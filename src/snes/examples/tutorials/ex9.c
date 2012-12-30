@@ -146,7 +146,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormPsiAndInitialGuess"
-PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible) 
+PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
 {
   ObsCtx         *user;
   PetscErrorCode ierr;
@@ -180,7 +180,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
       if (r <= 1.0) {
         psi[j][i] = sqrt(1.0 - r * r);
       } else {
-        psi[j][i] = -1.0;        
+        psi[j][i] = -1.0;
       }
       if (r <= afree) {
         uexact[j][i] = psi[j][i];  /* on the obstacle */
@@ -212,7 +212,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
 #define __FUNCT__ "FormBounds"
 /*  FormBounds() for call-back: tell SNESVI (variational inequality)
   that we want u >= psi */
-PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) 
+PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
 {
   PetscErrorCode ierr;
   ObsCtx         *user;
@@ -228,7 +228,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
 /* FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch */
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,ObsCtx *user) 
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,ObsCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -254,14 +254,14 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   ierr = DMDAVecRestoreArray(info->da, user->uexact, &uexact);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(10.0*info->ym*info->xm);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /* FormJacobianLocal - Evaluates Jacobian matrix on local process patch */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat jac, MatStructure *str,ObsCtx *user) 
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat jac, MatStructure *str,ObsCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;

@@ -20,7 +20,7 @@ static char help[] = "Sets up two PetscShell objects -- Field and Viz -- and att
    Processors: 1
 T*/
 
-/* 
+/*
   Include "petscsys.h" so that we can use PetscShell
   automatically includes:
      petscshell.h    - PetscShell routines
@@ -51,7 +51,7 @@ int main(int argc,char **args) {
   ierr = PetscObjectCompose((PetscObject)viz, "rho",  rho);CHKERRQ(ierr);
 
   for (i = 0; i < numIter; ++i) {
-    ierr = PetscShellCall(viz, "viewRho");CHKERRQ(ierr); 
+    ierr = PetscShellCall(viz, "viewRho");CHKERRQ(ierr);
   }
   /**/
   /* ierr = PetscShellDestroy(&viz);CHKERRQ(ierr); */

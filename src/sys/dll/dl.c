@@ -42,7 +42,7 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
    Output Parameter:
 +   name - actual name of file on local filesystem if found
 .   llen - length of the name buffer
--   found - true if the file exists 
+-   found - true if the file exists
 
    Level: developer
 

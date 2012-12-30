@@ -198,7 +198,7 @@ PetscErrorCode VecPointwiseMult_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yi
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) ww[i] *= yy[i];
   } else if(ww == yy) {
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) ww[i] *= xx[i];
-  } else 
+  } else
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
   {
     PetscInt start,n;

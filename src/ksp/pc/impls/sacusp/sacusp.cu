@@ -57,7 +57,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
-  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
   CUSPMATRIX* mat;	
@@ -100,7 +100,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
 #endif

@@ -433,7 +433,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
   XUndefineCursor(win->disp,win->win);
-  XFlush(win->disp); 
+  XFlush(win->disp);
   XSync(win->disp,False);
   PetscFunctionReturn(0);
 }

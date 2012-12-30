@@ -30,7 +30,7 @@ int main (int argc,char ** argv) {
 
   /*
     Reads a mesh
-  */  
+  */
   ierr = DMMeshCreateExodusNG(PETSC_COMM_WORLD,infilename,&dmBody,&dmFS);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ int main (int argc,char ** argv) {
           sr_array[k] = 1. + 100*c;
         }
       }
-      ierr = SectionRealUpdateClosure(sec1,dmBody,cell,sr_array,ADD_VALUES);CHKERRQ(ierr);        
+      ierr = SectionRealUpdateClosure(sec1,dmBody,cell,sr_array,ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscFree(sr_array);CHKERRQ(ierr);
     }
     ierr = SectionRealComplete(sec1);CHKERRQ(ierr);
@@ -75,17 +75,17 @@ int main (int argc,char ** argv) {
           sr_array[k] = 1. + 100*c;
         }
       }
-      ierr = SectionRealUpdateClosure(sec1,dmFS,face,sr_array,ADD_VALUES);CHKERRQ(ierr);        
+      ierr = SectionRealUpdateClosure(sec1,dmFS,face,sr_array,ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscFree(sr_array);CHKERRQ(ierr);
     }
     ierr = SectionRealComplete(sec1);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"sec1 as a SectionReal\n");CHKERRQ(ierr);
     ierr = SectionRealView(sec1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }    
+  }
 
   ierr = SectionRealDestroy(&sec1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmBody);CHKERRQ(ierr);  
-  ierr = DMDestroy(&dmFS);CHKERRQ(ierr);  
+  ierr = DMDestroy(&dmBody);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmFS);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

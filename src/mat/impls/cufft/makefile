@@ -6,8 +6,8 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 SOURCECU  = cufft.cu
-SOURCEF   = 
-SOURCEH   = 
+SOURCEF   =
+SOURCEH   =
 LIBBASE   = libpetscmat
 DIRS      =
 MANSEC    = Mat

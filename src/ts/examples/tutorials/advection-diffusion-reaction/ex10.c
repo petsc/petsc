@@ -34,7 +34,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 
       The variables He, V, I are always used to index into the concentrations of He, V, and I respectively
       Note that unlike in traditional C code the indices for He[], V[] and I[] run from 1 to N, NOT 0 to N-1
-      (the use of the union below "tricks" the C compiler to allow the indices to start at 1.) 
+      (the use of the union below "tricks" the C compiler to allow the indices to start at 1.)
 
 */
 typedef struct {
@@ -47,7 +47,7 @@ typedef struct {
 } Concentrations;
 
 /*
-     Holds problem specific options and data 
+     Holds problem specific options and data
 */
 typedef struct {
   PetscBool   noreactions;           /* run without the reaction terms */
@@ -160,7 +160,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   Concentrations *c;
   PetscReal      hx,x;
   char           string[16];
-  
+
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -257,7 +257,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   hx     = 8.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
   /*
-       F  = Cdot +  all the diffusion and reaction terms added below 
+       F  = Cdot +  all the diffusion and reaction terms added below
   */
   ierr = VecCopy(Cdot,F);CHKERRQ(ierr);
 
@@ -306,7 +306,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 
     /* ----------------------------------------------------------------
      ---- Compute forcing that produces He of cluster size 1
-          Crude cubic approximation of graph from Tibo's notes 
+          Crude cubic approximation of graph from Tibo's notes
     */
     f[xi].He[1] -=  ctx->forcingScale*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
     /* Are V or I produced? */
@@ -394,7 +394,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     if (ctx->nodissociations) continue;
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
-          I assume dissociation means losing only a single item from a cluster 
+          I assume dissociation means losing only a single item from a cluster
           I cannot tell from the notes if clusters can break up into any sub-size.
     */
     /*   He[He] ->  He[He-1] + He[1] */

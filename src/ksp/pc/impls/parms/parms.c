@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-/* 
+/*
    Provides an interface to pARMS.
    Requires pARMS 3.2 or later.
 */
@@ -21,8 +21,8 @@
 #define FLOAT PetscScalar
 #include "parms.h"
 
-/* 
-   Private context (data structure) for the  preconditioner.  
+/*
+   Private context (data structure) for the  preconditioner.
 */
 typedef struct {
   parms_Map         map;
@@ -37,14 +37,14 @@ typedef struct {
 } PC_PARMS;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_PARMS"
 static PetscErrorCode PCSetUp_PARMS(PC pc)
 {
   Mat               pmat;
   PC_PARMS          *parms = (PC_PARMS*)pc->data;
   const PetscInt    *mapptr0;
-  PetscInt          n, lsize, low, high, i, pos, ncols, length; 
+  PetscInt          n, lsize, low, high, i, pos, ncols, length;
   int               *maptmp, *mapptr, *ia, *ja, *ja1, *im;
   PetscScalar       *aa, *aa1;
   const PetscInt    *cols;
@@ -79,7 +79,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
     parms_MapFree(&parms->map);
     parms->map = PETSC_NULL;
   }
-  
+
   /* create pARMS map object */
   parms_MapCreateFromPtr(&parms->map,(int)n,maptmp,mapptr,((PetscObject)pmat)->comm,1,NONINTERLACED);
 
@@ -148,10 +148,10 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
     parms_PCFree(&parms->pc);
     parms->pc = PETSC_NULL;
   }
-  
+
   /* Now create pARMS preconditioner object based on A */
   parms_PCCreate(&parms->pc,parms->A);
-  
+
   /* Transfer options from PC to pARMS */
   switch(parms->global) {
     case 0: parms_PCSetType(parms->pc, PCRAS); break;
@@ -187,7 +187,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_PARMS"
 static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
 {
@@ -196,7 +196,7 @@ static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
   PC_PARMS             *parms = (PC_PARMS*)pc->data;
   char                 *str;
   double               fill_fact;
- 
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -246,11 +246,11 @@ static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance for schur complement at each level: %g\n",parms->droptol[4]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance for ILUT in last level schur complement: %g\n",parms->droptol[5]);CHKERRQ(ierr);
   }
- 
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_PARMS"
 static PetscErrorCode PCDestroy_PARMS(PC pc)
 {
@@ -285,7 +285,7 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_PARMS"
 static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
 {
@@ -320,7 +320,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
   if (flag) parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = parms->lfil[0];
   ierr = PetscOptionsInt("-pc_parms_lfil_schur","amount of fill-in for schur","PCPARMSSetFill",parms->lfil[4],&parms->lfil[4],&flag);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_parms_lfil_ilut_L_U","amount of fill-in for ILUT L and U","PCPARMSSetFill",parms->lfil[5],&parms->lfil[5],&flag);CHKERRQ(ierr);
-  if (flag) parms->lfil[6] = parms->lfil[5]; 
+  if (flag) parms->lfil[6] = parms->lfil[5];
   ierr = PetscOptionsReal("-pc_parms_droptol_factors","drop tolerance for L, U, L^{-1}F and EU^{-1}","None",parms->droptol[0],&parms->droptol[0],&flag);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_parms_droptol_schur_compl","drop tolerance for schur complement at each level","None",parms->droptol[4],&parms->droptol[4],&flag);CHKERRQ(ierr);
   if (flag) parms->droptol[1] = parms->droptol[2] = parms->droptol[3] = parms->droptol[0];
@@ -330,7 +330,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_PARMS"
 static PetscErrorCode PCApply_PARMS(PC pc,Vec b,Vec x)
 {
@@ -351,7 +351,7 @@ static PetscErrorCode PCApply_PARMS(PC pc,Vec b,Vec x)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetGlobal_PARMS"
 PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
 {
@@ -366,7 +366,7 @@ PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetGlobal"
 /*@
    PCPARMSSetGlobal - Sets the global preconditioner to be used in PARMS.
@@ -384,7 +384,7 @@ EXTERN_C_END
 
    Options Database Keys:
    -pc_parms_global [ras,schur,bj] - Sets global preconditioner
- 
+
    Level: intermediate
 
    Notes:
@@ -404,7 +404,7 @@ PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetLocal_PARMS"
 PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
 {
@@ -419,7 +419,7 @@ PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetLocal"
 /*@
    PCPARMSSetLocal - Sets the local preconditioner to be used in PARMS.
@@ -438,7 +438,7 @@ EXTERN_C_END
 
    Options Database Keys:
    -pc_parms_local [ilu0,iluk,ilut,arms] - Sets local preconditioner
- 
+
    Level: intermediate
 
    Notes:
@@ -462,7 +462,7 @@ PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveTolerances_PARMS"
 PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxits)
 {
@@ -478,12 +478,12 @@ PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxi
     parms->maxits = maxits;
     pc->setupcalled = 0;
   }
-   
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveTolerances"
 /*@
    PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
@@ -499,13 +499,13 @@ EXTERN_C_END
    Options Database Keys:
 +  -pc_parms_solve_tol - set the tolerance for local solve
 -  -pc_parms_max_it - set the maximum number of inner iterations
- 
+
    Level: intermediate
 
    Notes:
    See the pARMS functions parms_PCSetInnerEps and parms_PCSetInnerMaxits for more information.
 
-.seealso: PCPARMS, PCPARMSSetSolveRestart() 
+.seealso: PCPARMS, PCPARMSSetSolveRestart()
 @*/
 PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits)
 {
@@ -518,7 +518,7 @@ PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveRestart_PARMS"
 PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
 {
@@ -530,12 +530,12 @@ PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
     parms->maxdim = restart;
     pc->setupcalled = 0;
   }
-   
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveRestart"
 /*@
    PCPARMSSetSolveRestart - Sets the number of iterations at which the
@@ -549,13 +549,13 @@ EXTERN_C_END
 
    Options Database Keys:
 .  -pc_parms_max_dim - sets the inner Krylov dimension
- 
+
    Level: intermediate
 
    Notes:
    See the pARMS function parms_PCSetInnerKSize for more information.
 
-.seealso: PCPARMS, PCPARMSSetSolveTolerances() 
+.seealso: PCPARMS, PCPARMSSetSolveTolerances()
 @*/
 PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart)
 {
@@ -568,7 +568,7 @@ PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetNonsymPerm_PARMS"
 PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
 {
@@ -583,7 +583,7 @@ PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetNonsymPerm"
 /*@
    PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
@@ -598,7 +598,7 @@ EXTERN_C_END
 
    Options Database Keys:
 .  -pc_parms_nonsymmetric_perm - sets the use of nonsymmetric permutation
- 
+
    Level: intermediate
 
    Notes:
@@ -617,7 +617,7 @@ PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetFill_PARMS"
 PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2)
 {
@@ -640,7 +640,7 @@ PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetFill"
 /*@
    PCPARMSSetFill - Sets the fill-in parameters for ILUT, ILUK and ARMS preconditioners.
@@ -651,7 +651,7 @@ EXTERN_C_END
 
    Input Parameters:
 +  pc - the preconditioner context
-.  fil0 - the level of fill-in kept in LB, UB, E/UB and LB\F 
+.  fil0 - the level of fill-in kept in LB, UB, E/UB and LB\F
 .  fil1 - the level of fill-in kept in S
 -  fil2 - the level of fill-in kept in the L and U parts of the LU factorization of S
 
@@ -659,7 +659,7 @@ EXTERN_C_END
 +  -pc_parms_lfil_ilu_arms - set the amount of fill-in for ilut, iluk and arms
 .  -pc_parms_lfil_schur - set the amount of fill-in for schur
 -  -pc_parms_lfil_ilut_L_U - set the amount of fill-in for ILUT L and U
- 
+
    Level: intermediate
 
    Notes:
@@ -717,7 +717,7 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_PARMS"
 PetscErrorCode PCCreate_PARMS(PC pc)
 {
@@ -732,7 +732,7 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   parms->global = PC_PARMS_GLOBAL_RAS;
   parms->local = PC_PARMS_LOCAL_ARMS;
   parms->levels = 10;
-  parms->nonsymperm = PETSC_TRUE; 
+  parms->nonsymperm = PETSC_TRUE;
   parms->blocksize = 250;
   parms->maxdim = 0;
   parms->maxits = 0;
@@ -763,7 +763,7 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveRestart_C","PCPARMSSetSolveRestart_PARMS",PCPARMSSetSolveRestart_PARMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetNonsymPerm_C","PCPARMSSetNonsymPerm_PARMS",PCPARMSSetNonsymPerm_PARMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetFill_C","PCPARMSSetFill_PARMS",PCPARMSSetFill_PARMS);CHKERRQ(ierr);
- 
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

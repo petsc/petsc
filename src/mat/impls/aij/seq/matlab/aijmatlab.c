@@ -1,5 +1,5 @@
 
-/* 
+/*
         Provides an interface for the MATLAB engine sparse solver
 
 */
@@ -9,7 +9,7 @@
 #include <mex.h>      /* MATLAB include file */
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJToMatlab"
 mxArray *MatSeqAIJToMatlab(Mat B)
 {
@@ -27,19 +27,19 @@ mxArray *MatSeqAIJToMatlab(Mat B)
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
   ii = mxGetJc(mat);
   for (i=0; i<B->rmap->n+1; i++) ii[i] = aij->i[i];
-  
+
   PetscFunctionReturn(mat);
 }
 EXTERN_C_END
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatlabEnginePut_SeqAIJ"
 PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  mxArray        *mat; 
+  mxArray        *mat;
 
   PetscFunctionBegin;
   mat = MatSeqAIJToMatlab((Mat)obj);if (!mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create MATLAB matrix");
@@ -50,7 +50,7 @@ PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJFromMatlab"
 /*@C
     MatSeqAIJFromMatlab - Given a MATLAB sparse matrix, fills a SeqAIJ matrix with its transpose.
@@ -77,7 +77,7 @@ PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
   nnz = (mxGetJc(mmat))[nn];
   ii  = mxGetJc(mmat);
   jj  = mxGetIr(mmat);
-  n   = (PetscInt) nn;  
+  n   = (PetscInt) nn;
   m   = (PetscInt) nm;
   nz  = (PetscInt) nnz;
 
@@ -120,13 +120,13 @@ EXTERN_C_END
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatlabEngineGet_SeqAIJ"
 PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            mat = (Mat)obj;
-  mxArray        *mmat; 
+  mxArray        *mmat;
 
   PetscFunctionBegin;
   mmat = engGetVariable((Engine *)mengine,obj->name);
@@ -135,7 +135,7 @@ PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSolve_Matlab"
 PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 {
@@ -158,7 +158,7 @@ PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_Matlab"
 PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 {
@@ -198,19 +198,19 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Matlab"
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   F->ops->lufactornumeric    = MatLUFactorNumeric_Matlab;
   F->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN 
-#undef __FUNCT__  
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_matlab"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPackage *type)
 {
@@ -221,14 +221,14 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPack
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_matlab"
 PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   ierr                         = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr                         = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr                         = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -244,20 +244,20 @@ EXTERN_C_END
 
 /* --------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_Matlab"
 PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  
-  PetscFunctionBegin; 
+
+  PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"MATLAB run parameters:  -- not written yet!\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatView_Matlab"
-PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) 
+PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;

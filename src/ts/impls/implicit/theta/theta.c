@@ -144,7 +144,7 @@ static PetscErrorCode TSEvaluateStep_Theta(TS ts,PetscInt order,Vec U,PetscBool 
     ierr = VecWAXPY(U,ts->time_step,th->Xdot,th->X0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-}  
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_Theta"

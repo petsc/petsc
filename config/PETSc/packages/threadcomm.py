@@ -1,7 +1,7 @@
 import PETSc.package
 import os
 
-# This is a temporary file for defining the flag PETSC_THREADCOMM_ACTIVE. 
+# This is a temporary file for defining the flag PETSC_THREADCOMM_ACTIVE.
 # It should be deleted when the flag is removed from the code.
 
 class Configure(PETSc.package.NewPackage):

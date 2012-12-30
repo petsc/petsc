@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = dmredundant.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = ../../../../include/petscdmredundant.h
 LIBBASE  = libpetscdm
 MANSEC   = DM

@@ -1,12 +1,12 @@
 
 static char help[] = "Extract submatrices using unsorted indices. For SEQSBAIJ either sort both rows and columns, or sort none.\n\n";
-/* 
+/*
    Take a 4x4 grid and form a 5-point stencil graph Laplacian over it.
    Partition the grid into two subdomains by splitting into two in the j-direction (slowest varying).
    Impose an overlap of 1 and order the subdomains with the j-direction varying fastest.
    Extract the subdomain submatrices, one per rank.
 */
-/* Results: 
+/* Results:
     Sequential:
     - seqaij:   will error out, if rows or columns are unsorted
     - seqbaij:  will extract submatrices correctly even for unsorted row or column indices
@@ -16,7 +16,7 @@ static char help[] = "Extract submatrices using unsorted indices. For SEQSBAIJ e
     - mpiaij:   will error out, if columns are unsorted
     - mpibaij:  will error out, if columns are unsorted.
     - mpisbaij: will error out, if columns are unsorted; even with unsorted rows will produce correct submatrices;
-                CANNOT automatically report inversions, because MatGetRow is not available.       
+                CANNOT automatically report inversions, because MatGetRow is not available.
 */
 
 #include <petscmat.h>
@@ -26,7 +26,7 @@ static char help[] = "Extract submatrices using unsorted indices. For SEQSBAIJ e
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A, *S;              
+  Mat            A, *S;
   IS             rowis[2], colis[2];
   PetscInt       n,N,i,j,k,l,nsub,Jlow[2] = {0,1}, *jlow, Jhigh[2] = {3,4}, *jhigh, row, col, *subindices, ncols;
   const PetscInt *cols;
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size>2) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.\n"); 
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.\n");
   }
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -52,9 +52,9 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  
+
   /* Don't care if the entries are set multiple times by different procs. */
-  for (i=0; i<4; ++i) { 
+  for (i=0; i<4; ++i) {
     for (j = 0; j<4; ++j) {
       row = j*4+i;
       v = -1.0;
@@ -74,7 +74,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Original matrix\n");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   if (size > 1) {
     nsub = 1; /* one subdomain per rank */
   }

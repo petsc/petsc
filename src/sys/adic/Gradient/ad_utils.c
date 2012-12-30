@@ -19,10 +19,10 @@ void PetscADSetValueAndColor(DERIV_TYPE *vars,int n,ISColoringValue *colors,doub
     DERIV_val(vars[i]) = values[i];
     d = (PetscReal*)DERIV_grad(vars[i]);
     for (j=0; j<ad_GRAD_MAX; j++) {
-      d[j] = 0.0; 
+      d[j] = 0.0;
     }
-    d[colors[i]] = 1.0; 
-  } 
+    d[colors[i]] = 1.0;
+  }
 }
 
 void PetscADResetIndep(void)

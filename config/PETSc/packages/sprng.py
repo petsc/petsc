@@ -4,8 +4,8 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sprng-1.0.tar.gz']
-    self.functions = ['make_new_seed_mpi'] 
-    self.includes  = ['sprng.h'] 
+    self.functions = ['make_new_seed_mpi']
+    self.includes  = ['sprng.h']
     self.liblist   = [['liblcg.a']]
     return
 
@@ -14,7 +14,7 @@ class Configure(PETSc.package.NewPackage):
     self.deps = [self.mpi]
     return
 
-  def Install(self):    
+  def Install(self):
     import os
 
     g = open(os.path.join(self.packageDir,'SRC','make.PETSC'),'w')

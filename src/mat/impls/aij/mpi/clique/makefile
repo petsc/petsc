@@ -3,7 +3,7 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC	 = clique.cxx
 SOURCEF	 =

@@ -46,8 +46,8 @@ struct _p_PetscThreadComm_PThread{
   cpu_set_t   *cpuset;
 #endif
   PetscBool  ismainworker;                   /* Is the main thread also a work thread?*/
-  PetscInt   *granks;                        /* Thread ranks - if main thread is a worker then main thread 
-				                rank is 0 and ranks for other threads start from 1, 
+  PetscInt   *granks;                        /* Thread ranks - if main thread is a worker then main thread
+				                rank is 0 and ranks for other threads start from 1,
 				                otherwise the thread ranks start from 0.
                                                 These ranks are with respect to the first initialized thread pool */
   PetscInt    thread_num_start;              /* index for the first created thread (= 1 if the main thread is a worker
@@ -55,7 +55,7 @@ struct _p_PetscThreadComm_PThread{
   PetscPThreadCommSynchronizationType sync;   /* Synchronization type */
   PetscPThreadCommAffinityPolicyType  aff;    /* affinity policy */
   PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */
-  PetscBool                           synchronizeafter; /* Whether the main thread should be blocked till all threads complete the given kernel */     
+  PetscBool                           synchronizeafter; /* Whether the main thread should be blocked till all threads complete the given kernel */
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
 };

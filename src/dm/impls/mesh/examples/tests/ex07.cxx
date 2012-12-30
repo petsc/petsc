@@ -50,8 +50,8 @@ PetscErrorCode testWindowedArrowContainer()
 
   WindowedArrowContainer wac;
 
-  
-  
+
+
 
 
   PetscFunctionReturn(0);

@@ -2,7 +2,7 @@
 CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
-FPPFLAGS         = 
+FPPFLAGS         =
 LOCDIR           = src/vec/is/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF        = ex1f.F ex1f90.F ex2f.F ex3f90.F
@@ -85,10 +85,10 @@ runex3f90:
 	   ${RM} -f ex3f90.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
-TESTEXAMPLES_C_X	    = 
+TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
-TESTEXAMPLES_FORTRAN_MPIUNI = 
-TESTEXAMPLES_C_X_MPIUNI   = 
+TESTEXAMPLES_FORTRAN_MPIUNI =
+TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm
 TESTEXAMPLES_13		    = ex4.PETSc ex4.rm
 

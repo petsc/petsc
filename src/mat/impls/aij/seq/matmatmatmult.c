@@ -23,7 +23,7 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
 #define __FUNCT__ "MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
 {
-  PetscErrorCode ierr; 
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
@@ -79,9 +79,9 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D
   Mat_SeqAIJ        *d=(Mat_SeqAIJ*)D->data;
   Mat_MatMatMatMult *matmatmatmult=d->matmatmatmult;
   Mat               BC= matmatmatmult->BC;
-  
+
   PetscFunctionBegin;
-  ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr); 
+  ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
   ierr = (D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

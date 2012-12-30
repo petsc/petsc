@@ -33,7 +33,7 @@ PetscScalar k1(AppCtx *ctx,PetscReal t)
 {
   PetscReal th = t/3600.0;
   PetscReal barth = th - 24.0*floor(th/24.0);
-  if (((((PetscInt)th) % 24) < 4)               || ((((PetscInt)th) % 24) >= 20)) return(1.0e-40); 
+  if (((((PetscInt)th) % 24) < 4)               || ((((PetscInt)th) % 24) >= 20)) return(1.0e-40);
   else return(ctx->k1*PetscExpScalar(7.0*PetscPowScalar(PetscSinScalar(.0625*PETSC_PI*(barth - 4.0)),.2)));
 }
 
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr); 
+  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
 

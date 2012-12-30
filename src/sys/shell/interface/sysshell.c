@@ -112,7 +112,7 @@ PetscErrorCode PetscShellGraphExpandRow_Private(PetscShellGraph graph, PetscInt 
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellGraphAddVertex"
-PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v) 
+PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v)
 {
   PetscInt       ii;
   PetscErrorCode ierr;

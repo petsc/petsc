@@ -1,12 +1,12 @@
 
-CFLAGS	        = 
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
 EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c
-EXAMPLESF       = 
-EXAMPLESFH      = 
+EXAMPLESF       =
+EXAMPLESFH      =
 MANSEC          = TS
 
 include ${PETSC_DIR}/conf/variables
@@ -105,12 +105,12 @@ runex5_2:
 	   ${RM} -f ex5.tmp
 
 TESTEXAMPLES_C		  = ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            runex4_7 ex4.rm 
+                            runex4_7 ex4.rm
 
 testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
-TESTEXAMPLES_C_X	  = 
-TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_C_X_MPIUNI = 
-TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
+TESTEXAMPLES_C_X	  =
+TESTEXAMPLES_FORTRAN	  =
+TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm
 
 include ${PETSC_DIR}/conf/test

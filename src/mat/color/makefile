@@ -1,7 +1,7 @@
 #
-#  All the Minpack coloring routines have been converted to C with the F2C 
-# converter. We do not include in the distribution the original Fortran 77 
-# code in the interest of saving disk space. 
+#  All the Minpack coloring routines have been converted to C with the F2C
+# converter. We do not include in the distribution the original Fortran 77
+# code in the interest of saving disk space.
 #
 #  All of the MINPACK routine names have been prefixed with MINPACK
 # to prevent name-space pollution.

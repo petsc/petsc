@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fft.c 
+SOURCEC  = fft.c
 SOURCEH  = fft.h
 LIBBASE  = libpetscmat
 DIRS     = fftw

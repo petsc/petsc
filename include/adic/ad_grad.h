@@ -3,7 +3,7 @@
   LAWS OF THE UNITED STATES.  FOR LICENSING INFORMATION CONTACT:
 
   Paul Hovland and Boyana Norris, Mathematics and Computer Science Division,
-  Argonne National Laboratory, 9700 S. Cass Avenue, Argonne IL 60439, 
+  Argonne National Laboratory, 9700 S. Cass Avenue, Argonne IL 60439,
   {hovland,norris}@mcs.anl.gov.
 */
 
@@ -21,7 +21,7 @@ PETSC_EXTERN int ad_grad_size_shadow;
 #   if defined(__cplusplus)
         extern "C" {
 #   endif
-    
+
 #define ad_AD_GradInitMPI(pargc, pargv) \
     { \
         ad_mpi_init(pargc, pargv, &ad_total_grad_size); \
@@ -50,7 +50,7 @@ PETSC_EXTERN int ad_grad_size_shadow;
     }
 
 
-#define ad_AD_ClearGrad(gz) memset((char*)gz, 0, ad_GRAD_MAX*sizeof(double)); 
+#define ad_AD_ClearGrad(gz) memset((char*)gz, 0, ad_GRAD_MAX*sizeof(double));
 
 #define ad_AD_ClearGrad2(gz)\
     {\

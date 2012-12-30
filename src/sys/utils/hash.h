@@ -1,10 +1,10 @@
 #ifndef _HASH_H
 #define _HASH_H
 
-/* 
- This code is adapted from the khash library, version 0.2.4. 
+/*
+ This code is adapted from the khash library, version 0.2.4.
  It has been modified to fit into PETSc.
- Original copyright notice follows. 
+ Original copyright notice follows.
 */
 
 /* The MIT License
@@ -586,8 +586,8 @@ typedef khiter_t   PetscHashIIter;
 }
 
 /*
- Locate index i in the hash table ht. If i is found in table, ii is its index, 
- between 0 and kh_size(ht)-1 (inclusive); otherwise, ii == -1. 
+ Locate index i in the hash table ht. If i is found in table, ii is its index,
+ between 0 and kh_size(ht)-1 (inclusive); otherwise, ii == -1.
  */
 #define PetscHashIMap(ht,i,ii)  \
 {                                          \
@@ -599,12 +599,12 @@ typedef khiter_t   PetscHashIIter;
     (ii) = -1;                             \
 }                                          \
 
-/* 
+/*
  Locate all integers from array iarr of length len in hash table ht.
- Their images -- their local numbering -- are stored in iiarr of length len.  
+ Their images -- their local numbering -- are stored in iiarr of length len.
  If drop == PETSC_TRUE:
-  - if an integer is not found in table, it is omitted and upon completion 
-    iilen has the number of located indices; iilen <= ilen in this case. 
+  - if an integer is not found in table, it is omitted and upon completion
+    iilen has the number of located indices; iilen <= ilen in this case.
  If drop == PETSC_FALSE:
   - if an integer is not found in table, it is replaced by -1; iilen == ilen
     upon completion.
@@ -640,7 +640,7 @@ struct _PetscHashIJKey {
 };
 typedef struct _PetscHashIJKey PetscHashIJKey;
 
-/* Hash function: mix two integers into one. 
+/* Hash function: mix two integers into one.
    Shift by half the number of bits in PetscInt to the left and then XOR.  If the indices fit into the lowest half part of PetscInt, this is a bijection.
    We should shift by (8/2)*sizeof(PetscInt): sizeof(PetscInt) is the number of bytes in PetscInt, with 8 bits per byte.
  */
@@ -912,7 +912,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h) {
     ierr = PetscHashIJIterBegin((h),&_15_hi);CHKERRQ(ierr);
     while(!PetscHashIJIterAtEnd((h),_15_hi)) {
       ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi);CHKERRQ(ierr);
-      while(!PetscHashIJValIterAtEnd((h),_15_vi)){ 
+      while(!PetscHashIJValIterAtEnd((h),_15_vi)){
         _15_vid = _15_vi;
         ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
         _15_vid->next = 0;
@@ -930,12 +930,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscHashIJClearValues((h));CHKERRQ(ierr);
-  kh_clear(HASHIJ,(h)->ht);   
+  kh_clear(HASHIJ,(h)->ht);
   (h)->size = 0;
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJDestroy"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h){
   PetscFunctionBegin;
@@ -947,7 +947,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h){
       kh_destroy(HASHIJ,(*h)->ht);
       (*h)->ht=0;
     }
-    _16_ierr = PetscFree((*h));CHKERRQ(_16_ierr);  
+    _16_ierr = PetscFree((*h));CHKERRQ(_16_ierr);
   }
   PetscFunctionReturn(0);
 }

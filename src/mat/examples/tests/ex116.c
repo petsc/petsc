@@ -62,7 +62,7 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Solve eigenvalue problem: A_dense*x = lambda*B*x */
   /*==================================================*/
-  /* Convert aij matrix to MatSeqDense for LAPACK */ 
+  /* Convert aij matrix to MatSeqDense for LAPACK */
   ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);
 
   lwork = PetscBLASIntCast(8*n);
@@ -118,11 +118,11 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscFree(work);CHKERRQ(ierr);
   if (TestSYEVX){ierr = PetscFree(evecs_array);CHKERRQ(ierr);}
 
-  /* Compute SVD: A_dense = U*SIGMA*transpose(V), 
+  /* Compute SVD: A_dense = U*SIGMA*transpose(V),
      JOBU=JOBV='S':  the first min(m,n) columns of U and V are returned in the arrayU and arrayV; */
   /*==============================================================================================*/
   {
-    /* Convert aij matrix to MatSeqDense for LAPACK */ 
+    /* Convert aij matrix to MatSeqDense for LAPACK */
     PetscScalar  *arrayU,*arrayVT,*arrayErr,alpha=1.0,beta=-1.0;
     Mat          Err;
     PetscBLASInt minMN,maxMN;
@@ -130,10 +130,10 @@ PetscInt main(PetscInt argc,char **args)
     PetscReal    norm;
 
     ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);
-  
-    minMN = PetscMin(m,n); 
+
+    minMN = PetscMin(m,n);
     maxMN = PetscMax(m,n);
-    lwork = 5*minMN + maxMN; 
+    lwork = 5*minMN + maxMN;
     ierr = PetscMalloc4(m*minMN,PetscScalar,&arrayU,m*minMN,PetscScalar,&arrayVT,m*minMN,PetscScalar,&arrayErr,lwork,PetscScalar,&work);CHKERRQ(ierr);
 
     /* Create matrix Err for checking error */
@@ -148,7 +148,7 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Compute A = U*SIGMA*VT */
     LAPACKgesvd_("S","S",&m,&n,arrayA,&m,evals,arrayU,&minMN,arrayVT,&minMN,work,&lwork,&lierr);
-    ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr); 
+    ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
     if (!lierr){
       printf(" 1st 10 of %d singular values: \n",minMN);
       for (i=0; i<10; i++) printf("%d  %G\n",i,evals[i]);
@@ -167,7 +167,7 @@ PetscInt main(PetscInt argc,char **args)
     //ierr = MatView(Err,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     ierr = MatNorm(Err,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
     printf(" || U*Sigma*VT - A || = %G\n",norm);
- 
+
     ierr = PetscFree4(arrayU,arrayVT,arrayErr,work);CHKERRQ(ierr);
     ierr = PetscFree(evals);CHKERRQ(ierr);
     ierr = MatDestroy(&A_dense);CHKERRQ(ierr);

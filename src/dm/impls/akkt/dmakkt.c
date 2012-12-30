@@ -21,7 +21,7 @@ PetscErrorCode DMAKKTSetDM(DM dm, DM ddm) {
   ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
   ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -99,7 +99,7 @@ PetscErrorCode DMAKKTSetFieldDecompositionName(DM dm, const char* dname) {
   ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
   ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ PetscErrorCode DMAKKTSetFieldDecomposition(DM dm, PetscInt n, const char* const 
   ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
   ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +205,7 @@ PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char*** names, IS
     }
   }
   for (i = 0; i < 2; ++i) {
-    if (names && kkt->names){ 
+    if (names && kkt->names){
       ierr = PetscStrallocpy(kkt->names[i],(*names)+i);CHKERRQ(ierr);
     }
     if (iss && kkt->isf) {
@@ -323,16 +323,16 @@ PetscErrorCode DMSetUp_AKKT(DM dm) {
   PetscFunctionReturn(0);
 }
 
-/* 
- This routine will coarsen the 11-block only using the 00-block prolongation (P0f0c), the 10 block and GAMG. 
- The result is the 11-block prolongator (P1f1c). 
+/*
+ This routine will coarsen the 11-block only using the 00-block prolongation (P0f0c), the 10 block and GAMG.
+ The result is the 11-block prolongator (P1f1c).
  */
 #undef  __FUNCT__
 #define __FUNCT__ "DMCoarsen_AKKT_GAMG11"
 PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out) {
   PetscErrorCode ierr;
   DM_AKKT* kkt = (DM_AKKT*)(dm->data);
-  Mat Aff   = kkt->Aff;   /* fine-level KKT matrix */ 
+  Mat Aff   = kkt->Aff;   /* fine-level KKT matrix */
   Mat A1f0f;              /* fine-level dual (constraint) Jacobian */
   Mat A1f0c;              /* = A1f0f*P0f0c coarsen only primal indices */
   Mat B1f1f;              /* = A1f0c'*A1f0c */
@@ -343,31 +343,31 @@ PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out) {
   PetscCoarsenData *coarsening;
   PetscFunctionBegin;
 
-  /* 
-   What is faster: 
+  /*
+   What is faster:
      - A0c1f = P0f0c'*A0f1f followed by B1f1f = A0c1f'*A0c1f, or
      - A1f0c = A1f0f*P0f0c  followed by B1f1f = A1f0c*A1f0c'?
-   My bet is on the latter: 
+   My bet is on the latter:
      - fewer transpositions inside MatMatMult and row indices are always local.
    */
 
   ierr = MatGetSubMatrix(Aff, kkt->isf[1], kkt->isf[0], MAT_INITIAL_MATRIX, &A1f0f);CHKERRQ(ierr);
   if (kkt->transposeP) {
-    ierr = MatMatTransposeMult(A1f0f,P0f0c,MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A1f0c);CHKERRQ(ierr); 
+    ierr = MatMatTransposeMult(A1f0f,P0f0c,MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A1f0c);CHKERRQ(ierr);
   }
-  ierr = MatMatMult(A1f0f,P0f0c,MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A1f0c);CHKERRQ(ierr); 
-  ierr = MatMatTransposeMult(A1f0c, A1f0c, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B1f1f);CHKERRQ(ierr); 
-  
+  ierr = MatMatMult(A1f0f,P0f0c,MAT_INITIAL_MATRIX, PETSC_DEFAULT, &A1f0c);CHKERRQ(ierr);
+  ierr = MatMatTransposeMult(A1f0c, A1f0c, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B1f1f);CHKERRQ(ierr);
+
   /* We create PCGAMG here since it is only needed for coarsening and we don't want to have to carry the attendant data structures, if we don't need them. */
   ierr = PCCreate(((PetscObject)dm)->comm, &gamg11);CHKERRQ(ierr);
   /* This must be an aggregating GAMG. */
   ierr = PCSetType(gamg11, PCGAMG);CHKERRQ(ierr);
   ierr = PCGAMGSetSquareGraph(gamg11, PETSC_FALSE);CHKERRQ(ierr);
-  /* 
+  /*
    Observe that we want to "square" A1f0c before passing it (B1f1f) to GAMG.
    This is not because we are not sure how GAMG will deal with a (potentially) non-square matrix,
    but rather because if we asked GAMG to square it, it would also smooth the resulting prolongator.
-   At least PC_GAMG_AGG would, and we need an unsmoothed prolongator. 
+   At least PC_GAMG_AGG would, and we need an unsmoothed prolongator.
    */
   ierr = PCSetOperators(gamg11, B1f1f, B1f1f, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   /* FIX: Currently there is no way to tell GAMG to coarsen onto a give comm, but it shouldn't be hard to hack that stuff in. */
@@ -381,7 +381,7 @@ PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out) {
   ierr = MatDestroy(&B1f1f);CHKERRQ(ierr);
   ierr = MatDestroy(&G1f1f);CHKERRQ(ierr);
   ierr = PCDestroy(&gamg11);CHKERRQ(ierr);
-  
+
   *P1f1c_out = P1f1c;
 
   PetscFunctionReturn(0);
@@ -411,7 +411,7 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm) {
     ierr = DMCoarsen(kkt->dmf[0], comm,  dmc+0);CHKERRQ(ierr);
     ierr = DMCreateInterpolation(dmc[0], kkt->dmf[0], &P0f0c, PETSC_NULL);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Could not coarsen the primal block: primal subDM not set.");
-  
+
   /* Should P0f0c be transposed to act as a prolongator (i.e., to map from coarse to fine). */
   ierr = MatGetSize(P0f0c, &M0, &N0);CHKERRQ(ierr);
   if (M0 == N0) SETERRQ1(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONGSTATE,"Primal prolongator is square with size %D: cannot distinguish coarse from fine",M0);
@@ -447,14 +447,14 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm) {
   ierr = MatDestroy(&P0f0c);CHKERRQ(ierr);
   ierr = MatDestroy(&P1f1c);CHKERRQ(ierr);
   /* Coarsening the underlying matrix and primal-dual decomposition. */
-  /* 
-    We do not coarsen the underlying DM because 
+  /*
+    We do not coarsen the underlying DM because
     (a) Its coarsening may be incompatible with the specialized KKT-aware coarsening of the blocks defined here.
-    (b) Even if the coarsening  the decomposition is compatible with the decomposition of the coarsening, we can 
+    (b) Even if the coarsening  the decomposition is compatible with the decomposition of the coarsening, we can
         pick the former without loss of generality.
-    (c) Even if (b) is true, the embeddings (IS) of the coarsened subDMs are potentially different now from what 
+    (c) Even if (b) is true, the embeddings (IS) of the coarsened subDMs are potentially different now from what
         they would be in the coarsened DM; thus, embeddings would have to be supplied manually anyhow.
-    (d) In the typical situation we should only use the primal subDM for coarsening -- the whole point of 
+    (d) In the typical situation we should only use the primal subDM for coarsening -- the whole point of
         DMAKKT is that the dual block coarsening should be derived from the primal block coarsening for compatibility.
         If we are given both subDMs, DMAKKT essentially becomes a version of DMComposite, in which case the composition
         of the coarsened decomposition is by definition the coarsening of the whole system DM.
@@ -560,7 +560,7 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v) {
   const char* name, *prefix;
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_SUP, "No support for non-ASCII viewers"); 
+  if (!isascii) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_SUP, "No support for non-ASCII viewers");
   ierr = PetscObjectGetTabLevel((PetscObject)dm, &tab);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm, &name);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix);CHKERRQ(ierr);
@@ -610,9 +610,9 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v) {
     ierr = MatView(kkt->Pfc,v);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscViewerASCIISetTab(v,vtab);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 

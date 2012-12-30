@@ -205,7 +205,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
         k = stack->currentsize-2;
         if (!all) {
-          k = 0; 
+          k = 0;
           while (!stack->petscroutine[k]) k++;
           ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
           if (!create) {

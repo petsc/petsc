@@ -5,9 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCECU  = sacusp.cu sacusppoly.cu
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/sacusp/
 

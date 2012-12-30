@@ -2,16 +2,16 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        =	 
+FPPFLAGS        =	
 LOCDIR          = src/dm/ao/examples/tests/ex3d
 EXAMPLESC       = ex3.cpp
-EXAMPLESF       = 
+EXAMPLESF       =
 MANSEC          = AO
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
-ex3: ex3.o  chkopts 
+ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_DM_LIB}
 	${RM} -f ex3.o
 
@@ -38,9 +38,9 @@ runex3_4:
 	   ${RM} -f ex3.tmp
 
 TESTEXAMPLES_C		  =  ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 ex3.rm
-TESTEXAMPLES_C_X	  = 
-TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_C_X_MPIUNI = 
-TESTEXAMPLES_C3		  = 
+TESTEXAMPLES_C_X	  =
+TESTEXAMPLES_FORTRAN	  =
+TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_C3		  =
 
 include ${PETSC_DIR}/conf/test

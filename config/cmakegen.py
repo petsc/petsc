@@ -141,7 +141,7 @@ set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ###################  The following describes the build  ####################
-  
+
 ''')
 
 def writePackage(f,pkg,pkgdeps):

@@ -6,7 +6,7 @@ FFLAGS    =
 SOURCEC  = aomapping.c
 SOURCEH  =
 LIBBASE  = libpetscdm
-DIRS     = 
+DIRS     =
 MANSEC   = AO
 LOCDIR   = src/dm/ao/impls/mapping/
 

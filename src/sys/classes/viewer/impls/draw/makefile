@@ -1,5 +1,5 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = vdraw.h
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/classes/viewer/impls/draw/
 
 include ${PETSC_DIR}/conf/variables

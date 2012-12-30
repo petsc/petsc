@@ -19,7 +19,7 @@ typedef enum ADIntr_Modes Mode;
 
 Mode ADIntr_Mode = ADINTR_REPORTONCE;
 
-/* This provides the first 10 spots in the mode stack. 
+/* This provides the first 10 spots in the mode stack.
    Most normal programs will probably not grow beyond this. */
 
 static Mode *ADIntr_mode_stack = 0;
@@ -47,30 +47,30 @@ ADIntr_die_malloc_failure ARG0(void)
 void
 adintr_mode_push ARG1(Mode, new_mode)
 {
-     if (!ADIntr_mode_stack) 
+     if (!ADIntr_mode_stack)
      {
 	  ADIntr_mode_stack = (Mode *) malloc(ADIntr_mode_max_depth *
 					      sizeof(Mode));
-	  if (!ADIntr_mode_stack) 
+	  if (!ADIntr_mode_stack)
 	  {
 	       ADIntr_die_malloc_failure();
 	  }
      }
 
-     if (ADIntr_mode_depth >= ADIntr_mode_max_depth) 
+     if (ADIntr_mode_depth >= ADIntr_mode_max_depth)
      {
 	  ADIntr_mode_max_depth += ADINTR_STACK_GROWTH_INCREMENT;
 
-	  ADIntr_mode_stack = 
+	  ADIntr_mode_stack =
 	       (Mode *) realloc (ADIntr_mode_stack,
 				 ADIntr_mode_max_depth * sizeof(Mode));
 
-	  if (!ADIntr_mode_stack) 
+	  if (!ADIntr_mode_stack)
 	  {
 	       ADIntr_die_malloc_failure();
 	  }
      }
-     
+
      ADIntr_mode_stack[ADIntr_mode_depth] = ADIntr_Mode;
      ADIntr_mode_depth++;
 
@@ -86,8 +86,8 @@ adintr_mode_pop ARG0(void)
 	  fprintf (stderr,"ADIntrinsics warning: more mode POP's than PUSH's (arising from AD_EXCEPTION_BEGIN_IGNORE\n");
 	  fprintf (stderr,"ADIntrinsics: Ignoring POP request\n");
 	  fflush(stderr);
-     } 
-     else 
+     }
+     else
      {
 	  ADIntr_mode_depth --;
 	  ADIntr_Mode = ADIntr_mode_stack[ADIntr_mode_depth];
@@ -97,7 +97,7 @@ adintr_mode_pop ARG0(void)
 /************************************************************************/
 
 void
-adintr_ehsup ARG3(enum ADIntr_Funcs, func, 
+adintr_ehsup ARG3(enum ADIntr_Funcs, func,
 		  enum ADIntr_Partials, partial,
 		  double, value)
 {
@@ -105,7 +105,7 @@ adintr_ehsup ARG3(enum ADIntr_Funcs, func,
 }
 
 double
-adintr_ehgup ARG2(enum ADIntr_Funcs, func, 
+adintr_ehgup ARG2(enum ADIntr_Funcs, func,
 		  enum ADIntr_Partials, partial)
 {
      return ADIntr_Partials[func][partial];
@@ -117,7 +117,7 @@ adintr_ehsout ARG1(FILE *,the_file)
      reportonce_set_raw_output(the_file);
 }
 
-void 
+void
 adintr_ehrpt ARG0(void)
 {
      reportonce_summary();

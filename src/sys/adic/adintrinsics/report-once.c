@@ -93,7 +93,7 @@ xrealloc ARG2(void*, ptr, size_t, new_size)
 }
 
 /* This depends on what the Fortran AD tool thinks. */
-#define FORTRAN_UNDEFINED_FID  0 
+#define FORTRAN_UNDEFINED_FID  0
 
 #define ALREADY_ASSIGNED(fid) (fid != FORTRAN_UNDEFINED_FID)
 
@@ -143,7 +143,7 @@ reportonce_ehsfid ARG3(int*,g_ehfid, char *,routine, char *,filename)
 
 
 RO_EXTERN void
-reportonce_report_one ARG4(int, fid, int, line, 
+reportonce_report_one ARG4(int, fid, int, line,
                            int, exception_type, long int, count)
 {
      if (!ERROR_FILE) ERROR_FILE = stderr;
@@ -170,19 +170,19 @@ RO_EXTERN void
 reportonce_accumulate ARG3(int, file, int, line, int, exception)
 {
      /* Adjust to internally number from 0 */
-     file = file - 1; 
+     file = file - 1;
 
      if ( ! initial_store_created )
      {
           {
                int i;
-               
+
                /* We depend on calloc'ed memory to read as integer 0 */
-               
+
                exception_info_store =
                     (exception_info ***) xcalloc ( initial_max_files,
                                                    sizeof( exception_info **) );
-               
+
                line_numbers_count =
                     (int*) xcalloc ( initial_max_files, sizeof(int));
 
@@ -202,10 +202,10 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
           while ( file >= current_max_files )
           {
                int i;
-               
+
                exception_info_store =
-                    (exception_info ***) xrealloc ( exception_info_store, 
-                                 (current_max_files + file_growth_increment ) * 
+                    (exception_info ***) xrealloc ( exception_info_store,
+                                 (current_max_files + file_growth_increment ) *
                                  sizeof( exception_info ** ) );
 
                line_numbers_count =
@@ -236,14 +236,14 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                {
                     exception_info_store[file][hashed_line] =
                          (exception_info*)xcalloc (1, sizeof(exception_info));
-                    
+
                     our_loc = exception_info_store[file][hashed_line];
-                    
+
                     our_loc->line = line;
                     our_loc->exception_type = exception;
                     our_loc->count = 1;
-                    our_loc->down = NULL; 
-                    
+                    our_loc->down = NULL;
+
                     line_numbers_count[file] += 1;
 
                     break;
@@ -269,14 +269,14 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
 
                     exception_info_store[file][hashed_line] =
                          (exception_info*)xcalloc (1, sizeof(exception_info));
-                    
+
                     our_loc = exception_info_store[file][hashed_line];
-                    
+
                     our_loc->line = line;
                     our_loc->exception_type = exception;
                     our_loc->count = 1;
-                    our_loc->down = old_first_elt; 
-                         
+                    our_loc->down = old_first_elt;
+
                     line_numbers_count[file] += 1;
                }
           }
@@ -319,17 +319,17 @@ reportonce_summary ARG0(void)
                int found_count = 0;
 
                /* Just skip this iteration if there's nothing to be done. */
-               if (!line_numbers_count[current_file]) 
+               if (!line_numbers_count[current_file])
                     continue;
 
               /* Make an array big enough to hold all of the extracted
                  info, then sort it in that array.
               */
-              elts = (struct exception_info * ) 
+              elts = (struct exception_info * )
                    xcalloc (line_numbers_count[current_file] + 1,
                             sizeof(struct exception_info));
 
-              /* 
+              /*
                  For a given file, walk along each main bucket of the array.
               */
               for (i = 0; i < hash_size; i++)
@@ -356,7 +356,7 @@ reportonce_summary ARG0(void)
               }
 
               if ( found_count != line_numbers_count[current_file])
-              {        
+              {
                    fprintf(stderr, "report once: Failed internal consistency check.\n");
                    abort();
               }
@@ -376,7 +376,7 @@ reportonce_summary ARG0(void)
                }
 
                /* Now print them out. */
-               
+
                for ( i=0; i<found_count; i++)
                {
                     reportonce_report_one (current_file,
@@ -395,11 +395,11 @@ RO_EXTERN void reportonce_reset ARG0(void)
 {
      int file_count;
      int line_hash_count;
-     
+
      for (file_count = 0; file_count < current_max_files; file_count++)
      {
           line_numbers_count[file_count] = 0;
-          
+
           for (line_hash_count = 0;
                line_hash_count < hash_size ;
                line_hash_count++)

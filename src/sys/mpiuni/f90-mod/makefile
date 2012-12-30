@@ -9,11 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = mpiunimod.F
-SOURCEH	   = 
+SOURCEH	   =
 LIBBASE	   = libpetscsys
 MANSEC	   = Sys
 LOCDIR	   = src/sys/mpiuni/f90-mod/

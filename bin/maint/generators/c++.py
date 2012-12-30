@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $ 
+# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -8,7 +8,7 @@
 #
 #  Crude as all hack!
 #
-#  Calling sequence: 
+#  Calling sequence:
 #      c++.py
 ##
 import os
@@ -31,7 +31,7 @@ def main(args):
   def ClassToPointer(a):
     if a in classes: return a+"_*"
     else: return a
-    
+
   for i in aliases:
     outfile.write("typedef "+aliases[i]+" "+i+"; \n")
   outfile.write("\n")
@@ -41,7 +41,7 @@ def main(args):
   for i in skeys:
     outfile.write("#define "+i+" char*\n")
   outfile.write("\n")
-  
+
   skeys = enums.keys()
   skeys.sort()
   for i in skeys:
@@ -53,7 +53,7 @@ def main(args):
       cnt = cnt + 1
       if not cnt == len(enums[i]): outfile.write(",")
       outfile.write("\n")
-    outfile.write("};\n")      
+    outfile.write("};\n")
   outfile.write("\n")
 
   skeys = classes.keys()
@@ -61,7 +61,7 @@ def main(args):
   for i in skeys:
     outfile.write("class "+i+"_;\n")
   outfile.write("\n")
-  
+
   skeys = structs.keys()
   skeys.sort()
   for i in skeys:
@@ -72,7 +72,7 @@ def main(args):
       if l in classes:
         j = l+"* "+j[j.find(" "):]
       outfile.write("    "+ClassToPointer(j)+";\n")
-    outfile.write("};\n")      
+    outfile.write("};\n")
   outfile.write("\n")
 
   skeys = classes.keys()
@@ -103,12 +103,12 @@ def main(args):
             if cnt < len(classes[i][j])-1: outfile.write(",")
           cnt = cnt + 1
         outfile.write("){return 0;};\n")
-    outfile.write("};\n")        
-  
-    
+    outfile.write("};\n")
+
+
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
   main(sys.argv[1:])
 

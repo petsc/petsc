@@ -695,7 +695,7 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 
 .seealso: TSSundialsGetIterations(),  TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(), 
+          TSSundialsGetIterations(), TSSundialsSetType(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
           TSSetExactFinalTime()
 @*/
@@ -794,7 +794,7 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(),  TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(), 
+          TSSundialsGetIterations(), TSSundialsSetType(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
           TSSetExactFinalTime()
 
@@ -859,7 +859,7 @@ PetscErrorCode  TSSundialsSetTolerance(TS ts,double aabs,double rel)
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(), 
+          TSSundialsGetIterations(), TSSundialsSetType(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance()
 @*/
 PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
@@ -932,7 +932,7 @@ PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 
 .seealso:TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetMaxl(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(), 
+          TSSundialsGetIterations(), TSSundialsSetType(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC()
 @*/
 PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)

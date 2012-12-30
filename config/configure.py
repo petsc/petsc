@@ -176,7 +176,7 @@ def chkrhl9():
     except:
       # can't read file - assume dangerous RHL9
       buf = 'Shrike'
-    if buf.find('Shrike') > -1: 
+    if buf.find('Shrike') > -1:
       sys.argv.append('--useThreads=0')
       extraLogs.append('''\
 ==============================================================================
@@ -226,19 +226,19 @@ def move_configure_log(framework):
       if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
   return
 
-def petsc_configure(configure_options): 
+def petsc_configure(configure_options):
   try:
     petscdir = os.environ['PETSC_DIR']
     sys.path.append(os.path.join(petscdir,'bin'))
     import petscnagupgrade
     file     = os.path.join(petscdir,'.nagged')
     if not petscnagupgrade.naggedtoday(file):
-      petscnagupgrade.currentversion(petscdir)  
+      petscnagupgrade.currentversion(petscdir)
   except:
     pass
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
-  print '==============================================================================='  
+  print '==============================================================================='
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])

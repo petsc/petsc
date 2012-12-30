@@ -5,7 +5,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c fdaij.c \
 	   matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c matmatmatmult.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = aij.h
 LIBBASE  = libpetscmat
 DIRS     = superlu umfpack essl lusol matlab csrperm crl bas ftn-kernels seqcusp \

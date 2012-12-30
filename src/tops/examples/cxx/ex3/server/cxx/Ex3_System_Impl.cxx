@@ -1,18 +1,18 @@
-// 
+//
 // File:          Ex3_System_Impl.cxx
 // Symbol:        Ex3.System-v0.0.0
 // Symbol Type:   class
 // Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex3.System
-// 
+//
 // WARNING: Automatically generated; only changes within splicers preserved
-// 
-// 
+//
+//
 #include "Ex3_System_Impl.hxx"
 
-// 
+//
 // Includes for all method dependencies.
-// 
+//
 #ifndef included_TOPS_Matrix_hxx
 #include "TOPS_Matrix.hxx"
 #endif
@@ -41,7 +41,7 @@
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
 Ex3::System_impl::System_impl() : StubBase(reinterpret_cast< void*>(
   ::Ex3::System::_wrapObj(reinterpret_cast< void*>(this))),false) , _wrapped(
-  true){ 
+  true){
   // DO-NOT-DELETE splicer.begin(Ex3.System._ctor2)
   // Insert-Code-Here {Ex3.System._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(Ex3.System._ctor2)
@@ -77,7 +77,7 @@ void Ex3::System_impl::_load() {
 void
 Ex3::System_impl::computeMatrix_impl (
   /* in */::TOPS::Matrix J,
-  /* in */::TOPS::Matrix B ) 
+  /* in */::TOPS::Matrix B )
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
   // Use the TOPS.Structured.Matrix port for getting BB
@@ -99,10 +99,10 @@ Ex3::System_impl::computeMatrix_impl (
   double hy     = 1.0/(double)(my-1);
   double hz     = 1.0/(double)(mz-1);
   //double sc     = hx*hy*hz;
-  double hxhydhz  = hx*hy/hz; 
+  double hxhydhz  = hx*hy/hz;
   double hyhzdhx  = hy*hz/hx;
   double hxhzdhy  = hx*hz/hy;
- 
+
   /*
      Compute part of matrix over the locally owned part of the grid
   */
@@ -134,7 +134,7 @@ Ex3::System_impl::computeMatrix_impl (
  * Method:  initializeOnce[]
  */
 void
-Ex3::System_impl::initializeOnce_impl () 
+Ex3::System_impl::initializeOnce_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.initializeOnce)
@@ -147,7 +147,7 @@ Ex3::System_impl::initializeOnce_impl ()
  */
 void
 Ex3::System_impl::computeRightHandSide_impl (
-  /* in array<double> */::sidl::array<double> b ) 
+  /* in array<double> */::sidl::array<double> b )
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeRightHandSide)
   TOPS::Structured::Solver solver = this->solver;
@@ -166,7 +166,7 @@ Ex3::System_impl::computeRightHandSide_impl (
   double hy     = 1.0/(double)(my-1);
   double hz     = 1.0/(double)(mz-1);
   double sc     = hx*hy*hz;
- 
+
   /*
      Compute right hand side over the locally owned part of the grid
   */
@@ -180,7 +180,7 @@ Ex3::System_impl::computeRightHandSide_impl (
         }
       }
     }
-  }  
+  }
   // DO-NOT-DELETE splicer.end(Ex3.System.computeRightHandSide)
 }
 
@@ -188,22 +188,22 @@ Ex3::System_impl::computeRightHandSide_impl (
  *  Starts up a component presence in the calling framework.
  * @param services the component instance's handle on the framework world.
  * Contracts concerning Svc and setServices:
- * 
+ *
  * The component interaction with the CCA framework
  * and Ports begins on the call to setServices by the framework.
- * 
+ *
  * This function is called exactly once for each instance created
  * by the framework.
- * 
+ *
  * The argument Svc will never be nil/null.
- * 
+ *
  * Those uses ports which are automatically connected by the framework
  * (so-called service-ports) may be obtained via getPort during
  * setServices.
  */
 void
 Ex3::System_impl::setServices_impl (
-  /* in */::gov::cca::Services services ) 
+  /* in */::gov::cca::Services services )
 // throws:
 //     ::gov::cca::CCAException
 //     ::sidl::RuntimeException
@@ -221,7 +221,7 @@ Ex3::System_impl::setServices_impl (
 	    __FILE__, __LINE__);
     return;
   }
-  
+
   // Provides ports
   // Initialization
   myServices.addProvidesPort(p,
@@ -231,14 +231,14 @@ Ex3::System_impl::setServices_impl (
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Matrix",
 			   "TOPS.System.Compute.Matrix", myServices.createTypeMap());
-  
+
   // RHS computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.RightHandSide",
 			   "TOPS.System.Compute.RightHandSide", myServices.createTypeMap());
- 
+
   // GoPort (instead of main)
-  myServices.addProvidesPort(p, 
+  myServices.addProvidesPort(p,
 			     "DoSolve",
 			     "gov.cca.ports.GoPort",
 			     myServices.createTypeMap());
@@ -251,21 +251,21 @@ Ex3::System_impl::setServices_impl (
 }
 
 /**
- *  
- * Execute some encapsulated functionality on the component. 
- * Return 0 if ok, -1 if internal error but component may be 
+ *
+ * Execute some encapsulated functionality on the component.
+ * Return 0 if ok, -1 if internal error but component may be
  * used further, and -2 if error so severe that component cannot
  * be further used safely.
  */
 int32_t
-Ex3::System_impl::go_impl () 
+Ex3::System_impl::go_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.go)
   // Insert-Code-Here {Ex3.System.go} (go method)
 #undef __FUNCT__
 #define __FUNCT__ "Ex3::System_impl::go"
-  
+
   // Parameter port stuff here (instead of argc, argv);
   // for now pass fake argc and argv to solver
 
@@ -278,7 +278,7 @@ Ex3::System_impl::go_impl ()
   }
 
   solver.Initialize();
-  
+
   solver.solve();
 
   myServices.releasePort("TOPS.StructuredSolver");

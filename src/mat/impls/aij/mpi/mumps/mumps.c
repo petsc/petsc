@@ -15,7 +15,7 @@ EXTERN_C_BEGIN
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-#include <smumps_c.h> 
+#include <smumps_c.h>
 #else
 #include <dmumps_c.h>
 #endif
@@ -683,9 +683,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     if (!mumps->myid) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.a = (mumps_complex*)mumps->val; 
+      mumps->id.a = (mumps_complex*)mumps->val;
 #else
-      mumps->id.a = (mumps_double_complex*)mumps->val; 
+      mumps->id.a = (mumps_double_complex*)mumps->val;
 #endif
 #else
       mumps->id.a = mumps->val;
@@ -694,9 +694,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   } else {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    mumps->id.a_loc = (mumps_complex*)mumps->val; 
+    mumps->id.a_loc = (mumps_complex*)mumps->val;
 #else
-    mumps->id.a_loc = (mumps_double_complex*)mumps->val; 
+    mumps->id.a_loc = (mumps_double_complex*)mumps->val;
 #endif
 #else
     mumps->id.a_loc = mumps->val;
@@ -835,7 +835,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
 
   mumps->id.job = JOB_INIT;
   mumps->id.par = 1;  /* host participates factorizaton and solve */
-  mumps->id.sym = mumps->sym; 
+  mumps->id.sym = mumps->sym;
   PetscMUMPS_c(&mumps->id);
 
   mumps->CleanUpMUMPS = PETSC_FALSE;
@@ -884,9 +884,9 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
       if (mumps->id.ICNTL(6)>1){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-        mumps->id.a = (mumps_complex*)mumps->val; 
+        mumps->id.a = (mumps_complex*)mumps->val;
 #else
-        mumps->id.a = (mumps_double_complex*)mumps->val; 
+        mumps->id.a = (mumps_double_complex*)mumps->val;
 #endif
 #else
         mumps->id.a = mumps->val;
@@ -897,7 +897,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
         PetscBool      flag;
         ierr = ISEqual(r,c,&flag);CHKERRQ(ierr);
         if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"row_perm != col_perm");
-        ierr = ISView(r,PETSC_VIEWER_STDOUT_SELF); 
+        ierr = ISView(r,PETSC_VIEWER_STDOUT_SELF);
          */
         if (!mumps->myid) {
           const PetscInt *idx;
@@ -941,10 +941,10 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
-    }    
+    }
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1)); 
-  
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
+
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
   F->ops->solvetranspose   = MatSolveTranspose_MUMPS;
@@ -982,9 +982,9 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
       if (mumps->id.ICNTL(6)>1){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-        mumps->id.a = (mumps_complex*)mumps->val; 
+        mumps->id.a = (mumps_complex*)mumps->val;
 #else
-        mumps->id.a = (mumps_double_complex*)mumps->val; 
+        mumps->id.a = (mumps_double_complex*)mumps->val;
 #endif
 #else
         mumps->id.a = mumps->val;
@@ -1022,10 +1022,10 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
-    }    
+    }
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1)); 
- 
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
+
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
   F->ops->solvetranspose   = MatSolveTranspose_MUMPS;
@@ -1062,9 +1062,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
       if (mumps->id.ICNTL(6)>1){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-        mumps->id.a = (mumps_complex*)mumps->val; 
+        mumps->id.a = (mumps_complex*)mumps->val;
 #else
-        mumps->id.a = (mumps_double_complex*)mumps->val; 
+        mumps->id.a = (mumps_double_complex*)mumps->val;
 #endif
 #else
         mumps->id.a = mumps->val;
@@ -1102,9 +1102,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
-    }    
+    }
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1)); 
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;

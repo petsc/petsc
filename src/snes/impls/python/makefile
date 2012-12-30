@@ -1,11 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = pythonsnes.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscsnes
 DIRS     =
 LOCDIR   = src/snes/impls/python/

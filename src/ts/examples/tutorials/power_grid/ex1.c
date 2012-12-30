@@ -138,7 +138,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsVec("-initial","Initial values","",U,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ctx.rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(ctx.rand);CHKERRQ(ierr);
 

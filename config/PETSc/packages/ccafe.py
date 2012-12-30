@@ -13,12 +13,12 @@ class Configure(PETSc.package.NewPackage):
     self.getExecutable('ccafe-config', path = ccafe_bin_dir, getFullPath=1, resultName = 'ccafe_config')
     if not hasattr(self,'ccafe_config'):
       raise RuntimeError('Cannot locate ccafe-config executable in the location specified with --with-ccafe-dir')
-    
+
     try:
       self.version  = PETSc.package.NewPackage.executeShellCommand(self.ccafe_config + ' --var CCAFE_VERSION')[0].rstrip()
     except RuntimeError, e:
       raise RuntimeError('Error when attempting to determine ccafe version')
-    
+
     #self.liblist  = [['libccaffeine_'+self.version.replace('.','_')+'.a']]
     try:
       self.ccaspec_config = PETSc.package.NewPackage.executeShellCommand(self.ccafe_config + ' --var CCAFE_CCA_SPEC_BABEL_CONFIG')[0].rstrip()
@@ -29,7 +29,7 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Error when attempting to determine ccafe cca-spec-babel version')
 
     self.specpkg = PETSc.package.NewPackage.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_PKG_NAME')[0].rstrip()
-    
+
     self.babel = PETSc.package.NewPackage.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_BABEL_BABEL')[0].rstrip()
     if not self.getExecutable(self.babel, resultName = 'babel'):
       raise RuntimeError('Located Babel library and include file but could not find babel executable')
@@ -50,7 +50,7 @@ class Configure(PETSc.package.NewPackage):
 
     self.miscSetup()
     self.babelpackage      = self.framework.require('PETSc.packages.babel', self)
-    
+
     PETSc.package.NewPackage.configureLibrary(self)
 
     self.addMakeMacro('CCAFE_HOME',self.framework.argDB['with-ccafe-dir'])

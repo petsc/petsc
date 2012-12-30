@@ -7,7 +7,7 @@ SOURCEC  = mpiadj.c
 SOURCEF  =
 SOURCEH  = mpiadj.h
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/adj/mpi/
 

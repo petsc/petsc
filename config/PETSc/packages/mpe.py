@@ -15,7 +15,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
-          
+
   def Install(self):
     import os
 
@@ -42,7 +42,7 @@ class Configure(PETSc.package.NewPackage):
     args.append('MPI_LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 
     args = ' '.join(args)
-    
+
     fd = file(os.path.join(self.packageDir,'mpe'), 'w')
     fd.write(args)
     fd.close()

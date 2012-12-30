@@ -5,9 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCECU  = bicgstabcusp.cu
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/bicgstabcusp/
 

@@ -421,7 +421,7 @@ PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED void *key)
 
 PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED void *key)
 {
-} 
+}
 #endif
 
 /*
@@ -554,7 +554,7 @@ M*/
   __chked = PETSC_TRUE;\
   }} while (0)
 #else
-#define PetscRegister__FUNCT__() 
+#define PetscRegister__FUNCT__()
 #endif
 
 #define PetscCheck__FUNCT__() do { \

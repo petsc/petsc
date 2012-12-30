@@ -7,7 +7,7 @@ configure_options = [
   #'CFLAGS=-g',                 # workarround for optimzier bug with gltr.c
   #'LIBS=/usr/lib/libm.a'       # workarround to configure convering '/usr/lib/libm.a' to '-lm'
   ]
-  
+
 if __name__ == '__main__':
   import sys,os
   sys.path.insert(0,os.path.abspath('config'))

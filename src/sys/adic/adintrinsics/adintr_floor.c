@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_floor
   exception number -> ADINTR_FLOOR
-  exceptional code -> 
+  exceptional code ->
 *fx = ADIntr_Partials[ADINTR_FLOOR][ADINTR_FX];
 
   */
@@ -37,7 +37,7 @@ adintr_floor (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
-     *fx = ADIntr_Partials[ADINTR_FLOOR][ADINTR_FX];     
+     *fx = ADIntr_Partials[ADINTR_FLOOR][ADINTR_FX];
      *fxx = ADIntr_Partials[ADINTR_FLOOR][ADINTR_FXX];
 
      /* Here is where we perform the action appropriate to the current mode. */
@@ -45,7 +45,7 @@ adintr_floor (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_modf
   exception number -> ADINTR_MODF
-  exceptional code -> 
+  exceptional code ->
 *fx = ADIntr_Partials[ADINTR_MODF][ADINTR_FX];
 *fy = ADIntr_Partials[ADINTR_MODF][ADINTR_FY];
 *fxx = ADIntr_Partials[ADINTR_MODF][ADINTR_FXX];
@@ -58,7 +58,7 @@ adintr_modf (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

@@ -7,7 +7,7 @@ SOURCEC  = nn.c
 SOURCEF  =
 SOURCEH  = nn.h
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/is/nn/
 

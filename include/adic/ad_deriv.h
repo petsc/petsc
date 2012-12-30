@@ -26,11 +26,11 @@ typedef float InactiveFloat;
 PETSC_EXTERN "C" {
 #endif
 
-#if !defined(ad_GRAD_PTR) 
+#if !defined(ad_GRAD_PTR)
 #define ad_GRAD_PTR 0
 #endif
 
-/* since ad_GRAD_MAX is set dynamically by the application (that automatically includes 
+/* since ad_GRAD_MAX is set dynamically by the application (that automatically includes
    this file) this is here so that the regular library compile can compile this file */
 #if !defined(ad_GRAD_MAX)
 #define ad_GRAD_MAX 64

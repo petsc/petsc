@@ -23,7 +23,7 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   PetscInitialize(&argc,&argv,0,help);
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
@@ -33,8 +33,8 @@ int main(int argc,char **argv)
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
-  /* 
-      Plot the  energies 
+  /*
+      Plot the  energies
   */
   ierr = PetscDrawLGSetDimension(lg,3);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawLGSetLegend(lg,legend);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
-  /* 
+  /*
       Plot the  forces
   */
   ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);

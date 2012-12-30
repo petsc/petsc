@@ -8,7 +8,7 @@ T*/
   and presents it as an sequence of Arrows; used in ParDelta::fusion().
   Note: this test may not fail in parallel, but is not designed to run that way.
 
-  Tests ParDelta::Flip  -- a class that wraps a BiGraph, implements a subset of the BiGraph interface  and redirects 
+  Tests ParDelta::Flip  -- a class that wraps a BiGraph, implements a subset of the BiGraph interface  and redirects
   select methods to the underlying BiGraph while reversing the input arrows.
 */
 
@@ -51,13 +51,13 @@ PetscErrorCode testPointConeArraySequence() {
   PetscBool  flag;
   PetscErrorCode ierr;
 
-  // Allocate a raw array of n PointConeArrows 
+  // Allocate a raw array of n PointConeArrows
   int n = 10;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag);CHKERRQ(ierr);
   if(n < 0) {
     SETERRQ1(PETSC_COMM_SELF,1, "Invalid PointConeArraySequence size: %d", n);
   }
-  
+
   PointConeArrow *aa = (PointConeArrow*) malloc(sizeof(PointConeArrow)*n);
 
   // Fill in the array

@@ -1666,8 +1666,8 @@ int main(int argc, char **argv)
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    for (k=j=0; j<mlocal; j++) 
-      for (i=0; i<SPATIAL_DIM_0; i++,k++) 
+    for (k=j=0; j<mlocal; j++)
+      for (i=0; i<SPATIAL_DIM_0; i++,k++)
         coords[k] = PetscRealPart(v[k]);
     ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, SPATIAL_DIM_0, mlocal, coords );CHKERRQ(ierr);

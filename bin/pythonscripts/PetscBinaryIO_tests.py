@@ -23,7 +23,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         vec.view(viewer)
         viewer.destroy()
         vec.destroy()
-        
+
         result, = PetscBinaryIO().readBinaryFile('test.dat')
         self.assertTrue(np.allclose(array, result))
 
@@ -49,7 +49,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         anis.view(viewer)
         viewer.destroy()
         anis.destroy()
-        
+
         result, = PetscBinaryIO().readBinaryFile('test.dat')
         self.assertTrue((indices == result).all())
 
@@ -60,7 +60,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         mat[0,1] = 2.1
         mat[1,1] = 3.1
         mat.assemble()
-        
+
         vals = np.array([1.1,2.1,3.1])
         counts = np.array([0,2,3])
         cols = np.array([0,1,1])
@@ -69,7 +69,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         mat.view(viewer)
         viewer.destroy()
         mat.destroy()
-        
+
         result, = PetscBinaryIO().readBinaryFile('test.dat')
         self.assertTrue(np.allclose(vals, result[1][2]))
         self.assertTrue((counts == result[1][0]).all())

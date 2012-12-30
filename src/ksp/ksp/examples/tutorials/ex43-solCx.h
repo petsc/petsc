@@ -7,10 +7,10 @@
 
 
 static void evaluate_solCx(
-		double pos[], 
+		double pos[],
 		double _eta_A, double _eta_B, 	/* Input parameters: density, viscosity A, viscosity B */
 		double _x_c, int _n, 			/* Input parameters: viscosity jump location, wavenumber in z */
-		double vel[], double* presssure, 
+		double vel[], double* presssure,
 		double total_stress[], double strain_rate[] )
 {
 	double Z,u1,u2,u3,u4,u5,u6,ZA,ZB;
@@ -2241,7 +2241,7 @@ static void evaluate_solCx(
 	
 	u5 = (double)(-2*Z*n*PI*u2-u3*2*n*PI)*cos(n*PI*z); /* pressure */
 	
-	u6 = (double)(u3*2*n*PI + 4*Z*n*PI*u2)*cos(n*PI*z); /* zz stress */	    
+	u6 = (double)(u3*2*n*PI + 4*Z*n*PI*u2)*cos(n*PI*z); /* zz stress */	
 	sum5 +=u5;
 	sum6 +=u6;
 	

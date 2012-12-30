@@ -33,7 +33,7 @@ PETSC_EXTERN "C" {
     if (*ppx) { \
         ad_adic_deriv_free(*ppx); \
         *ppx = (double*)0; \
-    } 
+    }
 
 #define IS_ZERO(px) \
     !px
@@ -43,7 +43,7 @@ PETSC_EXTERN "C" {
         flag |= (1<<pos);\
     }
 
-    
+
 #define DAXPY1(ppz, a, pa) \
 {\
     int _i; double*pz;\
@@ -82,10 +82,10 @@ void ad_grad_daxpy_copy(double** ppz, double* pa);
 
 void ad_grad_daxpy_1(double** pz, double a, double* pa);
 
-void ad_grad_daxpy_2(double** ppz, double a, double* pa, 
+void ad_grad_daxpy_2(double** ppz, double a, double* pa,
                      double b, double* pb);
 
-void ad_grad_daxpy_3(double** ppz, double a, double* pa, 
+void ad_grad_daxpy_3(double** ppz, double a, double* pa,
                      double b, double* pb, double c, double* pc);
 
 void ad_grad_daxpy_n(int n, double** ppz, ...);

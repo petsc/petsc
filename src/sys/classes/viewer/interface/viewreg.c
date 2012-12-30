@@ -69,7 +69,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       if (cnt > sizeof(viewers)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",cvalue);
       if (!loc) {
         switch (cnt) {
-        case 0: 
+        case 0:
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
           break;
         case 1:

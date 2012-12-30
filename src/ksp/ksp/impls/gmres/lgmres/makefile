@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = lgmres.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = lgmresimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP

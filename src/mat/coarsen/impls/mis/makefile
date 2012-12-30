@@ -3,9 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS =
 SOURCEC  = mis.c
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/coarsen/impls/mis/
 MANSEC   = MatOrderings

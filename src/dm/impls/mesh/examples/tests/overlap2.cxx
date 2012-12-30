@@ -100,7 +100,7 @@ PetscErrorCode DoubletTest(MPI_Comm comm, Options *options)
   if (debug) {std::cout << "Send information" << std::endl;}
   for(send_overlap_type::traits::capSequence::iterator s_iter = sendPoints->begin(); s_iter != sendPoints->end(); ++s_iter) {
     const Obj<send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*s_iter);
-    
+
     if (debug) {std::cout << "[" << sendOverlap->commRank() << "]Point " << *s_iter << std::endl;}
     for(send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
       sendSection->update(*p_iter, *s_iter, &(globalOrder[*s_iter]));
@@ -127,7 +127,7 @@ PetscErrorCode DoubletTest(MPI_Comm comm, Options *options)
 
   for(recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
     const Obj<recv_overlap_type::traits::coneSequence>& recvPatches = recvOverlap->cone(*r_iter);
-    
+
     if (debug) {std::cout << "[" << recvOverlap->commRank() << "]Point " << *r_iter << std::endl;}
     for(recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
       const recv_section_type::value_type *values = recvSection->restrictPoint(*p_iter, *r_iter);

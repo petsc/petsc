@@ -1,18 +1,18 @@
-// 
+//
 // File:          Ex4_System_Impl.cxx
 // Symbol:        Ex4.System-v0.0.0
 // Symbol Type:   class
 // Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex4.System
-// 
+//
 // WARNING: Automatically generated; only changes within splicers preserved
-// 
-// 
+//
+//
 #include "Ex4_System_Impl.hxx"
 
-// 
+//
 // Includes for all method dependencies.
-// 
+//
 #ifndef included_TOPS_Matrix_hxx
 #include "TOPS_Matrix.hxx"
 #endif
@@ -42,7 +42,7 @@
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
 Ex4::System_impl::System_impl() : StubBase(reinterpret_cast< void*>(
   ::Ex4::System::_wrapObj(reinterpret_cast< void*>(this))),false) , _wrapped(
-  true){ 
+  true){
   // DO-NOT-DELETE splicer.begin(Ex4.System._ctor2)
   // Insert-Code-Here {Ex4.System._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(Ex4.System._ctor2)
@@ -78,7 +78,7 @@ void Ex4::System_impl::_load() {
 void
 Ex4::System_impl::computeMatrix_impl (
   /* in */::TOPS::Matrix J,
-  /* in */::TOPS::Matrix B ) 
+  /* in */::TOPS::Matrix B )
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.computeMatrix)
 #undef __FUNCT__
@@ -93,7 +93,7 @@ Ex4::System_impl::computeMatrix_impl (
     int ia[1]; ia[0] = 0;
     sidl::array<int> row = sidl::array<int>::create1d(1,ia);
     double iv[1]; iv[0] = 1.0/hx;
-    sidl::array<double> values = sidl::array<double>::create1d(1,iv);    
+    sidl::array<double> values = sidl::array<double>::create1d(1,iv);
     BB.set(row,row,values);
     start++;
   }
@@ -101,7 +101,7 @@ Ex4::System_impl::computeMatrix_impl (
     int ia[1]; ia[0] = this->n - 1;
     sidl::array<int> row = sidl::array<int>::create1d(1,ia);
     double iv[1]; iv[0] = 1.0/hx;
-    sidl::array<double> values = sidl::array<double>::create1d(1,iv);    
+    sidl::array<double> values = sidl::array<double>::create1d(1,iv);
     BB.set(row,row,values);
     end--;
   }
@@ -127,7 +127,7 @@ Ex4::System_impl::computeMatrix_impl (
  * Method:  initializeOnce[]
  */
 void
-Ex4::System_impl::initializeOnce_impl () 
+Ex4::System_impl::initializeOnce_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.initializeOnce)
@@ -150,7 +150,7 @@ Ex4::System_impl::initializeOnce_impl ()
  */
 void
 Ex4::System_impl::computeRightHandSide_impl (
-  /* in array<double> */::sidl::array<double> b ) 
+  /* in array<double> */::sidl::array<double> b )
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.computeRightHandSide)
 #undef __FUNCT__
@@ -158,7 +158,7 @@ Ex4::System_impl::computeRightHandSide_impl (
   int i,nlocal = b.length(0);
   int rank; MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   int size; MPI_Comm_size(MPI_COMM_WORLD,&size);
-  // For a finite element discretization the local element contributions to the 
+  // For a finite element discretization the local element contributions to the
   // ghost degrees of freedom would also be computed here. Skipped here.
   if (rank) nlocal--;
   if (rank != size-1) nlocal--;
@@ -172,22 +172,22 @@ Ex4::System_impl::computeRightHandSide_impl (
  *  Starts up a component presence in the calling framework.
  * @param services the component instance's handle on the framework world.
  * Contracts concerning Svc and setServices:
- * 
+ *
  * The component interaction with the CCA framework
  * and Ports begins on the call to setServices by the framework.
- * 
+ *
  * This function is called exactly once for each instance created
  * by the framework.
- * 
+ *
  * The argument Svc will never be nil/null.
- * 
+ *
  * Those uses ports which are automatically connected by the framework
  * (so-called service-ports) may be obtained via getPort during
  * setServices.
  */
 void
 Ex4::System_impl::setServices_impl (
-  /* in */::gov::cca::Services services ) 
+  /* in */::gov::cca::Services services )
 // throws:
 //     ::gov::cca::CCAException
 //     ::sidl::RuntimeException
@@ -205,7 +205,7 @@ Ex4::System_impl::setServices_impl (
 	    __FILE__, __LINE__);
     return;
   }
-  
+
   // Provides ports
   // Initialization
   myServices.addProvidesPort(p,
@@ -215,14 +215,14 @@ Ex4::System_impl::setServices_impl (
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Matrix",
 			   "TOPS.System.Compute.Matrix", myServices.createTypeMap());
-  
+
   // RHS computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.RightHandSide",
 			   "TOPS.System.Compute.RightHandSide", myServices.createTypeMap());
- 
+
   // GoPort (instead of main)
-  myServices.addProvidesPort(p, 
+  myServices.addProvidesPort(p,
 			     "DoSolve",
 			     "gov.cca.ports.GoPort",
 			     myServices.createTypeMap());
@@ -234,14 +234,14 @@ Ex4::System_impl::setServices_impl (
 }
 
 /**
- *  
- * Execute some encapsulated functionality on the component. 
- * Return 0 if ok, -1 if internal error but component may be 
+ *
+ * Execute some encapsulated functionality on the component.
+ * Return 0 if ok, -1 if internal error but component may be
  * used further, and -2 if error so severe that component cannot
  * be further used safely.
  */
 int32_t
-Ex4::System_impl::go_impl () 
+Ex4::System_impl::go_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.go)
@@ -249,7 +249,7 @@ Ex4::System_impl::go_impl ()
 
 #undef __FUNCT__
 #define __FUNCT__ "Ex4::System_impl::go"
-  
+
   // Parameter port stuff here (instead of argc, argv);
   // for now pass fake argc and argv to solver
 
@@ -262,7 +262,7 @@ Ex4::System_impl::go_impl ()
   this->solver = solver;
 
   solver.Initialize();
-  
+
   solver.solve();
 
   myServices.releasePort("TOPS.UnstructuredSolver");

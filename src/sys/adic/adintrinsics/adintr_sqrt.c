@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_sqrt
   exception number -> ADINTR_SQRT
-  exceptional code -> 
+  exceptional code ->
 *fx = ADIntr_Partials[ADINTR_SQRT][ADINTR_FX];
 *fxx = ADIntr_Partials[ADINTR_SQRT][ADINTR_FXX];
 
@@ -47,7 +47,7 @@ adintr_sqrt (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

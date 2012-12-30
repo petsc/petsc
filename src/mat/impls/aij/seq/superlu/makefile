@@ -5,10 +5,10 @@ ALL: lib
 CFLAGS   = ${SUPERLU_INCLUDE}
 FFLAGS   =
 SOURCEC  = superlu.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/superlu/
 

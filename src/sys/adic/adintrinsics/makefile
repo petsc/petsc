@@ -2,7 +2,7 @@
 ALL: lib
 
 CFLAGS   = -DDISABLE_FORTRAN -I${PETSC_DIR}/include/adic
-FFLAGS   = 
+FFLAGS   =
 SOURCEC  = adintr_acos.c adintr_exp.c adintr_max.c adintr_acosh.c \
 	adintr_fabs.c adintr_min.c adintr_asin.c adintr_floor.c \
 	adintr_modf.c adintr_asinh.c adintr_fmax.c adintr_pow.c \
@@ -15,7 +15,7 @@ SOURCEC  = adintr_acos.c adintr_exp.c adintr_max.c adintr_acosh.c \
 SOURCEF  =
 SOURCEH  = ../../../../include/adic/run-map.h ../../../../include/adic/run-alloc.h report-once.h
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/adic/adintrinsics/
 MANSEC   = Sys
 

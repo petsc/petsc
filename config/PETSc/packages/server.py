@@ -20,5 +20,5 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     if self.pthread.found:
         self.addDefine('USE_PTHREAD',1)
-        self.addDefine('USE_SERVER',1)    
-    
+        self.addDefine('USE_SERVER',1)
+

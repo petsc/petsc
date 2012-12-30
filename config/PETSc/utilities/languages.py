@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
     if not hasattr(self, 'clanguage'):
       return ''
     return '  Clanguage: ' + self.clanguage +'\n'
-    
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
       options.append('with-'+package+'include')
       options.append('with-'+package+'-dir')
       options.append('with-'+package+'-lib')
-      
+
     for option in options:
       if option in self.framework.argDB and self.framework.argDB[option]:
         return 1

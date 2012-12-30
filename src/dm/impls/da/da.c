@@ -349,7 +349,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 
   Level: intermediate
 
-  Note: these numbers are NOT multiplied by the number of dof per node. 
+  Note: these numbers are NOT multiplied by the number of dof per node.
 
 .keywords:  distributed array
 .seealso: DMDACreate(), DMDestroy(), DMDA
@@ -509,7 +509,7 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
      In C you should not free these arrays, nor change the values in them. They will only have valid values while the
     DMDA they came from still exists (has not been destroyed).
 
-    These numbers are NOT multiplied by the number of dof per node. 
+    These numbers are NOT multiplied by the number of dof per node.
 
 .seealso: DMDAGetCorners(), DMDAGetGhostCorners(), DMDACreate(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecGetOwnershipRanges()
 @*/

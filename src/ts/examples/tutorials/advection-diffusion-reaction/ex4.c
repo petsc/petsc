@@ -4,8 +4,8 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
 /*
      Page 18, Chemo-taxis Problems from Mathematical Biology
 
-        rho_t = 
-        c_t   = 
+        rho_t =
+        c_t   =
 
      Further discusson on Page 134 and in 2d on Page 409
 */

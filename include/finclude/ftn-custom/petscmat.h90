@@ -1,4 +1,4 @@
-#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #include "finclude/ftn-custom/petscmatdef.h90"
 #endif
 #include "finclude/ftn-custom/petscishide.h90"
@@ -8,7 +8,7 @@
 #define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
-      Interface 
+      Interface
         Subroutine MatGetRowIJF90(v,shift,sym,blckcmp,n,ia,             &
      &                            ja,done,ierr)
           USE_MAT_HIDE
@@ -20,7 +20,7 @@
         End Subroutine
       End Interface
 
-      Interface 
+      Interface
         Subroutine MatRestoreRowIJF90(v,shift,sym,blckcmp,n,            &
      &                                ia,ja,done,ierr)
           USE_MAT_HIDE
@@ -32,7 +32,7 @@
         End Subroutine
       End Interface
 
-      Interface 
+      Interface
         Subroutine MatDenseGetArrayF90(v,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
@@ -42,7 +42,7 @@
       End Interface
 
 
-      Interface 
+      Interface
         Subroutine MatDenseRestoreArrayF90(v,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
@@ -51,7 +51,7 @@
         End Subroutine
       End Interface
 
-      Interface 
+      Interface
         Subroutine MatSeqAIJGetArrayF90(v,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
@@ -61,7 +61,7 @@
       End Interface
 
 
-      Interface 
+      Interface
         Subroutine MatSeqAIJRestoreArrayF90(v,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
@@ -70,7 +70,7 @@
         End Subroutine
       End Interface
 
-      Interface 
+      Interface
         Subroutine MatGetGhostsF90(v,array,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: array(:)
@@ -126,7 +126,7 @@
          PetscErrorCode ierr
          end subroutine
       End Interface
-      
+
       Interface
          subroutine MatLUFactorNumeric(fact, v, info ,ierr)
          USE_MAT_HIDE
@@ -148,7 +148,7 @@
          PetscErrorCode ierr
          end subroutine
       End Interface
-      
+
       Interface
          subroutine MatCholeskyFactorSymbolic(fact,v,perm,info,ierr)
          USE_MAT_HIDE

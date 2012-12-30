@@ -64,7 +64,7 @@ class Configure(PETSc.package.NewPackage):
     self.addMakeMacro('BFORT ', self.bfort)
     self.addMakeMacro('DOCTEXT ', self.doctext)
     self.addMakeMacro('MAPNAMES ', self.mapnames)
-    self.addMakeMacro('BIB2HTML ', self.bib2html)    
+    self.addMakeMacro('BIB2HTML ', self.bib2html)
     self.getExecutable('pdflatex', getFullPath = 1)
     return self.installDir
 
@@ -73,7 +73,7 @@ class Configure(PETSc.package.NewPackage):
       if self.framework.argDB['with-batch'] and not hasattr(self,'bfort'):
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
-      else:     
+      else:
         self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
           import os,sys

@@ -27,7 +27,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('OFLAGS = '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.close()
-    
+
     if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling chaco; this may take several minutes')

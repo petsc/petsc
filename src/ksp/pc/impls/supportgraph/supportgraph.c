@@ -1,8 +1,8 @@
 
-/*  -------------------------------------------------------------------- 
+/*  --------------------------------------------------------------------
 
      This file implements a SupportGraph preconditioner in PETSc as part of PC.
-     You can use this as a starting point for implementing your own 
+     You can use this as a starting point for implementing your own
      preconditioner that is not provided with PETSc. (You might also consider
      just using PCSHELL)
 
@@ -14,9 +14,9 @@
      where the suffix "_XXX" denotes a particular implementation, in
      this case we use _SupportGraph (e.g., PCCreate_SupportGraph, PCApply_SupportGraph).
      These routines are actually called via the common user interface
-     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(), 
-     so the application code interface remains identical for all 
-     preconditioners.  
+     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(),
+     so the application code interface remains identical for all
+     preconditioners.
 
      Another key routine is:
           PCSetUp_XXX()           - Prepares for the use of a preconditioner
@@ -33,26 +33,26 @@
      The various types of solvers (preconditioners, Krylov subspace methods,
      nonlinear solvers, timesteppers) are all organized similarly, so the
      above description applies to these categories also.  One exception is
-     that the analogues of PCApply() for these components are KSPSolve(), 
+     that the analogues of PCApply() for these components are KSPSolve(),
      SNESSolve(), and TSSolve().
 
      Additional optional functionality unique to preconditioners is left and
-     right symmetric preconditioner application via PCApplySymmetricLeft() 
-     and PCApplySymmetricRight().  The SupportGraph implementation is 
+     right symmetric preconditioner application via PCApplySymmetricLeft()
+     and PCApplySymmetricRight().  The SupportGraph implementation is
      PCApplySymmetricLeftOrRight_SupportGraph().
 
     -------------------------------------------------------------------- */
 
-/* 
+/*
    Include files needed for the SupportGraph preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners 
+     pcimpl.h - private include file intended for use by all preconditioners
      adjacency_list.hpp
 */
 
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 
-/* 
-   Private context (data structure) for the SupportGraph preconditioner.  
+/*
+   Private context (data structure) for the SupportGraph preconditioner.
 */
 typedef struct {
   Mat        pre;      /* Cholesky factored preconditioner matrix */
@@ -61,7 +61,7 @@ typedef struct {
   PetscReal  tol;      /* throw out entries smaller than this */
 } PC_SupportGraph;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_SupportGraph"
 static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
 {
@@ -75,13 +75,13 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: maxCong = %f\n",sg->maxCong);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: tol = %f\n",sg->tol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Factored Matrix:\n");CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);  
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = MatView(sg->pre, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);  
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCSupportGraph",((PetscObject)viewer)->type_name);
   }
@@ -93,7 +93,7 @@ extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SupportGraph - Prepares for the use of the SupportGraph preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -104,7 +104,7 @@ extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_SupportGraph"
 static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 {
@@ -142,7 +142,7 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_SupportGraph"
 static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 {
@@ -163,7 +163,7 @@ static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_SupportGraph"
 static PetscErrorCode PCDestroy_SupportGraph(PC pc)
 {
@@ -179,7 +179,7 @@ static PetscErrorCode PCDestroy_SupportGraph(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SupportGraph"
 static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 {
@@ -197,8 +197,8 @@ static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreate_SupportGraph - Creates a SupportGraph preconditioner context, PC_SupportGraph, 
-   and sets this as the private data within the generic preconditioning 
+   PCCreate_SupportGraph - Creates a SupportGraph preconditioner context, PC_SupportGraph,
+   and sets this as the private data within the generic preconditioning
    context, PC, that was created within PCCreate().
 
    Input Parameter:
@@ -223,7 +223,7 @@ static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_SupportGraph"
 PetscErrorCode  PCCreate_SupportGraph(PC pc)
 {
@@ -242,7 +242,7 @@ PetscErrorCode  PCCreate_SupportGraph(PC pc)
   sg->augment = PETSC_TRUE;
   sg->maxCong = 3.0;
   sg->tol = 0;
-  
+
 
   /*
       Set the pointers for the functions that are provided above.

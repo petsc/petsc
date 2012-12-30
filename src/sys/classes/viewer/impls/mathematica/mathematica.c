@@ -12,7 +12,7 @@ PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 static void *mathematicaEnv                   = PETSC_NULL;
 
 static PetscBool  PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaFinalizePackage"
 /*@C
   PetscViewerMathematicaFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -31,7 +31,7 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaInitializePackage"
 /*@C
   PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
@@ -59,7 +59,7 @@ PetscErrorCode  PetscViewerMathematicaInitializePackage(const char path[])
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerInitializeMathematicaWorld_Private"
 PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
 {
@@ -71,11 +71,11 @@ PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerDestroy_Mathematica"
 static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
 {
-  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data; 
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
@@ -86,7 +86,7 @@ static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerDestroyMathematica_Private"
 PetscErrorCode PetscViewerDestroyMathematica_Private(void)
 {
@@ -99,9 +99,9 @@ PetscErrorCode PetscViewerDestroyMathematica_Private(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetupConnection_Private"
-PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v) 
+PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
 #ifdef MATHEMATICA_3_0
@@ -166,7 +166,7 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Mathematica"
 PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
 {
@@ -197,7 +197,7 @@ PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaParseLinkMode_Private"
 PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkMode *mode) {
   PetscBool      isCreate, isConnect, isLaunch;
@@ -219,7 +219,7 @@ PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkM
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetFromOptions"
 PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
 {
@@ -321,7 +321,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetLinkName"
 PetscErrorCode  PetscViewerMathematicaSetLinkName(PetscViewer v, const char *name) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
@@ -334,7 +334,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkName(PetscViewer v, const char *nam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaLinkPort"
 PetscErrorCode  PetscViewerMathematicaSetLinkPort(PetscViewer v, int port) {
   char           name[16];
@@ -346,7 +346,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkPort(PetscViewer v, int port) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetLinkHost"
 PetscErrorCode  PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *host) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
@@ -359,7 +359,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *hos
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetLinkHost"
 PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode) {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
@@ -370,7 +370,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode) 
 }
 
 /*----------------------------------------- Public Functions --------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaOpen"
 /*@C
   PetscViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
@@ -389,7 +389,7 @@ PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode) 
   Level: intermediate
 
   Notes:
-  Most users should employ the following commands to access the 
+  Most users should employ the following commands to access the
   Mathematica viewers
 $
 $    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
@@ -429,7 +429,7 @@ PetscErrorCode  PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char m
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaGetLink"
 /*@C
   PetscViewerMathematicaGetLink - Returns the link to Mathematica
@@ -453,7 +453,7 @@ PetscErrorCode  PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSkipPackets"
 /*@C
   PetscViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
@@ -483,7 +483,7 @@ PetscErrorCode  PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaGetName"
 /*@C
   PetscViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica
@@ -510,7 +510,7 @@ PetscErrorCode  PetscViewerMathematicaGetName(PetscViewer viewer, const char **n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetName"
 /*@C
   PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
@@ -535,7 +535,7 @@ PetscErrorCode  PetscViewerMathematicaSetName(PetscViewer viewer, const char nam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaClearName"
 /*@C
   PetscViewerMathematicaClearName - Use the default name for objects communicated to Mathematica
@@ -558,7 +558,7 @@ PetscErrorCode  PetscViewerMathematicaClearName(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaGetVector"
 /*@C
   PetscViewerMathematicaGetVector - Retrieve a vector from Mathematica
@@ -610,7 +610,7 @@ PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaPutVector"
 /*@C
   PetscViewerMathematicaPutVector - Send a vector to Mathematica

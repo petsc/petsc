@@ -1,6 +1,6 @@
 # -*- mode: makefile -*-
 #
-# The following variables specify PETSc related info, and can be picked up directly 
+# The following variables specify PETSc related info, and can be picked up directly
 # by external packages (like TAO) or PETSc applications that do not use PETSc targets.
 #
 # PETSC_LIB_DIR          - (defined from $PETSC_DIR) determines where the PETSc libraries are built.
@@ -15,7 +15,7 @@ PETSC_FCPPFLAGS	    = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS
 PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 #
-# The following variables are used by PETSc build targets. External Packages (like TAO) can 
+# The following variables are used by PETSc build targets. External Packages (like TAO) can
 # redefine them appropriately.
 #
 # INSTALL_LIB_DIR   - the location where the libraries are built.
@@ -31,7 +31,7 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 # The following variables define PETSc compile procedures
 #
 PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC}
-PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} 
+PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}
 PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
 PETSC_CUCOMPILE       = ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
 PETSC_CUCOMPILE_SINGLE= ${CUDAC} -o $*.o ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}"
@@ -60,7 +60,7 @@ OBJS       = ${OBJSCU} ${OBJSC} ${OBJSF}
 CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${CFLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
 #
-# Defines all libraries needed for using linear and nonlinear solvers, 
+# Defines all libraries needed for using linear and nonlinear solvers,
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #

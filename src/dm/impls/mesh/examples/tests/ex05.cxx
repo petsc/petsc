@@ -55,18 +55,18 @@ PetscErrorCode testHat(MPI_Comm comm) {
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  
+
   debug = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
 
   ALE::Obj<PointBiGraph> bg = PointBiGraph(comm, debug);
 
-  // Add three arrows from a single cap point rank to global points with the indices 2*rank, 2*rank+1, 2*rank+2 
+  // Add three arrows from a single cap point rank to global points with the indices 2*rank, 2*rank+1, 2*rank+2
   for(int i = 0; i < 3; i++) {
     bg->addArrow(rank, ALE::def::Point(-1,2*rank+i), -rank);
   }
-  
+
   // View
   bg->view("Hat bigraph", true);
 
@@ -93,7 +93,7 @@ PetscErrorCode testSkewedHat(MPI_Comm comm) {
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  
+
   debug = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode testSkewedHat(MPI_Comm comm) {
     bg->addArrow(rank, ALE::def::Point(-1,2*rank+i), -rank);
   }
   bg->addBasePoint(ALE::def::Point(-1,2*(rank+1)));
-  
+
   // View
   bg->view("SkewedHat bigraph");
 
@@ -134,7 +134,7 @@ PetscErrorCode testSkewedHatFlip(MPI_Comm comm) {
   PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  
+
   debug = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ PetscErrorCode testSkewedHatFlip(MPI_Comm comm) {
     bg->addArrow(ALE::def::Point(-1,2*rank+i), rank, -rank);
   }
   bg->addCapPoint(ALE::def::Point(-1,2*(rank+1)));
-  
+
   // View
   bg->view("SkewedHatFlip bigraph");
 

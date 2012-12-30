@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'precision'):
       desc.append('  Precision: ' + self.precision)
     return '\n'.join(desc)+'\n'
-    
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-precision=<single,double,__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))
@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
     if self.scalartype == 'complex':
       self.addDefine('USE_COMPLEX', '1')
       if self.languages.cSupport:
-        raise RuntimeError('Cannot use --with-c-support and --with-scalar-type=complex together')      
+        raise RuntimeError('Cannot use --with-c-support and --with-scalar-type=complex together')
       if self.languages.clanguage == 'C' and not self.types.c99_complex:
         raise RuntimeError('C Compiler provided doest not support C99 complex')
       if self.languages.clanguage == 'Cxx' and not self.types.cxx_complex:
@@ -53,22 +53,22 @@ class Configure(config.base.Configure):
     self.pushLanguage(self.languages.clanguage)
     if self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnan(b);\n'):
-        self.addDefine('HAVE_ISNAN',1)    
+        self.addDefine('HAVE_ISNAN',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);\n'):
-        self.addDefine('HAVE_ISINF',1)    
+        self.addDefine('HAVE_ISINF',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
-        self.addDefine('HAVE__ISNAN',1)    
+        self.addDefine('HAVE__ISNAN',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
-        self.addDefine('HAVE__FINITE',1)    
+        self.addDefine('HAVE__FINITE',1)
     else:
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnan(b);\n'):
-        self.addDefine('HAVE_ISNAN',1)    
+        self.addDefine('HAVE_ISNAN',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);\n'):
-        self.addDefine('HAVE_ISINF',1)    
+        self.addDefine('HAVE_ISINF',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0;int a = _isnan(b);\n'):
-        self.addDefine('HAVE__ISNAN',1)    
+        self.addDefine('HAVE__ISNAN',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0;int a = _finite(b);\n'):
-        self.addDefine('HAVE__FINITE',1)    
+        self.addDefine('HAVE__FINITE',1)
     self.popLanguage()
     return
 
@@ -81,7 +81,7 @@ class Configure(config.base.Configure):
       self.pushLanguage('C')
       if not config.setCompilers.Configure.isIntel(self.compilers.getCompiler()): raise RuntimeError('Only Intel compiler supports _quad')
       self.popLanguage()
-      self.addDefine('USE_REAL__QUAD', '1')        
+      self.addDefine('USE_REAL__QUAD', '1')
     elif self.precision == 'double':
       self.addDefine('USE_REAL_DOUBLE', '1')
     elif self.precision == '__float128':  # supported by gcc 4.6
@@ -93,7 +93,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('--with-precision must be single, double,__float128')
     self.framework.logPrint('Precision is '+str(self.precision))
     if self.framework.argDB['with-mixed-precision']:
-      self.addDefine('USE_MIXED_PRECISION', '1')      
+      self.addDefine('USE_MIXED_PRECISION', '1')
     return
 
   def configure(self):

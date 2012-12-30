@@ -1,18 +1,18 @@
-// 
+//
 // File:          Ex2_System_Impl.cxx
 // Symbol:        Ex2.System-v0.0.0
 // Symbol Type:   class
 // Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex2.System
-// 
+//
 // WARNING: Automatically generated; only changes within splicers preserved
-// 
-// 
+//
+//
 #include "Ex2_System_Impl.hxx"
 
-// 
+//
 // Includes for all method dependencies.
-// 
+//
 #ifndef included_gov_cca_CCAException_hxx
 #include "gov_cca_CCAException.hxx"
 #endif
@@ -41,7 +41,7 @@
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
 Ex2::System_impl::System_impl() : StubBase(reinterpret_cast< void*>(
   ::Ex2::System::_wrapObj(reinterpret_cast< void*>(this))),false) , _wrapped(
-  true){ 
+  true){
   // DO-NOT-DELETE splicer.begin(Ex2.System._ctor2)
   // Insert-Code-Here {Ex2.System._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(Ex2.System._ctor2)
@@ -77,7 +77,7 @@ void Ex2::System_impl::_load() {
  * Method:  initializeOnce[]
  */
 void
-Ex2::System_impl::initializeOnce_impl () 
+Ex2::System_impl::initializeOnce_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.initializeOnce)
@@ -89,7 +89,7 @@ Ex2::System_impl::initializeOnce_impl ()
  * Method:  initializeEverySolve[]
  */
 void
-Ex2::System_impl::initializeEverySolve_impl () 
+Ex2::System_impl::initializeEverySolve_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.initializeEverySolve)
@@ -103,7 +103,7 @@ Ex2::System_impl::initializeEverySolve_impl ()
 void
 Ex2::System_impl::computeResidual_impl (
   /* in array<double> */::sidl::array<double> x,
-  /* in array<double> */::sidl::array<double> f ) 
+  /* in array<double> */::sidl::array<double> f )
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.computeResidual)
   TOPS::Structured::Solver solver = this->solver;
@@ -117,11 +117,11 @@ Ex2::System_impl::computeResidual_impl (
 
   double hx     = 1.0/(double)(mx-1), dhx = (double)(mx-1);
   double hy     = 1.0/(double)(my-1), dhy = (double)(my-1);
-  double hxdhy  = hx/hy; 
+  double hxdhy  = hx/hy;
   double hydhx  = hy/hx;
 
   double vx,avx,vxp,vxm,vy,avy,vyp,vym,u,uxx,uyy;
-  double grashof = this->grashof;  
+  double grashof = this->grashof;
   double prandtl = this->prandtl;
   double lid     = this->lid;
 
@@ -139,7 +139,7 @@ Ex2::System_impl::computeResidual_impl (
     for (i=xs; i<xs+xm; i++) {
       f.set(U,i,j,x.get(U,i,j));
       f.set(V,i,j,x.get(V,i,j));
-      f.set(OMEGA,i,j,x.get(OMEGA,i,j) + (x.get(U,i,j+1) - x.get(U,i,j))*dhy); 
+      f.set(OMEGA,i,j,x.get(OMEGA,i,j) + (x.get(U,i,j+1) - x.get(U,i,j))*dhy);
       f.set(TEMP,i,j, x.get(TEMP,i,j)-x.get(TEMP,i,j+1));
     }
   }
@@ -174,7 +174,7 @@ Ex2::System_impl::computeResidual_impl (
   if (xinte == mx) {
     i = mx - 1;
     xinte = xinte - 1;
-    /* right edge */ 
+    /* right edge */
     for (j=ys; j<ys+ym; j++) {
       f.set(U,i,j,x.get(U,i,j));
       f.set(V,i,j,x.get(V,i,j));
@@ -234,7 +234,7 @@ Ex2::System_impl::computeResidual_impl (
  */
 void
 Ex2::System_impl::computeInitialGuess_impl (
-  /* in array<double> */::sidl::array<double> x ) 
+  /* in array<double> */::sidl::array<double> x )
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.computeInitialGuess)
   /*
@@ -248,7 +248,7 @@ Ex2::System_impl::computeInitialGuess_impl (
   int ym = x.length(2) - 1;
   int i,j;
   double dx  = 1.0/(solver.length(0)-1);
-  double grashof = this->grashof;  
+  double grashof = this->grashof;
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       x.set(U,i,j,0.0);
@@ -264,22 +264,22 @@ Ex2::System_impl::computeInitialGuess_impl (
  *  Starts up a component presence in the calling framework.
  * @param services the component instance's handle on the framework world.
  * Contracts concerning Svc and setServices:
- * 
+ *
  * The component interaction with the CCA framework
  * and Ports begins on the call to setServices by the framework.
- * 
+ *
  * This function is called exactly once for each instance created
  * by the framework.
- * 
+ *
  * The argument Svc will never be nil/null.
- * 
+ *
  * Those uses ports which are automatically connected by the framework
  * (so-called service-ports) may be obtained via getPort during
  * setServices.
  */
 void
 Ex2::System_impl::setServices_impl (
-  /* in */::gov::cca::Services services ) 
+  /* in */::gov::cca::Services services )
 // throws:
 //     ::gov::cca::CCAException
 //     ::sidl::RuntimeException
@@ -294,12 +294,12 @@ Ex2::System_impl::setServices_impl (
 	    __FILE__, __LINE__);
     return;
   }
-  
+
   // Provides ports
   myServices.addProvidesPort(p,
 			   "TOPS.System.Initialize.Once",
 			   "TOPS.System.Initialize.Once", myServices.createTypeMap());
-  
+
   myServices.addProvidesPort(p,
 			   "TOPS.System.Initialize.EverySolve",
 			   "TOPS.System.Initialize.EverySolve", myServices.createTypeMap());
@@ -313,7 +313,7 @@ Ex2::System_impl::setServices_impl (
 			   "TOPS.System.Compute.Residual", myServices.createTypeMap());
 
   // GoPort (instead of main)
-  myServices.addProvidesPort(p, 
+  myServices.addProvidesPort(p,
 			     "DoSolve",
 			     "gov.cca.ports.GoPort",
 			     myServices.createTypeMap());
@@ -326,14 +326,14 @@ Ex2::System_impl::setServices_impl (
 }
 
 /**
- *  
- * Execute some encapsulated functionality on the component. 
- * Return 0 if ok, -1 if internal error but component may be 
+ *
+ * Execute some encapsulated functionality on the component.
+ * Return 0 if ok, -1 if internal error but component may be
  * used further, and -2 if error so severe that component cannot
  * be further used safely.
  */
 int32_t
-Ex2::System_impl::go_impl () 
+Ex2::System_impl::go_impl ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.go)

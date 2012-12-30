@@ -8,7 +8,7 @@ CPPFLAGS           =
 FPPFLAGS           =
 LOCDIR		   = src/ts/characteristic/examples/tutorials/
 MANSEC             = SemiLagrange
-EXAMPLESC	   = 
+EXAMPLESC	   =
 EXAMPLESF	   =
 EXAMPLESCH	   =
 EXAMPLESFH         =
@@ -31,6 +31,6 @@ ex4: ex4.o  chkopts
 	${RM} ex4.o
 #--------------------------------------------------------------------------
 
-TESTEXAMPLES_C_NOCOMPLEX = 
+TESTEXAMPLES_C_NOCOMPLEX =
 
 include ${PETSC_DIR}/conf/test

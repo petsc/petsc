@@ -14,7 +14,7 @@
 #if defined(__cplusplus)
 #undef ADINTR_EXTERN
 #define ADINTR_EXTERN extern "C"
-#endif 
+#endif
 
 enum ADIntr_Modes
 {
@@ -25,10 +25,10 @@ enum ADIntr_Modes
 
 enum ADIntr_Partials
 {
-	ADINTR_FX = 0, 
-	ADINTR_FY, 
-	ADINTR_FXX, 
-	ADINTR_FXY, 
+	ADINTR_FX = 0,
+	ADINTR_FY,
+	ADINTR_FXX,
+	ADINTR_FXY,
 	ADINTR_FYY,
 	ADINTR_MAX_PARTIALS
 };

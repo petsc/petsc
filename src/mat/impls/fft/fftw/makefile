@@ -6,9 +6,9 @@ ALL: lib
 
 CFLAGS   = ${FFTW_INCLUDE}
 FFLAGS   =
-SOURCEC  = fftw.c 
+SOURCEC  = fftw.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/fft/fftw/

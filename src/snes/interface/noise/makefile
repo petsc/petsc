@@ -1,15 +1,15 @@
 
 ALL: lib
 
-#requiresscalar real 
+#requiresscalar real
 #requiresprecision double
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = snesmfj2.c snesnoise.c snesdnest.c
 SOURCEF  =
-SOURCEH  = 
-DIRS     = 
+SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/interface/noise/

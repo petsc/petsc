@@ -14,7 +14,7 @@ typedef struct {
   PetscBool  generate;
 } Options;
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
@@ -68,9 +68,9 @@ int main (int argc, char * argv[]) {
         refinementLimit = 0.01;
         bound_m = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, upper_coords, lower_coords, faces);
       }
-      
+
       m = ALE::Generator::refineMesh(ALE::Generator::generateMesh(bound_m, PETSC_FALSE), refinementLimit, PETSC_FALSE);
-      
+
     }
 
     MeshCreate(comm, &mesh);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ int main (int argc, char * argv[]) {
     ALE::Obj<ALE::Mesh::label_sequence> vertices = m->depthStratum(0);
     ALE::Obj<ALE::Mesh::label_type> boundary = m->getLabel("marker");
     ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
-    ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end(); 
+    ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
     ALE::Mesh::sieve_type::supportSet int_vertices = ALE::Mesh::sieve_type::supportSet();
     //calculate maxIndex
     ALE::Mesh::point_type maxIndex = -1;
@@ -97,7 +97,7 @@ int main (int argc, char * argv[]) {
       }
       v_iter++;
     }
- 
+
     ALE::Mesh::sieve_type::supportSet::iterator iv_iter = int_vertices.begin();
     ALE::Mesh::sieve_type::supportSet::iterator iv_iter_end = int_vertices.end();
     PetscPrintf(m->comm(), "Size of the mesh: %d vertices, %d faces\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());

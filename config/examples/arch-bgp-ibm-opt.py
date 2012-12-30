@@ -10,7 +10,7 @@ configure_options = [
 
   '--with-is-color-value-type=short',
   '--with-shared-libraries=0',
-  
+
   '-COPTFLAGS=-O3 -qarch=450d -qtune=450 -qmaxmem=-1',
   '-CXXOPTFLAGS=-O3 -qarch=450d -qtune=450 -qmaxmem=-1',
   '-FOPTFLAGS=-O3 -qarch=450d -qtune=450 -qmaxmem=-1',

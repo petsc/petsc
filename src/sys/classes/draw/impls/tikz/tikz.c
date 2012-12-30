@@ -59,7 +59,7 @@ PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
 static const char *TikZColors[] = { "white",  "black", "red",  "green", "cyan",   "blue", "magenta", 0, 0, "orange",
                                     "violet", "brown", "pink", 0,       "yellow", 0};
 
-PETSC_STATIC_INLINE const char * TikZColorMap(int cl) 
+PETSC_STATIC_INLINE const char * TikZColorMap(int cl)
 {
   return((cl < 16) ? ( TikZColors[cl] ? TikZColors[cl] : "black") : "black");
 }
@@ -114,7 +114,7 @@ PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawBoxedString_TikZ"
 /*
-    Does not handle multiline strings correctly 
+    Does not handle multiline strings correctly
 */
 PetscErrorCode PetscDrawBoxedString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,int ct,const char text[],PetscReal *w,PetscReal *h)
 {

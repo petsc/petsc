@@ -24,7 +24,7 @@ namespace Hierarchy {
   class HierarchyBuilder {
     private:
       //I am SO SICK of typing these.
-      
+
       Obj<ALE::Mesh> mesh;
       Obj<topology_type> topology;
       Obj<real_section_type> coordinates;
@@ -37,7 +37,7 @@ namespace Hierarchy {
       int C_levels;
       double C_factor;
       patch_type patch;
-      
+
       //private member functions
       PetscErrorCode CreateSpacingFunction();
       PetscErrorCode IdentifyBoundary();
@@ -48,7 +48,7 @@ namespace Hierarchy {
       PetscErrorCode BuildTopLevel(); //does a dumbest-approach build on the top level.
       PetscErrorCode PointListToMesh(std::list<point_type> *, patch_type);
       PetscErrorCode GetLocalInterpolation(double * coeffs, point_type v, point_type e); //test case for this.
-      
+
       //monotony relief
       void ElementCorners(double *, patch_type, point_type);
 
@@ -75,7 +75,7 @@ namespace Hierarchy {
    // TEST FOR BUILDING THE RESTRICT (INTERPOLATE) OPERATOR.
    double * v0, * J, * invJ, detJ;
    mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
-   
+
   }
 
   HierarchyBuilder::HierarchyBuilder(Obj<ALE::Mesh> m, int dimensions, int levels, double C) {
@@ -85,9 +85,9 @@ namespace Hierarchy {
     mesh = m;
     topology = mesh->getTopology();
     coordinates = mesh->getRealSection("coordinates");
-    
+
     //set up the spacing section
-    
+
     spacing = mesh->getRealSection("spacing");
     spacing->setFiberDimensionByDepth(patch, 0, 1);
     spacing->allocate();
@@ -107,7 +107,7 @@ namespace Hierarchy {
     BuildLevels();
     return;
   }
-  
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   PetscErrorCode HierarchyBuilder::TriangleToMesh(triangulateio * src, patch_type patch) {
     PetscFunctionBegin;
@@ -132,7 +132,7 @@ namespace Hierarchy {
     PetscFunctionReturn(0);
   }
 
-  
+
   PetscErrorCode HierarchyBuilder::IdentifyBoundary()
   {
     if (dim == 2) {
@@ -164,7 +164,7 @@ namespace Hierarchy {
 	  while (p_iter != p_iter_end) {
 	    if (topology->depth(patch, *p_iter) != 0) {
 	      throw ALE::Exception("Bad point");
-	    } 
+	    }
 	    if (topology->getValue(boundary, *p_iter) == 0) {
 	      topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(*p_iter));
 	      if (mesh->debug()) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
@@ -176,16 +176,16 @@ namespace Hierarchy {
 	e_iter++;
       }
     //boundary->view(std::cout, "Boundary label");
-    } else if (dim == 3) {  //loop over the faces to determine the 
-      
+    } else if (dim == 3) {  //loop over the faces to determine the
+
     } else {
-      
+
     }
     PetscFunctionReturn(0);
   }
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   PetscErrorCode HierarchyBuilder::PointListToMesh(std::list<point_type> * points, patch_type newPatch) {
     triangulateio * input = new triangulateio;
     triangulateio * output = new triangulateio;
@@ -213,21 +213,21 @@ namespace Hierarchy {
       c_iter++;
       index++;
     }
-    
+
     //input->numberofsegments = 0;
     //input->segmentlist = NULL;
-    
+
     Obj<label_sequence> boundEdges = topology->heightStratum(C_levels+1, 0);
     label_sequence::iterator be_iter = boundEdges->begin();
     label_sequence::iterator be_iter_end = boundEdges->end();
 //set up the boundary segments
-      
+
     input->numberofsegments = boundEdges->size();
     input->segmentlist = new int[2*input->numberofsegments];
     for (int i = 0; i < 2*input->numberofsegments; i++) {
       input->segmentlist[i] = -1;  //initialize
     }
-    
+
     index = 0;
     while (be_iter != be_iter_end) { //loop over the boundary segments
       Obj<coneSequence> neighbors = topology->getPatch(C_levels + 1)->cone(*be_iter);
@@ -248,7 +248,7 @@ namespace Hierarchy {
       index++;
       be_iter++;
     }
-    
+
     input->numberoftriangles = 0;
     input->numberofcorners = 0;
     input->numberoftriangleattributes = 0;
@@ -262,7 +262,7 @@ namespace Hierarchy {
 
     input->holelist = NULL;
     input->numberofholes = 0;
-  
+
     input->regionlist = NULL;
     input->numberofregions = 0;
 
@@ -292,16 +292,16 @@ namespace Hierarchy {
     delete input;
     delete output;
   }
-  
+
   int HierarchyBuilder::BoundaryNodeDimension_2D(point_type vertex) {
 
     const double *vCoords = coordinates->restrict(patch, vertex);
     double v_x = vCoords[0], v_y = vCoords[1];
     bool foundNeighbor = false;
     int isEssential = 1;
-  
+
     double f_n_x, f_n_y;
-  
+
     Obj<supportSequence> support = topology->getPatch(patch)->support(vertex);
     label_sequence::iterator s_iter = support->begin();
     label_sequence::iterator s_iter_end = support->end();
@@ -332,9 +332,9 @@ namespace Hierarchy {
     }
     return isEssential;
   }
-  
+
   ///////////////////////////////////////////////////////////////////////////////////////////
-  
+
   struct bound_trav {  //structure with all the info needed to do a DFS on the boundary to find the PSLG
     ALE::Mesh::point_type lastCorn;  //the last corner seen.  as we string along we will connect these two in the new topology definition
     ALE::Mesh::point_type lastNode;  //the last node seen, so we do not backtrace.
@@ -343,8 +343,8 @@ namespace Hierarchy {
     ALE::Mesh::point_type lastEdge;   //a HACK to keep edges from getting duplicated.
     int length;
   };
-  
-  
+
+
   PetscErrorCode HierarchyBuilder::IdentifyCoarsestBoundary () {
       //creates a 2-level (PSLG) representation of the boundary for feeding into triangle or tetgen.
     PetscFunctionBegin;
@@ -471,23 +471,23 @@ namespace Hierarchy {
     PetscPrintf(mesh->comm(), "- Created %d segments in %d boundaries in the exterior PSLG\n", topology->heightStratum(C_levels+1, 0)->size(), nBoundaries);
     PetscFunctionReturn(0);
   }
-  
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   PetscErrorCode HierarchyBuilder::CreateSpacingFunction() {
     PetscFunctionBegin;
     const Obj<label_sequence>& vertices = topology->depthStratum(patch, 0);
-  
+
     label_sequence::iterator v_iter = vertices->begin();
     label_sequence::iterator v_iter_end = vertices->end();
-  
+
     double vCoords[dim], nCoords[dim];
-  
+
     while (v_iter != v_iter_end) {
 	//printf("vertex: %d\n", *v_iter);
       const double * rBuf = coordinates->restrict(patch, *v_iter);
       PetscMemcpy(vCoords, rBuf, dim*sizeof(double));
-	  
+	
       double minDist = -1; //using the max is silly.
       Obj<supportSequence> support = topology->getPatch(patch)->support(*v_iter);
 	Obj<coneSet> neighbors = topology->getPatch(patch)->cone(support);
@@ -511,12 +511,12 @@ namespace Hierarchy {
       minDist = sqrt(minDist);
       spacing->update(patch, *v_iter, &minDist);
       v_iter++;
-    } 
+    }
     PetscFunctionReturn(0);
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-  //METHODOLOGY: Build the first level, and bucket the points in the triangles.  From then on we must 
+  //METHODOLOGY: Build the first level, and bucket the points in the triangles.  From then on we must
   //compare as follows:
   // + +             +    +
   //+ 0 +___________+___0  +
@@ -528,12 +528,12 @@ namespace Hierarchy {
   //+ 0_+_x_x__+_0 +
   // + +        + +
   // The interior point (o) must be compared to the elements on the other side of the edge if the sphere
-  // of radius space(o) + length(edge) - sum(length(edge(endpoints))) collides with the edge.  This is done recursively on the 
+  // of radius space(o) + length(edge) - sum(length(edge(endpoints))) collides with the edge.  This is done recursively on the
   // next step out as well, allowing us to keep a small number of comparisons to the total number of points.
   //
   // The reason this works is that the largest possible intersection involves a sphere on the edge of radius
-  // such that it doesn't collide with the endpoints.  
-  
+  // such that it doesn't collide with the endpoints.
+
   PetscErrorCode HierarchyBuilder::BuildLevels() { //ok we're going to try this: MESH-based coarsening.
     std::list<point_type> level_points;
     const Obj<label_sequence> & top_vertices = topology->depthStratum(C_levels, 0);
@@ -611,7 +611,7 @@ namespace Hierarchy {
                      compare_list.push_back(*parts_iter);
                      topology->setValue(traversal, *parts_iter, 1);
                   }
-                  
+
                 }
                 parts_iter++;
               }
@@ -661,7 +661,7 @@ namespace Hierarchy {
             topology->setValue(included_location, *p_iter, *t_iter);
             topology->setValue(prolongation, *p_iter, *t_iter);
             level_points.push_front(*p_iter);
-           
+
           }
           //printf("\n");
           p_iter++;
@@ -715,7 +715,7 @@ namespace Hierarchy {
               if (topology->height(curLevel, *it_iter) == 0 && topology->getValue(traversal, *it_iter) != 1) {
                   topology->setValue(traversal, *it_iter, 1);
                   trav_list.push_back(*it_iter);
-              } 
+              }
               it_iter++;
             }
           }
@@ -738,7 +738,7 @@ namespace Hierarchy {
           point_type curTri = *trav_list.begin();
           trav_list.pop_front();
           bool containsPoint = false;
-          ElementCorners(t_coords, curLevel, curTri); 
+          ElementCorners(t_coords, curLevel, curTri);
           //CHECK EVERY POINT AGAINST THIS TRIANGLE; THE POINTS SHOULD DIE OFF FAST
           std::list<point_type>::iterator ipl_iter = pointList.begin();
           std::list<point_type>::iterator ipl_iter_end = pointList.end();
@@ -839,8 +839,8 @@ namespace Hierarchy {
 	double p_coords[dim];
 	PetscMemcpy(p_coords, coordinates->restrict(patch, *p_iter), dim*sizeof(double));
 	if (PointsCollide(v_coords, p_coords, v_space*factor, p_space*factor)) {
-	  v_is_ok = false; 
-	} 
+	  v_is_ok = false;
+	}
 	p_iter++;
       }
       //enforce the condition that the sphere packing must be within the coarsest domain.
@@ -959,7 +959,7 @@ namespace Hierarchy {
                    }
                    tn_iter++;
                  }
-               } 
+               }
              } //end of triangle traversal
              //clean up the traversal label
              Obj<label_sequence> visited_triangles_label = topology->getLabelStratum(C_levels, "traversal", 1);
@@ -1036,8 +1036,8 @@ namespace Hierarchy {
     if (dist < mdist*mdist/4) return true;
     else return false;
   }
-  
-  
+
+
   bool HierarchyBuilder::PointInEdgeRegion(double * e_coords, double * p_coords, double region) {
     double res_len = 0;
     double e_dot_e = 0;

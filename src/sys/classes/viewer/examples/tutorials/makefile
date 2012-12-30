@@ -1,6 +1,6 @@
 
 CFLAGS	        =
-FFLAGS	        = 
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR  = src/sys/classes/viewer/examples/tutorials/
@@ -24,13 +24,13 @@ runex1f90:
 	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_1.tmp 5>&1; \
 	   if (${DIFF} output/ex1f90_1.out ex1f90_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1f90_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1f90_1.tmp 
+	   ${RM} -f ex1f90_1.tmp
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
 TESTEXAMPLES_C          = ex2.PETSc ex2.rm
-TESTEXAMPLES_C_X_MPIUNI = 
+TESTEXAMPLES_C_X_MPIUNI =
 
 include ${PETSC_DIR}/conf/test
 

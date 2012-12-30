@@ -2,7 +2,7 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        =	 
+FPPFLAGS        =	
 LOCDIR          = src/dm/ao/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex4.c ex7.c
 EXAMPLESF       = ex4f.F
@@ -11,7 +11,7 @@ MANSEC          = AO
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
-ex1: ex1.o  chkopts 
+ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
 
@@ -96,9 +96,9 @@ runex7:
 	   ${RM} -f ex7_1.tmp
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
                             ex4.PETSc runex4 runex4_2 ex4.rm  ex7.PETSc runex7 ex7.rm
-TESTEXAMPLES_C_X	  = 
+TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex4f.PETSc runex4f runex4f_2 ex4f.rm
-TESTEXAMPLES_C_X_MPIUNI = 
-TESTEXAMPLES_C3		  = 
+TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_C3		  =
 
 include ${PETSC_DIR}/conf/test

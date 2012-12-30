@@ -11,10 +11,10 @@
 #include <stdarg.h>
 #include <ad_grad.h>
 #include <ad_grad_daxpy.h>
-void ad_grad_daxpy_init(void) { 
+void ad_grad_daxpy_init(void) {
     ad_adic_deriv_init( ad_grad_size*sizeof(double), 0 );
 }
-void ad_grad_daxpy_final(void) { 
+void ad_grad_daxpy_final(void) {
     ad_adic_deriv_final();
 }
 
@@ -48,7 +48,7 @@ void ad_grad_daxpy_1(double** ppz, double a, double* pa)
 }
 
 
-void ad_grad_daxpy_2(double** ppz, double a, double* pa, 
+void ad_grad_daxpy_2(double** ppz, double a, double* pa,
                      double b, double* pb)
 {
     if (IS_ZERO(pa)) {
@@ -67,22 +67,22 @@ void ad_grad_daxpy_2(double** ppz, double a, double* pa,
     }
 }
 
-void ad_grad_daxpy_3(double** ppz, double a, double* pa, 
+void ad_grad_daxpy_3(double** ppz, double a, double* pa,
                      double b, double* pb, double c, double* pc)
 {
     if (IS_ZERO(pa)) {
         if (IS_ZERO(pb)) {
-            if (IS_ZERO(pc)) { 
+            if (IS_ZERO(pc)) {
                 INVALIDATE(ppz);
             }
-            else {      
+            else {
                 DAXPY1(ppz,c,pc);
             }
         }
         else if (IS_ZERO(pc)) {
             DAXPY1(ppz,b,pb);
         }
-        else { 
+        else {
             DAXPY2(ppz,b,pb,c,pc);
         }
     }
@@ -90,7 +90,7 @@ void ad_grad_daxpy_3(double** ppz, double a, double* pa,
         if (IS_ZERO(pc)) {
             DAXPY1(ppz,a,pa);
         }
-        else { 
+        else {
             DAXPY2(ppz,a,pa,c,pc);
         }
     }
@@ -331,16 +331,16 @@ void ad_grad_daxpy_n(int n, double** ppz, ...)
       case 1:
           DAXPY1(ppz,alphas[0],grads[0]);
           break;
-          
+
       case 2:
           DAXPY2(ppz,alphas[0],grads[0],alphas[1],grads[1]);
           break;
-          
+
       case 3:
           VALIDATE(ppz);
           DAXPY3(ppz,alphas[0],grads[0],alphas[1],grads[1],alphas[2],grads[2]);
           break;
-          
+
       case 4:
           VALIDATE(ppz);
           z = *ppz;
@@ -349,7 +349,7 @@ void ad_grad_daxpy_n(int n, double** ppz, ...)
                      alphas[2]*grads[2][i] + alphas[3]*grads[3][i];
           }
           break;
-          
+
       case 5:
           VALIDATE(ppz);
           z = *ppz;
@@ -359,7 +359,7 @@ void ad_grad_daxpy_n(int n, double** ppz, ...)
                      alphas[4]*grads[4][i];
           }
           break;
-          
+
       default:
           z = *ppz;
           for (i = 0; i < ad_grad_size; i++) {
@@ -375,5 +375,5 @@ void ad_grad_daxpy_n(int n, double** ppz, ...)
           }
           break;
     }
-    
+
 }

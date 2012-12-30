@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adiforfix.py,v 1.3 2001/08/24 16:32:18 bsmith Exp $ 
+# $Id: adiforfix.py,v 1.3 2001/08/24 16:32:18 bsmith Exp $
 #
 # change python to whatever is needed on your system to invoke python
 #
 #  Adds & continuation marker to the end of continued lines
-# 
-#  Calling sequence: 
+#
+#  Calling sequence:
 #      | adiforfix.py
 #
 import urllib
@@ -55,7 +55,7 @@ def main():
         for j in range(i+1,n):
           if len(lines[j]) > 6:
             if (lines[j][5] == '&') & (lines[j][0] == ' '):
-              lines[i] = rstrip(lines[i])+"                                                                       "                      
+              lines[i] = rstrip(lines[i])+"                                                                       "
               lines[i] = lines[i][0:72]+"&\n"
               break
             elif (lines[j][0] == ' '):
@@ -65,10 +65,10 @@ def main():
       lines[i]=replace(lines[i],"E - ","E-")
 
     sys.stdout.writelines(lines)
-     
+
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

@@ -1,6 +1,6 @@
 /*
-   
-      PETSc mathematics include file. Defines certain basic mathematical 
+
+      PETSc mathematics include file. Defines certain basic mathematical
     constants and functions for working with single, double, and quad precision
     floating point numbers as well as complex single and double.
 
@@ -18,7 +18,7 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;
-   note that one cannot mix the use of complex and real in the same 
+   note that one cannot mix the use of complex and real in the same
    PETSc program. All PETSc objects in one program are built around the object
    PetscScalar which is either always a real or a complex.
 
@@ -243,7 +243,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   
+
    Notes: type can be integer or floating point value
 
    Level: beginner
@@ -324,7 +324,7 @@ M*/
    Not Collective
 
    Input Parameter:
-.   v1 - the double 
+.   v1 - the double
 
 
    Level: beginner
@@ -356,7 +356,7 @@ M*/
 
 /* ----------------------------------------------------------------------------*/
 /*
-     Basic constants 
+     Basic constants
 */
 #if defined(PETSC_USE_REAL___FLOAT128)
 #define PETSC_PI                 M_PIq

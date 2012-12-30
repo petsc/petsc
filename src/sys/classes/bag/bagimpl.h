@@ -9,7 +9,7 @@ struct _n_PetscBagItem {
   PetscDataType dtype;
   PetscInt      offset;
   PetscInt      msize;
-  char          name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH]; 
+  char          name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH];
   char          **list;
   PetscBool     freelist;
   PetscBagItem  next;

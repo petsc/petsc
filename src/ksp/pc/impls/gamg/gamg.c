@@ -720,7 +720,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         CHKERRQ(ierr);
       }
 
-      
+
 
       ierr = MatDestroy( &Gmat );CHKERRQ(ierr);
       ierr = PetscCDDestroy( agg_lists );CHKERRQ(ierr);
@@ -920,7 +920,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = PetscObjectTypeCompare( (PetscObject)subpc, PCJACOBI, &flag );CHKERRQ(ierr);
         if ( flag && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
         else{ /* eigen estimate 'emax' */
-          KSP eksp; 
+          KSP eksp;
           Mat Lmat = Aarr[level];
           Vec bb, xx;
 
@@ -933,7 +933,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
             ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
             ierr = PetscRandomDestroy( &rctx );CHKERRQ(ierr);
           }
-          
+
           /* zeroing out BC rows -- needed for crazy matrices */
           {
             PetscInt Istart,Iend,ncols,jj,Ii;
@@ -942,7 +942,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
             for ( Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++ ) {
               ierr = MatGetRow(Lmat,Ii,&ncols,0,0);CHKERRQ(ierr);
               if( ncols <= 1 ) {
-                ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );CHKERRQ(ierr); 
+                ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );CHKERRQ(ierr);
               }
               ierr = MatRestoreRow(Lmat,Ii,&ncols,0,0);CHKERRQ(ierr);
             }

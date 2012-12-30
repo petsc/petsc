@@ -10,7 +10,7 @@
 #define fortranzero_ fortranzero
 #endif
 EXTERN_C_BEGIN
-extern void fortrancopy_(PetscInt*,PetscScalar*,PetscScalar*); 
+extern void fortrancopy_(PetscInt*,PetscScalar*,PetscScalar*);
 extern void fortranzero_(PetscInt*,PetscScalar*);
 EXTERN_C_END
 #endif

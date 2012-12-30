@@ -3,7 +3,7 @@
 %
 %                            PART 1
 %
-%   This introductory PETSc information is included in 
+%   This introductory PETSc information is included in
 %   both manual.tex and intro.tex.
 %
 % --------------------------------------------------------------------
@@ -15,17 +15,17 @@ has successfully demonstrated that the use of modern programming
 paradigms can ease the development of large-scale scientific
 application codes in Fortran, C, C++, and Python.  Begun several years ago,
 the software has evolved into a powerful set of tools for the
-numerical solution of partial differential equations and related problems 
-on high-performance computers. PETSc is also callable directly from MATLAB (sequential) to 
+numerical solution of partial differential equations and related problems
+on high-performance computers. PETSc is also callable directly from MATLAB (sequential) to
 allow ``trying out'' PETSc's solvers from prototype MATLAB code.
 
 PETSc consists of a variety of libraries (similar to classes in C++),
 which are discussed in detail in Parts II and III of the users manual.
 Each library manipulates a particular family of objects (for instance,
 vectors) and the operations one would like to perform on the objects.
-The objects and operations in PETSc are derived from our long 
-experiences with scientific computation. Some of the PETSc modules deal with 
-\begin{itemize} 
+The objects and operations in PETSc are derived from our long
+experiences with scientific computation. Some of the PETSc modules deal with
+\begin{itemize}
 \item index sets (IS), including permutations, for indexing into vectors, renumbering, etc;
 \item vectors (Vec);
 \item matrices (Mat) (generally sparse);
@@ -35,10 +35,10 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item nonlinear solvers (SNES); and
 \item timesteppers for solving time-dependent (nonlinear) PDEs, including support for differential algebraic equations (TS).
 \end{itemize}
-Each consists of an abstract interface 
-(simply a set of calling sequences) and one or more implementations 
-using particular data structures. Thus, PETSc provides clean and 
-effective codes for the various phases of solving PDEs, with a uniform 
+Each consists of an abstract interface
+(simply a set of calling sequences) and one or more implementations
+using particular data structures. Thus, PETSc provides clean and
+effective codes for the various phases of solving PDEs, with a uniform
 approach for each class of problems.  This design
 enables easy comparison and use of different algorithms (for example,
 to experiment with different Krylov subspace methods, preconditioners,
@@ -53,12 +53,12 @@ of algorithms.  The PETSc infrastructure creates a
 foundation for building large-scale applications.
 
 It is useful to consider the interrelationships among different
-pieces of PETSc.  Figure \ref{fig_1} is a diagram of some 
+pieces of PETSc.  Figure \ref{fig_1} is a diagram of some
 of these pieces; Figure \ref{fig_2} presents
 several of the individual parts in more detail.
 These figures illustrate the library's hierarchical organization,
-which enables users to employ the level of abstraction that is most 
-appropriate for a particular problem.  
+which enables users to employ the level of abstraction that is most
+appropriate for a particular problem.
 \begin{figure}[hbt]
 %\centerline{ \pdfximage height 3.4in {petscwww.pdf} \pdfrefximage \pdflastximage}
 \centerline{ \includegraphics{petscwww}}
@@ -90,10 +90,10 @@ the basic procedure for using the PETSc library and presents two
 simple examples of solving linear systems with PETSc.  This section
 conveys the typical style used throughout the library and enables the
 application programmer to begin using the software immediately.
-Part I is also distributed separately for individuals interested in an 
+Part I is also distributed separately for individuals interested in an
 overview of the PETSc software, excluding the details of library usage.
 Readers of this separate distribution of Part I should note that all
-references within the text to particular chapters and sections 
+references within the text to particular chapters and sections
 indicate locations in the complete users manual.
 
 Part II explains in detail the use of the various PETSc libraries,
@@ -121,28 +121,28 @@ accessed at \href{http://www.mcs.anl.gov/petsc/documentation}{http://www.mcs.anl
 The manual pages
 provide hyperlinked indices (organized by
 both concepts and routine names) to the tutorial examples and enable
-easy movement among related topics.  
+easy movement among related topics.
 
 Emacs and Vi/Vim users may find the
 \trl{etags}/\trl{ctags}  option to be extremely useful for exploring the PETSc
 source code.  Details of this feature are provided in
-Section~\ref{sec_emacs}. 
+Section~\ref{sec_emacs}.
 
 The file \trl{manual.pdf} contains
-the complete {\em PETSc Users Manual} in the portable document format (PDF), 
-while \trl{intro.pdf} 
-includes only the introductory segment, Part I.  \sindex{installing PETSc} 
+the complete {\em PETSc Users Manual} in the portable document format (PDF),
+while \trl{intro.pdf}
+includes only the introductory segment, Part I.  \sindex{installing PETSc}
 The complete PETSc distribution, users
 manual, manual pages, and additional information are also available via
 the PETSc home page at
-\href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}.  
+\href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}.
 The PETSc home page also
 contains details regarding installation, new features and changes in recent
 versions of PETSc, machines that we currently support, and a FAQ list for frequently asked questions.
 
 \medskip\medskip
 
-\noindent{\bf Note to Fortran Programmers}: In most of the  
+\noindent{\bf Note to Fortran Programmers}: In most of the
 manual, the examples and calling sequences are given for the C/C++
 family of programming languages.  We follow this convention because we
 recommend that PETSc applications be coded in C or C++.
@@ -153,11 +153,11 @@ differences between using PETSc from Fortran and C, as well as several
 complete Fortran examples.  This chapter also introduces some
 routines that support direct use of Fortran90 pointers.
 
-\noindent{\bf Note to Python Programmers}: To program with PETSc in Python you need to install the PETSc4py package developed by 
-Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide 
+\noindent{\bf Note to Python Programmers}: To program with PETSc in Python you need to install the PETSc4py package developed by
+Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide
 for more details \href{http://www.mcs.anl.gov/petsc/documentation/installation.html}{http://www.mcs.anl.gov/petsc/documentation/installation.html}.
 
-\noindent{\bf Note to MATLAB Programmers}: To program with PETSc in MATLAB read the information in src/matlab/classes/PetscInitialize.m. Numerious examples 
+\noindent{\bf Note to MATLAB Programmers}: To program with PETSc in MATLAB read the information in src/matlab/classes/PetscInitialize.m. Numerious examples
 are given in src/matlab/classes/examples/tutorials. Run the program demo in that directory.
 
 %-----------------------------------------------------------------------------
@@ -174,7 +174,7 @@ directory.  For example, under the UNIX bash shell a command of the form
 .bashrc} or other startup file.  In addition, the user must set the environmental
 variable {\trl{PETSC_ARCH}} to specify the architecture. Note that
 {\trl{PETSC_ARCH}} is just a name selected by the installer to refer to
-the libraries compiled for a particular set of compiler options and 
+the libraries compiled for a particular set of compiler options and
 machine type. Using different {\trl{PETSC_ARCH}} allows one to manage
 several different sets of libraries easily.
 
@@ -184,35 +184,35 @@ PETSc programs, users must know the procedure for beginning MPI jobs
 on their selected computer system(s).  For instance, when using the
 MPICH implementation of MPI \cite{mpich-web-page} and many others, the following
 command initiates a program that uses eight processors:
-\findex{mpiexec} \sindex{running PETSc programs} 
+\findex{mpiexec} \sindex{running PETSc programs}
 \begin{tabbing}
    mpiexec -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 
-PETSc also comes with a script 
+PETSc also comes with a script
 \begin{tabbing}
    \${PETSC\_DIR}/bin/petscmpiexec -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
-that uses the information set in \trl{${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables} to 
+that uses the information set in \trl{${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables} to
 automatically use the correct \trl{mpiexec} for your configuration.
 
 All PETSc-compliant programs support the use of the \trl{-h}
 \findex{-h} or \trl{-help} option as well as the \trl{-v} \findex{-v}
-or \trl{-version} option. 
+or \trl{-version} option.
 
 
-Certain options are supported by all PETSc programs.  We list a few 
-particularly useful ones below; a complete list can be obtained by 
+Certain options are supported by all PETSc programs.  We list a few
+particularly useful ones below; a complete list can be obtained by
 running any PETSc program with the option \trl{-help}.
 \begin{itemize}
 \item \trl{-log_summary} - summarize the program's performance
 \item \trl{-fp_trap} - stop on floating-point exceptions; \findex{-fp_trap}
       for example divide by zero
-\item \trl{-malloc_dump} - enable memory tracing; dump list of unfreed memory 
+\item \trl{-malloc_dump} - enable memory tracing; dump list of unfreed memory
       at conclusion \findex{-trdump} of the run
-\item \trl{-malloc_debug} - enable memory tracing (by default this is 
+\item \trl{-malloc_debug} - enable memory tracing (by default this is
       activated for debugging versions)
-\item \trl{-start_in_debugger} \trl{[noxterm,gdb,dbx,xxgdb]} \trl{[-display name]} 
+\item \trl{-start_in_debugger} \trl{[noxterm,gdb,dbx,xxgdb]} \trl{[-display name]}
      - start all processes in debugger \findex{-start_in_debugger} \sindex{debugger}
 \item \trl{-on_error_attach_debugger}  \trl{[noxterm,gdb,dbx,xxgdb]}
       \trl{[-display name]} - \findex{-on_error_attach_debugger}start debugger only on encountering an error
@@ -225,11 +225,11 @@ See Section \ref{sec_debugging} for more information on debugging PETSc programs
 \section{Writing PETSc Programs}
 \label{sec_writing}
 
-Most PETSc programs begin with a call to 
+Most PETSc programs begin with a call to
 \begin{tabbing}
   PetscInitialize(int *argc,char ***argv,char *file,char *help);
-\end{tabbing} 
-which initializes PETSc and MPI.  The arguments \trl{argc} and 
+\end{tabbing}
+which initializes PETSc and MPI.  The arguments \trl{argc} and
 \trl{argv} are the command line arguments delivered in all C and C++
 programs. \sindex{command line arguments} The argument \trl{file}
 optionally indicates an alternative name for the PETSc options file,
@@ -241,11 +241,11 @@ character string that will be printed if the program is run with the
 \trl{-help} option.  In Fortran the initialization command has the form
 \begin{tabbing}
    call PetscInitialize(character(*) file,integer ierr)
-\end{tabbing} 
+\end{tabbing}
 PetscInitialize() automatically calls \trl{MPI_Init()} if MPI
 has not been not previously initialized. In certain \findex{MPI_Init()}
 circumstances in which MPI needs to be initialized directly (or is
-initialized by some other library), the user can first call 
+initialized by some other library), the user can first call
 \trl{MPI_Init()} (or have the other library do it), and then call
 PetscInitialize().
 By default, PetscInitialize() sets the PETSc ``world''
@@ -254,15 +254,15 @@ communicator, given by PETSC\_COMM\_WORLD, to \trl{MPI_COMM_WORLD}.
 For those not familar with MPI, a {\em communicator} is a way of
 indicating a collection of processes that will be involved together
 in a calculation or communication. Communicators have the variable type
-\trl{MPI_Comm}. In most cases users can employ the communicator 
-PETSC\_COMM\_WORLD to indicate all processes in a given run and 
+\trl{MPI_Comm}. In most cases users can employ the communicator
+PETSC\_COMM\_WORLD to indicate all processes in a given run and
 PETSC\_COMM\_SELF to indicate a single process.
 
 MPI provides routines
 for generating new communicators consisting of subsets of processors,
 though most users rarely need to use these. The book {\em Using MPI},
 by Lusk, Gropp, and Skjellum \cite{using-mpi} provides an excellent
-introduction to the concepts in MPI, see also the MPI homepage 
+introduction to the concepts in MPI, see also the MPI homepage
 \href{http://www.mcs.anl.gov/mpi/}{http://www.mcs.anl.gov/mpi/}.
 Note that PETSc users need not program much message passing directly
 with MPI, but they must be familar with the basic concepts of message
@@ -288,7 +288,7 @@ the program, and calls \trl{MPI_Finalize()} \findex{MPI_Finalize()}
 if PetscInitialize()
 began MPI. If MPI was initiated externally from PETSc (by either
 the user or another software package), the user is
-responsible for calling \trl{MPI_Finalize()}. 
+responsible for calling \trl{MPI_Finalize()}.
 
 \section{Simple PETSc Examples}
 
@@ -297,12 +297,12 @@ responsible for calling \trl{MPI_Finalize()}.
 To help the user start using PETSc immediately, we begin with a simple
 uniprocessor example in Figure~\ref{fig_example1} that solves the
 one-dimensional Laplacian problem with finite differences.  This
-sequential code, which can be found in 
+sequential code, which can be found in
 \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex1.c},
-illustrates the solution of a linear system with KSP, the 
+illustrates the solution of a linear system with KSP, the
 interface to the preconditioners, Krylov subspace methods, and direct
 linear solvers of PETSc.  Following the code we highlight a few of the most important
-parts of this example.  
+parts of this example.
 
 \begin{figure}[H]
 {\footnotesize
@@ -326,8 +326,8 @@ include file that corresponds to the highest level PETSc objects
 needed within the program; all of the required lower level include
 files are automatically included within the higher level files.  For
 example, \trl{petscksp.h} includes \trl{petscmat.h} (matrices),
-\trl{petscvec.h} (vectors), and \trl{petscsys.h} (base PETSc file).  
-The PETSc include files are located in the directory 
+\trl{petscvec.h} (vectors), and \trl{petscsys.h} (base PETSc file).
+The PETSc include files are located in the directory
 \trl{${PETSC_DIR}/include}.  See Section \ref{sec_fortran_includes}
 for a discussion of PETSc include files in Fortran programs.
 
@@ -344,8 +344,8 @@ options database may be found in Section \ref{sec_options}.
 \subsection*{Vectors}
 \label{sec_vecintro}
 
-One creates a new parallel or 
-sequential vector, \trl{x}, of global dimension \trl{M} with the 
+One creates a new parallel or
+sequential vector, \trl{x}, of global dimension \trl{M} with the
 commands  \sindex{vectors}
 \begin{tabbing}
   VecCreate(MPI\_Comm comm,Vec *x);\\
@@ -353,13 +353,13 @@ commands  \sindex{vectors}
 \end{tabbing}
 where \trl{comm} denotes the MPI communicator and \trl{m} is the optional local size
 which may be PETSC\_DECIDE. The type of storage
-for the vector may be set with either calls to 
+for the vector may be set with either calls to
 VecSetType() or VecSetFromOptions().
 Additional vectors of the same type can be formed with
 \begin{tabbing}
   VecDuplicate(Vec old,Vec *new);
 \end{tabbing}
-The commands 
+The commands
 \begin{tabbing}
   VecSet(Vec x,PetscScalar value);\\
   VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
@@ -383,7 +383,7 @@ use of complex numbers in PETSc programs.
 \subsection*{Matrices}
 \label{sec_matintro}
 
-Usage of PETSc matrices and vectors is similar. \sindex{matrices} 
+Usage of PETSc matrices and vectors is similar. \sindex{matrices}
 The user can create a new parallel or sequential matrix, \trl{A}, which
 has \trl{M} global rows and \trl{N} global columns, with the routines
 \begin{tabbing}
@@ -415,8 +415,8 @@ well as the details of some basic matrix manipulation routines.
 \subsection*{Linear Solvers}
 
 After creating the matrix and vectors that define a linear system,
-\trl{Ax = b}, the user can then use KSP to solve the system 
-with the following sequence of commands: 
+\trl{Ax = b}, the user can then use KSP to solve the system
+with the following sequence of commands:
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
   KSPSetOperators(KSP ksp,Mat A,Mat PrecA,MatStructure flag);\\
@@ -428,7 +428,7 @@ The user first creates the KSP context and sets the operators
 associated with the system (linear system matrix and optionally different
 preconditioning matrix).  The user then sets various options for
 customized solution, solves the linear system, and finally destroys
-the KSP context.  We emphasize the command KSPSetFromOptions(), 
+the KSP context.  We emphasize the command KSPSetFromOptions(),
 which enables the user to customize the linear solution
 method at runtime by using the options database, which is discussed in
 Section~\ref{sec_options}. Through this database, the user not only
@@ -440,9 +440,9 @@ Chapter~\ref{ch_ksp} describes in detail the KSP package, including
 the PC and KSP packages for preconditioners and Krylov subspace methods.
 
 \subsection*{Nonlinear Solvers}
-Most PDE problems of interest are inherently nonlinear. PETSc provides 
+Most PDE problems of interest are inherently nonlinear. PETSc provides
 an interface to tackle the nonlinear problems directly called SNES. Chapter
-\ref{chapter_snes} describes the nonlinear solvers in detail. We recommend 
+\ref{chapter_snes} describes the nonlinear solvers in detail. We recommend
 most PETSc users work directly with SNES, rather than using PETSc
 for the linear problem within a nonlinear solver.
 
@@ -457,7 +457,7 @@ In Figure~\ref{fig_traceback} we indicate a
 traceback generated by error detection within a sample PETSc
 program. The error occurred on line 1673 of the file \trl{
 ${PETSC_DIR}/src/mat/impls/aij/seq/aij.c} and was caused by trying to allocate too
-large an array in memory. The routine was called in the program 
+large an array in memory. The routine was called in the program
 \trl{ex3.c} on line 71.  See Section \ref{sec_fortran_errors} for
 details regarding error checking when using the PETSc Fortran interface.
 
@@ -468,9 +468,9 @@ details regarding error checking when using the PETSc Fortran interface.
    PETSC ERROR:   Out of memory. This could be due to allocating\\
    PETSC ERROR:   too large an object or bleeding by not properly\\
    PETSC ERROR:   destroying unneeded objects.\\
-   PETSC ERROR:   Try running with -trdump for more information.\\ 
+   PETSC ERROR:   Try running with -trdump for more information.\\
    PETSC ERROR: MatSetType() line 99 in src/mat/utils/gcreate.c  \\
-   PETSC ERROR: main() line 71 in src/ksp/ksp/examples/tutorials/ex3.c\\  
+   PETSC ERROR: main() line 71 in src/ksp/ksp/examples/tutorials/ex3.c\\
    MPI Abort by user Aborting program !\\
    Aborting program! \\
    p0\_28969:  p4\_error: : 1
@@ -481,10 +481,10 @@ details regarding error checking when using the PETSc Fortran interface.
 \end{figure}
 
 When running the debug version of the PETSc libraries, it
-does a great deal of checking for memory corruption (writing outside of 
-array bounds etc). The macros \trl{CHKMEMQ} can be called 
+does a great deal of checking for memory corruption (writing outside of
+array bounds etc). The macros \trl{CHKMEMQ} can be called
 anywhere in the code to check the current status of the memory for corruption.
-By putting several (or many) of these macros into your code you can usually 
+By putting several (or many) of these macros into your code you can usually
 easily track down in what small segment of your code the corruption has occured.
 
 \subsection*{Parallel Programming}
@@ -508,7 +508,7 @@ creation are:
 \begin{tabbing}
   MatCreate(MPI\_Comm comm,Mat *A);\\
   VecCreate(MPI\_Comm comm,Vec *x);\\
-  KSPCreate(MPI\_Comm comm,KSP *ksp); 
+  KSPCreate(MPI\_Comm comm,KSP *ksp);
 \end{tabbing}
 The creation routines are collective over all processors in the
 communicator; thus, all processors in the communicator {\em must}
@@ -544,8 +544,8 @@ Figure~\ref{fig_exrun} illustrates compiling and running a PETSc program
 using MPICH.  Note that different sites may have slightly different
 library and compiler names.  See Chapter \ref{ch_makefiles}
 for a discussion about compiling PETSc programs.
-Users who are experiencing difficulties linking PETSc programs should 
-refer to the FAQ  via the PETSc WWW home page 
+Users who are experiencing difficulties linking PETSc programs should
+refer to the FAQ  via the PETSc WWW home page
 \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc} or
 given in the file \href{faq.html}{\${PETSC\_DIR}/docs/faq.html}.
 
@@ -597,7 +597,7 @@ eagle> mpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -
 
 ex1 on a sun4 named merlin.mcs.anl.gov with 1 processor, by curfman Wed Aug 7 17:24 1996
 
-                         Max         Min        Avg        Total 
+                         Max         Min        Avg        Total
 Time (sec):           1.150e-01      1.0   1.150e-01
 Objects:              1.900e+01      1.0   1.900e+01
 Flops:                3.998e+04      1.0   3.998e+04  3.998e+04
@@ -607,8 +607,8 @@ MPI Messages:         0.000e+00      0.0   0.000e+00  0.000e+00 (lengths)
 MPI Reductions:       0.000e+00      0.0
 
 --------------------------------------------------------------------------------------
-Phase              Count      Time (sec)       Flops/sec     Messages    -- Global --    
-                             Max     Ratio    Max    Ratio Avg len  Redc %T %F %M %L %R   
+Phase              Count      Time (sec)       Flops/sec     Messages    -- Global --
+                             Max     Ratio    Max    Ratio Avg len  Redc %T %F %M %L %R
 --------------------------------------------------------------------------------------
 Mat Mult               2  2.553e-03    1.0  3.9e+06    1.0  0.0 0.0 0.0  2 25  0  0  0
 Mat AssemblyBegin      1  2.193e-05    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
@@ -653,13 +653,13 @@ Preconditioner        1              1          0     64872
 The examples throughout the library demonstrate the software usage
 and can serve as templates for developing
 custom applications.  We suggest that new PETSc
-users examine programs in the directories 
+users examine programs in the directories
 \begin{tabbing}
   \trl{${PETSC_DIR}/src/<library>/examples/tutorials},
 \end{tabbing}
 where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following
-section), such as \trl{snes} or \trl{ksp}.  
+section), such as \trl{snes} or \trl{ksp}.
 The manual pages located at
 \begin{tabbing}
    \${PETSC\_DIR}/docs/index.html or \\
@@ -719,7 +719,7 @@ When citing PETSc in a publication please cite the following:
 \section{Directory Structure}
 
 We conclude this introduction with an overview of the
-organization of the PETSc software.  
+organization of the PETSc software.
 The root directory of PETSc contains the following directories:
 % As shown in Figure~\ref{fig_directories}, the root directory of PETSc contains the following directories:
 
@@ -735,9 +735,9 @@ The root directory of PETSc contains the following directories:
 
 \item \trl{conf} - Base PETSc makefile that defines the standard make variables and rules used by PETSc
 \item \trl{include} - All include files for PETSc that are visible to the user.
-\item \trl{include/finclude}    - PETSc include files for Fortran programmers using 
+\item \trl{include/finclude}    - PETSc include files for Fortran programmers using
                                   the .F suffix (recommended).
-\item \trl{include/private}    - Private PETSc include files that should {\em not} 
+\item \trl{include/private}    - Private PETSc include files that should {\em not}
                                   be used by application programmers.
 \item \trl{share} - Some small test matrices in data files
 \item \trl{src} - The source code for all PETSc libraries, which
@@ -777,11 +777,11 @@ Each PETSc source code library directory has the following subdirectories:
   \item \trl{tests} - Programs designed for thorough testing of PETSc.  As such,
           these codes are not intended for examination by users.
   \end{itemize}
-\item  \trl{interface} - The calling sequences for the abstract interface  
+\item  \trl{interface} - The calling sequences for the abstract interface
         to the component.
         Code here does not know about particular implementations.
 \item  \trl{impls} - Source code for one or more implementations.
-\item  \trl{utils} - Utility routines.  Source here may know about the 
+\item  \trl{utils} - Utility routines.  Source here may know about the
           implementations, but ideally will not know about implementations
           for other components.
 \end{itemize}

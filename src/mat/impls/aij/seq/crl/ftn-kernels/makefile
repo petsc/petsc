@@ -10,13 +10,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  = fmultcrl.F
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/mat/impls/aij/seq/crl/ftn-kernels/
-DIRS     = 
+DIRS     =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

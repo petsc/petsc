@@ -30,15 +30,15 @@ PetscErrorCode PetscCliqueInitializePackage(const char *path)
 }
 
 /*
-  MatConvertToClique: Convert Petsc aij matrix to Clique matrix 
+  MatConvertToClique: Convert Petsc aij matrix to Clique matrix
 
   input:
 +   A     - matrix in seqaij or mpiaij format
 -   reuse - denotes if the destination matrix is to be created or reused. Currently
             MAT_REUSE_MATRIX is only supported for inplace conversion, otherwise use MAT_INITIAL_MATRIX.
 
-  output:   
-.   cliq - Clique context 
+  output:
+.   cliq - Clique context
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertToClique"
@@ -49,9 +49,9 @@ PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
   const PetscInt        *cols;
   const PetscCliqScalar *vals;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
-  
+
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX){ 
+  if (reuse == MAT_INITIAL_MATRIX){
     /* create Clique matrix */
     cmat = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
     cliq->cmat = cmat;
@@ -66,12 +66,12 @@ PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
 
   cmat->StartAssembly();
   //cmat->Reserve( 7*localHeight ); ???
-  for (i=rstart; i<rend; i++){ 
-    ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
+  for (i=rstart; i<rend; i++){
+    ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
     for (j=0; j<ncols; j++){
       cmat->Update(i,cols[j],vals[j]);
     }
-    ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
+    ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
   }
   cmat->StopAssembly();
   PetscFunctionReturn(0);
@@ -92,7 +92,7 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   PetscFunctionBegin;
   if (!cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Clique matrix cmat is not created yet");
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
-  
+
   cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cxxcomm);
   cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cxxcomm);
   for (i=0; i<A->cmap->n; i++) {
@@ -100,7 +100,7 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   }
   cliq::Multiply(1.0,*cmat,xc,0.0,yc);
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
- 
+
   for (i=0; i<A->cmap->n; i++) {
     ierr = VecSetValueLocal(Y,i,yc.GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -131,7 +131,7 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
       ierr = PetscPrintf(((PetscObject)viewer)->comm,"Clique matrix\n");CHKERRQ(ierr);
       ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
       ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Clique matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
@@ -146,7 +146,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 
   PetscFunctionBegin;
   printf("MatDestroy_Clique ...\n");
-  if (cliq && cliq->CleanUpClique) { 
+  if (cliq && cliq->CleanUpClique) {
     /* Terminate instance, deallocate memories */
     printf("MatDestroy_Clique ... destroy clique struct \n");
     ierr = PetscCommDestroy(&(cliq->cliq_comm));CHKERRQ(ierr);
@@ -165,7 +165,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -179,7 +179,7 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
   Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
   cliq::DistVector<PetscCliqScalar> *bc=cliq->rhs;
   cliq::DistNodalVector<PetscCliqScalar> *xNodal=cliq->xNodal;
- 
+
   PetscFunctionBegin;
   ierr = VecGetArrayRead(B,(const PetscScalar **)&b);CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) {
@@ -191,7 +191,7 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
   cliq::Solve( *cliq->info, *cliq->frontTree, xNodal->localVec );
   xNodal->Push( *cliq->inverseMap, *cliq->info, *bc );
 
-  ierr = MPI_Comm_rank(cliq->cliq_comm,&rank);CHKERRQ(ierr); 
+  ierr = MPI_Comm_rank(cliq->cliq_comm,&rank);CHKERRQ(ierr);
   for (i=0; i<bc->LocalHeight(); i++) {
     ierr = VecSetValue(X,rank*bc->Blocksize()+i,bc->GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -260,8 +260,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   Use ./configure --download-clique to have PETSc installed with Clique
 
   Options Database Keys:
-+ -mat_clique_    - 
-- -mat_clique_ <integer> - 
++ -mat_clique_    -
+- -mat_clique_ <integer> -
 
   Level: beginner
 
@@ -288,7 +288,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   Mat_Clique     *cliq;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscCliqueInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
@@ -318,7 +318,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->destroy = MatDestroy_Clique;
   B->factortype   = ftype;
-  B->assembled    = PETSC_FALSE;  
+  B->assembled    = PETSC_FALSE;
 
   /* Set Clique options */
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Clique Options","Mat");CHKERRQ(ierr);

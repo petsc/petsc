@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_asinh
   exception number -> ADINTR_ASINH
-  exceptional code -> 
+  exceptional code ->
 
   */
 
@@ -39,13 +39,13 @@ adintr_asinh (int deriv_order, int file_number, int line_number,
      /* Here is where exceptional partials should be set. */
      *fx = ADIntr_Partials[ADINTR_ASINH][ADINTR_FX];
      *fxx = ADIntr_Partials[ADINTR_ASINH][ADINTR_FXX];
-     
+
      /* Here is where we perform the action appropriate to the current mode. */
      if (ADIntr_Mode == ADINTR_REPORTONCE)
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

@@ -46,7 +46,7 @@ static int             num_attr = 1,mpi_tag_ub = 100000000;
 extern "C" {
 #endif
 
-/* 
+/*
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
 int MPIUNI_Memcpy(void *a,const void* b,int n) {
@@ -96,7 +96,7 @@ int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
   attr[comm-1][keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
 }
-  
+
 int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
   if (comm-1 < 0 || comm-1 > 3) return 1;
@@ -175,7 +175,7 @@ int MPI_Abort(MPI_Comm comm,int errorcode)
 }
 
 /* --------------------------------------------------------------------------*/
-  
+
 static int MPI_was_initialized = 0;
 static int MPI_was_finalized   = 0;
 
@@ -370,7 +370,7 @@ void PETSC_STDCALL  mpi_finalize_(int *ierr)
   *ierr = MPI_Finalize();
 }
 
-void PETSC_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
+void PETSC_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr)
 {
   *size = 1;
   *ierr = 0;
@@ -388,7 +388,7 @@ void PETSC_STDCALL mpi_comm_split_(MPI_Comm *comm,int *color,int *key, MPI_Comm 
   *ierr=MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
+void PETSC_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr)
 {
   abort();
   *ierr = MPI_SUCCESS;
@@ -400,11 +400,11 @@ void PETSC_STDCALL mpi_reduce_(void *sendbuf,void *recvbuf,int *count,int *datat
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
+void PETSC_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
-} 
+}
 
 void PETSC_STDCALL mpi_barrier_(MPI_Comm *comm,int *ierr)
 {

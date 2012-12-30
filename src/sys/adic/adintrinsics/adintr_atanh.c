@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_atanh
   exception number -> ADINTR_ATANH
-  exceptional code -> 
+  exceptional code ->
 
   */
 
@@ -44,7 +44,7 @@ adintr_atanh (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

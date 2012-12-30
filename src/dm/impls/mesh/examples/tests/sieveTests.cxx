@@ -430,8 +430,8 @@ PetscErrorCode RunUnitTests(const Options *options)
 
   PetscFunctionBegin;
   if (options->overlap)       {ierr = OverlapTests(options);CHKERRQ(ierr);}
-  if (options->preallocation) {ierr = PreallocationTests(options);CHKERRQ(ierr);} 
-  if (options->label)         {ierr = LabelTests(options);CHKERRQ(ierr);} 
+  if (options->preallocation) {ierr = PreallocationTests(options);CHKERRQ(ierr);}
+  if (options->label)         {ierr = LabelTests(options);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

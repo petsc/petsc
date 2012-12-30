@@ -1159,7 +1159,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   TSType         type;
   PetscBool      iascii,isstring,isundials,isbinary,isdraw;
   DMTS           sdm;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!viewer) {
@@ -1386,7 +1386,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 
    Input Parameter:
 +   ts - the time-step context
--   eftopt - exact final time option 
+-   eftopt - exact final time option
 
    Level: beginner
 
@@ -2082,7 +2082,7 @@ PetscErrorCode  TSPostStep(TS ts)
 $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 
 +    ts - the TS context
-.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have 
+.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have
                                been interpolated to)
 .    time - current time
 .    u - current iterate
@@ -2250,7 +2250,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
    The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
    be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
 
-   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the 
+   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
    time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
 
 .keywords: TS, timestep, solve
@@ -4236,7 +4236,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 #endif
 
 
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGSolution"
 /*@C

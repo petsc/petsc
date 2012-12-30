@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =  
+SOURCEC  =
 SOURCEF  =
 SOURCEH  = dvecimpl.h
 LIBBASE  = libpetscvec

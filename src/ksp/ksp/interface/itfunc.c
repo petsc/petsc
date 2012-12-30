@@ -209,13 +209,13 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     }
     if (kdm->ops->computerhs) {
       ierr = (*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
-    } 
+    }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
       ierr = KSPGetOperators(ksp,&A,&B,PETSC_NULL);CHKERRQ(ierr);
       if (kdm->ops->computeoperators) {
         ierr = (*kdm->ops->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
-      } 
+      }
       ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
     }
   }

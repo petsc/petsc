@@ -1,11 +1,11 @@
 
-CFLAGS	        = 
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/adda/examples/tests/
 EXAMPLESC       = ex1.c
-EXAMPLESF       = 
+EXAMPLESF       =
 MANSEC          = DM
 SUBMANSEC       = DMADDA
 

@@ -3,7 +3,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
 	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
 	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/petsc.bib website/index.html \
@@ -20,9 +20,9 @@ DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
            website/documentation/referencing.html\
            website/documentation/exercises/index.html website/documentation/exercises/*/index.html \
            website/documentation/changes/*.html
-LIBBASE  = 
+LIBBASE  =
 LINCLUDE = ${SOURCEH}
-DIRS     = 
+DIRS     =
 LOCDIR   = src/docs/
 
 CLEANFILES = website/publications/petscapps.html website/publications/petscapps-bib.html

@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = sliced.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = ../../../../include/petscdmsliced.h
 LIBBASE  = libpetscdm
 MANSEC   = DM

@@ -7,10 +7,10 @@ static char help[] = "Tests MatPermute() for a square matrix in parallel.\n\n";
    - seqsbaij: permutation not supported for this MATTYPE
    Parallel:
    - mpiaij:   incorrect permutation (disable this op for now)
-   - seqbaij:  correct permutation, but all manner of memory leaks 
+   - seqbaij:  correct permutation, but all manner of memory leaks
                (disable this op for now, because it appears broken for nonsquare matrices; see ex151)
    - seqsbaij: permutation not supported for this MATTYPE
-   
+
  */
 #undef __FUNCT__
 #define __FUNCT__ "main"

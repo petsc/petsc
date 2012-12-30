@@ -8,7 +8,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDestroy_MPICUSP"
 PetscErrorCode VecDestroy_MPICUSP(Vec v)
 {
@@ -27,7 +27,7 @@ PetscErrorCode VecDestroy_MPICUSP(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecNorm_MPICUSP"
 PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
 {
@@ -62,7 +62,7 @@ PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDot_MPICUSP"
 PetscErrorCode VecDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -76,7 +76,7 @@ PetscErrorCode VecDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecTDot_MPICUSP"
 PetscErrorCode VecTDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -90,7 +90,7 @@ PetscErrorCode VecTDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMDot_MPICUSP"
 PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
@@ -121,7 +121,7 @@ PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 M*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPICUSP"
 PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 {
@@ -148,7 +148,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
     if (vw->localupdate) {
       ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
     }
-  }    
+  }
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash = win->stash.donotstash;
@@ -182,7 +182,7 @@ PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPICUSP"
 PetscErrorCode  VecCreate_MPICUSP(Vec vv)
 {

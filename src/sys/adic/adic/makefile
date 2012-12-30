@@ -1,13 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
-FFLAGS   = 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = run-map.c run-alloc.c
 SOURCEF  =
 SOURCEH  = ../../../../include/adic/run-map.h ../../../../include/adic/run-alloc.h
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/adic/adic/
 MANSEC   = Sys
 

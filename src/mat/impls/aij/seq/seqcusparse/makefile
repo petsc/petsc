@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCECU  = aijcusparse.cu 
+SOURCECU  = aijcusparse.cu
 SOURCEF   =
 SOURCEH   = cusparsematimpl.h
 LIBBASE   = libpetscmat

@@ -19,7 +19,7 @@ typedef struct {
   PetscBool  diagonalvalid;  /* indicates if diagonal matches current base vector */
 } Mat_DAAD;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_DAAD"
 PetscErrorCode MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
 {
@@ -37,7 +37,7 @@ PetscErrorCode MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_DAAD"
 PetscErrorCode MatMult_DAAD(Mat A,Vec xx,Vec yy)
 {
@@ -56,7 +56,7 @@ PetscErrorCode MatMult_DAAD(Mat A,Vec xx,Vec yy)
 
 #include <../src/dm/da/daimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_DAAD"
 PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
 {
@@ -110,7 +110,7 @@ PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSOR_DAAD"
 PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
@@ -218,7 +218,7 @@ PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscRea
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_DAAD"
 PetscErrorCode MatDestroy_DAAD(Mat A)
 {
@@ -341,7 +341,7 @@ static struct _MatOps MatOps_Values = {0,
 /* --------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_AD"
 PetscErrorCode  MatMFFDSetBase_AD(Mat J,Vec U,Vec F)
 {
@@ -357,7 +357,7 @@ PetscErrorCode  MatMFFDSetBase_AD(Mat J,Vec U,Vec F)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDAADSetDA_AD"
 PetscErrorCode  MatDAADSetDA_AD(Mat A,DM da)
 {
@@ -379,7 +379,7 @@ PetscErrorCode  MatDAADSetDA_AD(Mat A,DM da)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDAADSetSNES_AD"
 PetscErrorCode  MatDAADSetSNES_AD(Mat A,SNES snes)
 {
@@ -392,7 +392,7 @@ PetscErrorCode  MatDAADSetSNES_AD(Mat A,SNES snes)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDAADSetCtx_AD"
 PetscErrorCode  MatDAADSetCtx_AD(Mat A,void *ctx)
 {
@@ -406,7 +406,7 @@ EXTERN_C_END
 
 /*MC
   MATDAAD - MATDAAD = "daad" - A matrix type that can do matrix-vector products using a local function that
-  is differentiated with ADIFOR or ADIC. 
+  is differentiated with ADIFOR or ADIC.
 
   Level: intermediate
 
@@ -414,7 +414,7 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_DAAD"
 PetscErrorCode  MatCreate_DAAD(Mat B)
 {
@@ -425,7 +425,7 @@ PetscErrorCode  MatCreate_DAAD(Mat B)
   ierr    = PetscNewLog(B,Mat_DAAD,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  
+
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
@@ -440,7 +440,7 @@ PetscErrorCode  MatCreate_DAAD(Mat B)
 EXTERN_C_END
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDAADSetDA"
 /*@C
    MatDAADSetDA - Tells the matrix what DMDA it is using for layout and Jacobian.
@@ -467,7 +467,7 @@ PetscErrorCode  MatDAADSetDA(Mat A,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDAADSetSNES"
 /*@C
    MatDAADSetSNES - Tells the matrix what SNES it is using for the base U.
@@ -496,7 +496,7 @@ PetscErrorCode  MatDAADSetSNES(Mat A,SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDAADSetCtx"
 /*@C
    MatDAADSetCtx - Sets the user context for a DMDAAD (ADIC matrix-free) matrix.
@@ -522,10 +522,10 @@ PetscErrorCode  MatDAADSetCtx(Mat A,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateDAAD"
 /*@C
-   MatCreateDAAD - Creates a matrix that can do matrix-vector products using a local 
+   MatCreateDAAD - Creates a matrix that can do matrix-vector products using a local
    function that is differentiated with ADIFOR or ADIC.
 
    Collective on DMDA
@@ -534,7 +534,7 @@ PetscErrorCode  MatDAADSetCtx(Mat A,void *ctx)
 .  da - the DMDA that defines the distribution of the vectors
 
    Output Parameter:
-.  A - the matrix 
+.  A - the matrix
 
    Level: intermediate
 
@@ -557,7 +557,7 @@ PetscErrorCode  MatCreateDAAD(DM da,Mat *A)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterDAAD"
 /*@
    MatRegisterDAAD - Registers DMDAAD matrix type
@@ -568,7 +568,7 @@ PetscErrorCode  MatCreateDAAD(DM da,Mat *A)
 
 @*/
 PetscErrorCode  MatRegisterDAAD(void)
-{ 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatRegisterDynamic(MATDAAD,PETSC_NULL,"MatCreate_DAAD",MatCreate_DAAD);CHKERRQ(ierr);

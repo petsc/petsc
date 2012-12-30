@@ -16,12 +16,12 @@
 </H3>
 <P>
 We provide these floating point performance numbers as a guide to users to indicate
-the type of floating point rates they should expect while using PETSc. We have done 
+the type of floating point rates they should expect while using PETSc. We have done
 our best to provide fair and accurate values but do not guarantee
 any of the numbers presented here.
 <P>
 See the "Profiling" chapter of <a href="http://www.mcs.anl.gov/petsc/manual.html#Node100">
-the PETSc users manual</a> for instructions on techniques to obtain accurate performance 
+the PETSc users manual</a> for instructions on techniques to obtain accurate performance
 numbers with PETSc
 
 <P><HR><P>
@@ -32,27 +32,27 @@ In many PDE application codes one most solve systems of linear equations
 arising from the descretization of multicomponent PDEs, the sparse matrices computed
 naturally have a block structure.
 <P>
-PETSc has special sparse matrix storage formats and routines to take advantage of 
+PETSc has special sparse matrix storage formats and routines to take advantage of
 that block structure to deliver much higher (two or three times as high) floating
 point computation rates. Below we give the
-floating point rates for the matrix-vector product for a 1503 by 1503 sparse matrix with a block 
+floating point rates for the matrix-vector product for a 1503 by 1503 sparse matrix with a block
 size of three arising from a simple oil reservoir simulation.
 
 <p>
 <A HREF="http://ftp.mcs.anl.gov/pub/petsc/matmultbench.ps">Embed here</A>
 <p>
 
-The next table depicts performance for the entire linear solve using GMRES(30) and 
+The next table depicts performance for the entire linear solve using GMRES(30) and
 ILU(0) preconditioning.
 
 <P>
 <A HREF="http://ftp.mcs.anl.gov/pub/petsc/solvebench.ps">Embed here</A>
 <P>
 
-These tests were run using 
+These tests were run using
 the code src/sles/examples/tutorials/ex10.c with the options
 <p>
-<tt>  
+<tt>
 mpiexec -n 1 ex10 -f0 arco1 -f1 arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_baij -matload_block_size 3 -log_summary
 </tt>
 
@@ -61,20 +61,20 @@ mpiexec -n 1 ex10 -f0 arco1 -f1 arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschm
 <A NAME="multiprocessor"> <H1 align=center>Parallel Performance for Euler Solver</H1></A>
 
 <A NAME="laplacian"> <H1 align=center>Scalability for Laplacian</H1></A>
-A typical "model" problem people work with in numerical analysis for PDEs is the 
+A typical "model" problem people work with in numerical analysis for PDEs is the
 Laplacian. Discretization of the Laplacian in two dimensions with finite differences
 is typically done using the "five point" stencil. This results in a very sparse
 (at most five nonzeros per row), ill-conditioned matrix.
 
 <P>
 Because the matrix is so sparse and has no block structure it is difficult to get
-very good sequential or parallel floating point performance, especially for small 
+very good sequential or parallel floating point performance, especially for small
 problems. Here we demonstrate scalability of the parallel PETSc matrix vector product
 for the five point stencil on two grids. These were run on three machines:
 an IBM SP2 with the Power2Super chip and two memory cards at ANL, the Cray T3E at NERSC and
 the Origin2000 at NCSA.
 
-<P> 
+<P>
 Since PETSc is intended for much more general problems then the Laplacian we don't consider
 the Laplacian to be a particularlly important benchmark; we include it due to interest
 from the community.
@@ -85,7 +85,7 @@ from the community.
 
 100by100 grid
 <P>
-Notes: The problem here is simply to small to parallelize on a distributed memory 
+Notes: The problem here is simply to small to parallelize on a distributed memory
 computer.
 <P>
 

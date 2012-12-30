@@ -12,7 +12,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-fortran-datatypes=<bool>', nargs.ArgBool(None, 0, 'Declare PETSc objects in Fortran like type(Vec) instead of Vec'))
@@ -38,7 +38,7 @@ class Configure(config.base.Configure):
           TRADITIONAL_CPP = '-traditional-cpp'
         else:
           TRADITIONAL_CPP = ''
-        # Fortran does NOT handle CPP macros 
+        # Fortran does NOT handle CPP macros
         self.addMakeRule('.F.o .F90.o .F95.o','',['-@${RM} __$< __$*.c',\
                                            '-@${GREP} -v "^!" $< > __$*.c',\
                                            '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$<',\
@@ -66,7 +66,7 @@ class Configure(config.base.Configure):
         if self.framework.argDB['with-fortran-datatypes']:
           raise RuntimeError('Cannot use generated fortran interface definitions with fortran datatypes')
         self.addDefine('USE_FORTRAN_INTERFACES', '1')
-      
+
     else:
       self.addMakeRule('.F.o','',['-@echo "Your system was not configured for Fortran use"', \
                                   '-@echo "  Check configure.log under the checkFortranCompiler test for the specific failure"',\

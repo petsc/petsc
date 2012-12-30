@@ -448,7 +448,7 @@ MDOMAINS = 2
 NDOMAINS = 1
 OVERLAP=1
 runex8:
-	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS} 
+	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
 
 VALGRIND=
 runex8g:
@@ -465,19 +465,19 @@ runex8_1:
 	   else echo ${PWD} ; echo "Possible problem with with ex8_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8_1.tmp
 
-runex8g_1: 
+runex8g_1:
 	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_1.tmp 2>&1; \
 	    if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
 	    else echo ${PWD} ; echo "Possible problem with with ex8g_1, diffs above \n========================================="; fi; \
 	    ${RM} -f ex8g_1.tmp
 
-runex8g_2: 
+runex8g_2:
 	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_2.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_2.out ex8g_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex8g_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8g_2.tmp
 
-runex8g_3: 
+runex8g_3:
 	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_3.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_3.out ex8g_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex8g_3, diffs above \n========================================="; fi; \
@@ -568,7 +568,7 @@ runex10_9:
 	 ${MPIEXEC} -n $$np ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -viewer_binary_skip_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
                     1.0e-15 -ksp_monitor_short -trans >> ex10_9.tmp 2>&1 ; \
-         done; done; done; 
+         done; done; done;
 	-@if (${DIFF} output/ex10_9.out ex10_9.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_9, diffs above \n========================================="; fi;
 	-@${RM} -f ex10_9.tmp
@@ -628,7 +628,7 @@ runex10_19:
 	-@for levels in ${LEVELS}; do \
 	${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels >> ex10_19aij.tmp 2>&1; \
 	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels -mat_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
-	done; 
+	done;
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_19, diffs above \n========================================="; fi; \
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
@@ -1114,7 +1114,7 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
                                  ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
-TESTEXAMPLES_FFTW              = 
-TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm 
+TESTEXAMPLES_FFTW              =
+TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
 
 include ${PETSC_DIR}/conf/test

@@ -114,7 +114,7 @@
         read/changed by that thread. The only private data a thread has are the
         local variables in the subroutines that it has called (i.e., the stack
         for that thread) or local variables that one explicitly indicates are
-        to be not shared in compiler directives. 
+        to be not shared in compiler directives.
       </p>
 
       <p>
@@ -163,7 +163,7 @@
           performance.  For example, if four threads share a matrix and are
           each calling MatSetValues(), this will be a bottleneck with those
           threads constantly fighting over the data structure inside the matrix
-          object. 
+          object.
         </li>
       </ol>
 
@@ -194,7 +194,7 @@
         thread to maintain its own private data structure that is later merged
         into a common data structure. But to do this, one has to introduce
         a great deal of private state associated with the thread, i.e., it
-        becomes more like a "light-weight process". 
+        becomes more like a "light-weight process".
       </p>
 
       <p>

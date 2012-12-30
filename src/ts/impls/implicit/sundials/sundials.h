@@ -29,7 +29,7 @@ typedef struct {
 
   /* PETSc peconditioner objects used by SUNDIALS */
   PetscInt                  cvode_type;   /* the SUNDIALS method, BDF or ADAMS  */
-  TSSundialsGramSchmidtType gtype; 
+  TSSundialsGramSchmidtType gtype;
   PetscReal                 linear_tol;
   PetscReal                 mindt,maxdt;
 

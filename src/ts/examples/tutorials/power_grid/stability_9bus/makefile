@@ -5,10 +5,10 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/stability_9bus
 EXAMPLESC       = ex9bus.c
-EXAMPLESF       = 
-EXAMPLESFH      = 
+EXAMPLESF       =
+EXAMPLESFH      =
 MANSEC          = TS
-DIRS            = 
+DIRS            =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

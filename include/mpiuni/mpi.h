@@ -1,6 +1,6 @@
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
- 
+
    NOT ALL THE MPI CALLS ARE IMPLEMENTED CORRECTLY! Only those needed in PETSc.
 
    For example,
@@ -60,7 +60,7 @@
   case, a proper implementation of MPI might as well be used. This is
   the reason the send to self is not implemented in MPIUNI, and never
   will be.
-  
+
   Proper implementations of MPI [for eg: MPICH & OpenMPI] are
   available for most machines. When these packages are available, Its
   generally preferable to use one of them instead of MPIUNI - even if
@@ -213,14 +213,14 @@ typedef int MPI_Op;
 */
 typedef int   (MPI_Copy_function)(MPI_Comm,int,void *,void *,void *,int *);
 typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
-typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *); 
+typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 
 /*
   In order that the PETSc MPIUNI can be used with another package that has its
   own MPIUni we map the following function names to a unique PETSc name. Those functions
   are defined in mpi.c and put into the libpetscsys.a or libpetsc.a library.
 
-  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the 
+  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the
   PETSc libraries unless the flag MPIUNI_AVOID_MPI_NAMESPACE is set.
 */
 #define MPI_Abort         Petsc_MPI_Abort
@@ -262,8 +262,8 @@ extern int    MPI_Comm_size(MPI_Comm,int*);
 extern int    MPI_Comm_rank(MPI_Comm,int*);
 
 #define MPI_Aint MPIUNI_INTPTR
-/* 
-    Routines we have replace with macros that do nothing 
+/*
+    Routines we have replace with macros that do nothing
     Some return error codes others return success
 */
 
@@ -693,7 +693,7 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 #define MPI_Graph_map(comm,a,b,c,d) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Get_processor_name(name,result_len) \
      (MPIUNI_Memcpy(name,"localhost",9*sizeof(char)),name[10] = 0,*(result_len) = 10)
-#define MPI_Errhandler_create(function,errhandler) (*(errhandler) = (MPI_Errhandler) 0, MPI_SUCCESS)    
+#define MPI_Errhandler_create(function,errhandler) (*(errhandler) = (MPI_Errhandler) 0, MPI_SUCCESS)
 #define MPI_Errhandler_set(comm,errhandler) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (errhandler),\

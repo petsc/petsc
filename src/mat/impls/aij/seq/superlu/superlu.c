@@ -25,14 +25,14 @@ EXTERN_C_BEGIN
 #include <slu_cdefs.h>
 #else
 #include <slu_zdefs.h>
-#endif  
+#endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
 #include <slu_sdefs.h>
 #else
 #include <slu_ddefs.h>
-#endif  
-#endif  
+#endif
+#endif
 #include <slu_util.h>
 EXTERN_C_END
 
@@ -195,18 +195,18 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
     /* Compute the incomplete factorization, condition number and pivot growth */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C, 
+    cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
            &lu->mem_usage, &lu->stat, &sinfo);
 #else
-    zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C, 
+    zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r,lu->etree, lu->equed, lu->R, lu->C,
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
            &lu->mem_usage, &lu->stat, &sinfo);
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-    sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C, 
-          &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, 
+    sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+          &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
           &lu->mem_usage, &lu->stat, &sinfo);
 #else
     dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -373,11 +373,11 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
            &lu->mem_usage, &lu->stat, &info);
 #endif
 #endif
-  } else if (A->factortype == MAT_FACTOR_ILU){ 
+  } else if (A->factortype == MAT_FACTOR_ILU){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
     cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
-           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, 
+           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
            &lu->mem_usage, &lu->stat, &info);
 #else
     zgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -387,7 +387,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
     sgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
-           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, 
+           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond,
            &lu->mem_usage, &lu->stat, &info);
 #else
     dgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -634,7 +634,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
     ierr = PetscOptionsBool("-mat_superlu_symmetricmode","SymmetricMode","None",(PetscBool)lu->options.SymmetricMode,&flg,0);CHKERRQ(ierr);
-    if (flg) lu->options.SymmetricMode = YES; 
+    if (flg) lu->options.SymmetricMode = YES;
     ierr = PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&real_input,&flg);CHKERRQ(ierr);
     if (flg) lu->options.DiagPivotThresh = (double) real_input;
     ierr = PetscOptionsBool("-mat_superlu_pivotgrowth","PivotGrowth","None",(PetscBool)lu->options.PivotGrowth,&flg,0);CHKERRQ(ierr);

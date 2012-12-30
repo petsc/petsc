@@ -46,7 +46,7 @@ int main(int argc,char **args)
     ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
     rowidx = 0; colidx = 1; v = 2.0;
     ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
-    
+
     rowidx = 1; colidx = 0; v = 2.0;
     ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
     rowidx = 1; colidx = 1; v = 3.0;
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %G\n",norm);CHKERRQ(ierr);
-  
+
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);

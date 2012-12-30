@@ -5,10 +5,10 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = 
-SOURCEC   = send.c 
+CPPFLAGS  =
+SOURCEC   = send.c
 SOURCEF   =
-SOURCEH   = socket.h 
+SOURCEH   = socket.h
 MANSEC    = Viewer
 LIBBASE   = libpetscsys
 DIRS      = matlab

@@ -11,7 +11,7 @@ PetscVecAssemblyBegin(b);
 PetscVecAssemblyEnd(b);
 PetscView(b);
 #
-#    Create a matrix 
+#    Create a matrix
 A = PetscMat();
 PetscMatSetType(A,"seqaij");
 PetscMatSetSizes(A,10,10,10,10);

@@ -1,7 +1,7 @@
 static const char help[] = "Tests PetscShell usage\n";
 #include <petsc.h>
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestACall"
 PetscErrorCode  TestACall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -11,7 +11,7 @@ PetscErrorCode  TestACall(PetscShell component, const char* message) {
   PetscFunctionReturn(0);
 }/* TestACall() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestBInitialize"
 PetscErrorCode  TestBInitialize(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -21,7 +21,7 @@ PetscErrorCode  TestBInitialize(PetscShell component, const char* message) {
   PetscFunctionReturn(0);
 }/* TestBInitialize() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestBCall"
 PetscErrorCode  TestBCall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -31,7 +31,7 @@ PetscErrorCode  TestBCall(PetscShell component, const char* message) {
   PetscFunctionReturn(0);
 }/* TestBCall() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestCInitialize"
 PetscErrorCode  TestCInitialize(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -41,7 +41,7 @@ PetscErrorCode  TestCInitialize(PetscShell component, const char* message) {
   PetscFunctionReturn(0);
 }/* TestCInitialize() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestCCall"
 PetscErrorCode  TestCCall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -51,7 +51,7 @@ PetscErrorCode  TestCCall(PetscShell component, const char* message) {
   PetscFunctionReturn(0);
 }/* TestCCall() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "main"
 PetscErrorCode main(int argc, char *argv[]) {
   PetscShell       shell, a = PETSC_NULL, b = PETSC_NULL;
@@ -69,7 +69,7 @@ PetscErrorCode main(int argc, char *argv[]) {
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Registering dependence: TestIIB --> TestIB\n");CHKERRQ(ierr);
   ierr = PetscShellRegisterDependence(shell, "TestIIB", "TestIB");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Registering dependence: TestIIA --> TestIA\n");CHKERRQ(ierr);
-  ierr = PetscShellRegisterDependence(shell, "TestIIA", "TestIA");CHKERRQ(ierr); 
+  ierr = PetscShellRegisterDependence(shell, "TestIIA", "TestIA");CHKERRQ(ierr);
   /**/
   ierr = PetscShellCreate(((PetscObject)shell)->comm, &a);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)a, "call", "call", (void (*)(void))TestACall);CHKERRQ(ierr);
@@ -93,12 +93,12 @@ PetscErrorCode main(int argc, char *argv[]) {
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Viewing top-level shell:\n");CHKERRQ(ierr);
   ierr = PetscShellView(shell, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   conf = "initialize";
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Visiting with message '%s':\n", conf);CHKERRQ(ierr);  
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Visiting with message '%s':\n", conf);CHKERRQ(ierr);
   ierr = PetscShellVisit(shell, conf);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Viewing top-level shell:\n");CHKERRQ(ierr);
   ierr = PetscShellView(shell, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   conf = "configure";
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Visiting with message '%s':\n", conf);CHKERRQ(ierr);  
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Visiting with message '%s':\n", conf);CHKERRQ(ierr);
   ierr = PetscShellVisit(shell, conf);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);

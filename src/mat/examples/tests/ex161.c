@@ -28,7 +28,7 @@ int main(int argc,char **argv) {
   ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
- 
+
   /* Create R */
   ierr = MatCreate(PETSC_COMM_SELF,&R);CHKERRQ(ierr);
   ierr = MatSetSizes(R,2,4,2,4);CHKERRQ(ierr);
@@ -50,9 +50,9 @@ int main(int argc,char **argv) {
   ierr = MatSetOptionsPrefix(C,"ARt_");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
- 
+
   /* Create MatTransposeColoring from symbolic C=A*R^T */
-  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr); 
+  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
   ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
@@ -86,7 +86,7 @@ int main(int argc,char **argv) {
   ierr = MatDestroy(&C_sparse);CHKERRQ(ierr);
   ierr = MatDestroy(&Rt_dense);CHKERRQ(ierr);
   ierr = MatTransposeColoringDestroy(&matcoloring);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr); 
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* Test PtAP = P^T*A*P, P = R^T */
   ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&P);CHKERRQ(ierr);

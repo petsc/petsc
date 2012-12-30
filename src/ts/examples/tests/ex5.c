@@ -280,7 +280,7 @@ int main(int argc,char **argv)
   /*Define what to print for ts_monitor option*/
   PetscBool  monitor_off = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
-  if (!monitor_off){  
+  if (!monitor_off){
     ierr = TSMonitorSet(ts,Monitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
@@ -755,11 +755,11 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  
+
   ierr = VecGetArray(T,&array);CHKERRQ(ierr);
   if (!rank){printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);}
   ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
-    
+
   if (user->drawcontours){
     ierr = VecView(T,viewer);CHKERRQ(ierr);
   }

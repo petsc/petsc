@@ -11,10 +11,10 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-  
+
 #define DEFAULT_BUCKET_SIZE		1000
 #define DEFAULT_DERIV_SIZE		sizeof(void*)
-  
+
 static int bucket_size = 0;
 static int deriv_size = 0;
 
@@ -31,7 +31,7 @@ static int nCount = 0;
 
 
 void* ad_adic_deriv_init(int dsize, int bsize)
-{ 
+{
   if (!dsize) {
     deriv_size = DEFAULT_DERIV_SIZE;
   } else {
@@ -42,11 +42,11 @@ void* ad_adic_deriv_init(int dsize, int bsize)
   } else {
     bucket_size = bsize;
   }
-  
+
   curBucket = (genlist_t*)malloc(deriv_size * bucket_size);
   curBucket->next = 0;
   curBucket->prev = 0;
-  
+
   freeList = 0;
   bucketList = curBucket;
   nCount = 0;
@@ -69,7 +69,7 @@ void ad_adic_deriv_final(void)
 
 void* ad_adic_deriv_alloc(void)
 {
-  
+
 #if defined(DEBUG)
   static 	count = 0;
   if (++count >= gdebug.nTokens) {
@@ -77,7 +77,7 @@ void* ad_adic_deriv_alloc(void)
     count = 0;
   }
 #endif
-  
+
   if (freeList) {
     void* pobj = freeList;
     freeList = freeList->next;
@@ -105,7 +105,7 @@ void ad_adic_deriv_free(void* ptr)
     count = 0;
   }
 #endif
-  
+
   genlist_t*	list = freeList;
   freeList = (genlist_t*)ptr;
   freeList->next = list;

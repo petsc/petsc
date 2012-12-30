@@ -370,9 +370,9 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
     if (dd.dim>1) { yloc = dd.p+1; }
     if (dd.dim>2) { zloc = dd.p+1; }
     ii=0;
-    for (k=0;k<zloc;k++) { 
-      for (j=0;j<yloc;j++) { 
-        for (i=1;i<xloc;i++) { 
+    for (k=0;k<zloc;k++) {
+      for (j=0;j<yloc;j++) {
+        for (i=1;i<xloc;i++) {
           indexg[ii]=k*xloc*yloc+j*xloc+i;
           ii++;
         }
@@ -440,7 +440,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
           for (k=0;k<j;k++) { colsg[k] = indexg[cols[k]]; }
           ierr = MatSetValues(temp_local_mat,1,&indexg[i],j,colsg,vals,ADD_VALUES);CHKERRQ(ierr);
           ierr = MatRestoreRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals);CHKERRQ(ierr);
-        } 
+        }
       }
     }
   }
@@ -503,7 +503,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
     }
   }
 
-  /* Weights for 1D quadrature */ 
+  /* Weights for 1D quadrature */
   ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->rhoGL);CHKERRQ(ierr);
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
@@ -526,7 +526,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
     glldata->A[i]=glldata->A[i-1]+p+1;
   }
   for (j=1;j<p;j++) {
-    x=glldata->zGL[j]; 
+    x=glldata->zGL[j];
     z0=1.0;
     z1=x;
     for (n=1;n<p;n++) {
@@ -553,7 +553,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
     }
   }
   for (j=1;j<p+1;j++) {
-    x=glldata->zGL[j]; 
+    x=glldata->zGL[j];
     z0=1.0;
     z1=x;
     for (n=1;n<p;n++) {
@@ -566,7 +566,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
     glldata->A[0][j]=glldata->A[j][0];
   }
   for (j=0;j<p;j++) {
-    x=glldata->zGL[j]; 
+    x=glldata->zGL[j];
     z0=1.0;
     z1=x;
     for (n=1;n<p;n++) {
@@ -746,13 +746,13 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
   PetscFunctionBeginUser;
   /* Compute some stuff of Gauss-Legendre-Lobatto quadrature rule */
   ierr = GLLStuffs(dd,&gll);CHKERRQ(ierr);
-  /* Compute matrix of subdomain Neumann problem */ 
+  /* Compute matrix of subdomain Neumann problem */
   ierr = ComputeSubdomainMatrix(dd,gll,&local_mat);CHKERRQ(ierr);
-  /* Compute global mapping of local dofs */ 
+  /* Compute global mapping of local dofs */
   ierr = ComputeMapping(dd,&matis_map);CHKERRQ(ierr);
-  /* Create MATIS object needed by BDDC */ 
+  /* Create MATIS object needed by BDDC */
   ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,&temp_A);CHKERRQ(ierr);
-  /* Set local subdomain matrices into MATIS object */ 
+  /* Set local subdomain matrices into MATIS object */
   ierr = MatScale(local_mat,dd.scalingfactor);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
   /* Call assembly functions */
@@ -847,7 +847,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   ierr = PCISSetSubdomainScalingFactor(pc,dd.scalingfactor);CHKERRQ(ierr);
 
   /* Dofs splitting
-     Simple stride-1 IS 
+     Simple stride-1 IS
      It is not needed since, by default, PCBDDC assumes a stride-1 split */
   ierr = PetscMalloc(1*sizeof(IS),&bddc_dofs_splitting);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,localsize,0,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
@@ -866,13 +866,13 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   ierr = PCBDDCSetLocalAdjacencyGraph(pc,localsize,xadj,adjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
 
   /* Neumann/Dirichlet indices on the global boundary */
-  if (dd.DBC_zerorows) { 
+  if (dd.DBC_zerorows) {
     /* Only in case you eliminate some rows matrix with zerorows function, you need to set dirichlet indices into PCBDDC data */
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS);CHKERRQ(ierr);
     ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
     ierr = PCBDDCSetDirichletBoundaries(pc,dirichletIS);CHKERRQ(ierr);
   } else {
-    if (dd.pure_neumann) { 
+    if (dd.pure_neumann) {
       /* In such a case, all interface nodes lying on the global boundary are neumann nodes */
       ierr = ComputeSpecialBoundaryIndices(dd,PETSC_NULL,&neumannIS);CHKERRQ(ierr);
       ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
@@ -883,7 +883,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
       ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
     }
   }
- 
+
   /* Pass null space information to BDDC (don't pass it via MatSetNullSpace!) */
   if(dd.pure_neumann) {
     MatNullSpace nsp;
@@ -981,7 +981,7 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   }
   PetscFunctionReturn(0);
 }
- 
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -1017,9 +1017,9 @@ int main(int argc,char **args)
   ierr = VecDuplicate(bddc_solution,&bddc_rhs);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&fetidp_solution_all);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&exact_solution);CHKERRQ(ierr);
-  /* create and customize KSP/PC for BDDC */ 
+  /* create and customize KSP/PC for BDDC */
   ierr = ComputeKSPBDDC(dd,A,&KSPwithBDDC);CHKERRQ(ierr);
-  /* create KSP/PC for FETIDP */ 
+  /* create KSP/PC for FETIDP */
   ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
   /* create random exact solution */
   ierr = VecSetRandom(exact_solution,PETSC_NULL);CHKERRQ(ierr);

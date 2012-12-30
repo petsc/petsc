@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_log
   exception number -> ADINTR_LOG
-  exceptional code -> 
+  exceptional code ->
 
   */
 
@@ -45,7 +45,7 @@ adintr_log (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

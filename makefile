@@ -1,5 +1,5 @@
 #
-# This is the makefile for compiling PETSc. See 
+# This is the makefile for compiling PETSc. See
 # http://www.mcs.anl.gov/petsc/documentation/installation.html for directions on installing PETSc.
 # See also conf for additional commands.
 #
@@ -120,9 +120,9 @@ build: chk_makej
 # Builds PETSc test examples for a given architecture
 #
 check: test
-test: 
+test:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
-testx: 
+testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
@@ -140,15 +140,15 @@ testx_build:
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
 
-testexamples: info 
+testexamples: info
 	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C  tree
 	-@echo "Completed compiling and running test examples"
 	-@echo "========================================="
-testfortran: info 
+testfortran: info
 	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
 	-@echo "========================================="
 	-@echo "Due to different numerical round-off on certain"
@@ -162,15 +162,15 @@ testfortran: info
             echo "Error: No FORTRAN compiler available"; \
           fi
 	-@echo "========================================="
-testexamples_uni: info 
+testexamples_uni: info
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X_MPIUni  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X_MPIUni  tree
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
-testfortran_uni: info 
+testfortran_uni: info
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR FORTRAN EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
@@ -236,7 +236,7 @@ allfortranstubs:
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
-	-@find . -type d -name ftn-auto | xargs rm -rf 
+	-@find . -type d -name ftn-auto | xargs rm -rf
 cmakegen:
 	-@${PYTHON} config/cmakegen.py
 #
@@ -325,8 +325,8 @@ deletemanualpages: chk_loc
           ${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
         fi
 
-allcleanhtml: 
-	-${RM} include/adic/*.h.html 
+allcleanhtml:
+	-${RM} include/adic/*.h.html
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc
@@ -377,31 +377,31 @@ createfastbuild:
 ###########################################################
 #
 #  See script for details
-# 
-gcov: 
+#
+gcov:
 	-@${PETSC_DIR}/bin/maint/gcov.py -run_gcov
 
-mergegcov: 
+mergegcov:
 	-@${PETSC_DIR}/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
-allrcslabel: 
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree 
+allrcslabel:
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree
 #
 #   The commands below are for generating ADIC versions of the code;
 # they are not currently used.
 #
 alladicignore:
 	-@${RM} ${INSTALL_LIB_DIR}/adicignore
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree
 
 alladic:
 	-@echo "Beginning to compile ADIC source code in all directories"
 	-@echo "Using ADIC compiler: ${ADIC_CC} ${CCPPFLAGS}"
 	-@echo "========================================="
 	-@cd include ; \
-           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petscsys.h 
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
+           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petscsys.h
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree
 
 alladiclib:
 	-@echo "Beginning to compile ADIC libraries in all directories"
@@ -426,7 +426,7 @@ alladiclib:
 #
 # Some macros to check if the fortran interface is up-to-date.
 #
-countfortranfunctions: 
+countfortranfunctions:
 	-@cd ${PETSC_DIR}/src/fortran; egrep '^void' custom/*.c auto/*.c | \
 	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
@@ -464,7 +464,7 @@ checkbadfortranstubs:
 	for OBJ in $$_p_OBJ; do \
 	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
-	done 
+	done
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #
@@ -483,8 +483,8 @@ exercises:
 	-@echo "========================================="
 	-@echo "Generating HTML tutorial exercises"
 	-@${RM} docs/pageform.txt
-	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt 
-	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt 
+	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt
+	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt
 	-@echo "access_format=short"                        >> docs/pageform.txt
 	-@echo "startpage=../exercises/introduction.htm"  >> docs/pageform.txt
 	-@echo "NONE title=\"Introduction\" command=link src=../exercises/introduction.htm" >> docs/pageform.txt
@@ -492,7 +492,7 @@ exercises:
 	-@echo "========================================="
 	-@${OMAKE} PETSC_DIR=${PETSC_DIR} ACTION=pagemaker tree
 	-@echo "Completed HTML for individual directories"
-	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt; 
+	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt;
 	-@echo "NONE title=\"PETSc Documentation\" command=link src=../index.html target=replace" >> docs/pageform.txt
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="

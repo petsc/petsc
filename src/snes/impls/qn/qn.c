@@ -30,7 +30,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNApply_Broyden"
-PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, Vec D, Vec Dold) 
+PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, Vec D, Vec Dold)
 {
   PetscErrorCode     ierr;
   SNES_QN            *qn = (SNES_QN*)snes->data;
@@ -653,7 +653,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 
 .keywords: SNES, SNESQN, restart, type, set SNESLineSearch
 @*/
-PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) 
+PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -687,7 +687,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 .keywords: SNES, SNESQN, scaling, type, set SNESLineSearch
 @*/
 
-PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype) 
+PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

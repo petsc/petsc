@@ -1197,7 +1197,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   ierr = PetscMemzero(ocols,nx*nc*sizeof(PetscInt));CHKERRQ(ierr);
 
   /*
-        note should be smaller for first and last process with no periodic 
+        note should be smaller for first and last process with no periodic
         does not handle dfill
   */
   cnt  = 0;
@@ -1215,8 +1215,8 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
       cnt++;
     }
   }
- /* coupling with process to the right */ 
-  for (i=nx-s; i<nx; i++){ 
+ /* coupling with process to the right */
+  for (i=nx-s; i<nx; i++){
     for (j=0; j<nc; j++){
       ocols[cnt] = ((rank == (size-1)) ? 0 : (i - nx + s + 1)*(ofill[j+1] - ofill[j]));
       cols[cnt]  = nc + (s + nx - i - 1)*(ofill[j+1] - ofill[j]);
@@ -1279,7 +1279,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         row++;
       }
     }
-    /* coupling with process to the right */ 
+    /* coupling with process to the right */
     for (i=xs+nx-s; i<xs+nx; i++){
       for (j=0; j<nc; j++){
         cnt = 0;

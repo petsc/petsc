@@ -140,7 +140,7 @@ PetscErrorCode SolveSubproblem(SNES snes)
 extern PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
 static PetscInt CountGood = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MonitorRange"
 PetscErrorCode  MonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
 {

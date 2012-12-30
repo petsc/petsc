@@ -20,7 +20,7 @@ EXTERN_C_BEGIN
 
     This provides an interface to Tim Davis' AMD package (used by UMFPACK, CHOLMOD, MATLAB, etc).
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_AMD"
 PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {

@@ -35,7 +35,7 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
  * Revision: 4.0-BETA, October 24, 1995
  * Original code developed by John D. McCalpin
  *
- * This program measures memory transfer rates in MB/s for simple 
+ * This program measures memory transfer rates in MB/s for simple
  * computational kernels coded in C.  These numbers reveal the quality
  * of code generation for simple uncacheable kernels as well as showing
  * the cost of floating-point operations relative to memory accesses.
@@ -43,7 +43,7 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
  * INSTRUCTIONS:
  *
  *	1) Stream requires a good bit of memory to run.  Adjust the
- *          value of 'N' (below) to give a 'timing calibration' of 
+ *          value of 'N' (below) to give a 'timing calibration' of
  *          at least 20 clock-ticks.  This will provide rate estimates
  *          that should be good to about 5% precision.
  */
@@ -134,7 +134,7 @@ int main(int argc,char *argv[])
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
 
-  if  ( (quantum = checktick()) >= 1) 
+  if  ( (quantum = checktick()) >= 1)
     PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity/precision appears to be "
            "%d microseconds.\n", quantum);
   else

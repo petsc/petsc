@@ -1,4 +1,4 @@
-/* 
+/*
    This is the definition of the Mathematica viewer structure.
 */
 

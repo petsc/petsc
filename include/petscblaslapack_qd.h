@@ -67,7 +67,7 @@
 #  define LAPACKsyevx_ cheevx_
 #  define LAPACKsygv_  chegv_
 #  define LAPACKsygvx_ chegvx_
-#  define LAPACKpttrs_ cpttrs_ 
+#  define LAPACKpttrs_ cpttrs_
 #endif
 
 #endif

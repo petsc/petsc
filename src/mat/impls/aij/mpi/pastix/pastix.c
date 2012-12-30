@@ -192,7 +192,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
       }
     }
   }
-  
+
   icntl=-1;
   check = 0;
   ierr = PetscOptionsInt("-mat_pastix_check","Check the matrix 0 : no, 1 : yes)","None",check,&icntl,&flg);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
               lu->rhsnbr,
               lu->iparm,
               lu->dparm);
-  
+
   if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER] );
 
   if (lu->commSize == 1){

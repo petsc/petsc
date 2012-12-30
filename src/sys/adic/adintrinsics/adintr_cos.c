@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_cos
   exception number -> ADINTR_COS
-  exceptional code -> 
+  exceptional code ->
 
   */
 
@@ -43,7 +43,7 @@ adintr_cos (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

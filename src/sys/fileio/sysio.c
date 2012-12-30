@@ -323,7 +323,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   if (functionload) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLSym(PETSC_NULL,fname,(void**)p);CHKERRQ(ierr);
-#else 
+#else
     *(void**)p = PETSC_NULL;
 #endif
   }
@@ -646,7 +646,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   if (functionload) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,PETSC_NULL,fname,(void**)ptmp);CHKERRQ(ierr);
-#else 
+#else
     *(void**)ptmp = PETSC_NULL;
 #endif
   }

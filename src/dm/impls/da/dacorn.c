@@ -145,7 +145,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 
    Input Parameters:
 +  da - the distributed array
-.  nf - coordinate number for the DMDA (0, 1, ... dim-1), 
+.  nf - coordinate number for the DMDA (0, 1, ... dim-1),
 -  name - the name of the coordinate
 
   Level: intermediate

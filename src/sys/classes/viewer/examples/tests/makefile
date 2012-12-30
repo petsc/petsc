@@ -1,6 +1,6 @@
 
-CFLAGS	        = 
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR  = src/sys/classes/viewer/examples/tests/
@@ -17,7 +17,7 @@ ex3: ex3.o   chkopts
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3
 
-TESTEXAMPLES_C_X	  = 
+TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_C_X_MPIUNI = ex3.PETSc runex3 ex3.rm
 
 include ${PETSC_DIR}/conf/test

@@ -70,13 +70,13 @@ testexamples_AFTERIMAGE:
 testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
 
-buildexamples_MPI: 
+buildexamples_MPI:
 	-@${OMAKE} testexamples_MPI TESTEXAMPLES_MPI=`echo ${TESTEXAMPLES_MPI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_BLASLAPACK: 
+buildexamples_BLASLAPACK:
 	-@${OMAKE} testexamples_BLASLAPACK TESTEXAMPLES_BLASLAPACK=`echo ${TESTEXAMPLES_BLASLAPACK} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_C: 
+buildexamples_C:
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_C_X: 
+buildexamples_C_X:
 	-@${OMAKE} testexamples_C_X TESTEXAMPLES_C_X=`echo ${TESTEXAMPLES_C_X} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_Fortran:
 	-@${OMAKE} testexamples_Fortran TESTEXAMPLES_FORTRAN=`echo ${TESTEXAMPLES_FORTRAN} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`

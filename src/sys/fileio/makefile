@@ -1,7 +1,7 @@
 
-ALL: lib 
+ALL: lib
 
-CFLAGS    = 
+CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
 SOURCEC	  = ffpath.c ftest.c ghome.c mpiuopen.c rpath.c \
@@ -10,7 +10,7 @@ SOURCEF	  =
 SOURCEH	  = mprint.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  =
 LOCDIR	  = src/sys/fileio/
 
 include ${PETSC_DIR}/conf/variables

@@ -18,10 +18,10 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr); 
+  ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
   (*C)->rmap->bs = P->cmap->bs;
   (*C)->cmap->bs = P->cmap->bs;
- 
+
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
   c = (Mat_SeqAIJ *)((*C)->data);
@@ -269,7 +269,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
   /* flag 'sparse_axpy' determines which implementations to be used:
-       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P; 
+       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P;
        1: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
   ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but slower MatPtAPNumeric()","",sparse_axpy,&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -309,7 +309,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
   ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ;
-  
+
   ptap->api = api;
   ptap->apj = apj;
 
@@ -317,7 +317,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatDestroy(&Pt);CHKERRQ(ierr);
   ierr = MatDestroy(&AP);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
-  ierr = PetscInfo2((*C),"given fill %G, use scalable %d\n",fill,sparse_axpy);CHKERRQ(ierr); 
+  ierr = PetscInfo2((*C),"given fill %G, use scalable %d\n",fill,sparse_axpy);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

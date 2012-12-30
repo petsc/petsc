@@ -1039,12 +1039,12 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
       PetscPrintf(wcomm,"[%d]%s square graph done\n",mype,__FUNCT__);
       /* check for symetry */
       if ( verbose > 4 ) {
-        
+
       }
     }
   }
   else Gmat2 = Gmat1;
-  
+
   /* get MIS aggs */
   /* randomize */
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &permute );CHKERRQ(ierr);
@@ -1064,7 +1064,7 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
     }
   }
   ierr = PetscFree( bIndexSet );CHKERRQ(ierr);
-  
+
   if ( verbose > 1 ) {
     PetscPrintf(wcomm,"[%d]%s coarsen graph\n",mype,__FUNCT__);
   }
@@ -1118,7 +1118,7 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
   if ( verbose > 2 ) {
     PetscPrintf(wcomm,"[%d]%s PCGAMGCoarsen_AGG done\n",mype,__FUNCT__);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1343,7 +1343,7 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
         ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
         ierr = PetscRandomDestroy( &rctx );CHKERRQ(ierr);
       }
-      
+
       /* zeroing out BC rows -- needed for crazy matrices */
       {
         PetscInt Istart,Iend,ncols,jj,Ii;
@@ -1352,7 +1352,7 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
         for ( Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++ ) {
           ierr = MatGetRow(Amat,Ii,&ncols,0,0);CHKERRQ(ierr);
           if( ncols <= 1 ) {
-            ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );CHKERRQ(ierr); 
+            ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );CHKERRQ(ierr);
           }
           ierr = MatRestoreRow(Amat,Ii,&ncols,0,0);CHKERRQ(ierr);
         }
@@ -1561,7 +1561,7 @@ PetscErrorCode  PCCreateGAMG_AGG( PC pc )
   PC_GAMG_AGG      *pc_gamg_agg;
 
   PetscFunctionBegin;
-  
+
   if( pc_gamg->subctx ){
     /* call base class */
     ierr = PCDestroy_GAMG( pc );CHKERRQ(ierr);

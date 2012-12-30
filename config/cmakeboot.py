@@ -50,7 +50,7 @@ class PETScMaker(script.Script):
  def setupModules(self):
    self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
-   self.setCompilers  = self.framework.require('config.setCompilers',         None)   
+   self.setCompilers  = self.framework.require('config.setCompilers',         None)
    self.arch          = self.framework.require('PETSc.utilities.arch',        None)
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
@@ -65,7 +65,7 @@ class PETScMaker(script.Script):
    self.libraries     = self.framework.require('config.libraries',            None)
    self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
+   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 

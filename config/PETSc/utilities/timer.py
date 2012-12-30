@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-timer=<default,mpi,ibm,dec,asci-red,nt>',  nargs.ArgString(None, None, 'Use high precision timer'))
@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
     elif self.useTimer != 'default':
       raise RuntimeError('Unknown Timer type specified :'+self.framework.argDB['with-timer'])
     return
-  
+
   def configure(self):
     self.executeTest(self.configureTimers)
     return

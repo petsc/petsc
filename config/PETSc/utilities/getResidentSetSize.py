@@ -14,10 +14,10 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return self.strmsg
-     
+
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-proc-filesystem=<bool>', nargs.ArgBool(None, 1, 'Use the /proc filesystem for system statistics'))    
+    help.addArgument('PETSc', '-with-proc-filesystem=<bool>', nargs.ArgBool(None, 1, 'Use the /proc filesystem for system statistics'))
     return
 
   def setupDependencies(self, framework):
@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
     self.functions.functions.append('getrusage')
     self.functions.functions.append('sbreak')
     self.functions.functions.append('getpagesize')
-    self.functions.functions.append('task_info')            
+    self.functions.functions.append('task_info')
     return
 
   def configureMemorySize(self):
@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
     if self.functions.haveFunction('sbreak'):
       self.addDefine('USE_SBREAK_FOR_SIZE', 1)
       return
-    
+
     # /proc is used on Linux systems
     if self.argDB['with-proc-filesystem'] and not self.framework.argDB['with-batch']:
       if os.path.isfile(os.path.join('/proc',str(os.getpid()),'statm')):
@@ -51,7 +51,7 @@ class Configure(config.base.Configure):
           return
         except:
           pass
-      
+
     # task_info() is  used on Mach and darwin (MacOS X) systems
     if self.functions.haveFunction('task_info') and not self.framework.argDB['with-batch']:
       (output,status) = self.outputRun('#include <mach/mach.h>\n#include <stdlib.h>\n#include <stdio.h>\n','''#define  ARRAYSIZE 10000000
@@ -84,13 +84,13 @@ class Configure(config.base.Configure):
             printf("task_info() returned a reasonable resident size\\n");
             return 0;
           }
-          return 4;''')      
+          return 4;''')
       if status == 0:
         self.framework.logPrint("Using task_info() for PetscMemoryGetCurrentUsage()")
         return
       self.delDefine('HAVE_TASK_INFO')
       self.framework.logPrint("task_info() does not work\n"+output)
-      
+
     # getrusage() is still used on BSD systems
     if self.functions.haveFunction('getrusage') and not self.framework.argDB['with-batch']:
       if self.functions.haveFunction('getpagesize'):
@@ -147,7 +147,7 @@ class Configure(config.base.Configure):
         self.framework.logPrint("output from getrusage()")
         self.framework.logPrint(output)
         return
-      
+
       # do not provide a way to get resident set size
       self.delDefine('HAVE_GETRUSAGE')
     return

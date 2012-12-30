@@ -27,7 +27,7 @@ class Configure(PETSc.package.NewPackage):
     yield os.path.join('/usr','local')
     yield os.path.join('/opt','local')
     return
-  
+
   def Install(self):
     raise RuntimeError('--download-valgrind not supported\n')
 

@@ -3,9 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =  
+SOURCEC  =
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscsys
 DIRS     = rand rand48 sprng
 LOCDIR   = src/sys/random/impls/

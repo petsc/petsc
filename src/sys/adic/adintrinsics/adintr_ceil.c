@@ -2,7 +2,7 @@
   macro expansion:
   function_driver -> adintr_ceil
   exception number -> ADINTR_CEIL
-  exceptional code -> 
+  exceptional code ->
 *fx = ADIntr_Partials[ADINTR_CEIL][ADINTR_FX];
 
   */
@@ -46,7 +46,7 @@ adintr_ceil (int deriv_order, int file_number, int line_number,
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }
-     
+
      va_end(argptr);
 }
 #if defined(__cplusplus)

@@ -42,7 +42,7 @@
 [DEFINES]
 	PetscAbsScalar = fabs
 	PetscExpScalar = exp
-        PetscFunctionBegin = 
+        PetscFunctionBegin =
 	PetscPowScalar = pow
 	PetscSqrtScalar = sqrt
         PETSC_TRUE         = 1
@@ -55,9 +55,9 @@
 
 [INACTIVE_FUNCTIONS]
 	erf
-	HorizVelocity 
-	VertVelocity 
-	Pressure  
+	HorizVelocity
+	VertVelocity
+	Pressure
 	CalcJunk
         PetscExpScalarPassive
         WSlab
@@ -69,7 +69,7 @@
         PassiveReal
 	PassiveScalar
         PetscReal
-        PetscBool 
+        PetscBool
         DMDALocalInfo
         MatStencil
         Mat

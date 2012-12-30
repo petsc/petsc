@@ -8,7 +8,7 @@
 */
 
 /*
-   This for PETSc where we KNOW that ad_grad_size is ad_GRAD_MAX thus we KNOW at COMPILE time the 
+   This for PETSc where we KNOW that ad_grad_size is ad_GRAD_MAX thus we KNOW at COMPILE time the
  size of the loops; by passing this information to the compiler it may compile faster code?
 */
 #if (ad_GRAD_MAX == 1)
@@ -35,12 +35,12 @@ void ad_grad_axpy_n(int, void*, ...);
                 for (iWiLlNeVeRCoNfLiCt = 0 ; iWiLlNeVeRCoNfLiCt < ad_GRAD_MAX ; iWiLlNeVeRCoNfLiCt++) {\
                     gz[iWiLlNeVeRCoNfLiCt] = 0.0;\
                 } }
-            
+
 #if defined(ad_grad_axpy_zero)
 #undef ad_grad_axpy_zero
 #endif
 #define ad_grad_axpy_zero(gz) ad_grad_axpy_0(gz)
-            
+
 #if defined(ad_grad_axpy_copy)
 #undef ad_grad_axpy_copy
 #endif
@@ -49,7 +49,7 @@ void ad_grad_axpy_n(int, void*, ...);
                 for (iWiLlNeVeRCoNfLiCt = 0 ; iWiLlNeVeRCoNfLiCt < ad_GRAD_MAX ; iWiLlNeVeRCoNfLiCt++) {\
                     gz[iWiLlNeVeRCoNfLiCt] = gx[iWiLlNeVeRCoNfLiCt];\
                 } }
-            
+
 #if defined(ad_grad_axpy_1)
 #undef ad_grad_axpy_1
 #endif

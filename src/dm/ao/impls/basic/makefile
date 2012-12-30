@@ -5,9 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = aobasic.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscdm
-DIRS     = 
+DIRS     =
 MANSEC   = AO
 LOCDIR   = src/dm/ao/impls/basic/
 

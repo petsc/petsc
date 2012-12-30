@@ -5,17 +5,17 @@
 
 PETSC_EXTERN PetscClassId PETSC_SHELL_CLASSID;
 
-/* 
-   There is only one type implementing PetscShell, 
-   so all the code is in the interface and implements only one class PETSCSHELL (below) 
+/*
+   There is only one type implementing PetscShell,
+   so all the code is in the interface and implements only one class PETSCSHELL (below)
    rather than using something like PETSCSHELL_BASIC, etc.
 */
-#define PETSCSHELL "petscshell" 
+#define PETSCSHELL "petscshell"
 
 
 /*S
      PetscShell - a simple interpreter of string messages.
-                  Responds to PetscShellCall(shell,message) by calling 
+                  Responds to PetscShellCall(shell,message) by calling
                   nameMessage(shell) or nameCall(shell,message),
                   where name is the shell's object name and functions nameMessage and nameCall
                   are attached to shell via PetscObjectComposeFunction() or found in a dynamic
@@ -57,7 +57,7 @@ PETSC_EXTERN PetscErrorCode PetscShellGetVisitor(PetscShell, PetscShell *);
 
 
 
-/* 
+/*
    This library deals with components and frameworks.
 
 PetscShell can (i) act as a  "framework" (more or less as before), or
@@ -135,6 +135,6 @@ with it using PetscObjectComposeFunction,
 or by setting the component's URL.
 There is a shorthand way of associating a URL to a component being
 attached to a framework: PetscShellyRegisterComponentURL.
-       
+
 */
 #endif

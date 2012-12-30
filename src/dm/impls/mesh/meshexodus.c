@@ -440,14 +440,14 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
 
   Input Parameters:
 + comm - The MPI communicator
-- filename - The ExodusII filename. Must be different on each processor 
+- filename - The ExodusII filename. Must be different on each processor
              (suggest using prefix-<rank>.gen or prefix-<rank>.exo)
 . dm  - The DM object representing the body
 
   Face Sets (Side Sets in Exodus terminology) are ignored
-  
+
   Interpolated meshes are not supported.
-  
+
   Level: beginner
 
 .keywords: mesh,ExodusII
@@ -516,7 +516,7 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
     ierr = ISRestoreTotalIndices(vsIS,&labels);CHKERRQ(ierr);
   }
   ierr = ex_put_init(exoid,title,num_dim,num_vertices,num_cells,num_cs_global,num_vs_global,0);
-  
+
   /*
     Write coordinates
   */
@@ -528,24 +528,24 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
     }
   }
   ierr = ex_put_coord(exoid,coord,&coord[num_vertices],&coord[2*num_vertices]);
-  
+
   /*
     Write cell set connectivity table and parameters
-    Compute the element number map 
+    Compute the element number map
     The element number map is not needed as long as the cell sets are of the type
     0    .. n1
     n1+1 .. n2
-    n2+1 ..n3 
+    n2+1 ..n3
     which is the case when a mesh is read from an exo file then distributed, but one never knows
   */
-  
+
   /*
     The following loop should be based on csIS and not csIS_global, but EXO has no
     way to write the block id's other than ex_put_elem_block
     and ensight is bothered if all cell set ID's are not on all files...
     Not a huge deal
   */
-    
+
   ierr = PetscMalloc(num_cells*sizeof(int),&elem_map);CHKERRQ(ierr);
   ierr = ISGetIndices(csIS_global,&csID);CHKERRQ(ierr);
   for (c_offset = 0,set = 0; set < num_cs_global; set++) {
@@ -556,14 +556,14 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Cell set %i: %i cells\n",csID[set],num_cell_in_set);CHKERRQ(ierr);
       ierr = PetscIntView(num_cell_in_set,cells,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
-    /* 
+    /*
       Add current block indices to elem_map. EXO uses fortran numbering
     */
     for (c = 0; c < num_cell_in_set; c++,c_offset++) {
       elem_map[c_offset] = cells[c]+1;
     }
     /*
-      We make an educated guess as to the type of cell. This misses out quads in 
+      We make an educated guess as to the type of cell. This misses out quads in
       a three-dimensional mesh.
       This most likely needs to be fixed by calling again ex_put_elem_block with
       the proper parameters
@@ -583,9 +583,9 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
       } else {
         cell_type = "UNKNOWN";
       }
-    }  
+    }
     ierr = ex_put_elem_block (exoid,csID[set],cell_type,num_cell_in_set,num_vertex_per_cell,num_cs_attr);
-    /* 
+    /*
       Build connectivity table of the current block
     */
     ierr = PetscMalloc(num_cell_in_set*num_vertex_per_cell*sizeof(int),&cs_connect);CHKERRQ(ierr);
@@ -599,29 +599,29 @@ PetscErrorCode DMMeshViewExodusSplit(DM dm,PetscInt exoid)
       ierr = ex_put_elem_conn(exoid,csID[set],cs_connect);
     }
     ierr = PetscFree(cs_connect);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(cellsIS,&cells);CHKERRQ(ierr);  
-    ierr = ISDestroy(&cellsIS);CHKERRQ(ierr); 
+    ierr = ISRestoreIndices(cellsIS,&cells);CHKERRQ(ierr);
+    ierr = ISDestroy(&cellsIS);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(csIS_global,&csID);CHKERRQ(ierr);
   ierr = ex_put_elem_num_map(exoid,elem_map);
   ierr = PetscFree(elem_map);CHKERRQ(ierr);
-  
+
   /*
-    Writing vertex sets 
-  */  
+    Writing vertex sets
+  */
   if (num_vs_global > 0) {
     ierr = ISGetIndices(vsIS_global,&vsID);CHKERRQ(ierr);
     for (set = 0; set < num_vs_global; set++) {
       ierr = DMMeshGetStratumSize(dm,"Vertex Sets",vsID[set],&num_vertex_in_set);CHKERRQ(ierr);
       ierr = ex_put_node_set_param(exoid,vsID[set],num_vertex_in_set,num_vs_attr);
-      
+
       ierr = DMMeshGetStratumIS(dm,"Vertex Sets",vsID[set],&verticesIS);CHKERRQ(ierr);
       ierr = ISGetIndices(verticesIS,(const PetscInt**)&vertices);CHKERRQ(ierr);
-      
+
       for (v = 0; v < num_vertex_in_set; v++) {
         vertices[v] -= num_cells-1;
       }
-      
+
       if (num_vertex_in_set > 0) {
         ierr = ex_put_node_set(exoid,vsID[set],vertices);
       }
@@ -725,7 +725,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
   ierr = VecSetSizes(v_local,num_vertices,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v_local);CHKERRQ(ierr);
   ierr = VecCreate(comm,&v_zero);CHKERRQ(ierr);
-  ierr = VecSetSizes(v_zero,num_vertices_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);  
+  ierr = VecSetSizes(v_zero,num_vertices_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,num_vertices,vertices,PETSC_OWN_POINTER,&is_local);CHKERRQ(ierr);
@@ -811,12 +811,12 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   ierr = PetscMalloc(setsize_local*sizeof(PetscInt),&setvertices_localtozero);CHKERRQ(ierr);
 
   if (rank == 0)  {
-    ierr = ISGetIndices(is_zero,(const PetscInt**)&setvertices_zero); 
+    ierr = ISGetIndices(is_zero,(const PetscInt**)&setvertices_zero);
   } else {
     ierr = PetscMalloc(setsize_zero*sizeof(PetscInt),&setvertices_zero);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast(setvertices_zero,setsize_zero,MPIU_INT,0,comm);
-  ierr = ISGetIndices(is_local,&setvertices_local);    
+  ierr = ISGetIndices(is_local,&setvertices_local);
 
 
   istart = 0;
@@ -824,10 +824,10 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
     j = allvertices[setvertices_local[i]-num_cells];
     /*
       j is the cell number in the seq mesh of the i-th vertex of the local vertex set.
-      Search for the matching vertex in vertex set. Because vertex in the zero set are usually 
+      Search for the matching vertex in vertex set. Because vertex in the zero set are usually
       numbered in ascending order, we start our search from the previous find.
 `   */
-        
+
     for (l = 0, k = istart; l < setsize_zero; l++,k = (l+istart)%setsize_zero) {
       if (setvertices_zero[k] == j) {
         break;
@@ -840,8 +840,8 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   if (rank == 0) {
     ierr = ISRestoreIndices(is_zero,(const PetscInt**)&setvertices_zero);CHKERRQ(ierr);
   } else {
-    ierr = PetscFree(setvertices_zero);CHKERRQ(ierr);   
-  }                 
+    ierr = PetscFree(setvertices_zero);CHKERRQ(ierr);
+  }
   /*
     Build the IS and Vec required to create the VecScatter
     A MUCH better way would be to use VecScatterCreateLocal and not create then destroy
@@ -852,7 +852,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   ierr = VecSetFromOptions(v_local);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&v_zero);CHKERRQ(ierr);
-  ierr = VecSetSizes(v_zero,setsize_zero*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);  
+  ierr = VecSetSizes(v_zero,setsize_zero*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,setsize_local,setvertices_localtozero,PETSC_OWN_POINTER,&is_localtozero);CHKERRQ(ierr);
@@ -935,7 +935,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
   ierr = VecSetSizes(v_local,num_cells,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v_local);CHKERRQ(ierr);
   ierr = VecCreate(comm,&v_zero);CHKERRQ(ierr);
-  ierr = VecSetSizes(v_zero,num_cells_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);  
+  ierr = VecSetSizes(v_zero,num_cells_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,num_cells,cells,PETSC_OWN_POINTER,&is_local);CHKERRQ(ierr);
@@ -1009,22 +1009,22 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
   ierr = PetscMalloc(setsize_local*sizeof(PetscInt),&setcells_localtozero);CHKERRQ(ierr);
 
   if (rank == 0)  {
-    ierr = ISGetIndices(is_zero,(const PetscInt**)&setcells_zero);    
+    ierr = ISGetIndices(is_zero,(const PetscInt**)&setcells_zero);
   } else {
     ierr = PetscMalloc(setsize_zero*sizeof(PetscInt),&setcells_zero);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast(setcells_zero,setsize_zero,MPIU_INT,0,comm);
-  ierr = ISGetIndices(is_local,&setcells_local);    
+  ierr = ISGetIndices(is_local,&setcells_local);
 
   istart = 0;
   for (i = 0; i < setsize_local; i++) {
     j = allcells[setcells_local[i]];
     /*
       j is the cell number in the seq mesh of the i-th cell of the local cell set.
-      Search for the matching cell in cell set. Because cells in the zero set are usually 
+      Search for the matching cell in cell set. Because cells in the zero set are usually
       numbered sequentially, we start our search from the previous find.
 `   */
-        
+
     for (l = 0, k = istart; l < setsize_zero; l++,k = (l+istart)%setsize_zero) {
       if (setcells_zero[k] == j) {
         break;
@@ -1037,8 +1037,8 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
   if (rank == 0) {
     ierr = ISRestoreIndices(is_zero,(const PetscInt**)&setcells_zero);CHKERRQ(ierr);
   } else {
-    ierr = PetscFree(setcells_zero);CHKERRQ(ierr);   
-  }                 
+    ierr = PetscFree(setcells_zero);CHKERRQ(ierr);
+  }
   /*
     Build the IS and Vec required to create the VecScatter
     A MUCH better way would be to use VecScatterCreateLocal and not create then destroy
@@ -1049,7 +1049,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
   ierr = VecSetFromOptions(v_local);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&v_zero);CHKERRQ(ierr);
-  ierr = VecSetSizes(v_zero,setsize_zero*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);  
+  ierr = VecSetSizes(v_zero,setsize_zero*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,setsize_local,setcells_localtozero,PETSC_OWN_POINTER,&is_localtozero);CHKERRQ(ierr);
@@ -1120,7 +1120,7 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
     for (c = 0; c < num_dof; c++) {
       ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
-      ierr = ex_put_nodal_var(exoid,step,exofield+c,num_vertices,vdof_array); 
+      ierr = ex_put_nodal_var(exoid,step,exofield+c,num_vertices,vdof_array);
       ierr = VecRestoreArray(vdof,&vdof_array);CHKERRQ(ierr);
       if (ierr != 0) {
         SETERRQ2(comm,PETSC_ERR_FILE_WRITE,"Unable to write to file id %i. ex_put_nodal_var returned %i",exoid,ierr);
@@ -1138,7 +1138,7 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
     num_vertices_zero = scatter->to_n;
 
     ierr = VecCreate(comm,&vdof_zero);CHKERRQ(ierr);
-    ierr = VecSetSizes(vdof_zero,num_vertices_zero,PETSC_DECIDE);CHKERRQ(ierr);  
+    ierr = VecSetSizes(vdof_zero,num_vertices_zero,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vdof_zero);CHKERRQ(ierr);
 
     for (c = 0; c < num_dof; c++) {
@@ -1150,7 +1150,7 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
         ierr = ex_put_nodal_var(exoid,step,exofield+c,num_vertices_zero,vdof_array);
         ierr = VecRestoreArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
       }
-    } 
+    }
     /*
       Clean up
     */
@@ -1221,7 +1221,7 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
   if (num_proc == 1) {
     for (c = 0; c < num_dof; c++) {
       ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
-      ierr = ex_get_nodal_var(exoid,step,exofield+c,num_vertices,vdof_array); 
+      ierr = ex_get_nodal_var(exoid,step,exofield+c,num_vertices,vdof_array);
       ierr = VecRestoreArray(vdof,&vdof_array);CHKERRQ(ierr);
       if (ierr != 0) {
         SETERRQ2(comm,PETSC_ERR_FILE_READ,"Unable to read file id %i. ex_put_nodal_var returned %i",exoid,ierr);
@@ -1240,7 +1240,7 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
     ierr = MPI_Bcast(&num_vertices_global,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
     ierr = VecCreate(comm,&vzero);CHKERRQ(ierr);
-    ierr = VecSetSizes(vzero,num_vertices_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);  
+    ierr = VecSetSizes(vzero,num_vertices_global*(rank==0),PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vzero);CHKERRQ(ierr);
 
     for (c = 0; c < num_dof; c++) {
@@ -1252,7 +1252,7 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
       ierr = VecScatterBegin(scatter,vzero,vdof,INSERT_VALUES,SCATTER_REVERSE);
       ierr = VecScatterEnd(scatter,vzero,vdof,INSERT_VALUES,SCATTER_REVERSE);
       ierr = VecStrideScatter(vdof,c,v,INSERT_VALUES);CHKERRQ(ierr);
-    } 
+    }
     /*
       Clean up
     */
@@ -1320,7 +1320,7 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
   ierr = MPI_Comm_rank(comm,&rank);
   ierr = VecGetBlockSize(v,&num_dof);
   ierr = PetscObjectGetComm((PetscObject) dm,&dmcomm);CHKERRQ(ierr);
-  
+
   ierr = DMMeshGetStratumSize(dm,"Vertex Sets",vsID,&num_vertices_in_set);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,num_vertices_in_set,&vdof);CHKERRQ(ierr);
 
@@ -1329,7 +1329,7 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
       for (c = 0; c < num_dof; c++) {
         ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
         ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
-        ierr = ex_put_nset_var(exoid,step,exofield+c,vsID,num_vertices_in_set,vdof_array); 
+        ierr = ex_put_nset_var(exoid,step,exofield+c,vsID,num_vertices_in_set,vdof_array);
         if (ierr != 0) {
           SETERRQ2(comm,PETSC_ERR_FILE_WRITE,"Unable to write to file id %i. ex_put_nset_var returned %i",exoid,ierr);
         }
@@ -1372,7 +1372,7 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
         }
         ierr = VecRestoreArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
       }
-    } 
+    }
     /*
       Clean up
     */
@@ -1446,7 +1446,7 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
     if (num_vertices_in_set > 0) {
       for (c = 0; c < num_dof; c++) {
         ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
-        ierr = ex_get_nset_var(exoid,step,exofield+c,vsID,num_vertices_in_set,vdof_array); 
+        ierr = ex_get_nset_var(exoid,step,exofield+c,vsID,num_vertices_in_set,vdof_array);
         if (ierr != 0) {
           SETERRQ2(comm,PETSC_ERR_FILE_READ,"Unable to read from file id %i. ex_put_nset_var returned %i",exoid,ierr);
         }
@@ -1490,7 +1490,7 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
       ierr = VecScatterEnd(scatter,vdof_zero,vdof,INSERT_VALUES,SCATTER_REVERSE);
 
       ierr = VecStrideScatter(vdof,c,v,INSERT_VALUES);CHKERRQ(ierr);
-    } 
+    }
     /*
       Clean up
     */
@@ -1556,9 +1556,9 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   ierr = PetscObjectGetComm((PetscObject) dm,&dmcomm);CHKERRQ(ierr);
   ierr = DMMeshGetLabelSize(dm,"Cell Sets",&num_cs);CHKERRQ(ierr);
   ierr = DMMeshGetStratumSize(dm,"height",0,&num_cells);CHKERRQ(ierr);
-  
+
   ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells,&vdof);CHKERRQ(ierr);
-  
+
   if (num_proc == 1) {
     ierr = DMMeshGetLabelSize(dm,"Cell Sets",&num_cs);CHKERRQ(ierr);
     ierr = DMMeshGetLabelIdIS(dm,"Cell Sets",&csIS);CHKERRQ(ierr);
@@ -1581,7 +1581,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
         */
         ierr = VecScatterBegin(setscatter,vdof,vdof_set,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(setscatter,vdof,vdof_set,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        
+
         /*
           Write array to disk
         */
@@ -1612,7 +1612,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = ex_get_elem_blk_ids(exoid,setsID_zero);
     }
     ierr = MPI_Bcast(setsID_zero,num_cs_zero,MPIU_INT,0,dmcomm);
-    
+
     istart = 0;
     for (set = 0; set < num_cs_zero; set++) {
       /*
@@ -1646,13 +1646,13 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
         */
         ierr = VecScatterBegin(setscatter,vdof,vdof_set,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(setscatter,vdof,vdof_set,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        
+
         /*
           Scatter vdof_set to cpu 0
         */
         ierr = VecScatterBegin(setscattertozero,vdof_set,vdof_set_zero,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(setscattertozero,vdof_set,vdof_set_zero,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        
+
         /*
           Write array to disk
         */
@@ -1678,8 +1678,8 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = ISDestroy(&setIS);CHKERRQ(ierr);
     }
     ierr = PetscFree(setsID_zero);CHKERRQ(ierr);
-  }  
-  
+  }
+
   ierr = VecDestroy(&vdof);CHKERRQ(ierr);
 #else
   SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
@@ -1739,15 +1739,15 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
   ierr = PetscObjectGetComm((PetscObject) dm,&dmcomm);CHKERRQ(ierr);
   ierr = DMMeshGetLabelSize(dm,"Cell Sets",&num_cs);CHKERRQ(ierr);
   ierr = DMMeshGetStratumSize(dm,"height",0,&num_cells);CHKERRQ(ierr);
-  
+
   ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells,&vdof);CHKERRQ(ierr);
-  
+
   if (num_proc == 1) {
     ierr = DMMeshGetLabelSize(dm,"Cell Sets",&num_cs);CHKERRQ(ierr);
     ierr = DMMeshGetLabelIdIS(dm,"Cell Sets",&csIS);CHKERRQ(ierr);
     ierr = ISGetIndices(csIS,&setsID);CHKERRQ(ierr);
 
-    for (c = 0; c < num_dof; c++) {        
+    for (c = 0; c < num_dof; c++) {
       for (set = 0; set < num_cs; set++) {
         /*
           Get the IS for the current set, the Vec containing a single dof and create
@@ -1791,16 +1791,16 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = ex_get_elem_blk_ids(exoid,setsID_zero);
     }
     ierr = MPI_Bcast(setsID_zero,num_cs_zero,MPIU_INT,0,dmcomm);
-    
+
     for (c = 0; c < num_dof; c++) {
-      istart = 0;    
+      istart = 0;
       for (set = 0; set < num_cs_zero; set++) {
         /*
           Get the size of the size of the set on cpu 0 and create a Vec to receive values
         */
         ierr = ex_get_elem_block(exoid,setsID_zero[set],junk,&num_cells_zero,&junk1,&junk2);
         ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_zero,&vdof_set_zero);CHKERRQ(ierr);
-  
+
         /*
           Get the IS for the current set, the Vec containing a single dof and create
           the scatter for the restriction to the current cell set
@@ -1915,12 +1915,12 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   ierr = ISGetSize(csIS,&num_cells);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells,&vdof);CHKERRQ(ierr);
-  
+
   if (num_proc == 1) {
     for (c = 0; c < num_dof; c++) {
       ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
-      ierr = ex_put_elem_var(exoid,step,exofield+c,csID,num_cells,vdof_array); 
+      ierr = ex_put_elem_var(exoid,step,exofield+c,csID,num_cells,vdof_array);
       ierr = VecRestoreArray(vdof,&vdof_array);CHKERRQ(ierr);
       if (ierr != 0) {
         SETERRQ2(comm,PETSC_ERR_FILE_WRITE,"Unable to write to file id %i. ex_put_elem_var returned %i",exoid,ierr);
@@ -1930,8 +1930,8 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     /*
       Get the global size of the cell set from the file because we can
       There is no direct way to get the index of the first cell in a cell set from exo.
-      (which depends on the order on the file) so we need to seek the cell set in the file and 
-      accumulate offsets... 
+      (which depends on the order on the file) so we need to seek the cell set in the file and
+      accumulate offsets...
     */
     if (rank == 0) {
       istart = 0;
@@ -1944,7 +1944,7 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
           break;
         } else {
           istart += num_cells_zero;
-        } 
+        }
       }
       ierr = PetscFree(csIDs);CHKERRQ(ierr);
       ierr = ex_get_elem_block(exoid,csID,junk,&num_cells_zero,&junk1,&junk2);
@@ -2029,7 +2029,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   ierr = MPI_Comm_rank(comm,&rank);
   ierr = VecGetBlockSize(v,&num_dof);
   ierr = PetscObjectGetComm((PetscObject) dm,&dmcomm);CHKERRQ(ierr);
-  
+
   ierr = DMMeshGetStratumIS(dm,"Cell Sets",csID,&csIS);CHKERRQ(ierr);
   ierr = ISGetSize(csIS,&num_cells);CHKERRQ(ierr);
 
@@ -2038,7 +2038,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
   if (num_proc == 1) {
     for (c = 0; c < num_dof; c++) {
       ierr = VecGetArray(vdof,&vdof_array);CHKERRQ(ierr);
-      ierr = ex_get_elem_var(exoid,step,exofield+c,csID,num_cells,vdof_array); 
+      ierr = ex_get_elem_var(exoid,step,exofield+c,csID,num_cells,vdof_array);
       ierr = VecRestoreArray(vdof,&vdof_array);CHKERRQ(ierr);
       if (ierr != 0) {
         SETERRQ2(comm,PETSC_ERR_FILE_WRITE,"Unable to write to file id %i. ex_put_elem_var returned %i",exoid,ierr);
@@ -2049,8 +2049,8 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     /*
       Get the global size of the cell set from the file because we can
       There is no direct way to get the index of the first cell in a cell set from exo.
-      (which depends on the order on the file) so we need to seek the cell set in the file and 
-      accumulate offsets... 
+      (which depends on the order on the file) so we need to seek the cell set in the file and
+      accumulate offsets...
     */
     if (rank == 0) {
       istart = 0;
@@ -2063,7 +2063,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
           break;
         } else {
           istart += num_cells_zero;
-        } 
+        }
       }
       ierr = PetscFree(csIDs);CHKERRQ(ierr);
       ierr = ex_get_elem_block(exoid,csID,junk,&num_cells_zero,&junk1,&junk2);
@@ -2073,7 +2073,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     ierr = ISDestroy(&csIS_zero);CHKERRQ(ierr);
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_zero,&vdof_zero);CHKERRQ(ierr);
-    
+
     for (c = 0; c < num_dof; c++) {
       if (rank == 0) {
         ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);

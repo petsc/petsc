@@ -2,7 +2,7 @@
 
 EXTERN_C_BEGIN
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestIACall"
 PetscErrorCode  TestIACall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -15,12 +15,12 @@ PetscErrorCode  TestIACall(PetscShell component, const char* message) {
     PetscShell shell;
     ierr = PetscShellGetVisitor(component, &shell);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "%s: registering dependence: TestIB --> %s\n", __FUNCT__, ((PetscObject)component)->name);CHKERRQ(ierr);
-    ierr = PetscShellRegisterDependence(shell, "TestIB", ((PetscObject)component)->name);CHKERRQ(ierr);    
+    ierr = PetscShellRegisterDependence(shell, "TestIB", ((PetscObject)component)->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }/* TestIACall() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestIBCall"
 PetscErrorCode  TestIBCall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;
@@ -30,7 +30,7 @@ PetscErrorCode  TestIBCall(PetscShell component, const char* message) {
   PetscFunctionReturn(0);
 }/* TestIBCall() */
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "TestICCall"
 PetscErrorCode  TestICCall(PetscShell component, const char* message) {
   MPI_Comm comm = ((PetscObject)component)->comm;

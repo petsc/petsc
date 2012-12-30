@@ -9,11 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petscmatmod.F
-SOURCEH	   = 
+SOURCEH	   =
 LIBBASE	   = libpetscmat
 MANSEC	   = Mat
 LOCDIR	   = src/mat/f90-mod/

@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEC  = petscglobal.c
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/adic/
 NOADIC   = false
 MANSEC   = Sys

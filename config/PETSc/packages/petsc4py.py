@@ -38,7 +38,7 @@ class Configure(PETSc.package.NewPackage):
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    
+
     return self.installDir
 
   def configureLibrary(self):
@@ -63,5 +63,5 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('petsc4py','')   
-      
+    self.addMakeRule('petsc4py','')
+

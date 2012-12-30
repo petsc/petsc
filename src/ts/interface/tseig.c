@@ -82,7 +82,7 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
 
 #undef __FUNCT__
 #define __FUNCT__ "TSLinearStabilityIndicator"
-static PetscErrorCode TSLinearStabilityIndicator(TS  ts, PetscReal xr,PetscReal xi,PetscBool *flg) 
+static PetscErrorCode TSLinearStabilityIndicator(TS  ts, PetscReal xr,PetscReal xi,PetscBool *flg)
 {
   PetscErrorCode ierr;
   PetscReal      yr,yi;
@@ -116,8 +116,8 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
-    /* 
-       This doesn't work because methods keep and use internal information about the shift so it 
+    /*
+       This doesn't work because methods keep and use internal information about the shift so it
        seems we would need code for each method to trick the correct Jacobian in being computed.
      */
     time_step_save = ts->time_step;

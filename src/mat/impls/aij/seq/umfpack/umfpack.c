@@ -1,8 +1,8 @@
 
-/* 
+/*
    Provides an interface to the UMFPACKv5.1 sparse solver
 
-   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the 
+   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
    that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
@@ -115,7 +115,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSolve_UMFPACK_Private"
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
@@ -139,10 +139,10 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,
                               lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
-#else  
+#else
   status = umfpack_UMF_wsolve(uflag,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #endif
-  umfpack_UMF_report_info(lu->Control, lu->Info); 
+  umfpack_UMF_report_info(lu->Control, lu->Info);
   if (status < 0){
     umfpack_UMF_report_status(lu->Control, status);
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
@@ -153,7 +153,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSolve_UMFPACK"
 static PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 {
@@ -165,7 +165,7 @@ static PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSolveTranspose_UMFPACK"
 static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A,Vec b,Vec x)
 {
@@ -177,7 +177,7 @@ static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_UMFPACK"
 static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
@@ -219,7 +219,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
 /*
    Note the r permutation is ignored
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
 static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
@@ -234,7 +234,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionBegin;
   if (lu->PetscMatOrdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);  
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);
     /* we cannot simply memcpy on 64 bit archs */
     for (i = 0; i < m; i++) lu->perm_c[i] = ra[i];
     ierr = ISRestoreIndices(r,&ra);CHKERRQ(ierr);
@@ -273,7 +273,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_UMFPACK"
 static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 {
@@ -336,8 +336,8 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN 
-#undef __FUNCT__  
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_umfpack"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPackage *type)
 {
@@ -346,7 +346,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-  
+
 
 /*MC
   MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
@@ -379,9 +379,9 @@ EXTERN_C_END
 .seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_umfpack"
-PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F) 
+PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_UMFPACK    *lu;
@@ -389,11 +389,11 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   PetscInt       m=A->rmap->n,n=A->cmap->n,idx;
 
   const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"},
-                 *scale[]={"NONE","SUM","MAX"}; 
+                 *scale[]={"NONE","SUM","MAX"};
   PetscBool      flg;
-  
+
   PetscFunctionBegin;
-  /* Create the factorization matrix F */  
+  /* Create the factorization matrix F */
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -407,7 +407,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   B->factortype            = MAT_FACTOR_LU;
   B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
   B->preallocated          = PETSC_TRUE;
-  
+
   /* initializations */
   /* ------------------------------------------------*/
   /* get the default control parameters */
@@ -454,7 +454,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
 
   /* Control parameters used by solve */
   ierr = PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],PETSC_NULL);CHKERRQ(ierr);
-  
+
   /* use Petsc mat ordering (note: size is for the transpose, and PETSc r = Umfpack perm_c) */
   ierr = PetscOptionsHasName(PETSC_NULL,"-pc_factor_mat_ordering_type",&lu->PetscMatOrdering);CHKERRQ(ierr);
   PetscOptionsEnd();

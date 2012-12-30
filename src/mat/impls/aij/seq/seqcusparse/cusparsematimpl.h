@@ -1,4 +1,4 @@
-#ifndef __CUSPARSEMATIMPL 
+#ifndef __CUSPARSEMATIMPL
 #define __CUSPARSEMATIMPL
 
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>

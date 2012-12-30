@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC	 = mpi.c
-SOURCEF	 = 
+SOURCEF	 =
 SOURCEH	 = ../../../include/mpiuni/mpi.h ../../../include/mpiuni/mpif.h
 SCRIPTS  = ../../../../bin/mpiexec.uni
 LIBBASE	 = libpetscsys

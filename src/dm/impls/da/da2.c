@@ -601,7 +601,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       y_t = ly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    } 
+    }
 
     if (n1 >= 0) { /* directly below */
       x_t = x;
@@ -617,7 +617,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       y_t = ly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    } 
+    }
   }
 
   for (i=0; i<y; i++) {
@@ -648,7 +648,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = ly[(n6/m)]; */
       s_t = bases[n6] + (i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    } 
+    }
 
     if (n7 >= 0) { /* directly above */
       x_t = x;
@@ -664,7 +664,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = ly[(n8/m)]; */
       s_t = bases[n8] + (i-1)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    } 
+    }
   }
 
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);

@@ -5,11 +5,11 @@
 */
 
 #include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
-EXTERN_C_BEGIN 
+EXTERN_C_BEGIN
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cufft.h>
-EXTERN_C_END 
+EXTERN_C_END
 
 typedef struct {
   PetscInt      ndim;
@@ -18,7 +18,7 @@ typedef struct {
   cufftComplex *devArray;
 } Mat_CUFFT;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqCUFFT"
 PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
 {
@@ -101,7 +101,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqCUFFT"
 PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 {
@@ -109,7 +109,7 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
   cufftResult    result;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   ierr = PetscFree(cufft->dim);CHKERRQ(ierr);
   if (cufft->p_forward)  {result = cufftDestroy(cufft->p_forward);CHKERRQ(result != CUFFT_SUCCESS);}
   if (cufft->p_backward) {result = cufftDestroy(cufft->p_backward);CHKERRQ(result != CUFFT_SUCCESS);}
@@ -119,7 +119,7 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateSeqCUFFT"
 /*@
   MatCreateSeqCUFFT - Creates a matrix object that provides sequential FFT via the external package CUFFT
@@ -153,7 +153,7 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
     if (dim[d] < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
     m *= dim[d];
   }
-  ierr = MatSetSizes(*A, m, m, m, m);CHKERRQ(ierr);  
+  ierr = MatSetSizes(*A, m, m, m, m);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*A, MATSEQCUFFT);CHKERRQ(ierr);
 
   ierr = PetscNewLog(*A, Mat_CUFFT, &cufft);CHKERRQ(ierr);

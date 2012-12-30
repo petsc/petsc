@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
-  
+
   MPI_Comm  comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Options for ALE memory management and logging testing", "Mesh");
     memTest = PETSC_TRUE;

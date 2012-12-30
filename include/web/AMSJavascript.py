@@ -1,8 +1,8 @@
-#   
+#
 #   Run python pyjsbuild --output . AMSJavascript.py to generate the needed HTML and Javascript
 #
 
-import pyjd 
+import pyjd
 
 from pyjamas.ui.RootPanel import RootPanel
 from pyjamas.ui.TextArea import TextArea
@@ -18,9 +18,9 @@ from pyjamas.ui.TreeItem import TreeItem
 
 
 comm   = -1  # Currently attached AMS communicator; only one is supported at a time
-args   = {}  # Arguments to each remote call 
+args   = {}  # Arguments to each remote call
 sent   = 0   # Number of calls sent to server
-recv   = 0   # Number of calls received from server 
+recv   = 0   # Number of calls received from server
 
 class AMSJavascriptExample:
     def onModuleLoad(self):
@@ -32,9 +32,9 @@ class AMSJavascriptExample:
         buttons.add(self.button)
         buttons.add(self.buttonupdate)
         buttons.setSpacing(8)
-        
+
         info = """<p>This example demonstrates the calling of the Memory Snooper in PETSc with Pyjamas and <a href="http://json-rpc.org/">JSON-RPC</a>.</p>"""
-        
+
         self.panel = VerticalPanel()
         self.panel.add(HTML(info))
         self.panel.add(buttons)
@@ -50,7 +50,7 @@ class AMSJavascriptExample:
             self.commobj = AMS_Comm()
             self.status.setText('Updating data: Press Display list button to refesh')
         if sender == self.button:
-            if sent > recv: 
+            if sent > recv:
                self.status.setText('Press button again: sent '+str(sent)+' recv '+str(recv))
             if self.commobj.commname == 'No AMS publisher running':
                self.status.setText(self.commobj.commname)
@@ -138,7 +138,7 @@ class AMS_Comm(JSONProxy):
     def get_memory_list(self,func = null):
         '''If called with func then calls func asynchronously with latest memory list;
            otherwise returns current (possibly out-dated) memory list'''
-        if func: 
+        if func:
             self.memory_list_func = func
             id = self.remote.YAML_AMS_Comm_get_memory_list(self.comm,self)
             args[id] = ['YAML_AMS_Comm_get_memory_list',self.comm]

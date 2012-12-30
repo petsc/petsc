@@ -7,10 +7,10 @@
 #
 PETSC_DIR = getenv("PETSC_DIR");
 PETSC_ARCH = getenv("PETSC_ARCH");
-if (length(PETSC_DIR) == 0) 
+if (length(PETSC_DIR) == 0)
   disp("Must have environmental variable PETSC_DIR set")
 end
-if (length(PETSC_ARCH) == 0) 
+if (length(PETSC_ARCH) == 0)
   disp("Must have environmental variable PETSC_ARCH set")
 end
 libpetsclocation = strcat(PETSC_DIR, "/", PETSC_ARCH, "/lib/", "libpetsc")
@@ -53,9 +53,9 @@ PETSC_NORM_MAX       = PETSC_NORM_INFINITY;
 
 
 # -------------------------------------
-#    These are the Julia interface methods for all the visible PETSc functions. Julia datatypes for PETSc objects simply contain the C pointer to the 
+#    These are the Julia interface methods for all the visible PETSc functions. Julia datatypes for PETSc objects simply contain the C pointer to the
 #    underlying PETSc object.
-#   
+#
 # -------------------------------------
 function PetscInitialize()
   PetscInitialize([])
@@ -67,13 +67,13 @@ end
 
 function PetscInitialize(args,filename,help)
   # argument list starts with program name
-  args = ["julia",args]; 
+  args = ["julia",args];
   #
   #   If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
   #
   init = 0;
   err = ccall(dlsym(libpetsc,:PetscInitialized),Int32,(Ptr{Int32},),&init);
-  if (init != 0) 
+  if (init != 0)
     gc() # call garbage collection to force all PETSc objects be destroy that are queued up for destruction
     err = ccall(dlsym(libpetsc,:PetscFinalize),Int32,());if (err != 0) return err; end
   end
@@ -112,17 +112,17 @@ type PetscIS <: PetscObject
     is = Array(Int64,1)
     err = ccall(dlsym(libpetsc, :ISCreate),Int32,(Int64,Ptr{Int64}),comm,is);if (err != 0) return err;end
     is = new(is[1])
-    finalizer(is,PetscDestroy) 
+    finalizer(is,PetscDestroy)
     # does not seem to be called immediately when is is no longer visible, is it called later during garbage collection?
     return is
   end
 end
 
   function PetscDestroy(is::PetscIS)
-    if (is.pobj != 0) then 
-      err = ccall(dlsym(libpetsc, :ISDestroy),Int32,(Ptr{Int64},), &is.pobj);   
+    if (is.pobj != 0) then
+      err = ccall(dlsym(libpetsc, :ISDestroy),Int32,(Ptr{Int64},), &is.pobj);
     end
-    is.pobj = 0 
+    is.pobj = 0
     return 0
   end
 
@@ -152,7 +152,7 @@ end
     indices = Array(Int32,len);
     err = ccall(dlsym(libpetsc,:ISGetIndicesCopy),Int32,(Int64,Ptr{Int32}),obj.pobj,indices);
     indices = indices + 1
-    return indices  
+    return indices
   end
 
 # -------------------------------------
@@ -164,15 +164,15 @@ type PetscVec <: PetscObject
     vec = Array(Int64,1)
     err = ccall(dlsym(libpetsc, :VecCreate),Int32,(Int64,Ptr{Int64}),comm,vec);
     vec = new(vec[1])
-    finalizer(vec,PetscDestroy)  
+    finalizer(vec,PetscDestroy)
     # does not seem to be called immediately when vec is no longer visible, is it called later during garbage collection?
     return vec
   end
 end
 
   function PetscDestroy(vec::PetscVec)
-    if (vec.pobj != 0) 
-      err = ccall(dlsym(libpetsc, :VecDestroy),Int32,(Ptr{Int64},), &vec.pobj);    
+    if (vec.pobj != 0)
+      err = ccall(dlsym(libpetsc, :VecDestroy),Int32,(Ptr{Int64},), &vec.pobj);
     end
     vec.pobj = 0
   end
@@ -186,7 +186,7 @@ end
     err = ccall(dlsym(libpetsc, :VecSetType),Int32,(Int64,Ptr{Uint8}), vec.pobj,cstring("seq"));
     err = ccall(dlsym(libpetsc, :VecSetSizes),Int32,(Int64,Int32,Int32), vec.pobj,length(array),length(array));
     # want a 32 bit int array so build it ourselves
-    idx = Array(Int32,length(array)); 
+    idx = Array(Int32,length(array));
     for i=1:length(array);  idx[i] = i-1;  end
     err = ccall(dlsym(libpetsc, :VecSetValues), Int32,(Int64,Int32,Ptr{Int32},Ptr{Float64},Int32), vec.pobj,length(idx),idx,array,PETSC_INSERT_VALUES);
     err = ccall(dlsym(libpetsc, :VecAssemblyBegin),Int32,(Int64,), vec.pobj);
@@ -248,15 +248,15 @@ type PetscMat <: PetscObject
     vec = Array(Int64,1)
     err = ccall(dlsym(libpetsc, :MatCreate),Int32,(Int64,Ptr{Int64}),comm,vec);
     vec = new(vec[1])
-    finalizer(vec,PetscDestroy)  
+    finalizer(vec,PetscDestroy)
     # does not seem to be called immediately when vec is no longer visible, is it called later during garbage collection?
     return vec
   end
 end
 
   function PetscDestroy(vec::PetscMat)
-    if (vec.pobj != 0) 
-      err = ccall(dlsym(libpetsc, :MatDestroy),Int32,(Ptr{Int64},), &vec.pobj);    
+    if (vec.pobj != 0)
+      err = ccall(dlsym(libpetsc, :MatDestroy),Int32,(Ptr{Int64},), &vec.pobj);
     end
     vec.pobj = 0
   end

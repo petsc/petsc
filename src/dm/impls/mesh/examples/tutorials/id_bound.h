@@ -12,7 +12,7 @@ namespace ALE {
       ALE::Mesh::point_type lastEdge;   //a HACK to keep edges from getting duplicated.
       int length;
     };
-    
+
     PetscErrorCode make_coarsest_boundary (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_section_type::patch_type patch) {
       //creates a 2-level (PSLG) representation of the boundary for feeding into triangle or tetgen.
       PetscFunctionBegin;

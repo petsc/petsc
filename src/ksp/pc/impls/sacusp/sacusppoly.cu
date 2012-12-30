@@ -1,9 +1,9 @@
 
 /*  -------------------------------------------------------------------- */
 
-/* 
+/*
    Include files needed for the CUSP Smoothed Aggregation preconditioner with Chebyshev polynomial smoothing:
-     pcimpl.h - private include file intended for use by all preconditioners 
+     pcimpl.h - private include file intended for use by all preconditioners
 */
 
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
@@ -17,8 +17,8 @@
 
 #define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
-/* 
-   Private context (data structure) for the SACUSPPoly preconditioner.  
+/*
+   Private context (data structure) for the SACUSPPoly preconditioner.
 */
 typedef struct {
  cuspsaprecond* SACUSPPoly;
@@ -29,7 +29,7 @@ typedef struct {
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SACUSPPoly - Prepares for the use of the SACUSPPoly preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -40,7 +40,7 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_SACUSPPoly"
 static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 {
@@ -48,7 +48,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
-  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
   CUSPMATRIX* mat;	
@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
       delete sa->SACUSPPoly;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
+    }
   }
   try {
 #if defined(PETSC_USE_COMPLEX)
@@ -79,7 +79,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 #endif
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  } 
+  }
   /*ierr = PetscOptionsInt("-pc_sacusp_cycles","Number of v-cycles to perform","PCSACUSPSetCycles",sa->cycles,
     &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
@@ -90,13 +90,13 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
 #endif
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
-  
+
   PetscFunctionBegin;
   /* how to incorporate dtol, guesszero, w?*/
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -134,7 +134,7 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_SACUSPPoly"
 static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 {
@@ -162,7 +162,7 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 #endif
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  } 
+  }
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_SACUSPPoly"
 static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
 {
@@ -191,7 +191,7 @@ static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
       delete sac->SACUSPPoly;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
+    }
 }
 
   /*
@@ -201,14 +201,14 @@ static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SACUSPPoly"
 static PetscErrorCode PCSetFromOptions_SACUSPPoly(PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUSPPoly options");CHKERRQ(ierr);			 
+  ierr = PetscOptionsHead("SACUSPPoly options");CHKERRQ(ierr);			
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -218,7 +218,7 @@ static PetscErrorCode PCSetFromOptions_SACUSPPoly(PC pc)
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_SACUSPPoly"
 PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
 {

@@ -1,4 +1,4 @@
- 
+
 static char help[] = "Tests external Clique direct solvers. Simplified from ex130.c\n\
 Example: mpiexec -n <np> ./ex168 -f <matrix binary file> \n\n";
 
@@ -8,7 +8,7 @@ Example: mpiexec -n <np> ./ex168 -f <matrix binary file> \n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,F; 
+  Mat            A,F;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
@@ -34,22 +34,22 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
   ierr = MatNorm(A,NORM_INFINITY,&Anorm);CHKERRQ(ierr);
-  
+
   /* Create vectors */
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   /* Test Cholesky Factorization */
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
-  
+
   if (!rank) printf(" Clique Cholesky:\n");
   ierr = MatGetFactor(A,MATSOLVERCLIQUE,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
 
-  info.fill = 5.0; 
+  info.fill = 5.0;
   ierr = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 1; nfact++){
@@ -59,7 +59,7 @@ int main(int argc,char **args)
     /* Test MatSolve() */
     if (testMatSolve && nfact == 2){
       ierr = MatSolve(F,b,x);CHKERRQ(ierr);
-    
+
       /* Check the residual */
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
@@ -71,15 +71,15 @@ int main(int argc,char **args)
         //}
     }
   }
-  
+
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); 
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

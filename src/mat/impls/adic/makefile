@@ -1,17 +1,17 @@
 
 #requirespackage  'PETSC_HAVE_ADIC'
-#requiresscalar real 
+#requiresscalar real
 #requiresprecision double
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = matadic.c nladic.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscsnes
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/adic/
 

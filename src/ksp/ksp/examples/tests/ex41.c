@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1;
   user.fine.my = user.ratio*(user.coarse.my-1)+1;
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
- 
+
   if (!rank){
     if (!Test_3D){
       ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %d %d; fine grids: %d %d\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
 
   }
   //if (!rank) printf("A:\n");
-  //ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  //ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D){
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
   //if (!rank) printf("P:\n");
-  //ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  //ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Get R = P^T */
   ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
@@ -140,11 +140,11 @@ int main(int argc,char **argv)
   ierr = MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
 
   /* Test C == PtAP */
-  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr); 
+  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP);CHKERRQ(ierr);
-  ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr); 
+  ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr);
   if (!flg) printf("RAP != PtAP\n");
-  ierr = MatDestroy(&PtAP);CHKERRQ(ierr); 
+  ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
 
   /* Clean up */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr); 
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

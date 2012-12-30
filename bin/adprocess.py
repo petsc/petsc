@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $ 
+# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $
 #
 # change python to whatever is needed on your system to invoke python
 #
 #  Processes .c or .f files looking for a particular function.
-#  Copies that function as well as an struct definitions 
+#  Copies that function as well as an struct definitions
 #  into a new file to be processed with adiC
-# 
-#  Calling sequence: 
+#
+#  Calling sequence:
 #      adprocess.py file1.[cf] functionname functionname2
 #
 #
@@ -28,7 +28,7 @@ from parseargs import *
 
 #
 #  Copies structs from filename to filename.tmp1
-    
+
 def setupfunctionC(filename,g = None):
         import re
         regtypedef  = re.compile('typedef [ ]*struct')
@@ -138,7 +138,7 @@ def getfunctionF(filename,functionname):
 	while line:
                 sline = lstrip(line)
                 if sline:
-                  if len(sline) >= 11 + len(functionname): 
+                  if len(sline) >= 11 + len(functionname):
                      if sline[0:11+len(functionname)] == "subroutine "+functionname:
 			while line:
                                 sline = lstrip(line)
@@ -156,9 +156,9 @@ def getfunctionF(filename,functionname):
 def main():
 
     arg_len = len(argv)
-    if arg_len < 2: 
+    if arg_len < 2:
         print 'Error! Insufficient arguments.'
-        print 'Usage:', argv[0], 'file.[cf] functionname1 functionname2 ...' 
+        print 'Usage:', argv[0], 'file.[cf] functionname1 functionname2 ...'
         sys.exit()
 
     ext = split(argv[1],'.')[-1]
@@ -173,6 +173,6 @@ def main():
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

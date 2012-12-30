@@ -104,7 +104,7 @@ PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_co
       printf("Operator will not include point %d\n", *v_iter);
     }
   v_iter++;
-  }  
+  }
 }
 
 void forcedP1_phi(double * w, int dim, double * v) { //assume that v is within the reference element and we want to get the coefficients for it.
@@ -224,7 +224,7 @@ o202____101__o201
   sieve2->addArrow(201, 105);
   sieve2->addArrow(204, 106);
   sieve2->addArrow(203, 106);
-  
+
   sieve2->stratify();
   topology2->setPatch(0, sieve2);
   topology2->stratify();

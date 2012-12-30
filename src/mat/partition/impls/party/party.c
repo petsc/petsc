@@ -9,12 +9,12 @@
 #include <stdlib.h>
 #endif
 
-/* 
+/*
    Currently using Party-1.99
 */
 EXTERN_C_BEGIN
 #include <party_lib.h>
-EXTERN_C_END 
+EXTERN_C_END
 
 typedef struct {
   PetscBool redm;
@@ -109,7 +109,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 
 #ifdef PETSC_HAVE_UNISTD_H
   err = fflush(stdout);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));
   if (count<0) count = 0;
   mesg_log[count] = 0;
@@ -123,7 +123,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);          
+  ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);
   for (i=0;i<mat->rmap->N;i++) parttab[i] = part_party[i];
 
   /* creation of the index set */
@@ -190,9 +190,9 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer
    Level: advanced
 
    Notes:
-   The method may be one of MP_PARTY_OPT, MP_PARTY_LIN, MP_PARTY_SCA, 
+   The method may be one of MP_PARTY_OPT, MP_PARTY_LIN, MP_PARTY_SCA,
    MP_PARTY_RAN, MP_PARTY_GBF, MP_PARTY_GCF, MP_PARTY_BUB or MP_PARTY_DEF, or
-   alternatively a string describing the method. Two or more methods can be 
+   alternatively a string describing the method. Two or more methods can be
    combined like "gbf,gcf". Check the Party Library Users Manual for details.
 
 .seealso: MatPartitioningPartySetLocal()
@@ -273,7 +273,7 @@ EXTERN_C_END
 /*@
    MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
    Party partitioner.
- 
+
    Collective on MatPartitioning
 
    Input Parameters:
@@ -316,7 +316,7 @@ EXTERN_C_END
 /*@
    MatPartitioningPartySetMatchOptimization - Activate matching optimization for
    graph reduction.
- 
+
    Collective on MatPartitioning
 
    Input Parameters:
@@ -356,7 +356,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatPartitioningPartySetBipart"
 /*@
    MatPartitioningPartySetBipart - Activate or deactivate recursive bisection.
- 
+
    Collective on MatPartitioning
 
    Input Parameters:

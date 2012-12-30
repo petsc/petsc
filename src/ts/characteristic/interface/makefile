@@ -1,15 +1,15 @@
 
 ALL: lib
 
-CPPFLAGS = 
-CFLAGS   = 
+CPPFLAGS =
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = characteristic.c mocregis.c slregis.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = SemiLagrange
-DIRS     = 
+DIRS     =
 LOCDIR   = src/ts/characteristic/interface/
 
 include ${PETSC_DIR}/conf/variables

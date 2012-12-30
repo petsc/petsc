@@ -1,5 +1,5 @@
 
-/* 
+/*
         Provides an interface to the IBM RS6000 Essl sparse solver
 
 */
@@ -43,9 +43,9 @@ PetscErrorCode MatDestroy_Essl(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSolve_Essl"
-PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) 
+PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
 {
   Mat_Essl       *essl = (Mat_Essl*)A->spptr;
   PetscScalar    *xx;
@@ -61,9 +61,9 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_Essl"
-PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info) 
+PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)(A)->data;
   Mat_Essl       *essl=(Mat_Essl*)(F)->spptr;
@@ -75,11 +75,11 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
   for (i=0; i<A->rmap->n+1; i++) essl->ia[i] = aa->i[i] + 1;
   for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
- 
+
   ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
-  
+
   /* set Essl options */
-  essl->iparm[0] = 1; 
+  essl->iparm[0] = 1;
   essl->iparm[1] = 5;
   essl->iparm[2] = 1;
   essl->iparm[3] = 0;
@@ -98,9 +98,9 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Essl"
-PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info) 
+PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -125,8 +125,8 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN 
-#undef __FUNCT__  
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_essl"
 PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type)
 {
@@ -136,7 +136,7 @@ PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type
 }
 
 /*MC
-  MATSOLVERESSL - "essl" - Provides direct solvers (LU) for sequential matrices 
+  MATSOLVERESSL - "essl" - Provides direct solvers (LU) for sequential matrices
                               via the external package ESSL.
 
   If ESSL is installed (see the manual for
@@ -149,16 +149,16 @@ PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type
 .seealso: PCLU, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_essl"
-PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F) 
+PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
   Mat_Essl       *essl;
 
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);

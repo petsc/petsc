@@ -10,7 +10,7 @@ configure_options = [
   '--with-mpi=0',
   'DATAFILESPATH=/home/sbalay/datafiles',
   ]
-  
+
 if __name__ == '__main__':
   import sys,os
   sys.path.insert(0,os.path.abspath('config'))

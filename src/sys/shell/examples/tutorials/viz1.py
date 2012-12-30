@@ -3,7 +3,7 @@ import sys,time
 
 
 class Viz:
-    '''A crude Python vizualization engine.  If your mayavi works, 
+    '''A crude Python vizualization engine.  If your mayavi works,
        uncomment the corresponding lines in the viewRho method to
        use that for vizualization instead.'''
     @staticmethod
@@ -28,7 +28,7 @@ class Viz:
         shape.append(d)
         rho = rho.reshape(shape)
         # Plot all of the components of rho over the da
-        # Use a contour plot in 3D 
+        # Use a contour plot in 3D
         for s in range(d):
             #from enthought.mayavi import mlab as mlab
             #mlab.contour3d(rho[:,:,:,s])

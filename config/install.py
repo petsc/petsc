@@ -54,7 +54,7 @@ class Installer(script.Script):
     self.makesys       = self.framework.require('config.programs',             None)
     self.compilers     = self.framework.require('config.compilers',            None)
     return
-  
+
   def setup(self):
     script.Script.setup(self)
     self.framework = self.loadConfigure()

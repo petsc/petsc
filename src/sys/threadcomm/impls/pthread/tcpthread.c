@@ -73,7 +73,7 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
     case PTHREADAFFPOLICY_NONE:
       break;
     }
-#endif  
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -176,7 +176,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       if (ptcomm->ismainworker) tcomm->leader = ptcomm->granks[1];
       else tcomm->leader = ptcomm->granks[0];
     }
-  
+
     /* Create array holding pthread ids */
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_t),&ptcomm->tid);CHKERRQ(ierr);
     /* Create thread attributes */
@@ -187,7 +187,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     cpu_set_t mset;
     PetscInt  ncores,icorr;
-    
+
     ierr = PetscGetNCores(&ncores);CHKERRQ(ierr);
     CPU_ZERO(&mset);
     icorr = tcomm->affinities[0]%ncores;
@@ -214,7 +214,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ptcomm->aff              = gptcomm->aff;
     tcomm->ops->runkernel    = gtcomm->ops->runkernel;
     tcomm->ops->barrier      = gtcomm->ops->barrier;
-    
+
     for (i=0; i < tcomm->nworkThreads;i++) {
       for (j=0;j < gtcomm->nworkThreads; j++) {
 	if (tcomm->affinities[i] == gaffinities[j]) {
@@ -222,9 +222,9 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 	}
       }
     }
-  }  
+  }
 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-    
+

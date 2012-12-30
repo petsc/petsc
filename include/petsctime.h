@@ -21,7 +21,7 @@ EXTERN_C_END
 PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
 /*
-   PetscTime - Returns the current time of day in seconds.  
+   PetscTime - Returns the current time of day in seconds.
 
    Synopsis:
    PetscTime(PetscLogDouble v)
@@ -32,15 +32,15 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 .  v - time counter
 
 
-   Usage: 
+   Usage:
      PetscLogDouble v;
      PetscTime(v);
      .... perform some calculation ...
      printf("Time for operation %g\n",v);
 
    Notes:
-   Since the PETSc libraries incorporate timing of phases and operations, 
-   PetscTime() is intended only for timing of application codes.  
+   Since the PETSc libraries incorporate timing of phases and operations,
+   PetscTime() is intended only for timing of application codes.
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
@@ -51,7 +51,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
 /*
    PetscTimeSubtract - Subtracts the current time of day (in seconds) from
-   the value v.  
+   the value v.
 
    Synopsis:
    PetscTimeSubtract(PetscLogDouble v)
@@ -66,8 +66,8 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
 
    Notes:
-   Since the PETSc libraries incorporate timing of phases and operations, 
-   PetscTimeSubtract() is intended only for timing of application codes.  
+   Since the PETSc libraries incorporate timing of phases and operations,
+   PetscTimeSubtract() is intended only for timing of application codes.
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
@@ -77,7 +77,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 */
 
 /*
-   PetscTimeAdd - Adds the current time of day (in seconds) to the value v.  
+   PetscTimeAdd - Adds the current time of day (in seconds) to the value v.
 
    Synopsis:
    PetscTimeAdd(PetscLogDouble v)
@@ -91,8 +91,8 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 .  v - time counter (v = v + current time)
 
    Notes:
-   Since the PETSc libraries incorporate timing of phases and operations, 
-   PetscTimeAdd() is intended only for timing of application codes.  
+   Since the PETSc libraries incorporate timing of phases and operations,
+   PetscTimeAdd() is intended only for timing of application codes.
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
@@ -113,7 +113,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
 /* ------------------------------------------------------------------
    Power1,2,3,PC machines have a fast clock read_real_time()
-*/ 
+*/
 #elif defined(PETSC_USE_READ_REAL_TIME)
 PETSC_EXTERN PetscLogDouble rs6000_time(void);
 #define PetscTime(v)         (v)=rs6000_time();
@@ -145,7 +145,7 @@ EXTERN_C_END
                              (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 /* ------------------------------------------------------------------
-   ASCI RED machine has a fast clock accessiable through dclock() 
+   ASCI RED machine has a fast clock accessiable through dclock()
 */
 #elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN

@@ -272,7 +272,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
 #define __FUNCT__ "DMCopyDMSNES"
 /*@C
    DMCopyDMSNES - copies a DM context to a new DM
- 
+
    Logically Collective
 
    Input Arguments:

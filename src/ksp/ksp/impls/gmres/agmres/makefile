@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = agmres.c agmresorthog.c agmresLeja.c
 SOURCEF  =

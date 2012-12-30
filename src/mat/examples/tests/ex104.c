@@ -1,6 +1,6 @@
 static char help[] = "Test MatMatMult(), MatTranspose(), MatTransposeMatMult() for Dense and Elemental matrices.\n\n";
 /*
- Example: 
+ Example:
    mpiexec -n <np> ./ex104 -mat_type elemental
 */
 

@@ -752,7 +752,7 @@ namespace ALE {
       *numCorners  = corners;
       *vertices    = v;
     };
-    #undef __FUNCT__  
+    #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteVertices"
     PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
       ALE::Obj<Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
@@ -834,7 +834,7 @@ namespace ALE {
 #endif
       PetscFunctionReturn(0);
     };
-    #undef __FUNCT__  
+    #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteElements"
     PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
 #if 0
@@ -918,7 +918,7 @@ namespace ALE {
 #endif
       PetscFunctionReturn(0);
     };
-    #undef __FUNCT__  
+    #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteVerticesLocal"
     PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
       Obj<Mesh::real_section_type>     coordinates = mesh->getRealSection("coordinates");
@@ -943,7 +943,7 @@ namespace ALE {
       }
       PetscFunctionReturn(0);
     };
-    #undef __FUNCT__  
+    #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteRestart"
     PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
       const Obj<Mesh::real_section_type>&   velocity    = mesh->getRealSection("VELN");
@@ -1021,8 +1021,8 @@ namespace ALE {
 
     //   This class reconstructs the local pieces of the boundary that distributed PCICE needs.
     // The boundary along with the boundary conditions is encoded in a collection of sections
-    // over the PCICE mesh.  These sections contain a description of the boundary topology 
-    // using elements' global names.  This is unacceptable for PCICE, since it interprets 
+    // over the PCICE mesh.  These sections contain a description of the boundary topology
+    // using elements' global names.  This is unacceptable for PCICE, since it interprets
     // elements of the connectivity data arrays as local offsets into (some other of) these arrays.
     //   This subroutine performs the renumbering based on the local numbering on the distributed
     // mesh.  Essentially, we replace each global element id by its local number.
@@ -1082,9 +1082,9 @@ namespace ALE {
           // are contained in entries 4 - 7
           for(int k = 0; k < fiberDimension/4; k++) {
             // Extract IBC entry 1 (entry kk*4) for edge kk connected to element p.
-            // This is the entry that needs renumbering for renumbering (2,3 & 4 are invariant under distribution), 
+            // This is the entry that needs renumbering for renumbering (2,3 & 4 are invariant under distribution),
             // see IBC's description.
-            // Here we assume that elementNum's domain contains all boundary elements found in IBC, 
+            // Here we assume that elementNum's domain contains all boundary elements found in IBC,
             // so we can restrict to the extracted entry.
             eNum = elementNum->restrictPoint((PETSC_MESH_TYPE::numbering_type::point_type) ibc_in[k*4]-1);
             ibc_out[k*4+0] = eNum[0]+1;

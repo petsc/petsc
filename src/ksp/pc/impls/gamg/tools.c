@@ -307,8 +307,8 @@ PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_da
 {
   PetscInt kk,idx;
   if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
-  for ( kk = 0, idx = GAMG_HASH(a_key) ; 
-        kk < a_tab->size ; 
+  for ( kk = 0, idx = GAMG_HASH(a_key) ;
+        kk < a_tab->size ;
         kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1 ){
 
     if ( a_tab->table[idx] == a_key ) {
@@ -337,7 +337,7 @@ PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_da
     ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->data );CHKERRQ(ierr);
     for (kk=0;kk<a_tab->size;kk++) a_tab->table[kk] = -1;
     for (kk=0;kk<oldsize;kk++) {
-      if ( oldtable[kk] != -1 ) { 
+      if ( oldtable[kk] != -1 ) {
         ierr = GAMGTableAdd( a_tab, oldtable[kk], olddata[kk] );CHKERRQ(ierr);
        }
     }

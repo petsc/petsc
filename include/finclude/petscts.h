@@ -28,7 +28,7 @@
       parameter (TS_EXACTFINALTIME_STEPOVER    = 0)
       parameter (TS_EXACTFINALTIME_INTERPOLATE = 1)
       parameter (TS_EXACTFINALTIME_MATCHSTEP   = 2)
-      
+
 !
 !  TSProblemType
 !

@@ -1,12 +1,12 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = dmakkt.c
 SOURCEH  = dmakkt.h
 LIBBASE  = libpetscdm
-DIRS     = 
+DIRS     =
 LOCDIR   = src/dm/impls/akkt/
 MANSEC   = DM
 

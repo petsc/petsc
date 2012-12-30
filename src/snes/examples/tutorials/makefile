@@ -1,6 +1,6 @@
 
 # This directory contains SNES example programs for solving systems of
-# nonlinear equations.  
+# nonlinear equations.
 
 #CPPFLAGS	 = -I/PETSc3/geodynamics/PetscSimulationsViewers/src
 CFLAGS           =
@@ -50,8 +50,8 @@ ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_SNES_LIB}
 	${RM} ex5f.o
 #
-#  The SGI parallelizing compiler generates incorrect code by treating 
-#  the math functions (such as sqrt and exp) as local variables. The 
+#  The SGI parallelizing compiler generates incorrect code by treating
+#  the math functions (such as sqrt and exp) as local variables. The
 #  sed below patches this.
 #
 ex5s: chkopts
@@ -570,27 +570,27 @@ runex19_5: #test different scatters
          done;\
 	 ${RM} -f ex19_5.tmp
 # fieldsplit preconditioner tests
-runex19_6: 
+runex19_6:
 	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -ksp_type fgmres -da_refine 1  > ex19_6.tmp 2>&1; \
 	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_6, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_6.tmp
-runex19_7: 
+runex19_7:
 	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -da_refine 1 -ksp_type fgmres  > ex19_7.tmp 2>&1; \
 	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_7, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_7.tmp
-runex19_8: 
+runex19_8:
 	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view   -fieldsplit_pc_type lu -da_refine 1 -ksp_type fgmres > ex19_8.tmp 2>&1; \
 	   if (${DIFF} output/ex19_8.out ex19_8.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_8, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_8.tmp
-runex19_9: 
+runex19_9:
 	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view -da_refine 1 -ksp_type fgmres  > ex19_9.tmp 2>&1; \
 	   if (${DIFF} output/ex19_9.out ex19_9.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_9, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_9.tmp
-runex19_10: 
+runex19_10:
 	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type symmetric_multiplicative -snes_view  -da_refine 1 -ksp_type fgmres > ex19_10.tmp 2>&1; \
 	   if (${DIFF} output/ex19_10.out ex19_10.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_10, diffs above \n========================================="; fi; \
@@ -713,8 +713,8 @@ runex19_bjacobi: #test hierarchical pc
 	   else  echo  ${PWD} "\nPossible problem with with ex19_bjacobi, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 
-runex19_draw: 
-	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd 
+runex19_draw:
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd
 
 runex18:
 	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view > ex18_1.tmp 2>&1; \
@@ -948,17 +948,17 @@ TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f9
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm 
+TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm
 TESTEXAMPLES_F90	       = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
-TESTEXAMPLES_13		       = 
-TESTEXAMPLES_MATLAB_ENGINE     = 
-TESTEXAMPLES_AMS	       = 
+TESTEXAMPLES_13		       =
+TESTEXAMPLES_MATLAB_ENGINE     =
+TESTEXAMPLES_AMS	       =
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
-TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_3 runex19_4  ex19.rm 
+TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_3 runex19_4  ex19.rm
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex19.PETSc  ex19.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
 TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
-TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm 
+TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm
 
 include ${PETSC_DIR}/conf/test

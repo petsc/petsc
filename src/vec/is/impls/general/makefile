@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = general.c 
+SOURCEC  = general.c
 SOURCEF  =
 SOURCEH  = general.h
 LIBBASE  = libpetscvec

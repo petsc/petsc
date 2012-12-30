@@ -334,7 +334,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
    Requires that PETSc be configured with the option --with-afterimage to save the images and ffmpeg must be in your path to make the movie
 
-   If X windows generates an error message about X_CreateWindow() failing then Afterimage was installed without X windows. Reinstall Afterimage using the 
+   If X windows generates an error message about X_CreateWindow() failing then Afterimage was installed without X windows. Reinstall Afterimage using the
    ./configure flags --x-includes=/pathtoXincludes --x-libraries=/pathtoXlibraries   For example under Mac OS X Mountain Lion --x-includes=/opt/X11/include -x-libraries=/opt/X11/lib
 
 

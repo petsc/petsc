@@ -4740,7 +4740,7 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
-   using the matrix.  
+   using the matrix.
 
    ALL processes that share a matrix MUST call MatAssemblyBegin() and MatAssemblyEnd() the SAME NUMBER of times, and each time with the
    same flag of MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY for all processes. Thus you CANNOT locally change from ADD_VALUES to INSERT_VALUES, that is
@@ -8193,7 +8193,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(P,2);
   if (!P->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
- 
+
   if (P->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
 
@@ -8211,7 +8211,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
         ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
         ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
         ierr = MatDestroy(&AP);CHKERRQ(ierr);
-      } 
+      }
       ierr = MatDestroy(&Pt);CHKERRQ(ierr);
     } else {
       ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
@@ -8248,7 +8248,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (viatranspose || viamatmatmatmult) {
     Mat Pt;
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    if (viamatmatmatmult){ 
+    if (viamatmatmatmult){
       ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
       ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
     } else {

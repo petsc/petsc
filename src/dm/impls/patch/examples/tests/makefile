@@ -1,11 +1,11 @@
 
-CFLAGS	        = 
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/patch/examples/tests/
 EXAMPLESC       = ex1.c
-EXAMPLESF       = 
+EXAMPLESF       =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
