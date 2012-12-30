@@ -9,6 +9,7 @@ struct _PetscSFOps {
   PetscErrorCode (*SetUp)(PetscSF);
   PetscErrorCode (*SetFromOptions)(PetscSF);
   PetscErrorCode (*View)(PetscSF,PetscViewer);
+  PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
   PetscErrorCode (*BcastBegin)(PetscSF,MPI_Datatype,const void*,void*);
   PetscErrorCode (*BcastEnd)(PetscSF,MPI_Datatype,const void*,void*);
   PetscErrorCode (*ReduceBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);

@@ -141,7 +141,7 @@ PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf,PetscSFWindowSyncType sync)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveEnum(sf,sync,2);
-  ierr = PetscTryMethod(sf,"PetscSFWindowSetSyncType_C",(PetscSF,PetscSFWindowSyncType),(sf,sync));CHKERRQ(ierr);
+  ierr = PetscUseMethod(sf,"PetscSFWindowSetSyncType_C",(PetscSF,PetscSFWindowSyncType),(sf,sync));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -437,6 +437,18 @@ static PetscErrorCode PetscSFView_Window(PetscSF sf,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFDuplicate_Window"
+static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf,PetscSFDuplicateOption opt,PetscSF newsf)
+{
+  PetscSF_Window *w = (PetscSF_Window*)sf->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFWindowSetSyncType(newsf,w->sync);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFBcastBegin_Window"
 static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
@@ -561,6 +573,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->Reset           = PetscSFReset_Window;
   sf->ops->Destroy         = PetscSFDestroy_Window;
   sf->ops->View            = PetscSFView_Window;
+  sf->ops->Duplicate       = PetscSFDuplicate_Window;
   sf->ops->BcastBegin      = PetscSFBcastBegin_Window;
   sf->ops->BcastEnd        = PetscSFBcastEnd_Window;
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Window;

@@ -53,16 +53,26 @@ $  PETSCSF_WINDOW_SYNC_FENCE - simplest model, synchronizing across communicator
 $  PETSCSF_WINDOW_SYNC_LOCK - passive model, less synchronous, requires less setup than PETSCSF_WINDOW_SYNC_ACTIVE, but may require more handshakes
 $  PETSCSF_WINDOW_SYNC_ACTIVE - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than PETSCSF_WINDOW_SYNC_LOCK)
 
-   Level: beginner
+   Level: advanced
 
-.seealso: PetscSFWindowSetSyncType()
+.seealso: PetscSFWindowSetSyncType(), PetscSFWindowGetSyncType()
 E*/
 typedef enum {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_SYNC_ACTIVE} PetscSFWindowSyncType;
 PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
-#if !defined(PETSC_HAVE_MPI_WIN_CREATE) /* The intent here is to be able to compile even without a complete MPI. */
-typedef struct MPI_Win_MISSING *MPI_Win;
-#endif
+/*E
+    PetscSFDuplicateOption - Aspects to preserve when duplicating a PetscSF
+
+$  PETSCSF_DUPLICATE_CONFONLY - configuration only, user must call PetscSFSetGraph()
+$  PETSCSF_DUPLICATE_RANKS - communication ranks preserved, but different graph (allows simpler setup after calling PetscSFSetGraph())
+$  PETSCSF_DUPLICATE_GRAPH - entire graph duplicated
+
+   Level: beginner
+
+.seealso: PetscSFDuplicate()
+E*/
+typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICATE_GRAPH} PetscSFDuplicateOption;
+PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 PETSC_EXTERN PetscFList PetscSFList;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
@@ -118,7 +128,6 @@ M*/
 #define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,d)
 #endif
 
-
 PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(const char*);
 PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF*);
@@ -127,6 +136,7 @@ PETSC_EXTERN PetscErrorCode PetscSFSetType(PetscSF,PetscSFType);
 PETSC_EXTERN PetscErrorCode PetscSFView(PetscSF,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSFSetUp(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetFromOptions(PetscSF);
+PETSC_EXTERN PetscErrorCode PetscSFDuplicate(PetscSF,PetscSFDuplicateOption,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFWindowSetSyncType(PetscSF,PetscSFWindowSyncType);
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetSyncType(PetscSF,PetscSFWindowSyncType*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);

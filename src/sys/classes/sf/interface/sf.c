@@ -10,6 +10,8 @@
 #  define PetscSFCheckGraphSet(sf,arg) do {} while (0)
 #endif
 
+const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",0};
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFCreate"
 /*@C
@@ -81,6 +83,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   ierr = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
   sf->graphset = PETSC_FALSE;
   if (sf->ops->Reset) {ierr = (*sf->ops->Reset)(sf);CHKERRQ(ierr);}
+  sf->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -476,15 +479,45 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
     }
   }
 
-  ierr = PetscSFCreate(((PetscObject)sf)->comm,isf);CHKERRQ(ierr);
-  ierr = PetscSFSetType(*isf,((PetscObject)sf)->type_name);CHKERRQ(ierr);
-  {
-    PetscSFWindowSyncType synctype;
-    ierr = PetscSFWindowGetSyncType(sf,&synctype);CHKERRQ(ierr);
-    ierr = PetscSFWindowSetSyncType(*isf,synctype);CHKERRQ(ierr);
-  }
+  ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,isf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*isf,maxlocal,count,newilocal,PETSC_OWN_POINTER,roots,PETSC_COPY_VALUES);CHKERRQ(ierr);
   ierr = PetscFree2(roots,leaves);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFDuplicate"
+/*@
+   PetscSFDuplicate - duplicate a PetscSF, optionally preserving rank connectivity and graph
+
+   Collective
+
+   Input Arguments:
++  sf - communication object to duplicate
+-  opt - PETSCSF_DUPLICATE_CONFONLY, PETSCSF_DUPLICATE_RANKS, or PETSCSF_DUPLICATE_GRAPH (see PetscSFDuplicateOption)
+
+   Output Arguments:
+.  newsf - new communication object
+
+   Level: beginner
+
+.seealso: PetscSFCreate(), PetscSFSetType(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *newsf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFCreate(((PetscObject)sf)->comm,newsf);CHKERRQ(ierr);
+  ierr = PetscSFSetType(*newsf,((PetscObject)sf)->type_name);CHKERRQ(ierr);
+  if (sf->ops->Duplicate) {ierr = (*sf->ops->Duplicate)(sf,opt,*newsf);CHKERRQ(ierr);}
+  if (opt == PETSCSF_DUPLICATE_GRAPH) {
+    PetscInt nroots,nleaves;
+    const PetscInt *ilocal;
+    const PetscSFNode *iremote;
+    ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*newsf,nroots,nleaves,ilocal,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -679,8 +712,12 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
       remote[i].rank = sf->ranks[i];
       remote[i].index = 0;
     }
-    ierr = PetscSFCreate(((PetscObject)sf)->comm,&bgcount);CHKERRQ(ierr);
-    ierr = PetscSFWindowSetSyncType(bgcount,PETSCSF_WINDOW_SYNC_LOCK);CHKERRQ(ierr); /* or FENCE, ACTIVE here would cause recursion */
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,&bgcount);CHKERRQ(ierr);
+    {                           /* Hack to prevent possible recursion */
+      PetscBool isWindow;
+      ierr = PetscObjectTypeCompare((PetscObject)bgcount,PETSCSFWINDOW,&isWindow);CHKERRQ(ierr);
+      if (isWindow) {ierr = PetscSFWindowSetSyncType(bgcount,PETSCSF_WINDOW_SYNC_LOCK);CHKERRQ(ierr);} /* or FENCE, ACTIVE here would cause recursion */
+    }
     ierr = PetscSFSetGraph(bgcount,1,sf->nranks,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeBegin(bgcount,&indegree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
@@ -738,8 +775,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidPointer(multi,2);
-  if (sf->nroots < 0) {
-    ierr = PetscSFCreate(((PetscObject)sf)->comm,&sf->multi);CHKERRQ(ierr);
+  if (sf->nroots < 0) {         /* Graph has not been set yet; why do we need this? */
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&sf->multi);CHKERRQ(ierr);
     *multi = sf->multi;
     PetscFunctionReturn(0);
   }
@@ -772,13 +809,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       remote[i].rank = sf->remote[i].rank;
       remote[i].index = outoffset[i];
     }
-    ierr = PetscSFCreate(((PetscObject)sf)->comm,&sf->multi);CHKERRQ(ierr);
-    ierr = PetscSFSetType(sf->multi,((PetscObject)sf)->type_name);CHKERRQ(ierr);
-    {
-      PetscSFWindowSyncType synctype;
-      ierr = PetscSFWindowGetSyncType(sf,&synctype);CHKERRQ(ierr);
-      ierr = PetscSFWindowSetSyncType(sf->multi,synctype);CHKERRQ(ierr);
-    }
+    ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&sf->multi);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(sf->multi,inoffset[sf->nroots],sf->nleaves,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     if (sf->rankorder) {        /* Sort the ranks */
       PetscMPIInt rank;
@@ -864,13 +895,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
       nleaves++;
     }
   }
-  ierr = PetscSFCreate(((PetscObject)sf)->comm,newsf);CHKERRQ(ierr);
-  ierr = PetscSFSetType(*newsf,((PetscObject)sf)->type_name);CHKERRQ(ierr);
-  {
-    PetscSFWindowSyncType synctype;
-    ierr = PetscSFWindowGetSyncType(sf,&synctype);CHKERRQ(ierr);
-    ierr = PetscSFWindowSetSyncType(*newsf,synctype);CHKERRQ(ierr);
-  }
+  ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
