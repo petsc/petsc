@@ -182,6 +182,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscFunctionBegin;
   if (sf->setupcalled) PetscFunctionReturn(0);
   if (!((PetscObject)sf)->type_name) {ierr = PetscSFSetType(sf,PETSCSFWINDOW);CHKERRQ(ierr);}
+  if (sf->ops->SetUp) {ierr = (*sf->ops->SetUp)(sf);CHKERRQ(ierr);}
   sf->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

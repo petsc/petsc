@@ -1,10 +1,10 @@
 ALL: lib
 
 SOURCEH	 =
-SOURCEC  =
+SOURCEC  = sfbasic.c
 LIBBASE	 = libpetscsys
-DIRS	 = window basic
-LOCDIR   = src/sys/classes/sf/impls/
+DIRS	 =
+LOCDIR   = src/sys/classes/sf/impls/basic/
 MANSEC   = PetscSF
 
 include ${PETSC_DIR}/conf/variables

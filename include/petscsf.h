@@ -30,6 +30,7 @@ typedef struct _p_PetscSF* PetscSF;
 J*/
 typedef const char *PetscSFType;
 #define PETSCSFWINDOW "window"
+#define PETSCSFBASIC  "basic"
 
 /*S
    PetscSFNode - specifier of owner and index

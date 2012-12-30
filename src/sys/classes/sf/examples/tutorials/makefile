@@ -19,13 +19,25 @@ runex1:
 	-@${MPIEXEC} -n 4 ./ex1 -test_bcast  > ex1_1.tmp 2>&1; \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || echo "${PWD}\n Possible problem with with ex1, diffs above \n========================================="; \
 	   ${RM} -f ex1_1.tmp
+runex1_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_bcast -sf_type basic  > ex1_1.tmp 2>&1; \
+	   ${DIFF} output/ex1_1_basic.out ex1_1.tmp || echo "${PWD}\n Possible problem with with ex1_basic, diffs above \n========================================="; \
+	   ${RM} -f ex1_1.tmp
 runex1_2:
 	-@${MPIEXEC} -n 4 ./ex1 -test_reduce > ex1_2.tmp 2>&1; \
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || echo "${PWD}\n Possible problem with with ex1_2, diffs above \n========================================="; \
 	   ${RM} -f ex1_2.tmp
+runex1_2_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_reduce -sf_type basic > ex1_2.tmp 2>&1; \
+	   ${DIFF} output/ex1_2_basic.out ex1_2.tmp || echo "${PWD}\n Possible problem with with ex1_2_basic, diffs above \n========================================="; \
+	   ${RM} -f ex1_2.tmp
 runex1_3:
 	-@${MPIEXEC} -n 4 ./ex1 -test_degree  > ex1_3.tmp 2>&1; \
 	   ${DIFF} output/ex1_3.out ex1_3.tmp || echo "${PWD}\n Possible problem with with ex1_3, diffs above \n========================================="; \
+	   ${RM} -f ex1_3.tmp
+runex1_3_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_degree -sf_type basic  > ex1_3.tmp 2>&1; \
+	   ${DIFF} output/ex1_3_basic.out ex1_3.tmp || echo "${PWD}\n Possible problem with with ex1_3_basic, diffs above \n========================================="; \
 	   ${RM} -f ex1_3.tmp
 runex1_4:
 	-@${MPIEXEC} -n 4 ./ex1 -test_gather  > ex1_4.tmp 2>&1; \
