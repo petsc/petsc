@@ -269,16 +269,16 @@ class Configure(config.base.Configure):
     libs = []
     for i in self.framework.packages:
       if i.useddirectly:
-        self.addDefine('HAVE_'+i.PACKAGE, 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
+        self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       libs.extend(i.lib)
-      self.addMakeMacro(i.PACKAGE+'_LIB', self.libraries.toStringNoDupes(i.lib))
+      self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
         includes.extend(i.include)
-        self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
+        self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     if self.framework.argDB['with-single-library']:
       self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
@@ -446,7 +446,7 @@ class Configure(config.base.Configure):
         cmakeset(fd,'PETSC_HAVE_MPIUNI')
       for pkg in self.framework.packages:
         if pkg.useddirectly:
-          cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE)
+          cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE.replace('-','_'))
         for pair in pkg.defines.items():
           if pair[0].startswith('HAVE_') and pair[1]:
             cmakeset(fd, self.framework.getFullDefineName(pkg, pair[0]), pair[1])
