@@ -6,7 +6,7 @@ Framework hooks
 
   The Framework will first instantiate the object and call setupDependencies(). All require()
   calls should be made in that method.
-  
+
   The Framework will then call configure(). If it succeeds, the object will be marked as configured.
 
 Generic test execution
@@ -71,7 +71,7 @@ class Configure(script.Script):
     self.framework       = framework
     self.defines         = {}
     self.makeRules       = {}
-    self.makeMacros      = {}        
+    self.makeMacros      = {}
     self.typedefs        = {}
     self.prototypes      = {}
     self.subst           = {}
@@ -186,7 +186,7 @@ class Configure(script.Script):
   def checkExecutable(self, dir, name):
     prog  = os.path.join(dir, name)
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
-    prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')') 
+    prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
     found = 0
     self.framework.log.write('Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
@@ -594,12 +594,12 @@ class Configure(script.Script):
       (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
     except RuntimeError, e:
       self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
-    if os.path.isfile(self.compilerObj): 
+    if os.path.isfile(self.compilerObj):
       try:
         os.remove(self.compilerObj)
       except RuntimeError, e:
         self.framework.log.write('ERROR while removing object file: '+str(e)+'\n')
-    if cleanup and os.path.isfile(self.linkerObj): 
+    if cleanup and os.path.isfile(self.linkerObj):
       try:
         if os.path.exists('/usr/bin/cygcheck.exe'): time.sleep(1)
         os.remove(self.linkerObj)

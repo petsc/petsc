@@ -67,4 +67,4 @@ if __name__ ==  '__main__':
   if len(sys.argv) < 2:
     sys.exit('Usage: setupRC.py <BuildSystem path>')
   setupRC(sys.argv[1])
-  
+

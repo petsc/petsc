@@ -40,7 +40,7 @@ def getSplicersDir(splicedimpls,dir,names):
 
       line = fd.readline()
     fd.close()
-  
+
 def getSplicers(directories):
   splicedimpls = {'.c' : {}, '.h' : {}, '.cc' : {}, '.hh' : {}, '.py' : {}, '.m' : {}}
 
@@ -51,7 +51,7 @@ def getSplicers(directories):
   f    = open('splicerblocks', 'w')
   cPickle.dump(splicedimpls,f)
   f.close()
-    
+
 if __name__ ==  '__main__':
   if len(sys.argv) > 2: sys.exit('Usage: getsplicers.py <directory>')
   getSplicers(sys.argv[1:-1])

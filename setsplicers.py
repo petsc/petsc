@@ -39,7 +39,7 @@ def setSplicersDir(splicedimpls,dir,names):
           body = body + line
           line = fd.readline()
 
-            
+
         # replace body with saved splicer block
         if name.endswith('._includes') and ext == '.cc':
           foundreplacement = 1
@@ -61,7 +61,7 @@ def setSplicersDir(splicedimpls,dir,names):
         else:
 #          print 'Cannot find splicer block '+name+' '+f+' ext '+ext
           pass
-          
+
 #         convert ASE directory hierarchy of includes
         nb = ''
         for l in body.split('\n'):
@@ -73,10 +73,10 @@ def setSplicersDir(splicedimpls,dir,names):
               t = '#include "'+string.join(fn[0:-1],'_')+'.hh"'
               nb = nb + t + '\n'
             else:
-              nb = nb + l + '\n'              
+              nb = nb + l + '\n'
           else:
-            nb = nb + l + '\n'              
-          
+            nb = nb + l + '\n'
+
         text = text+nb
         text = text+line
       line = fd.readline()
@@ -89,7 +89,7 @@ def setSplicersDir(splicedimpls,dir,names):
       fd.close()
 
 #    print text
-  
+
 def setSplicers(directory):
 
   f    = open('splicerblocks', 'r')
@@ -108,7 +108,7 @@ def setSplicers(directory):
           splicedimpls[i][newname] = splicedimpls[i][j]
           del splicedimpls[i][j]
 
-  
+
   regset    = re.compile('\.set\(([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*)\)[ ]*;')
   regcreate = re.compile('\.create\(([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*)\)[ ]*;')
   replaces =  {'SIDL/Args':'SIDLASE/Args',    'SIDL/ProjectState':'SIDLASE/ProjectState',
@@ -124,13 +124,13 @@ def setSplicers(directory):
         splicedimpls[i][j] = regset.sub('.set(\\2,\\1);',splicedimpls[i][j])
       if regcreate.search(splicedimpls[i][j]):
         splicedimpls[i][j] = regcreate.sub('.createRow(\\1,\\2,\\3);',splicedimpls[i][j])
-      for k in replaces:    
+      for k in replaces:
         splicedimpls[i][j] = splicedimpls[i][j].replace(k,replaces[k])
-  
+
   if not directory: directory = os.getcwd()
   os.path.walk(directory,setSplicersDir,splicedimpls)
 
-    
+
 if __name__ ==  '__main__':
   if len(sys.argv) > 2: sys.exit('Usage: getsplicers.py <directory>')
   sys.argv.append(None)

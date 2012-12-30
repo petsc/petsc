@@ -9,7 +9,7 @@ import pwd
 
 def edit(astring):
   filename = os.path.join('/tmp', pwd.getpwuid(os.getuid())[0]+'-emacsclient')
-  
+
   f = open(filename,'w')
   f.write(astring)
   f.close()

@@ -18,20 +18,20 @@ import urllib
 import httplib
 import HTMLParser
 
-# -----------------------------------------------------------------    
+# -----------------------------------------------------------------
 
 class iproject:
   def __init__(self,url):
     self.url  = url
     self.text = 'None'
-    
+
 # -----------------------------------------------------------------
 
 class CursesInstallGUI(HTMLParser.HTMLParser):
   def __init__(self):
     HTMLParser.HTMLParser.__init__(self)
     self.foundProject = 0
-    
+
   def handle_starttag(self, tag, attrs):
     if tag == 'a':
       if not attrs[0][0] == 'href': return
@@ -47,7 +47,7 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
     if self.foundProject == 3:
       self.iprojects[-1].text = data
       self.foundProject = 0
-    
+
   def Welcome(self,stdscr):
     bootstrap.CursesInstall.CenterAddStr(stdscr,1,'Welcome to the ASE Project Installer')
     bootstrap.CursesInstall.CenterAddStr(stdscr,3,'The SIDL Language and compiler included were developed')
@@ -67,7 +67,7 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
     for i in self.argsDB['installedprojects']:
       bootstrap.CursesInstall.CenterAddStr(stdscr,cnt,i.getUrl())
       cnt = cnt+1
-          
+
     bootstrap.CursesInstall.CenterAddStr(stdscr,cnt+1,'(hit any key to continue)')
     stdscr.refresh()
     curses.halfdelay(100)
@@ -100,8 +100,8 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
         if not i.url.find('-release') == -1: self.iprojects.remove(i)  # remove  PETSc 2 releases
         if not i.url.find('/bugdb') == -1: self.iprojects.remove(i)    # remove BitKeeper crap
         if not i.url.find('petsc-dev') == -1: self.iprojects.remove(i) # remove PETSc 2
-        if not i.url.find('blaslapack') == -1: self.iprojects.remove(i) 
-        
+        if not i.url.find('blaslapack') == -1: self.iprojects.remove(i)
+
 
   def SelectProject(self,stdscr):
     stdscr.clear()
@@ -140,4 +140,4 @@ if __name__ ==  '__main__':
   curses.wrapper(gui.SelectProject)
   curses.wrapper(gui.cursesRunInstaller)
 
-      
+

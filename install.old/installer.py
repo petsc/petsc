@@ -13,7 +13,7 @@ def runinstaller(opts = []):
   import importer
   import installerclass
   installer   = installerclass.Installer(sys.argv[1:]+opts)
-    
+
   compilerUrl = 'bk://sidl.bkbits.net/Compiler'
   # Must copy list since target is reset by each make below
   for url in installer.argDB.target[:]:
@@ -38,6 +38,6 @@ def runinstaller(opts = []):
           profile.run('installer.install(url)')
         else:
           installer.install(url)
-  
+
 if __name__ == '__main__':
   runinstaller()

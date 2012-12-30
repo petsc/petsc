@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
 *** Incomplete cygwin install detected . /usr/bin/make is missing. **************
 *** Please rerun cygwin-setup and select module "make" for install.**************''')
       else:
-        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run ./configure again')    
+        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run ./configure again')
     # Check for GNU make
     haveGNUMake = 0
     self.getExecutable('strings', getFullPath = 1)
@@ -58,13 +58,13 @@ class Configure(config.base.Configure):
           haveGNUMake = 1
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
-        
+
     # Setup make flags
     self.flags = ''
     if haveGNUMake:
       self.flags += ' --no-print-directory'
     self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
-      
+
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:
       self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
@@ -158,7 +158,7 @@ class Configure(config.base.Configure):
     if not hasattr(self, 'mv'): raise RuntimeError('Could not locate mv executable')
     self.getExecutable('cp',   getFullPath = 1)
     if not hasattr(self, 'cp'): raise RuntimeError('Could not locate cp executable')
-    self.getExecutable('grep', getFullPath = 1)    
+    self.getExecutable('grep', getFullPath = 1)
     if not hasattr(self, 'grep'): raise RuntimeError('Could not locate grep executable')
     self.getExecutable('rm -f',getFullPath = 1, resultName = 'RM')
     if not hasattr(self, 'RM'): raise RuntimeError('Could not locate rm executable')
@@ -185,7 +185,7 @@ class Configure(config.base.Configure):
           raise RuntimeError('''\
 *** Fedora 8 Linux with broken diffutils-2.8.1-17.fc8 detected. ****************
 *** Run "sudo yum update diffutils" to get the latest bugfixed version. ********''')
-        raise RuntimeError(self.diff+' executable does not properly handle -w (whitespace) option')        
+        raise RuntimeError(self.diff+' executable does not properly handle -w (whitespace) option')
       self.diff = self.diff + ' -w'
       self.addMakeMacro('DIFF',self.diff)
     else:
@@ -209,5 +209,5 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-make'] == '0':
       self.executeTest(self.configureMake)
       self.executeTest(self.configureMkdir)
-      self.executeTest(self.configurePrograms)    
+      self.executeTest(self.configurePrograms)
     return

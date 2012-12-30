@@ -80,7 +80,7 @@ choke me
     if 'known-memcmp-ok' in self.framework.argDB:
       if self.framework.argDB['known-memcmp-ok'] == 0:
         raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed')
-      else: 
+      else:
         return
     if not self.framework.argDB['with-batch']:
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):

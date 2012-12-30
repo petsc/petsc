@@ -23,7 +23,7 @@ class Configure(config.package.Package):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.blasLapack]
     return
-          
+
   def Install(self):
     self.framework.log.write('umfpackDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
@@ -54,7 +54,7 @@ class Configure(config.package.Package):
     g.write('INSTALL_LIB       = ' + self.libDir + '\n')
     g.write('INSTALL_INCLUDE   = ' + self.includeDir + '\n')
     g.close()
-    
+
     # Build UMFPACK
     if self.installNeeded(mkfile):
       try:

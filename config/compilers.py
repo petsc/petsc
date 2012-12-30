@@ -152,7 +152,7 @@ class Configure(config.base.Configure):
         self.addDefine(language.upper()+'_RESTRICT', kw)
         self.popLanguage()
         return
-    # did not find restrict 
+    # did not find restrict
     self.addDefine(language.upper()+'_RESTRICT', ' ')
     self.logPrint('No '+str(language)+' restrict keyword', 4, 'compilers')
     self.popLanguage()
@@ -181,7 +181,7 @@ class Configure(config.base.Configure):
     # since doing that causes problems on other systems.
     if output.find('XL_CONFIG') >= 0:
       output = output.replace(',', ' ')
-      
+
     # Parse output
     argIter = iter(output.split())
     clibs = []
@@ -230,7 +230,7 @@ class Configure(config.base.Configure):
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
-        if m: 
+        if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
         # Check for special library arguments
@@ -259,8 +259,8 @@ class Configure(config.base.Configure):
           lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue          
-          if not lib in rpathflags:          
+          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
+          if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
             clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
@@ -271,7 +271,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-R.*$', arg)
         if m:
           lib = os.path.abspath(arg[2:])
-          if not lib in rpathflags:          
+          if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
             clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
@@ -389,7 +389,7 @@ class Configure(config.base.Configure):
     # since doing that causes problems on other systems.
     if output.find('XL_CONFIG') >= 0:
       output = output.replace(',', ' ')
-      
+
     # Parse output
     argIter = iter(output.split())
     cxxlibs = []
@@ -439,7 +439,7 @@ class Configure(config.base.Configure):
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
-        if m: 
+        if m:
           self.logPrint('Skipping system library: '+arg, 4, 'compilers')
           continue
         # Check for special library arguments
@@ -461,7 +461,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
-          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue                    
+          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
@@ -473,7 +473,7 @@ class Configure(config.base.Configure):
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
-          if not lib in rpathflags:          
+          if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
             cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
@@ -683,14 +683,14 @@ class Configure(config.base.Configure):
 
     However, the Fortran 77 intrinsic and run-time libraries must be
     linked in as well, but the C++ compiler/linker does not know how to
-    add these Fortran 77 libraries. 
+    add these Fortran 77 libraries.
 
     This code was translated from the autoconf macro which was packaged in
     its current form by Matthew D. Langston <langston@SLAC.Stanford.EDU>.
     However, nearly all of this macro came from the OCTAVE_FLIBS macro in
     octave-2.0.13/aclocal.m4, and full credit should go to John W. Eaton
     for writing this extremely useful macro.'''
-    if not hasattr(self.setCompilers, 'CC') or not hasattr(self.setCompilers, 'FC'): 
+    if not hasattr(self.setCompilers, 'CC') or not hasattr(self.setCompilers, 'FC'):
       return
     self.pushLanguage('FC')
     oldFlags = self.setCompilers.LDFLAGS
@@ -810,7 +810,7 @@ class Configure(config.base.Configure):
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
-        if m: 
+        if m:
           self.logPrint('Found system library therefor skipping: '+arg, 4, 'compilers')
           continue
         # Check for canonical library argument
@@ -826,7 +826,7 @@ class Configure(config.base.Configure):
           # HP Fortran prints these libraries in a very strange way
           if arg == '-l:libU77.a':  arg = '-lU77'
           if arg == '-l:libF90.a':  arg = '-lF90'
-          if arg == '-l:libIO77.a': arg = '-lIO77'                      
+          if arg == '-l:libIO77.a': arg = '-lIO77'
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
@@ -853,7 +853,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
-          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue          
+          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
@@ -916,7 +916,7 @@ class Configure(config.base.Configure):
             if os.path.isdir(l):
               lib1 = '-L'+os.path.abspath(l)
               if lib1 in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
-              if not arg in lflags:              
+              if not arg in lflags:
                 flibs.append(lib1)
                 lflags.append(lib1)
                 self.logPrint('Handling HPUX list of directories: '+l, 4, 'compilers')
@@ -1259,7 +1259,7 @@ class Configure(config.base.Configure):
       elif os.path.isfile(os.path.join(testdir, 'configtest.mod')) or os.path.isfile(os.path.join(testdir, 'CONFIGTEST.mod')):
         if os.path.isfile(os.path.join(testdir, 'configtest.mod')): modname = 'configtest.mod'
         if os.path.isfile(os.path.join(testdir, 'CONFIGTEST.mod')): modname = 'CONFIGTEST.mod'
-        self.logPrint('Fortran module output flag '+flag+' found', 3, 'compilers')        
+        self.logPrint('Fortran module output flag '+flag+' found', 3, 'compilers')
         self.setCompilers.fortranModuleOutputFlag = flag
         found = 1
       else:

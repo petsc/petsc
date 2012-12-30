@@ -81,7 +81,7 @@ class CompilerOptions(config.base.Configure):
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
       except:
         pass
-    
+
     flags = []
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
@@ -246,7 +246,7 @@ class CompilerOptions(config.base.Configure):
             version = output.split('\r\n')[1]
           else:
             version = output.split('\n')[0]
-          
+
     except RuntimeError, e:
       self.framework.log.write('Could not determine compiler version: '+str(e))
     self.framework.log.write('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')

@@ -27,7 +27,7 @@ class Configure(config.package.Package):
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
     return
 
-  
+
   def __str__(self):
     return 'BLAS/LAPACK: '+self.libraries.toString(self.lib)+'\n'
 
@@ -96,7 +96,7 @@ class Configure(config.package.Package):
     calls      = ['','']
     for routine in range(len(routines)):
       routines[routine] = self.getPrefix()+routines[routine]
-       
+
     if fortranMangle=='stdcall':
       if routines == ['dgetrs','dgeev']:
         prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
@@ -113,7 +113,7 @@ class Configure(config.package.Package):
     '''Checking for BLAS and LAPACK symbols'''
 
     #check for BLASLAPACK_STDCALL calling convention!!!!
-    
+
     if blasLibrary is None:
       self.separateBlas = 0
       blasLibrary       = lapackLibrary
@@ -179,7 +179,7 @@ class Configure(config.package.Package):
       if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
         self.download= [self.framework.argDB['download-f-blas-lapack']]
       self.fblaslapack = 1
-      
+
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
       if self.defaultPrecision == '__float128':
@@ -218,7 +218,7 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml.a'), 1)
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'), 1)
-      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)      
+      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       # Check MATLAB [ILP64] MKL
       yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'], 1)
       # Check Linux MKL variations
@@ -301,7 +301,7 @@ class Configure(config.package.Package):
     yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'], 1)
     # Try MacOSX location
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
-    yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'], 1)    
+    yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'], 1)
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'), 1)
     # Sun locations
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a','libm.a'], 1)
@@ -317,13 +317,13 @@ class Configure(config.package.Package):
         yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'), 1)
         yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'), 1)
         mkldir = os.path.join(mklpath, 'em64t', 'lib')
-        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)      
+        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
         yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)
     if self.framework.argDB['download-f-blas-lapack'] == 2:
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
-      libdir = self.downLoadBlasLapack('f','f')            
+      libdir = self.downLoadBlasLapack('f','f')
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
     return
 
@@ -363,7 +363,7 @@ class Configure(config.package.Package):
     blasDir = self.packageDir
 
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
-    f = open(os.path.join(blasDir,'makefile'),'r')    
+    f = open(os.path.join(blasDir,'makefile'),'r')
     line = f.readline()
     while line:
       if line.startswith('CC  '):
@@ -391,7 +391,7 @@ class Configure(config.package.Package):
         self.setCompilers.pushLanguage('FC')
         line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n'
         noopt = self.checkNoOptFlag()
-        self.setCompilers.popLanguage()       
+        self.setCompilers.popLanguage()
       if line.startswith('FNOOPT'):
         self.setCompilers.pushLanguage('FC')
         line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
@@ -406,7 +406,7 @@ class Configure(config.package.Package):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
-      
+
 
       if line.startswith('include'):
         line = '\n'

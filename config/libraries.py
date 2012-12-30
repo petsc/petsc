@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
       - If the path ends in ".lib" return it unchanged
       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
       - If the filename is "lib"<name>, return -l<name>
-      - If the path ends in ".so" return it unchanged       
+      - If the path ends in ".so" return it unchanged
       - If the path is absolute, return it unchanged
       - Otherwise return -l<library>'''
     if not library:

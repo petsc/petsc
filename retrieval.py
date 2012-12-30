@@ -79,7 +79,7 @@ Unable to download package %s from: %s
 Downloaded package %s from: %s is not a tarball.
 [or installed python cannot process compressed files]
 * If you are behind a firewall - please fix your proxy and rerun ./configure
-  For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov 
+  For example at LANL you may need to set the environmental variable http_proxy (or HTTP_PROXY?) to  http://proxyout.lanl.gov
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
@@ -256,7 +256,7 @@ and if that succeeds then rerun ./configure
 
   def sshRetrieve(self, url, root, canExist = 0, force = 0):
     command = 'hg clone '+url+' '+os.path.join(root,os.path.basename(url))
-    output  = config.base.Configure.executeShellCommand(command)      
+    output  = config.base.Configure.executeShellCommand(command)
     return root
 
   def oldRetrieve(self, url, root = None, canExist = 0, force = 0):

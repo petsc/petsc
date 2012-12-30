@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
     include = include.replace('\\)',')').replace(')', '\\)')
     if include[0] == '-':
       return [include]
-    
+
     self.pushLanguage('FC')
     string = self.setCompilers.fortranModuleIncludeFlag+include
     self.popLanguage()

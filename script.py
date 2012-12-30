@@ -169,7 +169,7 @@ class Script(logger.Logger):
       input.close()
       if useSelect:
         outputClosed = 0
-        errorClosed  = 0  
+        errorClosed  = 0
         lst = [output, error]
         while 1:
           ready = select.select(lst, [], [])
