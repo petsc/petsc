@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = DMDAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);	
 
   // Create the HDF5 viewer
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer); CHKERRQ(ierr);	
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);	
 
   // Write the H5 file
   ierr = VecView(gauss,H5viewer);CHKERRQ(ierr);	

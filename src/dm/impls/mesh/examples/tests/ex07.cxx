@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   verbosity = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = testWindowedArrowContainer();                                   CHKERRQ(ierr);
+  ierr = testWindowedArrowContainer();CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();

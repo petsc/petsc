@@ -496,7 +496,7 @@ PetscErrorCode PostStep(TS ts)
   PetscReal       t;
 
   PetscFunctionBeginUser;
-  ierr = TSGetTime(ts,&t); CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
   PetscFunctionReturn(0);
 }

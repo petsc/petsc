@@ -78,7 +78,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);         CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
@@ -261,13 +261,13 @@ int main(int argc,char **args)
   /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
-  ierr = VecAXPY(x,-1.0,u); CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY, &e); CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_INFINITY, &e);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-print_error",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
   }
 
   /*

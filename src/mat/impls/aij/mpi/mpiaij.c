@@ -2139,7 +2139,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(B,A->cmap->bs,A->rmap->bs); CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(B,A->cmap->bs,A->rmap->bs);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
     ierr = PetscFree4(d_nnz,o_nnz,g_nnz,oloc);CHKERRQ(ierr);
@@ -2469,7 +2469,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, c
   ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
   ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
   ierr = MatSetSizes(fact, m, n, M, N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(fact,A->rmap->bs,A->cmap->bs); CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(fact,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(fact, ((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2841,7 +2841,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
 
     ierr = MatCreate(subcomm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,mlocal_sub,mlocal_sub,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(C,mat->rmap->bs,mat->cmap->bs); CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(C,mat->rmap->bs,mat->cmap->bs);CHKERRQ(ierr);
     ierr = MatSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(C,rownz_max,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(C,rownz_max,PETSC_NULL,rownz_max,PETSC_NULL);CHKERRQ(ierr);
@@ -3652,9 +3652,9 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
     PetscInt cbs;
-    ierr = ISGetBlockSize(iscol,&cbs); CHKERRQ(ierr);
+    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
     ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(iscol_local,cbs); CHKERRQ(ierr);
+    ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
   }
   ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
@@ -3755,7 +3755,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
     }
     ierr = MatCreate(comm,&M);CHKERRQ(ierr);
     ierr = MatSetSizes(M,m,nlocal,PETSC_DECIDE,n);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(M,bs,cbs); CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(M,bs,cbs);CHKERRQ(ierr);
     ierr = MatSetType(M,((PetscObject)mat)->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(M,0,dlens,0,olens);CHKERRQ(ierr);
     ierr = PetscFree(dlens);CHKERRQ(ierr);
@@ -4133,7 +4133,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
-  /* ierr = MatSetBlockSizes(M,bs,cbs); CHKERRQ(ierr); */
+  /* ierr = MatSetBlockSizes(M,bs,cbs);CHKERRQ(ierr); */
   ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocationCSR(*mat,i,j,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4465,9 +4465,9 @@ PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm comm,Mat inmat
   }
 
   ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE); CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(*outmat,bs,cbs); CHKERRQ(ierr);
-  ierr = MatSetType(*outmat,MATMPIAIJ);  CHKERRQ(ierr);
+  ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
+  ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4954,7 +4954,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   } else {
     ierr = MatSetSizes(B_mpi,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   }
-  ierr = MatSetBlockSizes(B_mpi,bs,cbs); CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(B_mpi,bs,cbs);CHKERRQ(ierr);
   ierr = MatSetType(B_mpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);

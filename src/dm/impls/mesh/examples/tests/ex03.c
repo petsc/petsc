@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr = testBiGraphDiv2();                                              CHKERRQ(ierr);
+  ierr = testBiGraphDiv2();CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);

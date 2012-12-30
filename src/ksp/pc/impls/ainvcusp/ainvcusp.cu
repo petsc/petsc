@@ -76,7 +76,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   try {
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ainv->AINVCUSP =  0; CHKERRQ(1); /* TODO */
+    ainv->AINVCUSP =  0;CHKERRQ(1); /* TODO */
 #else
     gpustruct = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
 #ifdef PETSC_HAVE_TXPETSCGPU

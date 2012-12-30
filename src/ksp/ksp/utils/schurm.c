@@ -641,6 +641,6 @@ PetscErrorCode KSPMatRegisterAll(const char path[])
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",MatCreate_SchurComplement); CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",MatCreate_SchurComplement);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

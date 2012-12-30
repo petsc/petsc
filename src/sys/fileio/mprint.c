@@ -164,7 +164,7 @@ $  PetscErrorCode ierr;
 $
 $  PetscFunctionBegin;
 $   if (fd != stdout && fd != stderr) {  handle regular files
-$      ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERR(ierr);
+$      ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERR(ierr);
 $  } else {
 $     char   buff[BIG];
 $     size_t length;
@@ -675,7 +675,7 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 
   PetscFunctionBegin;
   if (fd != stdout && fd != stderr) { /* handle regular files */
-    ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERRQ(ierr);
+    ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERRQ(ierr);
   } else {
     size_t len=8*1024,length;
     char   buf[len];

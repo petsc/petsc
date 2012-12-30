@@ -364,7 +364,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     /* Create chunk */
     chunkspace = H5Pcreate(H5P_DATASET_CREATE);
     if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
-    status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
+    status = H5Pset_chunk(chunkspace, dim, chunkDims);CHKERRQ(status);
 
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);

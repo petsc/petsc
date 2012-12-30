@@ -43,7 +43,7 @@ int main(int argc,char **argv) {
   ierr = PetscPrintf(PETSC_COMM_SELF, "B: %d,%d\n",m,n);
 
   /* Register the multiplication routine. */
-  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL,(PetscVoidFunction)MatMatMult_SeqAIJ_SeqDense,"MatMatMult",2,MATSEQAIJ,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL,(PetscVoidFunction)MatMatMult_SeqAIJ_SeqDense,"MatMatMult",2,MATSEQAIJ,MATSEQDENSE);CHKERRQ(ierr);
 
   /* Remove this routine from B's FList to prevent double dispatch from that FList: do this by passing in a null url and function pointer together with the type- (and language-) specific op name. */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqaij_seqdense_C", PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);

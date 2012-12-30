@@ -65,7 +65,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
   }
   try {
 #if defined(PETSC_USE_COMPLEX)
-    sa->SACUSPPoly = 0; CHKERRQ(1); /* TODO */
+    sa->SACUSPPoly = 0;CHKERRQ(1); /* TODO */
 #else
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);

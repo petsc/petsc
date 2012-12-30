@@ -350,7 +350,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
                       1, /* 1 dof */
                       1, /* stencil = 1 */
                       PETSC_NULL,
-                      &dac ); CHKERRQ(ierr);
+                      &dac );CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
@@ -378,19 +378,19 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
 
   ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
   ierr = VecSet(ac,66.99);CHKERRQ(ierr);
 
-  ierr = DMCreateGlobalVector(daf,&af); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
 
-  ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
+  ierr = MatMult(INTERP,ac, af);CHKERRQ(ierr);
 
   {
     Vec       afexact;
     PetscReal nrm;
     PetscInt  N;
 
-    ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daf,&afexact);CHKERRQ(ierr);
     ierr = VecSet(afexact,66.99);CHKERRQ(ierr);
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
@@ -443,7 +443,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
                       1, /* 1 dof */
                       1, /* stencil = 1 */
                       PETSC_NULL, PETSC_NULL,
-                      &dac ); CHKERRQ(ierr);
+                      &dac );CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
@@ -455,7 +455,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 
   /* apply conformal mappings */
   map_id = 0;
-  ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL ); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL );CHKERRQ(ierr);
   if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
@@ -479,18 +479,18 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 
   ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
   ierr = DADefineXLinearField2D(dac,ac);CHKERRQ(ierr);
 
-  ierr = DMCreateGlobalVector(daf,&af); CHKERRQ(ierr);
-  ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
+  ierr = MatMult(INTERP,ac, af);CHKERRQ(ierr);
 
   {
     Vec       afexact;
     PetscReal nrm;
     PetscInt  N;
 
-    ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daf,&afexact);CHKERRQ(ierr);
     ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
     ierr = DADefineXLinearField2D(daf,afexact);CHKERRQ(ierr);
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
@@ -544,7 +544,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
                       1, /* 1 dof */
                       1, /* stencil = 1 */
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,
-                      &dac ); CHKERRQ(ierr);
+                      &dac );CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
@@ -558,7 +558,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   /*ierr = DAApplyTrilinearMapping(dac);CHKERRQ(ierr);*/
   /* apply conformal mappings */
   map_id = 0;
-  ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL ); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL );CHKERRQ(ierr);
   if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
@@ -581,21 +581,21 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
 
   ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
   ierr = VecZeroEntries(ac);CHKERRQ(ierr);
   ierr = DADefineXLinearField3D(dac,ac);CHKERRQ(ierr);
 
-  ierr = DMCreateGlobalVector(daf,&af); CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
   ierr = VecZeroEntries(af);CHKERRQ(ierr);
 
-  ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
+  ierr = MatMult(INTERP,ac, af);CHKERRQ(ierr);
 
   {
     Vec       afexact;
     PetscReal nrm;
     PetscInt  N;
 
-    ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daf,&afexact);CHKERRQ(ierr);
     ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
     ierr = DADefineXLinearField3D(daf,afexact);CHKERRQ(ierr);
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */

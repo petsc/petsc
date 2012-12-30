@@ -99,7 +99,7 @@ PetscErrorCode  KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPPGMRES,     path,"KSPCreate_PGMRES",    KSPCreate_PGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSPECEST,    path,"KSPCreate_SpecEst",  KSPCreate_SpecEst);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = KSPRegisterDynamic(KSPDGMRES,     path,"KSPCreate_DGMRES", KSPCreate_DGMRES); CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPDGMRES,     path,"KSPCreate_DGMRES", KSPCreate_DGMRES);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

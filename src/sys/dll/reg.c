@@ -692,18 +692,18 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
 
   PetscFunctionBegin;
   if (!*fl) {
-    ierr           = PetscNew(struct _n_PetscOpFList,&entry); CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(op,&entry->op);          CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(url,&(entry->url));      CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscOpFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(op,&entry->op);CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(url,&(entry->url));CHKERRQ(ierr);
     ierr           = PetscFListGetPathAndFunction(url,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->name    = fname;
     entry->routine = fnc;
     entry->numArgs = numArgs;
     if (numArgs) {
-      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));CHKERRQ(ierr);
       for (i = 0; i < numArgs; ++i) {
-        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
+        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));CHKERRQ(ierr);
       }
     }
     entry->next    = 0;
@@ -733,28 +733,28 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
       if (!match) goto next;
       if (numArgs) {
         for (i = 0; i < numArgs; ++i) {
-          ierr = PetscStrcmp(argTypes[i], ne->argTypes[i], &match);  CHKERRQ(ierr);
+          ierr = PetscStrcmp(argTypes[i], ne->argTypes[i], &match);CHKERRQ(ierr);
           if (!match) goto next;
         }
       }
       if (!url && !fnc) {
         /* remove this record */
         if (e) e->next = ne->next;
-        ierr = PetscFree(ne->op);    CHKERRQ(ierr);
-        ierr = PetscFree(ne->url);   CHKERRQ(ierr);
-        ierr = PetscFree(ne->path);  CHKERRQ(ierr);
-        ierr = PetscFree(ne->name);  CHKERRQ(ierr);
+        ierr = PetscFree(ne->op);CHKERRQ(ierr);
+        ierr = PetscFree(ne->url);CHKERRQ(ierr);
+        ierr = PetscFree(ne->path);CHKERRQ(ierr);
+        ierr = PetscFree(ne->name);CHKERRQ(ierr);
         if (numArgs) {
           for (i = 0; i < numArgs; ++i) {
-            ierr = PetscFree(ne->argTypes[i]);  CHKERRQ(ierr);
+            ierr = PetscFree(ne->argTypes[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFree(ne->argTypes);       CHKERRQ(ierr);
+          ierr = PetscFree(ne->argTypes);CHKERRQ(ierr);
         }
-        ierr = PetscFree(ne);                   CHKERRQ(ierr);
+        ierr = PetscFree(ne);CHKERRQ(ierr);
       }
       else {
         /* Replace url, fpath, fname and fnc. */
-        ierr = PetscStrallocpy(url, &(ne->url)); CHKERRQ(ierr);
+        ierr = PetscStrallocpy(url, &(ne->url));CHKERRQ(ierr);
         ierr = PetscFListGetPathAndFunction(url,&fpath,&fname);CHKERRQ(ierr);
         ierr = PetscFree(ne->path);CHKERRQ(ierr);
         ierr = PetscFree(ne->name);CHKERRQ(ierr);
@@ -766,17 +766,17 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
       next: {e = ne; ne = ne->next;}
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(struct _n_PetscOpFList,&entry);           CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(op,&entry->op);                    CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscOpFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(op,&entry->op);CHKERRQ(ierr);
     entry->numArgs = numArgs;
     if (numArgs) {
-      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));CHKERRQ(ierr);
       for (i = 0; i < numArgs; ++i) {
-        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
+        ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));CHKERRQ(ierr);
       }
     }
-    ierr = PetscStrallocpy(url, &(entry->url));                         CHKERRQ(ierr);
-    ierr           = PetscFListGetPathAndFunction(url,&fpath,&fname);   CHKERRQ(ierr);
+    ierr = PetscStrallocpy(url, &(entry->url));CHKERRQ(ierr);
+    ierr           = PetscFListGetPathAndFunction(url,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->name    = fname;
     entry->routine = fnc;
@@ -830,11 +830,11 @@ PetscErrorCode  PetscOpFListDestroy(PetscOpFList *fl)
   entry = *fl;
   while (entry) {
     next = entry->next;
-    ierr = PetscFree(entry->op);  CHKERRQ(ierr);
+    ierr = PetscFree(entry->op);CHKERRQ(ierr);
     for (i = 0; i < entry->numArgs; ++i) {
-      ierr = PetscFree(entry->argTypes[i]); CHKERRQ(ierr);
+      ierr = PetscFree(entry->argTypes[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(entry->argTypes);  CHKERRQ(ierr);
+    ierr = PetscFree(entry->argTypes);CHKERRQ(ierr);
     ierr = PetscFree(entry->url);CHKERRQ(ierr);
     ierr = PetscFree(entry->path);CHKERRQ(ierr);
     ierr = PetscFree(entry->name);CHKERRQ(ierr);
@@ -900,7 +900,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
   match = PETSC_FALSE;
   entry = fl;
   while (entry) {
-    ierr = PetscStrcmp(entry->op,op,&match); CHKERRQ(ierr);
+    ierr = PetscStrcmp(entry->op,op,&match);CHKERRQ(ierr);
     if (!match) goto next;
     if (numArgs == entry->numArgs)
       match = PETSC_TRUE;
@@ -909,7 +909,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
     if (!match) goto next;
     if (numArgs) {
       for (i = 0; i < numArgs; ++i) {
-        ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
+        ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);CHKERRQ(ierr);
         if (!match) goto next;
       }
     }
@@ -963,16 +963,16 @@ PetscErrorCode  PetscOpFListView(PetscOpFList list,PetscViewer viewer)
 
   while (list) {
     if (list->url) {
-      ierr = PetscViewerASCIIPrintf(viewer," %s: ",list->url); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer," %s: ",list->url);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "%s(", list->op);    CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%s(", list->op);CHKERRQ(ierr);
     for (i = 0; i < list->numArgs;++i) {
       if (i > 0) {
-        ierr = PetscViewerASCIIPrintf(viewer, ", "); CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "%s", list->argTypes[i]);    CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%s", list->argTypes[i]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, ")\n");    CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, ")\n");CHKERRQ(ierr);
     list = list->next;
   }
   PetscFunctionReturn(0);

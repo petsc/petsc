@@ -47,15 +47,15 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscPrintf(comm, "Creating a doublet Sieve bottom-up\n");CHKERRQ(ierr);
-  ierr = createDoubletSieveBottomUp(comm, &doublet);               CHKERRQ(ierr);
+  ierr = createDoubletSieveBottomUp(comm, &doublet);CHKERRQ(ierr);
   doublet->view("Bottom-up Doublet");                       
-  ierr = viewStrata(doublet, "Bottom-up Doublet");                 CHKERRQ(ierr);
+  ierr = viewStrata(doublet, "Bottom-up Doublet");CHKERRQ(ierr);
   delete doublet;
 
-  ierr = PetscPrintf(comm, "Creating a doublet Sieve top-down\n"); CHKERRQ(ierr);
-  ierr = createDoubletSieveTopDown(comm, &doublet);                CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Creating a doublet Sieve top-down\n");CHKERRQ(ierr);
+  ierr = createDoubletSieveTopDown(comm, &doublet);CHKERRQ(ierr);
   doublet->view("Top-down Doublet");                       
-  ierr = viewStrata(doublet, "Top-down Doublet");                  CHKERRQ(ierr);
+  ierr = viewStrata(doublet, "Top-down Doublet");CHKERRQ(ierr);
   delete doublet;
 
   ierr = PetscFinalize();

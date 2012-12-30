@@ -309,23 +309,23 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
   PetscValidPointer(objlist,3);
   PetscValidPointer(count,4);
   PetscValidPointer(numbering,5);
-  ierr = MPI_Comm_size(comm, &size);                   CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);                   CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   roots = 0;
   for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
-    ierr = MPI_Comm_rank(objlist[i]->comm, &srank);         CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(objlist[i]->comm, &srank);CHKERRQ(ierr);
     /* Am I the root of the i-th subcomm? */
     if (!srank) ++roots;
   }
   /* Obtain the sum of all roots -- the global number of distinct subcomms. */
-  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
+  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   /* Now introduce a global numbering for subcomms, initially known only by subcomm roots. */
   /*
    At the subcomm roots number the subcomms in the subcomm-root local manner,
    and make it global by calculating the shift.
    */
-  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
+  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   offset -= roots;
   /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
   /*
@@ -336,8 +336,8 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
   for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
     numbering[i] = offset + roots; /* only meaningful if !srank. */
-    ierr = MPI_Comm_rank(objlist[i]->comm, &srank);      CHKERRQ(ierr);
-    ierr = MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm); CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(objlist[i]->comm, &srank);CHKERRQ(ierr);
+    ierr = MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm);CHKERRQ(ierr);
     if (!srank) ++roots;
   }
 

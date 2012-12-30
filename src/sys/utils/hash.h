@@ -670,7 +670,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h){
   PetscErrorCode _15_ierr;
   PetscFunctionBegin;
   PetscValidPointer(h,1);
-  _15_ierr = PetscNew(struct _PetscHashIJ, (h)); CHKERRQ(_15_ierr);
+  _15_ierr = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
   (*h)->ht = kh_init(HASHIJ);
   (*h)->multivalued = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -749,7 +749,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashI
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))){ierr = PetscHashIJIterNext((h),(*hi),(hi)); CHKERRQ(ierr);}
+  (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))){ierr = PetscHashIJIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -809,7 +809,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i
     _11_ijval->head->k = (ii);
   }
   else {
-    ierr = PetscNew(IJNode, &_11_ijnode); CHKERRQ(ierr);
+    ierr = PetscNew(IJNode, &_11_ijnode);CHKERRQ(ierr);
     _11_ijnode->k = (ii);
     _11_ijval = &(kh_val((h)->ht,_11_hi));
     if (!_11_ijval->tail) {
@@ -838,11 +838,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJK
   PetscErrorCode ierr;
   PetscFunctionBegin;
   n = 0;
-  ierr = PetscHashIJIterBegin((h),&_12_hi); CHKERRQ(ierr);
+  ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
   while(!PetscHashIJIterAtEnd((h),_12_hi)) {
-    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key); CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);CHKERRQ(ierr);
     (arr)[(n)++] = _12_key;
-    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -859,18 +859,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt
   PetscHashIJKey _12_key;
   PetscInt n = 0;
   PetscFunctionBegin;
-  ierr = PetscHashIJIterBegin((h),&_12_hi); CHKERRQ(ierr);
+  ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
   while(!PetscHashIJIterAtEnd((h),_12_hi)) {
-    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);    CHKERRQ(ierr);
-    ierr = PetscHashIJIterGetValIter((h),_12_hi,&_12_vi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetValIter((h),_12_hi,&_12_vi);CHKERRQ(ierr);
     while(!PetscHashIJValIterAtEnd((h),_12_vi)) {
       (iarr)[(n)] = _12_key.i;
       (jarr)[(n)] = _12_key.j;
-      ierr = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]); CHKERRQ(ierr);
+      ierr = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]);CHKERRQ(ierr);
       ++(n);
-      ierr = PetscHashIJValIterNext((h),_12_vi, &_12_vi); CHKERRQ(ierr);
+      ierr = PetscHashIJValIterNext((h),_12_vi, &_12_vi);CHKERRQ(ierr);
     }
-    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -884,18 +884,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHash
   PetscInt         _14_val;
   PetscErrorCode   ierr;
   PetscFunctionBegin;
-  ierr = PetscHashIJCreate((hd)); CHKERRQ(ierr);
-  ierr = PetscHashIJIterBegin((h),&_14_hi); CHKERRQ(ierr);
+  ierr = PetscHashIJCreate((hd));CHKERRQ(ierr);
+  ierr = PetscHashIJIterBegin((h),&_14_hi);CHKERRQ(ierr);
   while(!PetscHashIJIterAtEnd((h),_14_hi)){
-    ierr = PetscHashIJIterGetKey((h),_14_hi,&_14_key); CHKERRQ(ierr);
-    ierr = PetscHashIJIterGetValIter((h),_14_hi,&_14_vi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetKey((h),_14_hi,&_14_key);CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetValIter((h),_14_hi,&_14_vi);CHKERRQ(ierr);
     while(!PetscHashIJValIterAtEnd((h),_14_vi)) {
-      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi); CHKERRQ(ierr);
-      ierr = PetscHashIJValIterGetVal((h),_14_vi,&_14_val); CHKERRQ(ierr);
-      ierr = PetscHashIJAdd((*hd), _14_key,_14_val); CHKERRQ(ierr);
-      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi); CHKERRQ(ierr);
+      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi);CHKERRQ(ierr);
+      ierr = PetscHashIJValIterGetVal((h),_14_vi,&_14_val);CHKERRQ(ierr);
+      ierr = PetscHashIJAdd((*hd), _14_key,_14_val);CHKERRQ(ierr);
+      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi);CHKERRQ(ierr);
     }
-    ierr = PetscHashIJIterNext((h),_14_hi, &_14_hi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterNext((h),_14_hi, &_14_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -909,16 +909,16 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h) {
     PetscHashIJIter _15_hi;
     PetscHashIJValIter  _15_vi, _15_vid;
     PetscErrorCode _15_ierr;
-    ierr = PetscHashIJIterBegin((h),&_15_hi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterBegin((h),&_15_hi);CHKERRQ(ierr);
     while(!PetscHashIJIterAtEnd((h),_15_hi)) {
-      ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi); CHKERRQ(ierr);
+      ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi);CHKERRQ(ierr);
       while(!PetscHashIJValIterAtEnd((h),_15_vi)){ 
         _15_vid = _15_vi;
-        ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi); CHKERRQ(ierr);
+        ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
         _15_vid->next = 0;
-        _15_ierr = PetscFree(_15_vid); CHKERRQ(_15_ierr);
+        _15_ierr = PetscFree(_15_vid);CHKERRQ(_15_ierr);
       }
-      ierr = PetscHashIJIterNext((h),_15_hi,&_15_hi); CHKERRQ(ierr);
+      ierr = PetscHashIJIterNext((h),_15_hi,&_15_hi);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -929,7 +929,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h) {
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscHashIJClearValues((h)); CHKERRQ(ierr);
+  ierr = PetscHashIJClearValues((h));CHKERRQ(ierr);
   kh_clear(HASHIJ,(h)->ht);   
   (h)->size = 0;
   PetscFunctionReturn(0);
@@ -947,7 +947,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h){
       kh_destroy(HASHIJ,(*h)->ht);
       (*h)->ht=0;
     }
-    _16_ierr = PetscFree((*h)); CHKERRQ(_16_ierr);  
+    _16_ierr = PetscFree((*h));CHKERRQ(_16_ierr);  
   }
   PetscFunctionReturn(0);
 }

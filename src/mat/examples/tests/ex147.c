@@ -92,9 +92,9 @@ PetscInt main(PetscInt argc,char **args)
 
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);
-    fftw_free(in1); ierr = VecDestroy(&fin) ;  CHKERRQ(ierr);
-    fftw_free(out); ierr = VecDestroy(&fout);  CHKERRQ(ierr);
-    fftw_free(in2); ierr = VecDestroy(&fout1); CHKERRQ(ierr);
+    fftw_free(in1); ierr = VecDestroy(&fin) ;CHKERRQ(ierr);
+    fftw_free(out); ierr = VecDestroy(&fout);CHKERRQ(ierr);
+    fftw_free(in2); ierr = VecDestroy(&fout1);CHKERRQ(ierr);
 
     ierr = PetscFinalize();
     return 0;

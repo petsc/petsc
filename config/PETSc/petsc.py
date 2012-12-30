@@ -275,7 +275,7 @@ class Configure(config.base.Configure):
   def checkWorkingLink(self):
     '''Checking that we can link a PETSc executable'''
     self.pushLanguage(self.languages.clanguage)
-    if not self.checkPETScLink('#include <petsclog.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
+    if not self.checkPETScLink('#include <petsclog.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time);CHKERRQ(ierr);\n'):
       self.logPrint('PETSc cannot link, which indicates a problem with the PETSc installation')
       return 0
     self.logPrint('PETSc can link with '+self.languages.clanguage)
@@ -284,7 +284,7 @@ class Configure(config.base.Configure):
     if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
-      if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petscsys.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
+      if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petscsys.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time);CHKERRQ(ierr);\n'):
         self.logPrint('PETSc cannot link C++ but can link C, which indicates a problem with the PETSc installation')
         self.popLanguage()
         return 0

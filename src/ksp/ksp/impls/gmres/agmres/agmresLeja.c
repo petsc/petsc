@@ -60,8 +60,8 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   PetscScalar    *n_cmpl,temp;
   PetscErrorCode  ierr;
   PetscInt        i, pos, j;
-  ierr = PetscMalloc(m*sizeof(PetscScalar), &n_cmpl); CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt), &spos); CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscScalar), &n_cmpl);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt), &spos);CHKERRQ(ierr);
 
   PetscFunctionBegin;
   /* Check the proper order of complex conjugate pairs */
@@ -104,7 +104,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
       j++;
     }
   }
-  ierr = PetscFree(spos); CHKERRQ(ierr);
-  ierr = PetscFree(n_cmpl); CHKERRQ(ierr);
+  ierr = PetscFree(spos);CHKERRQ(ierr);
+  ierr = PetscFree(n_cmpl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

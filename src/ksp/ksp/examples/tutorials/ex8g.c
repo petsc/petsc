@@ -273,13 +273,13 @@ int main(int argc,char **args)
   /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
-  ierr = VecAXPY(x,-1.0,u); CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY, &e); CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_INFINITY, &e);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-print_error",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
   }
 
   /*
@@ -288,7 +288,7 @@ int main(int argc,char **args)
   */
 
   if (user_set_subdomains) {
-    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris); CHKERRQ(ierr);
+    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris);CHKERRQ(ierr);
   }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

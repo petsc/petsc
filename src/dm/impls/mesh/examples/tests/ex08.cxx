@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   
   try {
-    ierr = testArrowFilters();                           CHKERRQ(ierr);
-    ierr = testCone();                                   CHKERRQ(ierr);
+    ierr = testArrowFilters();CHKERRQ(ierr);
+    ierr = testCone();CHKERRQ(ierr);
   }
   catch(const ALE::FilterDef::FilterError& e) {
     std::cout << "FILTER ERROR: " << e.msg() << std::endl;

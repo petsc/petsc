@@ -18,17 +18,17 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create the DA and extract its size info. */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR,-M,-N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, PETSC_NULL, &M,&N,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&i0,&j0,PETSC_NULL,&m,&n,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gi0,&gj0,PETSC_NULL,&gm,&gn,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR,-M,-N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, PETSC_NULL, &M,&N,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&i0,&j0,PETSC_NULL,&m,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gi0,&gj0,PETSC_NULL,&gm,&gn,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create MATIJ with m*n local rows (and columns). */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATIJ);CHKERRQ(ierr);
 #if 0
-  ierr = PetscOptionsGetBool(PETSC_NULL, "--preallocate", &preallocate, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "--preallocate", &preallocate, &flag);CHKERRQ(ierr);
   if (preallocate) {
   }
 #endif
@@ -48,15 +48,15 @@ int main(int argc,char **args)
         e0[k] = i*M+j; e1[k] = (i)*M+j+1;
         ++k;
       }
-      MatIJSetEdges(A,k,e0,e1); CHKERRQ(ierr);
+      MatIJSetEdges(A,k,e0,e1);CHKERRQ(ierr);
 
     }
   }
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);    CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* View A. */
-  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);

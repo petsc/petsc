@@ -43,9 +43,9 @@ PetscErrorCode PCSetCoordinates_GEO( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
-  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+  ierr  = MatGetBlockSize( Amat, &bs );CHKERRQ( ierr );
 
-  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend );CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
   if (nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %d %d.",a_nloc,nloc);
@@ -61,8 +61,8 @@ PetscErrorCode PCSetCoordinates_GEO( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
-    ierr = PetscFree( pc_gamg->data );  CHKERRQ(ierr);
-    ierr = PetscMalloc((arrsz+1)*sizeof(PetscReal), &pc_gamg->data ); CHKERRQ(ierr);
+    ierr = PetscFree( pc_gamg->data );CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz+1)*sizeof(PetscReal), &pc_gamg->data );CHKERRQ(ierr);
   }
   for (kk=0;kk<arrsz;kk++)pc_gamg->data[kk] = -999.;
   pc_gamg->data[arrsz] = -99.;
@@ -111,7 +111,7 @@ PetscErrorCode PCSetFromOptions_GEO( PC pc )
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-GEO options"); CHKERRQ(ierr);
+  ierr = PetscOptionsHead("GAMG-GEO options");CHKERRQ(ierr);
   {
     /* -pc_gamg_sa_nsmooths */
     /* pc_gamg_sa->smooths = 0; */
@@ -126,7 +126,7 @@ PetscErrorCode PCSetFromOptions_GEO( PC pc )
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   /* call base class */
-  ierr = PCSetFromOptions_GAMG( pc ); CHKERRQ(ierr);
+  ierr = PCSetFromOptions_GAMG( pc );CHKERRQ(ierr);
 
   if ( pc_gamg->verbose ) {
     MPI_Comm  wcomm = ((PetscObject)pc)->comm;
@@ -179,19 +179,19 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
   PetscReal            tm;
   PetscFunctionBegin;
 
-  ierr = MPI_Comm_rank(wcomm,&mype);    CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);     CHKERRQ(ierr);
-  ierr = ISGetSize( selected_2, &nselected_2 );        CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = ISGetSize( selected_2, &nselected_2 );CHKERRQ(ierr);
   if (nselected_2 == 1 || nselected_2 == 2 ){ /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
   }
   else *a_worst_best = 0.0;
-  ierr = MPI_Allreduce( a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm );  CHKERRQ(ierr);
+  ierr = MPI_Allreduce( a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm );CHKERRQ(ierr);
   if ( tm > 0.0 ) {
     *a_worst_best = 100.0;
     PetscFunctionReturn(0);
   }
-  ierr = MatGetOwnershipRange( a_Prol, &Istart, &Iend );  CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange( a_Prol, &Istart, &Iend );CHKERRQ(ierr);
   nFineLoc = (Iend-Istart)/bs; myFine0 = Istart/bs;
   nPlotPts = nFineLoc; /* locals */
   /* traingle */
@@ -199,8 +199,8 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
   in.numberofpoints = nselected_2;
   in.numberofpointattributes = 0;
   /* get nselected points */
-  ierr = PetscMalloc( 2*(nselected_2)*sizeof(REAL), &in.pointlist ); CHKERRQ(ierr);
-  ierr = ISGetIndices( selected_2, &selected_idx_2 );     CHKERRQ(ierr);
+  ierr = PetscMalloc( 2*(nselected_2)*sizeof(REAL), &in.pointlist );CHKERRQ(ierr);
+  ierr = ISGetIndices( selected_2, &selected_idx_2 );CHKERRQ(ierr);
 
   for (kk=0,sid=0;kk<nselected_2;kk++,sid += 2){
     PetscInt lid = selected_idx_2[kk];
@@ -314,8 +314,8 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
   { /* form P - setup some maps */
     PetscInt clid,mm,*nTri,*node_tri;
 
-    ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &node_tri ); CHKERRQ(ierr);
-    ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &nTri ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &node_tri );CHKERRQ(ierr);
+    ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &nTri );CHKERRQ(ierr);
 
     /* need list of triangles on node */
     for (kk=0;kk<nselected_2;kk++) nTri[kk] = 0;
@@ -330,7 +330,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
     /* find points and set prolongation */
     for ( mm = clid = 0 ; mm < nFineLoc ; mm++ ){
       PetscBool ise;
-      ierr = PetscCDEmptyAt(agg_lists_1,mm,&ise); CHKERRQ(ierr);
+      ierr = PetscCDEmptyAt(agg_lists_1,mm,&ise);CHKERRQ(ierr);
       if ( !ise ) {
         const PetscInt lid = mm;
         //for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++){
@@ -338,11 +338,11 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
         PetscScalar AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos         pos;
-        ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos); CHKERRQ(ierr);
+        ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
         while(pos){
           PetscInt flid;
-          ierr = PetscLLNGetID( pos, &flid ); CHKERRQ(ierr);
-          ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos); CHKERRQ(ierr);
+          ierr = PetscLLNGetID( pos, &flid );CHKERRQ(ierr);
+          ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
 
           if ( flid < nFineLoc ) {  /* could be a ghost */
             PetscInt bestTID = -1; PetscReal best_alpha = 1.e10;
@@ -425,7 +425,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
                 PetscInt cgid = crsGID[clids[idx]];
                 PetscInt jj = cgid*bs, ii = fgid*bs; /* need to gloalize */
                 for (tt=0 ; tt < bs ; tt++, ii++, jj++ ){
-                  ierr = MatSetValues(a_Prol,1,&ii,1,&jj,&shp,INSERT_VALUES); CHKERRQ(ierr);
+                  ierr = MatSetValues(a_Prol,1,&ii,1,&jj,&shp,INSERT_VALUES);CHKERRQ(ierr);
                 }
               }
             }
@@ -435,19 +435,19 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
       } /* a coarse agg */
     } /* for all fine nodes */
 
-    ierr = ISRestoreIndices( selected_2, &selected_idx_2 );     CHKERRQ(ierr);
+    ierr = ISRestoreIndices( selected_2, &selected_idx_2 );CHKERRQ(ierr);
     ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    ierr = PetscFree( node_tri );  CHKERRQ(ierr);
-    ierr = PetscFree( nTri );  CHKERRQ(ierr);
+    ierr = PetscFree( node_tri );CHKERRQ(ierr);
+    ierr = PetscFree( nTri );CHKERRQ(ierr);
   }
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[FIND_V],0,0,0,0);CHKERRQ(ierr);
 #endif
   free( mid.trianglelist );
   free( mid.neighborlist );
-  ierr = PetscFree( in.pointlist );  CHKERRQ(ierr);
+  ierr = PetscFree( in.pointlist );CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 #else
@@ -485,11 +485,11 @@ static PetscErrorCode getGIDsOnSquareGraph( const PetscInt nselected_1,
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(Gmat1,&my0,&Iend); CHKERRQ(ierr); /* AIJ */
+  ierr = MatGetOwnershipRange(Gmat1,&my0,&Iend);CHKERRQ(ierr); /* AIJ */
   nloc = Iend - my0; /* this does not change */
 
   if (npe == 1) { /* not much to do in serial */
-    ierr = PetscMalloc( nselected_1*sizeof(PetscInt), &crsGID ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nselected_1*sizeof(PetscInt), &crsGID );CHKERRQ(ierr);
     for (kk=0;kk<nselected_1;kk++) crsGID[kk] = kk;
     *a_Gmat_2 = 0;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,nselected_1,clid_lid_1,PETSC_COPY_VALUES,a_selected_2);
@@ -509,32 +509,32 @@ static PetscErrorCode getGIDsOnSquareGraph( const PetscInt nselected_1,
 
     if ( a_Gmat_2 ) { /* output */
       /* grow graph to get wider set of selected vertices to cover fine grid, invalidates 'llist' */
-      ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
+      ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );CHKERRQ(ierr);
       *a_Gmat_2 = Gmat2; /* output */
     }
     else Gmat2 = Gmat1;  /* use local to get crsGIDs at least */
     /* get coarse grid GIDS for selected (locals and ghosts) */
     mpimat2 = (Mat_MPIAIJ*)Gmat2->data;
-    ierr = MatGetVecs( Gmat2, &locState, 0 );         CHKERRQ(ierr);
-    ierr = VecSet( locState, (PetscScalar)(PetscReal)(-1) );  CHKERRQ(ierr); /* set with UNKNOWN state */
+    ierr = MatGetVecs( Gmat2, &locState, 0 );CHKERRQ(ierr);
+    ierr = VecSet( locState, (PetscScalar)(PetscReal)(-1) );CHKERRQ(ierr); /* set with UNKNOWN state */
     for (kk=0;kk<nselected_1;kk++){
       PetscInt fgid = clid_lid_1[kk] + my0;
       PetscScalar v = (PetscScalar)(kk+myCrs0);
-      ierr = VecSetValues( locState, 1, &fgid, &v, INSERT_VALUES );  CHKERRQ(ierr); /* set with PID */
+      ierr = VecSetValues( locState, 1, &fgid, &v, INSERT_VALUES );CHKERRQ(ierr); /* set with PID */
     }
-    ierr = VecAssemblyBegin( locState ); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd( locState ); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin( locState );CHKERRQ(ierr);
+    ierr = VecAssemblyEnd( locState );CHKERRQ(ierr);
     ierr = VecScatterBegin(mpimat2->Mvctx,locState,mpimat2->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr =   VecScatterEnd(mpimat2->Mvctx,locState,mpimat2->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetLocalSize( mpimat2->lvec, &num_fine_ghosts ); CHKERRQ(ierr);
-    ierr = VecGetArray( mpimat2->lvec, &cpcol_state ); CHKERRQ(ierr);
+    ierr = VecGetLocalSize( mpimat2->lvec, &num_fine_ghosts );CHKERRQ(ierr);
+    ierr = VecGetArray( mpimat2->lvec, &cpcol_state );CHKERRQ(ierr);
     for (kk=0,num_crs_ghost=0;kk<num_fine_ghosts;kk++){
       if ( (PetscInt)PetscRealPart(cpcol_state[kk]) != -1 ) num_crs_ghost++;
     }
-    ierr = PetscMalloc( (nselected_1+num_crs_ghost)*sizeof(PetscInt), &crsGID ); CHKERRQ(ierr); /* output */
+    ierr = PetscMalloc( (nselected_1+num_crs_ghost)*sizeof(PetscInt), &crsGID );CHKERRQ(ierr); /* output */
     {
       PetscInt *selected_set;
-      ierr = PetscMalloc( (nselected_1+num_crs_ghost)*sizeof(PetscInt), &selected_set ); CHKERRQ(ierr);
+      ierr = PetscMalloc( (nselected_1+num_crs_ghost)*sizeof(PetscInt), &selected_set );CHKERRQ(ierr);
       /* do ghost of 'crsGID' */
       for (kk=0,idx=nselected_1;kk<num_fine_ghosts;kk++){
         if ( (PetscInt)PetscRealPart(cpcol_state[kk]) != -1 ){
@@ -544,9 +544,9 @@ static PetscErrorCode getGIDsOnSquareGraph( const PetscInt nselected_1,
         }
       }
       assert(idx==(nselected_1+num_crs_ghost));
-      ierr = VecRestoreArray( mpimat2->lvec, &cpcol_state ); CHKERRQ(ierr);
+      ierr = VecRestoreArray( mpimat2->lvec, &cpcol_state );CHKERRQ(ierr);
       /* do locals in 'crsGID' */
-      ierr = VecGetArray( locState, &cpcol_state ); CHKERRQ(ierr);
+      ierr = VecGetArray( locState, &cpcol_state );CHKERRQ(ierr);
       for (kk=0,idx=0;kk<nloc;kk++){
         if ( (PetscInt)PetscRealPart(cpcol_state[kk]) != -1 ){
           PetscInt cgid = (PetscInt)PetscRealPart(cpcol_state[kk]);
@@ -555,17 +555,17 @@ static PetscErrorCode getGIDsOnSquareGraph( const PetscInt nselected_1,
         }
       }
       assert(idx==nselected_1);
-      ierr = VecRestoreArray( locState, &cpcol_state ); CHKERRQ(ierr);
+      ierr = VecRestoreArray( locState, &cpcol_state );CHKERRQ(ierr);
 
       if ( a_selected_2 != 0 ) { /* output */
         ierr = ISCreateGeneral(PETSC_COMM_SELF,(nselected_1+num_crs_ghost),selected_set,PETSC_OWN_POINTER,a_selected_2);
         CHKERRQ(ierr);
       }
       else {
-        ierr = PetscFree( selected_set );  CHKERRQ(ierr);
+        ierr = PetscFree( selected_set );CHKERRQ(ierr);
       }
     }
-    ierr = VecDestroy( &locState );                    CHKERRQ(ierr);
+    ierr = VecDestroy( &locState );CHKERRQ(ierr);
   }
   *a_crsGID = crsGID; /* output */
 
@@ -602,14 +602,14 @@ PetscErrorCode PCGAMGgraph_GEO( PC pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank( wcomm, &mype);  CHKERRQ(ierr);
-  ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
+  ierr = MPI_Comm_rank( wcomm, &mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size( wcomm, &npe);CHKERRQ(ierr);
 
-  ierr = MatIsSymmetricKnown(Amat, &set, &flg);        CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(Amat, &set, &flg);CHKERRQ(ierr);
   symm = (PetscBool)!(set && flg);
 
-  ierr  = PCGAMGCreateGraph( Amat, &Gmat ); CHKERRQ( ierr );
-  ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
+  ierr  = PCGAMGCreateGraph( Amat, &Gmat );CHKERRQ( ierr );
+  ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose );CHKERRQ( ierr );
 
   *a_Gmat = Gmat;
 #if defined PETSC_USE_LOG
@@ -651,29 +651,29 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC a_pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank( wcomm, &mype);  CHKERRQ(ierr);
-  ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange( Gmat, &Istart, &Iend ); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank( wcomm, &mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size( wcomm, &npe);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange( Gmat, &Istart, &Iend );CHKERRQ(ierr);
   nloc = (Iend-Istart);
 
   /* create random permutation with sort for geo-mg */
-  ierr = PetscMalloc( nloc*sizeof(GAMGNode), &gnodes ); CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt), &permute ); CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(GAMGNode), &gnodes );CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(PetscInt), &permute );CHKERRQ(ierr);
 
   for (Ii=Istart; Ii<Iend; Ii++) { /* locals only? */
-    ierr = MatGetRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+    ierr = MatGetRow(Gmat,Ii,&ncols,0,0);CHKERRQ(ierr);
     {
       PetscInt lid = Ii - Istart;
       gnodes[lid].lid = lid;
       gnodes[lid].degree = ncols;
     }
-    ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+    ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0);CHKERRQ(ierr);
   }
   /* randomize */
   srand(1); /* make deterministic */
   if ( PETSC_TRUE ) {
     PetscBool *bIndexSet;
-    ierr = PetscMalloc( nloc*sizeof(PetscBool), &bIndexSet ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscBool), &bIndexSet );CHKERRQ(ierr);
     for ( Ii = 0; Ii < nloc ; Ii++) bIndexSet[Ii] = PETSC_FALSE;
     for ( Ii = 0; Ii < nloc ; Ii++)
     {
@@ -687,7 +687,7 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC a_pc,
         bIndexSet[iSwapIndex] = PETSC_TRUE;
       }
     }
-    ierr = PetscFree( bIndexSet );  CHKERRQ(ierr);
+    ierr = PetscFree( bIndexSet );CHKERRQ(ierr);
   }
   /* only sort locals */
   qsort( gnodes, nloc, sizeof(GAMGNode), petsc_geo_mg_compare );
@@ -698,21 +698,21 @@ PetscErrorCode PCGAMGcoarsen_GEO( PC a_pc,
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_OWN_POINTER, &perm);
   CHKERRQ(ierr);
 
-  ierr = PetscFree( gnodes );  CHKERRQ(ierr);
+  ierr = PetscFree( gnodes );CHKERRQ(ierr);
 
   /* get MIS aggs */
 
-  ierr = MatCoarsenCreate( wcomm, &crs ); CHKERRQ(ierr);
-  ierr = MatCoarsenSetType( crs, MATCOARSENMIS ); CHKERRQ(ierr);
-  ierr = MatCoarsenSetGreedyOrdering( crs, perm ); CHKERRQ(ierr);
-  ierr = MatCoarsenSetAdjacency( crs, Gmat ); CHKERRQ(ierr);
-  ierr = MatCoarsenSetVerbose( crs, pc_gamg->verbose ); CHKERRQ(ierr);
-  ierr = MatCoarsenSetStrictAggs( crs, PETSC_FALSE ); CHKERRQ(ierr);
-  ierr = MatCoarsenApply( crs ); CHKERRQ(ierr);
-  ierr = MatCoarsenGetData( crs, a_llist_parent ); CHKERRQ(ierr);
-  ierr = MatCoarsenDestroy( &crs ); CHKERRQ(ierr);
+  ierr = MatCoarsenCreate( wcomm, &crs );CHKERRQ(ierr);
+  ierr = MatCoarsenSetType( crs, MATCOARSENMIS );CHKERRQ(ierr);
+  ierr = MatCoarsenSetGreedyOrdering( crs, perm );CHKERRQ(ierr);
+  ierr = MatCoarsenSetAdjacency( crs, Gmat );CHKERRQ(ierr);
+  ierr = MatCoarsenSetVerbose( crs, pc_gamg->verbose );CHKERRQ(ierr);
+  ierr = MatCoarsenSetStrictAggs( crs, PETSC_FALSE );CHKERRQ(ierr);
+  ierr = MatCoarsenApply( crs );CHKERRQ(ierr);
+  ierr = MatCoarsenGetData( crs, a_llist_parent );CHKERRQ(ierr);
+  ierr = MatCoarsenDestroy( &crs );CHKERRQ(ierr);
 
-  ierr = ISDestroy( &perm );                    CHKERRQ(ierr);
+  ierr = ISDestroy( &perm );CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGCoarsen_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -759,37 +759,37 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
 #endif
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange( Amat, &Istart, &Iend ); CHKERRQ(ierr);
-  ierr = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+  ierr = MatGetOwnershipRange( Amat, &Istart, &Iend );CHKERRQ(ierr);
+  ierr = MatGetBlockSize( Amat, &bs );CHKERRQ( ierr );
   nloc = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
 
   /* get 'nLocalSelected' */
-  ierr = PetscCDGetMIS( agg_lists, &selected_1 );        CHKERRQ(ierr);
-  ierr = ISGetSize( selected_1, &jj );               CHKERRQ(ierr);
-  ierr = PetscMalloc( jj*sizeof(PetscInt), &clid_flid ); CHKERRQ(ierr);
-  ierr = ISGetIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
+  ierr = PetscCDGetMIS( agg_lists, &selected_1 );CHKERRQ(ierr);
+  ierr = ISGetSize( selected_1, &jj );CHKERRQ(ierr);
+  ierr = PetscMalloc( jj*sizeof(PetscInt), &clid_flid );CHKERRQ(ierr);
+  ierr = ISGetIndices( selected_1, &selected_idx );CHKERRQ(ierr);
   for (kk=0,nLocalSelected=0;kk<jj;kk++) {
     PetscInt lid = selected_idx[kk];
     if ( lid<nloc ) {
-      ierr = MatGetRow(Gmat,lid+my0,&ncols,0,0); CHKERRQ(ierr);
+      ierr = MatGetRow(Gmat,lid+my0,&ncols,0,0);CHKERRQ(ierr);
       if ( ncols>1 ) { /* fiter out singletons */
         clid_flid[nLocalSelected++] = lid;
       }
       else assert(0); /* filtered in coarsening */
-      ierr = MatRestoreRow(Gmat,lid+my0,&ncols,0,0); CHKERRQ(ierr);
+      ierr = MatRestoreRow(Gmat,lid+my0,&ncols,0,0);CHKERRQ(ierr);
     }
   }
-  ierr = ISRestoreIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
-  ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr); /* this is selected_1 in serial */
+  ierr = ISRestoreIndices( selected_1, &selected_idx );CHKERRQ(ierr);
+  ierr = ISDestroy( &selected_1 );CHKERRQ(ierr); /* this is selected_1 in serial */
 
   /* create prolongator, create P matrix */
-  ierr = MatCreate( wcomm, &Prol ); CHKERRQ(ierr);
+  ierr = MatCreate( wcomm, &Prol );CHKERRQ(ierr);
   ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*bs,PETSC_DETERMINE,PETSC_DETERMINE);
   CHKERRQ(ierr);
-  ierr = MatSetBlockSizes( Prol, bs, bs ); CHKERRQ(ierr);
-  ierr = MatSetType( Prol, MATAIJ );   CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL);   CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL,3*data_cols,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatSetBlockSizes( Prol, bs, bs );CHKERRQ(ierr);
+  ierr = MatSetType( Prol, MATAIJ );CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL,3*data_cols,PETSC_NULL);CHKERRQ(ierr);
   /* ierr = MatCreateAIJ( wcomm,  */
   /*                      nloc*bs, nLocalSelected*bs, */
   /*                      PETSC_DETERMINE, PETSC_DETERMINE, */
@@ -799,13 +799,13 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
   /* CHKERRQ(ierr); */
 
   /* can get all points "removed" - but not on geomg */
-  ierr =  MatGetSize( Prol, &kk, &jj ); CHKERRQ(ierr);
+  ierr =  MatGetSize( Prol, &kk, &jj );CHKERRQ(ierr);
   if ( jj==0 ) {
     if ( verbose ) {
       PetscPrintf(wcomm,"[%d]%s ERROE: no selected points on coarse grid\n",mype,__FUNCT__);
     }
-    ierr = PetscFree( clid_flid );  CHKERRQ(ierr);
-    ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
+    ierr = PetscFree( clid_flid );CHKERRQ(ierr);
+    ierr = MatDestroy( &Prol );CHKERRQ(ierr);
     *a_P_out = PETSC_NULL;  /* out */
     PetscFunctionReturn(0);
   }
@@ -837,7 +837,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
       coords = (PetscReal*)pc_gamg->data;
       data_stride = pc_gamg->data_sz/pc_gamg->data_cell_cols;
     }
-    ierr = MatDestroy( &Gmat2 );  CHKERRQ(ierr);
+    ierr = MatDestroy( &Gmat2 );CHKERRQ(ierr);
 
     /* triangulate */
     if ( dim == 2 ) {
@@ -849,19 +849,19 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
                                      nLocalSelected, clid_flid, agg_lists, crsGID, bs, Prol, &metric );
       CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
-      ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET6],0,0,0,0); CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
 #endif
-      ierr = PetscFree( crsGID );  CHKERRQ(ierr);
+      ierr = PetscFree( crsGID );CHKERRQ(ierr);
 
       /* clean up and create coordinates for coarse grid (output) */
-      if (npe > 1) ierr = PetscFree( coords ); CHKERRQ(ierr);
+      if (npe > 1) ierr = PetscFree( coords );CHKERRQ(ierr);
 
-      ierr = MPI_Allreduce( &metric, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm );  CHKERRQ(ierr);
+      ierr = MPI_Allreduce( &metric, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm );CHKERRQ(ierr);
       if ( tm > 1. ) { /* needs to be globalized - should not happen */
         if ( verbose ) {
           PetscPrintf(wcomm,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,tm);
         }
-        ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
+        ierr = MatDestroy( &Prol );CHKERRQ(ierr);
         Prol = PETSC_NULL;
       }
       else if ( metric > .0 ) {
@@ -881,15 +881,15 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
         for (jj=0;jj<dim;jj++) crs_crds[jj*nLocalSelected + kk] = pc_gamg->data[jj*nloc + lid];
       }
 
-      ierr = PetscFree( pc_gamg->data ); CHKERRQ( ierr );
+      ierr = PetscFree( pc_gamg->data );CHKERRQ( ierr );
       pc_gamg->data = crs_crds; /* out */
       pc_gamg->data_sz = dim*nLocalSelected;
     }
-    ierr = ISDestroy( &selected_2 ); CHKERRQ(ierr);
+    ierr = ISDestroy( &selected_2 );CHKERRQ(ierr);
   }
 
   *a_P_out = Prol;  /* out */
-  ierr = PetscFree( clid_flid );  CHKERRQ(ierr);
+  ierr = PetscFree( clid_flid );CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGProlongator_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif

@@ -31,14 +31,14 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   PetscFunctionBegin;
   ierr = TSGetIJacobian(ts,&J,&P,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   y_data = (PetscScalar *) N_VGetArrayPointer(y);
-  ierr = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
+  ierr = VecPlaceArray(yy,y_data);CHKERRQ(ierr);
   ierr = VecZeroEntries(yydot);CHKERRQ(ierr); /* The Jacobian is independent of Ydot for ODE which is all that CVode works for */
   /* compute the shifted Jacobian   (1/gm)*I + Jrest */
   ierr = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,&J,&P,&str,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = VecResetArray(yy); CHKERRQ(ierr);
+  ierr = VecResetArray(yy);CHKERRQ(ierr);
   ierr = MatScale(P,gm);CHKERRQ(ierr);  /* turn into I-gm*Jrest, J is not used by Sundials  */
   *jcurPtr = TRUE;
-  ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
+  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,J,P,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -62,14 +62,14 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
   /* Make the PETSc work vectors rr and zz point to the arrays in the SUNDIALS vectors r and z respectively*/
   r_data  = (PetscScalar *) N_VGetArrayPointer(r);
   z_data  = (PetscScalar *) N_VGetArrayPointer(z);
-  ierr = VecPlaceArray(rr,r_data); CHKERRQ(ierr);
-  ierr = VecPlaceArray(zz,z_data); CHKERRQ(ierr);
+  ierr = VecPlaceArray(rr,r_data);CHKERRQ(ierr);
+  ierr = VecPlaceArray(zz,z_data);CHKERRQ(ierr);
 
   /* Solve the Px=r and put the result in zz */
-  ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
-  ierr = PCApply(pc,rr,zz); CHKERRQ(ierr);
-  ierr = VecResetArray(rr); CHKERRQ(ierr);
-  ierr = VecResetArray(zz); CHKERRQ(ierr);
+  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
+  ierr = PCApply(pc,rr,zz);CHKERRQ(ierr);
+  ierr = VecResetArray(rr);CHKERRQ(ierr);
+  ierr = VecResetArray(zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +95,7 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   y_data     = (PetscScalar *) N_VGetArrayPointer(y);
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
   ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr);
-  ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr);
+  ierr = VecPlaceArray(yyd,ydot_data);CHKERRABORT(comm,ierr);
 
   /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -105,11 +105,11 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
     ierr = TSComputeRHSFunction(ts,t,yy,yyd);CHKERRQ(ierr);
   } else {                      /* If rhsfunction is also set, this computes both parts and shifts them to the right */
     ierr = VecZeroEntries(yydot);CHKERRQ(ierr);
-    ierr = TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE); CHKERRABORT(comm,ierr);
+    ierr = TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE);CHKERRABORT(comm,ierr);
     ierr = VecScale(yyd,-1.);CHKERRQ(ierr);
   }
-  ierr = VecResetArray(yy); CHKERRABORT(comm,ierr);
-  ierr = VecResetArray(yyd); CHKERRABORT(comm,ierr);
+  ierr = VecResetArray(yy);CHKERRABORT(comm,ierr);
+  ierr = VecResetArray(yyd);CHKERRABORT(comm,ierr);
   PetscFunctionReturn(0);
 }
 
@@ -198,9 +198,9 @@ PetscErrorCode TSStep_Sundials(TS ts)
   }
 
   /* copy the solution from cvode->y to cvode->update and sol */
-  ierr = VecPlaceArray(cvode->w1,y_data); CHKERRQ(ierr);
+  ierr = VecPlaceArray(cvode->w1,y_data);CHKERRQ(ierr);
   ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
-  ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
+  ierr = VecResetArray(cvode->w1);CHKERRQ(ierr);
   ierr = VecCopy(cvode->update,ts->vec_sol);CHKERRQ(ierr);
   ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
   ierr = CVSpilsGetNumLinIters(mem, &its);
@@ -374,7 +374,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
-  ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
+  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&pcnone);CHKERRQ(ierr);
   if (pcnone){
@@ -488,7 +488,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     ierr = CVSpilsGetNumConvFails(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp);CHKERRQ(ierr);
 
-    ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
+    ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
     ierr = PCView(pc,viewer);CHKERRQ(ierr);
     ierr = CVSpilsGetNumPrecEvals(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp);CHKERRQ(ierr);
@@ -611,7 +611,7 @@ PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,pc); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

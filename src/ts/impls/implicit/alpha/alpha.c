@@ -218,7 +218,7 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
     ierr = TSAlphaSetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-ts_alpha_adapt","default time step adaptativity","TSAlphaSetAdapt",adapt,&adapt,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = TSAlphaSetAdapt(ts,adapt?TSAlphaAdaptDefault:PETSC_NULL,PETSC_NULL); CHKERRQ(ierr); }
+    if (flag) { ierr = TSAlphaSetAdapt(ts,adapt?TSAlphaAdaptDefault:PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); }
     ierr = PetscOptionsReal("-ts_alpha_adapt_rtol","relative tolerance for dt adaptativity","",th->rtol,&th->rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absolute tolerance for dt adaptativity","",th->atol,&th->atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_min","minimum dt scale","",th->scale_min,&th->scale_min,PETSC_NULL);CHKERRQ(ierr);

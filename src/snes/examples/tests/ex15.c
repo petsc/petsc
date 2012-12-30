@@ -54,8 +54,8 @@ int main( int argc, char **argv )
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
 
   /* Check for any command line arguments that override defaults */
-  info = PetscOptionsGetReal(PETSC_NULL,"-ecc",&user.ecc,&flg); CHKERRQ(info);
-  info = PetscOptionsGetReal(PETSC_NULL,"-b",&user.b,&flg); CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-ecc",&user.ecc,&flg);CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-b",&user.b,&flg);CHKERRQ(info);
 
   /*
      A two dimensional distributed array will help define this problem,
@@ -74,25 +74,25 @@ int main( int argc, char **argv )
      gradient, and Hessian.  Duplicate for remaining vectors that are
      the same types.
   */
-  info = DMCreateGlobalVector(user.da,&x); CHKERRQ(info); /* Solution */
-  info = VecDuplicate(x,&user.B); CHKERRQ(info); /* Linear objective */
+  info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info); /* Solution */
+  info = VecDuplicate(x,&user.B);CHKERRQ(info); /* Linear objective */
   info = VecDuplicate(x,&r);CHKERRQ(info);
 
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   info = DMCreateMatrix(user.da,MATAIJ,&user.A);CHKERRQ(info);
 
   /* User defined function -- compute linear term of quadratic */
-  info = ComputeB(&user); CHKERRQ(info);
+  info = ComputeB(&user);CHKERRQ(info);
 
   /* Create nonlinear solver context */
-  info = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(info);
+  info = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(info);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
   info = SNESSetFunction(snes,r,FormGradient,&user);CHKERRQ(info);
   info = SNESSetJacobian(snes,user.A,user.A,FormHessian,&user);CHKERRQ(info);
 
   /* Set the initial solution guess */
-  info = VecSet(x, zero); CHKERRQ(info);
+  info = VecSet(x, zero);CHKERRQ(info);
 
   info = SNESSetFromOptions(snes);CHKERRQ(info);
 
@@ -106,19 +106,19 @@ int main( int argc, char **argv )
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
 
-  info = SNESGetConvergedReason(snes,&reason); CHKERRQ(info);
+  info = SNESGetConvergedReason(snes,&reason);CHKERRQ(info);
   if (reason <= 0) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The SNESVI solver did not converge, adjust some parameters, or check the function evaluation routines\n");
   }
 
   /* Free memory */
-  info = VecDestroy(&x); CHKERRQ(info);
+  info = VecDestroy(&x);CHKERRQ(info);
   info = VecDestroy(&xl);CHKERRQ(info);
   info = VecDestroy(&xu);CHKERRQ(info);
   info = VecDestroy(&r);CHKERRQ(info);
-  info = MatDestroy(&user.A); CHKERRQ(info);
-  info = VecDestroy(&user.B); CHKERRQ(info);
-  info = DMDestroy(&user.da); CHKERRQ(info);
+  info = MatDestroy(&user.A);CHKERRQ(info);
+  info = VecDestroy(&user.B);CHKERRQ(info);
+  info = DMDestroy(&user.da);CHKERRQ(info);
   info = SNESDestroy(&snes);CHKERRQ(info);
 
   info = PetscFinalize();
@@ -153,9 +153,9 @@ PetscErrorCode ComputeB(AppCtx* user)
   ehxhy = ecc*hx*hy;
 
   /* Get pointer to local vector data */
-  info = DMDAVecGetArray(user->da,user->B, &b); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,user->B, &b);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
   /* Compute the linear term in the objective function */
   for (i=xs; i<xs+xm; i++){
@@ -166,7 +166,7 @@ PetscErrorCode ComputeB(AppCtx* user)
   }
   /* Restore vectors */
   info = DMDAVecRestoreArray(user->da,user->B,&b);CHKERRQ(info);
-  info = PetscLogFlops(5*xm*ym+3*xm); CHKERRQ(info);
+  info = PetscLogFlops(5*xm*ym+3*xm);CHKERRQ(info);
 
   PetscFunctionReturn(0);
 }
@@ -199,18 +199,18 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   hxhx=one/(hx*hx);
   hyhy=one/(hy*hy);
 
-  info = VecSet(G, zero); CHKERRQ(info);
+  info = VecSet(G, zero);CHKERRQ(info);
 
   /* Get local vector */
   info = DMGetLocalVector(user->da,&localX);CHKERRQ(info);
   /* Get ghoist points */
-  info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
-  info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(info);
+  info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
+  info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   /* Get pointer to vector data */
   info = DMDAVecGetArray(user->da,localX,&x);CHKERRQ(info);
   info = DMDAVecGetArray(user->da,G,&g);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
   for (i=xs; i< xs+xm; i++){
     xi=(i+1)*hx;
@@ -260,13 +260,13 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   }
 
   /* Restore vectors */
-  info = DMDAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
-  info = DMDAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,localX, &x);CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,G, &g);CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
 
-  info = VecAXPY(G, one, user->B); CHKERRQ(info);
+  info = VecAXPY(G, one, user->B);CHKERRQ(info);
 
-  info = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(info);
+  info = PetscLogFlops((91 + 10*ym) * xm);CHKERRQ(info);
   PetscFunctionReturn(0);
 
 }
@@ -306,8 +306,8 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   hxhx=one/(hx*hx);
   hyhy=one/(hy*hy);
 
-  info = MatAssembled(hes,&assembled); CHKERRQ(info);
-  if (assembled){info = MatZeroEntries(hes);  CHKERRQ(info);}
+  info = MatAssembled(hes,&assembled);CHKERRQ(info);
+  if (assembled){info = MatZeroEntries(hes);CHKERRQ(info);}
   *flg=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
@@ -317,7 +317,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
 
   /* Get pointers to vector data */
-  info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(info);
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
@@ -357,23 +357,23 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
       if (j+1 < ny){
 	v[k]= vup; col[k].i = i; col[k].j = j+1; k++;
       }
-      info = MatSetValuesStencil(hes,1,&row,k,col,v,INSERT_VALUES); CHKERRQ(info);
+      info = MatSetValuesStencil(hes,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
     }
   }
 
-  info = MatAssemblyBegin(hes,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+  info = MatAssemblyBegin(hes,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
   info = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(info);
-  info = MatAssemblyEnd(hes,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+  info = MatAssemblyEnd(hes,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
 
   /*
     Tell the matrix we will never add a new nonzero location to the
     matrix. If we do it will generate an error.
   */
-  info = MatSetOption(hes,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE); CHKERRQ(info);
-  info = MatSetOption(hes,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(info);
+  info = MatSetOption(hes,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(info);
+  info = MatSetOption(hes,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(info);
 
-  info = PetscLogFlops(9*xm*ym+49*xm); CHKERRQ(info);
+  info = PetscLogFlops(9*xm*ym+49*xm);CHKERRQ(info);
 
   PetscFunctionReturn(0);
 }

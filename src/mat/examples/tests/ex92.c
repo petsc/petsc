@@ -179,8 +179,8 @@ int main(int argc,char **args)
   /* Test MatGetSubmatrices */
   if (TestSubMat){
     for (i = 0; i < nd; ++i) {
-      ierr = ISSort(is1[i]); CHKERRQ(ierr);
-      ierr = ISSort(is2[i]); CHKERRQ(ierr);
+      ierr = ISSort(is1[i]);CHKERRQ(ierr);
+      ierr = ISSort(is2[i]);CHKERRQ(ierr);
     }
     ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
     ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);

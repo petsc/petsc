@@ -268,10 +268,10 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
     parms_PCFree(&parms->pc);
   }
   if (parms->lvec0) {
-    ierr = PetscFree(parms->lvec0); CHKERRQ(ierr);
+    ierr = PetscFree(parms->lvec0);CHKERRQ(ierr);
   }
   if (parms->lvec1) {
-    ierr = PetscFree(parms->lvec1); CHKERRQ(ierr);
+    ierr = PetscFree(parms->lvec1);CHKERRQ(ierr);
   }
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
 

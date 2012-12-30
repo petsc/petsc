@@ -1791,8 +1791,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
 
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,P->cmap->bs,A->cmap->bs); CHKERRQ(ierr);
-  ierr = MatSetType(Cmpi,MATMPIAIJ); CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi,P->cmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Cmpi,1);CHKERRQ(ierr);

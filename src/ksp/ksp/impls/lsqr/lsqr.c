@@ -128,9 +128,9 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   beta = rnorm;
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
-  ierr = KSP_MatMultTranspose(ksp,Amat,U,V); CHKERRQ(ierr);
+  ierr = KSP_MatMultTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
   if (nopreconditioner) {
-     ierr = VecNorm(V,NORM_2,&alpha); CHKERRQ(ierr);
+     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   } else {
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
     ierr = VecDot(V,Z,&alphac);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       PetscFunctionReturn(0);
     }
     alpha = PetscSqrtReal(PetscRealPart(alphac));
-    ierr = VecScale(Z,1.0/alpha); CHKERRQ(ierr);
+    ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
   }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
 
@@ -171,7 +171,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
     if (nopreconditioner) {
-      ierr = VecNorm(V1,NORM_2,&alpha); CHKERRQ(ierr);
+      ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
     } else {
       ierr = PCApply(ksp->pc,V1,Z);CHKERRQ(ierr);
       ierr = VecDot(V1,Z,&alphac);CHKERRQ(ierr);

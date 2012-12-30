@@ -115,7 +115,7 @@ int main(int argc,char **argv)
                      "setup done: square       side length = %.3f\n"
                      "            grid               Mx,My = %D,%D\n"
                      "            spacing            dx,dy = %.3f,%.3f\n",
-                     4.0, Mx, My, (double)dx, (double)dy); CHKERRQ(ierr);
+                     4.0, Mx, My, (double)dx, (double)dy);CHKERRQ(ierr);
 
   /* solve nonlinear system */
   ierr = SNESSolve(snes,PETSC_NULL,u);CHKERRQ(ierr);

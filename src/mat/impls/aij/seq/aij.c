@@ -2278,7 +2278,7 @@ PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,MatReuse sc
   PetscFunctionBegin;
   ierr = MatCreate(subComm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,mat->rmap->n,mat->cmap->n,mat->rmap->n,mat->cmap->n);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(B,mat->rmap->bs,mat->cmap->bs); CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(B,mat->rmap->bs,mat->cmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatDuplicateNoCreate_SeqAIJ(B,mat,MAT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);
   *subMat = B;

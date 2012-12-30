@@ -125,7 +125,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 #if defined(PETSC_USE_DEBUG)
   i = (PetscInt)useblockis;
-  ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,((PetscObject)mat)->comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,((PetscObject)mat)->comm);CHKERRQ(ierr);
   if (j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
 #endif
 

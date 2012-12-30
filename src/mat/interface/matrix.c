@@ -8239,7 +8239,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscObjectQueryFunction((PetscObject)P,ptapname,(void (**)(void))&ptap);CHKERRQ(ierr);
     if (!ptap) {
       /* dual dispatch using MatQueryOp */
-      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&ptap), "MatPtAP",2,((PetscObject)A)->type_name,((PetscObject)P)->type_name); CHKERRQ(ierr);
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&ptap), "MatPtAP",2,((PetscObject)A)->type_name,((PetscObject)P)->type_name);CHKERRQ(ierr);
       if (!ptap) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
     }
   }
@@ -8621,7 +8621,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
     if (!mult) {
       /* dual dispatch using MatQueryOp */
-      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name); CHKERRQ(ierr);
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
       if (!mult) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
     }
   }
@@ -8920,7 +8920,7 @@ PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
     transposematmult = fA;
   } else {
     /* dual dispatch using MatQueryOp */
-    ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&transposematmult), "MatTansposeMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name); CHKERRQ(ierr);
+    ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&transposematmult), "MatTansposeMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
     if (!transposematmult) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
@@ -9020,7 +9020,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
     if (!mult) {
       /* dual dispatch using MatQueryOp */
-      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMatMult",3,((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name); CHKERRQ(ierr);
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMatMult",3,((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
       if (!mult) SETERRQ3(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMatMult requires A, %s, to be compatible with B, %s, C, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);
     }
   }

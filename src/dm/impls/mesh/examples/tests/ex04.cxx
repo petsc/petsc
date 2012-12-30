@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   verbosity = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = testPointConeArraySequence();                                   CHKERRQ(ierr);
+  ierr = testPointConeArraySequence();CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();
