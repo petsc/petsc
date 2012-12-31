@@ -3,6 +3,10 @@
 typedef struct _n_PetscSFDataLink *PetscSFDataLink;
 typedef struct _n_PetscSFWinLink  *PetscSFWinLink;
 
+#if !defined(PETSC_HAVE_MPI_WIN_CREATE) /* The intent here is to be able to compile even without a complete MPI. */
+typedef struct MPI_Win_MISSING *MPI_Win;
+#endif
+
 typedef struct {
   PetscSFWindowSyncType sync; /* FENCE, LOCK, or ACTIVE synchronization */
   PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
@@ -102,7 +106,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(nranks,MPI_Datatype,&link->mine,nranks,MPI_Datatype,&link->remote);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    PetscInt rcount = roffset[i+1] - roffset[i];
+    PETSC_UNUSED PetscInt rcount = roffset[i+1] - roffset[i];
     PetscMPIInt *rmine,*rremote;
 #if !defined(PETSC_USE_64BIT_INDICES)
     rmine   = sf->rmine + sf->roffset[i];
@@ -602,5 +606,15 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowSetSyncType_C","PetscSFWindowSetSyncType_Window",PetscSFWindowSetSyncType_Window);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowGetSyncType_C","PetscSFWindowGetSyncType_Window",PetscSFWindowGetSyncType_Window);CHKERRQ(ierr);
+
+#if OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6)
+  {
+    PetscBool ackbug = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-acknowledge_ompi_onesided_bug",&ackbug,PETSC_NULL);CHKERRQ(ierr);
+    if (ackbug) {
+      ierr = PetscInfo(sf,"Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.");CHKERRQ(ierr);
+    } else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_LIB,"Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
+  }
+#endif
   PetscFunctionReturn(0);
 }

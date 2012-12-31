@@ -104,7 +104,8 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
    Notes:
    See "include/petscsf.h" for available methods (for instance)
-.    PETSCSFWINDOW - MPI-2/3 one-sided
++    PETSCSFWINDOW - MPI-2/3 one-sided
+-    PETSCSFBASIC - basic implementation using MPI-1 two-sided
 
   Level: intermediate
 
@@ -184,7 +185,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 
   PetscFunctionBegin;
   if (sf->setupcalled) PetscFunctionReturn(0);
-  if (!((PetscObject)sf)->type_name) {ierr = PetscSFSetType(sf,PETSCSFWINDOW);CHKERRQ(ierr);}
+  if (!((PetscObject)sf)->type_name) {ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);}
   if (sf->ops->SetUp) {ierr = (*sf->ops->SetUp)(sf);CHKERRQ(ierr);}
   sf->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -211,7 +212,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 @*/
 PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 {
-  PetscSFType    deft = PETSCSFWINDOW;
+  PetscSFType    deft;
   char           type[256];
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -219,7 +220,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)sf);CHKERRQ(ierr);
-  deft  = ((PetscObject)sf)->type_name ? ((PetscObject)sf)->type_name : PETSCSFWINDOW;
+  deft  = ((PetscObject)sf)->type_name ? ((PetscObject)sf)->type_name : PETSCSFBASIC;
   ierr = PetscOptionsList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,256,&flg);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,flg?type:deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,PETSC_NULL);CHKERRQ(ierr);
