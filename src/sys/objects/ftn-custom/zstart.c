@@ -11,6 +11,7 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
+#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUSP)
@@ -116,7 +117,7 @@ extern void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 EXTERN_C_END
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Op MPIU_SUM;
 EXTERN_C_BEGIN
 extern void  MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
@@ -321,7 +322,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalRank\n");return;}
   *ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalSize\n");return;}
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
   /*
      Initialized the global variable; this is because with
      shared libraries the constructors for global variables
@@ -329,17 +330,15 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   */
   {
 #if defined(PETSC_CLANGUAGE_CXX)
-    PetscScalar ic(0.0,1.0);
+    PetscComplex ic(0.0,1.0);
     PETSC_i = ic;
 #else
-    PetscScalar ic;
-    ic = 1.0*I;
-    PETSC_i = ic;
+    PETSC_i = _Complex_I;
 #endif
   }
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  *ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_C_DOUBLE_COMPLEX);
+  *ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_C_DOUBLE_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU_C_DOUBLE_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
@@ -358,8 +357,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU___FLOAT128);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
-#if defined(PETSC_USE_COMPLEX)
-  *ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___COMPLEX128);
+#if defined(PETSC_HAVE_COMPLEX)
+  *ierr = MPI_Type_contiguous(4,MPI_DOUBLE,&MPIU___COMPLEX128);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU___COMPLEX128);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
