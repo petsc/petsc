@@ -44,7 +44,8 @@ PetscErrorCode  VecCreate_Seq(Vec V)
   s->array_allocated = array;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
 #else
-  if (((PetscObject)V)->precision == PETSC_PRECISION_SINGLE) {
+  switch (((PetscObject)V)->precision) {
+  case PETSC_PRECISION_SINGLE: {
     float *aarray;
     ierr = PetscMalloc(n*sizeof(float),&aarray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(V, n*sizeof(float));CHKERRQ(ierr);
@@ -52,7 +53,8 @@ PetscErrorCode  VecCreate_Seq(Vec V)
     ierr = VecCreate_Seq_Private(V,aarray);CHKERRQ(ierr);
     s    = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;
-  } else {
+  } break;
+  case PETSC_PRECISION_DOUBLE: {
     double *aarray;
     ierr = PetscMalloc(n*sizeof(double),&aarray);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(V, n*sizeof(double));CHKERRQ(ierr);
@@ -60,6 +62,8 @@ PetscErrorCode  VecCreate_Seq(Vec V)
     ierr = VecCreate_Seq_Private(V,aarray);CHKERRQ(ierr);
     s    = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;
+  } break;
+  default: SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"No support for mixed precision %d",(int)(((PetscObject)V)->precision));
   }
 #endif
   PetscFunctionReturn(0);

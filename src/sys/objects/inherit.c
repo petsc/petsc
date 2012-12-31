@@ -40,7 +40,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
   h->parentid               = 0;
   h->qlist                  = 0;
   h->olist                  = 0;
-  h->precision              = (PetscPrecision) sizeof(PetscScalar);
+  h->precision              = (PetscPrecision) sizeof(PetscReal);
   h->bops->destroy          = des;
   h->bops->view             = vie;
   h->bops->getcomm          = PetscObjectGetComm_Petsc;
