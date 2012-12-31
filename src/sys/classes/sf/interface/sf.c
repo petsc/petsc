@@ -341,7 +341,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     ierr = PetscTableAdd(table,iremote[i].rank+1,1,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(table,&sf->nranks);CHKERRQ(ierr);
-  ierr = PetscMalloc4(sf->nranks,PetscInt,&sf->ranks,sf->nranks+1,PetscInt,&sf->roffset,nleaves,PetscMPIInt,&sf->rmine,nleaves,PetscMPIInt,&sf->rremote);CHKERRQ(ierr);
+  ierr = PetscMalloc4(sf->nranks,PetscInt,&sf->ranks,sf->nranks+1,PetscInt,&sf->roffset,nleaves,PetscInt,&sf->rmine,nleaves,PetscInt,&sf->rremote);CHKERRQ(ierr);
   ierr = PetscMalloc2(sf->nranks,PetscInt,&rcount,sf->nranks,PetscInt,&ranks);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(table,&pos);CHKERRQ(ierr);
   for (i=0; i<sf->nranks; i++) {
@@ -662,7 +662,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 
 .seealso: PetscSFSetGraph()
 @*/
-PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscMPIInt **rmine,const PetscMPIInt **rremote)
+PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
 {
 
   PetscFunctionBegin;

@@ -147,7 +147,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt nroots,cons
 PETSC_EXTERN PetscErrorCode PetscSFCreateArray(PetscSF,MPI_Datatype,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroyArray(PetscSF,MPI_Datatype,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
-PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscMPIInt**,const PetscMPIInt**);
+PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);

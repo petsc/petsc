@@ -81,8 +81,8 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
   PetscErrorCode ierr;
   PetscSFDataLink link;
   PetscInt i,nranks;
-  const PetscInt *roffset;
-  const PetscMPIInt *ranks,*rmine,*rremote;
+  const PetscInt *roffset,*rmine,*rremote;
+  const PetscMPIInt *ranks;
 
   PetscFunctionBegin;
   /* Look for types in cache */
@@ -102,9 +102,24 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(nranks,MPI_Datatype,&link->mine,nranks,MPI_Datatype,&link->remote);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
-    PETSC_UNUSED PetscInt rcount = roffset[i+1] - roffset[i];
-    ierr = MPI_Type_create_indexed_block(rcount,1,sf->rmine+sf->roffset[i],link->unit,&link->mine[i]);CHKERRQ(ierr);
-    ierr = MPI_Type_create_indexed_block(rcount,1,sf->rremote+sf->roffset[i],link->unit,&link->remote[i]);CHKERRQ(ierr);
+    PetscInt rcount = roffset[i+1] - roffset[i];
+    PetscMPIInt *rmine,*rremote;
+#if !defined(PETSC_USE_64BIT_INDICES)
+    rmine   = sf->rmine + sf->roffset[i];
+    rremote = sf->rremote + sf->roffset[i];
+#else
+    PetscInt j;
+    ierr = PetscMalloc2(rcount,PetscMPIInt,&rmine,rcount,PetscMPIInt,&rremote);CHKERRQ(ierr);
+    for (j=0; j<rcount; j++) {
+      rmine[j]   = PetscMPIIntCast(sf->rmine[sf->roffset[i]+j]);
+      rremote[j] = PetscMPIIntCast(sf->rremote[sf->roffset[i]+j]);
+    }
+#endif
+    ierr = MPI_Type_create_indexed_block(rcount,1,rmine,link->unit,&link->mine[i]);CHKERRQ(ierr);
+    ierr = MPI_Type_create_indexed_block(rcount,1,rremote,link->unit,&link->remote[i]);CHKERRQ(ierr);
+#if defined(PETSC_USE_64BIT_INDICES)
+    ierr = PetscFree2(rmine,rremote);CHKERRQ(ierr);
+#endif
     ierr = MPI_Type_commit(&link->mine[i]);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&link->remote[i]);CHKERRQ(ierr);
   }

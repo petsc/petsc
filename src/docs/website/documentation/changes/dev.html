@@ -108,6 +108,10 @@
           (It is unlikely that any users were calling these routines.)
           PetscSFSetSynchronizationType() and the enum PetscSFSynchronizationType were renamed to PetscSFWindowSetSyncType() and PetscSFWindowSyncType respectively.
         </li>
+        <li>
+          The location arguments to <tt>PetscSFGetRanks()</tt> were changed from <tt>PetscMPIInt</tt> (aka <tt>int</tt>) to <tt>PetscInt</tt> to (eventually) support very large local memory.
+          The "window" implementation will not support such large sizes due to technical limitations of MPI one sided and "basic" does not currently due to PetscGatherMessageLengths().
+        </li>
       </ul>
       <h4>IS:</h4>
       <h4>PF:</h4>
