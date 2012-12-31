@@ -45,8 +45,6 @@
 
        integer MPI_REQUEST_NULL
        parameter (MPI_REQUEST_NULL=0)
-       integer MPI_MINLOC
-       parameter (MPI_MINLOC=0)
 
        INTEGER MPI_SOURCE,MPI_TAG,MPI_ERROR
        PARAMETER(MPI_SOURCE=2,MPI_TAG=3,MPI_ERROR=4)
