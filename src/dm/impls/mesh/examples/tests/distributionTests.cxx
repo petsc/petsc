@@ -215,7 +215,7 @@ PetscErrorCode SectionTest(const Options *options)
   Obj<section>           serialSection   = new section(options->comm, options->debug);
   Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type   *value;
-  
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

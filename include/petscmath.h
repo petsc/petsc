@@ -1,6 +1,6 @@
 /*
-   
-      PETSc mathematics include file. Defines certain basic mathematical 
+
+      PETSc mathematics include file. Defines certain basic mathematical
     constants and functions for working with single, double, and quad precision
     floating point numbers as well as complex single and double.
 
@@ -18,7 +18,7 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;
-   note that one cannot mix the use of complex and real in the same 
+   note that one cannot mix the use of complex and real in the same
    PETSc program. All PETSc objects in one program are built around the object
    PetscScalar which is either always a real or a complex.
 
@@ -239,7 +239,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   
+
    Notes: type can be integer or floating point value
 
    Level: beginner
@@ -320,7 +320,7 @@ M*/
    Not Collective
 
    Input Parameter:
-.   v1 - the double 
+.   v1 - the double
 
 
    Level: beginner
@@ -352,7 +352,7 @@ M*/
 
 /* ----------------------------------------------------------------------------*/
 /*
-     Basic constants 
+     Basic constants
 */
 #if defined(PETSC_USE_REAL___FLOAT128)
 #define PETSC_PI                 M_PIq
@@ -388,13 +388,6 @@ M*/
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
 #  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
 #  define PETSC_SMALL                   1.e-20
-#endif
-
-#if defined PETSC_HAVE_ADIC
-/* Use MPI_Allreduce when ADIC is not available. */
-PETSC_EXTERN PetscErrorCode PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);

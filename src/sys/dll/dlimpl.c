@@ -37,7 +37,7 @@ typedef void* dlsymbol_t;
 
    Input Parameters:
 +    name - name of library
--    mode - options on how to open library 
+-    mode - options on how to open library
 
    Output Parameter:
 .    handle

@@ -1,5 +1,5 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/classes/viewer/impls/ascii/
 
 include ${PETSC_DIR}/conf/variables

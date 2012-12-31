@@ -4740,7 +4740,7 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
-   using the matrix.  
+   using the matrix.
 
    ALL processes that share a matrix MUST call MatAssemblyBegin() and MatAssemblyEnd() the SAME NUMBER of times, and each time with the
    same flag of MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY for all processes. Thus you CANNOT locally change from ADD_VALUES to INSERT_VALUES, that is
@@ -4820,7 +4820,7 @@ PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  PetscBool         incall = PETSC_FALSE;
+  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -7556,81 +7556,6 @@ PetscErrorCode  MatICCFactor(Mat mat,IS row,const MatFactorInfo* info)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdic"
-/*@
-   MatSetValuesAdic - Sets values computed with ADIC automatic differentiation into a matrix.
-
-   Not Collective
-
-   Input Parameters:
-+  mat - the matrix
--  v - the values compute with ADIC
-
-   Level: developer
-
-   Notes:
-     Must call MatSetColoring() before using this routine. Also this matrix must already
-     have its nonzero pattern determined.
-
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
-          MatSetValues(), MatSetColoring(), MatSetValuesAdifor()
-@*/
-PetscErrorCode  MatSetValuesAdic(Mat mat,void *v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(mat,2);
-
-  if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
-  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesadic) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesadic)(mat,v);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (mat->viewonassembly) {
-    ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetColoring"
-/*@
-   MatSetColoring - Sets a coloring used by calls to MatSetValuesAdic()
-
-   Not Collective
-
-   Input Parameters:
-+  mat - the matrix
--  coloring - the coloring
-
-   Level: developer
-
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
-          MatSetValues(), MatSetValuesAdic()
-@*/
-PetscErrorCode  MatSetColoring(Mat mat,ISColoring coloring)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(coloring,2);
-
-  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
-  if (!mat->ops->setcoloring) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setcoloring)(mat,coloring);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatSetValuesAdifor"
 /*@
    MatSetValuesAdifor - Sets values computed with automatic differentiation into a matrix.
@@ -8193,7 +8118,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(P,2);
   if (!P->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
- 
+
   if (P->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
 
@@ -8211,7 +8136,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
         ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
         ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
         ierr = MatDestroy(&AP);CHKERRQ(ierr);
-      } 
+      }
       ierr = MatDestroy(&Pt);CHKERRQ(ierr);
     } else {
       ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
@@ -8239,7 +8164,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscObjectQueryFunction((PetscObject)P,ptapname,(void (**)(void))&ptap);CHKERRQ(ierr);
     if (!ptap) {
       /* dual dispatch using MatQueryOp */
-      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&ptap), "MatPtAP",2,((PetscObject)A)->type_name,((PetscObject)P)->type_name); CHKERRQ(ierr);
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&ptap), "MatPtAP",2,((PetscObject)A)->type_name,((PetscObject)P)->type_name);CHKERRQ(ierr);
       if (!ptap) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
     }
   }
@@ -8248,7 +8173,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (viatranspose || viamatmatmatmult) {
     Mat Pt;
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    if (viamatmatmatmult){ 
+    if (viamatmatmatmult){
       ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
       ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
     } else {
@@ -8621,7 +8546,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
     if (!mult) {
       /* dual dispatch using MatQueryOp */
-      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name); CHKERRQ(ierr);
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
       if (!mult) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
     }
   }
@@ -8920,7 +8845,7 @@ PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
     transposematmult = fA;
   } else {
     /* dual dispatch using MatQueryOp */
-    ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&transposematmult), "MatTansposeMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name); CHKERRQ(ierr);
+    ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&transposematmult), "MatTansposeMatMult",2,((PetscObject)A)->type_name,((PetscObject)B)->type_name);CHKERRQ(ierr);
     if (!transposematmult) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
@@ -9020,7 +8945,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
     if (!mult) {
       /* dual dispatch using MatQueryOp */
-      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMatMult",3,((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name); CHKERRQ(ierr);
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMatMult",3,((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
       if (!mult) SETERRQ3(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMatMult requires A, %s, to be compatible with B, %s, C, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);
     }
   }

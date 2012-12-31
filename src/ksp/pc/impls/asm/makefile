@@ -5,9 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = asm.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/asm/
 

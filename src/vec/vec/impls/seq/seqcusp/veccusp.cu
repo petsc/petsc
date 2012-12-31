@@ -15,7 +15,7 @@ PETSC_CUDA_EXTERN_C_END
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscCUSPFlag for the vector
-    Does NOT zero the CUSP array 
+    Does NOT zero the CUSP array
  */
 PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
 {
@@ -46,7 +46,7 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
     Allocates space for the vector array on the GPU if it does not exist.
     Does NOT change the PetscCUSPFlag for the vector
     Does NOT zero the CUSP array
- 
+
  */
 PetscErrorCode VecCUSPAllocateCheck(Vec v)
 {
@@ -68,7 +68,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
       ierr = ((Vec_CUSP*)v->spptr)->GPUvector->buildStreamsAndEvents();CHKERRCUSP(ierr);
 
       Vec_Seq        *s;
-      s = (Vec_Seq*)v->data;  
+      s = (Vec_Seq*)v->data;
       if (v->map->n>0) {
 	if (s->array==0) {
 	  // In this branch, GPUvector owns the ptr and manages the memory
@@ -78,8 +78,8 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 	}
 	else {
 	  // In this branch, Petsc owns the ptr to start, however we want to use
-	  // page locked host memory for faster data transfers. So, a new 
-	  // page-locked buffer is allocated. Then, the old Petsc memory 
+	  // page locked host memory for faster data transfers. So, a new
+	  // page-locked buffer is allocated. Then, the old Petsc memory
 	  // is copied in to the new buffer. Then the old Petsc memory is freed.
 	  // GPUvector owns the new ptr.
 	  ierr = ((Vec_CUSP*)v->spptr)->GPUvector->allocateHostMemory();CHKERRCUSP(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 	  s->array_allocated = temp;
 	}
 	ierr = WaitForGPU();CHKERRCUSP(ierr);
-      }        
+      }
       v->ops->destroy = VecDestroy_SeqCUSP;
 #endif
     } catch(char* ex) {
@@ -116,7 +116,7 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
     try{
 #ifdef PETSC_HAVE_TXPETSCGPU
       ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyToGPUAll();CHKERRCUSP(ierr);
-#else 
+#else
       CUSPARRAY      *varray;
       varray  = ((Vec_CUSP*)v->spptr)->GPUarray;
       varray->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + v->map->n);
@@ -138,7 +138,7 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 {
   PetscErrorCode ierr;
   CUSPARRAY      *varray;
-  
+
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
@@ -148,8 +148,8 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
     ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyToGPUSome(varray, ci->recvIndices);CHKERRCUSP(ierr);
 #else
     Vec_Seq        *s;
-    s = (Vec_Seq*)v->data;  
-    
+    s = (Vec_Seq*)v->data;
+
     CUSPINTARRAYCPU *indicesCPU=&ci->recvIndicesCPU;
     CUSPINTARRAYGPU *indicesGPU=&ci->recvIndicesGPU;
 
@@ -215,12 +215,12 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
     varray  = ((Vec_CUSP*)v->spptr)->GPUarray;
 #ifdef PETSC_HAVE_TXPETSCGPU
     ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyFromGPUSome(varray, ci->sendIndices);CHKERRCUSP(ierr);
-#else    
+#else
   Vec_Seq        *s;
   s = (Vec_Seq*)v->data;
     CUSPINTARRAYCPU *indicesCPU=&ci->sendIndicesCPU;
     CUSPINTARRAYGPU *indicesGPU=&ci->sendIndicesGPU;
-    
+
     thrust::copy(thrust::make_permutation_iterator(varray->begin(),indicesGPU->begin()),
 		 thrust::make_permutation_iterator(varray->begin(),indicesGPU->end()),
 		 thrust::make_permutation_iterator(s->array,indicesCPU->begin()));
@@ -351,7 +351,7 @@ PetscErrorCode PetscCUSPIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt
 
   cci->recvIndicesCPU.assign(recvIndices,recvIndices+nr);
   cci->recvIndicesGPU.assign(recvIndices,recvIndices+nr);
-#endif  
+#endif
   *ci = cci;
   PetscFunctionReturn(0);
 }
@@ -374,7 +374,7 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
 #ifdef PETSC_HAVE_TXPETSCGPU
     if ((*ci)->sendIndices) delete (*ci)->sendIndices;
     if ((*ci)->recvIndices) delete (*ci)->recvIndices;
-#endif  
+#endif
     if (ci) delete *ci;
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
@@ -398,7 +398,7 @@ PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices ci)
     ci->recvIndices->resetStatusFlag();
   PetscFunctionReturn(0);
 }
-#endif  
+#endif
 
 
 #undef __FUNCT__
@@ -481,7 +481,7 @@ PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU_Public(Vec v, PetscCUSPIndic
   PetscFunctionReturn(0);
 }
 
-/* Note that this function only moves *some* of the data from a contiguous buffer on the GPU to arbitrary locations 
+/* Note that this function only moves *some* of the data from a contiguous buffer on the GPU to arbitrary locations
    in a GPU vector. This function will typically be called after an asynchronous memory transfer from the host to the device.
    which means that we need recombine the data at some point before using any of the standard functions.
    We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
@@ -1820,7 +1820,7 @@ PetscErrorCode VecDotNorm2_SeqCUSP(Vec s, Vec t, PetscScalar *dp, PetscScalar *n
   PetscReal                              n=s->map->n;
   thrust::tuple<PetscScalar,PetscScalar> result;
   CUSPARRAY                              *sarray,*tarray;
-  
+
   PetscFunctionBegin;
   /*ierr = VecCUSPCopyToGPU(s);CHKERRQ(ierr);
    ierr = VecCUSPCopyToGPU(t);CHKERRQ(ierr);*/

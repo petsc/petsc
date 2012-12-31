@@ -113,7 +113,7 @@ PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectGetTabLevel((PetscObject)ksp, tab); CHKERRQ(ierr);
+  ierr = PetscObjectGetTabLevel((PetscObject)ksp, tab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -143,10 +143,10 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectSetTabLevel((PetscObject)ksp, tab);              CHKERRQ(ierr);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);                      CHKERRQ(ierr);}
+  ierr = PetscObjectSetTabLevel((PetscObject)ksp, tab);CHKERRQ(ierr);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   /* Do we need a PCSetTabLevel()? */
-  ierr = PetscObjectSetTabLevel((PetscObject)ksp->pc, tab);          CHKERRQ(ierr);
+  ierr = PetscObjectSetTabLevel((PetscObject)ksp->pc, tab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1443,7 +1443,7 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
   Input Parameters:
 + newdm - the newly loaded PC, this needs to have been created with PCCreate() or
            some related function before a call to PCLoad().
-- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() 
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
 
    Level: intermediate
 

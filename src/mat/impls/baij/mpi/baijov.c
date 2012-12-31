@@ -549,7 +549,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   /* Currently, unsorted column indices will result in inverted column indices in the resulting submatrices. */
   for (i = 0; i < ismax; ++i) {
     PetscBool sorted;
-    ierr = ISSorted(iscol[i], &sorted); CHKERRQ(ierr);
+    ierr = ISSorted(iscol[i], &sorted);CHKERRQ(ierr);
     if (!sorted) SETERRQ1(((PetscObject)iscol[i])->comm, PETSC_ERR_SUP, "Column index set %D not sorted", i);
   }
   /* The compression and expansion should be avoided. Doesn't point

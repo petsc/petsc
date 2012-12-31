@@ -9,7 +9,7 @@ SOURCEC  = convert.c matstash.c axpy.c zerodiag.c \
 SOURCEF  =
 SOURCEH  = freespace.h petscheap.h
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/utils/
 

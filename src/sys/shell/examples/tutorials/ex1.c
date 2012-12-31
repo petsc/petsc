@@ -20,7 +20,7 @@ static char help[] = "Sets up two PetscShell objects -- Field and Viz -- and att
    Processors: 1
 T*/
 
-/* 
+/*
   Include "petscsys.h" so that we can use PetscShell
   automatically includes:
      petscshell.h    - PetscShell routines
@@ -38,24 +38,24 @@ int main(int argc,char **args) {
   PetscFunctionBegin;
   PetscInitialize(&argc,&args,(char *)0,help);
   /**/
-  ierr = PetscShellCreate(PETSC_COMM_SELF, &field);       CHKERRQ(ierr);
-  ierr = PetscShellSetURL(field, "./field.py:Field");     CHKERRQ(ierr);
-  ierr = PetscShellCreate(PETSC_COMM_SELF, &viz);         CHKERRQ(ierr);
-  ierr = PetscShellSetURL(viz, "./viz1.py:Viz");          CHKERRQ(ierr);
+  ierr = PetscShellCreate(PETSC_COMM_SELF, &field);CHKERRQ(ierr);
+  ierr = PetscShellSetURL(field, "./field.py:Field");CHKERRQ(ierr);
+  ierr = PetscShellCreate(PETSC_COMM_SELF, &viz);CHKERRQ(ierr);
+  ierr = PetscShellSetURL(viz, "./viz1.py:Viz");CHKERRQ(ierr);
   /**/
-  ierr = PetscShellCall(field, "init");                        CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)field, "mesh", &mesh);  CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)field, "rho",  &rho);   CHKERRQ(ierr);
+  ierr = PetscShellCall(field, "init");CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)field, "mesh", &mesh);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)field, "rho",  &rho);CHKERRQ(ierr);
 
-  ierr = PetscObjectCompose((PetscObject)viz, "mesh", mesh);   CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)viz, "rho",  rho);    CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)viz, "mesh", mesh);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)viz, "rho",  rho);CHKERRQ(ierr);
 
   for (i = 0; i < numIter; ++i) {
-    ierr = PetscShellCall(viz, "viewRho");              CHKERRQ(ierr); 
+    ierr = PetscShellCall(viz, "viewRho");CHKERRQ(ierr);
   }
   /**/
-  /* ierr = PetscShellDestroy(&viz);                    CHKERRQ(ierr); */
-  ierr = PetscShellDestroy(&field);                  CHKERRQ(ierr);
+  /* ierr = PetscShellDestroy(&viz);CHKERRQ(ierr); */
+  ierr = PetscShellDestroy(&field);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }/* main() */

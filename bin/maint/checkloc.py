@@ -48,6 +48,6 @@ def main():
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
   import sys
   main()

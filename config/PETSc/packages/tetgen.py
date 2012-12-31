@@ -41,7 +41,7 @@ class tetgenio {
 
   public:
 
-    int firstnumber; 
+    int firstnumber;
     int mesh_dim;
     double *pointlist;
     double *pointattributelist;

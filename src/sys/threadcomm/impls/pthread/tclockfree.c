@@ -37,7 +37,7 @@ void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadComm
   PetscThreadComm_PThread  ptcomm;
 
   ptcomm = (PetscThreadComm_PThread)tcomm->data;
-  
+
   switch(ptcomm->spark) {
   case PTHREADPOOLSPARK_SELF:
     if (CheckThreadCommMembership(myrank,tcomm)) {
@@ -101,7 +101,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
   }
   /* Loop till all threads signal that they have done their job */
   while(wait) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       job_status = job->job_status[ptcomm->granks[i]];
       active_threads += job_status;
     }
@@ -180,8 +180,8 @@ PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(MPI_Comm comm,PetscThre
 {
   PetscErrorCode           ierr;
   PetscThreadComm          tcomm=0;
-  PetscThreadComm_PThread  ptcomm;    
-  
+  PetscThreadComm_PThread  ptcomm;
+
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   ptcomm = (PetscThreadComm_PThread)tcomm->data;

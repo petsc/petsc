@@ -1,14 +1,14 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 SOURCEC	  = random.c randreg.c dlregisrand.c randomc.c
 SOURCEF	  =
-SOURCEH	  = 
+SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  =
 LOCDIR	  = src/sys/random/interface/
 
 include ${PETSC_DIR}/conf/variables

@@ -49,7 +49,7 @@
 /* INSTRUCTIONS:
  *
  *      1) Stream requires a good bit of memory to run.  Adjust the
- *          value of 'N' (below) to give a 'timing calibration' of 
+ *          value of 'N' (below) to give a 'timing calibration' of
  *          at least 20 clock-ticks.  This will provide rate estimates
  *          that should be good to about 5% precision.
  */
@@ -148,7 +148,7 @@ int main()
     printf("the *best* time for each is used.\n");
 
      printf(HLINE); */
-#pragma omp parallel 
+#pragma omp parallel
     {
 #pragma omp master
         {
@@ -170,7 +170,7 @@ int main()
 
     /*printf(HLINE);*/
 
-    if  ( (quantum = checktick()) >= 1) 
+    if  ( (quantum = checktick()) >= 1)
       ;/*  printf("Your clock granularity/precision appears to be "
         "%d microseconds.\n", quantum);*/
     else {
@@ -207,7 +207,7 @@ int main()
             c[j] = a[j];
 #endif
         times[0][k] = mysecond() - times[0][k];
-        
+
         times[1][k] = mysecond();
 #ifdef TUNED
         tuned_STREAM_Scale(scalar);
@@ -217,7 +217,7 @@ int main()
             b[j] = scalar*c[j];
 #endif
         times[1][k] = mysecond() - times[1][k];
-        
+
         times[2][k] = mysecond();
 #ifdef TUNED
         tuned_STREAM_Add();
@@ -227,7 +227,7 @@ int main()
             c[j] = a[j]+b[j];
 #endif
         times[2][k] = mysecond() - times[2][k];
-        
+
         times[3][k] = mysecond();
 #ifdef TUNED
         tuned_STREAM_Triad(scalar);
@@ -250,7 +250,7 @@ int main()
             maxtime[j] = MAX(maxtime[j], times[j][k]);
             }
         }
-    
+
     printf("Function      Rate (MB/s) \n");
     for (j=0; j<4; j++) {
         avgtime[j] = avgtime[j]/(double)(NTIMES-1);

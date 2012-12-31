@@ -3243,14 +3243,13 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp,diag_tmp;
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
-  PetscReal          dt=info->dt,dtcol=info->dtcol,shift=info->shiftamount;
+  PetscReal          dt=info->dt,shift=info->shiftamount;
   PetscInt           dtcount=(PetscInt)info->dtcount,nnz_max;
   PetscBool          missing;
 
   PetscFunctionBegin;
 
   if (dt      == PETSC_DEFAULT) dt      = 0.005;
-  if (dtcol   == PETSC_DEFAULT) dtcol   = 0.01; /* XXX unused! */
   if (dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5*a->rmax);
 
   /* ------- symbolic factorization, can be reused ---------*/
@@ -3323,7 +3322,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   bi[2*n+1] = bdiag[0]+1; /* endof bj and ba array */
   for (i=0; i<n; i++) {
     /* copy initial fill into linked list */
-    nzi = 0; /* nonzeros for active row i */
     nzi = ai[r[i]+1] - ai[r[i]];
     if (!nzi) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];

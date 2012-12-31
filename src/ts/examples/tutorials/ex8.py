@@ -47,7 +47,7 @@ da = PETSc.DA().create([M],comm=PETSc.COMM_WORLD)
 f = da.createGlobalVector()
 x = f.duplicate()
 J = da.getMatrix(PETSc.Mat.Type.AIJ);
-   
+
 ts = PETSc.TS().create(PETSc.COMM_WORLD)
 ts.setProblemType(PETSc.TS.ProblemType.NONLINEAR)
 ts.setType(ts.Type.GL)

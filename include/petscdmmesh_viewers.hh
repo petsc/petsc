@@ -11,7 +11,7 @@ class VTKViewer {
   VTKViewer() {};
   virtual ~VTKViewer() {};
 
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeHeader"
   template<typename Mesh>
   static PetscErrorCode writeHeader(const Obj<Mesh>& mesh, PetscViewer viewer) {
@@ -25,7 +25,7 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeVertices"
   template<typename Mesh>
   static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
@@ -53,7 +53,7 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeField"
   template<typename Section>
     static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
@@ -76,7 +76,7 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeSection"
   template<typename Section>
   static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
@@ -296,7 +296,7 @@ class VTKViewer {
     }
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
@@ -318,7 +318,7 @@ class VTKViewer {
     }
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const Obj<typename Mesh::label_sequence>& elements, const Obj<typename Mesh::numbering_type>& cNumbering, const Obj<typename Mesh::numbering_type>& vNumbering, PetscViewer viewer)
@@ -421,7 +421,7 @@ class VTKViewer {
     }
     PetscFunctionReturn(0);
   };
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeElements"
   static PetscErrorCode writeElements(const Obj<PETSC_MESH_TYPE>& mesh, const Obj<PETSC_MESH_TYPE::label_sequence>& elements, const Obj<PETSC_MESH_TYPE::numbering_type>& cNumbering, const Obj<PETSC_MESH_TYPE::numbering_type>& vNumbering, PetscViewer viewer)
   {
@@ -592,7 +592,7 @@ class VTKXMLViewer {
     PetscFunctionReturn(0);
   };
 
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeVertices"
   template<typename Mesh>
   static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
@@ -616,7 +616,7 @@ class VTKXMLViewer {
     PetscFunctionReturn(0);
   };
 
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeSection"
   template<typename Section>
   static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
@@ -688,7 +688,7 @@ class VTKXMLViewer {
 
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
@@ -710,7 +710,7 @@ class VTKXMLViewer {
     }
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
-  #undef __FUNCT__  
+  #undef __FUNCT__
   #define __FUNCT__ "writeElements"
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const Obj<typename Mesh::label_sequence>& elements, const Obj<typename Mesh::numbering_type>& cNumbering, const Obj<typename Mesh::numbering_type>& vNumbering, PetscViewer viewer)
@@ -806,7 +806,7 @@ class VTKXMLViewer {
   };
 };
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionView_Sieve_Ascii"
 template<typename Bundle, typename Section>
   PetscErrorCode SectionView_Sieve_Ascii(const Obj<Bundle>& bundle, const Obj<Section>& s, const char name[], PetscViewer viewer, int enforceDim = -1)
@@ -882,7 +882,7 @@ template<typename Bundle, typename Section>
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshView_Sieve_Ascii"
 template<typename Mesh, typename Section>
 PetscErrorCode DMMeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& partition, PetscViewer viewer)

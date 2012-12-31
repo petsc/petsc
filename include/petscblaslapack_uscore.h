@@ -166,7 +166,7 @@
 #  define LAPACKsyevx_ cheevx_
 #  define LAPACKsygv_  chegv_
 #  define LAPACKsygvx_ chegvx_
-#  define LAPACKpttrs_ cpttrs_ 
+#  define LAPACKpttrs_ cpttrs_
 /* LAPACKstebz_ does not exist for complex. */
 #  define LAPACKsteqr_ csteqr_
 #  define LAPACKhseqr_ chseqr_
@@ -208,7 +208,7 @@
 #  define LAPACKsyevx_ zheevx_
 #  define LAPACKsygv_  zhegv_
 #  define LAPACKsygvx_ zhegvx_
-#  define LAPACKpttrs_ zpttrs_ 
+#  define LAPACKpttrs_ zpttrs_
 /* LAPACKstebz_ does not exist for complex. */
 #  define LAPACKsteqr_ zsteqr_
 #  define LAPACKhseqr_ zhseqr_
@@ -250,7 +250,7 @@
 #  define LAPACKsyevx_ wheevx_
 #  define LAPACKsygv_  whegv_
 #  define LAPACKsygvx_ whegvx_
-#  define LAPACKpttrs_ wpttrs_ 
+#  define LAPACKpttrs_ wpttrs_
 /* LAPACKstebz_ does not exist for complex. */
 #  define LAPACKsteqr_ wsteqr_
 #  define LAPACKhseqr_ whseqr_

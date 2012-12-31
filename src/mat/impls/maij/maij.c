@@ -123,7 +123,7 @@ PetscErrorCode MatView_SeqMAIJ(Mat A,PetscViewer viewer)
   Mat            B;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);
+  ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -137,7 +137,7 @@ PetscErrorCode MatView_MPIMAIJ(Mat A,PetscViewer viewer)
   Mat            B;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);
+  ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2999,7 +2999,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
   /* Note, aspect ratio of P is the same as the aspect ratio of SeqAIJ inside P */
-  ierr          = PetscFreeSpaceGet((ai[am]/pm)*pn,&free_space);
+  ierr          = PetscFreeSpaceGet((ai[am]/pm)*pn,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
@@ -3107,11 +3107,11 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   Mat_SeqAIJ      *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ      *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ      *c  = (Mat_SeqAIJ *) C->data;
-  const PetscInt  *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
+  const PetscInt  *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*pJ,*pjj;
   const PetscInt  *ci=c->i,*cj=c->j,*cjj;
   const PetscInt  am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N,ppdof=pp->dof;
   PetscInt        i,j,k,pshift,poffset,anzi,pnzi,apnzj,nextap,pnzj,prow,crow,*apj,*apjdense;
-  const MatScalar *aa=a->a,*pa=p->a,*pA=p->a,*paj;
+  const MatScalar *aa=a->a,*pa=p->a,*pA,*paj;
   MatScalar       *ca=c->a,*caj,*apa;
 
   PetscFunctionBegin;
@@ -3199,7 +3199,7 @@ PETSC_EXTERN_C PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_SeqAIJ_SeqMAIJ(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = MatPtAPNumeric_SeqAIJ_SeqMAIJ(A,P,*C);CHKERRQ(ierr);
@@ -3239,7 +3239,7 @@ PETSC_EXTERN_C PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = ((*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);

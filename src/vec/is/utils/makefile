@@ -7,7 +7,7 @@ SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c isblock.c
 SOURCEF	 =
 SOURCEH	 =
 LIBBASE	 = libpetscvec
-DIRS	 = 
+DIRS	 =
 MANSEC	 = IS
 LOCDIR	 = src/vec/is/utils/
 

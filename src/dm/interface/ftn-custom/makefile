@@ -5,8 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zdmf.c zdmgetf.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 LOCDIR   = src/dm/interface/ftn-custom/

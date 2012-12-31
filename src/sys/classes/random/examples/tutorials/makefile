@@ -1,11 +1,11 @@
 
-CFLAGS	        = 
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/random/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c
-EXAMPLESF       = 
+EXAMPLESF       =
 MANSEC          = Sys
 
 include ${PETSC_DIR}/conf/variables
@@ -21,7 +21,7 @@ ex2: ex2.o chkopts
 
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 
+	-@${MPIEXEC} -n 1 ./ex1
 
 runex1_2:
 	-@${MPIEXEC}  -n 2 ./ex1
@@ -29,7 +29,7 @@ runex1_2:
 runex2:
 	-@${MPIEXEC} -n 2 ./ex2
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm 
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm
 TESTEXAMPLES_C_X	       =
 TESTEXAMPLES_FORTRAN	       =
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =

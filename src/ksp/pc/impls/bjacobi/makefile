@@ -7,7 +7,7 @@ SOURCEC  = bjacobi.c
 SOURCEF  =
 SOURCEH  = bjacobi.h
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/bjacobi/
 

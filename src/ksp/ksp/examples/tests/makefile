@@ -1,15 +1,14 @@
 
-CFLAGS	  = 
+CFLAGS	  =
 FFLAGS    =
-CPPFLAGS  = 
+CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
-NOADIC    = true
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c
-EXAMPLESCH      = 
+EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -127,7 +126,7 @@ ex29: ex29.o  chkopts
 	${RM} ex29.o
 ex30: ex30.o  chkopts
 	-${CLINKER} -o ex30 ex30.o  ${PETSC_KSP_LIB}
-	${RM} ex30.o 
+	${RM} ex30.o
 ex31: ex31.o  chkopts
 	-${CLINKER} -o ex31 ex31.o  ${PETSC_KSP_LIB}
 	${RM} ex31.o
@@ -358,7 +357,7 @@ runex17:
 	   ${RM} -f ex17_1.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex18:
-	-@${MPIEXEC} -n 1 ./ex18 -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1  
+	-@${MPIEXEC} -n 1 ./ex18 -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short \
 	-ksp_type gmres  > ex19_1.tmp 2>&1; \
@@ -439,7 +438,7 @@ runex25_2:
 		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else echo ${PWD} ; echo "Possible problem with with ex25_2, diffs above \n========================================="; fi; \
-           ${RM} -f ex25_2.tmp 
+           ${RM} -f ex25_2.tmp
 runex26:
 	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short > ex26_1.tmp 2>&1; \
 	if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
@@ -637,7 +636,7 @@ runex32_testset5:
 		${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	   done; \
 	done; \
-       
+
 	@-count=8; \
         for ordering in natural nd; do \
 	    count=`expr $$count + 1`; \
@@ -649,7 +648,7 @@ runex32_testset5:
 	    else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij "; fi;   \
 	    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	done; \
-       
+
 
 	@-count=10; \
 	count=`expr $$count + 1`; \
@@ -840,10 +839,10 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
 				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm
-TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
-TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm 
-TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm 
+TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
+TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
@@ -851,8 +850,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm ex11.
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
-                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 ex37.rm ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm  
-TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
+                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 ex37.rm ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm

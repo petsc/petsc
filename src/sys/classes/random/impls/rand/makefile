@@ -6,9 +6,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = rand.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/random/impls/rand/
 
 include ${PETSC_DIR}/conf/variables

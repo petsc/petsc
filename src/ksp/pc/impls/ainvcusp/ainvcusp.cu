@@ -52,7 +52,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   PC_AINVCUSP     *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool       flg = PETSC_FALSE;
 #if !defined(PETSC_USE_COMPLEX)
-  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
   CUSPMATRIX* mat;	
@@ -76,7 +76,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   try {
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ainv->AINVCUSP =  0; CHKERRQ(1); /* TODO */
+    ainv->AINVCUSP =  0;CHKERRQ(1); /* TODO */
 #else
     gpustruct = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
 #ifdef PETSC_HAVE_TXPETSCGPU
@@ -182,7 +182,7 @@ static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
 {
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   ierr = PCReset_AINVCUSP(pc);CHKERRQ(ierr);
 
   /*

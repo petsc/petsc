@@ -224,7 +224,7 @@ int main(int argc,char **args)
     ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
   }
 
- /*ierr = SNESMonitorSet(snes,Monitor,(void*)&monP); CHKERRQ(ierr);*/
+ /*ierr = SNESMonitorSet(snes,Monitor,(void*)&monP);CHKERRQ(ierr);*/
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
 

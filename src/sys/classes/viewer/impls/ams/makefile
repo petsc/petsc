@@ -1,6 +1,6 @@
 #requirespackage  'PETSC_HAVE_AMS'
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   = -DAMS_HOME='"${AMS_HOME}"'
 FFLAGS   =
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  =
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/classes/viewer/impls/ams/
 
 include ${PETSC_DIR}/conf/variables

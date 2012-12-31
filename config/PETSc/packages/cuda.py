@@ -8,7 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes         = ['cublas.h', 'cufft.h','cusparse.h']
     self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a'],
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
-    self.double           = 0   # 1 means requires double precision 
+    self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
     self.requires32bitint = 0
     self.worksonWindows   = 1
@@ -19,7 +19,7 @@ class Configure(PETSc.package.NewPackage):
     self.ThrustVersion = '100400' #Version 1.4.0
 #
 #   obtain thrust and cusp with
-#   hg clone https://thrust.googlecode.com/hg/ thrust 
+#   hg clone https://thrust.googlecode.com/hg/ thrust
 #   hg clone https://cusp-library.googlecode.com/hg/ cusp
 #     put them in /usr/local/cuda
 #
@@ -98,11 +98,11 @@ class Configure(PETSc.package.NewPackage):
   def configureTypes(self):
     import config.setCompilers
 #    if self.scalartypes.scalartype == 'complex':
-#      raise RuntimeError('Must use real numbers with CUDA') 
+#      raise RuntimeError('Must use real numbers with CUDA')
     if not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
       raise RuntimeError('Must use GNU compilers with CUDA')
     if not self.scalartypes.precision in ['double', 'single']:
-      raise RuntimeError('Must use either single or double precision with CUDA') 
+      raise RuntimeError('Must use either single or double precision with CUDA')
     else:
       self.setCompilers.pushLanguage('CUDA')
 #Not setting -arch if with-cuda-arch is not specified uses nvcc default architecture

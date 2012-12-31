@@ -1354,15 +1354,13 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool  symme
       }
     }
 
-    n     *= bs;
-    nz *= bs*bs;
     if (symmetric) { /* deallocate memory allocated in MatToSymmetricIJ_SeqAIJ() */
       ierr = PetscFree(tia);CHKERRQ(ierr);
       ierr = PetscFree(tja);CHKERRQ(ierr);
     }
   } else if (oshift == 1) {
     if (symmetric) {
-      PetscInt nz = tia[A->rmap->n/bs];
+      nz = tia[A->rmap->n/bs];
       /*  add 1 to i and j indices */
       for (i=0; i<A->rmap->n/bs+1; i++) tia[i] = tia[i] + 1;
       *ia = tia;
@@ -1371,7 +1369,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool  symme
         *ja = tja;
       }
     } else {
-      PetscInt nz = a->i[A->rmap->n/bs];
+      nz = a->i[A->rmap->n/bs];
       /* malloc space and  add 1 to i and j indices */
       ierr = PetscMalloc((A->rmap->n/bs+1)*sizeof(PetscInt),ia);CHKERRQ(ierr);
       for (i=0; i<A->rmap->n/bs+1; i++) (*ia)[i] = a->i[i] + 1;
@@ -3185,7 +3183,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
   if (!skipallocation) {
     if (!b->imax) {
       ierr = PetscMalloc2(mbs,PetscInt,&b->imax,mbs,PetscInt,&b->ilen);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(B,2*mbs*sizeof(PetscInt));
+      ierr = PetscLogObjectMemory(B,2*mbs*sizeof(PetscInt));CHKERRQ(ierr);
       b->free_imax_ilen = PETSC_TRUE;
     }
     /* b->ilen will count nonzeros in each block row so far. */

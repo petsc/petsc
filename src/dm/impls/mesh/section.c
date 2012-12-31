@@ -32,7 +32,7 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
-  } else if (isdraw){ 
+  } else if (isdraw){
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
@@ -40,10 +40,10 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealView"
 /*@C
-   SectionRealView - Views a Section object. 
+   SectionRealView - Views a Section object.
 
    Collective on Section
 
@@ -56,10 +56,10 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
-   You can change the format the section is printed using the 
+   You can change the format the section is printed using the
    option PetscViewerSetFormat().
 
    The user can open alternative visualization contexts with
@@ -100,7 +100,7 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealDuplicate"
 /*@C
   SectionRealDuplicate - Create an equivalent Section object
@@ -112,7 +112,7 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
 
   Output Parameter:
 . newSection - the duplicate
- 
+
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealSetSection()
@@ -136,7 +136,7 @@ PetscErrorCode  SectionRealDuplicate(SectionReal section, SectionReal *newSectio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealGetSection"
 /*@C
   SectionRealGetSection - Gets the internal section object
@@ -148,7 +148,7 @@ PetscErrorCode  SectionRealDuplicate(SectionReal section, SectionReal *newSectio
 
   Output Parameter:
 . s - the internal section object
- 
+
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealSetSection()
@@ -161,7 +161,7 @@ PetscErrorCode  SectionRealGetSection(SectionReal section, ALE::Obj<PETSC_MESH_T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealSetSection"
 /*@C
   SectionRealSetSection - Sets the internal section object
@@ -171,7 +171,7 @@ PetscErrorCode  SectionRealGetSection(SectionReal section, ALE::Obj<PETSC_MESH_T
   Input Parameters:
 + section - the section object
 - s - the internal section object
- 
+
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealGetSection()
@@ -187,7 +187,7 @@ PetscErrorCode  SectionRealSetSection(SectionReal section, const ALE::Obj<PETSC_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealGetBundle"
 /*@C
   SectionRealGetBundle - Gets the section bundle
@@ -199,7 +199,7 @@ PetscErrorCode  SectionRealSetSection(SectionReal section, const ALE::Obj<PETSC_
 
   Output Parameter:
 . b - the section bundle
- 
+
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealGetSection(), SectionRealSetSection()
@@ -212,7 +212,7 @@ PetscErrorCode  SectionRealGetBundle(SectionReal section, ALE::Obj<PETSC_MESH_TY
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealSetBundle"
 /*@C
   SectionRealSetBundle - Sets the section bundle
@@ -222,7 +222,7 @@ PetscErrorCode  SectionRealGetBundle(SectionReal section, ALE::Obj<PETSC_MESH_TY
   Input Parameters:
 + section - the section object
 - b - the section bundle
- 
+
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealGetSection(), SectionRealSetSection()
@@ -235,7 +235,7 @@ PetscErrorCode  SectionRealSetBundle(SectionReal section, const ALE::Obj<PETSC_M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealCreate"
 /*@C
   SectionRealCreate - Creates a Section object, used to manage data for an unstructured problem
@@ -275,7 +275,7 @@ PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealDestroy"
 /*@
   SectionRealDestroy - Destroys a section.
@@ -301,7 +301,7 @@ PetscErrorCode  SectionRealDestroy(SectionReal *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealDistribute"
 /*@
   SectionRealDistribute - Distributes the sections.
@@ -346,7 +346,7 @@ PetscErrorCode SectionRealDistribute(SectionReal serialSection, DM parallelMesh,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealRestrict"
 /*@C
   SectionRealRestrict - Restricts the SectionReal to a subset of the topology, returning an array of values.
@@ -377,7 +377,7 @@ PetscErrorCode  SectionRealRestrict(SectionReal section, PetscInt point, PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealUpdate"
 /*@C
   SectionRealUpdate - Updates the array of values associated to a subset of the topology in this Section.
@@ -550,7 +550,7 @@ PetscErrorCode SectionRealUpdateClosure(SectionReal section, DM dm, PetscInt poi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealComplete"
 /*@
   SectionRealComplete - Exchanges data across the mesh overlap.
@@ -581,7 +581,7 @@ PetscErrorCode SectionRealComplete(SectionReal section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealZero"
 /*@
   SectionRealZero - Zero out the entries
@@ -606,7 +606,7 @@ PetscErrorCode SectionRealZero(SectionReal section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealGetFiberDimension"
 /*@
   SectionRealGetFiberDimension - Get the size of the vector space attached to the point
@@ -632,7 +632,7 @@ PetscErrorCode  SectionRealGetFiberDimension(SectionReal section, PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealSetFiberDimension"
 /*@
   SectionRealSetFiberDimension - Set the size of the vector space attached to the point
@@ -656,7 +656,7 @@ PetscErrorCode  SectionRealSetFiberDimension(SectionReal section, PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealSetFiberDimensionField"
 /*@
   SectionRealSetFiberDimensionField - Set the size of the vector space attached to the point for a given field
@@ -710,7 +710,7 @@ PetscErrorCode SectionRealGetSize(SectionReal section, PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealAllocate"
 /*@
   SectionRealAllocate - Allocate storage for this section
@@ -732,7 +732,7 @@ PetscErrorCode  SectionRealAllocate(SectionReal section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealCreateLocalVector"
 /*@
   SectionRealCreateLocalVector - Creates a vector with the local piece of the Section
@@ -740,7 +740,7 @@ PetscErrorCode  SectionRealAllocate(SectionReal section)
   Collective on DMMesh
 
   Input Parameter:
-. section - the Section  
+. section - the Section
 
   Output Parameter:
 . localVec - the local vector
@@ -765,7 +765,7 @@ PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealAddSpace"
 /*@
   SectionRealAddSpace - Add another field to this section
@@ -790,7 +790,7 @@ PetscErrorCode  SectionRealAddSpace(SectionReal section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealGetFibration"
 /*@
   SectionRealGetFibration - Creates a section for only the data associated with the given field
@@ -827,7 +827,7 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealToVec"
 /*@C
   SectionRealToVec - Maps the given section to a Vec
@@ -866,7 +866,7 @@ PetscErrorCode  SectionRealToVec(SectionReal section, DM dm, ScatterMode mode, V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealToVec"
 /*@
   SectionRealToVec - Map between unassembled local Section storage and a globally assembled Vec
@@ -902,7 +902,7 @@ PetscErrorCode  SectionRealToVec(SectionReal section, VecScatter scatter, Scatte
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealClear"
 /*@
   SectionRealClear - Dellocate storage for this section
@@ -924,7 +924,7 @@ PetscErrorCode  SectionRealClear(SectionReal section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealSet"
 /*@
   SectionRealSet - Sets all the values to the given value
@@ -950,7 +950,7 @@ PetscErrorCode  SectionRealSet(SectionReal section, PetscReal val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealNorm"
 /*@C
   SectionRealNorm - Computes the vector norm.
@@ -996,10 +996,10 @@ PetscErrorCode  SectionRealNorm(SectionReal section, DM dm, NormType type, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionRealAXPY"
 /*@
-  SectionRealAXPY - 
+  SectionRealAXPY -
 
   Collective on Section
 
@@ -1124,18 +1124,18 @@ PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiber
 #define __FUNCT__ "DMMeshCreateSectionRealIS"
 /*@C
   DMMeshCreateSectionRealIS - Create a Section over the points specified in an IS.
-  
+
   Collective on DMMesh
-  
+
   Input Parameters:
   + dm - the DMMesh object
   . is - The IS describing the points associated with the degrees of freedom
   . name - The name of the section
   - fiberDim - The number of degrees of freedom per point of the IS
-  
+
   Output Parameter:
   . section - The section
-  
+
   Level: intermediate
 
 .keywords: mesh, section, cell
@@ -1150,14 +1150,14 @@ PetscErrorCode DMMeshCreateSectionRealIS(DM dm,IS is,const char name[],PetscInt 
   const PetscInt *points;
   PetscInt        numpoints,p;
   PetscErrorCode  ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm,&comm);CHKERRQ(ierr);
-  
+
   ierr = PetscSectionCreate(comm,&s);CHKERRQ(ierr);
-  ierr = DMMeshGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);    
+  ierr = DMMeshGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(s,pStart,pEnd);CHKERRQ(ierr);
-  
+
   ierr = ISGetLocalSize(is,&numpoints);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&points);CHKERRQ(ierr);
   for (p =0; p < numpoints; p++) {
@@ -1231,7 +1231,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
-  } else if (isdraw){ 
+  } else if (isdraw){
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
@@ -1239,10 +1239,10 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntView"
 /*@C
-   SectionIntView - Views a Section object. 
+   SectionIntView - Views a Section object.
 
    Collective on Section
 
@@ -1255,10 +1255,10 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
-   You can change the format the section is printed using the 
+   You can change the format the section is printed using the
    option PetscViewerSetFormat().
 
    The user can open alternative visualization contexts with
@@ -1299,7 +1299,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntGetSection"
 /*@C
   SectionIntGetSection - Gets the internal section object
@@ -1311,7 +1311,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
 
   Output Parameter:
 . s - the internal section object
- 
+
   Level: advanced
 
 .seealso SectionIntCreate(), SectionIntSetSection()
@@ -1324,7 +1324,7 @@ PetscErrorCode  SectionIntGetSection(SectionInt section, ALE::Obj<PETSC_MESH_TYP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntSetSection"
 /*@C
   SectionIntSetSection - Sets the internal section object
@@ -1334,7 +1334,7 @@ PetscErrorCode  SectionIntGetSection(SectionInt section, ALE::Obj<PETSC_MESH_TYP
   Input Parameters:
 + section - the section object
 - s - the internal section object
- 
+
   Level: advanced
 
 .seealso SectionIntCreate(), SectionIntGetSection()
@@ -1350,7 +1350,7 @@ PetscErrorCode  SectionIntSetSection(SectionInt section, const ALE::Obj<PETSC_ME
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntGetBundle"
 /*@C
   SectionIntGetBundle - Gets the section bundle
@@ -1362,7 +1362,7 @@ PetscErrorCode  SectionIntSetSection(SectionInt section, const ALE::Obj<PETSC_ME
 
   Output Parameter:
 . b - the section bundle
- 
+
   Level: advanced
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
@@ -1375,7 +1375,7 @@ PetscErrorCode  SectionIntGetBundle(SectionInt section, ALE::Obj<PETSC_MESH_TYPE
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntSetBundle"
 /*@C
   SectionIntSetBundle - Sets the section bundle
@@ -1385,7 +1385,7 @@ PetscErrorCode  SectionIntGetBundle(SectionInt section, ALE::Obj<PETSC_MESH_TYPE
   Input Parameters:
 + section - the section object
 - b - the section bundle
- 
+
   Level: advanced
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
@@ -1398,7 +1398,7 @@ PetscErrorCode  SectionIntSetBundle(SectionInt section, const ALE::Obj<PETSC_MES
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntCreate"
 /*@C
   SectionIntCreate - Creates a Section object, used to manage data for an unstructured problem
@@ -1438,7 +1438,7 @@ PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntDestroy"
 /*@
   SectionIntDestroy - Destroys a section.
@@ -1464,7 +1464,7 @@ PetscErrorCode  SectionIntDestroy(SectionInt *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntDistribute"
 /*@
   SectionIntDistribute - Distributes the sections.
@@ -1509,7 +1509,7 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, DM parallelMesh, S
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntRestrict"
 /*@C
   SectionIntRestrict - Restricts the SectionInt to a subset of the topology, returning an array of values.
@@ -1536,7 +1536,7 @@ PetscErrorCode  SectionIntRestrict(SectionInt section, PetscInt point, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntUpdate"
 /*@C
   SectionIntUpdate - Updates the array of values associated to a subset of the topology in this Section.
@@ -1644,7 +1644,7 @@ PetscErrorCode SectionIntUpdateClosure(SectionInt section, DM dm, PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntComplete"
 /*@
   SectionIntComplete - Exchanges data across the mesh overlap.
@@ -1700,7 +1700,7 @@ PetscErrorCode SectionIntZero(SectionInt section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntGetFiberDimension"
 /*@
   SectionIntGetFiberDimension - Get the size of the vector space attached to the point
@@ -1726,7 +1726,7 @@ PetscErrorCode  SectionIntGetFiberDimension(SectionInt section, PetscInt point, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntSetFiberDimension"
 /*@
   SectionIntSetFiberDimension - Set the size of the vector space attached to the point
@@ -1750,7 +1750,7 @@ PetscErrorCode  SectionIntSetFiberDimension(SectionInt section, PetscInt point, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntSetFiberDimensionField"
 /*@
   SectionIntSetFiberDimensionField - Set the size of the vector space attached to the point for a given field
@@ -1804,7 +1804,7 @@ PetscErrorCode SectionIntGetSize(SectionInt section, PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntAllocate"
 /*@
   SectionIntAllocate - Allocate storage for this section
@@ -1826,7 +1826,7 @@ PetscErrorCode  SectionIntAllocate(SectionInt section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntClear"
 /*@C
   SectionIntClear - Dellocate storage for this section
@@ -1848,7 +1848,7 @@ PetscErrorCode  SectionIntClear(SectionInt section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntSet"
 /*@
   SectionIntSet - Sets all the values to the given value
@@ -1874,7 +1874,7 @@ PetscErrorCode  SectionIntSet(SectionInt section, PetscInt val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntAddSpace"
 /*@
   SectionIntAddSpace - Add another field to this section
@@ -1899,7 +1899,7 @@ PetscErrorCode  SectionIntAddSpace(SectionInt section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionIntGetFibration"
 /*@
   SectionIntGetFibration - Creates a section for only the data associated with the given field

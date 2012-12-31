@@ -18,7 +18,7 @@ namespace ALE { namespace Coarsener {
     double * adjPregion; //the average number of adjacent regions per region.
     double * minAngle; //the minimum angle in each level
     double * maxAngle; //the maximum angle in each level
-    
+
     int edgeSegments; //
     int edgePoints;
   } coarsen_stats;
@@ -63,7 +63,7 @@ namespace ALE { namespace Coarsener {
       coarsen_stats.adjPregion = new double[nMeshes + 1];
       coarsen_stats.minAngle = new double[nMeshes + 1];
       coarsen_stats.maxAngle = new double[nMeshes + 1];
-      
+
     }
     //create the initial overhead comparison level.
     	  //build the root node;
@@ -108,7 +108,7 @@ namespace ALE { namespace Coarsener {
 	    //initialize the boundaries.
       for (int i = 0; i < dim; i++) {
 	if (bound_init[2*i] == false || cur_coords[i] < tmpPoint->boundaries[2*i]) {
-	  bound_init[2*i] = true; 
+	  bound_init[2*i] = true;
 	  tmpPoint->boundaries[2*i] = cur_coords[i];
 	}
 	if (bound_init[2*i+1] == false || cur_coords[i] > tmpPoint->boundaries[2*i+1]) {
@@ -121,7 +121,7 @@ namespace ALE { namespace Coarsener {
 
 	    //if it's essential, push it to the ColPoints stack, which will be the pool that is compared with during the traversal-MIS algorithm.
       int boundRank = topology->getValue(boundary, *v_iter);
-	if(boundRank == dim) { 
+	if(boundRank == dim) {
 	  tmpPoint->childColPoints.push_front(*v_iter);
 	  globalNodes.push_front(*v_iter);
 	} else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
@@ -150,12 +150,12 @@ namespace ALE { namespace Coarsener {
 	  bool canRefine = true;
 	    //define the criterion under which we cannot refine this particular section
 	  for (int i = 0; i < dim; i++) {
-	    if((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) { 
+	    if((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) {
 	      canRefine = false;
 	      //PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]),2*pBeta*tmpPoint->maxSpacing);
 	    }
 	  }
-	  if (tmpPoint->childColPoints.size() <= 4) canRefine = false;  //allows us to compute NEAREST POINT at each stage, as SOME adjacent thing will have a point. 
+	  if (tmpPoint->childColPoints.size() <= 4) canRefine = false;  //allows us to compute NEAREST POINT at each stage, as SOME adjacent thing will have a point.
           //if (tmpPoint->childColPoints.size() + tmpPoint->childPoints.size() < 8) canRefine = false;
 	  if (canRefine) {
 	  //PetscPrintf(mesh->comm(), "-- refining an area containing %d nodes..\n", tmpPoint->childPoints.size() + tmpPoint->childColPoints.size());
@@ -200,7 +200,7 @@ namespace ALE { namespace Coarsener {
 	    }
 	    p_iter = tmpPoint->childColPoints.begin();
 	    p_iter_end = tmpPoint->childColPoints.end();
-		//add the points to the 
+		//add the points to the
 	    while (p_iter != p_iter_end) {
 	      double ch_space = *spacing->restrict(rPatch, *p_iter);
 	      const double * cur_coords = coords->restrict(rPatch, *p_iter);
@@ -220,7 +220,7 @@ namespace ALE { namespace Coarsener {
 
 	  } else {  //ending refinement if
 	    tmpPoint->isLeaf = true;
-	    leaf_list.push_front(tmpPoint); 
+	    leaf_list.push_front(tmpPoint);
 	  } //ending canrefine else
 	} //ending !isleaf else
       } //ending refinement while.
@@ -280,7 +280,7 @@ namespace ALE { namespace Coarsener {
               be_iter++;
             }
           }
-          
+
 		//internal consistency check; keeps us from having to go outside if we don't have to.
 	  std::list<ALE::Mesh::point_type>::iterator int_iter = cur_leaf->childColPoints.begin();
 	  std::list<ALE::Mesh::point_type>::iterator int_iter_end = cur_leaf->childColPoints.end();
@@ -386,7 +386,7 @@ namespace ALE { namespace Coarsener {
                 //if (contTri == -1) {
                   //printf("still broken\n");
                 //} else printf("fixed\n");
-                } 
+                }
               }
             }*/
             //nearest->update(rPatch, *l_points_iter, &contTri);
@@ -403,7 +403,7 @@ namespace ALE { namespace Coarsener {
 #ifdef PETSC_HAVE_TRIANGLE
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
-  
+
       input->numberofpoints = globalNodes.size();
       PetscPrintf(mesh->comm(), "Accepted %d nodes; triangulating.\n", input->numberofpoints);
       input->numberofpointattributes = 0;
@@ -438,7 +438,7 @@ namespace ALE { namespace Coarsener {
       ALE::Mesh::topology_type::label_sequence::iterator be_iter = boundEdges->begin();
       ALE::Mesh::topology_type::label_sequence::iterator be_iter_end = boundEdges->end();
 //set up the boundary segments
-      
+
       input->numberofsegments = boundEdges->size();
       input->segmentlist = new int[2*input->numberofsegments];
       for (int i = 0; i < 2*input->numberofsegments; i++) {
@@ -478,7 +478,7 @@ namespace ALE { namespace Coarsener {
 
       input->holelist = NULL;
       input->numberofholes = 0;
-  
+
       input->regionlist = NULL;
       input->numberofregions = 0;
 
@@ -512,11 +512,11 @@ namespace ALE { namespace Coarsener {
       if (coarsen_stats.computeStats) {
         coarsen_stats.nNodes[curLevel] = output->numberofpoints;
         coarsen_stats.nFaces[curLevel] = output->numberoftriangles;
-        
+
 
         coarsen_stats.adjPregion[curLevel] = ((float)regions_adjacent)/coarsen_stats.regions[curLevel];
         coarsen_stats.compPpoint[curLevel] = ((float)point_comparisons)/visited_nodes;
-        
+
         double * tmp_stats = ComputeAngles(mesh, dim, curLevel);
         coarsen_stats.minAngle[curLevel] = tmp_stats[0];
         coarsen_stats.maxAngle[curLevel] = tmp_stats[1];
@@ -528,8 +528,8 @@ namespace ALE { namespace Coarsener {
     if (coarsen_stats.displayStats)coarsen_DisplayStats();
     PetscFunctionReturn(0);
   }  //end of CreateCoarsenedHierarchy
-  
-  
+
+
 /*  bool isOverlap(mis_node * a, mis_node * b, int dim) { //see if any two balls in the two sections could overlap at all.
     int sharedDim = 0;
     for (int i = 0; i < dim; i++) {

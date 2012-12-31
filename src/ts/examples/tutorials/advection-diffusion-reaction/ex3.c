@@ -120,7 +120,7 @@ int main(int argc,char **argv)
   */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
@@ -284,7 +284,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
   */
 
   /* diffusion */
-  v[0] = appctx->d/(h*h); 
+  v[0] = appctx->d/(h*h);
   v[1] = -2.0*appctx->d/(h*h);
   v[2] = appctx->d/(h*h);
   if (!mstart) {
@@ -293,7 +293,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
     mstart++;
   }
 
-  if (mend == M){ 
+  if (mend == M){
     mend--;
     idx[0] = M-2; idx[1] = M-1; idx[2] = 0;
     ierr = MatSetValues(A,1,&mend,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);

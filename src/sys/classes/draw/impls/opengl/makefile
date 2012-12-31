@@ -1,19 +1,18 @@
 
 #requirespackage 'PETSC_HAVE_OPENGL'
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = ${OPENGL_INCLUDE} 
+CPPFLAGS  = ${OPENGL_INCLUDE}
 SOURCEC   = openglops.c
 SOURCEF   =
-SOURCEH   = 
+SOURCEH   =
 MANSEC    = Draw
 LIBBASE   = libpetscsys
-DIRS      = 
+DIRS      =
 LOCDIR   = src/sys/classes/draw/impls/opengl/
-NOADIC    = true
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

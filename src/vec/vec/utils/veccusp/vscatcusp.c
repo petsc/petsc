@@ -1,19 +1,19 @@
 #include <petsc-private/isimpl.h>              /*I "petscis.h" I*/
 #include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecScatterInitializeForGPU"
 /*@
    VecScatterInitializeForGPU - Initializes a generalized scatter from one vector to
- another for GPU based computation.  Effectively, this function creates all the 
+ another for GPU based computation.  Effectively, this function creates all the
  necessary indexing buffers and work vectors needed to move data only those data points
  in a vector which need to be communicated across ranks. This is done at the first time
  this function is called. Thereafter, this function launches a kernel,
- VecCUSPCopySomeToContiguousBufferGPU_Public, which moves the scattered data into a 
- contiguous buffer on the GPU. Currently, this only used in the context of the parallel 
- SpMV call in MatMult_MPIAIJCUSP (in mpi/mpicusp/mpiaijcusp.cu) or MatMult_MPIAIJCUSPARSE 
- (in mpi/mpicusparse/mpiaijcusparse.cu). This function is executed before the call to 
- MatMult. This enables the memory transfers to be overlapped with the MatMult SpMV kernel 
+ VecCUSPCopySomeToContiguousBufferGPU_Public, which moves the scattered data into a
+ contiguous buffer on the GPU. Currently, this only used in the context of the parallel
+ SpMV call in MatMult_MPIAIJCUSP (in mpi/mpicusp/mpiaijcusp.cu) or MatMult_MPIAIJCUSPARSE
+ (in mpi/mpicusparse/mpiaijcusparse.cu). This function is executed before the call to
+ MatMult. This enables the memory transfers to be overlapped with the MatMult SpMV kernel
  call.
 
    Input Parameters:
@@ -94,15 +94,15 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
     }
     /*
      This should be called here.
-     ... basically, we launch the copy kernel that takes the scattered data and puts it in a 
+     ... basically, we launch the copy kernel that takes the scattered data and puts it in a
          a contiguous buffer. Then, this buffer is messaged after the MatMult is called.
      */
 #if 0 /* Paul, why did you leave this line commented after writing the note above explaining why it should be called? */
     /* I couldn't make this version run more efficiently. In theory, I would like to do it this way
        since the amount of data transfer between GPU and CPU is reduced. However, gather kernels
-       really don't perform very well on the device. Thus, what I do is message (from GPU to CPU) the 
-       smallest contiguous chunk of the vector containing all those elements needing to be MPI-messaged. 
-       I would like to leave this code in here for now ... maybe I'll figure out how to do a better 
+       really don't perform very well on the device. Thus, what I do is message (from GPU to CPU) the
+       smallest contiguous chunk of the vector containing all those elements needing to be MPI-messaged.
+       I would like to leave this code in here for now ... maybe I'll figure out how to do a better
        gather kernel on GPU. */
     ierr = VecCUSPCopySomeToContiguousBufferGPU_Public(x,(PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
 #endif
@@ -111,13 +111,13 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecScatterFinalizeForGPU"
 /*@
    VecScatterFinalizeForGPU - Finalizes a generalized scatter from one vector to
  another for GPU based computation. Effectively, this function resets the temporary
  buffer flags. Currently, this only used in the context of the parallel SpMV call in
- in MatMult_MPIAIJCUSP (in mpi/mpicusp/mpiaijcusp.cu) or MatMult_MPIAIJCUSPARSE 
+ in MatMult_MPIAIJCUSP (in mpi/mpicusp/mpiaijcusp.cu) or MatMult_MPIAIJCUSPARSE
  (in mpi/mpicusparse/mpiaijcusparse.cu). Once the MatMultAdd is finished,
  the GPU temporary buffers used for messaging are no longer valid.
 

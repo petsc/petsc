@@ -9,11 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petsckspmod.F
-SOURCEH	   = 
+SOURCEH	   =
 LIBBASE	   = libpetscksp
 MANSEC	   = KSP
 LOCDIR	   = src/ksp/f90-mod/

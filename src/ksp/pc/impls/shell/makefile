@@ -3,9 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = shellpc.c 
+SOURCEC  = shellpc.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscksp
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/shell/

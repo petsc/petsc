@@ -197,7 +197,6 @@ extern PetscErrorCode MatSOR_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,Petsc
 
 extern PetscErrorCode MatSetOption_SeqAIJ(Mat,MatOption,PetscBool);
 extern PetscErrorCode MatSetColoring_SeqAIJ(Mat,ISColoring);
-extern PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat,void*);
 extern PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat,PetscInt,void*);
 
 extern PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);

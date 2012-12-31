@@ -1185,36 +1185,36 @@ PetscErrorCode  PetscLogDump(const char sname[])
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
   if ((!rank) && (!fd)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", petsc_TotalFlops, _TotalTime);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", petsc_TotalFlops, _TotalTime);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);CHKERRQ(ierr);
   /* Output actions */
   if (petsc_logActions) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", petsc_numActions);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", petsc_numActions);CHKERRQ(ierr);
     for (action = 0; action < petsc_numActions; action++) {
       ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n",
                           petsc_actions[action].time, petsc_actions[action].action, (int)petsc_actions[action].event, (int)petsc_actions[action].classid, petsc_actions[action].id1,
-                          petsc_actions[action].id2, petsc_actions[action].id3, petsc_actions[action].flops, petsc_actions[action].mem, petsc_actions[action].maxmem);
+                          petsc_actions[action].id2, petsc_actions[action].id3, petsc_actions[action].flops, petsc_actions[action].mem, petsc_actions[action].maxmem);CHKERRQ(ierr);
     }
   }
   /* Output objects */
   if (petsc_logObjects) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", petsc_numObjects, petsc_numObjectsDestroyed);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", petsc_numObjects, petsc_numObjectsDestroyed);CHKERRQ(ierr);
     for (object = 0; object < petsc_numObjects; object++) {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", petsc_objects[object].parent, (int) petsc_objects[object].mem);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", petsc_objects[object].parent, (int) petsc_objects[object].mem);CHKERRQ(ierr);
       if (!petsc_objects[object].name[0]) {
-        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd,"No Name\n");
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd,"No Name\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", petsc_objects[object].name);
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", petsc_objects[object].name);CHKERRQ(ierr);
       }
       if (petsc_objects[object].info[0] != 0) {
-        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n");
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", petsc_objects[object].info);
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", petsc_objects[object].info);CHKERRQ(ierr);
       }
     }
   }
   /* Output events */
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Event log:\n");
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Event log:\n");CHKERRQ(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscIntStackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
   eventInfo = stageLog->stageInfo[curStage].eventLog->eventInfo;
@@ -1225,7 +1225,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
       flops = 0.0;
     }
     ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%d %16d %16g %16g %16g\n", event, eventInfo[event].count,
-                        eventInfo[event].flops, eventInfo[event].time, flops);
+                        eventInfo[event].flops, eventInfo[event].time, flops);CHKERRQ(ierr);
   }
   ierr = PetscFClose(PETSC_COMM_WORLD, fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);

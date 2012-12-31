@@ -1,6 +1,6 @@
-/* 
+/*
   Usage: A = sopen(portnumber);  [ 5000 < portnumber < 5010 ]
- 
+
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 	 Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
 	 Updated by Barry Smith, bsmith@mcs.anl.gov 8/11/06
@@ -83,11 +83,11 @@ typedef unsigned long   u_long;
 static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
-  struct sockaddr_in isa; 
+  struct sockaddr_in isa;
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
   size_t             i;
 #else
@@ -106,19 +106,19 @@ int SOCKConnect_Private(int portnumber)
   if ((t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
     PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
   }
-  close(listenport);  
+  close(listenport);
   return(t);
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "establish"
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
   int                s;
   PetscErrorCode     ierr;
-  struct sockaddr_in sa;  
+  struct sockaddr_in sa;
   struct hostent     *hp;
 #if defined(PETSC_HAVE_UNAME)
   struct utsname     utname;
@@ -143,8 +143,8 @@ int establish(u_short portnum)
     PETSC_MEX_ERRORQ("RECEIVE: error from gethostbyname\n");
   }
 
-  sa.sin_family = hp->h_addrtype; 
-  sa.sin_port = htons(portnum); 
+  sa.sin_family = hp->h_addrtype;
+  sa.sin_port = htons(portnum);
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
     PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");
@@ -159,13 +159,13 @@ int establish(u_short portnum)
     ierr = WSAGetLastError();
     if (ierr != WSAEADDRINUSE) {
 #else
-    if (errno != EADDRINUSE) { 
+    if (errno != EADDRINUSE) {
 #endif
       close(s);
       PETSC_MEX_ERRORQ("RECEIVE: error from bind\n");
       return(-1);
     }
-    close(listenport); 
+    close(listenport);
   }
   listen(s,0);
   return(s);
@@ -174,7 +174,7 @@ int establish(u_short portnum)
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
@@ -188,7 +188,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
     char *str;
     str = getenv("PETSC_VIEWER_SOCKET_PORT");
     if (str) portnumber = atoi(str);
-    else portnumber = PETSCSOCKETDEFAULTPORT;  
+    else portnumber = PETSCSOCKETDEFAULTPORT;
   } else {
     portnumber = (int)*mxGetPr(prhs[0]);
   }
@@ -197,7 +197,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   t = SOCKConnect_Private(portnumber); if (t == -1)  PETSC_MEX_ERROR("opening socket");
 
   plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
- 
+
   *mxGetPr(plhs[0]) = t;
   return;
 }

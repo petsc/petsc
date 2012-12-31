@@ -1,5 +1,5 @@
-/* 
- 
+/*
+
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 	 Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
 */
@@ -50,7 +50,7 @@ typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
@@ -58,12 +58,12 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   Linger linger;
 
   linger.onoff = 1;
-  linger.time  = 0; 
+  linger.time  = 0;
 
   if (!nrhs) PETSC_MEX_ERROR("Needs one argument, the port");
   t = (int)*mxGetPr(prhs[0]);
 
-  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
+  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger)))
     PETSC_MEX_ERROR("Setting linger");
   if (close(t)) PETSC_MEX_ERROR("closing socket");
   return;

@@ -7,7 +7,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 #define __FUNCT__ "DMViewFromOptions"
 /*
   Processes command line options to determine if/how a dm
-  is to be viewed. 
+  is to be viewed.
 
 */
 PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
@@ -1203,7 +1203,7 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidPointer(ddm,3);
   *ddm = PETSC_NULL;
   if (dm->ops->createfielddecompositiondm) {
-    ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
+    ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1269,7 +1269,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     }
   }
   else {
-    ierr = (*dm->ops->createfielddecomposition)(dm,len,namelist,islist,dmlist); CHKERRQ(ierr);
+    ierr = (*dm->ops->createfielddecomposition)(dm,len,namelist,islist,dmlist);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1305,7 +1305,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
   if (is) {PetscValidPointer(is,4);}
   if (subdm) {PetscValidPointer(subdm,5);}
   if (dm->ops->createsubdm) {
-    ierr = (*dm->ops->createsubdm)(dm, numFields, fields, is, subdm); CHKERRQ(ierr);
+    ierr = (*dm->ops->createsubdm)(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateSubDM implementation defined");
   PetscFunctionReturn(0);
 }
@@ -1338,7 +1338,7 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidPointer(ddm,3);
   *ddm = PETSC_NULL;
   if (dm->ops->createdomaindecompositiondm) {
-    ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
+    ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1370,7 +1370,7 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
   PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
   and all of the arrays should be freed with PetscFree().
- 
+
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateDomainDecompositionDM(), DMCreateFieldDecomposition()
 @*/
 PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
@@ -1387,10 +1387,8 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
   if (dm->ops->createdomaindecomposition) {
-    ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
-  } else {
-    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DMCreateDomainDecomposition not supported for this DM type!");CHKERRQ(ierr);
-  }
+    ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DMCreateDomainDecomposition not supported for this DM type!");CHKERRQ(ierr);
   if (len) *len = l;
   for (i = 0; i < l; i++) {
     for (link=dm->subdomainhook; link; link=link->next) {
@@ -1440,7 +1438,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscValidPointer(oscat,5);
   PetscValidPointer(gscat,6);
   if (dm->ops->createddscatters) {
-    ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat); CHKERRQ(ierr);
+    ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
   PetscFunctionReturn(0);
 }
@@ -1997,7 +1995,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
    Input Arguments:
 +  global - global DM
-.  
+.
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
 
@@ -2132,9 +2130,7 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
     for (i=1; i<nlevels; i++) {
       ierr = DMRefine(dmf[i-1],((PetscObject)dm)->comm,&dmf[i]);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
-  }
+  } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
   PetscFunctionReturn(0);
 }
 
@@ -2175,9 +2171,7 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
     for (i=1; i<nlevels; i++) {
       ierr = DMCoarsen(dmc[i-1],((PetscObject)dm)->comm,&dmc[i]);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No CoarsenHierarchy for this DM yet");
-  }
+  } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No CoarsenHierarchy for this DM yet");
   PetscFunctionReturn(0);
 }
 
@@ -2300,7 +2294,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(),
          DMSetJacobian()
 
 @*/
@@ -2363,7 +2357,7 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,2);
   if (dm->ops->computevariablebounds) {
-    ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
+    ierr = (*dm->ops->computevariablebounds)(dm, xl,xu);CHKERRQ(ierr);
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
   PetscFunctionReturn(0);
@@ -2421,7 +2415,7 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
     ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
   }
   else if (dm->x) {
-    ierr = VecDestroy(&dm->x);  CHKERRQ(ierr);
+    ierr = VecDestroy(&dm->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

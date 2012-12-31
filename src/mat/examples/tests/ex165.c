@@ -1,7 +1,7 @@
- 
+
 static char help[] = "Tests C=A^T*B via MatTranspose() and MatMatMult(). \n\
                      Contributed by Alexander Grayver, Jan. 2012 \n\n";
-/* Example: 
+/* Example:
   mpiexec -n <np> ./ex165 -fA A.dat -fB B.dat -view_C
  */
 
@@ -11,11 +11,11 @@ static char help[] = "Tests C=A^T*B via MatTranspose() and MatMatMult(). \n\
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  Mat            A,AT,B,C; 
+  Mat            A,AT,B,C;
   PetscViewer    viewer;
   PetscBool      flg;
   char           file[PETSC_MAX_PATH_LEN];
-  
+
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Input fileA not specified");
@@ -35,7 +35,7 @@ int main(int argc,char **args)
 
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&AT);CHKERRQ(ierr);
   ierr = MatMatMult(AT,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);
-  
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-view_C",&flg);CHKERRQ(ierr);
   if (flg){
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"C.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);

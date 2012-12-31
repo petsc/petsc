@@ -6,9 +6,9 @@ CFLAGS   = ${SPRNG_INCLUDE}
 FFLAGS   =
 SOURCEC  = sprng.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscsys
-DIRS     = 
+DIRS     =
 LOCDIR   = src/sys/random/impls/sprng/
 
 include ${PETSC_DIR}/conf/variables

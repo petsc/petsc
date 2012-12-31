@@ -16,9 +16,9 @@ int main( int argc, char **argv )
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-k",&k,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mdot",&mdot);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test with %D random vectors of length %D",k,n);CHKERRQ(ierr); 
-  if (mdot) ierr = PetscPrintf(PETSC_COMM_WORLD,"(mdot)",k,n);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n",k,n);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test with %D random vectors of length %D",k,n);CHKERRQ(ierr);
+  if (mdot) ierr = PetscPrintf(PETSC_COMM_WORLD,"(mdot)",k,n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n",k,n);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&t);CHKERRQ(ierr);

@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = adda.c
 SOURCEF  =

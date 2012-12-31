@@ -6,7 +6,7 @@
 #    Also removes the #define somefunction_ somefunction from the tags list
 #
 #
-# 
+#
 #   Walks through the PETSc tree generating the TAGS file
 #
 import os
@@ -18,7 +18,7 @@ import commands
 
 #
 #  Copies structs from filename to filename.tmp
-    
+
 def addFileNameTags(filename):
   removedefines = 0
   f = open(filename)
@@ -135,7 +135,7 @@ def main():
   try: os.unlink('CTAGS')
   except: pass
   etagfile = os.path.join(os.getcwd(),'ETAGS')
-  ctagfile = os.path.join(os.getcwd(),'CTAGS')  
+  ctagfile = os.path.join(os.getcwd(),'CTAGS')
   os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
   processFiles(os.getcwd(),etagfile,ctagfile)
   addFileNameTags(etagfile)
@@ -144,6 +144,6 @@ def main():
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

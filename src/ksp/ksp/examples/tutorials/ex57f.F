@@ -20,7 +20,7 @@
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
 !  petsc/include/foldinclude.
-!         
+!
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
 !  each file needed for the various PETSc components within their
@@ -65,7 +65,7 @@
 !        double precision x(*).
 !  However, local vector data can be easily accessed via VecGetArray().
 !  See the Fortran section of the PETSc users manual for details.
-!  
+!
       PetscReal       norm
       PetscInt        i,j,II,JJ,m,n,its,icntl,ival
       PetscInt        Istart,Iend,ione
@@ -74,14 +74,14 @@
       PetscBool       flg
       PetscScalar     v,one,neg_one
       Vec             x,b,u
-      Mat             A,F 
+      Mat             A,F
       KSP             ksp
       PetscRandom     rctx
       PC              pc
 
 !  These variables are not currently used.
 !      PC          pc
-!      PCType      ptype 
+!      PCType      ptype
 !      double precision tol
 
 
@@ -92,7 +92,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m = 3
@@ -105,10 +105,10 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -121,14 +121,14 @@
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned. 
+!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
@@ -141,7 +141,7 @@
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
@@ -164,7 +164,7 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-!   Check if A is symmetric 
+!   Check if A is symmetric
       if (size == 1) then
         call MatIsSymmetric(A,0.0,flg,ierr)
         if (flg .eq. PETSC_FALSE) then
@@ -179,7 +179,7 @@
 !   - When solving a linear system, the vectors and matrices MUST
 !     be partitioned accordingly.  PETSc automatically generates
 !     appropriately partitioned matrices and vectors when MatCreate()
-!     and VecCreate() are used with the same communicator. 
+!     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -212,9 +212,9 @@
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -254,15 +254,15 @@
      &          PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,ierr)
       endif
 !
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
       call VecAXPY(x,neg_one,u,ierr)
@@ -367,7 +367,7 @@
       KSPConvergedReason flag
       double precision rnorm
 
-      if (rnorm .le. .05) then 
+      if (rnorm .le. .05) then
         flag = 1
       else
         flag = 0

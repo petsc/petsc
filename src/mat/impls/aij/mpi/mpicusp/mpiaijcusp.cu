@@ -4,7 +4,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include "mpicuspmatimpl.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -54,7 +54,7 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetVecs_MPIAIJCUSP"
 PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
@@ -88,12 +88,12 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
      than the CPU version. In particular, the diagonal block
      multiplication kernel is launched in one stream. Then,
      in a separate stream, the data transfers from DeviceToHost
-     (with MPI messaging in between), then HostToDevice are 
+     (with MPI messaging in between), then HostToDevice are
      launched. Once the data transfer stream is synchronized,
      to ensure messaging is complete, the MatMultAdd kernel
      is launched in the original (MatMult) stream to protect
      against race conditions.
-  
+
      This sequence should only be called for GPU computation. */
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
@@ -107,24 +107,24 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
   ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy);CHKERRQ(ierr);
-  ierr = VecScatterFinalizeForGPU(a->Mvctx);CHKERRQ(ierr);        
+  ierr = VecScatterFinalizeForGPU(a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif 
+#endif
 
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCUSPSetFormat_MPIAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   switch (op) {
   case MAT_CUSP_MULT_DIAG:
     cuspStruct->diagGPUMatFormat = format;
@@ -139,12 +139,12 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPFormatOperation. Only MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_DIAG, and MAT_CUSP_MULT_ALL are currently supported.",op);
   }
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
 PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 {
@@ -191,7 +191,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
     delete cuspStruct;
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", ex);
-  } 
+  }
   cuspStruct = 0;
 #endif
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCUSP"
 PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
 {
@@ -224,7 +224,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   cuspStruct->diagGPUMatFormat    = MAT_CUSP_CSR;
   cuspStruct->offdiagGPUMatFormat = MAT_CUSP_CSR;
 
-  A->ops->mult           = MatMult_MPIAIJCUSP; 
+  A->ops->mult           = MatMult_MPIAIJCUSP;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;	
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatCUSPSetFormat_C", "MatCUSPSetFormat_MPIAIJCUSP", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
@@ -238,9 +238,9 @@ EXTERN_C_END
 /*@
    MatCreateAIJCUSP - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately pushed down
-   to NVidia GPUs and use the CUSP library for calculations. For good matrix 
-   assembly performance the user should preallocate the matrix storage by setting 
-   the parameter nz (or the array nnz).  By setting these parameters accurately, 
+   to NVidia GPUs and use the CUSP library for calculations. For good matrix
+   assembly performance the user should preallocate the matrix storage by setting
+   the parameter nz (or the array nnz).  By setting these parameters accurately,
    performance during matrix assembly can be increased by more than a factor of 50.
 
 
@@ -251,11 +251,11 @@ EXTERN_C_END
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows 
+-  nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
-.  A - the matrix 
+.  A - the matrix
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
    MatXXXXSetPreallocation() paradigm instead of this routine directly.
@@ -270,12 +270,12 @@ EXTERN_C_END
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For large problems you MUST preallocate memory or you 
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
-   By default, this format uses inodes (identical nodes) when possible, to 
-   improve numerical efficiency of matrix-vector products and solves. We 
+   By default, this format uses inodes (identical nodes) when possible, to
+   improve numerical efficiency of matrix-vector products and solves. We
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
@@ -283,7 +283,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ(), MATMPIAIJCUSP, MATAIJCUSP
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateAIJCUSP"
 PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
@@ -307,14 +307,14 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
 /*M
    MATAIJCUSP - MATMPIAIJCUSP = "aijcusp" = "mpiaijcusp" - A matrix type to be used for sparse matrices.
 
-   A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format. 
-   All matrix calculations are performed on Nvidia GPUs using the CUSP library. DIA and ELL 
-   formats are ONLY available when using the 'txpetscgpu' package. Use --download-txpetscgpu 
+   A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format.
+   All matrix calculations are performed on Nvidia GPUs using the CUSP library. DIA and ELL
+   formats are ONLY available when using the 'txpetscgpu' package. Use --download-txpetscgpu
    to build/install PETSc to use different GPU storage formats with CUSP matrix types.
 
    This matrix type is identical to MATSEQAIJCUSP when constructed with a single process communicator,
-   and MATMPIAIJCUSP otherwise.  As a result, for single process communicators, 
-   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+   and MATMPIAIJCUSP otherwise.  As a result, for single process communicators,
+   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported
    for communicators controlling multiple processes.  It is recommended that you call both of
    the above preallocation routines for simplicity.
 

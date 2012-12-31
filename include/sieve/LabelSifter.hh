@@ -582,7 +582,7 @@ namespace ALE {
           txt << "[" << this->commRank() << "]: " << ai->source << "---->" << ai->target << std::endl;
         }
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }
       else { // if(raw)
         ostringstream txt;
@@ -595,7 +595,7 @@ namespace ALE {
           txt << "[" << this->commRank() << "]: " << arr << std::endl;
         }
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }// if(raw)
 
       PetscFunctionReturn(0);

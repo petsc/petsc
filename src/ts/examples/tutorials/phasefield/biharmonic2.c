@@ -6,16 +6,16 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
     w = -kappa \Delta u
     u_t =  \Delta w
-    -1  <= u <= 1 
+    -1  <= u <= 1
     Periodic boundary conditions
 
 Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason --wait   -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9 
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason --wait   -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9
 
     w = -kappa \Delta u  + u^3  - u
-    u_t =  \Delta w                                    
-    -1  <= u <= 1 
+    u_t =  \Delta w
+    -1  <= u <= 1
     Periodic boundary conditions
 
 Evolve the Cahn-Hillard equations:
@@ -28,7 +28,7 @@ Evolve the Cahn-Hillard equations:
 #include <petscts.h>
 
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,Vec,void*),FormInitialSolution(DM,Vec,PetscReal);
@@ -61,8 +61,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr); 
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy = 1;
   //ierr = PetscOptionsGetInt(PETSC_NULL,"-energy",&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,FormFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
 <     Set Jacobian matrix data structure and default Jacobian evaluation
      routine. User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
+                (unless user explicitly sets preconditioner)
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
@@ -181,7 +181,7 @@ typedef struct {PetscScalar w,u;} Field;
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -271,8 +271,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localXdot);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -322,6 +322,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
      Restore vectors
   */
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 

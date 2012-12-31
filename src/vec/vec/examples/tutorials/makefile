@@ -1,6 +1,6 @@
 #
-CFLAGS		 = 
-FFLAGS		 = 
+CFLAGS		 =
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
@@ -12,7 +12,7 @@ EXAMPLESF	 = ex1f.F ex1f90.F ex2f.F ex3f.F ex4f.F ex4f90.F ex7f.F ex9f.F ex11f.F
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
-ex1: ex1.o  chkopts 
+ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
 
@@ -61,7 +61,7 @@ ex6: ex6.o  chkopts
 	${RM} -f ex6.o
 
 ex7: ex7.o ex7f.o chkopts
-	-${CLINKER} -o ex7 ex7.o ex7f.o ${PETSC_VEC_LIB} 
+	-${CLINKER} -o ex7 ex7.o ex7f.o ${PETSC_VEC_LIB}
 	${RM} -f ex7.o ex7f.o
 
 ex8: ex8.o  chkopts
@@ -137,7 +137,7 @@ ex43: ex43.o chkopts
 	${RM} ex43.o
 
 #-------------------------------------------------------------------------------------------
-#   This section is used for testing examples and can be ignored 
+#   This section is used for testing examples and can be ignored
 #-------------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1_1.tmp 2>&1;   \
@@ -305,7 +305,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm  \
                               ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc \
                               runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3 ex10.rm ex11.PETSc runex11 ex11.rm \
                               ex12.PETSc runex12 ex12.rm ex16.PETSc runex16 ex16.rm ex9.PETSc runex9 runex9_2 ex9.rm ex16.PETSc \
-                              ex16.rm 
+                              ex16.rm
 TESTEXAMPLES_C_X	    = ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm ex4f.PETSc \
                               runex4f ex4f.rm ex3f.PETSc ex3f.rm ex7.PETSc runex7 ex7.rm ex9f.PETSc runex9f \

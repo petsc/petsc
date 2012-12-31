@@ -5,7 +5,7 @@ SOURCEC  =
 SOURCEF  =
 SOURCEH  = petscimpl.h
 LIBBASE  = libpetscvec
-DIRS     = 
+DIRS     =
 LOCDIR   = include/petsc-private/
 MANSEC   = Sys
 

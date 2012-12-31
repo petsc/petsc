@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /* If we want to use negative indices, set the option */
-  ierr = VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,set_option_negidx); CHKERRQ(ierr);
+  ierr = VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,set_option_negidx);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRQ(ierr);
   m = iend - istart;
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
     }
   }
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank); CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank);CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,
 				   "%d: idx[%D] == %D; val[%D] == %f\n",

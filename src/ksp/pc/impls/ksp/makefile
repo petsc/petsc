@@ -5,9 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = pcksp.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/ksp/
 

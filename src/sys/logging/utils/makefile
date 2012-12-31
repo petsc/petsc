@@ -1,16 +1,16 @@
 #requiresdefine    'PETSC_USE_LOG'
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
 SOURCEC	  = classLog.c stageLog.c eventLog.c stack.c
 SOURCEF	  =
-SOURCEH	  = 
+SOURCEH	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  =
 LOCDIR	  = src/sys/plog/utils/
 
 include ${PETSC_DIR}/conf/variables

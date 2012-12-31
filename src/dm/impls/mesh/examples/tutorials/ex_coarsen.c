@@ -27,7 +27,7 @@ typedef struct {
   PetscBool  outputVTK;          // Output the mesh in VTK
   PetscBool  generate;           // Generate the mesh rather than reading it in
   PetscReal  curvatureCutoff;     // the cutoff for the curvature
-  PetscReal  refinementLimit;    // the maximum cell volume used in the finest mesh 
+  PetscReal  refinementLimit;    // the maximum cell volume used in the finest mesh
   PetscBool  refinementGrading;  //grade the L-shaped and Fichera corner meshes as C0r^-2 \leq h \leq C1r^-2
   PetscBool  interpolate;        //construct the subdimensional elements of the mesh
 } Options;
@@ -41,7 +41,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "Options");CHKERRQ(ierr);
   options->dim          = 2;
-  ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
+  ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);
   options->debug        = 0;
   options->useZeroBase  = PETSC_TRUE;
   ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
@@ -51,7 +51,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->outputVTK    = PETSC_TRUE;
   options->curvatureCutoff = 1.5;
   options->generate = PETSC_TRUE;
-  options->interpolate = PETSC_TRUE;  
+  options->interpolate = PETSC_TRUE;
 
   if (options->dim == 2) {
     options->refinementLimit = 0.001;
@@ -63,18 +63,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen_3", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);    
-  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);   
-  ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL); 
+  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);
+  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);
+  ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL);
   ierr = PetscOptionsBool("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, PETSC_NULL);
-  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);    
+  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);
   ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Coarsen_RefineSingularity_Fichera"
 PetscErrorCode  MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> *refinedMesh, PetscBool  interpolate = PETSC_FALSE)
 {
@@ -127,7 +127,7 @@ PetscErrorCode  MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm
 	  for (int j = 0; j < dim; j++) {
 	    if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
 	  }
-	  if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+	  if (cornerdist < dist || dist == 0.) dist = cornerdist;
 	}
       }
     }
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
     ierr = MeshSetMesh(mesh, m);
     //ierr = MeshIDBoundary(mesh);
     //create the spacing function on the original mesh
-    
+
     m->markBoundaryCells("marker");
     //    PetscPrintf(m->comm(), "marked the boundary cells\n");
 
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
     for (int i = 1; i < nMeshes; i++) {
       sprintf(vtkfilename, "coarse_mesh%d.vtk", i);
       ierr = OutputVTK(coarsened_mesh[i], &options, vtkfilename);CHKERRQ(ierr);
-    } 
+    }
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

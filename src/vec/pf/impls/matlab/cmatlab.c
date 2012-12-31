@@ -9,8 +9,8 @@ typedef struct {
   PetscMatlabEngine mengine;
   char              *string;
 } PF_Matlab;
-  
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "PFView_Matlab"
 PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
 {
@@ -26,7 +26,7 @@ PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFDestroy_Matlab"
 PetscErrorCode PFDestroy_Matlab(void *value)
 {
@@ -40,7 +40,7 @@ PetscErrorCode PFDestroy_Matlab(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFApply_Matlab"
 PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,PetscScalar *out)
 {
@@ -55,7 +55,7 @@ PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_Matlab"
 PetscErrorCode PFSetFromOptions_Matlab(PF pf)
 {
@@ -71,12 +71,12 @@ PetscErrorCode PFSetFromOptions_Matlab(PF pf)
       ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  PetscFunctionReturn(0);    
+  PetscFunctionReturn(0);
 }
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFCreate_Matlab"
 PetscErrorCode  PFCreate_Matlab(PF pf,void *value)
 {
@@ -89,7 +89,7 @@ PetscErrorCode  PFCreate_Matlab(PF pf,void *value)
   matlab->dimout = pf->dimout;
 
   ierr = PetscMatlabEngineCreate(((PetscObject)pf)->comm,PETSC_NULL,&matlab->mengine);CHKERRQ(ierr);
-    
+
   if (value) {
     ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
   }

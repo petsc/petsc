@@ -1,11 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = const.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/pf/impls/constant/

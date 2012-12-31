@@ -3,11 +3,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = maij.c 
+SOURCEC  = maij.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/maij/
 

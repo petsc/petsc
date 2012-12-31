@@ -7,10 +7,10 @@
 #include <petscpcasa.h>
 
 /*
-     Structure for adaptive smoothed aggregation solver. 
+     Structure for adaptive smoothed aggregation solver.
 */
 
-/* 
+/*
    Private context (data structure) for the ASA preconditioner.
 
    This is one level in the multigrid hierarchy
@@ -21,7 +21,7 @@ struct __PC_ASA_level {
 					      current level */
 
   Mat        A;                            /* The coarsened matrix for the current level */
-  Mat        B;                            /* Near kernel components. We will 
+  Mat        B;                            /* Near kernel components. We will
 					      allocate sufficient space for max_cand_vecs */
   PetscInt   cand_vecs;                    /* How many candidate vectors are stored in B */
 
@@ -29,14 +29,14 @@ struct __PC_ASA_level {
   Vec        x;                            /* Current candidate vector to be processed */
   Vec        b;                            /* Current right hand side */
   Vec        r;                            /* Current residual */
-  
+
   DM         dm;                           /* Grid information about the layout.
 					      Undecided on data structure for algebraic case
 					      combine with DM in some way */
 
   PetscInt   aggnum;                       /* The number of aggregates */
   Mat        agg;                          /* The aggregates. Row i has an entry in the columns j
-					      corresponding to the fine-level points that map to 
+					      corresponding to the fine-level points that map to
 					      the i-th node on the coarse level */
   PetscInt   *loc_agg_dofs;                /* The dofs for each aggregate, each processor only stores
 					      the dof for the local aggregates */
@@ -51,7 +51,7 @@ struct __PC_ASA_level {
   PetscReal  spec_rad;                     /* estimate of the spectral radius of A */
   Mat        smP;                            /* smoothed prolongator */
   Mat        smPt;                           /* smoothed restriction operator */
-  
+
   MPI_Comm   comm;                         /* communicator object for this level */
 
   KSP        smoothd;                      /* pre smoother */
@@ -62,7 +62,7 @@ struct __PC_ASA_level {
 
 typedef struct __PC_ASA_level  PC_ASA_level;
 
-/* 
+/*
    Private context (data structure) for the ASA preconditioner.
 
    This is the abstract object that contains the global data for the ASA object
@@ -117,7 +117,7 @@ typedef struct {
   /* data regarding the problem */
   Mat        A;                            /* matrix used in forming residual, scaled by insqrtdiag */
   Vec        invsqrtdiag;                  /* 1/sqrt(diagonal A) */
-  Vec        b;                            /* Right hand side */ 
+  Vec        b;                            /* Right hand side */
   Vec        x;                            /* Solution */
   Vec        r;                            /* Residual */
 

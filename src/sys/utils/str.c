@@ -22,7 +22,7 @@
 
    Input Parameters:
 +  s - pointer to string
--  sp - seperator charactor
+-  sp - separator charactor
 
    Output Parameter:
 +   argc - the number of entries in the array
@@ -59,7 +59,7 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
     if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
     else if (s[i] != sp) {flg = PETSC_FALSE;}
   }
-  (*args) = (char **) malloc(((*argc)+1)*sizeof(char**)); if (!*args) return PETSC_ERR_MEM;
+  (*args) = (char **) malloc(((*argc)+1)*sizeof(char*)); if (!*args) return PETSC_ERR_MEM;
   lens    = (int*) malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
   for (i=0; i<*argc; i++) lens[i] = 0;
 
@@ -75,6 +75,7 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
   for (i=0; i<*argc; i++) {
     (*args)[i] = (char*) malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
   }
+  free(lens);
   (*args)[*argc] = 0;
 
   *argc = 0;

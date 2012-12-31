@@ -748,13 +748,13 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCreateFieldIS_Composite(dm, len, namelist, islist); CHKERRQ(ierr);
+  ierr = DMCreateFieldIS_Composite(dm, len, namelist, islist);CHKERRQ(ierr);
   if (dmlist) {
-    ierr = DMCompositeGetNumberDM(dm, &nDM);    CHKERRQ(ierr);
-    ierr = PetscMalloc(nDM*sizeof(DM), dmlist); CHKERRQ(ierr);
+    ierr = DMCompositeGetNumberDM(dm, &nDM);CHKERRQ(ierr);
+    ierr = PetscMalloc(nDM*sizeof(DM), dmlist);CHKERRQ(ierr);
     ierr = DMCompositeGetEntriesArray(dm, *dmlist);CHKERRQ(ierr);
     for (i=0; i<nDM; i++) {
-      ierr = PetscObjectReference((PetscObject)((*dmlist)[i])); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)((*dmlist)[i]));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

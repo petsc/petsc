@@ -3,18 +3,18 @@
 #requiresscalar real
 #requiresprecision  double
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    = ${MATLAB_INCLUDE}
 FFLAGS    =
-CPPFLAGS  = 
+CPPFLAGS  =
 SOURCEC	  = matlab.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petscmatlab.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 LOCDIR	  = src/sys/classes/matlabengine/
-DIRS      = 
+DIRS      =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

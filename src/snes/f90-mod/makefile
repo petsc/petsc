@@ -9,11 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petscsnesmod.F
-SOURCEH	   = 
+SOURCEH	   =
 LIBBASE	   = libpetscsnes
 MANSEC	   = SNES
 LOCDIR	   = src/snes/f90-mod/

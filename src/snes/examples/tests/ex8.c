@@ -72,30 +72,30 @@ int main(int argc, char **argv)
   info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
   /* Extract global vectors from DMDA; */
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
-  info = VecDuplicate(x, &r); CHKERRQ(info);
+  info = VecDuplicate(x, &r);CHKERRQ(info);
 
   N = user.mx*user.my;
   info = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(info);
 
   /* Create nonlinear solver context */
-  info = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(info);
+  info = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(info);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
   info = SNESSetFunction(snes,r,FormGradient,&user);CHKERRQ(info);
   info = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(info);
 
   /* Set the boundary conditions */
-  info = MSA_BoundaryConditions(&user); CHKERRQ(info);
+  info = MSA_BoundaryConditions(&user);CHKERRQ(info);
 
   /* Set initial solution guess */
-  info = MSA_InitialPoint(&user, x); CHKERRQ(info);
+  info = MSA_InitialPoint(&user, x);CHKERRQ(info);
 
 
   /* Set Bounds on variables */
-  info = VecDuplicate(x, &xl); CHKERRQ(info);
-  info = VecDuplicate(x, &xu); CHKERRQ(info);
-  info = VecSet(xl, lb); CHKERRQ(info);
-  info = VecSet(xu, ub); CHKERRQ(info);
+  info = VecDuplicate(x, &xl);CHKERRQ(info);
+  info = VecDuplicate(x, &xu);CHKERRQ(info);
+  info = VecSet(xl, lb);CHKERRQ(info);
+  info = VecSet(xu, ub);CHKERRQ(info);
 
   info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
@@ -105,22 +105,22 @@ int main(int argc, char **argv)
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
 
   info = PetscOptionsHasName(PETSC_NULL,"-view_sol",&flg);CHKERRQ(info);
-  if (flg) { info = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info); }
+  if (flg) { info = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info); }
 
   /* Free memory */
-  info = VecDestroy(&x); CHKERRQ(info);
-  info = VecDestroy(&xl); CHKERRQ(info);
-  info = VecDestroy(&xu); CHKERRQ(info);
-  info = VecDestroy(&r); CHKERRQ(info);
-  info = MatDestroy(&J); CHKERRQ(info);
-  info = SNESDestroy(&snes); CHKERRQ(info);
+  info = VecDestroy(&x);CHKERRQ(info);
+  info = VecDestroy(&xl);CHKERRQ(info);
+  info = VecDestroy(&xu);CHKERRQ(info);
+  info = VecDestroy(&r);CHKERRQ(info);
+  info = MatDestroy(&J);CHKERRQ(info);
+  info = SNESDestroy(&snes);CHKERRQ(info);
 
   /* Free user-created data structures */
   info = DMDestroy(&user.da);CHKERRQ(info);
-  info = PetscFree(user.bottom); CHKERRQ(info);
-  info = PetscFree(user.top); CHKERRQ(info);
-  info = PetscFree(user.left); CHKERRQ(info);
-  info = PetscFree(user.right); CHKERRQ(info);
+  info = PetscFree(user.bottom);CHKERRQ(info);
+  info = PetscFree(user.top);CHKERRQ(info);
+  info = PetscFree(user.left);CHKERRQ(info);
+  info = PetscFree(user.right);CHKERRQ(info);
 
   info = PetscFinalize();
 
@@ -163,8 +163,8 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   /* Get pointer to local vector data */
-  info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
-  info = DMDAVecGetArray(user->da,G, &g); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,G, &g);CHKERRQ(info);
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute function over the locally owned part of the mesh */
@@ -254,10 +254,10 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   }
 
   /* Restore vectors */
-  info = DMDAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
-  info = DMDAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,localX, &x);CHKERRQ(info);
+  info = DMDAVecRestoreArray(user->da,G, &g);CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
-  info = PetscLogFlops(67*mx*my); CHKERRQ(info);
+  info = PetscLogFlops(67*mx*my);CHKERRQ(info);
   PetscFunctionReturn(0);
 }
 
@@ -294,8 +294,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   PetscFunctionBeginUser;
   /* Set various matrix options */
-  info = MatAssembled(H,&assembled); CHKERRQ(info);
-  if (assembled){info = MatZeroEntries(H);  CHKERRQ(info);}
+  info = MatAssembled(H,&assembled);CHKERRQ(info);
+  if (assembled){info = MatZeroEntries(H);CHKERRQ(info);}
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
@@ -305,7 +305,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
 
   /* Get pointers to vector data */
-  info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
+  info = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(info);
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute Jacobian over the locally owned part of the mesh */
@@ -439,12 +439,12 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   }
 
   /* Assemble the matrix */
-  info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+  info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
   info = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(info);
-  info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
+  info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
   info = DMRestoreLocalVector(user->da,&localX);CHKERRQ(info);
 
-  info = PetscLogFlops(199*mx*my); CHKERRQ(info);
+  info = PetscLogFlops(199*mx*my);CHKERRQ(info);
   PetscFunctionReturn(0);
 }
 
@@ -556,11 +556,11 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool       flg;
 
   PetscFunctionBeginUser;
-  info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
 
   if (flg && start==0){ /* The zero vector is reasonable */
 
-    info = VecSet(X, zero); CHKERRQ(info);
+    info = VecSet(X, zero);CHKERRQ(info);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
 
 
@@ -570,7 +570,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt    xs,xm,ys,ym;
 
     /* Get pointers to vector data */
-    info = DMDAVecGetArray(user->da,X,&x); CHKERRQ(info);
+    info = DMDAVecGetArray(user->da,X,&x);CHKERRQ(info);
     info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
     /* Perform local computations */
@@ -582,7 +582,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     }
 
     /* Restore vectors */
-    info = DMDAVecRestoreArray(user->da,X,&x); CHKERRQ(info);
+    info = DMDAVecRestoreArray(user->da,X,&x);CHKERRQ(info);
 
   }
   PetscFunctionReturn(0);

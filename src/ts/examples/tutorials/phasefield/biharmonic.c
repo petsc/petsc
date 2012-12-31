@@ -4,10 +4,10 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 /*
   Solves the equation
 
-    u_t = - kappa  \Delta \Delta u 
+    u_t = - kappa  \Delta \Delta u
     Periodic boundary conditions
 
-Evolve the biharmonic heat equation: 
+Evolve the biharmonic heat equation:
 ---------------
 ./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
 
@@ -16,15 +16,15 @@ Evolve with the restriction that -1 <= u <= 1; i.e. as a variational inequality
 ./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn   -da_refine 5 -vi -mymonitor
 
    u_t =  kappa \Delta \Delta u +   6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
-    -1 <= u <= 1 
+    -1 <= u <= 1
     Periodic boundary conditions
 
-Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows 
+Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows
 ---------------
 ./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -ts_monitor_draw_solution --mymonitor
 
 Initial hump neither shrinks nor grows when degenerate (otherwise similar solution)
- 
+
 ./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate -ts_monitor_draw_solution --mymonitor
 
 ./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -snes_vi_ignore_function_sign -ts_monitor_draw_solution --mymonitor
@@ -94,8 +94,8 @@ int main(int argc,char **argv)
   ctx.truncation = 1;
   ierr = PetscOptionsInt("-truncation","order of log truncation (1=cubic, 2=quadratic)","",ctx.truncation,&ctx.truncation,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine. User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
+                (unless user explicitly sets preconditioner)
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
@@ -161,7 +161,7 @@ int main(int argc,char **argv)
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
 #endif
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
@@ -214,7 +214,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -271,13 +271,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
     if (ctx->degenerate) {
       c = (1. - x[i]*x[i])*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
       r = (1. - x[i+1]*x[i+1])*(x[i] + x[i+2] - 2.0*x[i+1])*sx;
-      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx; 
+      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx;
     } else {
       c = (x[i-1] + x[i+1] - 2.0*x[i])*sx;
       r = (x[i] + x[i+2] - 2.0*x[i+1])*sx;
       l = (x[i-2] + x[i] - 2.0*x[i-1])*sx;
     }
-    f[i] = -ctx->kappa*(l + r - 2.0*c)*sx; 
+    f[i] = -ctx->kappa*(l + r - 2.0*c)*sx;
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
       case 1: // double well
@@ -342,13 +342,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-/* 
+/*
    FormJacobian - Evaluates nonlinear function's Jacobian
 
 */
@@ -399,7 +399,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
       PetscScalar c,r,l;
       c = (1. - x[i]*x[i])*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
       r = (1. - x[i+1]*x[i+1])*(x[i] + x[i+2] - 2.0*x[i+1])*sx;
-      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx; 
+      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx;
     } else {
       cols[0].i = i - 2; vals[0] = -ctx->kappa*sx*sx;
       cols[1].i = i - 1; vals[1] =  4.0*ctx->kappa*sx*sx;
@@ -437,8 +437,8 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
@@ -468,7 +468,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
- /*  InitialSolution.biharmonic is obtained by running 
+ /*  InitialSolution.biharmonic is obtained by running
       ./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 30
       After changing the initial grid spacing to 10 and the stencil width to 2 in the DMDA create.
    */
@@ -503,10 +503,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
      Restore vectors
   */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MyMonitor"
 /*
     This routine is not parallel
@@ -537,7 +537,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                         PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); 
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
@@ -556,8 +556,8 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscOptionsGetRealArray(PETSC_NULL,"-zoom",xx,&cnt,PETSC_NULL);CHKERRQ(ierr);
   xs = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
-  /* 
-      Plot the  energies 
+  /*
+      Plot the  energies
   */
   ierr = PetscDrawLGSetDimension(lg,1 + (ctx->cahnhillard ? 1 : 0) + (ctx->energy == 3));CHKERRQ(ierr);
   ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
@@ -575,7 +575,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       case 1: // double well
         yy[1]   = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
         break;
-      case 2: // double obstacle 
+      case 2: // double obstacle
         yy[1] = .5*PetscRealPart(1. - u[i]*u[i]);
         break;
       case 3: // logarithm + double well
@@ -609,7 +609,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   /*  ierr = PetscDrawLGSetLegend(lg,legend[ctx->energy-1]);CHKERRQ(ierr); */
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
-  /* 
+  /*
       Plot the  forces
   */
   ierr = PetscDrawLGSetDimension(lg,0 + (ctx->cahnhillard ? 2 : 0) + (ctx->energy == 3));CHKERRQ(ierr);
@@ -816,7 +816,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       }
       ierr = PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_BLUE);CHKERRQ(ierr);
     }
-    x   += cnt*hx; 
+    x   += cnt*hx;
   }
   ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
@@ -827,7 +827,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MyDestroy"
 PetscErrorCode  MyDestroy(void **ptr)
 {

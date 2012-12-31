@@ -3,7 +3,7 @@
 
 
 #define PetscScalarNorm(a,b) (PetscSqrtScalar((a)*(a)+(b)*(b)))
-/* 
+/*
    Private context for semismooth newton method with line search for solving
    system of mixed complementarity equations
  */

@@ -10,7 +10,7 @@ EXTERN_C_BEGIN
 #include <sprng.h>
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSeed_Sprng"
 PetscErrorCode  PetscRandomSeed_Sprng(PetscRandom r)
 {
@@ -19,18 +19,18 @@ PetscErrorCode  PetscRandomSeed_Sprng(PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetValue_Sprng"
 PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)  
+#if defined(PETSC_USE_COMPLEX)
   if (r->iset) {
     *val = PetscRealPart(r->width)*sprng() + PetscRealPart(r->low) +
       (PetscImaginaryPart(r->width)*sprng() + PetscImaginaryPart(r->low)) * PETSC_i;
   } else {
     *val = sprng() + sprng()*PETSC_i;
-  } 
+  }
 #else
   if (r->iset) *val = r->width * sprng() + r->low;
   else         *val = sprng();
@@ -38,7 +38,7 @@ PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetValue_Sprng"
 PetscErrorCode  PetscRandomGetValueReal_Sprng(PetscRandom r,PetscScalar *val)
 {
@@ -67,7 +67,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    PETSCSPRNG- access to the publically available random number generator sprng
 
    Options Database Keys:
-. -random_type <rand,rand48,sprng> 
+. -random_type <rand,rand48,sprng>
 
   Level: beginner
 
@@ -81,8 +81,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomCreate_Sprng" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscRandomCreate_Sprng"
 PetscErrorCode  PetscRandomCreate_Sprng(PetscRandom r)
 {
   PetscErrorCode ierr;

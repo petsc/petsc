@@ -9,7 +9,7 @@ SOURCEH  = cuspvecimpl.h
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/impls/seq/seqcusp/
-DIRS     = 
+DIRS     =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

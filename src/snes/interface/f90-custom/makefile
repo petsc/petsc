@@ -5,8 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zsnesf90.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscsnes
 LOCDIR   = src/snes/interface/f90-custom/
 

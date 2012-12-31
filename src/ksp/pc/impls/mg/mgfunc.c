@@ -437,7 +437,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
   if (mglevels[l]->smoothu == mglevels[l]->smoothd) {
     KSPType     ksptype;
     PCType      pctype;
-    PC          ipc; 
+    PC          ipc;
     PetscReal   rtol,abstol,dtol;
     PetscInt    maxits;
     KSPNormType normtype;

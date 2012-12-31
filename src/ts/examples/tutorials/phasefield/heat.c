@@ -4,14 +4,14 @@ static char help[] = "Solves heat equation in 1d.\n";
 /*
   Solves the equation
 
-    u_t = kappa  \Delta u 
+    u_t = kappa  \Delta u
        Periodic boundary conditions
 
-Evolve the  heat equation: 
+Evolve the  heat equation:
 ---------------
 ./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
 
-Evolve the  Allen-Cahn equation: 
+Evolve the  Allen-Cahn equation:
 ---------------
 ./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
 
@@ -20,7 +20,7 @@ Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait  -mymonitor
 
 
-The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with 
+The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with
 ./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
 to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain the initial solution file
 
@@ -29,7 +29,7 @@ to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain 
 #include <petscts.h>
 
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**);
@@ -61,8 +61,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -205,8 +205,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -238,10 +238,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  /*  InitialSolution is obtained with 
+  /*  InitialSolution is obtained with
       ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
    */
- 
+
   /* ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution",FILE_MODE_READ,&viewer);CHKERRQ(ierr); */
   /* ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr); */
   /* ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr); */
@@ -291,10 +291,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
      Restore vectors
   */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MyMonitor"
 /*
     This routine is not parallel
@@ -322,7 +322,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                         PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); 
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
@@ -341,8 +341,8 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscOptionsGetRealArray(PETSC_NULL,"-zoom",xx,&cnt,PETSC_NULL);CHKERRQ(ierr);
   xs = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
-  /* 
-      Plot the  energies 
+  /*
+      Plot the  energies
   */
   ierr = PetscDrawLGSetDimension(lg,1 + (ctx->allencahn ? 1 : 0));CHKERRQ(ierr);
   ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
@@ -353,7 +353,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
     if (ctx->allencahn) {
       yy[1] = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
-    } 
+    }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x   += hx;
   }
@@ -363,7 +363,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawLGSetLegend(lg,legend);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
-  /* 
+  /*
       Plot the  forces
   */
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
@@ -377,7 +377,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     if (ctx->allencahn) {
       yy[1] = PetscRealPart(u[i] - u[i]*u[i]*u[i]);
       max   = PetscMax(max,PetscAbs(yy[1]));
-    } 
+    }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x   += hx;
   }
@@ -418,7 +418,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       len   = .5*PetscRealPart(u[i] - u[i]*u[i]*u[i])/max;
       ierr = PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_BLUE);CHKERRQ(ierr);
     }
-    x   += cnt*hx; 
+    x   += cnt*hx;
   }
   ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
@@ -429,7 +429,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MyDestroy"
 PetscErrorCode  MyDestroy(void **ptr)
 {

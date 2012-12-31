@@ -25,7 +25,7 @@ typedef struct {  /* default context for matrix-free SNES */
 } MFCtx_Private;
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
+#define __FUNCT__ "SNESMatrixFreeDestroy2_Private" 
 PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   PetscErrorCode ierr;
@@ -41,7 +41,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESMatrixFreeView2_Private" /* ADIC Ignore */
+#define __FUNCT__ "SNESMatrixFreeView2_Private" 
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */

@@ -246,7 +246,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
   }
   /*
        It would be better to move this code to PetscFileSetName() but since it must return a preexiting communicator
-     we cannot do that, since PetscFileSetName() takes a communicator that already exists. 
+     we cannot do that, since PetscFileSetName() takes a communicator that already exists.
 
       Plus if the original communicator that created the file has since been close this will not detect the old
       communictor and hence will overwrite the old data. It may be better to simply remove all this code

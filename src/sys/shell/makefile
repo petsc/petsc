@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = interface 
+DIRS     = interface
 LOCDIR   = src/sys/shell/
 MANSEC   = Sys
 

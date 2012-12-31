@@ -779,7 +779,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 #endif
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,PETSC_NULL);CHKERRQ(ierr);
   if (dump) {
-   
+
     viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
   }
 

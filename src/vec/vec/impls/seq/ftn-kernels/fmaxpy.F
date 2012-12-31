@@ -48,7 +48,7 @@
       PETSC_AssertAlignx(16,y0(1))
       PETSC_AssertAlignx(16,y1(1))
       do i=1,n
-          x(i)  = x(i) + a0*y0(i) + a1*y1(i) 
+          x(i)  = x(i) + a0*y0(i) + a1*y1(i)
       enddo
       return
       end

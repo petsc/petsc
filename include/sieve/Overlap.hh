@@ -82,7 +82,7 @@ public:
   };
   /* setNumRanks - Set the number of partner processes
 
-     This allocates storage for the ranks and must only be called once. 
+     This allocates storage for the ranks and must only be called once.
   */
   void setNumRanks(index_type R) {
     PetscErrorCode ierr;

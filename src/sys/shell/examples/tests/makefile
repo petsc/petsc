@@ -1,10 +1,10 @@
-ALL: ${TESTS} 
+ALL: ${TESTS}
 
-CFLAGS      = 
-FFLAGS      = 
-CPPFLAGS    = ${EXTRA_FLAGS} 
+CFLAGS      =
+FFLAGS      =
+CPPFLAGS    = ${EXTRA_FLAGS}
 SOURCEC     = testcomponentsI.c testcomponentsII.c
-SOURCEF     = 
+SOURCEF     =
 SOURCEH     =
 MANSEC      = Sys
 LOCDIR      = src/sys/shell/examples/tests/
@@ -28,18 +28,18 @@ test1: test1.c
 TEST       = test1
 test: libs ${TEST}.o
 	${SL_LINKER} -o ${TEST} ${TEST}.o ${PETSC_LIB};\
-	${RM} ${EX}.o 
+	${RM} ${EX}.o
 
 
 
 distclean: clean
-	${RM} *~ *.o ${TESTS} 
+	${RM} *~ *.o ${TESTS}
 	${RM} -rf ${TESTLIBDIR}
 
 .PHONY: distclean
 
-TESTEXAMPLES_C_X	  = 
-TESTEXAMPLES_C_X_MPIUNI = 
+TESTEXAMPLES_C_X	  =
+TESTEXAMPLES_C_X_MPIUNI =
 
 
 

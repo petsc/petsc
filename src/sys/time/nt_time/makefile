@@ -1,5 +1,5 @@
 #requiresfunction 'PETSC_USE_NT_TIME'
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =

@@ -347,9 +347,9 @@ PETSC_STATIC_INLINE PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *
   PetscReal   x, z,r;
 
   x = (i - grid->jlid)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = PetscSqrtReal(x*x+z*z); 
-  st = z/r;  
-  ct = x/r;  
+  r = PetscSqrtReal(x*x+z*z);
+  st = z/r;
+  ct = x/r;
   th = atan(z/x);
   return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
 }

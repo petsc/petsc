@@ -79,8 +79,8 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
-  } 
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #if defined(PTAP_PROFILE)
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
 #endif
-  
+
   /* check if matrix local sizes are compatible */
   if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend){
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%D, %D) != Prow (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
@@ -270,7 +270,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
-  ierr = PetscMalloc2(size,PetscMPIInt,&len_si,size,MPI_Status,&sstatus);CHKERRQ(ierr); 
+  ierr = PetscMalloc2(size,PetscMPIInt,&len_si,size,MPI_Status,&sstatus);CHKERRQ(ierr);
   ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
   len_s = merge->len_s;
@@ -354,7 +354,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
   ierr = PetscFree(rwaits);CHKERRQ(ierr);
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);}
-  
+
   ierr = PetscFree2(len_si,sstatus);CHKERRQ(ierr);
   ierr = PetscFree(len_ri);CHKERRQ(ierr);
   ierr = PetscFree(swaits);CHKERRQ(ierr);
@@ -452,7 +452,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   merge->duplicate     = Cmpi->ops->duplicate;
 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
-  Cmpi->assembled      = PETSC_FALSE; 
+  Cmpi->assembled      = PETSC_FALSE;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_PtAP;
   Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatPtAP;
 
@@ -464,9 +464,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ptap->merge    = merge;
   ptap->rmax     = ap_rmax;
   *C             = Cmpi;
-  
+
   /* flag 'scalable' determines which implementations to be used:
-       0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa; 
+       0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa;
        1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
   /* set default scalable */
   ptap->scalable = PETSC_TRUE;
@@ -549,7 +549,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   }
 #if defined(PTAP_PROFILE)
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-#endif  
+#endif
 
   /* 2) compute numeric C_seq = P_loc^T*A_loc*P - dominating part */
   /*--------------------------------------------------------------*/
@@ -575,7 +575,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
       ierr = PetscGetTime(&t2_0);CHKERRQ(ierr);
-#endif  
+#endif
       /* 2-a) form i-th sparse row of A_loc*P = Ad*P_loc + Ao*P_oth */
       /*------------------------------------------------------------*/
       apJ = apj + api[i];
@@ -618,7 +618,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #if defined(PTAP_PROFILE)
       ierr = PetscGetTime(&t2_1);CHKERRQ(ierr);
       et2_AP += t2_1 - t2_0;
-#endif  
+#endif
 
       /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
       /*--------------------------------------------------------------*/
@@ -662,7 +662,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #if defined(PTAP_PROFILE)
       ierr = PetscGetTime(&t2_2);CHKERRQ(ierr);
       et2_PtAP += t2_2 - t2_1;
-#endif  
+#endif
     }
   } else {/* Do sparse axpy on apa (length of ap_rmax, stores A[i,:]*P) - scalable, but slower */
     /*-----------------------------------------------------------------------------------------*/
@@ -670,7 +670,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
       ierr = PetscGetTime(&t2_0);CHKERRQ(ierr);
-#endif  
+#endif
       /* form i-th sparse row of A*P */
       apnz = api[i+1] - api[i];
       apJ  = apj + api[i];
@@ -713,7 +713,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #if defined(PTAP_PROFILE)
       ierr = PetscGetTime(&t2_1);CHKERRQ(ierr);
       et2_AP += t2_1 - t2_0;
-#endif  
+#endif
 
       /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
       /*--------------------------------------------------------------*/
@@ -743,9 +743,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #if defined(PTAP_PROFILE)
       ierr = PetscGetTime(&t2_2);CHKERRQ(ierr);
       et2_PtAP += t2_2 - t2_1;
-#endif  
+#endif
     }
-  } 
+  }
 #if defined(PTAP_PROFILE)
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
 #endif

@@ -8,10 +8,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = lusol.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/lusol/
 

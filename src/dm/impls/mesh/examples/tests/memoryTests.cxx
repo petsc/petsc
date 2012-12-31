@@ -253,7 +253,7 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   const PetscInt     locCells = end - start;
   const PetscInt     remCells = numCells - locCells;
   const PetscInt     remRanks = options->size-1;
-  const PetscInt     rotRanks = 1; 
+  const PetscInt     rotRanks = 1;
  // Allocs:
   //   Atlas (UniformSection) + Obj
   //     Atlas (ConstantSection) + Obj
@@ -557,7 +557,7 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
   const PetscInt     locCells = end - start;
   const PetscInt     remCells = numCells - locCells;
   const PetscInt     remRanks = options->size-1;
-  const PetscInt     rotRanks = 1; 
+  const PetscInt     rotRanks = 1;
   PetscInt           numAlloc;
   PetscInt           numBytes;
   double            *values;

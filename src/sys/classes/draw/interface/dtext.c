@@ -96,7 +96,7 @@ PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,
 
   top    = syl;
   left   = sxl - .5*(mlen + 2)*tw;
-  right  = sxl + .5*(mlen + 2)*tw; 
+  right  = sxl + .5*(mlen + 2)*tw;
   bottom = syl - (1.0 + cnt)*th;
   if (w) *w = right - left;
   if (h) *h = top - bottom;

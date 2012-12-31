@@ -5,8 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zvsectionf90.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscvec
 LOCDIR   = src/vec/vec/impls/seq/f90-custom/
 

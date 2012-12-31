@@ -1,7 +1,7 @@
 #requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCECU = mpiaijcusp.cu mpiaijAssemble.cu
 SOURCEF	 =

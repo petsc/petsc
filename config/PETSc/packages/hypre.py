@@ -18,7 +18,7 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]  
+    self.deps       = [self.mpi,self.blasLapack]
     return
 
   def generateLibList(self,dir):
@@ -28,7 +28,7 @@ class Configure(PETSc.package.NewPackage):
     if self.languages.clanguage == 'C':
       alllibs[0].extend(self.compilers.cxxlibs)
     return alllibs
-        
+
   def Install(self):
     import os
 

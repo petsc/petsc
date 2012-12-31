@@ -1,6 +1,6 @@
 
-CFLAGS	        = 
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tests/
@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c
-EXAMPLESF       = 
+EXAMPLESF       =
 MANSEC          = DM
 
 include ${PETSC_DIR}/conf/variables
@@ -18,11 +18,11 @@ ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
 	${RM} -f ex1.o
 
-ex2: ex2.o  chkopts 
+ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
-ex3: ex3.o  chkopts 
+ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
 	${RM} -f ex3.o
 
@@ -30,7 +30,7 @@ ex4: ex4.o   chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
 	${RM} -f ex4.o
 
-ex5: ex5.o  chkopts 
+ex5: ex5.o  chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_DM_LIB}
 	${RM} -f ex5.o
 
@@ -208,7 +208,7 @@ runex12:
 # ex13 uses the output of ex14
 runex13:
 	-@${MPIEXEC} -n 3 ./ex13
-	-@${RM} -f daoutput daoutput.info 
+	-@${RM} -f daoutput daoutput.info
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 ; sleep 1
 
@@ -293,7 +293,7 @@ runex30_3:
 	   ${DIFF} output/ex30_3.out ex30_3.tmp || echo ${PWD} "\n Possible problem with with ex30_3, diffs above \n========================================="; \
 	   ${RM} -f ex30_3.tmp
 runex31:
-	-@${MPIEXEC} -n 2 ./ex31 
+	-@${MPIEXEC} -n 2 ./ex31
 runex32:
 	-@${MPIEXEC} -n 2 ./ex32 > ex32_1.tmp; \
 	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo ${PWD} "\n Possible problem with with ex32, diffs above \n========================================="; \
@@ -346,11 +346,11 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc e
 TESTEXAMPLES_C_X	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm ex37.PETSc runex37 ex37.rm
-TESTEXAMPLES_FORTRAN	  = 
+TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
-TESTEXAMPLES_C_COMPLEX	  = 
-TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm 
+TESTEXAMPLES_C_COMPLEX	  =
+TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm
 TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 

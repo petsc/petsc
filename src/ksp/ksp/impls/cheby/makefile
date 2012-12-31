@@ -1,9 +1,9 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cheby.c 
+SOURCEC  = cheby.c
 SOURCEF  =
 SOURCEH  = chebyshevimpl.h
 LIBBASE  = libpetscksp

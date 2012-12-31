@@ -66,8 +66,8 @@ int main(int argc, char **argv)
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  info = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg); CHKERRQ(info);
-  info = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg); CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg);CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg);CHKERRQ(info);
   info = PetscOptionsGetScalar(PETSC_NULL, "-lb", &lb, &flg);CHKERRQ(info);
   info = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg);CHKERRQ(info);
 
@@ -80,11 +80,11 @@ int main(int argc, char **argv)
 
   /* Create appropriate vectors and matrices */
   info = VecCreateSeq(MPI_COMM_SELF, N, &x);
-  info = VecDuplicate(x, &r); CHKERRQ(info);
-  info = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, PETSC_NULL, &J); CHKERRQ(info);
+  info = VecDuplicate(x, &r);CHKERRQ(info);
+  info = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, PETSC_NULL, &J);CHKERRQ(info);
 
   /* Create nonlinear solver context */
-  info = SNESCreate(PETSC_COMM_SELF,&snes); CHKERRQ(info);
+  info = SNESCreate(PETSC_COMM_SELF,&snes);CHKERRQ(info);
 
 
   /*  Set function evaluation and Jacobian evaluation  routines */
@@ -92,39 +92,39 @@ int main(int argc, char **argv)
   info = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(info);
 
   /* Set the variable bounds */
-  info = MSA_BoundaryConditions(&user); CHKERRQ(info);
+  info = MSA_BoundaryConditions(&user);CHKERRQ(info);
 
   /* Set initial solution guess */
-  info = MSA_InitialPoint(&user, x); CHKERRQ(info);
+  info = MSA_InitialPoint(&user, x);CHKERRQ(info);
 
   info = SNESSetFromOptions(snes);CHKERRQ(info);
 
   /* Set Bounds on variables */
-  info = VecDuplicate(x, &xl); CHKERRQ(info);
-  info = VecDuplicate(x, &xu); CHKERRQ(info);
-  info = VecSet(xl, lb); CHKERRQ(info);
-  info = VecSet(xu, ub); CHKERRQ(info);
+  info = VecDuplicate(x, &xl);CHKERRQ(info);
+  info = VecDuplicate(x, &xu);CHKERRQ(info);
+  info = VecSet(xl, lb);CHKERRQ(info);
+  info = VecSet(xu, ub);CHKERRQ(info);
 
   info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
 
-  info = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info);
+  info = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(info);
 
   /* Free memory */
-  info = VecDestroy(&x); CHKERRQ(info);
-  info = VecDestroy(&xl); CHKERRQ(info);
-  info = VecDestroy(&xu); CHKERRQ(info);
-  info = VecDestroy(&r); CHKERRQ(info);
-  info = MatDestroy(&J); CHKERRQ(info);
-  info = SNESDestroy(&snes); CHKERRQ(info);
+  info = VecDestroy(&x);CHKERRQ(info);
+  info = VecDestroy(&xl);CHKERRQ(info);
+  info = VecDestroy(&xu);CHKERRQ(info);
+  info = VecDestroy(&r);CHKERRQ(info);
+  info = MatDestroy(&J);CHKERRQ(info);
+  info = SNESDestroy(&snes);CHKERRQ(info);
 
   /* Free user-created data structures */
-  info = PetscFree(user.bottom); CHKERRQ(info);
-  info = PetscFree(user.top); CHKERRQ(info);
-  info = PetscFree(user.left); CHKERRQ(info);
-  info = PetscFree(user.right); CHKERRQ(info);
+  info = PetscFree(user.bottom);CHKERRQ(info);
+  info = PetscFree(user.top);CHKERRQ(info);
+  info = PetscFree(user.left);CHKERRQ(info);
+  info = PetscFree(user.right);CHKERRQ(info);
 
   info = PetscFinalize();
 
@@ -157,11 +157,11 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   PetscScalar  *g, *x;
 
   /* Initialize vector to zero */
-  info = VecSet(G, zero); CHKERRQ(info);
+  info = VecSet(G, zero);CHKERRQ(info);
 
   /* Get pointers to vector data */
-  info = VecGetArray(X, &x); CHKERRQ(info);
-  info = VecGetArray(G, &g); CHKERRQ(info);
+  info = VecGetArray(X, &x);CHKERRQ(info);
+  info = VecGetArray(G, &g);CHKERRQ(info);
 
   /* Compute function over the locally owned part of the mesh */
   for (j=0; j<my; j++){
@@ -251,9 +251,9 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   }
 
   /* Restore vectors */
-  info = VecRestoreArray(X, &x); CHKERRQ(info);
-  info = VecRestoreArray(G, &g); CHKERRQ(info);
-  info = PetscLogFlops(67*mx*my); CHKERRQ(info);
+  info = VecRestoreArray(X, &x);CHKERRQ(info);
+  info = VecRestoreArray(G, &g);CHKERRQ(info);
+  info = PetscLogFlops(67*mx*my);CHKERRQ(info);
   return 0;
 }
 
@@ -287,13 +287,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscBool       assembled;
 
   /* Set various matrix options */
-  info = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE); CHKERRQ(info);
-  info = MatAssembled(H,&assembled); CHKERRQ(info);
-  if (assembled){info = MatZeroEntries(H);  CHKERRQ(info);}
+  info = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(info);
+  info = MatAssembled(H,&assembled);CHKERRQ(info);
+  if (assembled){info = MatZeroEntries(H);CHKERRQ(info);}
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get pointers to vector data */
-  info = VecGetArray(X, &x); CHKERRQ(info);
+  info = VecGetArray(X, &x);CHKERRQ(info);
 
   /* Compute Jacobian over the locally owned part of the mesh */
   for (i=0; i< mx; i++){
@@ -413,12 +413,12 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   }
 
   /* Restore vectors */
-  info = VecRestoreArray(X,&x); CHKERRQ(info);
+  info = VecRestoreArray(X,&x);CHKERRQ(info);
 
   /* Assemble the matrix */
-  info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
-  info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(info);
-  info = PetscLogFlops(199*mx*my); CHKERRQ(info);
+  info = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
+  info = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
+  info = PetscLogFlops(199*mx*my);CHKERRQ(info);
   return 0;
 }
 
@@ -528,11 +528,11 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscScalar     zero=0.0;
   PetscBool       flg;
 
-  info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
 
   if (flg && start==0){ /* The zero vector is reasonable */
 
-    info = VecSet(X, zero); CHKERRQ(info);
+    info = VecSet(X, zero);CHKERRQ(info);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
 
 
@@ -543,7 +543,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscScalar *x;
 
     /* Get pointers to vector data */
-    info = VecGetArray(X,&x); CHKERRQ(info);
+    info = VecGetArray(X,&x);CHKERRQ(info);
 
     /* Perform local computations */
     for (j=0; j<my; j++){
@@ -555,7 +555,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     }
 
     /* Restore vectors */
-    info = VecRestoreArray(X,&x); CHKERRQ(info);
+    info = VecRestoreArray(X,&x);CHKERRQ(info);
 
   }
   return 0;

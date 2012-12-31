@@ -1,17 +1,17 @@
 
 CFLAGS           =
-FFLAGS		 = 
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = tutorials/python/
-MANSEC           = 
+MANSEC           =
 EXAMPLESC	 = ex1.c
-EXAMPLESF	 = 
-EXAMPLESCH	 = 
-EXAMPLESFH       = 
-EXAMPLESMATLAB   = 
-DIRS		 = 
-CLEANFILES       = 
+EXAMPLESF	 =
+EXAMPLESCH	 =
+EXAMPLESFH       =
+EXAMPLESMATLAB   =
+DIRS		 =
+CLEANFILES       =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

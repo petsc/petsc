@@ -1,13 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = matnest.c
 SOURCEF  =
-SOURCEH  = matnestimpl.h 
+SOURCEH  = matnestimpl.h
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 LOCDIR   = src/mat/impls/nest/
 MANSEC   = Mat
 

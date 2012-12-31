@@ -1,6 +1,6 @@
 !  This file contains include statements and a user-defined
 !  common block for application-specific data.  This file is
-!  included in each routine within the program ex2f. 
+!  included in each routine within the program ex2f.
 !
 !  The following include statements are generally used in TS Fortran
 !  programs:
@@ -30,14 +30,14 @@
 #include <finclude/petscviewer.h>
 #include <finclude/petscdraw.h>
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  The application context to contain data needed by the 
+!  The application context to contain data needed by the
 !  application-provided call-back routines, RHSFunction(),
 !  RHSJacobian(), Monitor().  In this example the application context
 !  is a Fortran common block, /appctx/.  Note that we can store
 !  (pointers to) PETSc objects within this common block.
-!    appctx:  M         - total number of grid points  
+!    appctx:  M         - total number of grid points
 !             da        - distributed array
 !             localwork - local work vector (including ghost points)
 !             solution  - solution vector
@@ -49,7 +49,7 @@
 !  Store other misc problem parameters in common block /params/
 !             h         - mesh width h = 1/(M-1)
 !
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Common block data:
       DM    da
       Vec   localwork,solution
@@ -66,4 +66,4 @@
       common /appctx/ localwork,solution,da,u_local
       common /appctx/ comm,rank,size,debug,M
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

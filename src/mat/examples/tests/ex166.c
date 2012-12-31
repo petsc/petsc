@@ -7,10 +7,10 @@ static char help[] = "Tests MatPermute() for a square matrix in parallel.\n\n";
    - seqsbaij: permutation not supported for this MATTYPE
    Parallel:
    - mpiaij:   incorrect permutation (disable this op for now)
-   - seqbaij:  correct permutation, but all manner of memory leaks 
+   - seqbaij:  correct permutation, but all manner of memory leaks
                (disable this op for now, because it appears broken for nonsquare matrices; see ex151)
    - seqsbaij: permutation not supported for this MATTYPE
-   
+
  */
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   view_sparse = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-view_sparse", &view_sparse, PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-view_sparse", &view_sparse, PETSC_NULL);CHKERRQ(ierr);
   if (!view_sparse) {
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   }

@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr = testBiGraphDiv2();                                              CHKERRQ(ierr);
+  ierr = testBiGraphDiv2();CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
@@ -51,19 +51,19 @@ PetscErrorCode testBiGraphDiv2() {
   debug = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<BiGraphInt3> bg = BiGraphInt3(PETSC_COMM_SELF, debug);
-  
-  // Add arrows from the first 10 integers to the first 20 integers, coloring the arrows for 0 (even target) or 1 (odd target) 
+
+  // Add arrows from the first 10 integers to the first 20 integers, coloring the arrows for 0 (even target) or 1 (odd target)
   for(int i = 0; i < 10; i++) {
     bg->addArrow(2*i+0, i, 0);
     bg->addArrow(2*i+1, i, 1);
   }
-  
+
   // View
   bg->view(std::cout, "bigraph/2");
 
   // View cones and supports
   viewConesAndSupports(bg, "bigraph/2");
-  
+
   // Take and view the cone of the whole base
   ALE::Obj<BiGraphInt3::traits::coneSet> cone = bg->cone(bg->base());
   std::cout << "Total cone of bigraph/2" << std::endl;
@@ -154,7 +154,7 @@ PetscErrorCode testBiGraphDiv2() {
 
   // View
   bg->view(std::cout, "bigraph/2 after excluding [0,5[ from base");
-  
+
 
   PetscFunctionReturn(0);
 }/* testBiGraphDiv2() */
@@ -162,14 +162,14 @@ PetscErrorCode testBiGraphDiv2() {
 #undef  __FUNCT__
 #define __FUNCT__ "viewConesAndSupports"
 void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name) {
-  
+
   // View the cones for all base points
   std::cout << name << " cones:" << std::endl;
   BiGraphInt3::traits::baseSequence base = bg->base();
   for(BiGraphInt3::traits::baseSequence::traits::iterator i = base.begin(); i != base.end(); i++) {
     BiGraphInt3::traits::coneSequence cone = bg->cone(*i);
     std::cout << *i << ": ";
-    cone.view(std::cout, true); 
+    cone.view(std::cout, true);
   }
 
   // View the supports for all cap points
@@ -178,6 +178,6 @@ void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name) {
   for(BiGraphInt3::traits::capSequence::traits::iterator i = cap.begin(); i != cap.end(); i++) {
     BiGraphInt3::traits::supportSequence supp = bg->support(*i);
     std::cout << *i << ": ";
-    supp.view(std::cout, true); 
+    supp.view(std::cout, true);
   }
 }/* viewConesAndSupports() */

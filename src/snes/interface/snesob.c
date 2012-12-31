@@ -21,7 +21,7 @@ $    func (SNES snes,Vec x,PetscReal *obj,void *ctx);
 .  X - solution
 .  F - current function/gradient
 .  obj - real to hold the objective value
--  ctx - optional user-defined objective context 
+-  ctx - optional user-defined objective context
 
    Level: beginner
 

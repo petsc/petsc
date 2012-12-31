@@ -87,8 +87,8 @@ class Configure(PETSc.package.NewPackage):
     g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
-      raise RuntimeError('Installing MUMPS requires a F90 compiler') 
-    self.setCompilers.pushLanguage('FC') 
+      raise RuntimeError('Installing MUMPS requires a F90 compiler')
+    self.setCompilers.pushLanguage('FC')
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
     g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
@@ -96,7 +96,7 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
-    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag    
+    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
       g.write('CDEFS   = -DAdd__\n')
     elif self.compilers.fortranMangling == 'underscore':
@@ -106,7 +106,7 @@ class Configure(PETSc.package.NewPackage):
 
     g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' \n')
     g.write('LIBEXT  = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
+    g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n')
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS

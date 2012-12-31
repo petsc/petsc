@@ -305,13 +305,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
   */
   for (j=ys; j<ys+ym; j++) {
 
-    stencil[0].j = j-1; 
-    stencil[1].j = j+1; 
-    stencil[2].j = j; 
-    stencil[3].j = j; 
-    stencil[4].j = j; 
-    stencil[5].j = j; 
-    rowstencil.k = 0; rowstencil.j = j; 
+    stencil[0].j = j-1;
+    stencil[1].j = j+1;
+    stencil[2].j = j;
+    stencil[3].j = j;
+    stencil[4].j = j;
+    stencil[5].j = j;
+    rowstencil.k = 0; rowstencil.j = j;
     for (i=xs; i<xs+xm; i++) {
       uc         = u[j][i].u;
       vc         = u[j][i].v;
@@ -327,7 +327,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
       stencil[1].i = i; stencil[1].c = 0; entries[1] = appctx->D1*sy;
       stencil[2].i = i-1; stencil[2].c = 0; entries[2] = appctx->D1*sx;
       stencil[3].i = i+1; stencil[3].c = 0; entries[3] = appctx->D1*sx;
-      stencil[4].i = i; stencil[4].c = 0; entries[4] = -2.0*appctx->D1*(sx + sy) - vc*vc - appctx->gamma; 
+      stencil[4].i = i; stencil[4].c = 0; entries[4] = -2.0*appctx->D1*(sx + sy) - vc*vc - appctx->gamma;
       stencil[5].i = i; stencil[5].c = 1; entries[5] = -2.0*uc*vc;
       rowstencil.i = i; rowstencil.c = 0;
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
@@ -336,7 +336,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
       stencil[1].c = 1; entries[1] = appctx->D2*sy;
       stencil[2].c = 1; entries[2] = appctx->D2*sx;
       stencil[3].c = 1; entries[3] = appctx->D2*sx;
-      stencil[4].c = 1; entries[4] = -2.0*appctx->D2*(sx + sy) + 2.0*uc*vc - appctx->gamma - appctx->kappa; 
+      stencil[4].c = 1; entries[4] = -2.0*appctx->D2*(sx + sy) + 2.0*uc*vc - appctx->gamma - appctx->kappa;
       stencil[5].c = 0; entries[5] = vc*vc;
       rowstencil.c = 1;
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);

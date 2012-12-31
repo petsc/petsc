@@ -53,7 +53,7 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
 /* INSTRUCTIONS:
  *
  *      1) Stream requires a good bit of memory to run.  Adjust the
- *          value of 'N' (below) to give a 'timing calibration' of 
+ *          value of 'N' (below) to give a 'timing calibration' of
  *          at least 20 clock-ticks.  This will provide rate estimates
  *          that should be good to about 5% precision.
  */
@@ -161,7 +161,7 @@ int main(int argc,char *argv[])
 
   PetscInitialize(&argc,&argv,0,help);
   /* --- SETUP --- determine precision and check timing --- */
-  
+
   /*printf(HLINE);
     printf("STREAM version $Revision: 5.9 $\n");
     printf(HLINE); */
@@ -174,7 +174,7 @@ int main(int argc,char *argv[])
 #else
   printf("Array size = %llu, Offset = %d\n", (unsigned long long) N, OFFSET);
 #endif
-  
+
   printf("Total memory required = %.1f MB.\n",(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
   printf("Each test is run %d times, but only\n", NTIMES);
   printf("the *best* time for each is used.\n");
@@ -198,35 +198,35 @@ int main(int argc,char *argv[])
 #endif
 
     /*printf(HLINE);*/
-    
+
     /* Get initial value for system clock. */
-    if  ( (quantum = checktick()) >= 1) 
+    if  ( (quantum = checktick()) >= 1)
       ;
       /*      printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
     else {
       /*   printf("Your clock granularity appears to be less than one microsecond.\n"); */
       quantum = 1;
     }
-    
+
     t = mysecond();
-    
+
 #if WITH_PTHREADS
     tuned_STREAM_2A();
 #else
     for (j = 0; j < N; j++)
       a[j] = 2.0E0 * a[j];
-#endif    
+#endif
     t = 1.0E6 * (mysecond() - t);
-    
+
     /*    printf("Each test below will take on the order of %d microseconds.\n", (int) t  );
     printf("   (= %d clock ticks)\n", (int) (t/quantum) );
     printf("Increase the size of the arrays if this shows that\n");
     printf("you are not getting at least 20 clock ticks per test.\n");
-    
+
     printf(HLINE);
     */
     /*  --- MAIN LOOP --- repeat test cases NTIMES times --- */
-    
+
     for (k=0; k<NTIMES; k++) {
       times[0][k] = mysecond();
 #if WITH_PTHREADS
@@ -236,7 +236,7 @@ int main(int argc,char *argv[])
 	c[j] = a[j];
 #endif
       times[0][k] = mysecond() - times[0][k];
-      
+
       times[1][k] = mysecond();
 #if WITH_PTHREADS
       tuned_STREAM_Scale(scalar);
@@ -245,7 +245,7 @@ int main(int argc,char *argv[])
 	b[j] = scalar*c[j];
 #endif
       times[1][k] = mysecond() - times[1][k];
-      
+
       times[2][k] = mysecond();
 #if WITH_PTHREADS
       tuned_STREAM_Add();
@@ -254,7 +254,7 @@ int main(int argc,char *argv[])
 	c[j] = a[j]+b[j];
 #endif
       times[2][k] = mysecond() - times[2][k];
-      
+
       times[3][k] = mysecond();
 #if WITH_PTHREADS
       tuned_STREAM_Triad(scalar);
@@ -264,9 +264,9 @@ int main(int argc,char *argv[])
 #endif
       times[3][k] = mysecond() - times[3][k];
     }
-    
+
     /*  --- SUMMARY --- */
-    
+
     for (k=1; k<NTIMES; k++) { /* note -- skip first iteration */
       for (j=0; j<4; j++) {
 	avgtime[j] = avgtime[j] + times[j][k];
@@ -274,15 +274,15 @@ int main(int argc,char *argv[])
 	maxtime[j] = MAX(maxtime[j], times[j][k]);
       }
     }
-    
+
     printf("Function      Rate (MB/s) \n");
     for (j=0; j<4; j++) {
       avgtime[j] = avgtime[j]/(double)(NTIMES-1);
-      
+
       printf("%s%11.4f  \n", label[j], 1.0E-06 * bytes[j]/mintime[j]);
     }
     /* printf(HLINE);*/
-    
+
     /* --- Check Results --- */
     checkSTREAMresults();
     /*    printf(HLINE);*/
@@ -329,7 +329,7 @@ double mysecond() {
   struct timeval tp;
   struct timezone tzp;
   int i=0;
-  
+
   i = gettimeofday(&tp,&tzp);
   return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
@@ -357,7 +357,7 @@ void checkSTREAMresults () {
   aj = aj * (double) (N);
   bj = bj * (double) (N);
   cj = cj * (double) (N);
-  
+
   asum = 0.0;
   bsum = 0.0;
   csum = 0.0;
@@ -381,7 +381,7 @@ void checkSTREAMresults () {
     printf ("Failed Validation on array a[]\n");
     printf ("        Expected  : %f \n",aj);
     printf ("        Observed  : %f \n",asum);
-  } 
+  }
   if (abs(bj-bsum)/bsum > epsilon) {
     printf ("Failed Validation on array b[]\n");
     printf ("        Expected  : %f \n",bj);
@@ -398,19 +398,19 @@ void checkSTREAMresults () {
 }
 
 #if WITH_PTHREADS
-PetscErrorCode tuned_STREAM_2A_Kernel(void* arg) 
+PetscErrorCode tuned_STREAM_2A_Kernel(void* arg)
 {
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai = data->a;
   int         nloc = data->nloc,i=0;
-  
+
   for (i=0;i<nloc;i++)
     ai[i] = 2.0E0*ai[i];
-  
+
   return(0);
 }
 
-void tuned_STREAM_2A() 
+void tuned_STREAM_2A()
 {
   PetscThreadsRunKernel(tuned_STREAM_2A_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
@@ -435,7 +435,7 @@ void tuned_STREAM_Initialize(double scalar) {
   PetscThreadsInitialize(PetscMaxThreads);
   PetscMalloc(nWorkThreads*sizeof(PetscInt),&ThreadAffinities);
   PetscMemcpy(ThreadAffinities,PetscThreadsCoreAffinities,nWorkThreads*sizeof(PetscInt));
-  
+
   PetscMalloc(nWorkThreads*sizeof(Kernel_Data),&kerneldatap);
   PetscMalloc(nWorkThreads*sizeof(Kernel_Data*),&pdata);
   Q = N/nWorkThreads;

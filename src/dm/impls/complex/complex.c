@@ -6217,11 +6217,11 @@ PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner refiner, DM *dmRefined
     sieve->cone(*c_iter, cV);
     const point_type *cone = cV.getPoints();
     const int coneSize = cV.getSize();
-    
+
     const point_type* newCells;
     int numNewCells = 0;
     refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
-    
+
     for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
       newSieve->setCone(&newCells[iCell*coneSize], curNewCell);
     } // for
@@ -6233,11 +6233,11 @@ PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner refiner, DM *dmRefined
     sieve->cone(*c_iter, cV);
     const point_type *cone = cV.getPoints();
     const int coneSize = cV.getSize();
-    
+
     const point_type* newCells;
     int numNewCells = 0;
     refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
-    
+
     for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
       newSieve->setCone(&newCells[iCell*coneSize], curNewCell);
     } // for
@@ -6261,7 +6261,7 @@ PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner refiner, DM *dmRefined
     newCoordinates->setFiberDimension(*v_iter, spaceDim);
   } // for
   newCoordinates->allocatePoint();
-      
+
   interval_type::const_iterator oldVerticesEnd = _orderOldMesh->verticesNormal().end();
   for (interval_type::const_iterator vOld_iter=_orderOldMesh->verticesNormal().begin(), vNew_iter=_orderNewMesh->verticesNormal().begin(); vOld_iter != oldVerticesEnd; ++vOld_iter, ++vNew_iter) {
     //std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl;
@@ -6285,7 +6285,7 @@ PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner refiner, DM *dmRefined
   while(depthVisitor.isModified()) {
     // FIX: Avoid the copy here somehow by fixing the traversal
     std::vector<mesh_type::point_type> modifiedPoints(depthVisitor.getModifiedPoints().begin(), depthVisitor.getModifiedPoints().end());
-    
+
     depthVisitor.clear();
     newSieve->support(modifiedPoints, depthVisitor);
   } // while

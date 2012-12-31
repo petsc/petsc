@@ -1,6 +1,6 @@
 #requirespackage  'PETSC_HAVE_HDF5'
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   = ${HDF5_INCLUDE}
 FFLAGS   =

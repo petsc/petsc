@@ -1,23 +1,23 @@
 !     Time-dependent advection-reaction PDE in 1d. Demonstrates IMEX methods
-!     
+!
 !     u_t + a1*u_x = -k1*u + k2*v + s1
 !     v_t + a2*v_x = k1*u - k2*v + s2
 !     0 < x < 1;
 !     a1 = 1, k1 = 10^6, s1 = 0,
 !     a2 = 0, k2 = 2*k1, s2 = 1
-!     
+!
 !     Initial conditions:
 !     u(x,0) = 1 + s2*x
 !     v(x,0) = k0/k1*u(x,0) + s1/k1
-!     
+!
 !     Upstream boundary conditions:
 !     u(0,t) = 1-sin(12*t)^4
-!     
+!
 
 #define MF_EX22F_MF
 !#undef  MF_EX22F_MF
 
-  
+
 #ifdef MF_EX22F_MF
   module PETScShiftMod
 #include <finclude/petscsys.h>
@@ -29,7 +29,7 @@
     PetscReal::MFuser(6)
   end module PETScShiftMod
 #endif
-  
+
 program main
 #ifdef MF_EX22F_MF
   use PETScShiftMod, only :  tscontext,Jmat
@@ -41,12 +41,12 @@ program main
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
 #include <finclude/petscdmda.h>
-  !     
+  !
   !     Create an application context to contain data needed by the
   !     application-provided call-back routines, FormJacobian() and
   !     FormFunction(). We use a double precision array with six
   !     entries, two for each problem parameter a, k, s.
-  !     
+  !
   PetscReal user(6)
   integer user_a,user_k,user_s
   parameter (user_a = 0,user_k = 2,user_s = 4)
@@ -74,7 +74,7 @@ program main
   PetscInt       im11,i2
   PetscBool      flg
 
- 
+
   PetscInt       xs,xe,gxs,gxe,dof,gdof
   PetscScalar    shell_shift
   Mat            A
@@ -121,7 +121,7 @@ program main
 
   OptionSaveToDisk=.FALSE.
   call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-sdisk',           &
-       OptionSaveToDisk,flg,ierr) 
+       OptionSaveToDisk,flg,ierr)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,7 +135,7 @@ program main
        user,ierr)
 
 #ifdef MF_EX22F_MF
-  ! - - - - - - - - -- - - - -   
+  ! - - - - - - - - -- - - - -
   !   Matrix free setup
   call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
   dof=i2*(xe-xs+1)
@@ -143,7 +143,7 @@ program main
   call MatCreateShell(PETSC_COMM_WORLD,                             &
        dof,dof,gdof,gdof,                                           &
        shell_shift,A,ierr);
-  
+
   call MatShellSetOperation(A,MATOP_MULT,MyMult,ierr)
   ! - - - - - - - - - - - -
 #endif
@@ -190,7 +190,7 @@ program main
      call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
      dof=i2*(xe-xs+1)
      gdof=i2*(gxe-gxs+1)
-     call SaveSolutionToDisk(da,X,gdof,xs,xe)   
+     call SaveSolutionToDisk(da,X,gdof,xs,xe)
   end if
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -520,35 +520,35 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
   MatStructure mstr
   PetscReal user(6)
   PetscErrorCode ierr
-  
-  !  call MatShellSetContext(J,shift,ierr) 
+
+  !  call MatShellSetContext(J,shift,ierr)
   PETSC_SHIFT=shift
   MFuser=user
 
   mstr = SAME_NONZERO_PATTERN
 end subroutine FormIJacobianMF
 
-! ------------------------------------------------------------------- 
-! 
-!   MyMult - user provided matrix multiply 
+! -------------------------------------------------------------------
+!
+!   MyMult - user provided matrix multiply
 !
 !   Input Parameters:
 !.  X - input vector
 !
 !   Output Parameter:
 !.  F - function vector
-! 
+!
 subroutine  MyMult(A,X,F,ierr)
   use PETScShiftMod, only :  PETSC_SHIFT,tscontext,Jmat,MFuser
   implicit none
-  
+
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscts.h>
 #include <finclude/petscvec.h90>
-  
+
   Mat     A
   Vec     X,F
 
@@ -558,7 +558,7 @@ subroutine  MyMult(A,X,F,ierr)
   Mat J,Jpre
 
   PetscReal user(6)
-  
+
   integer user_a,user_k,user_s
   parameter (user_a = 0,user_k = 2,user_s = 4)
 
@@ -568,7 +568,7 @@ subroutine  MyMult(A,X,F,ierr)
   PetscReal      k1,k2;
   PetscScalar    val(4)
 
-  !call MatShellGetContext(A,shift,ierr)     
+  !call MatShellGetContext(A,shift,ierr)
   shift=PETSC_SHIFT
   user=MFuser
 
@@ -619,7 +619,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   PetscInt xs,xe
   PetscInt gdof,i
   PetscErrorCode ierr
-  PetscOffset    ixx 
+  PetscOffset    ixx
   PetscScalar data2(2,xs:xe),data(gdof)
   PetscScalar    xx(0:1)
 
@@ -628,7 +628,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 
   data2=reshape(xx(ixx:ixx+gdof),(/2,xe-xs+1/))
   data=reshape(data2,(/gdof/))
-  open(1020,file='solution_out_ex22f_mf.txt') 
+  open(1020,file='solution_out_ex22f_mf.txt')
   do i=1,gdof
      write(1020,'(e24.16,1x)') data(i)
   end do

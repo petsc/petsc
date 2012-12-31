@@ -1,15 +1,15 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
 SOURCEC	  = verboseinfo.c
 SOURCEF	  =
-SOURCEH	  = 
+SOURCEH	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  =
 LOCDIR	  = src/sys/verbose/
 
 include ${PETSC_DIR}/conf/variables

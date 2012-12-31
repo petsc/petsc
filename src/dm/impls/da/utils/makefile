@@ -4,12 +4,12 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = binaryMatlab.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA
-DIRS     = 
+DIRS     =
 LOCDIR   = src/dm/impls/da/utils/
 
 include ${PETSC_DIR}/conf/variables

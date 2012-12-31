@@ -17,8 +17,6 @@ typedef struct {
   const char   *name0,*name1;
 } ZoomCtx;
 
-#define RestrictBetween(x,min,max) ((PetscRealPart(x) > max) ? max : ((PetscRealPart(x) < min) ? min : PetscRealPart(x)))
-
 /*
        This does the drawing for one particular field
     in one particular set of coordinates. It is a callback
@@ -48,10 +46,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
-      id = i+j*m;    x1 = PetscRealPart(xy[2*id]);y_1 = PetscRealPart(xy[2*id+1]);c1 = (int)(PETSC_DRAW_BASIC_COLORS+s*(RestrictBetween(v[k+step*id],min,max)-min));
-      id = i+j*m+1;  x2 = PetscRealPart(xy[2*id]);y2  = y_1;                      c2 = (int)(PETSC_DRAW_BASIC_COLORS+s*(RestrictBetween(v[k+step*id],min,max)-min));
-      id = i+j*m+1+m;x3 = x2;                     y3  = PetscRealPart(xy[2*id+1]);c3 = (int)(PETSC_DRAW_BASIC_COLORS+s*(RestrictBetween(v[k+step*id],min,max)-min));
-      id = i+j*m+m;  x4 = x1;                     y4  = y3;                       c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(RestrictBetween(v[k+step*id],min,max)-min));
+      id = i+j*m;    x1 = PetscRealPart(xy[2*id]);y_1 = PetscRealPart(xy[2*id+1]);c1 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      id = i+j*m+1;  x2 = PetscRealPart(xy[2*id]);y2  = y_1;                      c2 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      id = i+j*m+1+m;x3 = x2;                     y3  = PetscRealPart(xy[2*id+1]);c3 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      id = i+j*m+m;  x4 = x1;                     y4  = y3;                       c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
 
       ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
       ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
@@ -366,7 +364,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     /* Create chunk */
     chunkspace = H5Pcreate(H5P_DATASET_CREATE);
     if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
-    status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
+    status = H5Pset_chunk(chunkspace, dim, chunkDims);CHKERRQ(status);
 
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);

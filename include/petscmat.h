@@ -263,7 +263,6 @@ PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const Pe
 PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateAdic(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,void (*)(void),Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLRC(Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,Mat*);
@@ -334,7 +333,6 @@ PETSC_EXTERN PetscErrorCode MatSetValuesBlockedStencil(Mat,PetscInt,const MatSte
 PETSC_EXTERN PetscErrorCode MatSetStencil(Mat,PetscInt,const PetscInt[],const PetscInt[],PetscInt);
 
 PETSC_EXTERN PetscErrorCode MatSetColoring(Mat,ISColoring);
-PETSC_EXTERN PetscErrorCode MatSetValuesAdic(Mat,void*);
 PETSC_EXTERN PetscErrorCode MatSetValuesAdifor(Mat,PetscInt,void*);
 
 /*E
@@ -368,7 +366,7 @@ typedef enum {MAT_OPTION_MIN = -8,
               MAT_NO_OFF_PROC_ZERO_ROWS = -6,
               MAT_NO_OFF_PROC_ENTRIES = -5,
               MAT_UNUSED_NONZERO_LOCATION_ERR = -4,
-              MAT_NEW_NONZERO_ALLOCATION_ERR = -3, 
+              MAT_NEW_NONZERO_ALLOCATION_ERR = -3,
               MAT_ROW_ORIENTED = -2,
               MAT_NEW_NONZERO_LOCATIONS = -1,
               MAT_SYMMETRIC = 1,
@@ -1561,7 +1559,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW_MIN_ABS=70,
                MATOP_CONVERT=71,
                MATOP_SET_COLORING=72,
-               MATOP_SET_VALUES_ADIC=73,
+               MATOP_PLACEHOLDER=73,
                MATOP_SET_VALUES_ADIFOR=74,
                MATOP_FD_COLORING_APPLY=75,
                MATOP_SET_FROM_OPTIONS=76,

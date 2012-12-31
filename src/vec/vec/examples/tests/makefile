@@ -1,8 +1,8 @@
 
-CFLAGS	        = 
+CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        = 
+FPPFLAGS        =
 LOCDIR          = src/vec/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
@@ -14,7 +14,7 @@ MANSEC          = Vec
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
-ex1: ex1.o  chkopts 
+ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
 
@@ -71,11 +71,11 @@ ex14: ex14.o  chkopts
 	${RM} -f ex14.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o ex15 ex15.o  ${PETSC_VEC_LIB} 
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_VEC_LIB}
 	${RM} -f ex15.o
 
 ex16: ex16.o  chkopts
-	-${CLINKER} -o ex16 ex16.o  ${PETSC_VEC_LIB} 
+	-${CLINKER} -o ex16 ex16.o  ${PETSC_VEC_LIB}
 	${RM} -f ex16.o
 
 ex17: ex17.o  chkopts
@@ -111,60 +111,60 @@ ex23: ex23.o  chkopts
 	${RM} -f ex23.o
 
 ex24: ex24.o chkopts
-	-${CLINKER} -o ex24 ex24.o ${PETSC_VEC_LIB} 
-	${RM} -f ex24.o 
+	-${CLINKER} -o ex24 ex24.o ${PETSC_VEC_LIB}
+	${RM} -f ex24.o
 
 ex25: ex25.o chkopts
-	-${CLINKER} -o ex25 ex25.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex25.o 
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_VEC_LIB}
+	${RM} -f ex25.o
 
 ex26: ex26.o chkopts
-	-${CLINKER} -o ex26 ex26.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex26.o 
+	-${CLINKER} -o ex26 ex26.o  ${PETSC_VEC_LIB}
+	${RM} -f ex26.o
 
 ex27: ex27.o chkopts
-	-${CLINKER} -o ex27 ex27.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex27.o 
+	-${CLINKER} -o ex27 ex27.o  ${PETSC_VEC_LIB}
+	${RM} -f ex27.o
 
 ex28: ex28.o chkopts
-	-${CLINKER} -o ex28 ex28.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex28.o 
+	-${CLINKER} -o ex28 ex28.o  ${PETSC_VEC_LIB}
+	${RM} -f ex28.o
 
 ex29: ex29.o chkopts
-	-${CLINKER} -o ex29 ex29.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex29.o 
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_VEC_LIB}
+	${RM} -f ex29.o
 
 ex30: ex30.o chkopts
-	-${CLINKER} -o ex30 ex30.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex30.o 
+	-${CLINKER} -o ex30 ex30.o  ${PETSC_VEC_LIB}
+	${RM} -f ex30.o
 
 ex30f: ex30f.o  chkopts
 	-${FLINKER} -o ex30f ex30f.o ${PETSC_VEC_LIB}
 	${RM} -f ex30f.o
 
 ex31: ex31.o chkopts
-	-${CLINKER} -o ex31 ex31.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex31.o 
+	-${CLINKER} -o ex31 ex31.o  ${PETSC_VEC_LIB}
+	${RM} -f ex31.o
 
 ex32f: ex32f.o chkopts
-	-${FLINKER} -o ex32f ex32f.o ${PETSC_VEC_LIB} 
-	${RM} -f ex32f.o 
+	-${FLINKER} -o ex32f ex32f.o ${PETSC_VEC_LIB}
+	${RM} -f ex32f.o
 
 ex33: ex33.o chkopts
-	-${CLINKER} -o ex33 ex33.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex33.o 
+	-${CLINKER} -o ex33 ex33.o  ${PETSC_VEC_LIB}
+	${RM} -f ex33.o
 
 ex34: ex34.o chkopts
-	-${CLINKER} -o ex34 ex34.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex34.o 
+	-${CLINKER} -o ex34 ex34.o  ${PETSC_VEC_LIB}
+	${RM} -f ex34.o
 
 ex35: ex35.o chkopts
-	-${CLINKER} -o ex35 ex35.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex35.o 
+	-${CLINKER} -o ex35 ex35.o  ${PETSC_VEC_LIB}
+	${RM} -f ex35.o
 
 ex36: ex36.o chkopts
-	-${CLINKER} -o ex36 ex36.o  ${PETSC_VEC_LIB} 
-	${RM} -f ex36.o 
+	-${CLINKER} -o ex36 ex36.o  ${PETSC_VEC_LIB}
+	${RM} -f ex36.o
 
 ex37: ex37.o chkopts
 	-${CLINKER} -o ex37 ex37.o  ${PETSC_VEC_LIB}
@@ -174,11 +174,11 @@ ex38: ex38.o chkopts
 	-${CLINKER} -o ex38 ex38.o  ${PETSC_VEC_LIB}
 	${RM} -f ex38.o
 
-ex39: ex39.o  chkopts 
+ex39: ex39.o  chkopts
 	-${CLINKER} -o ex39 ex39.o ${PETSC_VEC_LIB}
 	${RM} -f ex39.o
 
-ex40: ex40.o  chkopts 
+ex40: ex40.o  chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_VEC_LIB}
 	${RM} -f ex40.o
 
@@ -186,15 +186,15 @@ ex40f90: ex40f90.o  chkopts
 	-${FLINKER} -o ex40f90 ex40f90.o ${PETSC_VEC_LIB}
 	${RM} -f ex40f90.o
 
-ex41: ex41.o  chkopts 
+ex41: ex41.o  chkopts
 	-${CLINKER} -o ex41 ex41.o ${PETSC_VEC_LIB}
 	${RM} -f ex41.o
 
-ex42: ex42.o  chkopts 
+ex42: ex42.o  chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_VEC_LIB}
 	${RM} -f ex42.o
 
-ex43: ex43.o  chkopts 
+ex43: ex43.o  chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_VEC_LIB}
 	${RM} -f ex43.o
 
@@ -431,10 +431,10 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \
-                              runex30f ex30f.rm 
+                              runex30f ex30f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex32f.PETSc runex32f ex32f.rm
-TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm 
+TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
-                              ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 
+                              ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm
 
 include ${PETSC_DIR}/conf/test

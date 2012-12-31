@@ -7,10 +7,10 @@ ALL: lib
 CFLAGS   = ${CHOLMOD_INCLUDE}
 FFLAGS   =
 SOURCEC  = aijcholmod.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/cholmod/
 

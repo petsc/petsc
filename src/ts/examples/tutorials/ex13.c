@@ -7,7 +7,7 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
            u(x,y) = 0.0           if r >= .125
 
     mpiexec -n 2 ./ex13 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor
-         ./ex13 -use_coloring 
+         ./ex13 -use_coloring
          ./ex13 -use_coloring  -draw_pause -1
          mpiexec -n 2 ./ex13 -ts_type sundials -ts_sundials_monitor_steps
 */

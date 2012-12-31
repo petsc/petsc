@@ -44,7 +44,7 @@ PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscS
   PetscInt        dim, dof, sw;
   DMDAStencilType st;
   PetscErrorCode  ierr;
-#endif 
+#endif
 
   PetscFunctionBegin;
 #if 0

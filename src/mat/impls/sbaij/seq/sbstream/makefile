@@ -1,10 +1,10 @@
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = sbstream.c sbstrmfact.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat

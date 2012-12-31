@@ -10,13 +10,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  = fsolvebaij.F
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
 LOCDIR   = src/mat/impls/baij/seq/ftn-kernels/
-DIRS     = 
+DIRS     =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

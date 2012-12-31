@@ -364,8 +364,6 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[]) {
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 
-       Process adiC(36): FormFunctionLocal
-
  */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppCtx *user)
 {
@@ -492,7 +490,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppC
       for (k = 0; k < 3; k++) {
         /* printf("  rLocal[%d] = (%g, %g, %g)\n", k, rLocal[k].u, rLocal[k].v, rLocal[k].p);*/
       }
-      ierr = constantResidual(1.0, PETSC_BOOL, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      ierr = constantResidual(1.0, PETSC_TRUE, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       /* printf("Upper Laplacian+Constant ElementVector for (%d, %d)\n", i, j);*/
       for (k = 0; k < 3; k++) {
         /* printf("  rLocal[%d] = (%g, %g, %g)\n", k, rLocal[k].u, rLocal[k].v, rLocal[k].p);*/

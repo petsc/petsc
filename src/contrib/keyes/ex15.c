@@ -15,23 +15,23 @@ options are:\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
-/*  
-  
-    This example models the partial differential equation 
-   
+/*
+
+    This example models the partial differential equation
+
          - Div(alpha* T^beta (GRAD T)) = 0.
-       
+
     where beta = 2.5 and alpha = 1.0
- 
+
     BC: T_left = 1.0 , T_right = 0.1, dT/dn_top = dTdn_bottom = 0.
-    
-    in the unit square, which is uniformly discretized in each of x and 
+
+    in the unit square, which is uniformly discretized in each of x and
     y in this simple encoding.  The degrees of freedom are cell centered.
- 
-    A finite volume approximation with the usual 5-point stencil 
-    is used to discretize the boundary value problem to obtain a 
-    nonlinear system of equations. 
- 
+
+    A finite volume approximation with the usual 5-point stencil
+    is used to discretize the boundary value problem to obtain a
+    nonlinear system of equations.
+
 */
 
 #include "snes.h"
@@ -74,9 +74,9 @@ extern int FormInterpolation(AppCtx *,GridCtx*,GridCtx*);
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  SNES          snes;                      
+  SNES          snes;
   AppCtx        user;
-  GridCtx       *finegrid;                      
+  GridCtx       *finegrid;
   int           ierr, its, lits, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           nlocal,i;
   int	        maxit, maxf,flag;
@@ -88,10 +88,10 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv,PETSC_NULL,help );
 
   /* set problem parameters */
-  user.tleft  = 1.0; 
+  user.tleft  = 1.0;
   user.tright = 0.1;
-  user.beta   = 2.5; 
-  user.bm1    = 1.5; 
+  user.beta   = 2.5;
+  user.bm1    = 1.5;
   user.coef   = 1.25;
   ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
@@ -102,8 +102,8 @@ int main( int argc, char **argv )
   /* set number of levels and grid size on coarsest level */
   user.ratio      = 2;
   user.nlevels    = 2;
-  user.grid[0].mx = 5; 
-  user.grid[0].my = 5; 
+  user.grid[0].mx = 5;
+  user.grid[0].my = 5;
   ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL);CHKERRA(ierr);
@@ -113,7 +113,7 @@ int main( int argc, char **argv )
 
   /* Set grid size for all finer levels */
   for (i=1; i<user.nlevels; i++) {
-    user.grid[i].mx = user.ratio*(user.grid[i-1].mx-1)+1; 
+    user.grid[i].mx = user.ratio*(user.grid[i-1].mx-1)+1;
     user.grid[i].my = user.ratio*(user.grid[i-1].my-1)+1;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid %d size %d by %d\n",i,user.grid[i].mx,user.grid[i].my);CHKERRA(ierr);
   }
@@ -156,9 +156,9 @@ int main( int argc, char **argv )
     ierr = PCMGGetSmoother(pc,i,&user.grid[i].sles);CHKERRA(ierr);
     ierr = SLESSetFromOptions(user.grid[i].sles);CHKERRA(ierr);
     ierr = SLESSetOperators(user.grid[i].sles,user.grid[i].J,user.grid[i].J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-    ierr = PCMGSetX(pc,i,user.grid[i].x);CHKERRA(ierr); 
-    ierr = PCMGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr); 
-    ierr = PCMGSetR(pc,i,user.grid[i].r);CHKERRA(ierr); 
+    ierr = PCMGSetX(pc,i,user.grid[i].x);CHKERRA(ierr);
+    ierr = PCMGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr);
+    ierr = PCMGSetR(pc,i,user.grid[i].r);CHKERRA(ierr);
     ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,user.grid[i].J);CHKERRA(ierr);
   }
 
@@ -209,8 +209,8 @@ int main( int argc, char **argv )
 
   /* Free interpolations between levels */
   for (i=1; i<user.nlevels; i++) {
-    ierr = MatDestroy(&user.grid[i].R);CHKERRA(ierr); 
-    ierr = VecDestroy(&user.grid[i].Rscale);CHKERRA(ierr); 
+    ierr = MatDestroy(&user.grid[i].R);CHKERRA(ierr);
+    ierr = VecDestroy(&user.grid[i].Rscale);CHKERRA(ierr);
   }
 
   /* free nonlinear solver object */
@@ -232,7 +232,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   Vec     localX = finegrid->localX;
 
   PetscFunctionBegin;
-  mx = finegrid->mx;        my = finegrid->my;            
+  mx = finegrid->mx;        my = finegrid->my;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
@@ -245,7 +245,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
+      row = i - Xs + (j - Ys)*Xm;
       x[row] = tleft;
     }
   }
@@ -271,15 +271,15 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   double  tleft, tright, beta;
   Scalar  *x,*f;
   GridCtx *finegrid = &user->grid[user->nlevels-1];
-  Vec     localX = finegrid->localX, localF = finegrid->localF; 
+  Vec     localX = finegrid->localX, localF = finegrid->localF;
 
   PetscFunctionBegin;
-  mx = finegrid->mx;        my = finegrid->my;       
+  mx = finegrid->mx;        my = finegrid->my;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
   beta = user->beta;
- 
+
   /* Get ghost points */
   ierr = DMGlobalToLocalBegin(finegrid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(finegrid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -290,7 +290,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - Ys)*Xm + xs - Xs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       t0 = x[row];
@@ -299,8 +299,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
 	/* general interior volume */
 
-        tw = x[row - 1];   
-        aw = 0.5*(t0 + tw);                 
+        tw = x[row - 1];
+        aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
         fw = dw*(t0 - tw);
 
@@ -313,8 +313,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         as = 0.5*(t0 + ts);
         ds = pow(as, beta);
         fs = ds*(t0 - ts);
-  
-        tn = x[row + Xm];  
+
+        tn = x[row + Xm];
         an = 0.5*(t0 + tn);
         dn = pow(an, beta);
         fn = dn*(tn - t0);
@@ -322,8 +322,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       } else if (i == 0) {
 
 	/* left-hand boundary */
-        tw = tleft;   
-        aw = 0.5*(t0 + tw);                 
+        tw = tleft;
+        aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
         fw = dw*(t0 - tw);
 
@@ -341,29 +341,29 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
  	  fs = 0.0;
 	}
 
-	if (j < my-1) { 
-          tn = x[row + Xm];  
+	if (j < my-1) {
+          tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           dn = pow(an, beta);
 	  fn = dn*(tn - t0);
 	} else {
-	  fn = 0.0; 
+	  fn = 0.0;
 	}
 
       } else if (i == mx-1) {
 
-        /* right-hand boundary */ 
-        tw = x[row - 1];   
+        /* right-hand boundary */
+        tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
         fw = dw*(t0 - tw);
- 
+
         te = tright;
         ae = 0.5*(t0 + te);
         de = pow(ae, beta);
         fe = de*(te - t0);
- 
-        if (j > 0) { 
+
+        if (j > 0) {
           ts = x[row - Xm];
           as = 0.5*(t0 + ts);
           ds = pow(as, beta);
@@ -371,14 +371,14 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         } else {
           fs = 0.0;
         }
- 
+
         if (j < my-1) {
           tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           dn = pow(an, beta);
-          fn = dn*(tn - t0); 
-        } else {   
-          fn = 0.0; 
+          fn = dn*(tn - t0);
+        } else {
+          fn = 0.0;
         }
 
       } else if (j == 0) {
@@ -403,7 +403,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
       } else if (j == my-1) {
 
-	/* top boundary, and i <> 0 or mx-1 */ 
+	/* top boundary, and i <> 0 or mx-1 */
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
@@ -423,7 +423,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
       }
 
-      f[row] = - hydhx*(fe-fw) - hxdhy*(fn-fs); 
+      f[row] = - hydhx*(fe-fw) - hxdhy*(fn-fs);
 
     }
   }
@@ -435,7 +435,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMLocalToGlobalEnd(finegrid->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   PLogFlops((22 + 4*POWFLOP)*ym*xm);
   PetscFunctionReturn(0);
-} 
+}
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 /*
       This works on ANY grid
@@ -448,14 +448,14 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   int     nloc, *ltog, grow;
   double  hx, hy, hxdhy, hydhx, value;
-  double  t0, tn, ts, te, tw; 
+  double  t0, tn, ts, te, tw;
   double  dn, ds, de, dw, an, as, ae, aw, bn, bs, be, bw, gn, gs, ge, gw;
   double  tleft, tright, beta, bm1, coef;
   Scalar  v[5], *x;
   Vec     localX = grid->localX;
 
   PetscFunctionBegin;
-  mx = grid->mx;            my = grid->my; 
+  mx = grid->mx;            my = grid->my;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
@@ -471,7 +471,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - Ys)*Xm + xs - Xs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
@@ -481,11 +481,11 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 
         /* general interior volume */
 
-        tw = x[row - 1];   
-        aw = 0.5*(t0 + tw);                 
+        tw = x[row - 1];
+        aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
 	/* dw = bw * aw */
-	dw = pow(aw, beta); 
+	dw = pow(aw, beta);
 	gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
@@ -501,8 +501,8 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 	/* ds = bs * as; */
 	ds = pow(as, beta);
         gs = coef*bs*(t0 - ts);
-  
-        tn = x[row + Xm];  
+
+        tn = x[row + Xm];
         an = 0.5*(t0 + tn);
         bn = pow(an, bm1);
 	/* dn = bn * an; */
@@ -510,78 +510,78 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         gn = coef*bn*(tn - t0);
 
 	col[0] = ltog[row - Xm];
-        v[0] = - hxdhy*(ds - gs); 
+        v[0] = - hxdhy*(ds - gs);
 	col[1] = ltog[row - 1];
-        v[1] = - hydhx*(dw - gw); 
+        v[1] = - hydhx*(dw - gw);
         col[2] = grow;
-        v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge); 
+        v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);
 	col[3] = ltog[row + 1];
-        v[3] = - hydhx*(de + ge); 
+        v[3] = - hydhx*(de + ge);
 	col[4] = ltog[row + Xm];
-        v[4] = - hxdhy*(dn + gn); 
+        v[4] = - hxdhy*(dn + gn);
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
       } else if (i == 0) {
 
         /* left-hand boundary */
         tw = tleft;
-        aw = 0.5*(t0 + tw);                  
-        bw = pow(aw, bm1); 
+        aw = 0.5*(t0 + tw);
+        bw = pow(aw, bm1);
 	/* dw = bw * aw */
-	dw = pow(aw, beta); 
-        gw = coef*bw*(t0 - tw); 
- 
-        te = x[row + 1]; 
-        ae = 0.5*(t0 + te); 
-        be = pow(ae, bm1); 
+	dw = pow(aw, beta);
+        gw = coef*bw*(t0 - tw);
+
+        te = x[row + 1];
+        ae = 0.5*(t0 + te);
+        be = pow(ae, bm1);
 	/* de = be * ae; */
 	de = pow(ae, beta);
         ge = coef*be*(te - t0);
- 
+
 	/* left-hand bottom boundary */
 	if (j == 0) {
 
-          tn = x[row + Xm];   
-          an = 0.5*(t0 + tn); 
-          bn = pow(an, bm1); 
+          tn = x[row + Xm];
+          an = 0.5*(t0 + tn);
+          bn = pow(an, bm1);
 	  /* dn = bn * an; */
 	  dn = pow(an, beta);
-          gn = coef*bn*(tn - t0); 
-          
+          gn = coef*bn*(tn - t0);
+
           col[0] = grow;
-          v[0] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); 
+          v[0] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge);
           col[1] = ltog[row + 1];
-          v[1] = - hydhx*(de + ge); 
+          v[1] = - hydhx*(de + ge);
           col[2] = ltog[row + Xm];
-          v[2] = - hxdhy*(dn + gn); 
+          v[2] = - hxdhy*(dn + gn);
           ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
- 
+
 	/* left-hand interior boundary */
 	} else if (j < my-1) {
 
-          ts = x[row - Xm];    
-          as = 0.5*(t0 + ts); 
-          bs = pow(as, bm1);  
+          ts = x[row - Xm];
+          as = 0.5*(t0 + ts);
+          bs = pow(as, bm1);
 	  /* ds = bs * as; */
 	  ds = pow(as, beta);
-          gs = coef*bs*(t0 - ts);  
-          
-          tn = x[row + Xm];    
-          an = 0.5*(t0 + tn); 
-          bn = pow(an, bm1);  
+          gs = coef*bs*(t0 - ts);
+
+          tn = x[row + Xm];
+          an = 0.5*(t0 + tn);
+          bn = pow(an, bm1);
 	  /* dn = bn * an; */
 	  dn = pow(an, beta);
-          gn = coef*bn*(tn - t0);  
-          
+          gn = coef*bn*(tn - t0);
+
           col[0] = ltog[row - Xm];
-          v[0] = - hxdhy*(ds - gs); 
-          col[1] = grow; 
-          v[1] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  
-          col[2] = ltog[row + 1]; 
-          v[2] = - hydhx*(de + ge);  
-          col[3] = ltog[row + Xm]; 
-          v[3] = - hxdhy*(dn + gn);  
-          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
+          v[0] = - hxdhy*(ds - gs);
+          col[1] = grow;
+          v[1] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);
+          col[2] = ltog[row + 1];
+          v[2] = - hydhx*(de + ge);
+          col[3] = ltog[row + Xm];
+          v[3] = - hxdhy*(dn + gn);
+          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
 	/* left-hand top boundary */
 	} else {
 
@@ -591,77 +591,77 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 	  /* ds = bs * as; */
 	  ds = pow(as, beta);
           gs = coef*bs*(t0 - ts);
-          
-          col[0] = ltog[row - Xm]; 
-          v[0] = - hxdhy*(ds - gs);  
-          col[1] = grow; 
-          v[1] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  
-          col[2] = ltog[row + 1];  
-          v[2] = - hydhx*(de + ge); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
+
+          col[0] = ltog[row - Xm];
+          v[0] = - hxdhy*(ds - gs);
+          col[1] = grow;
+          v[1] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);
+          col[2] = ltog[row + 1];
+          v[2] = - hydhx*(de + ge);
+          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
 	}
 
       } else if (i == mx-1) {
- 
+
         /* right-hand boundary */
         tw = x[row - 1];
-        aw = 0.5*(t0 + tw);                  
-        bw = pow(aw, bm1); 
+        aw = 0.5*(t0 + tw);
+        bw = pow(aw, bm1);
 	/* dw = bw * aw */
-	dw = pow(aw, beta); 
-        gw = coef*bw*(t0 - tw); 
- 
-        te = tright; 
-        ae = 0.5*(t0 + te); 
-        be = pow(ae, bm1); 
+	dw = pow(aw, beta);
+        gw = coef*bw*(t0 - tw);
+
+        te = tright;
+        ae = 0.5*(t0 + te);
+        be = pow(ae, bm1);
 	/* de = be * ae; */
 	de = pow(ae, beta);
         ge = coef*be*(te - t0);
- 
+
 	/* right-hand bottom boundary */
 	if (j == 0) {
 
-          tn = x[row + Xm];   
-          an = 0.5*(t0 + tn); 
-          bn = pow(an, bm1); 
+          tn = x[row + Xm];
+          an = 0.5*(t0 + tn);
+          bn = pow(an, bm1);
 	  /* dn = bn * an; */
 	  dn = pow(an, beta);
-          gn = coef*bn*(tn - t0); 
-          
+          gn = coef*bn*(tn - t0);
+
           col[0] = ltog[row - 1];
-          v[0] = - hydhx*(dw - gw); 
+          v[0] = - hydhx*(dw - gw);
           col[1] = grow;
-          v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); 
+          v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge);
           col[2] = ltog[row + Xm];
-          v[2] = - hxdhy*(dn + gn); 
+          v[2] = - hxdhy*(dn + gn);
           ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
- 
+
 	/* right-hand interior boundary */
 	} else if (j < my-1) {
 
-          ts = x[row - Xm];    
-          as = 0.5*(t0 + ts); 
-          bs = pow(as, bm1);  
+          ts = x[row - Xm];
+          as = 0.5*(t0 + ts);
+          bs = pow(as, bm1);
 	  /* ds = bs * as; */
 	  ds = pow(as, beta);
-          gs = coef*bs*(t0 - ts);  
-          
-          tn = x[row + Xm];    
-          an = 0.5*(t0 + tn); 
-          bn = pow(an, bm1);  
+          gs = coef*bs*(t0 - ts);
+
+          tn = x[row + Xm];
+          an = 0.5*(t0 + tn);
+          bn = pow(an, bm1);
 	  /* dn = bn * an; */
 	  dn = pow(an, beta);
-          gn = coef*bn*(tn - t0);  
-          
+          gn = coef*bn*(tn - t0);
+
           col[0] = ltog[row - Xm];
-          v[0] = - hxdhy*(ds - gs); 
-          col[1] = ltog[row - 1]; 
-          v[1] = - hydhx*(dw - gw);  
-          col[2] = grow; 
-          v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  
-          col[3] = ltog[row + Xm]; 
-          v[3] = - hxdhy*(dn + gn);  
-          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
+          v[0] = - hxdhy*(ds - gs);
+          col[1] = ltog[row - 1];
+          v[1] = - hydhx*(dw - gw);
+          col[2] = grow;
+          v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);
+          col[3] = ltog[row + Xm];
+          v[3] = - hxdhy*(dn + gn);
+          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
 	/* right-hand top boundary */
 	} else {
 
@@ -671,14 +671,14 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 	  /* ds = bs * as; */
 	  ds = pow(as, beta);
           gs = coef*bs*(t0 - ts);
-          
-          col[0] = ltog[row - Xm]; 
-          v[0] = - hxdhy*(ds - gs);  
-          col[1] = ltog[row - 1];  
-          v[1] = - hydhx*(dw - gw); 
-          col[2] = grow; 
-          v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
+
+          col[0] = ltog[row - Xm];
+          v[0] = - hxdhy*(ds - gs);
+          col[1] = ltog[row - 1];
+          v[1] = - hydhx*(dw - gw);
+          col[2] = grow;
+          v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);
+          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
 	}
 
       /* bottom boundary, and i <> 0 or mx-1 */
@@ -688,7 +688,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
 	/* dw = bw * aw */
-	dw = pow(aw, beta); 
+	dw = pow(aw, beta);
         gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
@@ -704,7 +704,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 	/* dn = bn * an; */
 	dn = pow(an, beta);
         gn = coef*bn*(tn - t0);
- 
+
         col[0] = ltog[row - 1];
         v[0] = - hydhx*(dw - gw);
         col[1] = grow;
@@ -714,15 +714,15 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         col[3] = ltog[row + Xm];
         v[3] = - hxdhy*(dn + gn);
         ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
- 
+
       /* top boundary, and i <> 0 or mx-1 */
       } else if (j == my-1) {
- 
+
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
 	/* dw = bw * aw */
-	dw = pow(aw, beta); 
+	dw = pow(aw, beta);
         gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
@@ -748,7 +748,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         col[3] = ltog[row + 1];
         v[3] = - hydhx*(de + ge);
         ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
- 
+
       }
     }
   }
@@ -762,7 +762,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 
 /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 /*
-      This evaluates the Jacobian on all of the grids 
+      This evaluates the Jacobian on all of the grids
 */
 #undef __FUNC__
 #define __FUNC__ "FormJacobian"
@@ -789,14 +789,14 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
       /* restrict X to coarse grid */
       ierr = MGRestrict(user->grid[i].R,X,user->grid[i-1].x);CHKERRQ(ierr);
-      X    = user->grid[i-1].x;      
+      X    = user->grid[i-1].x;
 
       /* scale to "natural" scaling for that grid */
       ierr = VecPointwiseMult(X,X,user->grid[i].Rscale);CHKERRQ(ierr);
 
       /* form Jacobian on coarse grid */
       ierr = FormJacobian_Grid(user,&user->grid[i-1],X,&user->grid[i-1].J,&user->grid[i-1].J);CHKERRQ(ierr);
-    
+
       ierr = SLESSetOperators(user->grid[i-1].sles,user->grid[i-1].J,user->grid[i-1].J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
     }
   }
@@ -817,7 +817,7 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   Scalar   v[4],x,y, one = 1.0;
   Mat      mat;
-  Vec	   Rscale; 
+  Vec	   Rscale;
 
   PetscFunctionBegin;
   ierr = DMDAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
@@ -838,15 +838,15 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( j=j_start; j<j_start+n; j++ ) {
     for ( i=i_start; i<i_start+m; i++ ) {
-      /* convert to local "natural" numbering and 
+      /* convert to local "natural" numbering and
          then to PETSc global numbering */
       row    = idx[m_ghost*(j-j_start_ghost) + (i-i_start_ghost)];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratio);    /* coarse grid node below fine grid node */
 
-      /* 
-         Only include those interpolation points that are truly 
+      /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
       */
@@ -858,24 +858,24 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
       if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Sorry j %d %d %d",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
       if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Sorry i %d %d %d",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
       col      = m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c);
-      cols[nc] = idx_c[col]; 
+      cols[nc] = idx_c[col];
       v[nc++]  = x*y - x - y + 1.0;
       /* one right and below */
-      if (i_c*ratio != i) { 
+      if (i_c*ratio != i) {
         cols[nc] = idx_c[col+1];
         v[nc++]  = -x*y + x;
       }
       /* one left and above */
-      if (j_c*ratio != j) { 
+      if (j_c*ratio != j) {
         cols[nc] = idx_c[col+m_ghost_c];
         v[nc++]  = -x*y + y;
       }
       /* one right and above */
-      if (j_c*ratio != j && i_c*ratio != i) { 
+      if (j_c*ratio != j && i_c*ratio != i) {
         cols[nc] = idx_c[col+m_ghost_c+1];
         v[nc++]  = x*y;
       }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

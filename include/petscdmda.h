@@ -272,19 +272,8 @@ PETSC_EXTERN PetscErrorCode DMDASetBlockFills(DM,const PetscInt*,const PetscInt*
 PETSC_EXTERN PetscErrorCode DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode DMDAGetAdicArray(DM,PetscBool ,void*,void*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMDARestoreAdicArray(DM,PetscBool ,void*,void*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMDAGetAdicMFArray(DM,PetscBool ,void*,void*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMDAGetAdicMFArray4(DM,PetscBool ,void*,void*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMDAGetAdicMFArray9(DM,PetscBool ,void*,void*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMDAGetAdicMFArrayb(DM,PetscBool ,void*,void*,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMDARestoreAdicMFArray(DM,PetscBool ,void*,void*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetArray(DM,PetscBool ,void*);
 PETSC_EXTERN PetscErrorCode DMDARestoreArray(DM,PetscBool ,void*);
-PETSC_EXTERN PetscErrorCode ad_DAGetArray(DM,PetscBool ,void*);
-PETSC_EXTERN PetscErrorCode ad_DARestoreArray(DM,PetscBool ,void*);
-PETSC_EXTERN PetscErrorCode admf_DAGetArray(DM,PetscBool ,void*);
-PETSC_EXTERN PetscErrorCode admf_DARestoreArray(DM,PetscBool ,void*);
 
 PETSC_EXTERN PetscErrorCode DMDACreatePF(DM,PF*);
 

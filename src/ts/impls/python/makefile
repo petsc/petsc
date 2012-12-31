@@ -1,11 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = pythonts.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscts
 DIRS     =
 LOCDIR   = src/ts/impls/python/

@@ -116,7 +116,7 @@ namespace ALE {
         typedef typename xsieve_type::arrow_type          arrow_type;
         typedef std::set<typename arrow_type::target_type> RealBase;
         typedef std::set<typename arrow_type::source_type> RealCone;
-        ALE::Obj<typename xsieve_type::BaseSequence> base = xsieve->base(); 
+        ALE::Obj<typename xsieve_type::BaseSequence> base = xsieve->base();
         PetscFunctionBegin;
         ALE::LogStage stage = ALE::LogStageRegister("Base Test");
         ALE::LogStagePush(stage);
@@ -140,7 +140,7 @@ namespace ALE {
       #define __FUNCT__ "BaseTest"
       template <typename XSieve_>
       static PetscErrorCode BaseTest(const ALE::Obj<XSieve_>& xsieve, ALE::ArgDB argDB, const char* xsieveName = NULL)
-      {        
+      {
         typedef XSieve_                                   xsieve_type;
         typedef typename xsieve_type::arrow_type          arrow_type;
         typedef std::set<typename arrow_type::target_type> RealBase;
@@ -172,13 +172,13 @@ namespace ALE {
           if(!silent) {
             std::cout << "Base: " << std::endl;
             int counter = 0;
-            for(; !(iter == bend); ++iter) {   
+            for(; !(iter == bend); ++iter) {
               std::cout << *iter << ", ";
               counter++;
             }
             std::cout << std::endl;
             std::cout << "realBase: " << std::endl;
-            for(typename RealBase::iterator ii = realBase.begin(); ii!=realBase.end(); ++ii) {   
+            for(typename RealBase::iterator ii = realBase.begin(); ii!=realBase.end(); ++ii) {
               std::cout << *ii << ", ";
             }
             std::cout << std::endl;
@@ -243,13 +243,13 @@ namespace ALE {
               // display realCone
               std::cout << "    realCone(" << *b_iter << ")";
               std::cout << ": [";
-              for(typename RealCone::iterator ii = realCone.begin(); ii!=realCone.end(); ++ii) {   
+              for(typename RealCone::iterator ii = realCone.begin(); ii!=realCone.end(); ++ii) {
                 std::cout << *ii << ", ";
               }
               std::cout << "] " << std::endl;
             }//if(!silent)
           }// base loop
-          if(!silent){std::cout << std::endl;}            
+          if(!silent){std::cout << std::endl;}
           ALE::LogStagePop(stage);
         }// for(i=0; i < testCount; ++i)
         PetscFunctionReturn(0);
@@ -268,7 +268,7 @@ namespace ALE {
         std::cout << "\nBasic Slice Test:\n";
         if(xsieveName != NULL) {
           std::cout << xsieveName << ":\n";
-        }        
+        }
         ALE::LogStage stage = ALE::LogStageRegister("SliceBasicTest");
         ALE::LogStagePush(stage);
         {// first slice scope
@@ -307,7 +307,7 @@ namespace ALE {
           }
         }// first slice scope
         {
-          std::cout << "Second slice scope:\n"; 
+          std::cout << "Second slice scope:\n";
           try {
             string sliceName("'Total2' of ");
             if(xsieveName != NULL) {sliceName = sliceName + string(xsieveName) + string(" ");};
@@ -333,7 +333,7 @@ namespace ALE {
       #define __FUNCT__ "BoundaryTest"
       template <typename XSieve_>
       static PetscErrorCode BoundaryTest(const ALE::Obj<XSieve_>& xsieve, ALE::ArgDB argDB, const char* xsieveName = NULL)
-      {        
+      {
         typedef XSieve_                                    xsieve_type;
         typedef typename xsieve_type::arrow_type           arrow_type;
         typedef std::set<typename arrow_type::target_type> RealBase;
@@ -359,7 +359,7 @@ namespace ALE {
             if(!silent) {
               if(xsieveName != NULL) {
                 label = string(xsieveName) + ": ";
-              }        
+              }
               else {
                 label = string(": ");
               }
@@ -388,7 +388,7 @@ namespace ALE {
             if(!silent) {
               if(xsieveName != NULL) {
                 label = string(xsieveName) + ": ";
-              }        
+              }
               else {
                 label = string(": ");
               }

@@ -21,7 +21,7 @@ int main(int argc, char** argv){
   // (3) parse command-line args
   //   argDB.parse(argc,argv)
   // (4) retrieve args
-  //   T1 t1 = argDB["arg1"]; 
+  //   T1 t1 = argDB["arg1"];
   //   T  t  = argDB["arg2"]; // ok if T2 can be cast to T, otherwise, an error
   try{
     ALE::ArgDB argDB("General options");

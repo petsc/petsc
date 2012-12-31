@@ -5,8 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zbagf90.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscsys
 LOCDIR   = src/sys/classes/bag/f90-custom/
 

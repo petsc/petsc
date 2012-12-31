@@ -5,9 +5,9 @@ CFLAGS   = #-DPCASA_VERBOSE -DPCASA_ENERGY_ERR -DPCASA_RES_ERR #-DCORR_CHECK
 FFLAGS   =
 SOURCEC  = asa.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/asa/
 

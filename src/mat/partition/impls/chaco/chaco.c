@@ -17,32 +17,32 @@ extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
     int mesh_dims[3], double *goal, int global_method, int local_method,
     int rqi_flag, int vmax, int ndims, double eigtol, long seed);
 
-extern int FREE_GRAPH;        
+extern int FREE_GRAPH;
 
 /*
-int       nvtxs;		number of vertices in full graph 
-int      *start;		start of edge list for each vertex 
-int      *adjacency;	        edge list data 
-int      *vwgts;	        weights for all vertices 
-float    *ewgts;	        weights for all edges 
-float    *x, *y, *z;	        coordinates for inertial method 
-char     *outassignname;        name of assignment output file 
-char     *outfilename;          output file name 
-short    *assignment;	        set number of each vtx (length n) 
-int       architecture;         0 => hypercube, d => d-dimensional mesh 
-int       ndims_tot;	        total number of cube dimensions to divide 
-int       mesh_dims[3];         dimensions of mesh of processors 
-double   *goal;	                desired set sizes for each set 
-int       global_method;        global partitioning algorithm 
-int       local_method;         local partitioning algorithm 
-int       rqi_flag;	        should I use RQI/Symmlq eigensolver? 
-int       vmax;	                how many vertices to coarsen down to? 
-int       ndims;	        number of eigenvectors (2^d sets) 
-double    eigtol;	        tolerance on eigenvectors 
-long      seed;	                for random graph mutations 
+int       nvtxs;		number of vertices in full graph
+int      *start;		start of edge list for each vertex
+int      *adjacency;	        edge list data
+int      *vwgts;	        weights for all vertices
+float    *ewgts;	        weights for all edges
+float    *x, *y, *z;	        coordinates for inertial method
+char     *outassignname;        name of assignment output file
+char     *outfilename;          output file name
+short    *assignment;	        set number of each vtx (length n)
+int       architecture;         0 => hypercube, d => d-dimensional mesh
+int       ndims_tot;	        total number of cube dimensions to divide
+int       mesh_dims[3];         dimensions of mesh of processors
+double   *goal;	                desired set sizes for each set
+int       global_method;        global partitioning algorithm
+int       local_method;         local partitioning algorithm
+int       rqi_flag;	        should I use RQI/Symmlq eigensolver?
+int       vmax;	                how many vertices to coarsen down to?
+int       ndims;	        number of eigenvectors (2^d sets)
+double    eigtol;	        tolerance on eigenvectors
+long      seed;	                for random graph mutations
 */
 
-EXTERN_C_END 
+EXTERN_C_END
 
 typedef struct {
   PetscBool         verbose;
@@ -123,7 +123,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   eigtol        = chaco->eigtol;          /* tolerance on eigenvectors */
   seed          = 123636512;              /* for random graph mutations */
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(short),&assignment);CHKERRQ(ierr);          
+  ierr = PetscMalloc((mat->rmap->N)*sizeof(short),&assignment);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(int)*start[nvtxs],&adjacency);CHKERRQ(ierr);
   for (i=0;i<start[nvtxs];i++)
     adjacency[i] = (adj->j)[i] + 1;   /* 1-based indexing */
@@ -144,7 +144,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 
 #ifdef PETSC_HAVE_UNISTD_H
   err = fflush(stdout);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));
   if (count<0) count = 0;
   mesg_log[count] = 0;
@@ -158,7 +158,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);          
+  ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);
   for (i=0;i<nvtxs;i++) parttab[i] = assignment[i];
 
   /* creation of the index set */
@@ -212,7 +212,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 
    Input Parameters:
 +  part - the partitioning context
--  method - one of MP_CHACO_MULTILEVEL, MP_CHACO_SPECTRAL, MP_CHACO_LINEAR, 
+-  method - one of MP_CHACO_MULTILEVEL, MP_CHACO_SPECTRAL, MP_CHACO_LINEAR,
             MP_CHACO_RANDOM or MP_CHACO_SCATTERED
 
    Options Database:
@@ -400,7 +400,7 @@ EXTERN_C_END
 /*@
    MatPartitioningChacoSetCoarseLevel - Set the coarse level parameter for the
    Chaco partitioner.
- 
+
    Collective on MatPartitioning
 
    Input Parameters:
@@ -565,8 +565,8 @@ PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part,PetscReal to
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningChacoSetEigenTol_Chaco" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningChacoSetEigenTol_Chaco"
 PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part,PetscReal tol)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
@@ -610,8 +610,8 @@ PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part,PetscReal *t
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningChacoGetEigenTol_Chaco" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningChacoGetEigenTol_Chaco"
 PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part,PetscReal *tol)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
@@ -657,8 +657,8 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part,PetscInt 
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningChacoSetEigenNumber_Chaco" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningChacoSetEigenNumber_Chaco"
 PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part,PetscInt num)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
@@ -702,8 +702,8 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part,PetscInt 
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningChacoGetEigenNumber_Chaco" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningChacoGetEigenNumber_Chaco"
 PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part,PetscInt *num)
 {
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;

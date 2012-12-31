@@ -97,7 +97,6 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
 
     j    = aj + ai[row] + ishift;
     jmax = aj + ai[row+1] + ishift;
-    i2   = 0;
     col  = *j++ + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) { /* 1.[-xx-d-xx--] 2.[-xx-------],off-diagonal elemets */
@@ -126,7 +125,6 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
   for (i1=0,row=0; i1<nslim_row; row += ns_row[i1],i1++) {
     j    = aj + ai[row] + ishift;
     jmax = aj + ai[row+1] + ishift;
-    i2   = 0;                     /* Col inode index */
     col  = *j++ + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) {
@@ -210,7 +208,6 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
  /* loop over matrix putting into ja */
   for (i1=0,row=0; i1<nslim_row; row+=ns_row[i1],i1++) {
     j   = aj + ai[row] + ishift;
-    i2  = 0;                     /* Col inode index */
     col = *j++ + ishift;
     i2  = tvc[col];
     nz  = ai[row+1] - ai[row];
@@ -332,7 +329,6 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
  /* loop over matrix putting into ja */
   for (i1=0,row=0; i1<nslim_row; row+=ns_row[i1],i1++) {
     j   = aj + ai[row] + ishift;
-    i2  = 0;                     /* Col inode index */
     col = *j++ + ishift;
     i2  = tvc[col];
     nz  = ai[row+1] - ai[row];

@@ -58,7 +58,7 @@ typedef struct  {
   int        x,y,w,h;  /* Size and location of window */
   WindowNode node;/* so we can grab windownode info if needed */
   DWORD      popup,caption,overlapped;
- 
+
 } PetscDraw_Win32;
 
 

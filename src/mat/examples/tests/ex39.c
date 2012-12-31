@@ -1,5 +1,5 @@
 
-static char help[] = "Tests Elemental interface.\n\n"; 
+static char help[] = "Tests Elemental interface.\n\n";
 
 #include <petscmat.h>
 
@@ -136,7 +136,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  
+
   /* Test MatMatTransposeMult(): B = C*C^T */
   ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
   if (mats_view) {
@@ -154,4 +154,4 @@ int main(int argc,char **args)
   return 0;
 }
 
- 
+

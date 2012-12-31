@@ -42,7 +42,7 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
       size_t         len = sizeof(N_CORES);
       ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0); /* osx preferes activecpu over ncpu */
       if (ierr) { /* freebsd check ncpu */
-        ierr = sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0); CHKERRQ(ierr);
+        ierr = sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
       }
     }
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
@@ -359,7 +359,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
       for (i=0;i<tcomm->nworkThreads;i++) tcomm->affinities[i] = i%N_CORES;
     }
   } else {
-    ierr = PetscMemcpy(tcomm->affinities,affinities,tcomm->nworkThreads*sizeof(PetscInt));
+    ierr = PetscMemcpy(tcomm->affinities,affinities,tcomm->nworkThreads*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

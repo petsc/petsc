@@ -34,7 +34,7 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   PetscFunctionBegin;
 #if 0
   /* resample x to usfft->resample */
-  ierr = MatResample_USFFT_Private(A, x); CHKERRQ(ierr);
+  ierr = MatResample_USFFT_Private(A, x);CHKERRQ(ierr);
 
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
   ierr = VecGetArray(usfft->resample,&r_array);CHKERRQ(ierr);
@@ -222,9 +222,9 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
   /* TODO: Use the new form of DMDACreate() */
 #if 0
   ierr = DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
-                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
+                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA));CHKERRQ(ierr);
 #endif
-  ierr = DMDAGetVec(usfft->resampleDA, usfft->resample); CHKERRQ(ierr);
+  ierr = DMDAGetVec(usfft->resampleDA, usfft->resample);CHKERRQ(ierr);
 
 
   /* CONTINUE: Need to build the connectivity "Sieve" attaching sample points to the resample points they are close to */

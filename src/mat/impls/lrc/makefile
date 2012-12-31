@@ -1,13 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = lrc.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 LOCDIR   = src/mat/impls/lrc/
 MANSEC   = Mat
 

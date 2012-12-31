@@ -1,15 +1,15 @@
 
 #requirespackage  'PETSC_HAVE_MATHEMATICA'
-#requiresscalar real 
+#requiresscalar real
 
-ALL: lib 
+ALL: lib
 
-CFLAGS    = ${MATHEMATICA_INCLUDE} 
+CFLAGS    = ${MATHEMATICA_INCLUDE}
 SOURCEC   = mathematica.c
 SOURCEH   = mathematica.h
 MANSEC    = Viewer
 LIBBASE   = libpetscsys
-DIRS      = 
+DIRS      =
 LOCDIR  = src/sys/classes/viewer/impls/mathematica/
 
 include ${PETSC_DIR}/conf/variables

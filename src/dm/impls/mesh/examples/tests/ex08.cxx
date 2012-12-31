@@ -35,10 +35,10 @@ int main(int argc, char *argv[])
   verbosity = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  
+
   try {
-    ierr = testArrowFilters();                           CHKERRQ(ierr);
-    ierr = testCone();                                   CHKERRQ(ierr);
+    ierr = testArrowFilters();CHKERRQ(ierr);
+    ierr = testCone();CHKERRQ(ierr);
   }
   catch(const ALE::FilterDef::FilterError& e) {
     std::cout << "FILTER ERROR: " << e.msg() << std::endl;
@@ -76,7 +76,7 @@ PetscErrorCode testCone()
   ac.addArrow(2,1,0);
   ac.addArrow(3,1,0);
   ac.addArrow(4,1,0);
-  
+
   ArrowContainer::ConeSequence cone0 = ac.cone(0);
   cone0.view(std::cout, "ac.cone0(0)");
   ArrowContainer::filter_object_type f1 = ac.newFilter(1);
@@ -87,7 +87,7 @@ PetscErrorCode testCone()
     std::cout << (ArrowContainer::predicate_traits::printable_type)(ci.predicate()) << "> " << std::endl;
     std::cout << ">>> cone0.end(): " << cone0.end().arrow() << " <";
     std::cout << (ArrowContainer::predicate_traits::printable_type)(cone0.end().predicate()) << "> " << std::endl;
-    
+
     bool adv = false;
     if(ci.source() > 0) {
       std::cout << "attempting to mark arrow " << ci.arrow() << " with predicate " << 1+ci.source() << " ... ";
@@ -118,9 +118,9 @@ PetscErrorCode testCone()
   ArrowContainer::filter_object_type f2 = ac.newFilter(2);
   ArrowContainer::ConeSequence cone02 = ac.cone(0, f2);
   cone02.view(std::cout, "ac.cone(0,f2)");
-  
+
   std::cout << "<<<<< testCone:" << std::endl << std::endl;
-  
+
   PetscFunctionReturn(0);
 }/* testCone() */
 
@@ -140,7 +140,7 @@ PetscErrorCode testArrowFilters()
   std::cout << std::endl << ">>>>> testArrowFilters:" << std::endl;
 
   ArrowContainer ac;
-  
+
   // Check the predicate type
   std::cout << "Using predicate type with the following traits:" << std::endl;
   std::cout << "min = "  << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::min;
@@ -158,7 +158,7 @@ PetscErrorCode testArrowFilters()
       ArrowContainer::filter_object_type pf4 = requestFilter(ac,width, "pf4");
     }
     catch(const ALE::FilterDef::FilterError& e) {
-      std::cout << "FILTER ERROR (not unexpected ;)): " << e.msg() << std::endl; 
+      std::cout << "FILTER ERROR (not unexpected ;)): " << e.msg() << std::endl;
     }
   }
   ArrowContainer::filter_object_type pf5 = requestFilter(ac,width, "pf5");
@@ -174,7 +174,7 @@ PetscErrorCode testArrowFilters()
       ArrowContainer::filter_object_type nf4 = requestFilter(ac,width, "nf4");
     }
     catch(const ALE::FilterDef::FilterError& e) {
-      std::cout << "FILTER ERROR (not unexpected ;)): " << e.msg() << std::endl; 
+      std::cout << "FILTER ERROR (not unexpected ;)): " << e.msg() << std::endl;
     }
   }
   ArrowContainer::filter_object_type nf5 = requestFilter(ac,width, "nf5");
@@ -184,7 +184,7 @@ PetscErrorCode testArrowFilters()
   width = (ArrowContainer::predicate_traits::third-1)/2;
   adjustFilter(ac, pf5, width/2, "pf5");
   adjustFilter(ac, nf5, -width/2, "nf5");
-  
+
   std::cout << "<<<<< testArrowFilters:" << std::endl << std::endl;
 
   PetscFunctionReturn(0);
@@ -204,13 +204,13 @@ ArrowContainer::filter_object_type requestFilter(ArrowContainer& ac, ArrowContai
   }
   std::cout << ": " << f << std::endl;
   std::cout << "resulting ArrowContainer state: " << ac << std::endl;
-  
+
   return f;
 }
 
 
 void adjustFilter(ArrowContainer& ac, ArrowContainer::filter_object_type& f, ArrowContainer::predicate_type width, const char *label) {
-  // 
+  //
   bool contract = (width < 0);
   if(contract) {
     std::cout << "Contracting filter ";
@@ -242,7 +242,7 @@ void adjustFilter(ArrowContainer& ac, ArrowContainer::filter_object_type& f, Arr
   }
   std::cout << ": " << f << std::endl;
   std::cout << "resulting ArrowContainer state: " << ac << std::endl;
-  
+
 }
 
 

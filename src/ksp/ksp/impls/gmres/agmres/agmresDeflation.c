@@ -92,9 +92,9 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
  * B - Right matrix
  * ldA - first dimension of A as declared  in the calling program
  * ldB - first dimension of B as declared  in the calling program
- * IsReduced - specifies if the matrices are already in the reduced form, 
+ * IsReduced - specifies if the matrices are already in the reduced form,
  * i.e A is a Hessenberg matrix and B is upper triangular.
- * Sr - on exit, the extracted Schur vectors corresponding 
+ * Sr - on exit, the extracted Schur vectors corresponding
  * the smallest eigenvalues (with complex conjugates)
  * CurNeig - Number of extracted eigenvalues
  */
@@ -190,7 +190,7 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
     }
   }
 
-  /* Broadcast Sr to all other processes to have consistent data; 
+  /* Broadcast Sr to all other processes to have consistent data;
    * FIXME should investigate how to get unique Schur vectors (unique QR factorization, probably the sign of rotations) */
   ierr = MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, ((PetscObject)ksp)->comm);
   /* Update the Shift values for the Newton basis. This is surely necessary when applying the DeflationPrecond */
@@ -203,7 +203,7 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
 }
 
 /*
- * This function form the matrices for the generalized eigenvalue problem, 
+ * This function form the matrices for the generalized eigenvalue problem,
  * it then compute the Schur vectors needed to augment the Newton basis.
  */
 #undef __FUNCT__

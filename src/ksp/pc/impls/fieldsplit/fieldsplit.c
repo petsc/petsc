@@ -371,12 +371,12 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = PetscInfo(pc, "Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         for (ilink = jac->head, i = 0; ilink; ilink = ilink->next, ++i) {
           const char *prefix;
-          ierr = PetscObjectGetOptionsPrefix((PetscObject)(ilink->ksp),&prefix); CHKERRQ(ierr);
-          ierr = PetscObjectSetOptionsPrefix((PetscObject)(dms[i]), prefix);     CHKERRQ(ierr);
+          ierr = PetscObjectGetOptionsPrefix((PetscObject)(ilink->ksp),&prefix);CHKERRQ(ierr);
+          ierr = PetscObjectSetOptionsPrefix((PetscObject)(dms[i]), prefix);CHKERRQ(ierr);
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
-          ierr = PetscObjectIncrementTabLevel((PetscObject)dms[i],(PetscObject)ilink->ksp,0); CHKERRQ(ierr);
-          ierr = DMDestroy(&dms[i]); CHKERRQ(ierr);
+          ierr = PetscObjectIncrementTabLevel((PetscObject)dms[i],(PetscObject)ilink->ksp,0);CHKERRQ(ierr);
+          ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
         }
         ierr = PetscFree(dms);CHKERRQ(ierr);
       }
@@ -689,9 +689,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
 
-      ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);               CHKERRQ(ierr);
+      ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
-      ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);           CHKERRQ(ierr);
+      ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pcschur;
@@ -699,8 +699,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = PCSetType(pcschur,PCNONE);CHKERRQ(ierr);
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
-      ierr  = KSPGetOptionsPrefix(jac->head->next->ksp, &Dprefix); CHKERRQ(ierr);
-      ierr  = KSPSetOptionsPrefix(jac->kspschur,         Dprefix); CHKERRQ(ierr);
+      ierr  = KSPGetOptionsPrefix(jac->head->next->ksp, &Dprefix);CHKERRQ(ierr);
+      ierr  = KSPSetOptionsPrefix(jac->kspschur,         Dprefix);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
@@ -1055,15 +1055,15 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
   if (pc->dm) {
     /* Allow the user to request a decomposition DM by name */
-    ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
-    ierr = PetscOptionsString("-pc_fieldsplit_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
+    ierr = PetscStrncpy(ddm_name, "", 1024);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_fieldsplit_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = DMCreateFieldDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
+      ierr = DMCreateFieldDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
       if (!ddm) {
         SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown field decomposition name %s", ddm_name);
       }
       ierr = PetscInfo(pc,"Using field decomposition DM defined using options database\n");CHKERRQ(ierr);
-      ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
+      ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsBool("-pc_fieldsplit_real_diagonal","Use diagonal blocks of the operator","PCFieldSplitSetRealDiagonal",jac->realdiagonal,&jac->realdiagonal,PETSC_NULL);CHKERRQ(ierr);

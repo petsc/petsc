@@ -18,7 +18,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('CC = '+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.close()
-    
+
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling party; this may take several minutes')

@@ -4,12 +4,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = matis.c 
+SOURCEC  = matis.c
 SOURCEF  =
 SOURCEH  = matis.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-DIRS     = 
+DIRS     =
 LOCDIR   = src/mat/impls/is/
 
 include ${PETSC_DIR}/conf/variables

@@ -15,10 +15,10 @@ namespace PETSc {
     LogStage(const std::string& name, PetscLogStage id) : name(name), id(id) {};
     LogStage(const LogStage& stage) : name(stage.name), id(stage.id) {};
     void push() {
-      PetscErrorCode ierr = PetscLogStagePush(this->id); CHKERRXX(ierr);
+      PetscErrorCode ierr = PetscLogStagePush(this->id);CHKERRXX(ierr);
     };
     void pop() {
-      PetscErrorCode ierr = PetscLogStagePop(); CHKERRXX(ierr);
+      PetscErrorCode ierr = PetscLogStagePop();CHKERRXX(ierr);
     };
     PetscLogEvent getId() {return this->id;};
   };
@@ -32,18 +32,18 @@ namespace PETSc {
     LogEvent(const std::string& name, PetscLogEvent id) : name(name), id(id) {};
     LogEvent(const LogEvent& event) : name(event.name), id(event.id) {};
     void begin(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL) {
-      PetscErrorCode ierr = PetscLogEventBegin(this->id, o1, o2, o3, o4); CHKERRXX(ierr);
+      PetscErrorCode ierr = PetscLogEventBegin(this->id, o1, o2, o3, o4);CHKERRXX(ierr);
     };
     void end(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL) {
-      PetscErrorCode ierr = PetscLogEventEnd(this->id, o1, o2, o3, o4); CHKERRXX(ierr);
+      PetscErrorCode ierr = PetscLogEventEnd(this->id, o1, o2, o3, o4);CHKERRXX(ierr);
     };
     void barrierBegin(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) comm = PETSC_COMM_WORLD;
-      PetscErrorCode ierr = PetscLogEventBarrierBegin(this->id, o1, o2, o3, o4, comm); CHKERRXX(ierr);
+      PetscErrorCode ierr = PetscLogEventBarrierBegin(this->id, o1, o2, o3, o4, comm);CHKERRXX(ierr);
     };
     void barrierEnd(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) comm = PETSC_COMM_WORLD;
-      PetscErrorCode ierr = PetscLogEventBarrierEnd(this->id, o1, o2, o3, o4, comm); CHKERRXX(ierr);
+      PetscErrorCode ierr = PetscLogEventBarrierEnd(this->id, o1, o2, o3, o4, comm);CHKERRXX(ierr);
     };
     PetscLogEvent getId() {return this->id;};
     PetscLogDouble time() {

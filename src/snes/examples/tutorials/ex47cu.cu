@@ -10,10 +10,10 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscBool  useCUSP = PETSC_FALSE;
 
-int main(int argc,char **argv) 
+int main(int argc,char **argv)
 {
-  SNES           snes; 
-  Vec            x,f;  
+  SNES           snes;
+  Vec            x,f;
   Mat            J;
   DM             da;
   PetscErrorCode ierr;
@@ -61,16 +61,16 @@ struct ApplyStencil
 		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
 		} else if (thrust::get<4>(t) == thrust::get<5>(t)-1) {
 		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
-		} 
+		}
 		
 	}
 };
 
-PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx) 
+PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart;
   PetscScalar    *xx,*ff,hx;
-  DM             da = (DM) ctx; 
+  DM             da = (DM) ctx;
   Vec            xlocal;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -123,10 +123,10 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);
     ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    
+
     for (i=xs; i<xs+xm; i++) {
-      if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
-      else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
+      if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx;
+      else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]);
     }
     ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
@@ -139,9 +139,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 }
 PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  DM             da = (DM) ctx; 
-  PetscInt       i,Mx,xm,xs; 
-  PetscScalar    hx,*xx; 
+  DM             da = (DM) ctx;
+  PetscInt       i,Mx,xm,xs;
+  PetscScalar    hx,*xx;
   Vec            xlocal;
   PetscErrorCode ierr;
 
@@ -153,7 +153,7 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) { 
+    if (i == 0 || i == Mx-1) {
       ierr = MatSetValue(*J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
     } else {
       ierr = MatSetValue(*J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);

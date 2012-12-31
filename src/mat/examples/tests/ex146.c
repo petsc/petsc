@@ -162,9 +162,9 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm);CHKERRQ(ierr);
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);
-    fftw_free(in1); ierr = VecDestroy(&fin) ;  CHKERRQ(ierr);
-    fftw_free(out); ierr = VecDestroy(&fout);  CHKERRQ(ierr);
-    fftw_free(in2); ierr = VecDestroy(&fout1); CHKERRQ(ierr);
+    fftw_free(in1); ierr = VecDestroy(&fin) ;CHKERRQ(ierr);
+    fftw_free(out); ierr = VecDestroy(&fout);CHKERRQ(ierr);
+    fftw_free(in2); ierr = VecDestroy(&fout1);CHKERRQ(ierr);
 
     ierr = PetscFinalize();
     return 0;

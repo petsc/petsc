@@ -235,7 +235,7 @@ PetscErrorCode  MatCoarsenDestroy( MatCoarsen *agg )
   }
 
   if ( (*agg)->agg_lists ) {
-    ierr = PetscCDDestroy( (*agg)->agg_lists );  CHKERRQ(ierr);
+    ierr = PetscCDDestroy( (*agg)->agg_lists );CHKERRQ(ierr);
   }
 
   ierr = PetscHeaderDestroy(agg);CHKERRQ(ierr);

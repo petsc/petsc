@@ -19,17 +19,17 @@ int main(int argc, char **argv)
   DM                  daf,dac1,dac2,dac3,dac4,daf1,daf2,daf3,daf4;
   Vec                 scaling_p1,scaling_p2,scaling_p3,scaling_p4;
   Mat                 interp_p1,interp_p2,interp_p3,interp_p4,interp_m1,interp_m2,interp_m3,interp_m4;
-  
+
   PetscInitialize(&argc,&argv, (char*)0, help);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,1024,1024,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&daf);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daf,&x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
 
-  ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1); CHKERRQ(ierr);
+  ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1);CHKERRQ(ierr);
   ierr = DMCoarsen(dac1,PETSC_COMM_WORLD,&dac2);CHKERRQ(ierr);
   ierr = DMCoarsen(dac2,PETSC_COMM_WORLD,&dac3);CHKERRQ(ierr);
   ierr = DMCoarsen(dac3,PETSC_COMM_WORLD,&dac4);CHKERRQ(ierr);
-  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);  CHKERRQ(ierr);
+  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);CHKERRQ(ierr);
   ierr = DMRefine(daf1,PETSC_COMM_WORLD,&daf2);CHKERRQ(ierr);
   ierr = DMRefine(daf2,PETSC_COMM_WORLD,&daf3);CHKERRQ(ierr);
   ierr = DMRefine(daf3,PETSC_COMM_WORLD,&daf4);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   ierr = MatRestrict(interp_m2,ym1,ym2);
   ierr = MatRestrict(interp_m3,ym2,ym3);
   ierr = MatRestrict(interp_m4,ym3,ym4);
-  
+
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi1",FILE_MODE_WRITE,&viewer_outp1);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi2",FILE_MODE_WRITE,&viewer_outp2);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi3",FILE_MODE_WRITE,&viewer_outp3);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   ierr = VecView(ym2,viewer_outm2);CHKERRQ(ierr);
   ierr = VecView(ym3,viewer_outm3);CHKERRQ(ierr);
   ierr = VecView(ym4,viewer_outm4);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerDestroy(&viewer_in);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer_outp1);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer_outp2);CHKERRQ(ierr);

@@ -1,15 +1,15 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = dmts.c dmdats.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
-DIRS     = 
-EDIRS    = 
+DIRS     =
+EDIRS    =
 LOCDIR   = src/ts/utils/
 
 include ${PETSC_DIR}/conf/variables

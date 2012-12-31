@@ -1,5 +1,5 @@
 
-/* 
+/*
         Provides an interface to the LUSOL package of ....
 
 */
@@ -173,7 +173,7 @@ typedef struct  {
  */
 
 #define Factorization_Tolerance       1e-1
-#define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0) 
+#define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0)
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
 #undef __FUNCT__
@@ -204,9 +204,9 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__  "MatSolve_LUSOL"
-PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x) 
+PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 {
   Mat_LUSOL      *lusol=(Mat_LUSOL*)A->spptr;
   double         *bb,*xx;
@@ -227,18 +227,18 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
     }
 
   LU6SOL(&mode, &m, &n, lusol->mnsv, xx, &nnz,
-         lusol->luparm, lusol->parmlu, lusol->data, 
-         lusol->indc, lusol->indr, lusol->ip, lusol->iq, 
+         lusol->luparm, lusol->parmlu, lusol->data,
+         lusol->indc, lusol->indr, lusol->ip, lusol->iq,
          lusol->lenc, lusol->lenr, lusol->locc, lusol->locr, &status);
 
-  if (status) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status); 
+  if (status) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
 
   ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_LUSOL"
 PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 {
@@ -307,13 +307,13 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
       /* Do the factorization.                                           */
       /*******************************************************************/
 
-      LU1FAC(&m, &n, &nz, &nnz, 
+      LU1FAC(&m, &n, &nz, &nnz,
              lusol->luparm, lusol->parmlu, lusol->data,
              lusol->indc, lusol->indr, lusol->ip, lusol->iq,
              lusol->lenc, lusol->lenr, lusol->locc, lusol->locr,
              lusol->iploc, lusol->iqloc, lusol->ipinv,
              lusol->iqinv, lusol->mnsw, &status);
-	  
+	
       switch(status)
         {
         case 0:		/* factored */
@@ -324,14 +324,14 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 
         case 1:
         case -1:		/* singular */
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Singular matrix"); 
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Singular matrix");
 
         case 3:
         case 4:		/* error conditions */
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix error"); 
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix error");
 
         default:		/* unknown condition */
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix unknown return code"); 
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix unknown return code");
         }
 
       factorizations++;
@@ -342,9 +342,9 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_LUSOL"
-PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactorInfo *info) 
+PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactorInfo *info)
 {
   /************************************************************************/
   /* Input                                                                */
@@ -360,7 +360,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   int            i, m, n, nz, nnz;
 
   PetscFunctionBegin;
-	  
+	
   /************************************************************************/
   /* Check the arguments.                                                 */
   /************************************************************************/
@@ -404,7 +404,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
 
   lusol->elbowroom = PetscMax(lusol->elbowroom, info->fill);
   nnz = PetscMax((int)(lusol->elbowroom*nz), 5*n);
-     
+
   lusol->n = n;
   lusol->nz = nz;
   lusol->nnz = nnz;
@@ -429,8 +429,8 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN 
-#undef __FUNCT__  
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_lusol"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
 {
@@ -440,9 +440,9 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPacka
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_lusol"
-PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F) 
+PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_LUSOL      *lusol;
@@ -467,7 +467,7 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 }
 
 /*MC
-  MATSOLVERLUSOL - "lusol" - Provides direct solvers (LU) for sequential matrices 
+  MATSOLVERLUSOL - "lusol" - Provides direct solvers (LU) for sequential matrices
                          via the external package LUSOL.
 
   If LUSOL is installed (see the manual for

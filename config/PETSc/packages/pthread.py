@@ -8,8 +8,8 @@ class Configure(PETSc.package.NewPackage):
     self.includes          = ['pthread.h']
     self.liblist           = [['libpthread.a']]
     self.complex           = 1   # 0 means cannot use complex
-    self.lookforbydefault  = 1 
-    self.double            = 0   # 1 means requires double precision 
+    self.lookforbydefault  = 1
+    self.double            = 0   # 1 means requires double precision
     self.requires32bitint  = 0;  # 1 means that the package will not work with 64 bit integers
     self.worksonWindows    = 1  # 1 means that package can be used on Microsof Windows
     return
@@ -33,5 +33,5 @@ class Configure(PETSc.package.NewPackage):
       self.addDefine('HAVE_SCHED_CPU_SET_T','1')
     if self.checkPreprocess('#include <sys/sysctl.h>'):
       self.addDefine('HAVE_SYS_SYSCTL_H','1')
-    
+
 # sets PETSC_HAVE_PTHREAD but does NOT set PETSC_HAVE_PTHREADCLASSES

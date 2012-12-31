@@ -47,7 +47,7 @@ class Configure(config.base.Configure):
     self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
     self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
-    self.CHUD          = framework.require('PETSc.utilities.CHUD',      self)        
+    self.CHUD          = framework.require('PETSc.utilities.CHUD',      self)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
@@ -152,22 +152,22 @@ class Configure(config.base.Configure):
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
-#-----------------------------------------------------------------------------------------------------    
+#-----------------------------------------------------------------------------------------------------
 
     # Sometimes we need C compiler, even if built with C++
     self.setCompilers.pushLanguage('C')
-    self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS+self.CHUD.CPPFLAGS)
-    
+
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
     self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
-    # .o or .obj 
+    # .o or .obj
     self.addMakeMacro('CC_SUFFIX','o')
 
     # executable linker values
@@ -184,11 +184,11 @@ class Configure(config.base.Configure):
       # need FPPFLAGS in config/setCompilers
       self.addDefine('HAVE_FORTRAN','1')
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
-    
+
       # compiler values
       self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
-      # .o or .obj 
+      # .o or .obj
       self.addMakeMacro('FC_SUFFIX','o')
 
       # executable linker values
@@ -234,7 +234,7 @@ class Configure(config.base.Configure):
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
       self.addDefine('SLSUFFIX','"'+self.setCompilers.sharedLibraryExt+'"')
-      
+
     self.addMakeMacro('SL_LINKER_LIBS','${PETSC_EXTERNAL_LIB_BASIC}')
 
 #-----------------------------------------------------------------------------------------------------
@@ -269,16 +269,16 @@ class Configure(config.base.Configure):
     libs = []
     for i in self.framework.packages:
       if i.useddirectly:
-        self.addDefine('HAVE_'+i.PACKAGE, 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
+        self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       libs.extend(i.lib)
-      self.addMakeMacro(i.PACKAGE+'_LIB', self.libraries.toStringNoDupes(i.lib))
+      self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
         includes.extend(i.include)
-        self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
+        self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     if self.framework.argDB['with-single-library']:
       self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
@@ -294,7 +294,7 @@ class Configure(config.base.Configure):
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes,includes))
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
-    
+
     self.addMakeMacro('DESTDIR',self.installdir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
 
@@ -328,7 +328,7 @@ class Configure(config.base.Configure):
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${PETSC_WITH_EXTERNAL_LIB}')
-      
+
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
 
@@ -446,7 +446,7 @@ class Configure(config.base.Configure):
         cmakeset(fd,'PETSC_HAVE_MPIUNI')
       for pkg in self.framework.packages:
         if pkg.useddirectly:
-          cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE)
+          cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE.replace('-','_'))
         for pair in pkg.defines.items():
           if pair[0].startswith('HAVE_') and pair[1]:
             cmakeset(fd, self.framework.getFullDefineName(pkg, pair[0]), pair[1])
@@ -544,7 +544,7 @@ class Configure(config.base.Configure):
     if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-ios']:
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
-    self.pushLanguage(self.languages.clanguage)      
+    self.pushLanguage(self.languages.clanguage)
     if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,_MM_HINT_NTA);\n'):
       # The Intel Intrinsics manual [1] specifies the prototype
       #
@@ -614,7 +614,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-ios']:
       self.addDefine('UNUSED', ' ')
       return
-    self.pushLanguage(self.languages.clanguage)      
+    self.pushLanguage(self.languages.clanguage)
     if self.checkLink('__attribute((unused)) static int myfunc(__attribute((unused)) void *name){ return 1;}', 'int i = 0;\nint j = myfunc(&i);\ntypedef void* atype;\n__attribute((unused))  atype a;\n'):
       self.addDefine('UNUSED', '__attribute((unused))')
     else:
@@ -671,7 +671,7 @@ class Configure(config.base.Configure):
     else:
       raise RuntimeError('Could not find any unsigned integer type matching void*')
     self.popLanguage()
-      
+
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''
     if self.languages.clanguage == 'C':
@@ -893,7 +893,7 @@ class Configure(config.base.Configure):
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')
     self.addMakeRule('remoteclean','')
-    
+
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()

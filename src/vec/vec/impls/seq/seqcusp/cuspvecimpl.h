@@ -83,7 +83,7 @@ extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndic
 #define WaitForGPU() PetscCUSPSynchronize ? cudaThreadSynchronize() : 0
 
 struct Vec_CUSP {
-  CUSPARRAY*       GPUarray;  /* this always holds the GPU data */  
+  CUSPARRAY*       GPUarray;  /* this always holds the GPU data */
 #ifdef PETSC_HAVE_TXPETSCGPU
   GPU_Vector<PetscInt, PetscScalar> * GPUvector; /* this always holds the GPU data */
 #endif

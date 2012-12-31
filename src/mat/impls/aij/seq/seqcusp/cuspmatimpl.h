@@ -1,4 +1,4 @@
-#ifndef __CUSPMATIMPL 
+#ifndef __CUSPMATIMPL
 #define __CUSPMATIMPL
 
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>

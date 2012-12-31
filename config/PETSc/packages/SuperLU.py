@@ -40,8 +40,8 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
-    g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
-    g.write('LOADOPTS     = \n') 
+    g.write('LOADER       = '+self.setCompilers.getLinker()+'\n')
+    g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
 
     # set blas name mangling
@@ -70,15 +70,15 @@ class Configure(PETSc.package.NewPackage):
   def consistencyChecks(self):
     PETSc.package.NewPackage.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package]:
-      if not self.blasLapack.checkForRoutine('slamch'): 
+      if not self.blasLapack.checkForRoutine('slamch'):
         raise RuntimeError('SuperLU requires the LAPACK routine slamch()')
       self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
 
-      if not self.blasLapack.checkForRoutine('dlamch'): 
+      if not self.blasLapack.checkForRoutine('dlamch'):
         raise RuntimeError('SuperLU requires the LAPACK routine dlamch()')
       self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
 
-      if not self.blasLapack.checkForRoutine('xerbla'): 
+      if not self.blasLapack.checkForRoutine('xerbla'):
         raise RuntimeError('SuperLU requires the BLAS routine xerbla()')
       self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
     return

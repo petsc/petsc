@@ -1,19 +1,18 @@
 
 #requirespackage 'PETSC_HAVE_X'
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = ${X_INCLUDE} 
+CPPFLAGS  = ${X_INCLUDE}
 SOURCEC   = xinit.c   wmap.c xcolor.c xops.c text.c tone.c drawopenx.c
 SOURCEF   =
 SOURCEH   = ximpl.h
 MANSEC    = Draw
 LIBBASE   = libpetscsys
-DIRS      = 
+DIRS      =
 LOCDIR   = src/sys/classes/draw/impls/x/
-NOADIC    = true
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

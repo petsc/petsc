@@ -3,7 +3,7 @@ import time
 import sys
 
 class Viz:
-    '''A crude Python vizualization engine.  If your mayavi works, 
+    '''A crude Python vizualization engine.  If your mayavi works,
        uncomment the corresponding lines in the viewRho method to
        use that for vizualization instead.'''
     @staticmethod
@@ -17,7 +17,7 @@ class Viz:
         da       = v.compose("mesh",f.query("mesh"))
         rho      = v.compose("rho", f.query("rho"))
         pass
- 
+
     @staticmethod
     def viewRho(v):
         import numpy

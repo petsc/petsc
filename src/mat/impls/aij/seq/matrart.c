@@ -54,7 +54,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
 
   /* Set initial free space to be nnz(A) scaled by aspect ratio of Pt. */
   /* This should be reasonable if sparsity of PAPt is similar to that of A. */
-  ierr          = PetscFreeSpaceGet((ai[am]/pn)*pm,&free_space);
+  ierr          = PetscFreeSpaceGet((ai[am]/pn)*pm,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine fill for each row of C: */
@@ -377,8 +377,8 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
 #if defined(PETSC_USE_INFO)
   {
   PetscReal density= (PetscReal)(c->nz)/(RARt_dense->rmap->n*RARt_dense->cmap->n);
-  ierr = PetscInfo6(*C,"RARt_den %D %D; Rt_den %D %D, (RARt->nz %D)/(m*ncolors)=%g\n",RARt_dense->rmap->n,RARt_dense->cmap->n,Rt_dense->rmap->n,Rt_dense->cmap->n,c->nz,density);
-  ierr = PetscInfo5(*C,"Sym = GetColor %g + MColorCreate %g + MDenCreate %g + other %g = %g\n",GColor,MCCreate,MDenCreate,etime,GColor+MCCreate+MDenCreate+etime);
+  ierr = PetscInfo6(*C,"RARt_den %D %D; Rt_den %D %D, (RARt->nz %D)/(m*ncolors)=%g\n",RARt_dense->rmap->n,RARt_dense->cmap->n,Rt_dense->rmap->n,Rt_dense->cmap->n,c->nz,density);CHKERRQ(ierr);
+  ierr = PetscInfo5(*C,"Sym = GetColor %g + MColorCreate %g + MDenCreate %g + other %g = %g\n",GColor,MCCreate,MDenCreate,etime,GColor+MCCreate+MDenCreate+etime);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);
@@ -524,7 +524,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   app2 += tf - t0;
 
 #if defined(PETSC_USE_INFO)
-  ierr = PetscInfo4(C,"Num = ColorApp %g + %g + Mult_sp_den %g  = %g\n",app1,app2,Mult_sp_den,app1+app2+Mult_sp_den);
+  ierr = PetscInfo4(C,"Num = ColorApp %g + %g + Mult_sp_den %g  = %g\n",app1,app2,Mult_sp_den,app1+app2+Mult_sp_den);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

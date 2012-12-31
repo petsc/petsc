@@ -109,7 +109,7 @@ static PetscErrorCode RoberCreate(Problem p)
 }
 
 /*
-     Stiff scalar valued problem 
+     Stiff scalar valued problem
 */
 
 typedef struct {

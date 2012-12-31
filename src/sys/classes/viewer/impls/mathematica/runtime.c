@@ -20,7 +20,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   /* Link host */
   argv[2] = "-linkhost";
   if (!linkhost) {
-    ierr = PetscGetHostName(hostname, 255);                                                               CHKERRQ(ierr);
+    ierr = PetscGetHostName(hostname, 255);CHKERRQ(ierr);
     argv[3] = hostname;
   } else {
     argv[3] = (char *) linkhost;
@@ -65,7 +65,7 @@ static int processPacket(MLINK link, int indent) {
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = printIndent(indent);                                                                             CHKERRQ(ierr);
+  ierr = printIndent(indent);CHKERRQ(ierr);
   switch(tokenType) {
   case MLTKFUNC:
     {
@@ -83,7 +83,7 @@ static int processPacket(MLINK link, int indent) {
       /* Process arguments */
       printf("  Arguments:\n");
       for (arg = 0; arg < numArguments; arg++) {
-        ierr = processPacket(link, indent+4);                                                             CHKERRQ(ierr);
+        ierr = processPacket(link, indent+4);CHKERRQ(ierr);
       }
     }
     break;
@@ -244,10 +244,10 @@ int main(int argc, char *argv[]) {
   MLINK link;
   int   ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);                     CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT);   CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = processPackets(link);                                                      CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = cleanupConnection(env, link);                                              CHKERRABORT(PETSC_COMM_WORLD, ierr);
-  ierr = PetscFinalize();                                                           CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = setupConnection(&env, &link, "192.168.119.1", MATHEMATICA_LINK_CONNECT);CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = processPackets(link);CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = cleanupConnection(env, link);CHKERRABORT(PETSC_COMM_WORLD, ierr);
+  ierr = PetscFinalize();CHKERRABORT(PETSC_COMM_WORLD, ierr);
   return(0);
 }

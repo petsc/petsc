@@ -366,7 +366,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     ierr = DMGlobalToLocalEnd(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(c->velocityDA, velocityLocal,    &velocityArray);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
   }
   ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n - 1/2}\n");CHKERRQ(ierr);
@@ -446,7 +446,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = CharacteristicGetValuesBegin(c);CHKERRQ(ierr);
   ierr = CharacteristicGetValuesEnd(c);CHKERRQ(ierr);
   if (c->velocityInterpLocal) {
-    ierr = DMDAVecRestoreArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(c->velocityDA, velocityLocal,    &velocityArray);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);

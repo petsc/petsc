@@ -103,7 +103,7 @@ struct _MatOps {
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
-  PetscErrorCode (*setvaluesadic)(Mat,void*);
+  PetscErrorCode (*dummy3)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
@@ -133,11 +133,11 @@ struct _MatOps {
   PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*dummy98)(Mat); 
+  PetscErrorCode (*dummy98)(Mat);
   /*99*/
-  PetscErrorCode (*dummy99)(Mat);            
-  PetscErrorCode (*dummy100)(Mat); 
-  PetscErrorCode (*dummy101)(Mat);            
+  PetscErrorCode (*dummy99)(Mat);
+  PetscErrorCode (*dummy100)(Mat);
+  PetscErrorCode (*dummy101)(Mat);
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
   PetscErrorCode (*dummy5)(void);
   /*104*/

@@ -27,7 +27,7 @@ int main(int argc,char **argv) {
   ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
- 
+
   /* Create B (dense) */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,4,4,4,4);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv) {
   ierr = PetscPrintf(PETSC_COMM_SELF, "B: %d,%d\n",m,n);
 
   /* Register the multiplication routine. */
-  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL,(PetscVoidFunction)MatMatMult_SeqAIJ_SeqDense,"MatMatMult",2,MATSEQAIJ,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL,(PetscVoidFunction)MatMatMult_SeqAIJ_SeqDense,"MatMatMult",2,MATSEQAIJ,MATSEQDENSE);CHKERRQ(ierr);
 
   /* Remove this routine from B's FList to prevent double dispatch from that FList: do this by passing in a null url and function pointer together with the type- (and language-) specific op name. */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqaij_seqdense_C", PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
@@ -52,8 +52,8 @@ int main(int argc,char **argv) {
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
- 
- 
+
+
   /* Free space */
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

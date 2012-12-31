@@ -157,7 +157,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
   PetscBool wait=PETSC_TRUE;
   PetscInt  i;
   while(wait) {
-    for (i=0;i < redctx->tcomm->nworkThreads;i++) { 
+    for (i=0;i < redctx->tcomm->nworkThreads;i++) {
       if (PetscReadOnce(int,redctx->thread_status[i]) != THREADCOMM_THREAD_POSTED_LOCALRED) {
 	wait = PETSC_TRUE;
 	break;
@@ -279,7 +279,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
       maxloc[0] = ((PetscReal*)redctx->local_red)[0];
       maxloc[1] = ((PetscReal*)redctx->local_red)[redctx->tcomm->nworkThreads];
       for (i=1; i < redctx->tcomm->nworkThreads;i++) {
-        if (((PetscReal*)redctx->local_red)[i] > maxloc[0]) { 
+        if (((PetscReal*)redctx->local_red)[i] > maxloc[0]) {
           maxloc[0] = ((PetscReal*)redctx->local_red)[i];
           maxloc[1] = ((PetscReal*)redctx->local_red)[redctx->tcomm->nworkThreads+i];
         }
@@ -293,7 +293,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
       maxloc[0] = ((PetscScalar*)redctx->local_red)[0];
       maxloc[1] = ((PetscScalar*)redctx->local_red)[redctx->tcomm->nworkThreads];
       for (i=1; i < redctx->tcomm->nworkThreads;i++) {
-        if (PetscRealPart(((PetscScalar*)redctx->local_red)[i]) > PetscRealPart(maxloc[0])) { 
+        if (PetscRealPart(((PetscScalar*)redctx->local_red)[i]) > PetscRealPart(maxloc[0])) {
           maxloc[0] = ((PetscScalar*)redctx->local_red)[i];
           maxloc[1] = ((PetscScalar*)redctx->local_red)[redctx->tcomm->nworkThreads+i];
         }
@@ -306,7 +306,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
       maxloc[0] = ((PetscInt*)redctx->local_red)[0];
       maxloc[1] = ((PetscInt*)redctx->local_red)[redctx->tcomm->nworkThreads];
       for (i=1; i < redctx->tcomm->nworkThreads;i++) {
-        if (((PetscInt*)redctx->local_red)[i] > maxloc[0]) { 
+        if (((PetscInt*)redctx->local_red)[i] > maxloc[0]) {
           maxloc[0] = ((PetscInt*)redctx->local_red)[i];
           maxloc[1] = ((PetscInt*)redctx->local_red)[redctx->tcomm->nworkThreads+i];
         }
@@ -321,7 +321,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
       minloc[0] = ((PetscReal*)redctx->local_red)[0];
       minloc[1] = ((PetscReal*)redctx->local_red)[redctx->tcomm->nworkThreads];
       for (i=1; i < redctx->tcomm->nworkThreads;i++) {
-        if (((PetscReal*)redctx->local_red)[i] < minloc[0]) { 
+        if (((PetscReal*)redctx->local_red)[i] < minloc[0]) {
           minloc[0] = ((PetscReal*)redctx->local_red)[i];
           minloc[1] = ((PetscReal*)redctx->local_red)[redctx->tcomm->nworkThreads+i];
         }
@@ -335,7 +335,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
       minloc[0] = ((PetscScalar*)redctx->local_red)[0];
       minloc[1] = ((PetscScalar*)redctx->local_red)[redctx->tcomm->nworkThreads];
       for (i=1; i < redctx->tcomm->nworkThreads;i++) {
-        if (PetscRealPart(((PetscScalar*)redctx->local_red)[i]) < PetscRealPart(minloc[0])) { 
+        if (PetscRealPart(((PetscScalar*)redctx->local_red)[i]) < PetscRealPart(minloc[0])) {
           minloc[0] = ((PetscScalar*)redctx->local_red)[i];
           minloc[1] = ((PetscScalar*)redctx->local_red)[redctx->tcomm->nworkThreads+i];
         }
@@ -348,7 +348,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
       minloc[0] = ((PetscInt*)redctx->local_red)[0];
       minloc[1] = ((PetscInt*)redctx->local_red)[redctx->tcomm->nworkThreads];
       for (i=1; i < redctx->tcomm->nworkThreads;i++) {
-        if (((PetscInt*)redctx->local_red)[i] < minloc[0]) { 
+        if (((PetscInt*)redctx->local_red)[i] < minloc[0]) {
           minloc[0] = ((PetscInt*)redctx->local_red)[i];
           minloc[1] = ((PetscInt*)redctx->local_red)[redctx->tcomm->nworkThreads+i];
         }
@@ -424,7 +424,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadCommReduc
 
   /* Wait till the leader performs the reduction so that the other threads
      can also see the reduction result */
-  while(PetscReadOnce(int,redctx->red_status) != THREADCOMM_REDUCTION_COMPLETE) 
+  while(PetscReadOnce(int,redctx->red_status) != THREADCOMM_REDUCTION_COMPLETE)
     ;
   redctx->thread_status[trank] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
   return 0;

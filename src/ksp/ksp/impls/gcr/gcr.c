@@ -44,10 +44,10 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
       ierr = (*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx);CHKERRQ(ierr);
     }
 		
-    ierr = PCApply( pc, r, s ); CHKERRQ(ierr); /* s = B^{-1} r */
-    ierr = MatMult( A, s, v ); CHKERRQ(ierr);  /* v = A s */
+    ierr = PCApply( pc, r, s );CHKERRQ(ierr); /* s = B^{-1} r */
+    ierr = MatMult( A, s, v );CHKERRQ(ierr);  /* v = A s */
 		
-    ierr = VecMDot( v,k, ctx->VV, ctx->val ); CHKERRQ(ierr);
+    ierr = VecMDot( v,k, ctx->VV, ctx->val );CHKERRQ(ierr);
     for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
     ierr = VecMAXPY(v,k,ctx->val,ctx->VV);CHKERRQ(ierr); /* v = v - sum_{i=0}^{k-1} alpha_i v_i */
     ierr = VecMAXPY(s,k,ctx->val,ctx->SS);CHKERRQ(ierr); /* s = s - sum_{i=0}^{k-1} alpha_i s_i */
@@ -55,12 +55,12 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     ierr = VecDotNorm2(r,v,&r_dot_v,&nrm);CHKERRQ(ierr);
     nrm     = PetscSqrtScalar(nrm);
     r_dot_v = r_dot_v/nrm;
-    ierr = VecScale( v, 1.0/nrm ); CHKERRQ(ierr);
-    ierr = VecScale( s, 1.0/nrm ); CHKERRQ(ierr);
-    ierr = VecAXPY( x,  r_dot_v, s ); CHKERRQ(ierr);
-    ierr = VecAXPY( r, -r_dot_v, v ); CHKERRQ(ierr);
+    ierr = VecScale( v, 1.0/nrm );CHKERRQ(ierr);
+    ierr = VecScale( s, 1.0/nrm );CHKERRQ(ierr);
+    ierr = VecAXPY( x,  r_dot_v, s );CHKERRQ(ierr);
+    ierr = VecAXPY( r, -r_dot_v, v );CHKERRQ(ierr);
     if (ksp->its > ksp->chknorm  ) {
-      ierr = VecNorm( r, NORM_2, &norm_r ); CHKERRQ(ierr);
+      ierr = VecNorm( r, NORM_2, &norm_r );CHKERRQ(ierr);
     }		
     /* update the local counter and the global counter */
     ksp->its++;

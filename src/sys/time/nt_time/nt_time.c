@@ -5,21 +5,21 @@
 
 EXTERN_C_BEGIN
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "nt_time"
 PetscLogDouble  nt_time(void)
 {
   static PetscBool      flag = PETSC_TRUE;
   PetscErrorCode ierr;
 
-  static LARGE_INTEGER  StartTime,PerfFreq,CurTime; 
+  static LARGE_INTEGER  StartTime,PerfFreq,CurTime;
   static PetscLogDouble SecInTick=0.0;
-  
+
   DWORD                 dwStartHigh,dwCurHigh;
   PetscLogDouble        dTime,dHigh;
   PetscLogDouble        ptime;
-  
-  
+
+
   PetscFunctionBegin;
   if (flag) {
     ierr = QueryPerformanceCounter(&StartTime);CHKERRQ(!ierr);
@@ -33,7 +33,7 @@ PetscLogDouble  nt_time(void)
 #endif
     flag = PETSC_FALSE;
   }		
-  
+
   ierr        = QueryPerformanceCounter(&CurTime);CHKERRQ(!ierr);
 #if defined(PETSC_HAVE_LARGE_INTEGER_U)
   dwCurHigh   = (DWORD)CurTime.u.HighPart;

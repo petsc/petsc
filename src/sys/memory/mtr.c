@@ -226,11 +226,11 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
     if (!PetscLogMalloc) {
       PetscLogMallocLength    = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
       if (!PetscLogMallocLength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
-      PetscLogMallocDirectory = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocDirectory = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
       if (!PetscLogMallocDirectory) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
-      PetscLogMallocFile      = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocFile      = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
       if (!PetscLogMallocFile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
-      PetscLogMallocFunction  = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
+      PetscLogMallocFunction  = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
       if (!PetscLogMallocFunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;

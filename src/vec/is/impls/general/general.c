@@ -495,7 +495,7 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
     sub->idx       = (PetscInt*)idx;
     sub->allocated = PETSC_FALSE;
   }
-  ierr = ISCreateGeneral_Private(is); CHKERRQ(ierr);
+  ierr = ISCreateGeneral_Private(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dense.c 
+SOURCEC  = dense.c
 SOURCEF  =
 SOURCEH  = dense.h
 LIBBASE  = libpetscmat

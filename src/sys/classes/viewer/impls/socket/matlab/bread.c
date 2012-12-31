@@ -5,7 +5,7 @@
 
 
 /*
-   TAKEN from src/sys/fileio/sysio.c The swap byte routines are 
+   TAKEN from src/sys/fileio/sysio.c The swap byte routines are
   included here because the MATLAB programs that use this do NOT
   link to the PETSc libraries.
 */
@@ -18,7 +18,7 @@
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SYByteSwapInt"
 void SYByteSwapInt(int *buff,int n)
 {
@@ -35,7 +35,7 @@ void SYByteSwapInt(int *buff,int n)
 /*
   SYByteSwapShort - Swap bytes in a short
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SYByteSwapShort"
 void SYByteSwapShort(short *buff,int n)
 {
@@ -54,7 +54,7 @@ void SYByteSwapShort(short *buff,int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SYByteSwapScalar"
 void SYByteSwapScalar(PetscScalar *buff,int n)
 {
@@ -76,14 +76,14 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return PETSC_ERR_SYS;}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscBinaryRead"
 /*
     PetscBinaryRead - Reads from a socket, called from MATLAB
 
   Input Parameters:
 .   fd - the file
-.   n  - the number of items to read 
+.   n  - the number of items to read
 .   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
   Output Parameters:
@@ -97,8 +97,8 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   int  maxblock,wsize,err;
   char *pp = (char*)p;
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  int  ntmp = n; 
-  void *ptmp = p; 
+  int  ntmp = n;
+  void *ptmp = p;
 #endif
 
   maxblock = 65536;
@@ -107,7 +107,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_SHORT)  n *= sizeof(short);
   else if (type == PETSC_CHAR)   n *= sizeof(char);
   else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
-  
+
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
@@ -131,14 +131,14 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscBinaryWrite"
 /*
     PetscBinaryWrite - Writes to a socket, called from MATLAB
 
   Input Parameters:
 .   fd - the file
-.   n  - the number of items to read 
+.   n  - the number of items to read
 .   p - the data
 .   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
@@ -151,8 +151,8 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBoo
   int  maxblock,wsize,err;
   char *pp = (char*)p;
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  int  ntmp = n; 
-  void *ptmp = p; 
+  int  ntmp = n;
+  void *ptmp = p;
 #endif
 
   maxblock = 65536;

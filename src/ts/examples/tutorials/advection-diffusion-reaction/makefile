@@ -25,11 +25,11 @@ ex1f: ex1f.o  chkopts
 
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_TS_LIB}
-	${RM} ex2.o 
+	${RM} ex2.o
 
 ex2f: ex2f.o  chkopts
 	-${FLINKER} -o ex2f ex2f.o   ${PETSC_TS_LIB}
-	${RM} ex2f.o 
+	${RM} ex2f.o
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
@@ -108,7 +108,7 @@ ex20: ex20.o  chkopts
 
 ex21: ex21.o  chkopts
 	-${CLINKER} -o ex21 ex21.o  ${PETSC_TS_LIB}
-	${RM} ex21.o 
+	${RM} ex21.o
 
 ex22: ex22.o chkopts
 	-${CLINKER} -o ex22 ex22.o ${PETSC_TS_LIB}
@@ -369,10 +369,10 @@ runex26aspin:
 
 
 TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm \
-                            ex4.PETSc ex4.rm ex5.PETSc ex5.rm 
-TESTEXAMPLES_C_X	  = 
-TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_C_X_MPIUNI   = 
-TESTEXAMPLES_13		  = 
+                            ex4.PETSc ex4.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_C_X	  =
+TESTEXAMPLES_FORTRAN	  =
+TESTEXAMPLES_C_X_MPIUNI   =
+TESTEXAMPLES_13		  =
 
 include ${PETSC_DIR}/conf/test

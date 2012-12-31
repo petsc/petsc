@@ -8,7 +8,7 @@ class TestIIIA:
     @staticmethod
     def configure(shell):
         print "Configuring TestIIIA"
-        
+
     @staticmethod
     def call(shell, message):
         print "TestIIIA called with message '" + str(message) + "'"

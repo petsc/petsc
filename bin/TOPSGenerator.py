@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-   Generates the code needed to connect an application code 
+   Generates the code needed to connect an application code
 to the TOPS Solver Components
 """
 
@@ -25,7 +25,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
         lin = buttonbox(message="Type of algebraic problem?", title=title, choices = ["linear", "nonlinear"],fontSize = 20)
         if lin == "nonlinear":
           jac = buttonbox(message="Will you provide analytic Jacobian?", title=title, choices = ["No", "Yes"],fontSize = 20,message2="Otherwise it will be computed via finite differencing")
-        
+
         ig = buttonbox(message="Will you provide an initial guess?", title=title, choices = ["No","Yes"],fontSize = 20)
 
         dof = int(enterbox("Number of degrees of freedom per grid point?",title,argDefaultText="1"))
@@ -36,7 +36,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
           staggered = buttonbox(message="Are you using a staggered grid?", title=title, choices = ["No","Yes"],fontSize = 20)
         else:
           uns = "Uns"
- 
+
         app = enterbox("Name of application?",title)
 
         # generate the sidl
@@ -51,7 +51,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
           f.write('TOPS.System.Compute.Residual')
           if jac == 'yes':
             f.write(',TOPS.System.Compute.Jacobian')
-        else: 
+        else:
           f.write('TOPS.System.Compute.RightHandSide,')
           f.write('TOPS.System.Compute.Matrix')
         if ig == 'yes':
@@ -77,14 +77,14 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
           result = buttonbox(message="SIDL code generation failed", title=title, choices = ["Ok"],fontSize = 20,message2=out)
 
 
-        # Add the common code 
+        # Add the common code
         f = file(os.path.join(app,'server','c++',app+'_System_Impl.cc'),'r')
         text = f.read()
         f.close()
 
         bscode = 'this->solver = (TOPS::'+uns+'tructured::Solver)solver;'
         text = text.replace('begin('+app+'.System.setSolver)','begin('+app+'.System.setSolver)\n'+bscode)
- 
+
         if dof > 1:
           bscode = '  this->solver.setBlockSize('+str(dof)+');'
           text = text.replace('begin('+app+'.System.initializeOnce)','begin('+app+'.System.initializeOnce)\n'+bscode)
@@ -93,8 +93,8 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
         if grid == 'logically rectangular':
           if dof > 1: sct = 1
           else: sct = 0
-          bscode = bscode + ''' 
-            int xs = x.lower('''+str(sct)+''');      
+          bscode = bscode + '''
+            int xs = x.lower('''+str(sct)+''');
             int xm = x.length('''+str(sct)+''') - 1;'''
           if dim > 1:
             bscode = bscode + '''
@@ -125,7 +125,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
         if ig:
           text = text.replace('begin('+app+'.System.initalGuess)','begin('+app+'.System.initialGuess)\n'+bscode)
 
-        bscode = ''' 
+        bscode = '''
           myServices = services;
           gov::cca::TypeMap tm = services.createTypeMap();
           if(tm._is_nil()) {
@@ -137,7 +137,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
             fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \\n",__FILE__, __LINE__);
             exit(1);
           }
-  
+
           myServices.addProvidesPort(p,"TOPS.System","TOPS.System", tm);
           myServices.addProvidesPort(p,"TOPS.System.Initialize.Once","TOPS.System.Initialize.Once", tm);
           myServices.addProvidesPort(p,"TOPS.System.Initialize.EverySolve","TOPS.System.Initialize.EverySolve", tm);
@@ -158,7 +158,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
         text = text.replace('begin('+app+'.System.setServices)','begin('+app+'.System.setServices)\n'+bscode)
 
 
-        bscode = '''  int argc = 1; 
+        bscode = '''  int argc = 1;
           char *argv[1];
           argv[0] = (char*) malloc(10*sizeof(char));
           strcpy(argv[0],"'''+app+'''");
@@ -188,7 +188,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
         f.write(text)
         f.close()
 
-        text = '''#!ccaffeine bootstrap file. 
+        text = '''#!ccaffeine bootstrap file.
           # ------- don't change anything ABOVE this line.-------------
           path set '''+os.path.join('@PETSC_LIB_DIR@','cca')+'''
           repository get-global TOPS.StructuredSolver

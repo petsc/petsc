@@ -2,9 +2,9 @@
 #include <petscmat.h>
 
 /*
-     MatDumpSPAI - Dumps a PETSc matrix to a file in an ASCII format 
+     MatDumpSPAI - Dumps a PETSc matrix to a file in an ASCII format
   suitable for the SPAI code of Stephen Barnard to solve. This routine
-  is simply here to allow testing of matrices directly with the SPAI 
+  is simply here to allow testing of matrices directly with the SPAI
   code, rather then through the PETSc interface.
 
 */
@@ -17,7 +17,7 @@ PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
   MPI_Comm          comm;
 
   PetscObjectGetComm((PetscObject)A,&comm);
- 
+
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Only single processor dumps");
 

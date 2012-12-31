@@ -2,7 +2,7 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        = 
+FPPFLAGS        =
 LOCDIR   = src/sys/classes/draw/examples/tutorials/
 EXAMPLESC       =
 EXAMPLESF       =
@@ -47,8 +47,8 @@ runex4:
 runex4_2:
 	-@${MPIEXEC} -n 2 ./ex4
 
-TESTEXAMPLES_C_X	  = 
-TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_C_X_MPIUNI = 
+TESTEXAMPLES_C_X	  =
+TESTEXAMPLES_FORTRAN	  =
+TESTEXAMPLES_C_X_MPIUNI =
 
 include ${PETSC_DIR}/conf/test

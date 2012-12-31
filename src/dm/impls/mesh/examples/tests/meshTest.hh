@@ -6,7 +6,7 @@ namespace ALE {
   namespace Test {
     class MeshProcessor {
     public:
-      typedef ALE::Mesh::real_section_type::value_type value_type; 
+      typedef ALE::Mesh::real_section_type::value_type value_type;
    public:
       static std::string printElement(const ALE::Mesh::real_section_type::point_type& e, const int dim, const value_type coords[], const int rank = -1) {
         ostringstream output;

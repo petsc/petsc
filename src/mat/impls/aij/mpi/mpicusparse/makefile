@@ -1,7 +1,7 @@
 #requirespackage 'PETSC_HAVE_TXPETSCGPU'
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCECU = mpiaijcusparse.cu
 SOURCEF	 =

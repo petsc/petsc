@@ -4,8 +4,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = index.c isregall.c isreg.c
-SOURCEF  = 
-SOURCEH  = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = IS
 LOCDIR   = src/vec/is/interface/

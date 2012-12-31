@@ -1,7 +1,7 @@
 
 static char help[] = "Tests MatMPIBAIJ format in sequential run \n";
 
-#include <petscmat.h> 
+#include <petscmat.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(A,2,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A,2,2,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
- 
+
   v = 1.0;
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++){
@@ -34,8 +34,8 @@ int main(int argc,char **args)
   /* Convert A to AIJ format */
   ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
-  ierr = MatDestroy(&B);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

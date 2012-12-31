@@ -143,8 +143,8 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESSetFunctionLocal"
 /*@C
-   DMSNESSetFunctionLocal - set a local residual evaluation function. This function is called with local vector 
-      containing the local vector information PLUS ghost point information. It should compute a result for all local 
+   DMSNESSetFunctionLocal - set a local residual evaluation function. This function is called with local vector
+      containing the local vector information PLUS ghost point information. It should compute a result for all local
       elements and DMSNES will automatically accumulate the overlapping values.
 
    Logically Collective

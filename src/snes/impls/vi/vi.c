@@ -385,7 +385,7 @@ PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
 {
   PetscErrorCode     ierr;
   PetscFunctionBegin;
-  ierr = DMComputeVariableBounds(snes->dm, xl, xu); CHKERRQ(ierr);
+  ierr = DMComputeVariableBounds(snes->dm, xl, xu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -420,7 +420,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
 
   if (!snes->ops->computevariablebounds && snes->dm) {
     PetscBool flag;
-    ierr = DMHasVariableBounds(snes->dm, &flag); CHKERRQ(ierr);
+    ierr = DMHasVariableBounds(snes->dm, &flag);CHKERRQ(ierr);
     snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
   }
   if (!snes->usersetbounds) {

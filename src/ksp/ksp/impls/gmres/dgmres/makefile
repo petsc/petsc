@@ -2,10 +2,10 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = dgmres.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = dgmresimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP

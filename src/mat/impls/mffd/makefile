@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = mffdimpl.h
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-DIRS     = 
+DIRS     =
 LOCDIR   = src/mat/impls/mffd/
 
 include ${PETSC_DIR}/conf/variables

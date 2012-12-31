@@ -9,10 +9,10 @@ typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nul
 
 typedef struct _DMOps *DMOps;
 struct _DMOps {
-  PetscErrorCode (*view)(DM,PetscViewer); 
-  PetscErrorCode (*load)(DM,PetscViewer); 
-  PetscErrorCode (*setfromoptions)(DM); 
-  PetscErrorCode (*setup)(DM); 
+  PetscErrorCode (*view)(DM,PetscViewer);
+  PetscErrorCode (*load)(DM,PetscViewer);
+  PetscErrorCode (*setfromoptions)(DM);
+  PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*createlocaltoglobalmapping)(DM);
@@ -108,7 +108,7 @@ struct _p_DM {
   PetscErrorCode          (*ctxdestroy)(void**);
   Vec                     x;       /* location at which the functions/Jacobian are computed */
   ISColoringType          coloringtype;
-  MatFDColoring           fd;      
+  MatFDColoring           fd;
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt                bs;
@@ -146,7 +146,7 @@ PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
 /*
 
-          Composite Vectors 
+          Composite Vectors
 
       Single global representation
       Individual global representations
@@ -169,42 +169,42 @@ PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
        DMDACreate(,&da_p);
        DMCompositeCreate(,&dm_velocities);
-       DMCompositeAddDM(dm,(DM)dm_velocities);     
-       DMCompositeAddDM(dm,(DM)dm_p);     
+       DMCompositeAddDM(dm,(DM)dm_velocities);
+       DMCompositeAddDM(dm,(DM)dm_p);
 
 
     Access parts of composite vectors (Composite only)
     ---------------------------------
       DMCompositeGetAccess  - access the global vector as subvectors and array (for redundant arrays)
-      ADD for local vector - 
+      ADD for local vector -
 
     Element access
     --------------
-      From global vectors 
+      From global vectors
          -DAVecGetArray   - for DMDA
          -VecGetArray - for DMSliced
          ADD for DMComposite???  maybe
 
       From individual vector
           -DAVecGetArray - for DMDA
-          -VecGetArray -for sliced  
+          -VecGetArray -for sliced
          ADD for DMComposite??? maybe
 
       From single local vector
           ADD         * single local vector as arrays?
 
-   Communication 
+   Communication
    -------------
       DMGlobalToLocal - global vector to single local vector
 
       DMCompositeScatter/Gather - direct to individual local vectors and arrays   CHANGE name closer to GlobalToLocal?
 
    Obtaining vectors
-   ----------------- 
-      DMCreateGlobal/Local 
-      DMGetGlobal/Local 
+   -----------------
+      DMCreateGlobal/Local
+      DMGetGlobal/Local
       DMCompositeGetLocalVectors   - gives individual local work vectors and arrays
-         
+
 
 ?????   individual global vectors   ????
 

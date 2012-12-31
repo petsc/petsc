@@ -2094,8 +2094,8 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
   } else {
     ierr   = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_INITIAL_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&isrow_new); CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol_new); CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow_new);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol_new);CHKERRQ(ierr);
   /*
       m - number of local rows
       n - number of columns (same on all processors)

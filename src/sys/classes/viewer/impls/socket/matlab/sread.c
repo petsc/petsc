@@ -1,5 +1,5 @@
 /*
- 
+
     This is the equivalent of MATLAB's fread() only on sockets instead of
    binary files.
 */
@@ -15,7 +15,7 @@ PetscErrorCode PetscBinaryRead(int,void *p,int,PetscDataType);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {

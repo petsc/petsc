@@ -88,7 +88,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
   nkdm->ops->computeinitialguess  = kdm->ops->computeinitialguess;
   nkdm->ops->destroy              = kdm->ops->destroy;
   nkdm->ops->duplicate            = kdm->ops->duplicate;
-  
+
   nkdm->operatorsctx    = kdm->operatorsctx;
   nkdm->rhsctx          = kdm->rhsctx;
   nkdm->initialguessctx = kdm->initialguessctx;
@@ -326,7 +326,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),vo
 
    Note:
    KSPSetComputeInitialGuess() is normally used, but it calls this function internally because the user context is actually
-   associated with the DM.  
+   associated with the DM.
 
 .seealso: DMKSPSetContext(), DMKSPGetComputeRHS(), KSPSetRHS()
 @*/

@@ -10,8 +10,8 @@ typedef struct {
   PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
   PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
   char          *filename;
-  PetscBool     storecompressed; 
-  PetscBool     closefile;       
+  PetscBool     storecompressed;
+  PetscBool     closefile;
   PetscBool     allowsynchronized; /* allow synchronized writes from any process to the viewer */
 } PetscViewer_ASCII;
 

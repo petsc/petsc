@@ -22,7 +22,7 @@ difference. Input parameters include:\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h    - base PETSc routines   petscvec.h - vectors
@@ -66,17 +66,17 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-gamma",&gamma,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&beta,PETSC_NULL);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and set right-hand-side vector.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Create parallel matrix, specifying only its global dimensions.
      When using MatCreate(), the matrix format can be specified at
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
 
      Performance tuning note:  For problems of substantial size,
-     preallocation of matrix memory is crucial for attaining good 
+     preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -86,25 +86,25 @@ int main(int argc,char **args)
   ierr = MatSeqAIJSetPreallocation(A,7,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  /* 
+  /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
-     rows of the matrix are locally owned. 
+     rows of the matrix are locally owned.
   */
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set matrix elements for the 3-D, seven-point stencil in parallel.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Always specify global rows and columns of matrix entries.
    */
   ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   co1 = gamma * h * h / 2.0;
   co2 = beta * h * h;
-  for (Ii=Istart; Ii<Iend; Ii++) { 
+  for (Ii=Istart; Ii<Iend; Ii++) {
     i = Ii/(n2*n3); j = (Ii - i*n2*n3)/n3; k = Ii - i*n2*n3 - j*n3;
     if (i>0)   {
       J = Ii - n2*n3;  v = -1.0 + co1*(PetscScalar)i;
@@ -134,7 +134,7 @@ int main(int argc,char **args)
     ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd()
      Computations can be done while messages are in transition
@@ -144,17 +144,17 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  /* 
+  /*
      Create parallel vectors.
       - We form 1 vector from scratch and then duplicate as needed.
       - When using VecCreate(), VecSetSizes and VecSetFromOptions()
         in this example, we specify only the
         vector's global dimension; the parallel partitioning is determined
-        at runtime. 
+        at runtime.
       - When solving a linear system, the vectors and matrices MUST
         be partitioned accordingly.  PETSc automatically generates
         appropriately partitioned matrices and vectors when MatCreate()
-        and VecCreate() are used with the same communicator.  
+        and VecCreate() are used with the same communicator.
       - The user can alternatively specify the local vector and matrix
         dimensions when more sophisticated partitioning is needed
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
@@ -166,26 +166,26 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set right-hand side.
   */
   ierr = VecSet(b,1.0);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the KSP context,
        we can then directly call any KSP and PC routines to set
@@ -193,7 +193,7 @@ int main(int argc,char **args)
   */
   ierr = KSPSetTolerances(ksp,1.e-6,1.e-50,PETSC_DEFAULT,200);CHKERRQ(ierr);
 
-  /* 
+  /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
     These options will override those specified above as long as
@@ -202,13 +202,13 @@ int main(int argc,char **args)
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
@@ -223,7 +223,7 @@ int main(int argc,char **args)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary). 
+         options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
   return 0;

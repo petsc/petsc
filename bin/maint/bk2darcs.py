@@ -59,7 +59,7 @@ def main():
   if os.system("bk changes -r+ > /dev/null 2>&1"):
     print 'Error! specified path is not a bk repository: ' + bk_repo
     sys.exit()
-    
+
   os.chdir(darcs_repo)
   if os.system("darcs changes --last=1 > /dev/null 2>&1"):
     print 'Error! specified path is not a darcs repository: ' + darcs_repo
@@ -114,7 +114,7 @@ def main():
     if len(revn.split('.')) > 2:
       print 'Ignoring changeset  : '+revn
       continue
-    
+
     print 'Processing changeset: '+revn
     # get revi
     revi = int(revn.split('.')[1])
@@ -123,7 +123,7 @@ def main():
     auth_email=fd.read().splitlines()[0].strip()
     fd.close()
     auth_email=auth_email.replace('.(none)','')
-    
+
     #get comment string
     fd=os.popen('bk changes -r'+revq+' | grep -v ^ChangeSet@')
     buf=fd.read()
@@ -143,7 +143,7 @@ def main():
     os.system('ls -a | grep -v _darcs | xargs rm -rf >/dev/null 2>&1')
     os.system('bk export -r'+revq+' ' + bk_repo + ' ' + darcs_repo)
     os.system('darcs record --test -l -a -A ' + auth_email + ' --delete-logfile --logfile='+log_file + '> /dev/null 2>&1')
-    
+
     # optimize/checkpoint every 250 patches
     if revi%250 == 0  and revi != 0 and rev != lastrev:
       print 'checkpointing/optimizing changeset-'+ revn
@@ -156,4 +156,4 @@ def main():
 if __name__ ==  '__main__':
   main()
 
-        
+

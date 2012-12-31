@@ -4,7 +4,7 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMatlabEnginePut_Default"
 PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 {
@@ -25,14 +25,14 @@ PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
   ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine *)mengine,obj->name,mat);
-  
+
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMatlabEngineGet_Default"
 PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
 {

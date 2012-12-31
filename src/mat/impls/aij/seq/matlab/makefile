@@ -7,10 +7,10 @@ ALL: lib
 CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = aijmatlab.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/matlab/
 

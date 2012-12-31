@@ -5,7 +5,7 @@
 ALL: lib
 
 # Set CFLAGS="-DPETSC_DEBUG_USFFT" to turn on debugging output
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = matusfft.c
 LIBBASE  = libpetscdm

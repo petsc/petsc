@@ -35,7 +35,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
                       1, /* 1 dof */
                       1, /* stencil = 1 */
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,
-                      &daf); CHKERRQ(ierr);
+                      &daf);CHKERRQ(ierr);
 
   ierr = DMSetFromOptions(daf);CHKERRQ(ierr);
 
@@ -75,10 +75,10 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
   }
 
   if (0) {
-    ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
     ierr = VecZeroEntries(ac);CHKERRQ(ierr);
 
-    ierr = DMCreateGlobalVector(daf,&af); CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
     ierr = VecZeroEntries(af);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_7.vtk", &vv);CHKERRQ(ierr);

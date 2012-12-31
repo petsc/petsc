@@ -1,5 +1,5 @@
 //Just a file full of functions for ex_coarsen
- 
+
 #include <list>
 #include <Distribution.hh>
 #include <petscmesh.h>
@@ -39,7 +39,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm)
   ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", debug, &debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", "ex_coarsen", baseFile, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-coarsen", "The coarsening factor", "ex_coarsen.c", c_factor, &c_factor, PETSC_NULL);    
+    ierr = PetscOptionsReal("-coarsen", "The coarsening factor", "ex_coarsen.c", c_factor, &c_factor, PETSC_NULL);
     ierr = PetscOptionsReal("-generate", "Generate the mesh with refinement limit placed after this.", "ex_coarsen.c", r_factor, &r_factor, PETSC_NULL);
   ierr = PetscOptionsEnd();
  PetscFunctionReturn(0);
@@ -174,7 +174,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   coordinates->setFiberDimensionByDepth(patch, 0, 2);  //puts two doubles on each node.
   coordinates->allocate();
   const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = coordinates->getTopology()->depthStratum(patch, 0);
-  
+
   ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
   ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
   const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
@@ -233,7 +233,7 @@ PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim
 
    input->holelist = NULL;
    input->numberofholes = 0;
-   
+
    input->regionlist = NULL;
    input->numberofregions = 0;
 
@@ -254,7 +254,7 @@ PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim
    output->edgemarkerlist = NULL;
    output->normlist = NULL;
 
-   char triangleOptions[256]; 
+   char triangleOptions[256];
    sprintf(triangleOptions, "-zeQa%f",ref_lim);
    triangulate(triangleOptions, input, output, NULL); //refine
 
@@ -321,6 +321,6 @@ int boundEdges = 0, boundVerts = 0;
       e_iter++;
    }
   printf("Boundary Edges: %d, Boundary Vertices: %d\n", boundEdges, boundVerts);
-  } 
+  }
   PetscFunctionReturn(0);
 }

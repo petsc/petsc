@@ -780,12 +780,12 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     MatTransposeColoring matcoloring;
     ISColoring           iscoloring;
     Mat                  Bt_dense,C_dense;
-    
+
     ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
     multtrans->matcoloring = matcoloring;
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-   
+
     /* Create Bt_dense and C_dense = A*Bt_dense */
     ierr = MatCreate(PETSC_COMM_SELF,&Bt_dense);CHKERRQ(ierr);
     ierr = MatSetSizes(Bt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
@@ -953,10 +953,10 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
     /* Get Bt_dense by Apply MatTransposeColoring to B */
     ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
-   
+
     /* C_dense = A*Bt_dense */
     ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
-   
+
     /* Recover C from C_dense */
     ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1268,7 +1268,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 	for (j=0; j<n; j++) {
 	  r1 += (*aa++)*b1[*aj++];
 	}
-	c[col*am + ridx[i]] += r1;
+	c[colam + ridx[i]] += r1;
       }
       b1 += bm;
     }
@@ -1297,6 +1297,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       b4 += bm4;
     }
     for (;col<cn; col++){     /* over extra columns of C */
+      colam = col*am;
       for (i=0; i<am; i++) {  /* over rows of C in those columns */
 	r1 = 0.0;
 	n   = a->i[i+1] - a->i[i];
@@ -1306,7 +1307,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 	for (j=0; j<n; j++) {
 	  r1 += (*aa++)*b1[*aj++];
 	}
-	c[col*am + i]     += r1;
+	c[colam + i]     += r1;
       }
       b1 += bm;
     }

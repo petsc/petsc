@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC	 = mpibaij.c mmbaij.c baijov.c
 SOURCEF	 =

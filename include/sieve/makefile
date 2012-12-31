@@ -8,7 +8,7 @@ SOURCEH  = ALE_args.hh ALE_mem.hh FEMProblem.hh ISieve.hh Partitioner.hh SieveBu
            IField.hh Numbering.hh Selection.hh Topology.hh ALE_log.hh DMBuilder.hh INumbering.hh \
            ParallelMapping.hh SieveAlgorithms.hh UFC.hh
 LIBBASE  = libpetscdm
-DIRS     = 
+DIRS     =
 LOCDIR   = include/sieve/
 MANSEC   = DM
 

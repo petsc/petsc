@@ -192,7 +192,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
       }
     }
   }
-  
+
   icntl=-1;
   check = 0;
   ierr = PetscOptionsInt("-mat_pastix_check","Check the matrix 0 : no, 1 : yes)","None",check,&icntl,&flg);CHKERRQ(ierr);
@@ -273,10 +273,10 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
                 lu->dparm);
 
     ierr = PetscFree(lu->colptr);CHKERRQ(ierr);
-    ierr = PetscFree(lu->row);  CHKERRQ(ierr);
-    ierr = PetscFree(lu->val);  CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm); CHKERRQ(ierr);
-    ierr = PetscFree(lu->invp); CHKERRQ(ierr);
+    ierr = PetscFree(lu->row);CHKERRQ(ierr);
+    ierr = PetscFree(lu->val);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm);CHKERRQ(ierr);
+    ierr = PetscFree(lu->invp);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&(lu->pastix_comm));CHKERRQ(ierr);
   }
   if (lu && lu->Destroy) {
@@ -337,7 +337,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
               lu->rhsnbr,
               lu->iparm,
               lu->dparm);
-  
+
   if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER] );
 
   if (lu->commSize == 1){
@@ -383,8 +383,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 
     /* Initialize a PASTIX instance */
     ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->pastix_comm));CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(lu->pastix_comm, &lu->commRank);         CHKERRQ(ierr);
-    ierr = MPI_Comm_size(lu->pastix_comm, &lu->commSize);         CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(lu->pastix_comm, &lu->commRank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(lu->pastix_comm, &lu->commSize);CHKERRQ(ierr);
 
     /* Set pastix options */
     lu->iparm[IPARM_MODIFY_PARAMETER] = API_NO;

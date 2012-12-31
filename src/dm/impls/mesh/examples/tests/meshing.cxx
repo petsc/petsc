@@ -60,7 +60,7 @@ PetscErrorCode CreateSimplex(MPI_Comm comm, ALE::Obj<ALE::Mesh> &m, Options * op
     }
     m->view("simplex mesh", comm);
   }
-  
+
   delete coord_template;
 }
 

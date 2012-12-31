@@ -1,18 +1,17 @@
 
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = 
+CPPFLAGS  =
 SOURCEC   = tikz.c
 SOURCEF   =
-SOURCEH   = 
+SOURCEH   =
 MANSEC    = Draw
 LIBBASE   = libpetscsys
-DIRS      = 
+DIRS      =
 LOCDIR    = src/sys/classes/draw/impls/tikz/
-NOADIC    = true
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

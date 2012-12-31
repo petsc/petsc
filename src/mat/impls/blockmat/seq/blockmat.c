@@ -22,7 +22,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
 {
   Mat_BlockMat       *a = (Mat_BlockMat*)A->data;
   PetscScalar        *x;
-  const Mat          *v = a->a;
+  const Mat          *v;
   const PetscScalar  *b;
   PetscErrorCode     ierr;
   PetscInt           n = A->cmap->n,i,mbs = n/A->rmap->bs,j,bs = A->rmap->bs;
@@ -129,7 +129,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 {
   Mat_BlockMat       *a = (Mat_BlockMat*)A->data;
   PetscScalar        *x;
-  const Mat          *v = a->a;
+  const Mat          *v;
   const PetscScalar  *b;
   PetscErrorCode     ierr;
   PetscInt           n = A->cmap->n,i,mbs = n/A->rmap->bs,j,bs = A->rmap->bs;

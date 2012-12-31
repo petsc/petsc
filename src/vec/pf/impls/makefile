@@ -3,9 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =  
+SOURCEC  =
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetscvec
 DIRS     = constant string matlab
 LOCDIR   = src/vec/pf/impls/

@@ -1,4 +1,4 @@
-#ifndef __MPICUSPMATIMPL 
+#ifndef __MPICUSPMATIMPL
 #define __MPICUSPMATIMPL
 
 typedef struct {

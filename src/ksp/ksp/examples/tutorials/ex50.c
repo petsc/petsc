@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMDestroy(&da); CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
@@ -84,23 +84,23 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
   pi = 4*atan(1.0);
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr); // Fine grid
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr); // Fine grid
   //printf(" M N: %d %d; xm ym: %d %d; xs ys: %d %d\n",M,N,xm,ym,xs,ys);
-  ierr = DMDAVecGetArray(da, b, &array); CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
     for (i=xs; i<xs+xm; i++){
       array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
-  ierr = DMDAVecRestoreArray(da, b, &array); CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b); CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
@@ -127,12 +127,12 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
 
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
     for (i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
@@ -160,7 +160,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
           }
           v[num] = ( (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx ); col[num].i = i;   col[num].j = j;
           num++;
-          ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES); CHKERRQ(ierr);
+          ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
       } else {
         v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
@@ -168,7 +168,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
         v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
         v[3] = -HydHx;              col[3].i = i+1; col[3].j = j;
         v[4] = -HxdHy;              col[4].i = i;   col[4].j = j+1;
-        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }

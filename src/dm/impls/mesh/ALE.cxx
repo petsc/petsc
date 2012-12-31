@@ -13,9 +13,9 @@ namespace ALE {
 
   //
   //  Memory handling stuff (ALE_mem.hh).
-  // 
-  
-  // static instance of a standard char allocator;  this is the only allocator used by ALE; 
+  //
+
+  // static instance of a standard char allocator;  this is the only allocator used by ALE;
   // it is defined here -- in an .cxx file -- to ensure that exactly one copy exists;
   // its services are presented through a static interface defined in universal_allocator.
 
@@ -66,7 +66,7 @@ namespace ALE {
     }
   }// MPIERROR()
 
-  // A helper function that allocates and assembles an error message from a format string 
+  // A helper function that allocates and assembles an error message from a format string
   const char *ERRORMSG(const char *fmt, ...) {
     va_list Argp;
     int32_t buf_size = 2*MPI_MAX_ERROR_STRING;
@@ -104,15 +104,15 @@ namespace ALE {
   LogStage LogStageRegister(const char *name){
     int stage = 0;
     std::string stage_name(name);
-    if(_log_stage.find(stage_name) == _log_stage.end()) {    
+    if(_log_stage.find(stage_name) == _log_stage.end()) {
       // stage by that name not yet registered, so we register it and store its registration number.
       PetscErrorCode ierr = PetscLogStageRegister(name, &stage);CHKERROR(ierr, "PetscLogStageRegister failed");
-      _log_stage[stage_name] = stage;                   
-    }                                                        
-    else {                                                   
+      _log_stage[stage_name] = stage;
+    }
+    else {
       // stage by that name already registered, so we retrieve its registration number.
-      stage = _log_stage[stage_name];                   
-    }                                                        
+      stage = _log_stage[stage_name];
+    }
     return stage;
   }
 

@@ -12,7 +12,7 @@ PetscErrorCode precond_lsqr_monitor(
                   );
 
 PetscErrorCode read_command_line( int argc, char **argv,
-     int * order, int *maxit, char ** dirname, PetscScalar * droptol, 
+     int * order, int *maxit, char ** dirname, PetscScalar * droptol,
      PetscScalar * epsdiag, PCType *pc_type);
 
 PetscErrorCode precond_lsqr_converged(

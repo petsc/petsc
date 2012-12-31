@@ -3,12 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS =
 SOURCEC  = icc.c
 SOURCEF  =
 SOURCEH  = icc.h
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/factor/icc/
 

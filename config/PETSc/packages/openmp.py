@@ -8,7 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes          = ['omp.h']
     self.liblist           = []
     self.complex           = 1   # 0 means cannot use complex
-    self.double            = 0   # 1 means requires double precision 
+    self.double            = 0   # 1 means requires double precision
     self.requires32bitint  = 0;  # 1 means that the package will not work with 64 bit integers
     self.worksonWindows    = 1  # 1 means that package can be used on Microsof Windows
     return
@@ -23,7 +23,7 @@ class Configure(PETSc.package.NewPackage):
     ''' Checks for -fopenmp compiler flag'''
     ''' Needs to check if OpenMP actually exists and works '''
     self.setCompilers.pushLanguage('C')
-    # 
+    #
     for flag in ["-fopenmp", # Gnu
                  "-qsmp=omp",# IBM XL C/C++
                  "-h omp",   # Cray. Must come after XL because XL interprets this option as meaning "-soname omp"
