@@ -1140,7 +1140,7 @@ PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken*);
    These are  MPI operations for MPI_Allreduce() etc
 */
 PETSC_EXTERN MPI_Op PetscMaxSum_Op;
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 PETSC_EXTERN MPI_Op MPIU_SUM;
 #else
 #define MPIU_SUM MPI_SUM

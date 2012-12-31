@@ -293,91 +293,97 @@ void  MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *
 EXTERN_C_END
 /* ---------------------------------------------------------------------------------------*/
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 MPI_Op MPIU_SUM = 0;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSum_Local"
-void  PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN_C void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype == MPIU_SCALAR) {
-    PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-    for (i=0; i<count; i++) {
-      xout[i] += xin[i];
-    }
-  } else if (*datatype == MPIU_REAL) {
+  if (*datatype == MPIU_REAL) {
     PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
     for (i=0; i<count; i++) {
       xout[i] += xin[i];
     }
-  } else {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
+  }
+#if defined(PETSC_HAVE_COMPLEX)
+  else if (*datatype == MPIU_COMPLEX) {
+    PetscComplex *xin = (PetscComplex *)in,*xout = (PetscComplex*)out;
+    for (i=0; i<count; i++) {
+      xout[i] += xin[i];
+    }
+  }
+#endif
+  else {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 #endif
 
 #if defined(PETSC_USE_REAL___FLOAT128)
 MPI_Op MPIU_MAX = 0;
 MPI_Op MPIU_MIN = 0;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMax_Local"
-void  PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN_C void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype == MPIU_SCALAR) {
-    PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-    for (i=0; i<count; i++) {
-      xout[i] = PetscRealPart(xout[i])<PetscRealPart(xin[i])? xin[i]: xout[i];
-    }
-  } else if (*datatype == MPIU_REAL) {
+  if (*datatype == MPIU_REAL) {
     PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
     for (i=0; i<count; i++) {
       xout[i] = PetscMax(xout[i],xin[i]);
     }
-  } else {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
+  }
+#if defined(PETSC_HAVE_COMPLEX)
+  else if (*datatype == MPIU_COMPLEX) {
+    PetscComplex *xin = (PetscComplex *)in,*xout = (PetscComplex*)out;
+    for (i=0; i<count; i++) {
+      xout[i] = PetscRealPartComplex(xout[i])<PetscRealPartComplex(xin[i])? xin[i]: xout[i];
+    }
+  }
+#endif
+  else {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMin_Local"
-void  PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN_C void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype == MPIU_SCALAR) {
-    PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-    for (i=0; i<count; i++) {
-      xout[i] = PetscRealPart(xout[i])>PetscRealPart(xin[i])? xin[i]: xout[i];
-    }
-  } else if (*datatype == MPIU_REAL) {
+  if (*datatype == MPIU_REAL) {
     PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
     for (i=0; i<count; i++) {
       xout[i] = PetscMin(xout[i],xin[i]);
     }
-  } else {
+  }
+#if defined(PETSC_HAVE_COMPLEX)
+  else if (*datatype == MPIU_COMPLEX) {
+    PetscComplex *xin = (PetscComplex *)in,*xout = (PetscComplex*)out;
+    for (i=0; i<count; i++) {
+      xout[i] = PetscRealPartComplex(xout[i])>PetscRealPartComplex(xin[i])? xin[i]: xout[i];
+    }
+  }
+#endif
+  else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 #endif
 
 EXTERN_C_BEGIN
@@ -734,7 +740,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU___FLOAT128);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
   ierr = MPI_Type_contiguous(4,MPI_DOUBLE,&MPIU___COMPLEX128);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU___COMPLEX128);CHKERRQ(ierr);
 #endif
@@ -742,7 +748,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
 #endif
 
@@ -1193,21 +1199,21 @@ PetscErrorCode  PetscFinalize(void)
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
   ierr = MPI_Type_free(&MPIU___COMPLEX128);CHKERRQ(ierr);
 #endif
   ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
   ierr = MPI_Type_free(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_free(&MPIU_C_COMPLEX);CHKERRQ(ierr);
 #endif
 #endif
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
 #endif
 

@@ -49,6 +49,7 @@ extern "C" {
 #if defined(__cplusplus)
 }
 #endif
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
 #define PetscSqrtReal(a)    sqrtq(a)
@@ -130,7 +131,6 @@ typedef double _Complex PetscComplex;
 
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef __complex128 PetscComplex;
-PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 
 #define PetscRealPartComplex(a)      crealq(a)
@@ -157,6 +157,16 @@ PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
 PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX;
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
 
+#if defined(PETSC_HAVE_COMPLEX)
+#  if defined(PETSC_USE_REAL_SINGLE)
+#    define MPIU_COMPLEX MPIU_C_COMPLEX
+#  elif defined(PETSC_USE_REAL_DOUBLE)
+#    define MPIU_COMPLEX MPIU_C_DOUBLE_COMPLEX
+#  elif defined(PETSC_USE_REAL___FLOAT128)
+#    define MPIU_COMPLEX MPIU___COMPLEX128
+#  endif /* PETSC_USE_REAL_* */
+#endif
+
 #if defined(PETSC_USE_COMPLEX)
 typedef PetscComplex PetscScalar;
 #define PetscRealPart(a)      PetscRealPartComplex(a)
@@ -170,29 +180,15 @@ typedef PetscComplex PetscScalar;
 #define PetscSinScalar(a)     PetscSinComplex(a)
 #define PetscCosScalar(a)     PetscCosComplex(a)
 
-#if defined(PETSC_USE_REAL_SINGLE)
-#define MPIU_SCALAR MPIU_C_COMPLEX
-#elif defined(PETSC_USE_REAL_DOUBLE)
-#define MPIU_SCALAR MPIU_C_DOUBLE_COMPLEX
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#define MPIU_SCALAR MPIU___COMPLEX128
-#endif /* PETSC_USE_REAL_* */
+#define MPIU_SCALAR MPIU_COMPLEX
 
 /*
     real number definitions
  */
 #else /* PETSC_USE_COMPLEX */
-#if defined(PETSC_USE_REAL_SINGLE)
-#define MPIU_SCALAR           MPI_FLOAT
-typedef float PetscScalar;
-#elif defined(PETSC_USE_REAL_DOUBLE)
-#define MPIU_SCALAR           MPI_DOUBLE
-typedef double PetscScalar;
-#elif defined(PETSC_USE_REAL___FLOAT128)
-PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
-#define MPIU_SCALAR MPIU___FLOAT128
-typedef __float128 PetscScalar;
-#endif /* PETSC_USE_REAL_* */
+typedef PetscReal PetscScalar;
+#define MPIU_SCALAR MPIU_REAL
+
 #define PetscRealPart(a)      (a)
 #define PetscImaginaryPart(a) ((PetscReal)0.)
 PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a : a;}
