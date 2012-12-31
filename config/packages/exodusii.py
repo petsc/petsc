@@ -7,7 +7,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodusii-5.22b.tar.gz']
-    self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a']]
+    self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a'], ['libexoIIv2c.a']]
     self.functions  = ['ex_close']
     self.includes   = ['exodusII.h']
     self.includedir = ['include', os.path.join('cbind', 'include'), os.path.join('forbind', 'include')]
