@@ -82,5 +82,7 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll_VTU(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMComplexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecView_Complex_Local(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Complex(Vec,PetscViewer);
 
 #endif /* _COMPLEXIMPL_H */
