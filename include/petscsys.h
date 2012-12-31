@@ -227,11 +227,11 @@ PETSC_EXTERN const char *PetscPrecisions[];
     For the rare cases when one needs to send a size_t object with MPI
 */
 #if (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_INT)
-#define MPIU_SIZE_T MPI_INT
+#define MPIU_SIZE_T MPI_UNSIGNED
 #elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
-#define MPIU_SIZE_T MPI_LONG
+#define MPIU_SIZE_T MPI_UNSIGNED_LONG
 #elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG_LONG)
-#define MPIU_SIZE_T MPI_LONG_LONG_INT
+#define MPIU_SIZE_T MPI_UNSIGNED_LONG_LONG
 #else
 #error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
 #endif

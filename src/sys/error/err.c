@@ -447,7 +447,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,0,0,0,MPIU_INT,0,comm);CHKERRQ(ierr);
       } else {
 	ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
-        ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+        ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0];
 	ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&displs);CHKERRQ(ierr);
         displs[0] = 0;

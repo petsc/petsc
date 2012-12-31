@@ -2200,8 +2200,8 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   PetscScalar    *vals,*buf;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
   MPI_Status     status;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners,*locrowlens,mmbs;
-  PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners,mmbs;
+  PetscInt       header[4],*rowlengths = 0,M,N,m,*cols,*locrowlens;
   PetscInt       *procsnz = 0,jj,*mycols,*ibuf;
   PetscInt       bs=1,Mbs,mbs,extra_rows;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
@@ -2270,7 +2270,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   rend   = rowners[rank+1];
 
   /* distribute row lengths to all processors */
-  ierr = PetscMalloc((rend-rstart)*bs*sizeof(PetscMPIInt),&locrowlens);CHKERRQ(ierr);
+  ierr = PetscMalloc((rend-rstart)*bs*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc((M+extra_rows)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);

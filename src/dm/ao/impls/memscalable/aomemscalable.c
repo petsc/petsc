@@ -411,11 +411,11 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscErrorCode    ierr;
   IS                isapp=ao->isapp,ispetsc=ao->ispetsc;
   const PetscInt    *mypetsc,*myapp;
-  PetscInt          napp,n_local,N,i,start,*petsc;
+  PetscInt          napp,n_local,N,i,start,*petsc,*lens,*disp;
   MPI_Comm          comm;
   AO_MemoryScalable *aomems;
   PetscLayout       map;
-  PetscMPIInt       *lens,size,rank,*disp;
+  PetscMPIInt       size,rank;
 
   PetscFunctionBegin;
   /* create special struct aomems */
@@ -428,9 +428,9 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscInt,&lens,size,PetscInt,&disp);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&napp, 1, MPIU_INT, lens, 1, MPIU_INT, comm);CHKERRQ(ierr);
 
   N = 0;
   for (i = 0; i < size; i++) {

@@ -456,7 +456,7 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
       ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
       if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
     }
-    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&draw->pause,1,MPIU_REAL,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -542,7 +542,7 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
     XSync(win->disp,False);
     XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
   }
-  ierr = MPI_Bcast(geo,2,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(geo,2,MPI_UNSIGNED,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   w = geo[0];
   h = geo[1];
   if (w == (unsigned int) win->w && h == (unsigned int) win->h) PetscFunctionReturn(0);

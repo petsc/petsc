@@ -167,12 +167,12 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,tag1,tag2,*len_s,nrqr,nrqs,*id_r1,*len_r1,flag,len;
+  PetscMPIInt    size,rank,tag1,tag2,*len_s,nrqr,nrqs,*id_r1,*len_r1,flag,len,*iwork;
   const PetscInt *idx_i;
   PetscInt       idx,isz,col,*n,*data1,**data1_start,*data2,*data2_i,*data,*data_i,
                  Mbs,i,j,k,*odata1,*odata2,
                  proc_id,**odata2_ptr,*ctable=0,*btable,len_max,len_est;
-  PetscInt       proc_end=0,*iwork,len_unused,nodata2;
+  PetscInt       proc_end=0,len_unused,nodata2;
   PetscInt       ois_max; /* max no of is[] in each of processor */
   char           *t_p;
   MPI_Comm       comm;
@@ -225,7 +225,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = PetscMalloc(size*sizeof(PetscInt*),&data1_start);CHKERRQ(ierr);
   for (i=0; i<size; i++) data1_start[i] = data1 + i*len;
 
-  ierr = PetscMalloc4(size,PetscInt,&len_s,size,PetscInt,&btable,size,PetscInt,&iwork,size+1,PetscInt,&Bowners);CHKERRQ(ierr);
+  ierr = PetscMalloc4(size,PetscInt,&len_s,size,PetscInt,&btable,size,PetscMPIInt,&iwork,size+1,PetscInt,&Bowners);CHKERRQ(ierr);
 
   /* gather c->garray from all processors */
   ierr = ISCreateGeneral(comm,Bnbs,c->garray,PETSC_COPY_VALUES,&garray_local);CHKERRQ(ierr);
@@ -402,7 +402,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   /* 4. Receive work done on other processors, then merge */
   /*------------------------------------------------------*/
   /* get max number of messages that this processor expects to recv */
-  ierr = MPI_Allreduce(len_s,iwork,size,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(len_s,iwork,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   ierr = PetscMalloc((iwork[rank]+1)*sizeof(PetscInt),&data2);CHKERRQ(ierr);
   ierr = PetscFree4(len_s,btable,iwork,Bowners);CHKERRQ(ierr);
 

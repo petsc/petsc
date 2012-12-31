@@ -775,8 +775,8 @@ PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create
   PetscFunctionBegin;
   if (!create_local) SETERRQ(((PetscObject)pc)->comm, PETSC_ERR_SUP, "No suppor for autocreation of nonlocal subdomains.");
   if (N < 1) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Total number of subdomains must be > 0, N = %D",N);
-  ierr = MPI_Allreduce(&N,&Nmin,1,MPI_INT,MPI_MIN,((PetscObject)pc)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&N,&Nmax,1,MPI_INT,MPI_MAX,((PetscObject)pc)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&N,&Nmin,1,MPIU_INT,MPIU_MIN,((PetscObject)pc)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&N,&Nmax,1,MPIU_INT,MPIU_MAX,((PetscObject)pc)->comm);CHKERRQ(ierr);
   if (Nmin != Nmax)
     SETERRQ2(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONG, "All processors must use the same number of subdomains.  min(N) = %D != %D = max(N)", Nmin, Nmax);
 
