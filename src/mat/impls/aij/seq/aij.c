@@ -3127,11 +3127,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRowMinAbs_SeqAIJ,
        0,
        MatSetColoring_SeqAIJ,
-#if defined(PETSC_HAVE_ADIC)
-       MatSetValuesAdic_SeqAIJ,
-#else
        0,
-#endif
 /*74*/ MatSetValuesAdifor_SeqAIJ,
        MatFDColoringApply_AIJ,
        0,
@@ -4432,37 +4428,6 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
   }
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_ADIC)
-EXTERN_C_BEGIN
-#include <adic/ad_utils.h>
-EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdic_SeqAIJ"
-PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
-{
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  PetscInt        m = A->rmap->n,*ii = a->i,*jj = a->j,nz,i,j,nlen;
-  PetscScalar     *v = a->a,*values = ((PetscScalar*)advalues)+1;
-  ISColoringValue *color;
-
-  PetscFunctionBegin;
-  if (!a->coloring) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Coloring not set for matrix");
-  nlen  = PetscADGetDerivTypeSize()/sizeof(PetscScalar);
-  color = a->coloring->colors;
-  /* loop over rows */
-  for (i=0; i<m; i++) {
-    nz = ii[i+1] - ii[i];
-    /* loop over columns putting computed value into matrix */
-    for (j=0; j<nz; j++) {
-      *v++ = values[color[*jj++]];
-    }
-    values += nlen; /* jump to next row of derivatives */
-  }
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesAdifor_SeqAIJ"

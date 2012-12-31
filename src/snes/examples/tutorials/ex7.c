@@ -364,8 +364,6 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[]) {
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 
-       Process adiC(36): FormFunctionLocal
-
  */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppCtx *user)
 {

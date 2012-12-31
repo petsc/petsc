@@ -62,8 +62,7 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
       PetscInt xmin_tmp;
       ymin = 0.0; ymax = 0.3;
 
-      /* ADIC doesn't like doubles in a for loop */
-      for (xmin_tmp =0; xmin_tmp < dd->M; xmin_tmp++) {
+      for (xmin_tmp=0; xmin_tmp < dd->M; xmin_tmp++) {
          ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
 

@@ -30,7 +30,6 @@ testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS}
 testexamples_METIS: ${TESTEXAMPLES_METIS}
 testexamples_SPAI: ${TESTEXAMPLES_SPAI}
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR}
-testexamples_ADIC: ${TESTEXAMPLES_ADIC}
 testexamples_FFTW: ${TESTEXAMPLES_FFTW}
 testexamples_AMS: ${TESTEXAMPLES_AMS}
 testexamples_VALGRIND: ${TESTEXAMPLES_VALGRIND}
@@ -114,8 +113,6 @@ buildexamples_SPAI:
 	-@${OMAKE} testexamples_SPAI TESTEXAMPLES_SPAI=`echo ${TESTEXAMPLES_SPAI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ADIFOR:
 	-@${OMAKE} testexamples_ADIFOR TESTEXAMPLES_ADIFOR=`echo ${TESTEXAMPLES_ADIFOR} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_ADIC:
-	-@${OMAKE} testexamples_ADIC TESTEXAMPLES_ADIC=`echo ${TESTEXAMPLES_ADIC} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_X:
 	-@${OMAKE} testexamples_X TESTEXAMPLES_X=`echo ${TESTEXAMPLES_X} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_OPENGL:

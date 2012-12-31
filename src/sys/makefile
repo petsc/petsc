@@ -2,7 +2,7 @@
 ALL: lib
 SOURCEH   =
 DIRS      = classes  error dll fileio memory objects time utils logging mpiuni \
-	    adic examples info fsrc shell f90-src f90-mod python ams totalview yaml \
+	    examples info fsrc shell f90-src f90-mod python ams totalview yaml \
             threadcomm
 LOCDIR    = src/sys/
 MANSEC    = Sys

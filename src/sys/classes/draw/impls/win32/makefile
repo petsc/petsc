@@ -13,7 +13,6 @@ MANSEC    = Draw
 LIBBASE   = libpetscsys
 DIRS      =
 LOCDIR   = src/sys/classes/draw/impls/win32/
-NOADIC    = true
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

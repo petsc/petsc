@@ -50,19 +50,6 @@ typedef struct {
   PetscInt              refine_x,refine_y,refine_z;    /* ratio used in refining */
   PetscInt              coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
 
-#define DMDA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DMDAGetAdicArray() */
-  void                  *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS];
-  void                  *adarrayghostedin[DMDA_MAX_AD_ARRAYS],*adarrayghostedout[DMDA_MAX_AD_ARRAYS];
-  void                  *adstartin[DMDA_MAX_AD_ARRAYS],*adstartout[DMDA_MAX_AD_ARRAYS];
-  void                  *adstartghostedin[DMDA_MAX_AD_ARRAYS],*adstartghostedout[DMDA_MAX_AD_ARRAYS];
-  PetscInt                    tdof,ghostedtdof;
-
-                            /* work arrays for holding derivative type data, via DMDAGetAdicMFArray() */
-  void                  *admfarrayin[DMDA_MAX_AD_ARRAYS],*admfarrayout[DMDA_MAX_AD_ARRAYS];
-  void                  *admfarrayghostedin[DMDA_MAX_AD_ARRAYS],*admfarrayghostedout[DMDA_MAX_AD_ARRAYS];
-  void                  *admfstartin[DMDA_MAX_AD_ARRAYS],*admfstartout[DMDA_MAX_AD_ARRAYS];
-  void                  *admfstartghostedin[DMDA_MAX_AD_ARRAYS],*admfstartghostedout[DMDA_MAX_AD_ARRAYS];
-
 #define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
   void                  *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];
   void                  *arrayghostedin[DMDA_MAX_WORK_ARRAYS],*arrayghostedout[DMDA_MAX_WORK_ARRAYS];

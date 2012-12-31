@@ -93,10 +93,6 @@ PETSC_MAKE_STOP_ON_ERROR = -
 #
 # ----------------------------------------------------------------------------------------
 #
-#   Currently ignore this entry
-#
-PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${EXTERNAL_LIB_BASIC}
-#
 # Some variables used to build shared libraries
 SHLIBS   = libpetscsys libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
 #

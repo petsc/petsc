@@ -62,18 +62,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
 
   PetscFunctionBegin;
   /* destroy the external/common part */
-  for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
-    ierr = PetscFree(dd->adstartghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->adstartghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->adstartout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->adstartin[i]);CHKERRQ(ierr);
-  }
-  for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
-    ierr = PetscFree(dd->admfstartghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->admfstartghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->admfstartout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->admfstartin[i]);CHKERRQ(ierr);
-  }
   for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
     ierr = PetscFree(dd->startghostedout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->startghostedin[i]);CHKERRQ(ierr);

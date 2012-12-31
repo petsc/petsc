@@ -295,7 +295,7 @@
       PetscEnum MATOP_GET_ROW_MIN_ABS
       PetscEnum MATOP_CONVERT
       PetscEnum MATOP_SET_COLORING
-      PetscEnum MATOP_SET_VALUES_ADIC
+      PetscEnum MATOP_PLACEHOLDER
       PetscEnum MATOP_SET_VALUES_ADIFOR
       PetscEnum MATOP_FD_COLORING_APPLY
       PetscEnum MATOP_SET_FROM_OPTIONS
@@ -425,7 +425,7 @@
       parameter(MATOP_GET_ROW_MIN_ABS=70)
       parameter(MATOP_CONVERT=71)
       parameter(MATOP_SET_COLORING=72)
-      parameter(MATOP_SET_VALUES_ADIC=73)
+      parameter(MATOP_PLACEHOLDER=73)
       parameter(MATOP_SET_VALUES_ADIFOR=74)
       parameter(MATOP_FD_COLORING_APPLY=75)
       parameter(MATOP_SET_FROM_OPTIONS=76)

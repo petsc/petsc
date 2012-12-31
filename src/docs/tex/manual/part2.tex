@@ -4745,17 +4745,13 @@ This chapter needs to be written.
 
 
 \cleardoublepage
-\chapter{Using ADIC and ADIFOR with PETSc}
+\chapter{Using ADIFOR with PETSc}
 
 Automatic differentiation is an incredible technique to generate code
 that computes Jacobians and other differentives directly from code
 that only evaluates the function.
 
 First one indicates the functions for which one needs Jacobians by adding
-in the comments in the code
-\begin{tabbing}
-       /* Process adiC(maximum number colors): FormFunctionLocal FormFunctionLocali */
-\end{tabbing}
 where one lists the functions. In Fortran use
 \begin{tabbing}
 !     Process adifor: FormFunctionLocal
@@ -4767,8 +4763,7 @@ Next one uses the call
   ad\_localfunction,ad\_mf\_localfunction);
 \end{tabbing}
 where the names of the last two functions are obtained
-by prepending an \trl{ad_} and \trl{ad_mf_} in front
-of the function name. In Fortran, this is done by prepending a \trl{g_} and \trl{m_}.
+by prepending in Fortran, this is done by prepending a \trl{g_} and \trl{m_}.
 
 \section{Work arrays inside the local functions} In C you can call DMDAVecGetArray() to get
 work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}

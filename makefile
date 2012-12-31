@@ -243,7 +243,7 @@ cmakegen:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = conf/variables conf/rules conf/test bmake/adic.init bmake/adicmf.init
+BMAKEFILES = conf/variables conf/rules conf/test 
 SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bugReport.py bin/maint/buildconfigtest bin/maint/builddistlite \
              bin/maint/buildtest bin/maint/checkBuilds.py bin/maint/copylognightly bin/maint/copylognightly.tao bin/maint/countfiles bin/maint/findbadfiles \
              bin/maint/fixinclude bin/maint/getexlist bin/maint/getpdflabels.py bin/maint/helpindex.py bin/maint/hosts.local bin/maint/hosts.solaris  \
@@ -326,7 +326,6 @@ deletemanualpages: chk_loc
         fi
 
 allcleanhtml:
-	-${RM} include/adic/*.h.html
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc
@@ -388,40 +387,6 @@ mergegcov:
 allrcslabel:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree
 #
-#   The commands below are for generating ADIC versions of the code;
-# they are not currently used.
-#
-alladicignore:
-	-@${RM} ${INSTALL_LIB_DIR}/adicignore
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree
-
-alladic:
-	-@echo "Beginning to compile ADIC source code in all directories"
-	-@echo "Using ADIC compiler: ${ADIC_CC} ${CCPPFLAGS}"
-	-@echo "========================================="
-	-@cd include ; \
-           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petscsys.h
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree
-
-alladiclib:
-	-@echo "Beginning to compile ADIC libraries in all directories"
-	-@echo "Using compiler: ${PCC} ${COPTFLAGS}"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
-	-@echo "-----------------------------------------"
-	-@echo "Using configuration flags:"
-	-@grep "define " ${PETSC_ARCH}/include/petscconf.h
-	-@echo "-----------------------------------------"
-	-@echo "Using include paths: ${CC_PETSC_INCLUDE}"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc directory: ${PETSC_DIR}"
-	-@echo "Using PETSc arch: ${PETSC_ARCH}"
-	-@echo "========================================="
-	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.${AR_LIB_SUFFIX}
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
-	-@cd src/adic/src ; \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} lib
-
 # -------------------------------------------------------------------------------
 #
 # Some macros to check if the fortran interface is up-to-date.
@@ -499,7 +464,7 @@ exercises:
 
 .PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
-        allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
+        allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
         start_configure configure_petsc configure_clean
 
 petscao : petscmat petscao.f90.h

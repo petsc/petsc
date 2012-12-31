@@ -3199,11 +3199,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRowMinAbs_MPIAIJ,
        0,
        MatSetColoring_MPIAIJ,
-#if defined(PETSC_HAVE_ADIC)
-       MatSetValuesAdic_MPIAIJ,
-#else
        0,
-#endif
        MatSetValuesAdifor_MPIAIJ,
 /*75*/ MatFDColoringApply_AIJ,
        0,
@@ -4406,21 +4402,6 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
 
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_ADIC)
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdic_MPIAIJ"
-PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat A,void *advalues)
-{
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatSetValuesAdic_SeqAIJ(a->A,advalues);CHKERRQ(ierr);
-  ierr = MatSetValuesAdic_SeqAIJ(a->B,advalues);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesAdifor_MPIAIJ"

@@ -155,9 +155,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
       (*PetscErrorPrintf)("not commonly aligned.\n");
-      /* double/int doesn't work with ADIC */
-      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",
-                         ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
+      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
     ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\

@@ -17,7 +17,6 @@ LIBBASE   = libpetscvec
 DIRS      =
 MANSEC    = Sys
 LOCDIR    = include/finclude/
-NOADIC    = true
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

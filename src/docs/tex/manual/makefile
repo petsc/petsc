@@ -2,7 +2,6 @@
 #clean is required - otherwise 'temporary file manual.pdf can upset the build
 ALL: clean manual.pdf
 
-NOADIC    = true
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
 

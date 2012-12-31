@@ -172,14 +172,12 @@ clean::
 	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	       *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ *.c*.c pageform.txt \
-               .adic* *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
+	        *.cp_ *.cp__ *.c*.c pageform.txt \
+               *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
 	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
 
-cleanadic:
-	@-${RM} *.ad.*
 #
 #  Checks if directory requires particular package or language
 # The makefile may contain
@@ -386,75 +384,8 @@ getautoconfargs:
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
         fi
-	${PETSC_MAKE_STOP_ON_ERROR}@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
-          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null;\
-          if [ "$$?" = 0 ]; then \
-            haveadic=1; \
-          else \
-            haveadic=0;\
-          fi; \
-        else \
-          haveadic=1; \
-        fi; \
-	if [ "$${haveadic}" = "1" ]; then \
-	   egrep "Process adiC" $< > /dev/null ; \
-              if [ "$$?" = 0 ]; then \
-                if [ ! -f $<.tmp1 ]; then \
-                  c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
-                  r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
-                  echo Running adiC on function $${r};\
-                  ${PYTHON} ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
-                  ${CP} $<.tmp1 $<.tmp2;\
-	          echo '#include "petscdm.h"' > $*.ad.c ; \
-	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
-	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
-                  if [ "foo${ADIC_CC}" != "foo" ]; then \
-                    echo ${ADIC_CC}  -i ${PETSC_DIR}/conf/adic.init $<.tmp1; \
-	            ${ADIC_CC} -F -z -t -i ${PETSC_DIR}/conf/adic.init  $<.tmp1 ; \
-	            ${ADIC_CC} -F -z -t -h -i ${PETSC_DIR}/conf/adicmf.init   $<.tmp2 ; \
-                  else \
-                    echo "You need to run the ADIC server on $<.tmp1 and $<.tmp2, then rerun make";\
-                    exit;\
-                  fi;\
-                fi;\
-	        cat $<.ad.tmp1  >> $*.ad.c ;\
-	        egrep "main\(" $< > /dev/null ; \
-                if [ "$$?" = 0 ]; then \
-		      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
-	  	      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
-                fi;\
-                echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
-                echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
-                echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfDERIV_TYPE;"  >> $*.ad.c ;\
-                sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
-	        egrep "Process blockadiC" $< > /dev/null ; \
-                if [ "$$?" = 0 ]; then \
-                  c=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
-                  r=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
-                  echo Running adiC on function $${r};\
-                  ${PYTHON} ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
-                  echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
-                  echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
-                  ${ADIC_CC} -t -h -i ${PETSC_DIR}/conf/adicmfb.init   $<.tmp1 ; \
-                  echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfbDERIV_TYPE;"  >> $*.ad.c ;\
-	          sed -e "s/DERIV_TYPE/mfbDERIV_TYPE/g" $<.ad.tmp1 >> $*.ad.c ;\
-                fi;\
-	        echo "#include \"$<\"" >> $*.ad.c ;\
-                ${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ;\
-	        echo ${PCC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	        ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-		 \
-              else \
-	        echo ${PETSC_COMPILE_SINGLE} $<; \
-	        ${PETSC_COMPILE_SINGLE} $<; \
-              fi; \
-        elif  [ -f $*.ad.c ]; then \
-          echo ${PCC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	  ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-        else \
-	  echo ${PETSC_COMPILE_SINGLE} $<; \
-	  ${PETSC_COMPILE_SINGLE} $<; \
-        fi
+	echo ${PETSC_COMPILE_SINGLE} $<; 
+	${PETSC_COMPILE_SINGLE} $<; 
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
@@ -776,53 +707,6 @@ cleanhtml:
 
 # -------------------------------------------------------------------------------
 #
-#   Rule for generating ADIC derivatives from PETSc .c and .hfiles
-#
-adic:
-	@-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -s -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	@-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEH}" != "" ]; then \
-          for i in ${SOURCEH} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -s -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	-@chmod -f go+rw *.ad.*
-
-adic2:
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEH}" != "" ]; then \
-          for i in ${SOURCEH} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	-@chmod -f go+rw *.ad.*
-
-adiclib:
-	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
-        fi; fi
-	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
-        fi; fi
-	-@chmod -f go+rw ${INSTALL_LIB_DIR}/${LIBBASE}.a
-	-@${RM} *.ad.o
-
-adiclib2:
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
-        fi; fi
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
-        fi; fi
-	-@chmod -f go+rw ${INSTALL_LIB_DIR}/${LIBBASE}.a
-	-@${RM} *.ad.o
 # ----------------------------------------------------------------------------------------
 # Coverage tests: what lines of source code are tested during running of test examples
 #

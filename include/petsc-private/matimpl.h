@@ -103,7 +103,7 @@ struct _MatOps {
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
-  PetscErrorCode (*setvaluesadic)(Mat,void*);
+  PetscErrorCode (*dummy3)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);

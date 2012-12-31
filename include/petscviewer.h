@@ -29,10 +29,6 @@ typedef struct _p_PetscViewer* PetscViewer;
 
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
-/*
-    petscsys.h must be included AFTER the definition of PetscViewer for ADIC to
-   process correctly.
-*/
 /*J
     PetscViewerType - String with the name of a PETSc PETScViewer
 

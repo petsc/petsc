@@ -363,8 +363,6 @@ PetscErrorCode nonlinearJacobian(PetscScalar lambda, PetscScalar u[], PetscScala
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 
-       Process adiC(36): FormFunctionLocal
-
  */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {

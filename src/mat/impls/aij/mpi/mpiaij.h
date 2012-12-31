@@ -81,7 +81,6 @@ extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
 EXTERN_C_END
 
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
-extern PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
 extern PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,PetscInt,void*);
 extern PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat);
 extern PetscErrorCode MatDisAssemble_MPIAIJ(Mat);

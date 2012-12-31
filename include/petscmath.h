@@ -394,13 +394,6 @@ M*/
 #  define PETSC_SMALL                   1.e-20
 #endif
 
-#if defined PETSC_HAVE_ADIC
-/* Use MPI_Allreduce when ADIC is not available. */
-PETSC_EXTERN PetscErrorCode PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
-#endif
-
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
 
