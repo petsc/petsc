@@ -457,10 +457,10 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     }
   }
   if (sharedtmp) { /* send library name to all processors */
-    ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
     if (*found) {
       ierr = MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
     }
   }
 

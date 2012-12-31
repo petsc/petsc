@@ -75,7 +75,7 @@ PetscErrorCode  PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButt
     ierr = PetscDrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);
   }
   if (button) {
-     ierr = MPI_Bcast(button,1,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast((PetscEnum*)button,1,MPIU_ENUM,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   }
   if (x_user) bcast[0] = *x_user;
   if (y_user) bcast[1] = *y_user;

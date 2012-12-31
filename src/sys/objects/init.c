@@ -51,6 +51,8 @@ MPI_Datatype   MPIU___COMPLEX128 = 0;
 #endif
 MPI_Datatype   MPIU_2SCALAR = 0;
 MPI_Datatype   MPIU_2INT = 0;
+MPI_Datatype    MPIU_BOOL = MPI_INT;
+MPI_Datatype    MPIU_ENUM = MPI_INT;
 
 /*
        Function that is called to display all error messages

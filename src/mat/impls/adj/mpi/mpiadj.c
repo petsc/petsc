@@ -186,7 +186,7 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscBool * flg)
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -264,7 +264,7 @@ PetscErrorCode MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   PetscFunctionBegin;
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix adds/inserts on different procs");
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -1715,7 +1715,7 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
   a = matA->A;
   b = matB->A;
   ierr = MatEqual(a,b,&flg);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&flg,flag,1,MPI_INT,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flg,flag,1,MPIU_BOOL,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -834,7 +834,7 @@ PetscErrorCode MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   }
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce((PetscEnum*)&mat->insertmode,&addv,1,MPIU_ENUM,MPI_BOR,((PetscObject)mat)->comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -917,7 +917,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ*)baij->B->data)->nonew)  {
-    ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,((PetscObject)mat)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,((PetscObject)mat)->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
       ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr);
     }
@@ -1932,7 +1932,7 @@ PetscErrorCode MatEqual_MPIBAIJ(Mat A,Mat B,PetscBool  *flag)
   if (flg) {
     ierr = MatEqual(b,d,&flg);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(&flg,flag,1,MPI_INT,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flg,flag,1,MPIU_BOOL,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1426,8 +1426,8 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
         localStageVisible[stage] = PETSC_TRUE;
       }
     }
-    ierr = MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPI_INT, MPI_LOR,  comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(localStageVisible, stageVisible, numStages, MPI_INT, MPI_LAND, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPIU_BOOL, MPI_LOR,  comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
     for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage]) {
         ierr = PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flops -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);
@@ -2248,8 +2248,8 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
         localStageVisible[stage] = PETSC_TRUE;
       }
     }
-    ierr = MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPI_INT, MPI_LOR,  comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(localStageVisible, stageVisible, numStages, MPI_INT, MPI_LAND, comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPIU_BOOL, MPI_LOR,  comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
 for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage]) {
         ierr = PetscFPrintf(comm, fd, "\n#Summary of Stages:   ----- Time ------  ----- Flops -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);

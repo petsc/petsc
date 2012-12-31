@@ -3302,7 +3302,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
         }
         ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
       }
-      ierr = MPI_Scatter(stratumSizes, newLabel->numStrata, MPIU_INT, newLabel->stratumSizes, newLabel->numStrata, MPI_INT, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Scatter(stratumSizes, newLabel->numStrata, MPIU_INT, newLabel->stratumSizes, newLabel->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
       /* Calculate stratumOffsets */
       newLabel->stratumOffsets[0] = 0;
       for (s = 0; s < newLabel->numStrata; ++s) {

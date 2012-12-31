@@ -150,6 +150,7 @@ typedef int PetscMPIInt;
 .seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
 M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
+extern MPI_Datatype MPIU_ENUM;
 
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
@@ -319,6 +320,7 @@ M*/
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
+extern MPI_Datatype MPIU_BOOL;
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained

@@ -167,7 +167,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     piece.ncells++;
   }
   if (!rank) {ierr = PetscMalloc(size*sizeof(piece),&gpiece);CHKERRQ(ierr);}
-  ierr = MPI_Gather(&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRQ(ierr);
 
   /*
    * Write file header

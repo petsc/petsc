@@ -89,7 +89,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
       ierr = PetscFree(a2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

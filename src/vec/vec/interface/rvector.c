@@ -1239,7 +1239,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
       PetscInt n,N;
       PetscScalar *x;
@@ -1314,7 +1314,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
       PetscBool contiguous,gcontiguous;
       ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
       ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
       if (!gcontiguous) SETERRQ(((PetscObject)is)->comm,PETSC_ERR_SUP,"Unhandled case, values have been changed and need to be copied back into X");
     }
     ierr = VecDestroy(Y);CHKERRQ(ierr);

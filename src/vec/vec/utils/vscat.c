@@ -1240,7 +1240,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end) islocal = PETSC_TRUE; else islocal = PETSC_FALSE;
-      ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
       if (cando) {
         ierr                = PetscMalloc2(1,VecScatter_Seq_Stride,&to12,1,VecScatter_Seq_Stride,&from12);CHKERRQ(ierr);
         to12->n             = nx;
@@ -1262,7 +1262,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
     }
 
     /* test for special case of all processors getting entire vector */
@@ -1284,7 +1284,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       } else if (from_first == 0 && from_step == 1 && from_first == to_first && from_step == to_step){
         totalv = 1;
       } else totalv = 0;
-      ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
       if (cando && (yin->map->N < PETSC_MPI_INT_MAX)) {
@@ -1314,7 +1314,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
     }
 
     /* test for special case of processor 0 getting entire vector */
@@ -1344,7 +1344,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         if (!nx) totalv = 1;
         else     totalv = 0;
       }
-      ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
       if (cando && (yin->map->N < PETSC_MPI_INT_MAX)) {
@@ -1374,7 +1374,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
     }
 
     ierr = PetscObjectTypeCompare((PetscObject)ix,ISBLOCK,&ixblock);CHKERRQ(ierr);
@@ -1459,7 +1459,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end) islocal = PETSC_TRUE; else islocal = PETSC_FALSE;
-      ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,((PetscObject)yin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)yin)->comm);CHKERRQ(ierr);
       if (cando) {
         ierr              = PetscMalloc2(1,VecScatter_Seq_Stride,&to,1,VecScatter_Seq_Stride,&from);CHKERRQ(ierr);
         to->n             = nx;
@@ -1481,7 +1481,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         goto functionend;
       }
     } else {
-      ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,((PetscObject)yin)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)yin)->comm);CHKERRQ(ierr);
     }
       /* special case block to stride */
     if (ix_type == IS_BLOCK_ID && iy_type == IS_STRIDE_ID){
