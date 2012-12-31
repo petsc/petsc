@@ -1475,7 +1475,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "   Time and Flops: Max - maximum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "                   Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Mess: number of messages sent\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   Avg. len: average message length\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   Avg. len: average message length (bytes)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Global: entire computation\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n");CHKERRQ(ierr);
