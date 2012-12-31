@@ -134,7 +134,7 @@ class PETScMaker(script.Script):
    except OSError:
      pass
    log.write('Invoking: %s\n' % cmd)
-   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=10)
+   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=30)
    if retcode:
      self.logPrintBox('CMake setup incomplete (status %d), falling back to legacy build' % (retcode,))
      self.logPrint('Output: '+output+'\nError: '+error)
