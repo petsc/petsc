@@ -3238,3 +3238,28 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
   *cdm = dm->coordinateDM;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocatePoints"
+/*@
+  DMLocatePoints - Locate the points in v in the mesh and return an IS of the containing cells
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+- v - The Vec of points
+
+  Output Parameters:
+. cells - The local cell numbers for cells which contain the points
+
+  Level: developer
+*/
+PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,2);
+  PetscValidPointer(cells,3);
+  PetscFunctionReturn(0);
+}

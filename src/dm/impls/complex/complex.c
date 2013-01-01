@@ -6564,11 +6564,8 @@ PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRef
   _calcNewOverlap(newMesh, mesh, refiner);
   // Calculate new labels
   _createLabels(newMesh, mesh, refiner);
-  PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
 #endif
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

@@ -150,6 +150,7 @@ PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
+PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,IS*);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -234,4 +235,29 @@ typedef struct {
 } PetscFEM;
 
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
+
+struct _DMInterpolationInfo {
+  MPI_Comm   comm;
+  PetscInt   dim;    /*1 The spatial dimension of points */
+  PetscInt   nInput; /* The number of input points */
+  PetscReal *points; /* The input point coordinates */
+  PetscInt  *cells;  /* The cell containing each point */
+  PetscInt   n;      /* The number of local points */
+  Vec        coords; /* The point coordinates */
+  PetscInt   dof;    /* The number of components to interpolate */
+};
+typedef struct _DMInterpolationInfo *DMInterpolationInfo;
+
+PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);
+PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo, PetscInt);
+PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo, PetscInt *);
+PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo, PetscInt);
+PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo, PetscInt *);
+PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo, PetscInt, PetscReal[]);
+PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo, DM, PetscBool);
+PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo, Vec *);
+PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *);
+PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
+PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
+PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
 #endif
