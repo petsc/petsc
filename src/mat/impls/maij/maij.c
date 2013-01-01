@@ -3089,7 +3089,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
-  (*C)->ops->ptap = MatPtAP_SeqAIJ_SeqMAIJ;
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqMAIJ;
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
