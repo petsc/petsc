@@ -1854,6 +1854,7 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
   ierr = PetscFree2(partSizes,partOffsets);CHKERRQ(ierr);
   ierr = ISGetIndices(partition,&partArray);CHKERRQ(ierr);
   ierr = PetscSFCreate(comm,&sfPoints);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfPoints);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sfPoints,numMyPoints,numPoints,partArray,PETSC_USE_POINTER,sendPoints,PETSC_OWN_POINTER);CHKERRQ(ierr);
 
   /* Invert SF so that the new owners are leaves and the locations indexed through partition are the roots */

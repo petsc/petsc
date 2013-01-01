@@ -6010,6 +6010,7 @@ PetscErrorCode DMComplexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks
   ierr = PetscFree(ranks);CHKERRQ(ierr);
   ierr = ISCreateGeneral(((PetscObject) dm)->comm, numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);
   ierr = PetscSFCreate(((PetscObject) dm)->comm, sfProcess);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sfProcess, 1, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
