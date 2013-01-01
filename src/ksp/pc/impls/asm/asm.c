@@ -235,11 +235,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       }
     }
     {/* determine the global and max number of subdomains */
-      PetscInt inwork[2],outwork[2];
-      inwork[0] = inwork[1] = osm->n_local_true;
-      ierr = MPI_Allreduce(inwork,outwork,1,MPIU_2INT,PetscMaxSum_Op,((PetscObject)pc)->comm);CHKERRQ(ierr);
-      osm->n_local = outwork[0];
-      osm->n       = outwork[1];
+      struct {PetscInt max,sum;} inwork,outwork;
+      inwork.max = osm->n_local_true;
+      inwork.sum = osm->n_local_true;
+      ierr = MPI_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,((PetscObject)pc)->comm);CHKERRQ(ierr);
+      osm->n_local = outwork.max;
+      osm->n       = outwork.sum;
     }
     if (!osm->is){ /* create the index sets */
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);

@@ -61,6 +61,19 @@ const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWi
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFWindowOpTranslate"
+/* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPI_Allreduce) */
+static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
+{
+
+  PetscFunctionBegin;
+  if (*op == MPIU_SUM) *op = MPI_SUM;
+  else if (*op == MPIU_MAX) *op = MPI_MAX;
+  else if (*op == MPIU_MIN) *op = MPI_MIN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFWindowGetDataTypes"
 /*@C
    PetscSFWindowGetDataTypes - gets composite local and remote data types for each rank
@@ -517,7 +530,7 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,const void
   PetscFunctionBegin;
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscSFOpTranslate(&op);CHKERRQ(ierr);
+  ierr = PetscSFWindowOpTranslate(&op);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {ierr = MPI_Win_lock(MPI_LOCK_SHARED,ranks[i],MPI_MODE_NOCHECK,win);CHKERRQ(ierr);}
@@ -555,7 +568,7 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   PetscFunctionBegin;
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
-  ierr = PetscSFOpTranslate(&op);CHKERRQ(ierr);
+  ierr = PetscSFWindowOpTranslate(&op);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
   for (i=0; i<sf->nranks; i++) {
     ierr = MPI_Win_lock(MPI_LOCK_EXCLUSIVE,sf->ranks[i],0,win);CHKERRQ(ierr);
@@ -607,7 +620,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowSetSyncType_C","PetscSFWindowSetSyncType_Window",PetscSFWindowSetSyncType_Window);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowGetSyncType_C","PetscSFWindowGetSyncType_Window",PetscSFWindowGetSyncType_Window);CHKERRQ(ierr);
 
-#if OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6)
+#if defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6))
   {
     PetscBool ackbug = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-acknowledge_ompi_onesided_bug",&ackbug,PETSC_NULL);CHKERRQ(ierr);

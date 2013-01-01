@@ -225,16 +225,16 @@ there would be no place to store the both needed results.
 PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
-  PetscInt       *work;
+  struct {PetscInt max,sum;} *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr   = PetscMalloc(2*size*sizeof(PetscInt),&work);CHKERRQ(ierr);
+  ierr   = PetscMalloc(size*sizeof(*work),&work);CHKERRQ(ierr);
   ierr   = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  *max   = work[2*rank];
-  *sum   = work[2*rank+1];
+  *max   = work[rank].max;
+  *sum   = work[rank].sum;
   ierr   = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -757,8 +757,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
+#endif
 
   /*
      Attributes to be set on PETSc communicators
@@ -1218,7 +1220,9 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
+#endif
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);

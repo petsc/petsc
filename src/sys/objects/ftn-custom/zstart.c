@@ -382,10 +382,12 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU_2SCALAR);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   *ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+#endif
   *ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);

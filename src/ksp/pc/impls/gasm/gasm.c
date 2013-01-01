@@ -337,12 +337,13 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = PCGASMCreateLocalSubdomains(pc->pmat,osm->overlap,osm->n,&osm->iis,&osm->ois);CHKERRQ(ierr);
     }
     if (osm->N == PETSC_DECIDE) {
-      PetscInt inwork[2], outwork[2];
+      struct {PetscInt max,sum;} inwork,outwork;
       /* determine global number of subdomains and the max number of local subdomains */
-      inwork[0] = inwork[1] = osm->n;
-      ierr = MPI_Allreduce(inwork,outwork,1,MPIU_2INT,PetscMaxSum_Op,((PetscObject)pc)->comm);CHKERRQ(ierr);
-      osm->nmax = outwork[0];
-      osm->N    = outwork[1];
+      inwork.max = osm->n;
+      inwork.sum = osm->n;
+      ierr = MPI_Allreduce(&inwork,&outwork,1,MPIU_2INT,PetscMaxSum_Op,((PetscObject)pc)->comm);CHKERRQ(ierr);
+      osm->nmax = outwork.max;
+      osm->N    = outwork.sum;
     }
 
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);

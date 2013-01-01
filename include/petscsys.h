@@ -99,6 +99,15 @@
 #define MPIAPI
 #endif
 
+/* Support for Clang (>=3.2) matching type tag arguments with void* buffer types */
+#if defined(__has_attribute)
+#  if __has_attribute(argument_with_type_tag) && __has_attribute(pointer_with_type_tag) && __has_attribute(type_tag_for_datatype)
+#    define PetscAttrMPIPointerWithType(bufno,typeno) __attribute__((pointer_with_type_tag(MPI,bufno,typeno)))
+#  endif
+#endif
+#if !defined(PetscAttrMPIPointerWithType)
+#  define PetscAttrMPIPointerWithType(bufno,typeno)
+#endif
 
 /*MC
     PetscErrorCode - datatype used for return error code from all PETSc functions

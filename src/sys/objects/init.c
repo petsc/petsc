@@ -50,7 +50,9 @@ MPI_Datatype   MPIU___COMPLEX128 = 0;
 #endif
 #endif
 MPI_Datatype   MPIU_2SCALAR = 0;
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
 MPI_Datatype   MPIU_2INT = 0;
+#endif
 MPI_Datatype    MPIU_BOOL = MPI_INT;
 MPI_Datatype    MPIU_ENUM = MPI_INT;
 
