@@ -7269,6 +7269,194 @@ PetscErrorCode DMComplexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexLocatePoint_Simplex_2D"
+PetscErrorCode DMComplexLocatePoint_Simplex_2D(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
+{
+  const PetscInt embedDim = 2;
+  PetscReal      v0[2], J[4], invJ[4], detJ;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  PetscReal xi  = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
+  PetscReal eta = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
+
+  if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) {
+    *cell = c;
+  } else {
+    *cell = -1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexLocatePoint_General_2D"
+PetscErrorCode DMComplexLocatePoint_General_2D(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
+{
+  PetscSection       coordSection;
+  Vec                coordsLocal;
+  const PetscScalar *coords;
+  const PetscInt     faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
+  PetscInt           crossings = 0, f;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, coordSection, coordsLocal, c, PETSC_NULL, &coords);CHKERRQ(ierr);
+  for(f = 0; f < 4; ++f) {
+    PetscReal x_i   = coords[faces[2*f+0]*2+0];
+    PetscReal y_i   = coords[faces[2*f+0]*2+1];
+    PetscReal x_j   = coords[faces[2*f+1]*2+0];
+    PetscReal y_j   = coords[faces[2*f+1]*2+1];
+    PetscReal slope = (y_j - y_i) / (x_j - x_i);
+    PetscBool cond1 = (x_i <= point[0]) && (point[0] < x_j) ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool cond2 = (x_j <= point[0]) && (point[0] < x_i) ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool above = (point[1] < slope * (point[0] - x_i) + y_i) ? PETSC_TRUE : PETSC_FALSE;
+    if ((cond1 || cond2)  && above) ++crossings;
+  }
+  if (crossings % 2) {
+    *cell = c;
+  } else {
+    *cell = -1;
+  }
+  ierr = DMComplexVecRestoreClosure(dm, coordSection, coordsLocal, c, PETSC_NULL, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexLocatePoint_Simplex_3D"
+PetscErrorCode DMComplexLocatePoint_Simplex_3D(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
+{
+  const PetscInt embedDim = 3;
+  PetscReal      v0[3], J[9], invJ[9], detJ;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  PetscReal xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]);
+  PetscReal eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
+  PetscReal zeta = invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]);
+
+  if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) {
+    *cell = c;
+  } else {
+    *cell = -1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexLocatePoint_General_3D"
+PetscErrorCode DMComplexLocatePoint_General_3D(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
+{
+  PetscSection       coordSection;
+  Vec                coordsLocal;
+  const PetscScalar *coords;
+  const PetscInt     faces[24] = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
+                                  3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
+  PetscBool          found     = PETSC_TRUE;
+  PetscInt           f;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, coordSection, coordsLocal, c, PETSC_NULL, &coords);CHKERRQ(ierr);
+  for(f = 0; f < 6; ++f) {
+    /* Check the point is under plane */
+    /*   Get face normal */
+    PetscReal v_i[3]    = {coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]};
+    PetscReal v_j[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
+    PetscReal normal[3] = {v_i[1]*v_j[2] - v_i[2]*v_j[1], v_i[2]*v_j[0] - v_i[0]*v_j[2], v_i[0]*v_j[1] - v_i[1]*v_j[0]};
+    PetscReal pp[3]     = {coords[faces[f*4+0]*3+0] - point[0],coords[faces[f*4+0]*3+1] - point[1],coords[faces[f*4+0]*3+2] - point[2]};
+    PetscReal dot       = normal[0]*pp[0] + normal[1]*pp[1] + normal[2]*pp[2];
+    /* Check that projected point is in face (2D location problem) */
+    if (dot < 0.0) {
+      found = PETSC_FALSE;
+      break;
+    }
+  }
+  if (found) {
+    *cell = c;
+  } else {
+    *cell = -1;
+  }
+  ierr = DMComplexVecRestoreClosure(dm, coordSection, coordsLocal, c, PETSC_NULL, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocatePoints_Complex"
+/*
+ Need to implement using the guess
+*/
+PetscErrorCode DMLocatePoints_Complex(DM dm, Vec v, IS *cellIS)
+{
+  PetscInt       cell = -1/*, guess = -1*/;
+  PetscInt       bs, numPoints, p;
+  PetscInt       dim, cStart, cEnd, cMax, c, coneSize;
+  PetscInt      *cells;
+  PetscScalar   *a;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v, &numPoints);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  if (bs != dim) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Block size for point vector %d must be the mesh coordinate dimension %d", bs, dim);
+  numPoints /= bs;
+  ierr = PetscMalloc(numPoints * sizeof(PetscInt), &cells);CHKERRQ(ierr);
+  for(p = 0; p < numPoints; ++p) {
+    const PetscScalar *point = &a[p*bs];
+
+    switch(dim) {
+    case 2:
+      for(c = cStart; c < cEnd; ++c) {
+        ierr = DMComplexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+        switch(coneSize) {
+        case 3:
+          ierr = DMComplexLocatePoint_Simplex_2D(dm, point, c, &cell);CHKERRQ(ierr);
+          break;
+        case 4:
+          ierr = DMComplexLocatePoint_General_2D(dm, point, c, &cell);CHKERRQ(ierr);
+          break;
+        default:
+          SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %d", coneSize);
+        }
+        if (cell >= 0) break;
+      }
+      break;
+    case 3:
+      for(c = cStart; c < cEnd; ++c) {
+        ierr = DMComplexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+        switch(coneSize) {
+        case 4:
+          ierr = DMComplexLocatePoint_Simplex_3D(dm, point, c, &cell);CHKERRQ(ierr);
+          break;
+        case 8:
+          ierr = DMComplexLocatePoint_General_3D(dm, point, c, &cell);CHKERRQ(ierr);
+          break;
+        default:
+          SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %d", coneSize);
+        }
+        if (cell >= 0) break;
+      }
+      break;
+    default:
+      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No point location for mesh dimension %d", dim);
+    }
+    cells[p] = cell;
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, numPoints, cells, PETSC_OWN_POINTER, cellIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /******************************** FEM Support **********************************/
 
 #undef __FUNCT__

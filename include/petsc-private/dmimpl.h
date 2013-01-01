@@ -20,7 +20,7 @@ struct _DMOps {
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
-  PetscErrorCode (*getcoloring)(DM,ISColoringType,MatType,ISColoring*);	
+  PetscErrorCode (*getcoloring)(DM,ISColoringType,MatType,ISColoring*);
   PetscErrorCode (*creatematrix)(DM, MatType,Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
@@ -31,7 +31,7 @@ struct _DMOps {
   PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM*);
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
 
-  PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
+  PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
@@ -46,6 +46,8 @@ struct _DMOps {
   PetscErrorCode (*createdomaindecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
+
+  PetscErrorCode (*locatepoints)(DM,Vec,IS*);
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;

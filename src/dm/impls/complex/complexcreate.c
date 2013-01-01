@@ -469,6 +469,7 @@ extern PetscErrorCode DMSetUp_Complex(DM dm);
 extern PetscErrorCode DMDestroy_Complex(DM dm);
 extern PetscErrorCode DMView_Complex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Complex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
+extern PetscErrorCode DMLocatePoints_Complex(DM dm, Vec v, IS *cellIS);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Complex"
@@ -528,6 +529,7 @@ PetscErrorCode DMInitialize_Complex(DM dm)
   dm->ops->localtoglobalend   = PETSC_NULL;
   dm->ops->destroy            = DMDestroy_Complex;
   dm->ops->createsubdm        = DMCreateSubDM_Complex;
+  dm->ops->locatepoints       = DMLocatePoints_Complex;
   PetscFunctionReturn(0);
 }
 

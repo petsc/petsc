@@ -3257,9 +3257,16 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 */
 PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscValidPointer(cells,3);
+  if (dm->ops->locatepoints) {
+    ierr = (*dm->ops->locatepoints)(dm,v,cells);CHKERRQ(ierr);
+  } else {
+    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Point location not available for this DM");
+  }
   PetscFunctionReturn(0);
 }
