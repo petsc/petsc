@@ -607,7 +607,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowSetSyncType_C","PetscSFWindowSetSyncType_Window",PetscSFWindowSetSyncType_Window);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowGetSyncType_C","PetscSFWindowGetSyncType_Window",PetscSFWindowGetSyncType_Window);CHKERRQ(ierr);
 
-#if OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6)
+#if defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6))
   {
     PetscBool ackbug = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-acknowledge_ompi_onesided_bug",&ackbug,PETSC_NULL);CHKERRQ(ierr);
