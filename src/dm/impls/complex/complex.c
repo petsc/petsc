@@ -6196,7 +6196,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
 PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       numLabels, l;
-  PetscInt       newp, cStart, cStartNew, cEnd, vStart, vStartNew, vEnd, fStart, fStartNew, fEnd, eStart, eEnd, r;
+  PetscInt       newp, cStart, cEnd, vStart, vStartNew, vEnd, fStart, fStartNew, fEnd, eStart, eEnd, r;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6204,7 +6204,6 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
   ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  cStartNew = 0;
   vStartNew = depthSize[2];
   fStartNew = depthSize[2] + depthSize[0];
   ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);

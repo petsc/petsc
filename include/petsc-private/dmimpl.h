@@ -144,6 +144,9 @@ struct _p_DM {
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
+PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
+
 /*
 
           Composite Vectors

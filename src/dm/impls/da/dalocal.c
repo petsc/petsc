@@ -55,16 +55,20 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
-  ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
-  ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
-  ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
-  ierr = VecSetDM(*g, da);CHKERRQ(ierr);
+  if (da->defaultSection) {
+    ierr = DMCreateLocalVector_Section_Private(da,g);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
+    ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
+    ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
+    ierr = VecSetDM(*g, da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  if (dd->w == 1  && dd->dim == 2) {
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
-  }
+    if (dd->w == 1  && dd->dim == 2) {
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
+    }
 #endif
+  }
   PetscFunctionReturn(0);
 }
 
