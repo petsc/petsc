@@ -144,8 +144,6 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const Pets
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt *nroots,PetscInt *nleaves,const PetscInt **ilocal,const PetscSFNode **iremote);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF,PetscInt nroots,const PetscInt *selected,PetscSF *newsf);
-PETSC_EXTERN PetscErrorCode PetscSFCreateArray(PetscSF,MPI_Datatype,void*,void*);
-PETSC_EXTERN PetscErrorCode PetscSFDestroyArray(PetscSF,MPI_Datatype,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
@@ -153,23 +151,32 @@ PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
 
 /* broadcasts rootdata to leafdata */
-PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF,MPI_Datatype,const void *rootdata,void *leafdata);
-PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF,MPI_Datatype,const void *rootdata,void *leafdata);
+PETSC_EXTERN PetscErrorCode PetscSFBcastBegin(PetscSF,MPI_Datatype,const void *rootdata,void *leafdata)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF,MPI_Datatype,const void *rootdata,void *leafdata)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 /* Reduce leafdata into rootdata using provided operation */
-PETSC_EXTERN PetscErrorCode PetscSFReduceBegin(PetscSF,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op);
-PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op);
+PETSC_EXTERN PetscErrorCode PetscSFReduceBegin(PetscSF,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);;
+PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);;
 /* Atomically modifies (using provided operation) rootdata using leafdata from each leaf, value at root at time of modification is returned in leafupdate. */
-PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op);
-PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op);
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
 /* Compute the degree of every root vertex (number of leaves in its star) */
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeBegin(PetscSF,const PetscInt **degree);
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeEnd(PetscSF,const PetscInt **degree);
 /* Concatenate data from all leaves into roots */
-PETSC_EXTERN PetscErrorCode PetscSFGatherBegin(PetscSF,MPI_Datatype,const void *leafdata,void *multirootdata);
-PETSC_EXTERN PetscErrorCode PetscSFGatherEnd(PetscSF,MPI_Datatype,const void *leafdata,void *multirootdata);
+PETSC_EXTERN PetscErrorCode PetscSFGatherBegin(PetscSF,MPI_Datatype,const void *leafdata,void *multirootdata)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+PETSC_EXTERN PetscErrorCode PetscSFGatherEnd(PetscSF,MPI_Datatype,const void *leafdata,void *multirootdata)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 /* Distribute distinct values to each leaf from roots */
-PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata);
-PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata);
-
+PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata)
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 
 #endif
