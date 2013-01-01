@@ -903,19 +903,6 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscSFOpTranslate"
-/* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPI_Allreduce) */
-PetscErrorCode PetscSFOpTranslate(MPI_Op *op)
-{
-
-  PetscFunctionBegin;
-  if (*op == MPIU_SUM) *op = MPI_SUM;
-  else if (*op == MPIU_MAX) *op = MPI_MAX;
-  else if (*op == MPIU_MIN) *op = MPI_MIN;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscSFBcastBegin"
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()

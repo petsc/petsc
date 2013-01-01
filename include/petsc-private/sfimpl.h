@@ -47,7 +47,6 @@ struct _p_PetscSF {
 
 PETSC_EXTERN PetscBool PetscSFRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PetscSFOpTranslate(MPI_Op*);
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype,MPI_Datatype*);
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype,MPI_Datatype,PetscBool*);
 
