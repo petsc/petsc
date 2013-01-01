@@ -1263,7 +1263,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
     }
     work[0] = dpx;
     work[1] = nmx;
-    ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
     *dp  = sum[0];
     *nm  = sum[1];
 

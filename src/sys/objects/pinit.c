@@ -225,16 +225,16 @@ there would be no place to store the both needed results.
 PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
-  PetscInt       *work;
+  struct {PetscInt max,sum;} *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr   = PetscMalloc(2*size*sizeof(PetscInt),&work);CHKERRQ(ierr);
+  ierr   = PetscMalloc(size*sizeof(*work),&work);CHKERRQ(ierr);
   ierr   = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  *max   = work[2*rank];
-  *sum   = work[2*rank+1];
+  *max   = work[rank].max;
+  *sum   = work[rank].sum;
   ierr   = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
