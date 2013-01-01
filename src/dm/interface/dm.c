@@ -3250,11 +3250,14 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 + dm - The DM
 - v - The Vec of points
 
-  Output Parameters:
+  Output Parameter:
 . cells - The local cell numbers for cells which contain the points
 
   Level: developer
-*/
+
+.keywords: point location, mesh
+.seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+@*/
 PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
 {
   PetscErrorCode ierr;
