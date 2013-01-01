@@ -11,6 +11,7 @@ typedef struct {
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscBool     refinementUniform; /* Uniformly refine the mesh */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
+  PetscBool     cellSimplex;       /* Use simplices or hexes */
 } AppCtx;
 
 #undef __FUNCT__
@@ -24,6 +25,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->interpolate       = PETSC_FALSE;
   options->refinementUniform = 0.0;
   options->refinementLimit   = 0.0;
+  options->cellSimplex       = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
@@ -31,6 +33,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex1.c", options->refinementUniform, &options->refinementUniform, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -45,17 +48,25 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate       = user->interpolate;
   PetscReal      refinementUniform = user->refinementUniform;
   PetscReal      refinementLimit   = user->refinementLimit;
+  PetscBool      cellSimplex       = user->cellSimplex;
   const char    *partitioner       = "chaco";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  if (cellSimplex) {
+    ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  } else {
+    const PetscInt cells[3] = {2, 2, 2};
+
+    ierr = DMComplexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
+  }
   {
     DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
+    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMComplexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {

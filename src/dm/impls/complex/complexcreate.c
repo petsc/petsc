@@ -306,8 +306,10 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
         const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
         const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
         const PetscInt cone[4] = {edgeB, edgeL+numYEdges, edgeB+numXEdges, edgeL};
+        const PetscInt ornt[4] = {0,     0,               -2,              -2};
 
         ierr = DMComplexSetCone(dm, face, cone);CHKERRQ(ierr);
+        ierr = DMComplexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
       }
     }
     /* Build Y edges*/

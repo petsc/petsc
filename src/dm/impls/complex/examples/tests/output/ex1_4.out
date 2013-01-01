@@ -166,8 +166,8 @@ Label 'marker':
 [1]: 15 (-1)
 [1]: 16 (-1)
 Star Forest Object: 2 MPI processes
-  type not yet set
-  synchronization=FENCE sort=rank-order
+  type: window
+    synchronization=FENCE sort=rank-order
   [0] Number of roots=19, leaves=5, remote ranks=1
   [0] 4 <- (1,6)
   [0] 5 <- (1,8)
@@ -706,7 +706,6 @@ Label 'marker':
 [1]: 44 (-1)
 Star Forest Object: 2 MPI processes
   type not yet set
-  synchronization=FENCE sort=rank-order
   [0] Number of roots=61, leaves=9, remote ranks=1
   [0] 16 <- (1,18)
   [0] 17 <- (1,20)
