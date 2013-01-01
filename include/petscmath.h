@@ -13,7 +13,11 @@
 #include <math.h>
 
 PETSC_EXTERN MPI_Datatype MPIU_2SCALAR;
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
 PETSC_EXTERN MPI_Datatype MPIU_2INT;
+#else
+#define MPIU_2INT MPI_2INT
+#endif
 
 /*
 

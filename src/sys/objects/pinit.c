@@ -757,8 +757,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
+#endif
 
   /*
      Attributes to be set on PETSc communicators
@@ -1218,7 +1220,9 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
+#endif
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
