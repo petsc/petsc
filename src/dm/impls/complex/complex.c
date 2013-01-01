@@ -1584,7 +1584,7 @@ PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCon
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
-  maxSize = (PetscInt) (2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1));
+  maxSize = (PetscInt) (2*PetscMax(PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1), depth+1));
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
   if (*points) {
     closure = *points;
@@ -4892,7 +4892,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
         }
       }
     }
-    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMComplexSetRefinementUniform(*dmRefined, PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
