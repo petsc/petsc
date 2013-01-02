@@ -322,6 +322,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalRank\n");return;}
   *ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalSize\n");return;}
+
+  MPIU_BOOL = MPI_INT;
+  MPIU_ENUM = MPI_INT;
+
 #if defined(PETSC_HAVE_COMPLEX)
   /*
      Initialized the global variable; this is because with

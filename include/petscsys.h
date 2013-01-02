@@ -103,10 +103,14 @@
 #if defined(__has_attribute)
 #  if __has_attribute(argument_with_type_tag) && __has_attribute(pointer_with_type_tag) && __has_attribute(type_tag_for_datatype)
 #    define PetscAttrMPIPointerWithType(bufno,typeno) __attribute__((pointer_with_type_tag(MPI,bufno,typeno)))
+#    define PetscAttrMPITypeTag(type)                 __attribute__((type_tag_for_datatype(MPI,type)))
+#    define PetscAttrMPITypeTagLayoutCompatible(type) __attribute__((type_tag_for_datatype(MPI,type,layout_compatible)))
 #  endif
 #endif
 #if !defined(PetscAttrMPIPointerWithType)
 #  define PetscAttrMPIPointerWithType(bufno,typeno)
+#  define PetscAttrMPITypeTag(type)
+#  define PetscAttrMPITypeTagLayoutCompatible(type)
 #endif
 
 /*MC
@@ -159,7 +163,7 @@ typedef int PetscMPIInt;
 .seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
 M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
-extern MPI_Datatype MPIU_ENUM;
+extern MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
@@ -329,7 +333,7 @@ M*/
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
-extern MPI_Datatype MPIU_BOOL;
+extern MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained

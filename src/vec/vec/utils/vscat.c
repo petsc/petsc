@@ -922,10 +922,10 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   VecScatter        ctx;
   PetscErrorCode    ierr;
   PetscMPIInt       size;
-  PetscInt          totalv,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range;
+  PetscInt          xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range;
   PetscInt          ix_type = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
   MPI_Comm          comm,ycomm;
-  PetscBool         ixblock,iyblock,iystride,islocal,cando,flag;
+  PetscBool         totalv,ixblock,iyblock,iystride,islocal,cando,flag;
   IS                tix = 0,tiy = 0;
   PetscViewer       viewer;
   PetscViewerFormat format;
@@ -1259,7 +1259,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
     /* test for special case of all processors getting entire vector */
     /* contains check that PetscMPIInt can handle the sizes needed */
-    totalv = 0;
+    totalv = PETSC_FALSE;
     if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID){
       PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
       PetscMPIInt          *count = PETSC_NULL,*displx;
@@ -1272,10 +1272,10 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
       ierr = VecGetSize(xin,&N);CHKERRQ(ierr);
       if (nx != N) {
-        totalv = 0;
+        totalv = PETSC_FALSE;
       } else if (from_first == 0 && from_step == 1 && from_first == to_first && from_step == to_step){
-        totalv = 1;
-      } else totalv = 0;
+        totalv = PETSC_TRUE;
+      } else totalv = PETSC_FALSE;
       ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -1311,7 +1311,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
     /* test for special case of processor 0 getting entire vector */
     /* contains check that PetscMPIInt can handle the sizes needed */
-    totalv = 0;
+    totalv = PETSC_FALSE;
     if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID){
       PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
       PetscMPIInt          rank,*count = PETSC_NULL,*displx;
@@ -1327,14 +1327,14 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (!rank) {
         ierr = VecGetSize(xin,&N);CHKERRQ(ierr);
         if (nx != N) {
-          totalv = 0;
+          totalv = PETSC_FALSE;
         } else if (from_first == 0        && from_step == 1 &&
                    from_first == to_first && from_step == to_step){
-          totalv = 1;
-        } else totalv = 0;
+          totalv = PETSC_TRUE;
+        } else totalv = PETSC_FALSE;
       } else {
-        if (!nx) totalv = 1;
-        else     totalv = 0;
+        if (!nx) totalv = PETSC_TRUE;
+        else     totalv = PETSC_FALSE;
       }
       ierr = MPI_Allreduce(&totalv,&cando,1,MPIU_BOOL,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
 

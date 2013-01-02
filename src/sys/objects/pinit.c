@@ -708,6 +708,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);CHKERRQ(ierr);
 
+  MPIU_BOOL = MPI_INT;
+  MPIU_ENUM = MPI_INT;
+
   /*
      Initialized the global complex variable; this is because with
      shared libraries the constructors for global variables

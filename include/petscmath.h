@@ -12,13 +12,6 @@
 #define __PETSCMATH_H
 #include <math.h>
 
-PETSC_EXTERN MPI_Datatype MPIU_2SCALAR;
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
-PETSC_EXTERN MPI_Datatype MPIU_2INT;
-#else
-#define MPIU_2INT MPI_2INT
-#endif
-
 /*
 
      Defines operations that are different for complex and real numbers;
@@ -53,7 +46,7 @@ extern "C" {
 #if defined(__cplusplus)
 }
 #endif
-PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
 #define PetscSqrtReal(a)    sqrtq(a)
@@ -135,7 +128,7 @@ typedef double _Complex PetscComplex;
 
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef __complex128 PetscComplex;
-PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
+PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 
 #define PetscRealPartComplex(a)      crealq(a)
 #define PetscImaginaryPartComplex(a) cimagq(a)
@@ -157,8 +150,18 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
 #else
-PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
-PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX;
+# if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+  typedef complexlib::complex<double> petsc_mpiu_c_double_complex;
+  typedef complexlib::complex<float> petsc_mpiu_c_complex;
+# elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+  typedef double _Complex petsc_mpiu_c_double_complex;
+  typedef float _Complex petsc_mpiu_c_complex;
+# else
+  typedef struct {double real,imag;} petsc_mpiu_c_double_complex;
+  typedef struct {float real,imag;} petsc_mpiu_c_complex;
+# endif
+PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_double_complex);
+PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_complex);
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
 
 #if defined(PETSC_HAVE_COMPLEX)
@@ -409,5 +412,13 @@ PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
 typedef PetscScalar MatScalar;
 typedef PetscReal MatReal;
 
+struct petsc_mpiu_2scalar {PetscScalar a,b;};
+PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2scalar);
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+struct petsc_mpiu_2int {PetscInt a,b;};
+PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2int);
+#else
+#define MPIU_2INT MPI_2INT
+#endif
 
 #endif
