@@ -135,6 +135,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
       ksp->its++;
 
+      //////////////
       ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
     }

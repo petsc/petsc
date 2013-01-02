@@ -280,6 +280,8 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,
  */
 /* avoid overflow */
 #define GAMG_HASH(key) ((7*key)%a_tab->size)
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableCreate"
 PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
@@ -291,6 +293,8 @@ PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableDestroy"
 PetscErrorCode GAMGTableDestroy(GAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
@@ -299,6 +303,8 @@ PetscErrorCode GAMGTableDestroy(GAMGHashTable *a_tab)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableAdd"
 PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
 {
   PetscInt kk,idx;
@@ -341,6 +347,8 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableFind"
 PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
 {
   PetscInt kk,idx;
