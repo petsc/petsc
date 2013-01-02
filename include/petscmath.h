@@ -146,6 +146,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
 #endif /* (PETSC_CLANGUAGE_CXX && PETSC_HAVE_CXX_COMPLEX) else-if (PETSC_CLANGUAGE_C && PETSC_HAVE_C99_COMPLEX) */
 
+#if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
@@ -163,6 +164,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_double_complex);
 PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_complex);
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
+#endif /* PETSC_HAVE_COMPLEX */
 
 #if defined(PETSC_HAVE_COMPLEX)
 #  if defined(PETSC_USE_REAL_SINGLE)
