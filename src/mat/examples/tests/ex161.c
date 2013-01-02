@@ -1,7 +1,7 @@
-static char help[] = "Test MatTransposeColoring for SeqAIJ matrices.\n\n";
+static char help[] = "Test MatTransposeColoring for SeqAIJ matrices. Used for '-matmattransmult_color' on  MatMatTransposeMult \n\n";
 
 #include <petscmat.h>
-#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h> /* Need struct _p_MatTransposeColoring for this test. */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -13,12 +13,18 @@ int main(int argc,char **argv) {
   MatTransposeColoring  matcoloring = 0;
   ISColoring            iscoloring;
   PetscBool             equal;
+  PetscMPIInt           size;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  /* Create A */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+
+  /* Create seqaij A */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,4,4);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   row=0; col=0; val=1.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
   row=1; col=3; val=2.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
   row=2; col=2; val=3.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
@@ -29,10 +35,12 @@ int main(int argc,char **argv) {
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
-  /* Create R */
+  /* Create seqaij R */
   ierr = MatCreate(PETSC_COMM_SELF,&R);CHKERRQ(ierr);
   ierr = MatSetSizes(R,2,4,2,4);CHKERRQ(ierr);
   ierr = MatSetType(R,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(R);CHKERRQ(ierr);
+  ierr = MatSetUp(R);CHKERRQ(ierr);
   row=0; col=0; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
   row=0; col=1; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
 
@@ -58,7 +66,7 @@ int main(int argc,char **argv) {
 
   /* Create Rt_dense */
   ierr = MatCreate(PETSC_COMM_WORLD,&Rt_dense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Rt_dense,A->cmap->n,matcoloring->ncolors,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetSizes(Rt_dense,4,matcoloring->ncolors,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Rt_dense,MATDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(Rt_dense,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
