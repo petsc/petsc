@@ -94,6 +94,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   IS              cellIS;
   PetscLayout     layout;
   PetscReal      *globalPoints;
+  PetscScalar    *globalPointsScalar;
   const PetscInt *ranges;
   PetscMPIInt    *counts, *displs;
   const PetscInt *foundCells;
@@ -122,7 +123,13 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
   //foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
 #else
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N, globalPoints, &pointVec);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&globalPointsScalar);CHKERRQ(ierr);
+  for (i=0; i<N; i++) globalPointsScalar[i] = globalPoints[i];
+#else
+  globalPointsScalar = globalPoints;
+#endif
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N, globalPointsScalar, &pointVec);CHKERRQ(ierr);
   ierr = PetscMalloc2(N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
   ierr = DMLocatePoints(dm, pointVec, &cellIS);CHKERRQ(ierr);
   ierr = ISGetIndices(cellIS, &foundCells);CHKERRQ(ierr);
@@ -170,6 +177,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
 #endif
+  if ((void*)globalPointsScalar != (void*)globalPoints) {ierr = PetscFree(globalPointsScalar);CHKERRQ(ierr);}
   if (!redundantPoints) {
     ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
@@ -241,10 +249,10 @@ PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolationInfo ctx, DM dm, Vec
     for(d = 0; d < ctx->dim; ++d) {
       xi[d] = 0.0;
       for(f = 0; f < ctx->dim; ++f) {
-        xi[d] += invJ[d*ctx->dim+f]*0.5*(coords[p*ctx->dim+f] - v0[f]);
+        xi[d] += invJ[d*ctx->dim+f]*0.5*PetscRealPart(coords[p*ctx->dim+f] - v0[f]);
       }
       for(comp = 0; comp < ctx->dof; ++comp) {
-        a[p*ctx->dof+comp] += (x[(d+1)*ctx->dof+comp] - x[0*ctx->dof+comp])*xi[d];
+        a[p*ctx->dof+comp] += PetscRealPart(x[(d+1)*ctx->dof+comp] - x[0*ctx->dof+comp])*xi[d];
       }
     }
     ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, PETSC_NULL, &x);CHKERRQ(ierr);
@@ -365,6 +373,7 @@ PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xL
   for (p = 0; p < ctx->n; ++p) {
     const PetscScalar *x, *vertices;
     PetscScalar       *xi;
+    PetscReal          xir[2];
     PetscInt           c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
@@ -380,8 +389,10 @@ PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xL
     ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
     ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
     ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);
+    xir[0] = PetscRealPart(xi[0]);
+    xir[1] = PetscRealPart(xi[1]);
     for (comp = 0; comp < ctx->dof; ++comp) {
-      a[p*ctx->dof+comp] = x[0*ctx->dof+comp]*(1 - xi[0])*(1 - xi[1]) + x[1*ctx->dof+comp]*xi[0]*(1 - xi[1]) + x[2*ctx->dof+comp]*xi[0]*xi[1] + x[3*ctx->dof+comp]*(1 - xi[0])*xi[1];
+      a[p*ctx->dof+comp] = x[0*ctx->dof+comp]*(1 - xir[0])*(1 - xir[1]) + x[1*ctx->dof+comp]*xir[0]*(1 - xir[1]) + x[2*ctx->dof+comp]*xir[0]*xir[1] + x[3*ctx->dof+comp]*(1 - xir[0])*xir[1];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
@@ -575,6 +586,7 @@ PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLo
   for(p = 0; p < ctx->n; ++p) {
     const PetscScalar *x, *vertices;
     PetscScalar       *xi;
+    PetscReal          xir[3];
     PetscInt           c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
@@ -591,16 +603,19 @@ PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLo
     ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
     ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
     ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);
+    xir[0] = PetscRealPart(xi[0]);
+    xir[1] = PetscRealPart(xi[1]);
+    xir[2] = PetscRealPart(xi[2]);
     for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] =
-        x[0*ctx->dof+comp]*(1-xi[0])*(1-xi[1])*(1-xi[2]) +
-        x[1*ctx->dof+comp]*    xi[0]*(1-xi[1])*(1-xi[2]) +
-        x[2*ctx->dof+comp]*    xi[0]*    xi[1]*(1-xi[2]) +
-        x[3*ctx->dof+comp]*(1-xi[0])*    xi[1]*(1-xi[2]) +
-        x[4*ctx->dof+comp]*(1-xi[0])*(1-xi[1])*   xi[2] +
-        x[5*ctx->dof+comp]*    xi[0]*(1-xi[1])*   xi[2] +
-        x[6*ctx->dof+comp]*    xi[0]*    xi[1]*   xi[2] +
-        x[7*ctx->dof+comp]*(1-xi[0])*    xi[1]*   xi[2];
+        x[0*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*(1-xir[2]) +
+        x[1*ctx->dof+comp]*    xir[0]*(1-xir[1])*(1-xir[2]) +
+        x[2*ctx->dof+comp]*    xir[0]*    xir[1]*(1-xir[2]) +
+        x[3*ctx->dof+comp]*(1-xir[0])*    xir[1]*(1-xir[2]) +
+        x[4*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*   xir[2] +
+        x[5*ctx->dof+comp]*    xir[0]*(1-xir[1])*   xir[2] +
+        x[6*ctx->dof+comp]*    xir[0]*    xir[1]*   xir[2] +
+        x[7*ctx->dof+comp]*(1-xir[0])*    xir[1]*   xir[2];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
