@@ -37,7 +37,7 @@ typedef const char* DMType;
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"
 #define DMMESH      "mesh"
-#define DMCOMPLEX   "complex"
+#define DMPLEX   "complex"
 #define DMCARTESIAN "cartesian"
 #define DMREDUNDANT "redundant"
 #define DMAKKT      "akkt"

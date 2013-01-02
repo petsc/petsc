@@ -1,18 +1,18 @@
 #define PETSCDM_DLL
-#include <petsc-private/compleximpl.h>    /*I   "petscdmcomplex.h"   I*/
+#include <petsc-private/pleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #ifdef PETSC_HAVE_EXODUSII
 #include<netcdf.h>
 #include<exodusII.h>
 #endif
 
-PETSC_EXTERN PetscErrorCode DMComplexInterpolate_2D(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMComplexInterpolate_3D(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexInterpolate_2D(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexInterpolate_3D(DM, DM *);
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexCreateExodus"
+#define __FUNCT__ "DMPlexCreateExodus"
 /*@
-  DMComplexCreateExodus - Create a DMComplex mesh from an ExodusII file.
+  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
 
   Collective on comm
 
@@ -29,7 +29,7 @@ PETSC_EXTERN PetscErrorCode DMComplexInterpolate_3D(DM, DM *);
 .keywords: mesh,ExodusII
 .seealso: MeshCreate(), MeshCreateExodus()
 @*/
-PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {
 #if defined(PETSC_HAVE_EXODUSII)
   PetscMPIInt    num_proc, rank;
@@ -49,7 +49,7 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &num_proc);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
     ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
@@ -59,8 +59,8 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, title);CHKERRQ(ierr);
-  ierr = DMComplexSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMComplexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
 
   /* Read cell sets information */
   if (!rank) {
@@ -83,7 +83,7 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
     for (cs = 0, c = 0; cs < num_cs; cs++) {
       ierr = ex_get_elem_block(exoid, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, &num_attr);CHKERRQ(ierr);
       for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
-        ierr = DMComplexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
+        ierr = DMPlexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
       }
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
@@ -96,23 +96,23 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
         }
-        ierr = DMComplexSetCone(*dm, c, cone);CHKERRQ(ierr);
-        ierr = DMComplexSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
+        ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
+        ierr = DMPlexSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
       }
       ierr = PetscFree2(cs_connect,cone);CHKERRQ(ierr);
     }
     ierr = PetscFree(cs_id);CHKERRQ(ierr);
   }
-  ierr = DMComplexSymmetrize(*dm);CHKERRQ(ierr);
-  ierr = DMComplexStratify(*dm);CHKERRQ(ierr);
+  ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
     DM idm;
 
     switch(dim) {
     case 2:
-      ierr = DMComplexInterpolate_2D(*dm, &idm);CHKERRQ(ierr);break;
+      ierr = DMPlexInterpolate_2D(*dm, &idm);CHKERRQ(ierr);break;
     case 3:
-      ierr = DMComplexInterpolate_3D(*dm, &idm);CHKERRQ(ierr);break;
+      ierr = DMPlexInterpolate_3D(*dm, &idm);CHKERRQ(ierr);break;
     default:
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No mesh interpolation support for dimension %D", dim);
     }
@@ -120,8 +120,8 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
     {
       DMLabel label;
 
-      ierr = DMComplexRemoveLabel(*dm, "Cell Sets", &label);CHKERRQ(ierr);
-      if (label) {ierr = DMComplexAddLabel(idm, label);CHKERRQ(ierr);}
+      ierr = DMPlexRemoveLabel(*dm, "Cell Sets", &label);CHKERRQ(ierr);
+      if (label) {ierr = DMPlexAddLabel(idm, label);CHKERRQ(ierr);}
     }
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
@@ -145,14 +145,14 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
       ierr = PetscMalloc(num_vertex_in_set * sizeof(int), &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
       for(v = 0; v < num_vertex_in_set; ++v) {
-        ierr = DMComplexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
+        ierr = DMPlexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
       ierr = PetscFree(vs_vertex_list);CHKERRQ(ierr);
     }
     ierr = PetscFree(vs_id);CHKERRQ(ierr);
   }
   /* Read coordinates */
-  ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
@@ -207,10 +207,10 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
         for(v = 0; v < faceSize; ++v, ++voff) {
           faceVertices[v] = fs_vertex_list[voff]+numCells-1;
         }
-        ierr = DMComplexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
+        ierr = DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
         if (numFaces != 1) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %d faces", f, fs, numFaces);
-        ierr = DMComplexSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
-        ierr = DMComplexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
+        ierr = DMPlexSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
+        ierr = DMPlexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
       }
       ierr = PetscFree2(fs_vertex_count_list,fs_vertex_list);CHKERRQ(ierr);
     }

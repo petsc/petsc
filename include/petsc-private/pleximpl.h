@@ -1,11 +1,11 @@
-#if !defined(_COMPLEXIMPL_H)
-#define _COMPLEXIMPL_H
+#if !defined(_PLEXIMPL_H)
+#define _PLEXIMPL_H
 
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
-#include <petscdmcomplex.h> /*I      "petscdmcomplex.h"    I*/
+#include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include "petsc-private/dmimpl.h"
 
-PETSC_EXTERN PetscLogEvent DMCOMPLEX_Distribute, DMCOMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -78,11 +78,11 @@ typedef struct {
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;
-} DM_Complex;
+} DM_Plex;
 
-PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll_VTU(DM,PetscViewer);
-PETSC_EXTERN PetscErrorCode DMComplexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecView_Complex_Local(Vec,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_Complex(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Plex(Vec,PetscViewer);
 
-#endif /* _COMPLEXIMPL_H */
+#endif /* _PLEXIMPL_H */

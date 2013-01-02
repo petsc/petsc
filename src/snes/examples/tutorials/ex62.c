@@ -1,6 +1,6 @@
 static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
 We solve the Stokes problem in a rectangular\n\
-domain, using a parallel unstructured mesh (DMCOMPLEX) to discretize it.\n\n\n";
+domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 /*
 The isoviscous Stokes problem, which we discretize using the finite
@@ -34,12 +34,12 @@ have
   x     = [u_{e_0} v_{e_0} u_{e_1} v_{e_1} u_{e_2} v_{e_2} u_{v_0} v_{v_0} p_{v_0} u_{v_1} v_{v_1} p_{v_1} u_{v_2} v_{v_2} p_{v_2}]
 
 The problem here is that we would like to loop over each field separately for
-integration. Therefore, the closure visitor in DMComplexVecGetClosure() reorders
+integration. Therefore, the closure visitor in DMPlexVecGetClosure() reorders
 the data so that each field is contiguous
 
   x'    = [u_{e_0} v_{e_0} u_{e_1} v_{e_1} u_{e_2} v_{e_2} u_{v_0} v_{v_0} u_{v_1} v_{v_1} u_{v_2} v_{v_2} p_{v_0} p_{v_1} p_{v_2}]
 
-Likewise, DMComplexVecSetClosure() takes data partitioned by field, and correctly
+Likewise, DMPlexVecSetClosure() takes data partitioned by field, and correctly
 puts it into the Sieve ordering.
 
 Next Steps:
@@ -51,7 +51,7 @@ Next Steps:
 For tensor product meshes, see SNES ex67, ex72
 */
 
-#include <petscdmcomplex.h>
+#include <petscdmplex.h>
 #include <petscsnes.h>
 
 /*------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
-  PetscFEM      fem;               /* REQUIRED to use DMComplexComputeResidualFEM() */
+  PetscFEM      fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
   PetscInt      debug;             /* The debugging level */
   PetscMPIInt   rank;              /* The process rank */
   PetscMPIInt   numProcs;          /* The number of processes */
@@ -265,7 +265,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMCOMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   run = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
@@ -325,20 +325,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
-    ierr = DMComplexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMComplexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -403,9 +403,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   }
   if (user->bcType == DIRICHLET) {
     numBC = 1;
-    ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+    ierr  = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
@@ -457,7 +457,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = DMComplexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
+  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -562,7 +562,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
     ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DMComplexComputeJacobianActionFEM(dm, J, localX, localY, ctx->user);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobianActionFEM(dm, J, localX, localY, ctx->user);CHKERRQ(ierr);
   if (n != N){
     ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   }
@@ -635,7 +635,7 @@ int main(int argc, char **argv)
     userJ.J    = J;
     userJ.user = &user;
     ierr = DMCreateLocalVector(user.dm, &userJ.u);CHKERRQ(ierr);
-    ierr = DMComplexProjectFunctionLocal(user.dm, numComponents, user.exactFuncs, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunctionLocal(user.dm, numComponents, user.exactFuncs, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
     A = J;
@@ -646,20 +646,20 @@ int main(int argc, char **argv)
     ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
 
-  ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMComplexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMComplexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes, A, J, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMComplexProjectFunction(user.dm, numComponents, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(user.dm, numComponents, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
     PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
     PetscInt c;
 
     for (c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
-    ierr = DMComplexProjectFunction(user.dm, numComponents, initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(user.dm, numComponents, initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
@@ -668,7 +668,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    ierr = DMComplexComputeL2Diff(user.dm, user.fem.quad, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(user.dm, user.fem.quad, user.exactFuncs, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", error);CHKERRQ(ierr);
     if (user.showSolution) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
@@ -681,7 +681,7 @@ int main(int argc, char **argv)
     /* Check discretization error */
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMComplexComputeL2Diff(user.dm, user.fem.quad, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(user.dm, user.fem.quad, user.exactFuncs, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
     ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
@@ -736,7 +736,7 @@ int main(int argc, char **argv)
 
     ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
     ierr = PetscObjectReference((PetscObject) uLocal);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMComplexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) uLocal);CHKERRQ(ierr);
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) uLocal);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }

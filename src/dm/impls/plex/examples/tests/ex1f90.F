@@ -10,12 +10,12 @@
       PetscErrorCode ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call DMComplexCreate(PETSC_COMM_WORLD, dm, ierr)
+      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
       firstCell = 0
       numCells = 5
-      call DMComplexSetChart(dm, 0, numCells, ierr)
+      call DMPlexSetChart(dm, 0, numCells, ierr)
       do c=firstCell,numCells-1
-         call DMComplexSetConeSize(dm, c, 4, ierr)
+         call DMPlexSetConeSize(dm, c, 4, ierr)
       end do
       call DMSetUp(dm, ierr)
 
@@ -26,9 +26,9 @@
       pEC => EC
       c = 0
       write(*,*) 'cell',c,pEC
-      call DMComplexSetCone(dm, c , pEC, ierr)
+      call DMPlexSetCone(dm, c , pEC, ierr)
       CHKERRQ(ierr)
-      call DMComplexGetCone(dm, c , pEC, ierr)
+      call DMPlexGetCone(dm, c , pEC, ierr)
       CHKERRQ(ierr)
       write(*,*) 'cell',c,pEC
 

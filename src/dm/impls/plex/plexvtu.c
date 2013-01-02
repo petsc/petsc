@@ -1,4 +1,4 @@
-#include <petsc-private/compleximpl.h>
+#include <petsc-private/pleximpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 typedef struct {
@@ -48,8 +48,8 @@ static PetscErrorCode TransferWrite(PetscViewer viewer,FILE *fp,PetscMPIInt sran
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetVTKConnectivity"
-static PetscErrorCode DMComplexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKInt **oconn,PetscVTKInt **ooffsets,PetscVTKType **otypes)
+#define __FUNCT__ "DMPlexGetVTKConnectivity"
+static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKInt **oconn,PetscVTKInt **ooffsets,PetscVTKType **otypes)
 {
   PetscErrorCode ierr;
   PetscVTKInt *conn,*offsets;
@@ -59,14 +59,14 @@ static PetscErrorCode DMComplexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVT
   PetscFunctionBegin;
   ierr = PetscMalloc3(piece->nconn,PetscVTKInt,&conn,piece->ncells,PetscVTKInt,&offsets,piece->ncells,PetscVTKType,&types);CHKERRQ(ierr);
 
-  ierr = DMComplexGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMComplexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
-  ierr = DMComplexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
 
   countcell = 0;
@@ -78,20 +78,20 @@ static PetscErrorCode DMComplexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVT
     if (hasLabel) {
       PetscInt value;
 
-      ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
     startoffset = countconn;
-    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
         conn[countconn++] = closure[v] - vStart;
       }
     }
-    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     offsets[countcell] = countconn;
     nverts = countconn - startoffset;
-    ierr = DMComplexVTKGetCellType(dm,dim,nverts,&celltype);CHKERRQ(ierr);
+    ierr = DMPlexVTKGetCellType(dm,dim,nverts,&celltype);CHKERRQ(ierr);
     types[countcell] = celltype;
     countcell++;
   }
@@ -104,12 +104,12 @@ static PetscErrorCode DMComplexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVT
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteAll_VTU"
+#define __FUNCT__ "DMPlexVTKWriteAll_VTU"
 /*
   Write all fields that have been provided to the viewer
   Multi-block XML format with binary appended data.
 */
-PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
+PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 {
   MPI_Comm comm = ((PetscObject)dm)->comm;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
@@ -138,13 +138,13 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <UnstructuredGrid>\n");CHKERRQ(ierr);
 
-  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
-  ierr = DMComplexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   piece.nvertices = vEnd - vStart;
   piece.ncells = 0;
@@ -156,14 +156,14 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     if (hasLabel) {
       PetscInt value;
 
-      ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
-    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) piece.nconn++;
     }
-    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     piece.ncells++;
   }
   if (!rank) {ierr = PetscMalloc(size*sizeof(piece),&gpiece);CHKERRQ(ierr);}
@@ -286,7 +286,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       {                           /* Connectivity, offsets, types */
         PetscVTKInt *connectivity,*offsets;
         PetscVTKType *types;
-        ierr = DMComplexGetVTKConnectivity(dm,&piece,&connectivity,&offsets,&types);CHKERRQ(ierr);
+        ierr = DMPlexGetVTKConnectivity(dm,&piece,&connectivity,&offsets,&types);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,connectivity,buffer,piece.nconn,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,offsets,buffer,piece.ncells,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,types,buffer,piece.ncells,PETSC_UINT8,tag);CHKERRQ(ierr);
@@ -315,10 +315,10 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             const PetscScalar *xpoint;
             if (hasLabel) {     /* Ignore some cells */
               PetscInt value;
-              ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+              ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
               if (value != 1) continue;
             }
-            ierr = DMComplexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
+            ierr = DMPlexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
             y[cnt++] = xpoint[i];
           }
           if (cnt != piece.ncells) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
@@ -341,7 +341,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
           PetscInt cnt;
           for (v=vStart,cnt=0; v<vEnd; v++) {
             const PetscScalar *xpoint;
-            ierr = DMComplexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
+            ierr = DMPlexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
             y[cnt++] = xpoint[i];
           }
           if (cnt != piece.nvertices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");

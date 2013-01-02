@@ -7669,17 +7669,17 @@ command
 \chapter{Unstructured Grids in PETSc}
 \label{ch_unstructured}
 
-This chapter introduces the DMComplex subclass of DM, which allows the user to handle unstructured grids using the generic
-DM interface for hierarchy and multi-physics. DMComplex was created to remedy a huge problem in all current PDE
+This chapter introduces the DMPlex subclass of DM, which allows the user to handle unstructured grids using the generic
+DM interface for hierarchy and multi-physics. DMPlex was created to remedy a huge problem in all current PDE
 simulation codes, namely that the discretization was so closely tied to the data layout and solver that switiching
 discretizations in the same code was not possible. Not only does this preclude the kind of comparsion that is necessary
 for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
 
 \medskip \medskip
 
-\section{Representing Unstructured Grids} \sindex{DMComplex}
+\section{Representing Unstructured Grids} \sindex{DMPlex}
 
-The main advantage of DMComplex in representing topology is that it treats all the different pieces of a mesh,
+The main advantage of DMPlex in representing topology is that it treats all the different pieces of a mesh,
 e.g. cells, faces, edges, vertices in exactly the same way. This allows the interface to be very small and simple, while
 remaining flexible and general. This also allows ``dimension independent programming'', which means that the same
 algorithm can be used unchanged for meshes of different shapes and dimensions.
@@ -7765,40 +7765,40 @@ To use the PETSc API, we first consecutively number the mesh pieces. The PETSc c
 then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
 points present in a mesh,
 \begin{tabbing}
-  DMComplexSetChart(dm, 0, 11);
+  DMPlexSetChart(dm, 0, 11);
 \end{tabbing}
 We then define the covering relation, which we call the \textit{cone}, which are also the in-edges in the DAG. In order
 to preallocate correctly, we first setup sizes,
 \begin{tabbing}
-  DMComplexSetConeSize(dm, 0, 3);\\
-  DMComplexSetConeSize(dm, 1, 3);\\
-  DMComplexSetConeSize(dm, 6, 2);\\
-  DMComplexSetConeSize(dm, 7, 2);\\
-  DMComplexSetConeSize(dm, 8, 2);\\
-  DMComplexSetConeSize(dm, 9, 2);\\
-  DMComplexSetConeSize(dm, 10, 2);\\
+  DMPlexSetConeSize(dm, 0, 3);\\
+  DMPlexSetConeSize(dm, 1, 3);\\
+  DMPlexSetConeSize(dm, 6, 2);\\
+  DMPlexSetConeSize(dm, 7, 2);\\
+  DMPlexSetConeSize(dm, 8, 2);\\
+  DMPlexSetConeSize(dm, 9, 2);\\
+  DMPlexSetConeSize(dm, 10, 2);\\
   DMSetUp(dm);
 \end{tabbing}
 and then point values,
 \begin{tabbing}
-  DMComplexSetCone(dm, 0, [6, 7, 8]);\\
-  DMComplexSetCone(dm, 1, [8, 9, 10]);\\
-  DMComplexSetCone(dm, 6, [2, 3]);\\
-  DMComplexSetCone(dm, 7, [3, 4]);\\
-  DMComplexSetCone(dm, 8, [4, 2]);\\
-  DMComplexSetCone(dm, 9, [4, 5]);\\
-  DMComplexSetCone(dm, 10, [5, 3]);
+  DMPlexSetCone(dm, 0, [6, 7, 8]);\\
+  DMPlexSetCone(dm, 1, [8, 9, 10]);\\
+  DMPlexSetCone(dm, 6, [2, 3]);\\
+  DMPlexSetCone(dm, 7, [3, 4]);\\
+  DMPlexSetCone(dm, 8, [4, 2]);\\
+  DMPlexSetCone(dm, 9, [4, 5]);\\
+  DMPlexSetCone(dm, 10, [5, 3]);
 \end{tabbing}
 
-There is also an API for the dual relation, using DMComplexSetSupportSize() and DMComplexSetSupport(), but this can be
+There is also an API for the dual relation, using DMPlexSetSupportSize() and DMPlexSetSupport(), but this can be
 calculated automatically by calling
 \begin{tabbing}
-  DMComplexSymmetrize(dm);
+  DMPlexSymmetrize(dm);
 \end{tabbing}
 In order to support efficient queries, we also want to construct fast search structures, indices, for the different
 types of points, which is done using
 \begin{tabbing}
-  DMComplexStratify(dm);
+  DMPlexStratify(dm);
 \end{tabbing}
 
 \section{Data on Unstructured Grids} \sindex{PetscSection}
@@ -7831,10 +7831,10 @@ element method,
 \begin{tabbing}
   PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;\\
 \\
-  DMComplexGetChart(dm, \&pStart, \&pEnd);\\
-  DMComplexGetHeightStratum(dm, 0, \&cStart, \&cEnd);\\
-  DMComplexGetHeightStratum(dm, 1, \&eStart, \&eEnd);\\
-  DMComplexGetDepthStratum(dm, 0, \&vStart, \&vEnd);\\
+  DMPlexGetChart(dm, \&pStart, \&pEnd);\\
+  DMPlexGetHeightStratum(dm, 0, \&cStart, \&cEnd);\\
+  DMPlexGetHeightStratum(dm, 1, \&eStart, \&eEnd);\\
+  DMPlexGetDepthStratum(dm, 0, \&vStart, \&vEnd);\\
   PetscSectionSetChart(s, pStart, pEnd);\\
   for\=(c = cStart; c < cEnd; ++c)\\
     \>PetscSectionSetDof(s, c, 1);\\
@@ -7876,9 +7876,9 @@ The evaluation of a residual, or Jacobian, for most discretizations has the foll
 
   \item Insert these values into the residual vector
 \end{itemize}
-DMComplex separates these different concerns by passing sets of points, which are just integers, from mesh traversal
+DMPlex separates these different concerns by passing sets of points, which are just integers, from mesh traversal
 routines to data extraction routines and back. In this way, the PetscSection which structures the data inside a Vec does
-not need to know anything about the mesh inside a DMComplex.
+not need to know anything about the mesh inside a DMPlex.
 
 The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
 in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
@@ -7891,7 +7891,7 @@ retrieve the data using PetscSection methods,
   PetscInt     numPoints, *points = PETSC\_NULL, p;\\
 \\
   VecGetArray(u, \&a);\\
-  DMComplexGetTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\
+  DMPlexGetTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\
   for\=(p = 0; p ${}\le{}$ numPoints*2; p += 2) \{\\
     \>PetscInt dof, off, d;\\
 \\
@@ -7901,7 +7901,7 @@ retrieve the data using PetscSection methods,
       \>\>myfunc(a[off+d]);\\
     \>\}\\
   \}\\
-  DMComplexRestoreTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\
+  DMPlexRestoreTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\
   VecRestoreArray(u, \&a);
 \end{tabbing}
 This operation is so common, that we have built a convenience method around it which returns the values in a contiguous
@@ -7910,12 +7910,12 @@ array, correctly taking into account the orientations of various mesh points,
   const PetscScalar *values;\\
   PetscInt           csize;\\
 \\
-  DMComplexVecGetClosure(dm, section, u, cell, \&csize, \&values);\\
+  DMPlexVecGetClosure(dm, section, u, cell, \&csize, \&values);\\
   /* Do integral in quadrature loop */\\
-  DMComplexVecRestoreClosure(dm, section, u, cell, \&csize, \&values);\\
-  DMComplexVecSetClosure(dm, section, residual, cell, \&r, ADD\_VALUES);
+  DMPlexVecRestoreClosure(dm, section, u, cell, \&csize, \&values);\\
+  DMPlexVecSetClosure(dm, section, residual, cell, \&r, ADD\_VALUES);
 \end{tabbing}
-A simple example of this kind of calculation is in DMComplexComputeL2Diff(). Note that there is no restriction on the
+A simple example of this kind of calculation is in DMPlexComputeL2Diff(). Note that there is no restriction on the
 type of cell or dimension of the mesh in the code above, so it will work for polyhedral cells, hybrid meshes, and meshes
 of any dimension, without change. We can also reverse the covering relation, so that the code works for finite volume
 methods where we want the data from neighboring cells for each face
@@ -7924,7 +7924,7 @@ methods where we want the data from neighboring cells for each face
   PetscInt     points[2*2], numPoints, p, dofA, offA, dofB, offB;\\
 \\
   VecGetArray(u, \&a);\\
-  DMComplexGetTransitiveClosure(dm, cell, PETSC\_FALSE, \&numPoints, \&points);\\
+  DMPlexGetTransitiveClosure(dm, cell, PETSC\_FALSE, \&numPoints, \&points);\\
   assert(numPoints == 2);\\
   PetscSectionGetDof(section, points[0*2], \&dofA);\\
   PetscSectionGetDof(section, points[1*2], \&dofB);\\

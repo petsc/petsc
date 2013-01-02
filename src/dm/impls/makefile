@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da adda sliced composite mesh cartesian redundant complex shell patch
+DIRS     = da adda sliced composite mesh cartesian redundant plex shell patch
 LOCDIR   = src/dm/impls
 MANSEC   = DM
 

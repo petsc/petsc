@@ -1810,7 +1810,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
   I need extract and merge routines for section based on fields. This should be trivial except for updating the
   constraint indices.
 
-  Then I need a new interface for DMCreateDecomposition that takes groups of fields and returns a real DMComplex
+  Then I need a new interface for DMCreateDecomposition that takes groups of fields and returns a real DMPlex
   that shares the mesh parts, and has the extracted section
 */
 

@@ -1,4 +1,4 @@
-#include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
+#include <petsc-private/pleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelCreate"
@@ -264,24 +264,24 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexCreateLabel"
+#define __FUNCT__ "DMPlexCreateLabel"
 /*@C
-  DMComplexCreateLabel - Create a label of the given name if it does not already exist
+  DMPlexCreateLabel - Create a label of the given name if it does not already exist
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 - name - The label name
 
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMLabelCreate(), DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMLabelCreate(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexCreateLabel(DM dm, const char name[])
+PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DM_Plex    *mesh = (DM_Plex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -303,14 +303,14 @@ PetscErrorCode DMComplexCreateLabel(DM dm, const char name[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelValue"
+#define __FUNCT__ "DMPlexGetLabelValue"
 /*@C
-  DMComplexGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
+  DMPlexGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 . name - The label name
 - point - The mesh point
 
@@ -320,9 +320,9 @@ PetscErrorCode DMComplexCreateLabel(DM dm, const char name[])
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelGetValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMLabelGetValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
+PetscErrorCode DMPlexGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -330,21 +330,21 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
   ierr = DMLabelGetValue(label, point, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexSetLabelValue"
+#define __FUNCT__ "DMPlexSetLabelValue"
 /*@C
-  DMComplexSetLabelValue - Add a point to a Sieve Label with given value
+  DMPlexSetLabelValue - Add a point to a Sieve Label with given value
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 . name - The label name
 . point - The mesh point
 - value - The label value for this point
@@ -354,9 +354,9 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelSetValue(), DMComplexGetStratumIS(), DMComplexClearLabelValue()
+.seealso: DMLabelSetValue(), DMPlexGetStratumIS(), DMPlexClearLabelValue()
 @*/
-PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
+PetscErrorCode DMPlexSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -364,24 +364,24 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) {
-    ierr = DMComplexCreateLabel(dm, name);CHKERRQ(ierr);
-    ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(dm, name);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   }
   ierr = DMLabelSetValue(label, point, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexClearLabelValue"
+#define __FUNCT__ "DMPlexClearLabelValue"
 /*@C
-  DMComplexClearLabelValue - Remove a point from a Sieve Label with given value
+  DMPlexClearLabelValue - Remove a point from a Sieve Label with given value
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 . name - The label name
 . point - The mesh point
 - value - The label value for this point
@@ -391,9 +391,9 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelClearValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMLabelClearValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
+PetscErrorCode DMPlexClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -401,21 +401,21 @@ PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelClearValue(label, point, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelSize"
+#define __FUNCT__ "DMPlexGetLabelSize"
 /*@C
-  DMComplexGetLabelSize - Get the number of different integer ids in a Label
+  DMPlexGetLabelSize - Get the number of different integer ids in a Label
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 - name - The label name
 
   Output Parameter:
@@ -424,9 +424,9 @@ PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabeGetNumValues(), DMComplexSetLabelValue()
+.seealso: DMLabeGetNumValues(), DMPlexSetLabelValue()
 @*/
-PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
+PetscErrorCode DMPlexGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -435,7 +435,7 @@ PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(size, 3);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *size = 0;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetNumValues(label, size);CHKERRQ(ierr);
@@ -443,14 +443,14 @@ PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelIdIS"
+#define __FUNCT__ "DMPlexGetLabelIdIS"
 /*@C
-  DMComplexGetLabelIdIS - Get the integer ids in a label
+  DMPlexGetLabelIdIS - Get the integer ids in a label
 
   Not Collective
 
   Input Parameters:
-+ mesh - The DMComplex object
++ mesh - The DMPlex object
 - name - The label name
 
   Output Parameter:
@@ -459,9 +459,9 @@ PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelGetValueIS(), DMComplexGetLabelSize()
+.seealso: DMLabelGetValueIS(), DMPlexGetLabelSize()
 @*/
-PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
+PetscErrorCode DMPlexGetLabelIdIS(DM dm, const char name[], IS *ids)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -470,7 +470,7 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(ids, 3);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *ids = PETSC_NULL;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
@@ -478,14 +478,14 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetStratumSize"
+#define __FUNCT__ "DMPlexGetStratumSize"
 /*@C
-  DMComplexGetStratumSize - Get the number of points in a label stratum
+  DMPlexGetStratumSize - Get the number of points in a label stratum
 
   Not Collective
 
   Input Parameters:
-+ dm - The DMComplex object
++ dm - The DMPlex object
 . name - The label name
 - value - The stratum value
 
@@ -495,9 +495,9 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelGetStratumSize(), DMComplexGetLabelSize(), DMComplexGetLabelIds()
+.seealso: DMLabelGetStratumSize(), DMPlexGetLabelSize(), DMPlexGetLabelIds()
 @*/
-PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
+PetscErrorCode DMPlexGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -506,7 +506,7 @@ PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value,
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(size, 4);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *size = 0;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetStratumSize(label, value, size);CHKERRQ(ierr);
@@ -514,14 +514,14 @@ PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetStratumIS"
+#define __FUNCT__ "DMPlexGetStratumIS"
 /*@C
-  DMComplexGetStratumIS - Get the points in a label stratum
+  DMPlexGetStratumIS - Get the points in a label stratum
 
   Not Collective
 
   Input Parameters:
-+ dm - The DMComplex object
++ dm - The DMPlex object
 . name - The label name
 - value - The stratum value
 
@@ -531,9 +531,9 @@ PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value,
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelGetStratumIS(), DMComplexGetStratumSize()
+.seealso: DMLabelGetStratumIS(), DMPlexGetStratumSize()
 @*/
-PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, IS *points) {
+PetscErrorCode DMPlexGetStratumIS(DM dm, const char name[], PetscInt value, IS *points) {
   DMLabel        label;
   PetscErrorCode ierr;
 
@@ -541,7 +541,7 @@ PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, I
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(points, 4);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *points = PETSC_NULL;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetStratumIS(label, value, points);CHKERRQ(ierr);
@@ -549,14 +549,14 @@ PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, I
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexClearLabelStratum"
+#define __FUNCT__ "DMPlexClearLabelStratum"
 /*@C
-  DMComplexClearLabelStratum - Remove all points from a stratum from a Sieve Label
+  DMPlexClearLabelStratum - Remove all points from a stratum from a Sieve Label
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 . name - The label name
 - value - The label value for this point
 
@@ -565,9 +565,9 @@ PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, I
   Level: beginner
 
 .keywords: mesh
-.seealso: DMLabelClearStratum(), DMComplexSetLabelValue(), DMComplexGetStratumIS(), DMComplexClearLabelValue()
+.seealso: DMLabelClearStratum(), DMPlexSetLabelValue(), DMPlexGetStratumIS(), DMPlexClearLabelValue()
 @*/
-PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt value)
+PetscErrorCode DMPlexClearLabelStratum(DM dm, const char name[], PetscInt value)
 {
   DMLabel        label;
   PetscErrorCode ierr;
@@ -575,7 +575,7 @@ PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt val
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelClearStratum(label, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -584,14 +584,14 @@ PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt val
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetNumLabels"
+#define __FUNCT__ "DMPlexGetNumLabels"
 /*@
-  DMComplexGetNumLabels - Return the number of labels defined by the mesh
+  DMPlexGetNumLabels - Return the number of labels defined by the mesh
 
   Not Collective
 
   Input Parameter:
-. dm   - The DMComplex object
+. dm   - The DMPlex object
 
   Output Parameter:
 . numLabels - the number of Labels
@@ -599,11 +599,11 @@ PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt val
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexGetNumLabels(DM dm, PetscInt *numLabels)
+PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 {
-  DM_Complex *mesh = (DM_Complex *) dm->data;
+  DM_Plex *mesh = (DM_Plex *) dm->data;
   DMLabel     next = mesh->labels;
   PetscInt    n    = 0;
 
@@ -619,14 +619,14 @@ PetscErrorCode DMComplexGetNumLabels(DM dm, PetscInt *numLabels)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelName"
+#define __FUNCT__ "DMPlexGetLabelName"
 /*@C
-  DMComplexGetLabelName - Return the name of nth label
+  DMPlexGetLabelName - Return the name of nth label
 
   Not Collective
 
   Input Parameters:
-+ dm - The DMComplex object
++ dm - The DMPlex object
 - n  - the label number
 
   Output Parameter:
@@ -635,11 +635,11 @@ PetscErrorCode DMComplexGetNumLabels(DM dm, PetscInt *numLabels)
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
+PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 {
-  DM_Complex *mesh = (DM_Complex *) dm->data;
+  DM_Plex *mesh = (DM_Plex *) dm->data;
   DMLabel     next = mesh->labels;
   PetscInt    l    = 0;
 
@@ -658,14 +658,14 @@ PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexHasLabel"
+#define __FUNCT__ "DMPlexHasLabel"
 /*@C
-  DMComplexHasLabel - Determine whether the mesh has a label of a given name
+  DMPlexHasLabel - Determine whether the mesh has a label of a given name
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 - name - The label name
 
   Output Parameter:
@@ -674,11 +674,11 @@ PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexCreateLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMPlexCreateLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
+PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DM_Plex    *mesh = (DM_Plex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscErrorCode ierr;
 
@@ -696,14 +696,14 @@ PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabel"
+#define __FUNCT__ "DMPlexGetLabel"
 /*@C
-  DMComplexGetLabel - Return the label of a given name, or PETSC_NULL
+  DMPlexGetLabel - Return the label of a given name, or PETSC_NULL
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 - name - The label name
 
   Output Parameter:
@@ -712,11 +712,11 @@ PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexCreateLabel(), DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexGetLabel(DM dm, const char name[], DMLabel *label)
+PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DM_Plex    *mesh = (DM_Plex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
@@ -738,30 +738,30 @@ PetscErrorCode DMComplexGetLabel(DM dm, const char name[], DMLabel *label)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexAddLabel"
+#define __FUNCT__ "DMPlexAddLabel"
 /*@C
-  DMComplexAddLabel - Add the label to this mesh
+  DMPlexAddLabel - Add the label to this mesh
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 - label - The DMLabel
 
   Level: developer
 
 .keywords: mesh
-.seealso: DMComplexCreateLabel(), DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexAddLabel(DM dm, DMLabel label)
+PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DM_Plex    *mesh = (DM_Plex *) dm->data;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMComplexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
+  ierr = DMPlexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
   if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
   label->next  = mesh->labels;
   mesh->labels = label;
@@ -769,14 +769,14 @@ PetscErrorCode DMComplexAddLabel(DM dm, DMLabel label)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexRemoveLabel"
+#define __FUNCT__ "DMPlexRemoveLabel"
 /*@C
-  DMComplexRemoveLabel - Remove the label from this mesh
+  DMPlexRemoveLabel - Remove the label from this mesh
 
   Not Collective
 
   Input Parameters:
-+ dm   - The DMComplex object
++ dm   - The DMPlex object
 - name - The label name
 
   Output Parameter:
@@ -785,11 +785,11 @@ PetscErrorCode DMComplexAddLabel(DM dm, DMLabel label)
   Level: developer
 
 .keywords: mesh
-.seealso: DMComplexCreateLabel(), DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
 @*/
-PetscErrorCode DMComplexRemoveLabel(DM dm, const char name[], DMLabel *label)
+PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DM_Plex    *mesh = (DM_Plex *) dm->data;
   DMLabel        next = mesh->labels;
   DMLabel        last = PETSC_NULL;
   PetscBool      hasLabel;
@@ -797,7 +797,7 @@ PetscErrorCode DMComplexRemoveLabel(DM dm, const char name[], DMLabel *label)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMComplexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
+  ierr = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   *label = PETSC_NULL;
   if (!hasLabel) PetscFunctionReturn(0);
   while(next) {

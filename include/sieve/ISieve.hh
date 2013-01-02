@@ -5,7 +5,7 @@
 #include <sieve/ALE.hh>
 #endif
 
-#include <petscdmcomplex.h>
+#include <petscdmplex.h>
 
 #include <fstream>
 
@@ -2725,20 +2725,20 @@ namespace ALE {
         }
       }
       // Create the ISieve
-      ierr = DMComplexSetChart(dm, min, max);CHKERRXX(ierr);
+      ierr = DMPlexSetChart(dm, min, max);CHKERRXX(ierr);
       // Set cone and support sizes
       size_t maxSize = 0;
 
       for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
         const Obj<typename Sieve::coneSequence>& cone = sieve.cone(*b_iter);
 
-        ierr = DMComplexSetConeSize(dm, renumbering[*b_iter], cone->size());CHKERRXX(ierr);
+        ierr = DMPlexSetConeSize(dm, renumbering[*b_iter], cone->size());CHKERRXX(ierr);
         maxSize = std::max(maxSize, cone->size());
       }
       for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
         const Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
 
-        ierr = DMComplexSetSupportSize(dm, renumbering[*c_iter], support->size());CHKERRXX(ierr);
+        ierr = DMPlexSetSupportSize(dm, renumbering[*c_iter], support->size());CHKERRXX(ierr);
         maxSize = std::max(maxSize, support->size());
       }
       ierr = DMSetUp(dm);CHKERRXX(ierr);
@@ -2752,7 +2752,7 @@ namespace ALE {
         for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
           points[i] = renumbering[*c_iter];
         }
-        ierr = DMComplexSetCone(dm, renumbering[*b_iter], points);CHKERRXX(ierr);
+        ierr = DMPlexSetCone(dm, renumbering[*b_iter], points);CHKERRXX(ierr);
       }
       for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
         const Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
@@ -2761,7 +2761,7 @@ namespace ALE {
         for(typename Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
           points[i] = renumbering[*s_iter];
         }
-        ierr = DMComplexSetSupport(dm, renumbering[*c_iter], points);CHKERRXX(ierr);
+        ierr = DMPlexSetSupport(dm, renumbering[*c_iter], points);CHKERRXX(ierr);
       }
       delete [] points;
     }
@@ -2789,7 +2789,7 @@ namespace ALE {
       PetscInt       maxConeSize;
       PetscErrorCode ierr;
 
-      ierr = DMComplexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRXX(ierr);
+      ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRXX(ierr);
       if (maxConeSize < 0) return;
       const Obj<typename Sieve::baseSequence>& base = sieve.base();
       int *orientations = new int[maxConeSize];
@@ -2803,7 +2803,7 @@ namespace ALE {
 
           orientations[i] = orientation->restrictPoint(arrow)[0];
         }
-        ierr = DMComplexSetConeOrientation(dm, renumbering[*b_iter], orientations);
+        ierr = DMPlexSetConeOrientation(dm, renumbering[*b_iter], orientations);
       }
       delete [] orientations;
     }
@@ -2875,7 +2875,7 @@ namespace ALE {
 
       for(typename Renumbering::const_iterator p = renumbering.begin(); p != renumbering.end(); ++p) {
         if (label->getConeSize(p->first)) {
-          ierr = DMComplexSetLabelValue(dm, name, p->second, *label->cone(p->first)->begin());CHKERRXX(ierr);
+          ierr = DMPlexSetLabelValue(dm, name, p->second, *label->cone(p->first)->begin());CHKERRXX(ierr);
         }
       }
     }
@@ -2913,12 +2913,12 @@ namespace ALE {
       PetscErrorCode ierr;
 
       ierr = DMCreate(mesh.comm(), dm);CHKERRXX(ierr);
-      ierr = DMSetType(*dm, DMCOMPLEX);CHKERRXX(ierr);
-      ierr = DMComplexSetDimension(*dm, mesh.getDimension());CHKERRXX(ierr);
+      ierr = DMSetType(*dm, DMPLEX);CHKERRXX(ierr);
+      ierr = DMPlexSetDimension(*dm, mesh.getDimension());CHKERRXX(ierr);
       convertSieve(*mesh.getSieve(), *dm, renumbering, renumber);
-      ierr = DMComplexStratify(*dm);CHKERRXX(ierr);
+      ierr = DMPlexStratify(*dm);CHKERRXX(ierr);
       convertOrientation(*mesh.getSieve(), *dm, renumbering, mesh.getArrowSection("orientation").ptr());
-      ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRXX(ierr);
+      ierr = DMPlexGetCoordinateSection(*dm, &coordSection);CHKERRXX(ierr);
       ierr = VecCreate(mesh.comm(), &coordinates);CHKERRXX(ierr);
       convertCoordinates(*mesh.getRealSection("coordinates"), coordSection, coordinates, renumbering);
       ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRXX(ierr);

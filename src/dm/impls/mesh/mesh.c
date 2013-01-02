@@ -549,7 +549,7 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
   if (mesh->useNewImpl) {
     PetscSection s;
 
-    /* DOES NOT WORK IN PARALLEL, CHANGE TO DMCOMPLEX */
+    /* DOES NOT WORK IN PARALLEL, CHANGE TO DMPLEX */
     ierr = DMMeshGetDefaultSection(dm, &s);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(s, &localSize);CHKERRQ(ierr);
     globalSize = PETSC_DETERMINE;

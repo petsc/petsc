@@ -1,6 +1,6 @@
 static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
 
-#include <petscdmcomplex.h>
+#include <petscdmplex.h>
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -55,32 +55,32 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   if (cellSimplex) {
-    ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   } else {
     const PetscInt cells[3] = {2, 2, 2};
 
-    ierr = DMComplexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
   }
   {
     DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
-    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMComplexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMComplexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
     if (refinementUniform) {
-      ierr = DMComplexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
+      ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
       ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
       if (refinedMesh) {
         ierr = DMDestroy(dm);CHKERRQ(ierr);

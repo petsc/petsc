@@ -1,6 +1,6 @@
 static char help[] = "Stokes Problem in 2d and 3d with hexhedral finite elements.\n\
 We solve the Stokes problem in a rectangular\n\
-domain, using a parallel unstructured mesh (DMCOMPLEX) to discretize it.\n\n\n";
+domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 /*
 The isoviscous Stokes problem, which we discretize using the finite
@@ -34,16 +34,16 @@ have
   x     = [u_{e_0} v_{e_0} u_{e_1} v_{e_1} u_{e_2} v_{e_2} u_{v_0} v_{v_0} p_{v_0} u_{v_1} v_{v_1} p_{v_1} u_{v_2} v_{v_2} p_{v_2}]
 
 The problem here is that we would like to loop over each field separately for
-integration. Therefore, the closure visitor in DMComplexVecGetClosure() reorders
+integration. Therefore, the closure visitor in DMPlexVecGetClosure() reorders
 the data so that each field is contiguous
 
   x'    = [u_{e_0} v_{e_0} u_{e_1} v_{e_1} u_{e_2} v_{e_2} u_{v_0} v_{v_0} u_{v_1} v_{v_1} u_{v_2} v_{v_2} p_{v_0} p_{v_1} p_{v_2}]
 
-Likewise, DMComplexVecSetClosure() takes data partitioned by field, and correctly
+Likewise, DMPlexVecSetClosure() takes data partitioned by field, and correctly
 puts it into the Sieve ordering.
 */
 
-#include <petscdmcomplex.h>
+#include <petscdmplex.h>
 #include <petscsnes.h>
 
 /*------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMCOMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   run = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
@@ -367,12 +367,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (refinementLimit > 0.0) {
     cells[0] = cells[1] = cells[2] = ceil(pow(1.0/refinementLimit, 1.0/dim));
   }
-  ierr = DMComplexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
   {
     DM distributedMesh = PETSC_NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMComplexDistribute(*dm, partitioner, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -436,9 +436,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   }
   if (user->bcType == DIRICHLET) {
     numBC = 1;
-    ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+    ierr  = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
@@ -507,14 +507,14 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   ierr = DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscReal          elemError = 0.0;
 
-    ierr = DMComplexComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMComplexVecGetClosure(user->dm, PETSC_NULL, localX, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(user->dm, PETSC_NULL, localX, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
     for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
       const PetscInt   numQuadPoints = user->q[field].numQuadPoints;
@@ -585,10 +585,10 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
 
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscScalar *coords;
@@ -605,17 +605,17 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
     PetscInt     eStart = 0, eEnd = 0, e, depth, dim;
 
     ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
-    ierr = DMComplexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
+    ierr = DMPlexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
     --depth;
-    if (depth > 1) {ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
+    if (depth > 1) {ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
     for (e = eStart; e < eEnd; ++e) {
       const PetscInt *cone;
       PetscInt        coneSize, d;
       PetscScalar    *coordsA, *coordsB;
 
-      ierr = DMComplexGetConeSize(dm, e, &coneSize);CHKERRQ(ierr);
-      ierr = DMComplexGetCone(dm, e, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeSize(dm, e, &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
       if (coneSize != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", coneSize, e);
       ierr = VecGetValuesSection(coordinates, cSection, cone[0], &coordsA);CHKERRQ(ierr);
       ierr = VecGetValuesSection(coordinates, cSection, cone[1], &coordsB);CHKERRQ(ierr);
@@ -657,7 +657,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
     const int                          oSize   = pV.getSize();
     int                                v       = 0;
 
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, PETSC_NULL, &detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometry(dm, c, v0, J, PETSC_NULL, &detJ);CHKERRQ(ierr);
     for (PetscInt cl = 0; cl < oSize; ++cl) {
       const PetscInt fDim;
 
@@ -668,7 +668,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
         }
       }
     }
-    ierr = DMComplexVecSetClosure(dm, PETSC_NULL, localX, c, values);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dm, PETSC_NULL, localX, c, values);CHKERRQ(ierr);
     pV.clear();
   }
   ierr = PetscFree2(v0,J);CHKERRQ(ierr);
@@ -892,7 +892,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   const PetscInt numCells = cEnd - cStart;
   PetscInt       cellDof  = 0;
   PetscScalar   *u;
@@ -905,9 +905,9 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     const PetscScalar *x;
     PetscInt           i;
 
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
-    ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
     for (i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
@@ -933,7 +933,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
-    ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemVec);CHKERRQ(ierr);
   ierr = PetscFree3(coords,v0,J);CHKERRQ(ierr);
@@ -1184,7 +1184,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   const PetscInt numCells = cEnd - cStart;
   PetscInt       cellDof  = 0;
   PetscScalar   *u, *a;
@@ -1197,13 +1197,13 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
     const PetscScalar *x;
     PetscInt           i;
 
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
-    ierr = DMComplexVecGetClosure(dm, PETSC_NULL, jctx->u, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, jctx->u, c, PETSC_NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
-    ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < cellDof; ++i) {
       a[c*cellDof+i] = x[i];
     }
@@ -1226,7 +1226,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
-    ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree5(u,a,invJ,detJ,elemVec);CHKERRQ(ierr);
   ierr = PetscFree3(coords,v0,J);CHKERRQ(ierr);
@@ -1526,7 +1526,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
@@ -1536,9 +1536,9 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
     const PetscScalar *x;
     PetscInt           i;
 
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
-    ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
     for (i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
@@ -1571,7 +1571,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
-    ierr = DMComplexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemMat);CHKERRQ(ierr);
   ierr = PetscFree2(v0,J);CHKERRQ(ierr);
@@ -1662,7 +1662,7 @@ int main(int argc, char **argv)
 
     ierr = SNESGetKSP( snes, &ksp );CHKERRQ(ierr);
     ierr = KSPGetPC( ksp, &pc );CHKERRQ(ierr);
-    ierr = DMComplexGetCoordinateVec( user.dm, &crd_vec );CHKERRQ(ierr);
+    ierr = DMPlexGetCoordinateVec( user.dm, &crd_vec );CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
@@ -1751,7 +1751,7 @@ int main(int argc, char **argv)
 
     ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
     ierr = PetscObjectReference((PetscObject) u);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMComplexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) u);CHKERRQ(ierr);
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) u);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

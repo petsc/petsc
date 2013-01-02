@@ -1,10 +1,10 @@
 #define PETSCDM_DLL
-#include <petsc-private/compleximpl.h>    /*I   "petscdmcomplex.h"   I*/
+#include <petsc-private/pleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKGetCellType"
-PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
+#define __FUNCT__ "DMPlexVTKGetCellType"
+PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
   PetscFunctionBegin;
   *cellType = -1;
   switch(dim) {
@@ -69,8 +69,8 @@ PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, Pe
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteCells_ASCII"
-PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
+#define __FUNCT__ "DMPlexVTKWriteCells_ASCII"
+PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm        comm = ((PetscObject) dm)->comm;
   IS              globalVertexNumbers;
@@ -87,13 +87,13 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
   ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
-  ierr = DMComplexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   for(c = cStart; c < cEnd; ++c) {
     PetscInt *closure = PETSC_NULL;
@@ -102,14 +102,14 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
     if (hasLabel) {
       PetscInt value;
 
-      ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
-    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) ++numCorners;
     }
-    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     ++numCells;
   }
   maxCells = numCells;
@@ -117,7 +117,7 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
   ierr = MPI_Reduce(&numCells, &maxCells, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Reduce(&numCorners, &totCorners, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Reduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
-  ierr = DMComplexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
+  ierr = DMPlexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr = PetscMalloc(maxCells * sizeof(PetscInt), &corners);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "CELLS %d %d\n", totCells, totCorners+totCells);CHKERRQ(ierr);
@@ -131,10 +131,10 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
       if (hasLabel) {
         PetscInt value;
 
-        ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+        ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
-      ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
           const PetscInt gv = gvertex[closure[v] - vStart];
@@ -147,7 +147,7 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
         ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
-      ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     if (numProcs > 1) {ierr = PetscMalloc((maxCorners+maxCells) * sizeof(PetscInt), &remoteVertices);CHKERRQ(ierr);}
     for(proc = 1; proc < numProcs; ++proc) {
@@ -177,10 +177,10 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
       if (hasLabel) {
         PetscInt value;
 
-        ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+        ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
-      ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
           const PetscInt gv = gvertex[closure[v] - vStart];
@@ -192,7 +192,7 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
       for(v = 0; v < nC; ++v, ++k) {
         localVertices[k] = closure[v];
       }
-      ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     if (k != numSend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numSend);
     ierr = MPI_Send(&numSend, 1, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
     PetscInt cellType;
 
     for (c = 0; c < numCells; ++c) {
-      ierr = DMComplexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+      ierr = DMPlexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
       ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
     }
     for(proc = 1; proc < numProcs; ++proc) {
@@ -214,7 +214,7 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
       ierr = MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
       ierr = MPI_Recv(corners, numCells, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
       for(c = 0; c < numCells; ++c) {
-        ierr = DMComplexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+        ierr = DMPlexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
       }
     }
@@ -228,8 +228,8 @@ PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCell
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteSection_ASCII"
-PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale) {
+#define __FUNCT__ "DMPlexVTKWriteSection_ASCII"
+PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale) {
   MPI_Comm           comm    = ((PetscObject) dm)->comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;
@@ -248,16 +248,16 @@ PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, Petsc
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   /* VTK only wants the values at cells or vertices */
-  ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKBounds(dm, &cMax, &vMax);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKBounds(dm, &cMax, &vMax);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
   if (vMax >= 0) {vEnd = PetscMin(vEnd, vMax);}
   pStart = PetscMax(PetscMin(cStart, vStart), pStart);
   pEnd   = PetscMin(PetscMax(cEnd,   vEnd),   pEnd);
-  ierr = DMComplexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
-  ierr = DMComplexGetStratumSize(dm, "vtk", 2, &numLabelVertices);CHKERRQ(ierr);
+  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = DMPlexGetStratumSize(dm, "vtk", 2, &numLabelVertices);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 || numLabelVertices > 0 ? PETSC_TRUE : PETSC_FALSE;
   for(p = pStart; p < pEnd; ++p) {
     /* Reject points not either cells or vertices */
@@ -267,7 +267,7 @@ PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, Petsc
 
       if (((p >= cStart) && (p < cEnd) && numLabelCells) ||
           ((p >= vStart) && (p < vEnd) && numLabelVertices)) {
-        ierr = DMComplexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
+        ierr = DMPlexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
     }
@@ -292,7 +292,7 @@ PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, Petsc
 
         if (((p >= cStart) && (p < cEnd) && numLabelCells) ||
             ((p >= vStart) && (p < vEnd) && numLabelVertices)) {
-          ierr = DMComplexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
+          ierr = DMPlexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
           if (value != 1) continue;
         }
       }
@@ -350,7 +350,7 @@ PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, Petsc
 
         if (((p >= cStart) && (p < cEnd) && numLabelCells) ||
             ((p >= vStart) && (p < vEnd) && numLabelVertices)) {
-          ierr = DMComplexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
+          ierr = DMPlexGetLabelValue(dm, "vtk", p, &value);CHKERRQ(ierr);
           if (value != 1) continue;
         }
       }
@@ -372,8 +372,8 @@ PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteField_ASCII"
-PetscErrorCode DMComplexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+#define __FUNCT__ "DMPlexVTKWriteField_ASCII"
+PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscInt       numDof = 0, maxDof;
@@ -395,13 +395,13 @@ PetscErrorCode DMComplexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSe
     ierr = PetscFPrintf(comm, fp, "SCALARS %s double %d\n", name, maxDof);CHKERRQ(ierr);
     ierr = PetscFPrintf(comm, fp, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
   }
-  ierr = DMComplexVTKWriteSection_ASCII(dm, section, globalSection, field, fp, enforceDof, precision, scale);CHKERRQ(ierr);
+  ierr = DMPlexVTKWriteSection_ASCII(dm, section, globalSection, field, fp, enforceDof, precision, scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteAll_ASCII"
-static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
+#define __FUNCT__ "DMPlexVTKWriteAll_ASCII"
+static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 {
   MPI_Comm                 comm = ((PetscObject) dm)->comm;
   PetscViewer_VTK         *vtk  = (PetscViewer_VTK *) viewer->data;
@@ -422,11 +422,11 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscFPrintf(comm, fp, "ASCII\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
   /* Vertices */
-  ierr = DMComplexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, &globalCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKBounds(dm, PETSC_NULL, &vMax);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKBounds(dm, PETSC_NULL, &vMax);CHKERRQ(ierr);
   if (vMax >= 0) {
     PetscInt pStart, pEnd, p, localSize = 0;
 
@@ -447,9 +447,9 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   }
   ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "POINTS %d double\n", totVertices);CHKERRQ(ierr);
-  ierr = DMComplexVTKWriteSection_ASCII(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale);CHKERRQ(ierr);
+  ierr = DMPlexVTKWriteSection_ASCII(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale);CHKERRQ(ierr);
   /* Cells */
-  ierr = DMComplexVTKWriteCells_ASCII(dm, fp, &totCells);CHKERRQ(ierr);
+  ierr = DMPlexVTKWriteCells_ASCII(dm, fp, &totCells);CHKERRQ(ierr);
   /* Vertex fields */
   for (link = vtk->link; link; link = link->next) {
     if ((link->ft == PETSC_VTK_POINT_FIELD) || (link->ft == PETSC_VTK_POINT_VECTOR_FIELD)) hasPoint = PETSC_TRUE;
@@ -479,7 +479,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       }
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-      ierr = DMComplexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
+      ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }
   }
@@ -508,7 +508,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       }
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-      ierr = DMComplexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
+      ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }
   }
@@ -520,14 +520,14 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteAll"
+#define __FUNCT__ "DMPlexVTKWriteAll"
 /*@C
-  DMComplexVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
+  DMPlexVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
 
   Collective
 
   Input Arguments:
-+ odm - The DMComplex specifying the mesh, passed as a PetscObject
++ odm - The DMPlex specifying the mesh, passed as a PetscObject
 - viewer - viewer of type VTK
 
   Level: developer
@@ -539,7 +539,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 
 .seealso: PETSCVIEWERVTK
 @*/
-PetscErrorCode DMComplexVTKWriteAll(PetscObject odm, PetscViewer viewer)
+PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
 {
   DM              dm   = (DM) odm;
   PetscBool       isvtk;
@@ -552,10 +552,10 @@ PetscErrorCode DMComplexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   if (!isvtk) SETERRQ1(((PetscObject) viewer)->comm, PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_ASCII_VTK:
-    ierr = DMComplexVTKWriteAll_ASCII(dm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexVTKWriteAll_ASCII(dm, viewer);CHKERRQ(ierr);
     break;
   case PETSC_VIEWER_VTK_VTU:
-    ierr = DMComplexVTKWriteAll_VTU(dm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexVTKWriteAll_VTU(dm, viewer);CHKERRQ(ierr);
     break;
   default: SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }

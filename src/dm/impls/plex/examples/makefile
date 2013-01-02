@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR	 = src/dm/impls/complex/examples/
+LOCDIR	 = src/dm/impls/plex/examples/
 DIRS	 = tests
 
 include ${PETSC_DIR}/conf/variables

@@ -1,8 +1,8 @@
-#include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
+#include <petsc-private/pleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLocalOffset_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMComplexGetLocalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
+#define __FUNCT__ "DMPlexGetLocalOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
@@ -20,8 +20,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMComplexGetLocalOffset_Private(DM dm,PetscIn
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetGlobalOffset_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMComplexGetGlobalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
+#define __FUNCT__ "DMPlexGetGlobalOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
@@ -47,9 +47,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMComplexGetGlobalOffset_Private(DM dm,PetscI
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetPointLocal"
+#define __FUNCT__ "DMPlexGetPointLocal"
 /*@
-   DMComplexGetPointLocal - get location of point data in local Vec
+   DMPlexGetPointLocal - get location of point data in local Vec
 
    Not Collective
 
@@ -63,9 +63,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMComplexGetGlobalOffset_Private(DM dm,PetscI
 
    Level: intermediate
 
-.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMComplexPointLocalRead(), DMComplexPointLocalRead(), DMComplexPointLocalRef()
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointLocalRead(), DMPlexPointLocalRead(), DMPlexPointLocalRef()
 @*/
-PetscErrorCode DMComplexGetPointLocal(DM dm,PetscInt point,PetscInt *start,PetscInt *end)
+PetscErrorCode DMPlexGetPointLocal(DM dm,PetscInt point,PetscInt *start,PetscInt *end)
 {
   PetscErrorCode ierr;
   PetscInt offset,dof;
@@ -80,9 +80,9 @@ PetscErrorCode DMComplexGetPointLocal(DM dm,PetscInt point,PetscInt *start,Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexPointLocalRead"
+#define __FUNCT__ "DMPlexPointLocalRead"
 /*@
-   DMComplexPointLocalRead - return read access to a point in local array
+   DMPlexPointLocalRead - return read access to a point in local array
 
    Not Collective
 
@@ -100,12 +100,12 @@ PetscErrorCode DMComplexGetPointLocal(DM dm,PetscInt point,PetscInt *start,Petsc
    A common usage when data sizes are known statically:
 
 $  const struct { PetscScalar foo,bar,baz; } *ptr;
-$  DMComplexPointLocalRead(dm,point,array,&ptr);
+$  DMPlexPointLocalRead(dm,point,array,&ptr);
 $  x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 
-.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMComplexGetPointLocal(), DMComplexPointGlobalRead()
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRead()
 @*/
-PetscErrorCode DMComplexPointLocalRead(DM dm,PetscInt point,const PetscScalar *array,const void *ptr)
+PetscErrorCode DMPlexPointLocalRead(DM dm,PetscInt point,const PetscScalar *array,const void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt start;
@@ -114,15 +114,15 @@ PetscErrorCode DMComplexPointLocalRead(DM dm,PetscInt point,const PetscScalar *a
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
-  ierr = DMComplexGetLocalOffset_Private(dm,point,&start);CHKERRQ(ierr);
+  ierr = DMPlexGetLocalOffset_Private(dm,point,&start);CHKERRQ(ierr);
   *(const PetscScalar **)ptr = array + start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexPointLocalRef"
+#define __FUNCT__ "DMPlexPointLocalRef"
 /*@
-   DMComplexPointLocalRef - return read/write access to a point in local array
+   DMPlexPointLocalRef - return read/write access to a point in local array
 
    Not Collective
 
@@ -140,12 +140,12 @@ PetscErrorCode DMComplexPointLocalRead(DM dm,PetscInt point,const PetscScalar *a
    A common usage when data sizes are known statically:
 
 $  struct { PetscScalar foo,bar,baz; } *ptr;
-$  DMComplexPointLocalRef(dm,point,array,&ptr);
+$  DMPlexPointLocalRef(dm,point,array,&ptr);
 $  ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 
-.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMComplexGetPointLocal(), DMComplexPointGlobalRef()
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
 @*/
-PetscErrorCode DMComplexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
+PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt start;
@@ -154,15 +154,15 @@ PetscErrorCode DMComplexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,vo
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
-  ierr = DMComplexGetLocalOffset_Private(dm,point,&start);CHKERRQ(ierr);
+  ierr = DMPlexGetLocalOffset_Private(dm,point,&start);CHKERRQ(ierr);
   *(PetscScalar **)ptr = array + start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetPointGlobal"
+#define __FUNCT__ "DMPlexGetPointGlobal"
 /*@
-   DMComplexGetPointGlobal - get location of point data in global Vec
+   DMPlexGetPointGlobal - get location of point data in global Vec
 
    Not Collective
 
@@ -176,9 +176,9 @@ PetscErrorCode DMComplexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,vo
 
    Level: intermediate
 
-.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMComplexPointGlobalRead(), DMComplexGetPointLocal(), DMComplexPointGlobalRead(), DMComplexPointGlobalRef()
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexPointGlobalRead(), DMPlexGetPointLocal(), DMPlexPointGlobalRead(), DMPlexPointGlobalRef()
 @*/
-PetscErrorCode DMComplexGetPointGlobal(DM dm,PetscInt point,PetscInt *start,PetscInt *end)
+PetscErrorCode DMPlexGetPointGlobal(DM dm,PetscInt point,PetscInt *start,PetscInt *end)
 {
   PetscErrorCode ierr;
   PetscInt offset,dof;
@@ -193,9 +193,9 @@ PetscErrorCode DMComplexGetPointGlobal(DM dm,PetscInt point,PetscInt *start,Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexPointGlobalRead"
+#define __FUNCT__ "DMPlexPointGlobalRead"
 /*@
-   DMComplexPointGlobalRead - return read access to a point in global array
+   DMPlexPointGlobalRead - return read access to a point in global array
 
    Not Collective
 
@@ -213,12 +213,12 @@ PetscErrorCode DMComplexGetPointGlobal(DM dm,PetscInt point,PetscInt *start,Pets
    A common usage when data sizes are known statically:
 
 $  const struct { PetscScalar foo,bar,baz; } *ptr;
-$  DMComplexPointGlobalRead(dm,point,array,&ptr);
+$  DMPlexPointGlobalRead(dm,point,array,&ptr);
 $  x = 2*ptr->foo + 3*ptr->bar + 5*ptr->baz;
 
-.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMComplexGetPointGlobal(), DMComplexPointLocalRead(), DMComplexPointGlobalRef()
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRead(), DMPlexPointGlobalRef()
 @*/
-PetscErrorCode DMComplexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *array,const void *ptr)
+PetscErrorCode DMPlexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *array,const void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt start;
@@ -227,15 +227,15 @@ PetscErrorCode DMComplexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
-  ierr = DMComplexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
+  ierr = DMPlexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
   *(const PetscScalar **)ptr = (start >= 0) ? array + start - dm->map->rstart : PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexPointGlobalRef"
+#define __FUNCT__ "DMPlexPointGlobalRef"
 /*@
-   DMComplexPointGlobalRef - return read/write access to a point in global array
+   DMPlexPointGlobalRef - return read/write access to a point in global array
 
    Not Collective
 
@@ -253,12 +253,12 @@ PetscErrorCode DMComplexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *
    A common usage when data sizes are known statically:
 
 $  struct { PetscScalar foo,bar,baz; } *ptr;
-$  DMComplexPointGlobalRef(dm,point,array,&ptr);
+$  DMPlexPointGlobalRef(dm,point,array,&ptr);
 $  ptr->foo = 2; ptr->bar = 3; ptr->baz = 5;
 
-.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMComplexGetPointGlobal(), DMComplexPointLocalRef(), DMComplexPointGlobalRead()
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointGlobal(), DMPlexPointLocalRef(), DMPlexPointGlobalRead()
 @*/
-PetscErrorCode DMComplexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
+PetscErrorCode DMPlexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt start;
@@ -267,7 +267,7 @@ PetscErrorCode DMComplexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,v
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
-  ierr = DMComplexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
+  ierr = DMPlexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
   *(PetscScalar **)ptr = (start >= 0) ? array + start - dm->map->rstart : PETSC_NULL;
   PetscFunctionReturn(0);
 }
