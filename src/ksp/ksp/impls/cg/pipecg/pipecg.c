@@ -47,7 +47,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    alpha,beta = 0.0,gamma,gammaold,delta;
+  PetscScalar    alpha = 0.0,beta = 0.0,gamma = 0.0,gammaold = 0.0,delta = 0.0;
   PetscReal      dp = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N,R,S;
   Mat            Amat,Pmat;

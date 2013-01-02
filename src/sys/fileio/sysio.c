@@ -623,7 +623,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   MPI_Datatype   mtype;
   char           *fname;
   PetscBool      functionload = PETSC_FALSE;
-  void           *ptmp;
+  void           *ptmp = PETSC_NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
