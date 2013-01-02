@@ -22,6 +22,8 @@ Solver loop to update \tau:
 /*
   DMPatchZoom - Create a version of the coarse patch (identified by rank) with halo on communicator commz
 
+  Collective on DM
+
   Input Parameters:
   + dm - the DM
   . rank - the rank which holds the given patch
