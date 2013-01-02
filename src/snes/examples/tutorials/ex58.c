@@ -451,8 +451,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 	col[k].i = i; col[k].j = j+1; k++;
       }
 
-      ierr = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);
-      CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 

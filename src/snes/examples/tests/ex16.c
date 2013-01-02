@@ -451,8 +451,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 	col[k].i = i; col[k].j = j+1; k++;
       }
 
-      info = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);
-      CHKERRQ(info);
+      info = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
     }
   }
 
@@ -580,26 +579,22 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   /* Scale the boundary if desired */
 
-  info = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg);
-  CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg);CHKERRQ(info);
   if (flg){
     info = VecScale(Bottom, scl);CHKERRQ(info);
   }
 
-  info = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg);
-  CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg);CHKERRQ(info);
   if (flg){
     info = VecScale(Top, scl);CHKERRQ(info);
   }
 
-  info = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg);
-  CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg);CHKERRQ(info);
   if (flg){
     info = VecScale(Right, scl);CHKERRQ(info);
   }
 
-  info = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg);
-  CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg);CHKERRQ(info);
   if (flg){
     info = VecScale(Left, scl);CHKERRQ(info);
   }

@@ -84,12 +84,8 @@ PetscErrorCode main(int argc, char *argv[]) {
   /* The following line requires that this executable export symbols TestCXXX as dynamic. Uncomment, when you are sure your linker cooperates. */
   /* ierr = PetscShellRegisterComponentURL(shell, "TestC", "TestC");CHKERRQ(ierr); */
   /**/
+  ierr = PetscShellRegisterComponentURL(shell, "TestIIIA", "./testcomponentsIII.py:TestIIIA");CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentURL(shell, "TestIIIA", "./testcomponentsIII.py:TestIIIA");CHKERRQ(ierr);
-
-  CHKERRQ(ierr);
-  ierr = PetscShellRegisterComponentURL(shell, "TestIIIA", "./testcomponentsIII.py:TestIIIA");
-
-  CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Viewing top-level shell:\n");CHKERRQ(ierr);
   ierr = PetscShellView(shell, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   conf = "initialize";

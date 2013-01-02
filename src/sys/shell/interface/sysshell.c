@@ -419,8 +419,7 @@ PetscErrorCode PetscShellCall(PetscShell shell, const char* message) {
     ierr = PetscShellCall_SO(shell,
                            ((struct _n_PetscShellVTable_SO*)shell->vtable)->path,
                            ((struct _n_PetscShellVTable_SO*)shell->vtable)->name,
-                           message);
-    CHKERRQ(ierr);
+                           message);CHKERRQ(ierr);
     break;
   case PETSC_SHELL_VTABLE_PY:
     PETSC_SHELL_CALL_PYTHON(shell, message);

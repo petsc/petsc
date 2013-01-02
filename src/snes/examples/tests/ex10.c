@@ -407,8 +407,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 	 Set matrix values using local numbering, which was defined
 	 earlier, in the main routine.
       */
-      info = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES);
-      CHKERRQ(info);
+      info = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
     }
   }
 

@@ -1466,9 +1466,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     }
   }
 
-  ierr = PetscFPrintf(comm, fd,
-    "\n------------------------------------------------------------------------------------------------------------------------\n");
-                                                                                                          CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd,"\n------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "Phase summary info:\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n");CHKERRQ(ierr);
@@ -1483,9 +1481,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd,
-    "------------------------------------------------------------------------------------------------------------------------\n");
-                                                                                                          CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
@@ -1516,16 +1512,10 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
 #endif
 
   /* Report events */
-  ierr = PetscFPrintf(comm, fd,
-    "Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total\n");
-                                                                                                          CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd,
-    "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");
-                                                                                                          CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------------------------------------------------\n");
+  ierr = PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd,"                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
-                                                                                                          CHKERRQ(ierr);
   /* Problem: The stage name will not show up unless the stage executed on proc 1 */
   for (stage = 0; stage < numStages; stage++) {
     if (!stageVisible[stage]) continue;

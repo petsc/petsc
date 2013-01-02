@@ -210,17 +210,14 @@ PetscErrorCode KSPDGMRESCycle (PetscInt *itcount,KSP ksp)
         ierr=KSP_PCApplyBAorAB (ksp, VEC_TEMP, VEC_VV (1+it), VEC_TEMP_MATOP);CHKERRQ(ierr);
       }
     } else {
-      ierr = KSP_PCApplyBAorAB (ksp,VEC_VV (it),VEC_VV (1+it),VEC_TEMP_MATOP);
-      CHKERRQ(ierr);
+      ierr = KSP_PCApplyBAorAB (ksp,VEC_VV (it),VEC_VV (1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
     }
     dgmres->matvecs += 1;
     /* update hessenberg matrix and do Gram-Schmidt */
-    ierr = (*dgmres->orthog) (ksp,it);
-    CHKERRQ(ierr);
+    ierr = (*dgmres->orthog) (ksp,it);CHKERRQ(ierr);
 
     /* vv(i+1) . vv(i+1) */
-    ierr = VecNormalize (VEC_VV (it+1),&tt);
-    CHKERRQ(ierr);
+    ierr = VecNormalize (VEC_VV (it+1),&tt);CHKERRQ(ierr);
     /* save the magnitude */
     *HH (it+1,it)    = tt;
     *HES (it+1,it)   = tt;
@@ -229,12 +226,10 @@ PetscErrorCode KSPDGMRESCycle (PetscInt *itcount,KSP ksp)
     hapbnd  = PetscAbsScalar (tt / *GRS (it));
     if (hapbnd > dgmres->haptol) hapbnd = dgmres->haptol;
     if (tt < hapbnd) {
-      ierr = PetscInfo2 (ksp,"Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt);
-      CHKERRQ(ierr);
+      ierr = PetscInfo2 (ksp,"Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt);CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
-    ierr = KSPDGMRESUpdateHessenberg (ksp,it,hapend,&res);
-    CHKERRQ(ierr);
+    ierr = KSPDGMRESUpdateHessenberg (ksp,it,hapend,&res);CHKERRQ(ierr);
 
     it++;
     dgmres->it  = (it-1);    /* For converged */
@@ -242,8 +237,7 @@ PetscErrorCode KSPDGMRESCycle (PetscInt *itcount,KSP ksp)
     ksp->rnorm = res;
     if (ksp->reason) break;
 
-    ierr = (*ksp->converged) (ksp,ksp->its,res,&ksp->reason,ksp->cnvP);
-    CHKERRQ(ierr);
+    ierr = (*ksp->converged) (ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
@@ -269,8 +263,7 @@ PetscErrorCode KSPDGMRESCycle (PetscInt *itcount,KSP ksp)
    preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
-  ierr = KSPDGMRESBuildSoln (GRS (0),ksp->vec_sol,ksp->vec_sol,ksp,it-1);
-  CHKERRQ(ierr);
+  ierr = KSPDGMRESBuildSoln (GRS (0),ksp->vec_sol,ksp->vec_sol,ksp,it-1);CHKERRQ(ierr);
 
   /* Compute data for the deflation to be used during the next restart */
   if (!ksp->reason && ksp->its < ksp->max_it) {
@@ -588,10 +581,7 @@ PetscErrorCode KSPView_DGMRES (KSP ksp,PetscViewer viewer)
     ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Number of matvecs : %D\n", dgmres->matvecs);CHKERRQ(ierr);
-  } else {
-    SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_SUP,"Viewer type %s not supported for KSP DGMRES", ( (PetscObject) viewer)->type_name);
-  }
-
+  } else SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_SUP,"Viewer type %s not supported for KSP DGMRES", ( (PetscObject) viewer)->type_name);
   PetscFunctionReturn (0);
 }
 

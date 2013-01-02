@@ -54,8 +54,7 @@ int main(int argc,char **args)
     if (mype==1) m=0;
     else m = nn*nn*nn;
     npe = 1;
-  }
-  else {
+  } else {
     m = nn*nn*nn/npe;
     if (mype==npe-1) m = nn*nn*nn - (npe-1)*m;
   }
@@ -134,8 +133,7 @@ int main(int argc,char **args)
 	    else DD1[i][j] = -.25;
 	  }
 	}
-      }
-      else {
+      } else {
 	for (i=0;i<24;i++){
 	  for (j=0;j<24;j++){
 	    ierr = fscanf(file, "%le", &DD1[i][j]);
@@ -216,16 +214,12 @@ int main(int argc,char **args)
 	    }
 	    for (ix=0;ix<24;ix++)for (jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
 	    if ( k>0 ) {
-	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);
-              CHKERRQ(ierr);
+	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
 	      ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)vv,ADD_VALUES);CHKERRQ(ierr);
-
-	    }
-	    else {
+	    } else {
 	      /* a BC */
 	      for (ix=0;ix<24;ix++)for (jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD2[ix][jx];
-	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);
-              CHKERRQ(ierr);
+	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
               ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)v2,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	  }
