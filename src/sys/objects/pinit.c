@@ -1053,7 +1053,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
   if (flg2) {
-    ierr = PetscOptionsView(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   /* to prevent PETSc -options_left from warning */
@@ -1066,7 +1069,10 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
     if (flg3) {
       if (!flg2) { /* have not yet printed the options */
-	ierr = PetscOptionsView(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        PetscViewer viewer;
+        ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+        ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
       if (!nopt) {
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
