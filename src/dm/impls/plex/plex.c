@@ -7274,13 +7274,16 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[]) {
 PetscErrorCode DMPlexLocatePoint_Simplex_2D(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
   const PetscInt embedDim = 2;
+  PetscReal      x = PetscRealPart(point[0]);
+  PetscReal      y = PetscRealPart(point[1]);
   PetscReal      v0[2], J[4], invJ[4], detJ;
+  PetscReal      xi, eta;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-  PetscReal xi  = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
-  PetscReal eta = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
+  xi  = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]);
+  eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
   if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) {
     *cell = c;
@@ -7298,6 +7301,8 @@ PetscErrorCode DMPlexLocatePoint_General_2D(DM dm, const PetscScalar point[], Pe
   Vec                coordsLocal;
   const PetscScalar *coords;
   const PetscInt     faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
+  PetscReal          x         = PetscRealPart(point[0]);
+  PetscReal          y         = PetscRealPart(point[1]);
   PetscInt           crossings = 0, f;
   PetscErrorCode     ierr;
 
@@ -7311,9 +7316,9 @@ PetscErrorCode DMPlexLocatePoint_General_2D(DM dm, const PetscScalar point[], Pe
     PetscReal x_j   = coords[faces[2*f+1]*2+0];
     PetscReal y_j   = coords[faces[2*f+1]*2+1];
     PetscReal slope = (y_j - y_i) / (x_j - x_i);
-    PetscBool cond1 = (x_i <= point[0]) && (point[0] < x_j) ? PETSC_TRUE : PETSC_FALSE;
-    PetscBool cond2 = (x_j <= point[0]) && (point[0] < x_i) ? PETSC_TRUE : PETSC_FALSE;
-    PetscBool above = (point[1] < slope * (point[0] - x_i) + y_i) ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool cond1 = (x_i <= x) && (x < x_j) ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool cond2 = (x_j <= x) && (x < x_i) ? PETSC_TRUE : PETSC_FALSE;
+    PetscBool above = (y < slope * (x - x_i) + y_i) ? PETSC_TRUE : PETSC_FALSE;
     if ((cond1 || cond2)  && above) ++crossings;
   }
   if (crossings % 2) {
@@ -7331,13 +7336,17 @@ PetscErrorCode DMPlexLocatePoint_Simplex_3D(DM dm, const PetscScalar point[], Pe
 {
   const PetscInt embedDim = 3;
   PetscReal      v0[3], J[9], invJ[9], detJ;
+  PetscReal      x = PetscRealPart(point[0]);
+  PetscReal      y = PetscRealPart(point[1]);
+  PetscReal      z = PetscRealPart(point[2]);
+  PetscReal      xi, eta, zeta;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-  PetscReal xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]);
-  PetscReal eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
-  PetscReal zeta = invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]);
+  xi   = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]) + invJ[0*embedDim+2]*(z - v0[2]);
+  eta  = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]) + invJ[1*embedDim+2]*(z - v0[2]);
+  zeta = invJ[2*embedDim+0]*(x - v0[0]) + invJ[2*embedDim+1]*(y - v0[1]) + invJ[2*embedDim+2]*(z - v0[2]);
 
   if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) {
     *cell = c;
@@ -7356,6 +7365,9 @@ PetscErrorCode DMPlexLocatePoint_General_3D(DM dm, const PetscScalar point[], Pe
   const PetscScalar *coords;
   const PetscInt     faces[24] = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
                                   3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
+  PetscReal          x         = PetscRealPart(point[0]);
+  PetscReal          y         = PetscRealPart(point[1]);
+  PetscReal          z         = PetscRealPart(point[2]);
   PetscBool          found     = PETSC_TRUE;
   PetscInt           f;
   PetscErrorCode     ierr;
@@ -7370,7 +7382,7 @@ PetscErrorCode DMPlexLocatePoint_General_3D(DM dm, const PetscScalar point[], Pe
     PetscReal v_i[3]    = {coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]};
     PetscReal v_j[3]    = {coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0],coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1],coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]};
     PetscReal normal[3] = {v_i[1]*v_j[2] - v_i[2]*v_j[1], v_i[2]*v_j[0] - v_i[0]*v_j[2], v_i[0]*v_j[1] - v_i[1]*v_j[0]};
-    PetscReal pp[3]     = {coords[faces[f*4+0]*3+0] - point[0],coords[faces[f*4+0]*3+1] - point[1],coords[faces[f*4+0]*3+2] - point[2]};
+    PetscReal pp[3]     = {coords[faces[f*4+0]*3+0] - x,coords[faces[f*4+0]*3+1] - y,coords[faces[f*4+0]*3+2] - z};
     PetscReal dot       = normal[0]*pp[0] + normal[1]*pp[1] + normal[2]*pp[2];
     /* Check that projected point is in face (2D location problem) */
     if (dot < 0.0) {
