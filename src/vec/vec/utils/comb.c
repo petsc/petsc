@@ -121,13 +121,10 @@ PETSC_EXTERN_C void  MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMP
   PetscInt    i,count = (PetscInt)*cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPIU_REAL) {
-    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
+  if (*datatype != MPIU_SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data types");
     MPI_Abort(MPI_COMM_SELF,1);
   }
-#if defined(PETSC_USE_COMPLEX)
-  count = count/2;
-#endif
   count = count/2;
   for (i=0; i<count; i++) {
     if (((int)PetscRealPart(xin[count+i])) == REDUCE_SUM) { /* second half of xin[] is flags for reduction type */
@@ -199,31 +196,11 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
         for (i=0; i<numops; i++) {
           lvalues[numops+i] = reducetype[i];
         }
-#if defined(PETSC_USE_COMPLEX)
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*2*numops,MPIU_REAL,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
-#else
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
-#endif
+        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
       } else if (max_flg) {
-#if defined(PETSC_USE_COMPLEX)
-        /*
-         complex case we max both the real and imaginary parts, the imaginary part
-         is just ignored later
-         */
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
-#else
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
-#endif
+        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
       } else if (min_flg) {
-#if defined(PETSC_USE_COMPLEX)
-        /*
-         complex case we min both the real and imaginary parts, the imaginary part
-         is just ignored later
-         */
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
-#else
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
-#endif
+        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
       } else {
         ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm,&sr->request);CHKERRQ(ierr);
       }
@@ -301,31 +278,11 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
       for (i=0; i<numops; i++) {
         lvalues[numops+i] = reducetype[i];
       }
-#if defined(PETSC_USE_COMPLEX)
-      ierr = MPI_Allreduce(lvalues,gvalues,2*2*numops,MPIU_REAL,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
-#else
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
-#endif
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
     } else if (max_flg) {
-#if defined(PETSC_USE_COMPLEX)
-      /*
-        complex case we max both the real and imaginary parts, the imaginary part
-        is just ignored later
-      */
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
-#else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
-#endif
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MAX,comm);CHKERRQ(ierr);
     } else if (min_flg) {
-#if defined(PETSC_USE_COMPLEX)
-      /*
-        complex case we min both the real and imaginary parts, the imaginary part
-        is just ignored later
-      */
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
-#else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
-#endif
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MIN,comm);CHKERRQ(ierr);
     } else {
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     }
