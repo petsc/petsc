@@ -23,7 +23,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->debug             = 0;
   options->dim               = 2;
   options->interpolate       = PETSC_FALSE;
-  options->refinementUniform = 0.0;
+  options->refinementUniform = PETSC_FALSE;
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
 
@@ -46,7 +46,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim               = user->dim;
   PetscBool      interpolate       = user->interpolate;
-  PetscReal      refinementUniform = user->refinementUniform;
+  PetscBool      refinementUniform = user->refinementUniform;
   PetscReal      refinementLimit   = user->refinementLimit;
   PetscBool      cellSimplex       = user->cellSimplex;
   const char    *partitioner       = "chaco";

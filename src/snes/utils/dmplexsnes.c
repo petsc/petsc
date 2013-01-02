@@ -372,8 +372,8 @@ PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xL
     if (4*2 != coordSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", coordSize, 4*2);}
     ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (4*ctx->dof != xSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", xSize, 4*ctx->dof);}
-    ierr = SNESSetFunction(snes, PETSC_NULL, PETSC_NULL, vertices);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes, PETSC_NULL, PETSC_NULL, PETSC_NULL, vertices);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes, PETSC_NULL, PETSC_NULL, (void *) vertices);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes, PETSC_NULL, PETSC_NULL, PETSC_NULL, (void *) vertices);CHKERRQ(ierr);
     ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0] = coords[p*ctx->dim+0];
     xi[1] = coords[p*ctx->dim+1];
@@ -582,8 +582,8 @@ PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLo
     if (8*3 != coordSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", coordSize, 8*3);}
     ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (8*ctx->dof != xSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", xSize, 8*ctx->dof);}
-    ierr = SNESSetFunction(snes, PETSC_NULL, PETSC_NULL, vertices);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes, PETSC_NULL, PETSC_NULL, PETSC_NULL, vertices);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes, PETSC_NULL, PETSC_NULL, (void *) vertices);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes, PETSC_NULL, PETSC_NULL, PETSC_NULL, (void *) vertices);CHKERRQ(ierr);
     ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0] = coords[p*ctx->dim+0];
     xi[1] = coords[p*ctx->dim+1];
