@@ -8,7 +8,9 @@ Load of 1.0 in x + 2y direction on all nodes (not a true uniform load).\n\
 #include <petscksp.h>
 #include <assert.h>
 
-#define ADD_STAGES
+static PetscBool log_stages = PETSC_TRUE;
+static PetscErrorCode MaybeLogStagePush(PetscLogStage stage) { return log_stages ? PetscLogStagePush(stage) : 0; }
+static PetscErrorCode MaybeLogStagePop() { return log_stages ? PetscLogStagePop() : 0; }
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -18,15 +20,14 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       m,nn,M,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
   PetscReal      x,y,z,h,*coords,soft_alpha=1.e-3;
+  PetscBool      two_solves = PETSC_FALSE,test_nonzero_cols = PETSC_FALSE;
   Vec            xx,bb;
   KSP            ksp;
   MPI_Comm       wcomm;
   PetscMPIInt    npe,mype;
   PC pc;
   PetscScalar DD[24][24],DD2[24][24];
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   PetscLogStage  stage[6];
-#endif
   PetscScalar DD1[24][24];
   PCType type;
 
@@ -35,20 +36,31 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank( wcomm, &mype );CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );CHKERRQ(ierr);
 
-  /* log */
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  ierr = PetscLogStageRegister("Setup", &stage[0]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Solve", &stage[1]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("2nd Setup", &stage[2]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("2nd Solve", &stage[3]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("3rd Setup", &stage[4]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
-#endif
+  ierr = PetscOptionsBegin(wcomm,PETSC_NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
+  {
+    char nestring[256];
+    ierr = PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %D (nprocs^{1/3})",(PetscInt)(pow((double)npe,1./3.) + .5));CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ne",nestring,"",ne,&ne,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",soft_alpha,&soft_alpha,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ne",&ne,PETSC_NULL);CHKERRQ(ierr);
+  if (log_stages) {
+    ierr = PetscLogStageRegister("Setup", &stage[0]);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("Solve", &stage[1]);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("2nd Setup", &stage[2]);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("2nd Solve", &stage[3]);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("3rd Setup", &stage[4]);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
+  } else {
+    for (i=0; i<sizeof(stage)/sizeof(stage[0]); i++) stage[i] = -1;
+  }
+
   h = 1./ne; nn = ne+1;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL);CHKERRQ(ierr);
   M = 3*nn*nn*nn; /* global number of equations */
   if (npe==2) {
     if (mype==1) m=0;
@@ -144,15 +156,10 @@ int main(int argc,char **args)
       /* BC version of element */
       for (i=0;i<24;i++)
 	for (j=0;j<24;j++)
-/* #define TEST_NONZERO_COLS */
-#if defined(TEST_NONZERO_COLS)
-          if (i<12)
-#else
-          if (i<12 || j < 12)
-#endif
-	    if (i==j) DD2[i][j] = 0.1*DD1[i][j];
-	    else DD2[i][j] = 0.0;
-	  else DD2[i][j] = DD1[i][j];
+          if (i<12 || (j < 12 && !test_nonzero_cols)) {
+            if (i==j) DD2[i][j] = 0.1*DD1[i][j];
+            else DD2[i][j] = 0.0;
+          } else DD2[i][j] = DD1[i][j];
       /* element residual/load vector */
       for (i=0;i<24;i++){
         if (i%3==0) vv[i] = h*h;
@@ -246,76 +253,58 @@ int main(int argc,char **args)
   ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
   ierr = PCSetCoordinates( pc, 3, m/3, coords );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
-#endif
+  ierr = MaybeLogStagePush(stage[0]);CHKERRQ(ierr);
 
   /* PC setup basically */
   ierr = KSPSetUp( ksp );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
-#endif
+  ierr = MaybeLogStagePop();CHKERRQ(ierr);
+  ierr = MaybeLogStagePush(stage[1]);CHKERRQ(ierr);
 
   /* test BCs */
-#if defined(TEST_NONZERO_COLS)
-  VecZeroEntries(xx);
-  if (mype==0){
-    VecSetValue(xx,0,1.0,INSERT_VALUES);
+  if (test_nonzero_cols) {
+    VecZeroEntries(xx);
+    if (mype==0){
+      VecSetValue(xx,0,1.0,INSERT_VALUES);
+    }
+    VecAssemblyBegin(xx);
+    VecAssemblyEnd(xx);
+    KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);
   }
-  VecAssemblyBegin(xx);
-  VecAssemblyEnd(xx);
-  KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);
-#endif
 
   /* 1st solve */
   ierr = KSPSolve( ksp, bb, xx );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-#endif
+  ierr = MaybeLogStagePop();CHKERRQ(ierr);
 
   /* 2nd solve */
-/* #define TwoSolve */
-#if defined(TwoSolve)
-  {
+  if (two_solves) {
     PetscReal emax, emin;
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-    ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
-#endif
+    ierr = MaybeLogStagePush(stage[2]);CHKERRQ(ierr);
     /* PC setup basically */
     ierr = MatScale( Amat, 100000.0 );CHKERRQ(ierr);
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
     ierr = KSPSetUp( ksp );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage[3]);CHKERRQ(ierr);
-#endif
+    ierr = MaybeLogStagePop();CHKERRQ(ierr);
+    ierr = MaybeLogStagePush(stage[3]);CHKERRQ(ierr);
     ierr = KSPSolve( ksp, bb, xx );CHKERRQ(ierr);
     ierr = KSPComputeExtremeSingularValues( ksp, &emax, &emin );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage[4]);CHKERRQ(ierr);
-#endif
+    ierr = MaybeLogStagePop();CHKERRQ(ierr);
+    ierr = MaybeLogStagePush(stage[4]);CHKERRQ(ierr);
 
     /* 3rd solve */
     ierr = MatScale( Amat, 100000.0 );CHKERRQ(ierr);
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
     ierr = KSPSetUp( ksp );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage[5]);CHKERRQ(ierr);
-#endif
+    ierr = MaybeLogStagePop();CHKERRQ(ierr);
+    ierr = MaybeLogStagePush(stage[5]);CHKERRQ(ierr);
 
     ierr = KSPSolve( ksp, bb, xx );CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-#endif
+    ierr = MaybeLogStagePop();CHKERRQ(ierr);
 
     PetscReal norm,norm2;
     /* PetscViewer viewer; */
@@ -347,12 +336,9 @@ int main(int argc,char **args)
     /* ierr = VecView( xx, viewer );CHKERRQ(ierr); */
     /* ierr = PetscViewerDestroy( &viewer );CHKERRQ(ierr); */
   }
-#endif
 
   /* Free work space */
-#if !defined(foo)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-#endif
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
