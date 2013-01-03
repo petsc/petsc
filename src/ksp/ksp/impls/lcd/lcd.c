@@ -116,7 +116,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
     ierr = VecCopy(lcd->P[it],lcd->P[0]);CHKERRQ(ierr);
   }
   if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  ierr = VecCopy(X,ksp->vec_sol);
+  ierr = VecCopy(X,ksp->vec_sol);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

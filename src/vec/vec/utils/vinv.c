@@ -1222,8 +1222,8 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
     ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
     ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
 
-    ierr = VecNorm_MPI(s,NORM_2, &tmp);
-    ierr = VecNorm_MPI(t,NORM_2, &tmp);
+    ierr = VecNorm_MPI(s,NORM_2, &tmp);CHKERRQ(ierr);
+    ierr = VecNorm_MPI(t,NORM_2, &tmp);CHKERRQ(ierr);
 
     for (i = 0; i<n; i++) {
       dpx += sx[i]*PetscConj(tx[i]);

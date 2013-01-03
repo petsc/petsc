@@ -50,7 +50,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
-  struct DMCompositeLink *next = com->next;
+  struct DMCompositeLink *next;
   PetscInt               m,*dnz,*onz,i,j,mA;
   Mat                    Atmp;
   PetscMPIInt            rank;

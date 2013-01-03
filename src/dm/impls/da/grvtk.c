@@ -26,7 +26,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Complex values not supported");
+  SETERRQ(comm,PETSC_ERR_SUP,"Complex values not supported");
 #endif
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

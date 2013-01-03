@@ -152,7 +152,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       ierr = MatSetSizes(A,0,0,n,n);CHKERRQ(ierr);
     }
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
-    ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
+    ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(BA,A);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
@@ -363,7 +363,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
   for (j=0; j<N; j++) {
     for (i=0; i<M; i++) {
       PetscReal px,py,tx,ty,tmod;
-      ierr = PolyEval(neig,r,c,xloc[i],yloc[j],&px,&py);
+      ierr = PolyEval(neig,r,c,xloc[i],yloc[j],&px,&py);CHKERRQ(ierr);
       tx = px*rscale - py*iscale;
       ty = py*rscale + px*iscale;
       tmod = PetscSqr(tx) + PetscSqr(ty); /* modulus of the complex polynomial */

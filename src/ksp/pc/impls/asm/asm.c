@@ -1302,8 +1302,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
       start += count[i];
     }
 
-    ierr = PetscFree(count);
-    ierr = PetscFree(indices);
+    ierr = PetscFree(count);CHKERRQ(ierr);
+    ierr = PetscFree(indices);CHKERRQ(ierr);
     ierr = ISDestroy(&isnumb);CHKERRQ(ierr);
     ierr = ISDestroy(&ispart);CHKERRQ(ierr);
 

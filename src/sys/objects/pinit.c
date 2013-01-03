@@ -107,7 +107,7 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
   char           **myargs = args;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&myargc,&myargs,filename,help);
+  ierr = PetscInitialize(&myargc,&myargs,filename,help);CHKERRQ(ierr);
   ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   PetscBeganMPI = PETSC_FALSE;
   PetscFunctionReturn(ierr);
@@ -831,7 +831,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       if (PetscHMPIWorker) { /* if worker then never enter user code */
         PetscInitializeCalled = PETSC_TRUE;
-        ierr = PetscEnd();
+        PetscEnd();
       }
     }
   }

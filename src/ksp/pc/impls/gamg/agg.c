@@ -1354,7 +1354,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,
       ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
 
       if (pc_gamg->emax_id == -1) {
-        ierr = PetscObjectComposedDataRegister(&pc_gamg->emax_id);
+        ierr = PetscObjectComposedDataRegister(&pc_gamg->emax_id);CHKERRQ(ierr);
         assert(pc_gamg->emax_id != -1);
       }
       ierr = PetscObjectComposedDataSetScalar((PetscObject)Amat, pc_gamg->emax_id, emax);CHKERRQ(ierr);
@@ -1543,9 +1543,6 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
 
   pc_gamg->createdefaultdata = PCSetData_AGG;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                            "PCSetCoordinates_C",
-                                            "PCSetCoordinates_AGG",
-                                            PCSetCoordinates_AGG);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_AGG",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

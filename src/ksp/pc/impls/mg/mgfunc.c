@@ -444,7 +444,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = PetscObjectGetComm((PetscObject)mglevels[l]->smoothd,&comm);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(mglevels[l]->smoothd,&prefix);CHKERRQ(ierr);
     ierr = KSPGetTolerances(mglevels[l]->smoothd,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
-    ierr = KSPGetType(mglevels[l]->smoothd,&ksptype);
+    ierr = KSPGetType(mglevels[l]->smoothd,&ksptype);CHKERRQ(ierr);
     ierr = KSPGetNormType(mglevels[l]->smoothd,&normtype);CHKERRQ(ierr);
     ierr = KSPGetPC(mglevels[l]->smoothd,&ipc);CHKERRQ(ierr);
     ierr = PCGetType(ipc,&pctype);CHKERRQ(ierr);

@@ -87,7 +87,7 @@ PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
     ierr              = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
     ierr              = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
     PetscHMPIWorker = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
-    ierr              = PetscEnd();  /* cannot continue into user code */
+    PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
 }

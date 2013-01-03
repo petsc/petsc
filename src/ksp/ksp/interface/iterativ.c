@@ -731,7 +731,7 @@ PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
         } else if (ksp->normtype == KSP_NORM_NATURAL) {
           PetscScalar norm;
            ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing natural norm of RHS\n");CHKERRQ(ierr);
-          ierr  = VecDot(ksp->vec_rhs,z,&norm);
+          ierr  = VecDot(ksp->vec_rhs,z,&norm);CHKERRQ(ierr);
           snorm = PetscSqrtReal(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
         }
         ierr = VecDestroy(&z);CHKERRQ(ierr);

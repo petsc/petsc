@@ -478,7 +478,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     if (flg) {
       KSPDynTolCtx *scale = NULL;
       PetscReal    defaultv = 1.0;
-      ierr = PetscMalloc(1*sizeof(KSPDynTolCtx),&scale);
+      ierr = PetscMalloc(1*sizeof(KSPDynTolCtx),&scale);CHKERRQ(ierr);
       scale->bnrm = -1.0;
       scale->coef = defaultv;
       ierr = PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicToleranceParam",defaultv,&(scale->coef),&flg);CHKERRQ(ierr);

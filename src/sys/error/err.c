@@ -53,6 +53,8 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.
 
+   Developer Note: Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
+
    Concepts: emacs^going to on error
    Concepts: error handler^going to line in emacs
 
@@ -62,24 +64,26 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
 PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
-  char        command[PETSC_MAX_PATH_LEN];
-  const char  *pdir;
-  FILE        *fp;
-  PetscInt    rval;
+  char           command[PETSC_MAX_PATH_LEN];
+  const char     *pdir;
+  FILE           *fp;
+  PetscInt       rval;
 
   PetscFunctionBegin;
-  /* Note: don't check error codes since this an error handler :-) */
-  ierr = PetscGetPetscDir(&pdir);
+  ierr = PetscGetPetscDir(&pdir);if (ierr) PetscFunctionReturn(ierr);
   sprintf(command,"cd %s; emacsclient --no-wait +%d %s%s\n",pdir,line,dir,file);
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
-  ierr = PetscPClose(MPI_COMM_WORLD,fp,&rval);
+  ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);if (ierr) PetscFunctionReturn(ierr);
+  ierr = PetscPClose(MPI_COMM_WORLD,fp,&rval);if (ierr) PetscFunctionReturn(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
-  ierr = PetscPopErrorHandler(); /* remove this handler from the stack of handlers */
-  if (!eh)     ierr = PetscTraceBackErrorHandler(comm,line,fun,file,dir,n,p,mess,0);
-  else         ierr = (*eh->handler)(comm,line,fun,file,dir,n,p,mess,eh->ctx);
+  ierr = PetscPopErrorHandler();if (ierr) PetscFunctionReturn(ierr); /* remove this handler from the stack of handlers */
+  if (!eh) {
+    ierr = PetscTraceBackErrorHandler(comm,line,fun,file,dir,n,p,mess,0);if (ierr) PetscFunctionReturn(ierr);
+  } else {
+    ierr = (*eh->handler)(comm,line,fun,file,dir,n,p,mess,eh->ctx);if (ierr) PetscFunctionReturn(ierr);
+  }
   PetscFunctionReturn(ierr);
 }
 
@@ -325,6 +329,10 @@ $     SETERRQ(comm,n,mess)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
+   Developer Note: Since this is called after an error condition it should not be calling any error handlers (currently it ignores any error codes) 
+   BUT this routine does call regular PETSc functions that may call error handlers, this is problematic and could be fixed by never calling other PETSc routines
+   but this annoying. 
+
    Concepts: error^setting condition
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
@@ -333,9 +341,9 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char* f
 {
   va_list        Argp;
   size_t         fullLength;
-  PetscErrorCode ierr;
   char           buf[2048],*lbuf = 0;
   PetscBool      ismain,isunknown;
+  PetscErrorCode ierr;
 
   if (!func)  func = "User provided function";
   if (!file)  file = "User file";
@@ -353,8 +361,8 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char* f
     }
   }
 
-  if (!eh)     ierr = PetscTraceBackErrorHandler(comm,line,func,file,dir,n,p,lbuf,0);
-  else         ierr = (*eh->handler)(comm,line,func,file,dir,n,p,lbuf,eh->ctx);
+  if (!eh) ierr = PetscTraceBackErrorHandler(comm,line,func,file,dir,n,p,lbuf,0);
+  else     ierr = (*eh->handler)(comm,line,func,file,dir,n,p,lbuf,eh->ctx);
 
   /*
       If this is called from the main() routine we call MPI_Abort() instead of

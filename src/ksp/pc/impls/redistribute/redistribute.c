@@ -110,7 +110,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
     ierr = MatGetSize(pc->pmat,&NN,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));
+    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));CHKERRQ(ierr);
     /*
 	this code is taken from VecScatterCreate_PtoS()
 	Determines what rows need to be moved where to
@@ -272,8 +272,8 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   ierr = VecDestroy(&red->x);CHKERRQ(ierr);
   ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&red->work);CHKERRQ(ierr);
-  ierr = PetscFree(red->drows);
-  ierr = PetscFree(red->diag);
+  ierr = PetscFree(red->drows);CHKERRQ(ierr);
+  ierr = PetscFree(red->diag);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

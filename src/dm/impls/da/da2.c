@@ -430,7 +430,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
 
-  count = x*y;
   ierr = PetscMalloc(x*y*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   left = xs - Xs; right = left + x;
   down = ys - Ys; up = down + y;
@@ -781,9 +780,9 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
   ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISGetIndices(ltogis, &idx_full);
+  ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ltogis, &idx_full);
+  ierr = ISRestoreIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);

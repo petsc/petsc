@@ -250,7 +250,7 @@ static PetscErrorCode createLevel(const PC pc,
 	  ierr = PetscSNPrintf(fname,sizeof(fname),"part_mat_%D.mat",llev);CHKERRQ(ierr);
 	  PetscViewerBinaryOpen(wcomm,fname,FILE_MODE_WRITE,&viewer);
 	  ierr = MatView(tMat, viewer);CHKERRQ(ierr);
-	  ierr = PetscViewerDestroy(&viewer);
+	  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 
 	ierr = MatConvert(tMat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj);CHKERRQ(ierr);
@@ -361,7 +361,7 @@ static PetscErrorCode createLevel(const PC pc,
 
     /* move data (for primal equations only) */
     /* Create a vector to contain the newly ordered element information */
-    ierr = VecCreate(wcomm, &dest_crd);
+    ierr = VecCreate(wcomm, &dest_crd);CHKERRQ(ierr);
     ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_prim_new, PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(dest_crd);CHKERRQ(ierr); /* this is needed! */
     /*
@@ -636,7 +636,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscInt NN = M;
     if (pc_gamg->verbose==1) {
       ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Pmat, &NN, &qq);
+      ierr = MatGetLocalSize(Pmat, &NN, &qq);CHKERRQ(ierr);
     } else {
       ierr = MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
     }
@@ -715,7 +715,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     if (level==0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
     if (!Parr[level1]) {
       if (pc_gamg->verbose) {
-        ierr =  PetscPrintf(wcomm,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);
+        ierr =  PetscPrintf(wcomm,"\t[%d]%s stop gridding, level %d\n",mype,__FUNCT__,level);CHKERRQ(ierr);
       }
       break;
     }
@@ -735,7 +735,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       PetscInt NN = M;
       if (pc_gamg->verbose==1) {
         ierr = MatGetInfo(Aarr[level1],MAT_LOCAL,&info);CHKERRQ(ierr);
-        ierr = MatGetLocalSize(Aarr[level1], &NN, &qq);
+        ierr = MatGetLocalSize(Aarr[level1], &NN, &qq);CHKERRQ(ierr);
       } else {
         ierr = MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
       }

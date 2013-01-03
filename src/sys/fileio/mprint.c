@@ -463,7 +463,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
         ierr = MPI_Recv(&size,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
         ierr = PetscMalloc(size * sizeof(char), &message);CHKERRQ(ierr);
         ierr = MPI_Recv(message,size,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
-        ierr = PetscFPrintf(comm,fd,"%s",message);
+        ierr = PetscFPrintf(comm,fd,"%s",message);CHKERRQ(ierr);
         ierr = PetscFree(message);CHKERRQ(ierr);
       }
     }

@@ -578,7 +578,7 @@ PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[]) {
   case PETSC_SHELL_VTABLE_SO:
     {
       struct _n_PetscShellVTable_SO *vt;
-      ierr = PetscMalloc(sizeof(struct _n_PetscShellVTable_SO), &(vt));
+      ierr = PetscMalloc(sizeof(struct _n_PetscShellVTable_SO), &(vt));CHKERRQ(ierr);
       shell->vtable = (void*)vt;
       ierr = PetscStrallocpy(path, &vt->path);CHKERRQ(ierr);
       ierr = PetscStrallocpy(name, &vt->name);CHKERRQ(ierr);
@@ -649,7 +649,7 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
     }
     ierr = PetscShellGraphTopologicalSort(shell->dep_graph, &N, &vertices);CHKERRQ(ierr);
     if (N) {
-      ierr = PetscViewerASCIIPrintf(viewer, "Component shells in the topological order of the dependence graph:\n");
+      ierr = PetscViewerASCIIPrintf(viewer, "Component shells in the topological order of the dependence graph:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (i = 0; i < N; ++i) {
         id = vertices[i];

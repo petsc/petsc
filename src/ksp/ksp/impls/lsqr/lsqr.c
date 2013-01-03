@@ -152,7 +152,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   lsqr->arnorm = alpha * beta;
   phibar = beta;
   rhobar = alpha;
-  tau = -beta;
   i = 0;
   do {
     if (nopreconditioner) {

@@ -392,9 +392,9 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
     if (*found) {
-      ierr = PetscInfo1(PETSC_NULL,"Found file %s\n",libname);
+      ierr = PetscInfo1(PETSC_NULL,"Found file %s\n",libname);CHKERRQ(ierr);
     } else {
-      ierr = PetscInfo1(PETSC_NULL,"Did not find file %s\n",libname);
+      ierr = PetscInfo1(PETSC_NULL,"Did not find file %s\n",libname);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }

@@ -76,7 +76,7 @@ PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer *viewer)
   ierr = PetscObjectGetComm((PetscObject)*viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(*viewer,&info);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabDestroy ---%\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");
+  ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabDestroy ---%\n\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

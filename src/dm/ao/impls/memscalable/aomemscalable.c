@@ -45,7 +45,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
     ierr = PetscMalloc2(map->N,PetscInt,&app,map->N,PetscInt,&petsc);CHKERRQ(ierr);
     len = map->n;
     /* print local AO */
-    ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",rank);
+    ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",rank);CHKERRQ(ierr);
     for (i=0; i<len; i++){
       ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aomems->app_loc[i],i,aomems->petsc_loc[i]);CHKERRQ(ierr);
     }
@@ -57,7 +57,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
       petsc_loc = petsc+ map->range[i];
       ierr = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",i);
+      ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",i);CHKERRQ(ierr);
       for (j=0; j<len; j++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",map->range[i]+j,app_loc[j],map->range[i]+j,petsc_loc[j]);CHKERRQ(ierr);
       }

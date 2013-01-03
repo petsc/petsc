@@ -249,7 +249,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
   ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInt trank;
-    ierr = PetscThreadCommGetRank(tcomm,&trank);
+    ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
     /* Only thread rank 0 updates the counter */
     if (!trank) counter->refcount--;
   } else counter->refcount--;
