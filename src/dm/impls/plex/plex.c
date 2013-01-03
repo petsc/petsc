@@ -8191,7 +8191,7 @@ PetscErrorCode DMPlexComputeTetrahedronGeometry_private(DM dm, PetscInt e, Petsc
     PetscLogFlops(18.0 + 12.0);
   }
   if (invJ) {
-    const PetscReal invDet = -1.0/(*detJ);
+    const PetscReal invDet = 1.0/(*detJ);
 
     invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
     invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
@@ -8296,7 +8296,7 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
       ierr = DMPlexComputeRectangleGeometry_private(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of cell vertices %D for element geometry computation", maxConeSize);
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", maxConeSize, cell);
     }
     break;
   case 3:
@@ -8308,7 +8308,7 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
       ierr = DMPlexComputeHexahedronGeometry_private(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of cell vertices %D for element geometry computation", maxConeSize);
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", maxConeSize, cell);
     }
     break;
   default:
