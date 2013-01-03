@@ -41,14 +41,9 @@ int main(int argc,char **args)
   for (i=rstart; i<rend; i++){
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
     if (!rank){
-#if defined(PETSC_USE_COMPLEX)
       for (j=0; j<nz; j++) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"%D %G ",idx[j],PetscRealPart(values[j]));CHKERRQ(ierr);
       }
-#else
-      for (j=0; j<nz; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%D %G ",idx[j],values[j]);CHKERRQ(ierr);}
-#endif
       ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
     }
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);

@@ -712,11 +712,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         x_l = a->j[j] ; x_r = x_l + 1.0;
-#if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(a->a[j]) >=  0.) continue;
-#else
-        if (a->a[j] >=  0.) continue;
-#endif
         ierr = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       }
     }
@@ -734,11 +730,7 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         x_l = a->j[j]; x_r = x_l + 1.0;
-#if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(a->a[j]) <=  0.) continue;
-#else
-        if (a->a[j] <=  0.) continue;
-#endif
         ierr = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       }
     }

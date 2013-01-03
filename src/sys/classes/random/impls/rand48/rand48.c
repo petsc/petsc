@@ -20,8 +20,7 @@ PetscErrorCode  PetscRandomGetValue_Rand48(PetscRandom r,PetscScalar *val)
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset) {
-    *val = PetscRealPart(r->width)*(PetscReal)drand48() + PetscRealPart(r->low) +
-      (PetscImaginaryPart(r->width)*(PetscReal)drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
+    *val = PetscRealPart(r->width)*(PetscReal)drand48() + PetscRealPart(r->low) + (PetscImaginaryPart(r->width)*(PetscReal)drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
   } else {
     *val = (PetscReal)drand48() + (PetscReal)drand48()*PETSC_i;
   }

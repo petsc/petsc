@@ -149,19 +149,15 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PStatInit(&stat);        /* Initialize the statistics variables. */
   if (lu->MatInputMode == GLOBAL) {
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx_ABglobal(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,M,nrhs,
-                   &lu->grid,&lu->LUstruct,berr,&stat,&info);
+    pzgssvx_ABglobal(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,M,nrhs,&lu->grid,&lu->LUstruct,berr,&stat,&info);
 #else
-    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr,M,nrhs,
-                   &lu->grid,&lu->LUstruct,berr,&stat,&info);
+    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr,M,nrhs,&lu->grid,&lu->LUstruct,berr,&stat,&info);
 #endif
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,m,nrhs,&lu->grid,
-	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
+    pzgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,m,nrhs,&lu->grid,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #else
-    pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,nrhs,&lu->grid,
-	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
+    pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,nrhs,&lu->grid,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #endif
   }
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
@@ -230,16 +226,13 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   ierr = MatDenseGetArray(X,&bptr);CHKERRQ(ierr);
   if (lu->MatInputMode == GLOBAL) { /* size == 1 */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, M, nrhs,
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+    pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, M, nrhs,&lu->grid, &lu->LUstruct, berr, &stat, &info);
 #else
-    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr, M, nrhs,
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr, M, nrhs, &lu->grid, &lu->LUstruct, berr, &stat, &info);
 #endif
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,m,nrhs,&lu->grid,
-	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
+    pzgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,m,nrhs,&lu->grid, &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #else
     pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,nrhs,&lu->grid,
 	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);

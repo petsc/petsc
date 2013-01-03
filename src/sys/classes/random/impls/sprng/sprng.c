@@ -26,8 +26,7 @@ PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset) {
-    *val = PetscRealPart(r->width)*sprng() + PetscRealPart(r->low) +
-      (PetscImaginaryPart(r->width)*sprng() + PetscImaginaryPart(r->low)) * PETSC_i;
+    *val = PetscRealPart(r->width)*sprng() + PetscRealPart(r->low) +  (PetscImaginaryPart(r->width)*sprng() + PetscImaginaryPart(r->low)) * PETSC_i;
   } else {
     *val = sprng() + sprng()*PETSC_i;
   }

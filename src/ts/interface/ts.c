@@ -4279,7 +4279,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 #if defined(PETSC_USE_COMPLEX)
   {
     PetscReal *yreal;
-    PetscInt i,n;
+    PetscInt  i,n;
     ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);

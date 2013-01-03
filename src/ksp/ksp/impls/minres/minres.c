@@ -130,7 +130,6 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
        ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
        break;
      }
-
 #endif
      beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 

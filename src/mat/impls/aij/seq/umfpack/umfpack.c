@@ -137,8 +137,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   ierr = VecGetArray(b,&ba);
   ierr = VecGetArray(x,&xa);
 #if defined(PETSC_USE_COMPLEX)
-  status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,
-                              lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
+  status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #else
   status = umfpack_UMF_wsolve(uflag,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #endif
@@ -249,8 +248,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
 #if !defined(PETSC_USE_COMPLEX)
     status = umfpack_UMF_qsymbolic(n,m,ai,aj,av,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
 #else
-    status = umfpack_UMF_qsymbolic(n,m,ai,aj,NULL,NULL,
-                                   lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
+    status = umfpack_UMF_qsymbolic(n,m,ai,aj,NULL,NULL,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
 #endif
   } else { /* use Umfpack col ordering */
 #if !defined(PETSC_USE_COMPLEX)

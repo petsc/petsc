@@ -169,7 +169,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecScale(R,-1.0);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(R,R,&crtr);CHKERRQ(ierr); rtr = PetscRealPart(crtr);
+  ierr = VecDot(R,R,&crtr);CHKERRQ(ierr);
+  rtr  = PetscRealPart(crtr);
 #else
   ierr = VecDot(R,R,&rtr);CHKERRQ(ierr);
 #endif
@@ -205,8 +206,10 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          /* Compute roots of quadratic */
          ierr = KSPQCGQuadraticRoots(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-         ierr = VecDot(W,ASP,&cwtasp);CHKERRQ(ierr); wtasp = PetscRealPart(cwtasp);
-         ierr = VecDot(BS,P,&cbstp);CHKERRQ(ierr);   bstp  = PetscRealPart(cbstp);
+         ierr  = VecDot(W,ASP,&cwtasp);CHKERRQ(ierr); 
+         wtasp = PetscRealPart(cwtasp);
+         ierr  = VecDot(BS,P,&cbstp);CHKERRQ(ierr);  
+         bstp  = PetscRealPart(cbstp);
 #else
          ierr = VecDot(W,ASP,&wtasp);CHKERRQ(ierr);
          ierr = VecDot(BS,P,&bstp);CHKERRQ(ierr);
@@ -257,7 +260,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
            ierr = KSPQCGQuadraticRoots(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
            ierr = VecCopy(W,X);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-           cstep1 = step1; ierr = VecAXPY(X,cstep1,P);CHKERRQ(ierr);
+           cstep1 = step1; 
+           ierr   = VecAXPY(X,cstep1,P);CHKERRQ(ierr);
 #else
            ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);  /*  x <- step1*p + x  */
 #endif
@@ -285,11 +289,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
          ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
          if (ksp->reason) {                 /* convergence for */
-#if defined(PETSC_USE_COMPLEX)
            ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
-#else
-           ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",step,rnrm,pcgP->delta);CHKERRQ(ierr);
-#endif
          }
       }
     }
@@ -511,9 +511,12 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal *delta,PetscRea
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(p,s,&cpts);CHKERRQ(ierr); pts = PetscRealPart(cpts);
-  ierr = VecDot(p,p,&cptp);CHKERRQ(ierr); ptp = PetscRealPart(cptp);
-  ierr = VecDot(s,s,&csts);CHKERRQ(ierr); sts = PetscRealPart(csts);
+  ierr = VecDot(p,s,&cpts);CHKERRQ(ierr); 
+  pts  = PetscRealPart(cpts);
+  ierr = VecDot(p,p,&cptp);CHKERRQ(ierr); 
+  ptp  = PetscRealPart(cptp);
+  ierr = VecDot(s,s,&csts);CHKERRQ(ierr);
+  sts  = PetscRealPart(csts);
 #else
   ierr = VecDot(p,s,&pts);CHKERRQ(ierr);
   ierr = VecDot(p,p,&ptp);CHKERRQ(ierr);

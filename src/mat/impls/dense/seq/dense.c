@@ -1056,7 +1056,6 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
       for (i = 0; i < m; i++) {
         y_l = m - i - 1.0;
         y_r = y_l + 1.0;
-#if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(v[j*m+i]) >  0.) {
           color = PETSC_DRAW_RED;
         } else if (PetscRealPart(v[j*m+i]) <  0.) {
@@ -1064,15 +1063,6 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
         } else {
           continue;
         }
-#else
-        if (v[j*m+i] >  0.) {
-          color = PETSC_DRAW_RED;
-        } else if (v[j*m+i] <  0.) {
-          color = PETSC_DRAW_BLUE;
-        } else {
-          continue;
-        }
-#endif
         ierr = PetscDrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
       }
     }

@@ -20,9 +20,7 @@ PetscErrorCode  PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  if (r->iset)
-    *val = PetscRealPart(r->width)*RAND_WRAP + PetscRealPart(r->low) +
-      (PetscImaginaryPart(r->width)*RAND_WRAP + PetscImaginaryPart(r->low)) * PETSC_i;
+  if (r->iset) *val = PetscRealPart(r->width)*RAND_WRAP + PetscRealPart(r->low) + (PetscImaginaryPart(r->width)*RAND_WRAP + PetscImaginaryPart(r->low)) * PETSC_i;
   else *val = RAND_WRAP + RAND_WRAP*PETSC_i;
 #else
   if (r->iset) *val = r->width * RAND_WRAP + r->low;
