@@ -2756,8 +2756,10 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   /* TODO: check error codes for UNIX calls */
 #ifdef PETSC_HAVE_UNISTD_H
   {
+    int piperet;
+    piperet = pipe(fd_pipe);
+    if (piperet) SETERRQ(comm,PETSC_ERR_SYS,"Could not create pipe");
     fd_stdout = dup(1);
-    pipe(fd_pipe);
     close(1);
     dup2(fd_pipe[1], 1);
   }
