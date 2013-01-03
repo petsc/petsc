@@ -8280,15 +8280,15 @@ PetscErrorCode DMPlexComputeHexahedronGeometry_private(DM dm, PetscInt e, PetscR
 .seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
 @*/
 PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ) {
-  PetscInt       dim, maxConeSize;
+  PetscInt       dim, coneSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
   switch(dim) {
   case 2:
-    switch(maxConeSize) {
+    switch(coneSize) {
     case 3:
       ierr = DMPlexComputeTriangleGeometry_private(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
@@ -8296,11 +8296,11 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
       ierr = DMPlexComputeRectangleGeometry_private(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", maxConeSize, cell);
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
     }
     break;
   case 3:
-    switch(maxConeSize) {
+    switch(coneSize) {
     case 4:
       ierr = DMPlexComputeTetrahedronGeometry_private(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
@@ -8308,7 +8308,7 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
       ierr = DMPlexComputeHexahedronGeometry_private(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", maxConeSize, cell);
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
     }
     break;
   default:
