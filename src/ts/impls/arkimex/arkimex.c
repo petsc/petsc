@@ -93,7 +93,7 @@ M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
 
-     This method has one explicit stage and two implicit stages. This method was provided by Emil Constantinescu.
+     This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implict component. This method was provided by Emil Constantinescu.
 
      Level: advanced
 
@@ -244,7 +244,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
     const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
       A[3][3] = {{0,0,0},
                  {2-s2,0,0},
-                 {0.55,0.45,0}},
+                 {0.5,0.5,0}},
       At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
                   {1/(2*s2),1/(2*s2),1-1/s2}},
