@@ -2036,19 +2036,11 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
     if (type == NORM_FROBENIUS) {
       v = amat->a;
       for (i=0; i<amat->nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-        sum += (*v)*(*v); v++;
-#endif
       }
       v = bmat->a;
       for (i=0; i<bmat->nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-        sum += (*v)*(*v); v++;
-#endif
       }
       ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
       *norm = PetscSqrtReal(*norm);

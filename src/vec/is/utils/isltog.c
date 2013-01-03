@@ -173,7 +173,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
     Input Parameters:
 +   comm - MPI communicator
 .   n - the number of local elements
-.   indices - the global index for each local element
+.   indices - the global index for each local element, these do not need to be in increasing order (sorted)
 -   mode - see PetscCopyMode
 
     Output Parameter:

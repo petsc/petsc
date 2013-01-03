@@ -553,12 +553,8 @@ PetscErrorCode VecMax_kernel(PetscInt thread_id,Vec xin,PetscThreadCommReduction
   end   = trstarts[thread_id+1];
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   lred[0] = xx[start]; lred[1] = start;
-  for(i=start+1;i<end;i++) {
-#if defined(PETSC_USE_COMPLEX)
-    if((tmp = PetscRealPart(xx[i])) > lred[0]) { lred[0] = tmp; lred[1] = i;}
-#else
-    if((tmp = xx[i]) > lred[0]) {lred[0] = tmp; lred[1] = i;}
-#endif
+  for (i=start+1;i<end;i++) {
+    if ((tmp = PetscRealPart(xx[i])) > lred[0]) { lred[0] = tmp; lred[1] = i;}
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = PetscThreadReductionKernelPost(thread_id,red,lred);CHKERRQ(ierr);
@@ -603,17 +599,9 @@ PetscErrorCode VecMax_Seq(Vec xin,PetscInt* idx,PetscReal * z)
     max = PETSC_MIN_REAL;
     j   = -1;
   } else {
-#if defined(PETSC_USE_COMPLEX)
       max = PetscRealPart(*xx++); j = 0;
-#else
-      max = *xx++; j = 0;
-#endif
     for (i=1; i<n; i++) {
-#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscRealPart(*xx++)) > max) { j = i; max = tmp;}
-#else
-      if ((tmp = *xx++) > max) { j = i; max = tmp; }
-#endif
     }
   }
   *z   = max;
@@ -637,11 +625,7 @@ PetscErrorCode VecMin_kernel(PetscInt thread_id,Vec xin,PetscThreadCommReduction
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   lred[0] = xx[start]; lred[1] = start;
   for(i=start+1;i<end;i++) {
-#if defined(PETSC_USE_COMPLEX)
     if((tmp = PetscRealPart(xx[i])) < lred[0]) { lred[0] = tmp; lred[1] = i;}
-#else
-    if((tmp = xx[i]) < lred[0]) {lred[0] = tmp; lred[1] = i;}
-#endif
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = PetscThreadReductionKernelPost(thread_id,red,lred);CHKERRQ(ierr);
@@ -686,17 +670,9 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal * z)
     min = PETSC_MAX_REAL;
     j   = -1;
   } else {
-#if defined(PETSC_USE_COMPLEX)
     min = PetscRealPart(*xx++); j = 0;
-#else
-    min = *xx++; j = 0;
-#endif
     for (i=1; i<n; i++) {
-#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscRealPart(*xx++)) < min) { j = i; min = tmp;}
-#else
-      if ((tmp = *xx++) < min) { j = i; min = tmp; }
-#endif
     }
   }
   *z   = min;

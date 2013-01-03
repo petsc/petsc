@@ -207,25 +207,25 @@ runex4_sundials:
 	   ${RM} -f ex4.tmp
 
 runex6:
-	-@${MPIEXEC} -n 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex6 -nox -ts_max_steps 4   > ex6_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex6_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex6_1.tmp
 
 runex7:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5   > ex7_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5   > ex7_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_1.tmp
 
 runex7_2:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_2.tmp
 
 runex7_3:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_3.tmp

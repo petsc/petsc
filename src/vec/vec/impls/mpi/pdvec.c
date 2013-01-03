@@ -574,11 +574,9 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   }
   for (i=1; i<xin->map->n; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),xarray[i-1],(PetscReal)(i+start),
-                   xarray[i],PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),xarray[i-1],(PetscReal)(i+start),xarray[i],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
-    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),PetscRealPart(xarray[i-1]),(PetscReal)(i+start),
-                   PetscRealPart(xarray[i]),PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),PetscRealPart(xarray[i-1]),(PetscReal)(i+start),PetscRealPart(xarray[i]),PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
   }
   if (rank) { /* receive value from right */

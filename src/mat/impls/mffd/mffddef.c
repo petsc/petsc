@@ -92,13 +92,8 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
     /*
       Safeguard for step sizes that are "too small"
     */
-#if defined(PETSC_USE_COMPLEX)
     if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
     else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
-#else
-    if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
-    else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
-#endif
     *h = ctx->error_rel*dot/(nrm*nrm);
   } else {
     *h = ctx->currenth;

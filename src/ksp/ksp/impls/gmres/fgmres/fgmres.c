@@ -421,11 +421,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
 
   for (j=1; j<=it; j++) {
     tt  = *hh;
-#if defined(PETSC_USE_COMPLEX)
     *hh = PetscConj(*cc) * tt + *ss * *(hh+1);
-#else
-    *hh = *cc * tt + *ss * *(hh+1);
-#endif
     hh++;
     *hh = *cc++ * *hh - (*ss++ * tt);
     /* hh, cc, and ss have all been incremented one by end of loop */
@@ -444,11 +440,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
   /* compute new plane rotation */
 
   if (!hapend) {
-#if defined(PETSC_USE_COMPLEX)
     tt        = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
-#else
-    tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
-#endif
     if (tt == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
       PetscFunctionReturn(0);
@@ -459,13 +451,8 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
 
     /* apply to 1) and 2) */
     *RS(it+1) = - (*ss * *RS(it));
-#if defined(PETSC_USE_COMPLEX)
     *RS(it)   = PetscConj(*cc) * *RS(it);
     *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
-#else
-    *RS(it)   = *cc * *RS(it);
-    *hh       = *cc * *hh + *ss * *(hh+1);
-#endif
 
     /* residual is the last element (it+1) of right-hand side! */
     *res      = PetscAbsScalar(*RS(it+1));

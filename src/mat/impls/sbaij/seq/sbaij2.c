@@ -1147,21 +1147,13 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       col  = aj + jmin;
       if (*col == k){         /* diagonal block */
         for (i=0; i<bs2; i++){
-#if defined(PETSC_USE_COMPLEX)
           sum_diag += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-          sum_diag += (*v)*(*v); v++;
-#endif
         }
         jmin++;
       }
       for (j=jmin; j<jmax; j++){  /* off-diagonal blocks */
         for (i=0; i<bs2; i++){
-#if defined(PETSC_USE_COMPLEX)
           sum_off += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-          sum_off += (*v)*(*v); v++;
-#endif
         }
       }
     }

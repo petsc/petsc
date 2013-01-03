@@ -1135,8 +1135,8 @@ runex54:
 	      for ov in ${OVERLAP}; do\
 	        for nd in ${NODOMAINS}; do \
 		  for np in ${NPROCS}; do \
-                    ${MPIEXEC} -n $$np ./ex54 -mat_block_size $$bs -ov $$ov \
-                       -mat_size $$matsize -nd $$nd ;\
+                    echo $$np ./ex54 -mat_block_size $$bs -ov $$ov -mat_size $$matsize -nd $$nd ;\
+                    ${MPIEXEC} -n $$np ./ex54 -mat_block_size $$bs -ov $$ov -mat_size $$matsize -nd $$nd ;\
 		  done; \
 		done;\
 	      done;\

@@ -454,13 +454,8 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
     ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
     h  = ww[i-rstart];
     if (h == 0.0) h = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-    if (h < umin && h >= 0.0)      h = umin;
-    else if (h < 0.0 && h > -umin) h = -umin;
-#else
     if (PetscAbsScalar(h) < umin && PetscRealPart(h) >= 0.0)     h = umin;
     else if (PetscRealPart(h) < 0.0 && PetscAbsScalar(h) < umin) h = -umin;
-#endif
     h     *= epsilon;
 
     ww[i-rstart] += h;

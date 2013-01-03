@@ -120,9 +120,9 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
   case ADD_VALUES:
   case MAX_VALUES:
   {
-    void *source;
+    void        *source;
     PetscScalar *buffer;
-    PetscInt i;
+    PetscInt    i;
     if (rank == red->rank) {
 #if defined (PETSC_HAVE_MPI_IN_PLACE)
       buffer = gv;

@@ -1805,11 +1805,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (i=0; i<a->nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-      sum += (*v)*(*v); v++;
-#endif
     }
     *nrm = PetscSqrtReal(sum);
   } else if (type == NORM_1) {
@@ -2581,13 +2577,8 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
       if (dx == 0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < umin && dx >= 0.0)      dx = umin;
-      else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
       if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
       dx                *= epsilon;
       vscale_array[col] = 1.0/dx;
     }
@@ -2618,13 +2609,8 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
       if (dx == 0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < umin && dx >= 0.0)      dx = umin;
-      else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
       if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
       dx            *= epsilon;
       if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
@@ -4194,7 +4180,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data,*b = (Mat_SeqAIJ *)B->data;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)
-  PetscInt k;
+  PetscInt       k;
 #endif
 
   PetscFunctionBegin;

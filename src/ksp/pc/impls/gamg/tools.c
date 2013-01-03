@@ -86,7 +86,6 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
 #endif
 
   *a_Gmat = Gmat;
-
   PetscFunctionReturn(0);
 }
 
@@ -102,17 +101,17 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGFilterGraph"
-PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat, const PetscReal vfilter, const PetscBool symm, const PetscInt verbose)
+PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm,PetscInt verbose)
 {
-  PetscErrorCode ierr;
-  PetscInt       Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
-  PetscMPIInt    mype, npe;
-  Mat            Gmat = *a_Gmat, tGmat, matTrans;
-  MPI_Comm       wcomm = ((PetscObject)Gmat)->comm;
+  PetscErrorCode    ierr;
+  PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
+  PetscMPIInt       mype, npe;
+  Mat               Gmat = *a_Gmat, tGmat, matTrans;
+  MPI_Comm          wcomm = ((PetscObject)Gmat)->comm;
   const PetscScalar *vals;
-  const PetscInt *idx;
-  PetscInt *d_nnz, *o_nnz;
-  Vec diag;
+  const PetscInt    *idx;
+  PetscInt          *d_nnz, *o_nnz;
+  Vec               diag;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
@@ -194,11 +193,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat, const PetscReal vfilter, const Pet
                   100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);CHKERRQ(ierr);
     }
   }
-
   ierr = MatDestroy(&Gmat);CHKERRQ(ierr);
-
   *a_Gmat = tGmat;
-
   PetscFunctionReturn(0);
 }
 
@@ -216,12 +212,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat, const PetscReal vfilter, const Pet
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGetDataWithGhosts"
-PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,
-                                        const PetscInt data_sz,
-                                        const PetscReal data_in[],
-                                        PetscInt *a_stride,
-                                        PetscReal **a_data_out
-                                       )
+PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,const PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
   PetscErrorCode ierr;
   PetscMPIInt    mype,npe;
@@ -256,10 +247,8 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,
     ierr = VecAssemblyBegin(tmp_crds);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(tmp_crds);CHKERRQ(ierr);
     /* get ghost datas */
-    ierr = VecScatterBegin(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);
-    CHKERRQ(ierr);
-    ierr = VecScatterEnd(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);
-    CHKERRQ(ierr);
+    ierr = VecScatterBegin(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(mpimat->lvec, &data_arr);CHKERRQ(ierr);
     for (kk=nloc,jj=0;jj<num_ghosts;kk++,jj++){
       datas[dir*nnodes + kk] = PetscRealPart(data_arr[jj]);
@@ -267,9 +256,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,
     ierr = VecRestoreArray(mpimat->lvec, &data_arr);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&tmp_crds);CHKERRQ(ierr);
-
   *a_data_out = datas;
-
   PetscFunctionReturn(0);
 }
 
@@ -280,25 +267,34 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,
  */
 /* avoid overflow */
 #define GAMG_HASH(key) ((7*key)%a_tab->size)
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableCreate"
 PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
-  PetscInt kk;
+  PetscInt       kk;
+
+  PetscFunctionBegin;
   a_tab->size = a_size;
   ierr = PetscMalloc(a_size*sizeof(PetscInt), &a_tab->table);CHKERRQ(ierr);
   ierr = PetscMalloc(a_size*sizeof(PetscInt), &a_tab->data);CHKERRQ(ierr);
   for (kk=0;kk<a_size;kk++) a_tab->table[kk] = -1;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableDestroy"
 PetscErrorCode GAMGTableDestroy(GAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
   ierr = PetscFree(a_tab->table);CHKERRQ(ierr);
   ierr = PetscFree(a_tab->data);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableAdd"
 PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
 {
   PetscInt kk,idx;
@@ -321,10 +317,11 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
       break;
     }
   }
-  if(kk==a_tab->size) {
+  if (kk==a_tab->size) {
     /* this is not to efficient, waiting until completely full */
     PetscInt       oldsize = a_tab->size, new_size = 2*a_tab->size + 5, *oldtable = a_tab->table, *olddata = a_tab->data;
     PetscErrorCode ierr;
+
     a_tab->size = new_size;
     ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->table);CHKERRQ(ierr);
     ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->data);CHKERRQ(ierr);
@@ -341,9 +338,13 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableFind"
 PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
 {
   PetscInt kk,idx;
+
+  PetscFunctionBegin;
   if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
   for (kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1){
     if (a_tab->table[idx] == a_key) {
@@ -356,5 +357,5 @@ PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_d
     }
   }
   if (kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"key %d not found in table",a_key);
-  return 0;
+  PetscFunctionReturn(0);
 }

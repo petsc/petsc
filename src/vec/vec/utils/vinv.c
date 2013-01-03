@@ -257,17 +257,9 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     max = PETSC_MIN_REAL;
   } else {
     id  = 0;
-#if defined(PETSC_USE_COMPLEX)
     max = PetscRealPart(x[0]);
-#else
-    max = x[0];
-#endif
     for (i=bs; i<n; i+=bs) {
-#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscRealPart(x[i])) > max) { max = tmp; id = i;}
-#else
-      if ((tmp = x[i]) > max) { max = tmp; id = i;}
-#endif
     }
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -349,17 +341,9 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     min = PETSC_MAX_REAL;
   } else {
     id = 0;
-#if defined(PETSC_USE_COMPLEX)
     min = PetscRealPart(x[0]);
-#else
-    min = x[0];
-#endif
     for (i=bs; i<n; i+=bs) {
-#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscRealPart(x[i])) < min) { min = tmp; id = i;}
-#else
-      if ((tmp = x[i]) < min) { min = tmp; id = i;}
-#endif
     }
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -581,19 +565,11 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
     }
   } else {
     for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
       max[j] = PetscRealPart(x[j]);
-#else
-      max[j] = x[j];
-#endif
     }
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
 	if ((tmp = PetscRealPart(x[i+j])) > max[j]) { max[j] = tmp;}
-#else
-	if ((tmp = x[i+j]) > max[j]) { max[j] = tmp; }
-#endif
       }
     }
   }
@@ -659,19 +635,11 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
     }
   } else {
     for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
       min[j] = PetscRealPart(x[j]);
-#else
-      min[j] = x[j];
-#endif
     }
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
 	if ((tmp = PetscRealPart(x[i+j])) < min[j]) { min[j] = tmp;}
-#else
-	if ((tmp = x[i+j]) < min[j]) { min[j] = tmp; }
-#endif
       }
     }
   }

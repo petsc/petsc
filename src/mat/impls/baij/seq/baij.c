@@ -2811,13 +2811,8 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
       dx  = xx[col];
     }
     if (dx == (PetscScalar)0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-    if (dx < umin && dx >= 0.0)      dx = umin;
-    else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
     if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
     dx               *= epsilon;
     vscale_array[col] = (PetscScalar)1.0/dx;
   }     CHKMEMQ;
@@ -2855,13 +2850,8 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 	  dx  = xx[col];
 	}
 	if (dx == (PetscScalar)0.0) dx = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-	if (dx < umin && dx >= 0.0)      dx = umin;
-	else if (dx < 0.0 && dx > -umin) dx = -umin;
-#else
 	if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
 	else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-#endif
 	dx            *= epsilon;
 	if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
 	w3_array[col] += dx;

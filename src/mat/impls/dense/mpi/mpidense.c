@@ -900,11 +900,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
   } else {
     if (type == NORM_FROBENIUS) {
       for (i=0; i<mdn->A->cmap->n*mdn->A->rmap->n; i++) {
-#if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-        sum += (*v)*(*v); v++;
-#endif
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPIU_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
       *nrm = PetscSqrtReal(*nrm);

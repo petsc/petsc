@@ -1911,11 +1911,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (i=0; i< bs2*nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-      sum += (*v)*(*v); v++;
-#endif
     }
     *norm = PetscSqrtReal(sum);
   } else if (type == NORM_1) { /* maximum column sum */

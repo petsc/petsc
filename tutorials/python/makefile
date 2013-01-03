@@ -48,8 +48,8 @@ runex1py:
 	   else echo ${PWD} ; echo "Possible problem with with ex1py_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1py_1.tmp example1.py[co]
 
-TESTEXAMPLES_C       = ex1.PETSc runex1 runex1py ex1.rm
-TESTEXAMPLES_FORTRAN = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_C_PYTHON       = ex1.PETSc runex1 runex1py ex1.rm
+TESTEXAMPLES_FORTRAN_PYTHON = ex1f.PETSc runex1f ex1f.rm
 
 #--------------------------------------------------------------------------
 

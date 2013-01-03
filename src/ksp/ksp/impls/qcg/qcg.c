@@ -298,11 +298,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       ierr = VecDot(R,R,&rntrn);CHKERRQ(ierr);
       beta = rntrn/rtr;
       ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);	/*  p <- r + beta*p  */
-#if defined(PETSC_USE_COMPLEX)
       rtr = PetscRealPart(rntrn);
-#else
-      rtr = rntrn;
-#endif
     }
   }
   if (!ksp->reason) {
@@ -316,11 +312,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
   ierr = VecDot(B,X,&btx);CHKERRQ(ierr);
   ierr = VecDot(X,WA,&xtax);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
   pcgP->quadratic = PetscRealPart(btx) + p5* PetscRealPart(xtax);
-#else
-  pcgP->quadratic = btx + p5*xtax;              /* Compute q(x) */
-#endif
   PetscFunctionReturn(0);
 }
 

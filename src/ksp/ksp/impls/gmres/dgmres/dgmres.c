@@ -451,11 +451,7 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg (KSP ksp,PetscInt it,PetscBool h
    of the Hessenberg matrix */
   for (j=1; j<=it; j++) {
     tt  = *hh;
-#if defined(PETSC_USE_COMPLEX)
     *hh = PetscConj (*cc) * tt + *ss * * (hh+1);
-#else
-    *hh = *cc * tt + *ss * * (hh+1);
-#endif
     hh++;
     *hh = *cc++ * *hh - (*ss++ * tt);
   }
@@ -467,11 +463,7 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg (KSP ksp,PetscInt it,PetscBool h
    thus obtaining the updated value of the residual
    */
   if (!hapend) {
-#if defined(PETSC_USE_COMPLEX)
     tt        = PetscSqrtScalar (PetscConj (*hh) * *hh + PetscConj (* (hh+1)) * * (hh+1));
-#else
-    tt        = PetscSqrtScalar (*hh * *hh + * (hh+1) * * (hh+1));
-#endif
     if (tt == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
       PetscFunctionReturn (0);
@@ -479,13 +471,8 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg (KSP ksp,PetscInt it,PetscBool h
     *cc       = *hh / tt;
     *ss       = * (hh+1) / tt;
     *GRS (it+1) = - (*ss * *GRS (it));
-#if defined(PETSC_USE_COMPLEX)
     *GRS (it)   = PetscConj (*cc) * *GRS (it);
     *hh       = PetscConj (*cc) * *hh + *ss * * (hh+1);
-#else
-    *GRS (it)   = *cc * *GRS (it);
-    *hh       = *cc * *hh + *ss * * (hh+1);
-#endif
     *res      = PetscAbsScalar (*GRS (it+1));
   } else {
     /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply

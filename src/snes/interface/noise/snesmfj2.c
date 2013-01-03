@@ -139,13 +139,8 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
-#if defined(PETSC_USE_COMPLEX)
       else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
       else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
-#else
-      else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
-      else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
-#endif
       h = PetscRealPart(ctx->error_rel*dot/(norm*norm));
     }
   } else {

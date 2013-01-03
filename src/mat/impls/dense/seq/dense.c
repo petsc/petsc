@@ -1316,20 +1316,12 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       for (j=0; j<A->cmap->n; j++) {
 	v = mat->v+j*lda;
 	for (i=0; i<m; i++) {
-#if defined(PETSC_USE_COMPLEX)
 	  sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-	  sum += (*v)*(*v); v++;
-#endif
 	}
       }
     } else {
       for (i=0; i<A->cmap->n*A->rmap->n; i++) {
-#if defined(PETSC_USE_COMPLEX)
 	sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-	sum += (*v)*(*v); v++;
-#endif
       }
     }
     *nrm = PetscSqrtReal(sum);

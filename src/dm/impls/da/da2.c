@@ -198,13 +198,8 @@ PetscErrorCode DMDAGetDiagonal_MFFD(DM da,Vec U,Vec a)
   nI = 0;
     h  = ww[gI];
     if (h == 0.0) h = 1.0;
-#if !defined(PETSC_USE_COMPLEX)
-    if (h < umin && h >= 0.0)      h = umin;
-    else if (h < 0.0 && h > -umin) h = -umin;
-#else
     if (PetscAbsScalar(h) < umin && PetscRealPart(h) >= 0.0)     h = umin;
     else if (PetscRealPart(h) < 0.0 && PetscAbsScalar(h) < umin) h = -umin;
-#endif
     h     *= epsilon;
 
     ww[gI] += h;

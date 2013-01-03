@@ -51,7 +51,7 @@ PETSC_EXTERN_C void LAPACKtrtrs_(const char *,const char *, const char *,PetscBL
 PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
 {
   PetscScalar sum=0.0;
-  int i,j,k;
+  PetscInt    i,j,k;
   if (*sx==1 && *sy==1) {
     for (i=0; i < *n; i++) sum += PetscConj(x[i])*y[i];
   } else {
@@ -62,7 +62,7 @@ PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar
 PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
 {
   PetscScalar sum=0.0;
-  int i,j,k;
+  PetscInt    i,j,k;
   if (*sx==1 && *sy==1) {
     for (i=0; i < *n; i++) sum += x[i]*y[i];
   } else {

@@ -248,13 +248,11 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
         f[i].w += x[i].u;
         break;
       case 3: // logarithmic
-        if (x[i].u < -1.0 + 2.0*ctx->tol) {
+        if (PetscRealPart(x[i].u) < -1.0 + 2.0*ctx->tol) {
           f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
-        }
-        else if (x[i].u > 1.0 - 2.0*ctx->tol) {
+        } else if (PetscRealPart(x[i].u) > 1.0 - 2.0*ctx->tol) {
           f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + ctx->theta_c*x[i].u;
-        }
-        else {
+        } else {
           f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         }
         break;

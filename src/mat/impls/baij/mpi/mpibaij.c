@@ -640,20 +640,12 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
       v = amat->a;
       nz = amat->nz*bs2;
       for (i=0; i<nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-        sum += (*v)*(*v); v++;
-#endif
       }
       v = bmat->a;
       nz = bmat->nz*bs2;
       for (i=0; i<nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-        sum += (*v)*(*v); v++;
-#endif
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
       *nrm = PetscSqrtReal(*nrm);

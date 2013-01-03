@@ -333,7 +333,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 .  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
-.  ghosts - global indices of ghost points (or PETSC_NULL if not needed)
+.  ghosts - global indices of ghost points (or PETSC_NULL if not needed), these do not need to be in increasing order (sorted)
 -  array - the space to store the vector values (as long as n + nghost)
 
    Output Parameter:
@@ -419,7 +419,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 .  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
--  ghosts - global indices of ghost points
+-  ghosts - global indices of ghost points, these do not need to be in increasing order (sorted)
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
@@ -459,7 +459,7 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
    Input Parameters:
 +  vv - the MPI vector
 .  nghost - number of local ghost points
--  ghosts - global indices of ghost points
+-  ghosts - global indices of ghost points, these do not need to be in increasing order (sorted)
 
 
    Notes:
@@ -552,7 +552,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 .  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
-.  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed), counts are by block not by index
+.  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
 -  array - the space to store the vector values (as long as n + nghost*bs)
 
    Output Parameter:
@@ -645,7 +645,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
 .  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
--  ghosts - global indices of ghost blocks, counts are by block, not by individual index
+-  ghosts - global indices of ghost blocks, counts are by block, not by individual index, these do not need to be in increasing order (sorted)
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
