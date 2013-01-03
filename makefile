@@ -24,10 +24,10 @@ all: chk_makej
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade | tee ${PETSC_ARCH}/conf/make.log
 	@ln -sf ${PETSC_ARCH}/conf/make.log make.log
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
 		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
 	 else \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
                 | ${GREP} -v "has no symbols"; \
 	 fi
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log | tee ${PETSC_ARCH}/conf/error.log > /dev/null
@@ -41,9 +41,17 @@ all: chk_makej
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
-all-cmake: chk_makej info cmakegen cmake
+all-cmake:
+	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} all;\
+        else echo "Build not configured for CMAKE. Quiting"; exit 1; fi
 
-all-legacy: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all-legacy:
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all
+
+all-cmake-local: chk_makej info cmakegen cmake
+
+all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
