@@ -7420,6 +7420,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
   ierr = VecGetLocalSize(v, &numPoints);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);

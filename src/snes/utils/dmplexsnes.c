@@ -129,7 +129,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 #else
   globalPointsScalar = globalPoints;
 #endif
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N, globalPointsScalar, &pointVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N*ctx->dim, globalPointsScalar, &pointVec);CHKERRQ(ierr);
   ierr = PetscMalloc2(N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
   ierr = DMLocatePoints(dm, pointVec, &cellIS);CHKERRQ(ierr);
   ierr = ISGetIndices(cellIS, &foundCells);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     }
   }
   /* Let the lowest rank process own each point */
-  ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {

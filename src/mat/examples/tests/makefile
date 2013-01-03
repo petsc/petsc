@@ -1793,6 +1793,16 @@ runex160:
 	-@${MPIEXEC} -n 1 ./ex160  > ex160.tmp 2>&1; \
 	   ${DIFF} output/ex160.out ex160.tmp || echo ${PWD} "\nPossible problem with ex160, diffs above \n========================================="; \
 	   ${RM} -f ex160.tmp
+
+runex161:
+	-@${MPIEXEC} -n 1 ./ex161  > ex161.tmp 2>&1; \
+	   ${DIFF} output/ex161.out ex161.tmp || echo ${PWD} "\nPossible problem with ex161, diffs above \n========================================="; \
+	   ${RM} -f ex161.tmp
+runex161_2:
+	-@${MPIEXEC} -n 1 ./ex161 -matmattransmult_color > ex161.tmp 2>&1; \
+	   ${DIFF} output/ex161.out ex161.tmp || echo ${PWD} "\nPossible problem with ex161_2, diffs above \n========================================="; \
+	   ${RM} -f ex161.tmp
+
 runex164:
 	-@${MPIEXEC} -n 1 ./ex164  > ex164.tmp 2>&1; \
 	   ${DIFF} output/ex164_1.out ex164.tmp || echo ${PWD} "\nPossible problem with ex164, diffs above \n========================================="; \
@@ -1818,7 +1828,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \
                                  ex151.PETSc runex151 ex151.rm \
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
-                                 ex160.PETSc runex160 ex160.rm  ex164.PETSc runex164 ex164.rm
+                                 ex160.PETSc runex160 ex160.rm  ex161.PETSc runex161 runex161_2 ex161.rm ex164.PETSc runex164 ex164.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \

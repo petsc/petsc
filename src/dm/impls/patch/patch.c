@@ -42,27 +42,30 @@ Solver loop to update \tau:
 */
 PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
 {
-#if 0
+  const PetscInt *lx, *ly, *lz;
   PetscInt        dim, dof, sw;
+  PetscInt        M, N, P, rM, rN, rP, halo;
   DMDAStencilType st;
   PetscErrorCode  ierr;
-#endif
 
   PetscFunctionBegin;
-#if 0
   if (commz == MPI_COMM_NULL) {
     /* Split communicator */
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
   }
   /* Create patch DM */
-  ierr = DMDAGetDim(dm, &dim);CHKERRQ(ierr);
-  ierr = DMDAGetDof(dm, &dof);CHKERRQ(ierr);
-  ierr = DMDAGetStencilType(dm, &st);CHKERRQ(ierr);
-  ierr = DMDAGetStencilWidth(dm, &sw);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0, &dof, &sw,0,0,0, &st);CHKERRQ(ierr);
+  halo = sw;
+
+  /* Get piece for rank r, expanded by halo */
+  ierr = DMDAGetOwnershipRanges(dm, &lx, &ly, &lz);CHKERRQ(ierr);
+  rM = PetscMin(M, lx[rank+1] - halo) - PetscMax(lx[rank] - halo, 0);
+  rN = PetscMin(N, ly[rank+1] - halo) - PetscMax(ly[rank] - halo, 0);
+  rP = PetscMin(P, lz[rank+1] - halo) - PetscMax(lz[rank] - halo, 0);
 
   ierr = DMDACreate(commz, dmz);CHKERRQ(ierr);
   ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
-  ierr = DMDASetSizes(*da, M, N, 1);CHKERRQ(ierr);
+  ierr = DMDASetSizes(*dmz, rM, rN, rP);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
@@ -73,7 +76,6 @@ PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscS
   ierr = DMSetUp(*dmz);CHKERRQ(ierr);
   /* Create SF for ghosted map */
   /* Create SF for restricted map */
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -81,20 +83,21 @@ PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscS
 #define __FUNCT__ "DMPatchSolve"
 PetscErrorCode DMPatchSolve(DM dm)
 {
-#if 0
   MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscSF        sfz, sfr;
+  PetscInt       r;
   PetscMPIInt    size;
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
-#if 0
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   for(r = 0; r < size; ++r) {
-    DM  dmz, dmf;
-    Mat interpz;
+    DM  dmz;
 
-    ierr = DMPatchZoom(dm, r, comm, &dmz);CHKERRQ(ierr);
+    ierr = DMPatchZoom(dm, r, comm, &dmz, &sfz, &sfr);CHKERRQ(ierr);
+#if 0
+    DM  dmf;
+    Mat interpz;
     /* Scatter Xcoarse -> Xzoom */
     ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
@@ -110,8 +113,8 @@ PetscErrorCode DMPatchSolve(DM dm)
     ierr = PetscSFBcastEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
     /* Compute global residual Rcoarse */
     /* TauCoarse = Rcoarse - Rcoarse_restricted */
-  }
 #endif
+  }
   PetscFunctionReturn(0);
 }
 
