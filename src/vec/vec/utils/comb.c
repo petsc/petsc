@@ -172,7 +172,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
     PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
     PetscInt       sum_flg = 0,max_flg = 0, min_flg = 0;
     MPI_Comm       comm = sr->comm;
-    PetscMPIInt    size;
+    PetscMPIInt    size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);;
     ierr = PetscLogEventBegin(VEC_ReduceBegin,0,0,0,0);CHKERRQ(ierr);
     ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
@@ -197,10 +197,10 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
           lvalues[numops+i] = reducetype[i];
         }
         ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
-      } else if (max_flg) {
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
+      } else if (max_flg) {   /* Compute max of real and imag parts separately, presumably only the real part is used */
+        ierr = MPIPetsc_Iallreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
       } else if (min_flg) {
-        ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
+        ierr = MPIPetsc_Iallreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MIN,comm,&sr->request);CHKERRQ(ierr);
       } else {
         ierr = MPIPetsc_Iallreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm,&sr->request);CHKERRQ(ierr);
       }
@@ -251,7 +251,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
   PetscInt       sum_flg = 0,max_flg = 0, min_flg = 0;
   MPI_Comm       comm = sr->comm;
-  PetscMPIInt    size;
+  PetscMPIInt    size,cmul = sizeof(PetscScalar)/sizeof(PetscReal);
 
   PetscFunctionBegin;
   if (sr->numopsend > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
@@ -279,10 +279,10 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
         lvalues[numops+i] = reducetype[i];
       }
       ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
-    } else if (max_flg) {
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MAX,comm);CHKERRQ(ierr);
+    } else if (max_flg) {     /* Compute max of real and imag parts separately, presumably only the real part is used */
+      ierr = MPI_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
     } else if (min_flg) {
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
     } else {
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     }
