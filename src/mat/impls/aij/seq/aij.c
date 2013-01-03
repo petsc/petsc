@@ -163,8 +163,7 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    aij->idiagvalid  = PETSC_FALSE;
-    aij->ibdiagvalid = PETSC_FALSE;
+    ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
   }
   ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -870,8 +869,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
 
-  a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -882,11 +880,11 @@ PetscErrorCode MatRealPart_SeqAIJ(Mat A)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscInt       i,nz = a->nz;
   MatScalar      *aa = a->a;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
-  a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -897,11 +895,11 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscInt       i,nz = a->nz;
   MatScalar      *aa = a->a;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
-  a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -925,12 +923,10 @@ PetscErrorCode MatZeroEntries_SeqAIJ_Kernel(PetscInt thread_id,Mat A)
 PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
   ierr = PetscThreadCommRunKernel(((PetscObject)A)->comm,(PetscThreadKernel)MatZeroEntries_SeqAIJ_Kernel,1,A);CHKERRQ(ierr);
-  a->idiagvalid = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -943,8 +939,7 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscMemzero(a->a,(a->i[A->rmap->n])*sizeof(PetscScalar));CHKERRQ(ierr);
-  a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -2100,8 +2095,7 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
-  a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2336,8 +2330,7 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionBegin;
   BLASscal_(&bnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
-  a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2689,8 +2682,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
-    y->idiagvalid  = PETSC_FALSE;
-    y->ibdiagvalid = PETSC_FALSE;
+    ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -4437,6 +4429,20 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
     }
     values += nl; /* jump to next row of derivatives */
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJInvalidateDiagonal"
+PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
+{
+  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  a->idiagvalid = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal_Inode(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
