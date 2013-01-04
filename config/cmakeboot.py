@@ -133,7 +133,7 @@ class PETScMaker(script.Script):
    # Try to remove all the old CMake files to avoid infinite loop (CMake-2.8.10.2, maybe other versions)
    # http://www.mail-archive.com/cmake@cmake.org/msg44765.html
    self.logPrint('Removing: %s' % os.path.join(archdir, 'CMakeFiles', version.vstring))
-   shutil.rmtree(os.path.join(archdir, 'CMakeFiles', version.vstring))
+   shutil.rmtree(os.path.join(archdir, 'CMakeFiles', version.vstring), ignore_errors=True)
    log.write('Invoking: %s\n' % cmd)
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=30)
    if retcode:
