@@ -25,7 +25,7 @@
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
-'#define PetscSqrtReal(a)    sqrt(a)
+#define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
 #define PetscSinReal(a)     sin(a)
