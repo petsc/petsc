@@ -118,6 +118,8 @@
       <h4>Vec:</h4>
       <ul>
         <li>The options -vec_view,  -vec_view_matlab, -vec_view_socket, -vec_view_binary, -vec_view_draw, -vec_view_lg have been replace by a more general systematic scheme of -vec_view [ascii,binary,draw, or socket][:filename][:format], for these cases they are exactly:  -vec_view  -vec_view ::ascii_matlab -vec_view socket -vec_view binary -vec_view draw -vec_view draw::draw_lg</li>
+        <li>VecDotNorm2() now returns the square of the norm in a real number (PetscReal) rather than the real part of a complex number (PetscScalar)</li>
+        <li>Added VecDotRealPart()</li>
       </ul>
       <h4>VecScatter:</h4>
       <h4>Mat:</h4>

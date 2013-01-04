@@ -46,9 +46,9 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2;
+  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1;
   Vec            X,B,V,P,R,RP,T,S;
-  PetscReal      dp = 0.0;
+  PetscReal      dp = 0.0,d2;
   KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
 
   PetscFunctionBegin;

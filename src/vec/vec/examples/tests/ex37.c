@@ -21,7 +21,7 @@ T*/
 static PetscErrorCode GetISs(Vec vecs[],IS is[])
 {
   PetscErrorCode ierr;
-  PetscInt rstart[2],rend[2];
+  PetscInt       rstart[2],rend[2];
 
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(vecs[0],&rstart[0],&rend[0]);CHKERRQ(ierr);
@@ -36,14 +36,14 @@ static PetscErrorCode GetISs(Vec vecs[],IS is[])
 #define __FUNCT__ "test_view"
 PetscErrorCode test_view( void )
 {
-  Vec X, a,b;
-  Vec c,d,e,f;
-  Vec tmp_buf[2];
-  IS  tmp_is[2];
-  PetscInt index;
-  PetscReal val;
-  PetscInt list[]={0,1,2};
-  PetscScalar vals[]={0.720032,0.061794,0.0100223};
+  Vec            X, a,b;
+  Vec            c,d,e,f;
+  Vec            tmp_buf[2];
+  IS             tmp_is[2];
+  PetscInt       index;
+  PetscReal      val;
+  PetscInt       list[]={0,1,2};
+  PetscScalar    vals[]={0.720032,0.061794,0.0100223};
   PetscErrorCode ierr;
   PetscBool      explcit = PETSC_FALSE;
 
@@ -112,9 +112,9 @@ PetscErrorCode test_view( void )
 #define __FUNCT__ "test_vec_ops"
 PetscErrorCode test_vec_ops( void )
 {
-  Vec X, a,b;
-  Vec c,d,e,f;
-  PetscScalar val;
+  Vec            X, a,b;
+  Vec            c,d,e,f;
+  PetscScalar    val;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -176,10 +176,10 @@ PetscErrorCode test_vec_ops( void )
 #define __FUNCT__ "gen_test_vector"
 PetscErrorCode gen_test_vector( MPI_Comm comm, PetscInt length, PetscInt start_value, PetscInt stride, Vec *_v )
 {
-  int nproc;
-  Vec v;
-  PetscInt i;
-  PetscScalar vx;
+  int            nproc;
+  Vec            v;
+  PetscInt       i;
+  PetscScalar    vx;
   PetscErrorCode ierr;
 
   MPI_Comm_size( comm, &nproc );
@@ -214,12 +214,12 @@ Y = aX + y = ( [4,9,14,19], (25,30,35,40,45] )
 #define __FUNCT__ "test_axpy_dot_max"
 PetscErrorCode test_axpy_dot_max( void )
 {
-  Vec x1,y1, x2,y2;
-  Vec tmp_buf[2];
-  Vec X, Y;
-  PetscReal real;
-  PetscScalar scalar, scalar2;
-  PetscInt index;
+  Vec            x1,y1, x2,y2;
+  Vec            tmp_buf[2];
+  Vec            X, Y;
+  PetscReal      real,real2;
+  PetscScalar    scalar;
+  PetscInt       index;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -259,8 +259,8 @@ PetscErrorCode test_axpy_dot_max( void )
 
   PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", PetscRealPart(scalar), PetscImaginaryPart(scalar) );
 
-  ierr = VecDotNorm2( X,Y, &scalar, &scalar2 );CHKERRQ(ierr);
-  PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf + %lfi\n", PetscRealPart(scalar), PetscImaginaryPart(scalar), PetscRealPart(scalar2), PetscImaginaryPart(scalar2) );
+  ierr = VecDotNorm2( X,Y, &scalar, &real2 );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", PetscRealPart(scalar), PetscImaginaryPart(scalar), real2);
 
 
   ierr = VecAXPY( Y, 1.0, X ); /* Y <- a X + Y */
@@ -271,8 +271,8 @@ PetscErrorCode test_axpy_dot_max( void )
   ierr = VecDot( X,Y, &scalar );CHKERRQ(ierr);
 
   PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", PetscRealPart(scalar), PetscImaginaryPart(scalar) );
-  ierr = VecDotNorm2( X,Y, &scalar, &scalar2 );CHKERRQ(ierr);
-  PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf + %lfi\n", PetscRealPart(scalar), PetscImaginaryPart(scalar), PetscRealPart(scalar2), PetscImaginaryPart(scalar2) );
+  ierr = VecDotNorm2( X,Y, &scalar, &real2 );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", PetscRealPart(scalar), PetscImaginaryPart(scalar), real2);
 
 
   ierr = VecMax( X, &index, &real );CHKERRQ(ierr);

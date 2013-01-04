@@ -1185,18 +1185,19 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 - t - second vector
 
   Output Parameter:
-+ dp - s't
-- nm - t't
++ dp - s'conj(t)
+- nm - t'conj(t) 
 
   Level: advanced
 
-  Developer Notes: Even though the second return argument is a norm and hence could be a PetscReal value it is returned as PetscScalar
+  Notes: conj(x) is the complex conjugate of x when x is complex
+
 
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
 .keywords: vector, sqrt, square root
 @*/
-PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
+PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 {
   PetscScalar    *sx, *tx, dpx = 0.0, nmx = 0.0,work[2],sum[2];
   PetscInt       i, n;
@@ -1215,7 +1216,8 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
 
   ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
   if (s->ops->dotnorm2) {
-    ierr = (*s->ops->dotnorm2)(s,t,dp,nm);CHKERRQ(ierr);
+    ierr = (*s->ops->dotnorm2)(s,t,dp,&dpx);CHKERRQ(ierr);
+    *nm = PetscRealPart(dpx);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
     ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
@@ -1229,7 +1231,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
     work[1] = nmx;
     ierr = MPI_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
     *dp  = sum[0];
-    *nm  = sum[1];
+    *nm  = PetscRealPart(sum[1]);
 
     ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
     ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);

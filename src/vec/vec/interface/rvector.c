@@ -115,7 +115,7 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
 .  x, y - the vectors
 
    Output Parameter:
-.  val - the dot product, this is returned in a PetscScalar only the real part is nonzero
+.  val - the real part of the dot product;
 
    Performance Issues:
 $    per-processor memory bandwidth
@@ -137,7 +137,7 @@ $    work load inbalance that causes certain processes to arrive much earlier th
    Concepts: inner product
    Concepts: vector^inner product
 
-.seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecDot()
+.seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecDot(), VecDotNorm2()
 @*/
 PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
 {

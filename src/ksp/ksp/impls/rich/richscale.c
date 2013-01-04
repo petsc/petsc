@@ -44,7 +44,7 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
     Level: intermediate
 
-    Notes: Requires two extra work vectors. Uses an extra axpy() and VecDotNorm2() per iteration.
+    Notes: Requires two extra work vectors. Uses an extra VecAXPY() and VecDotNorm2() per iteration.
 
     Developer Notes: Could also minimize the 2-norm of the true residual with one less work vector
 

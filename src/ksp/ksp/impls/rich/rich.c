@@ -28,8 +28,8 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i,maxit;
   MatStructure   pflag;
-  PetscReal      rnorm = 0.0;
-  PetscScalar    scale,abr,rdot;
+  PetscReal      rnorm = 0.0,abr;
+  PetscScalar    scale,rdot;
   Vec            x,b,r,z,w = PETSC_NULL,y = PETSC_NULL;
   PetscInt       xs, ws;
   Mat            Amat,Pmat;

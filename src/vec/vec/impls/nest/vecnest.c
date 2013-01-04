@@ -157,7 +157,8 @@ static PetscErrorCode VecDotNorm2_Nest(Vec x,Vec y,PetscScalar *dp, PetscScalar 
   Vec_Nest       *bx = (Vec_Nest*)x->data;
   Vec_Nest       *by = (Vec_Nest*)y->data;
   PetscInt       i,nr;
-  PetscScalar    x_dot_y,norm2_y,_dp,_nm;
+  PetscScalar    x_dot_y,_dp,_nm;
+  PetscReal      norm2_y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
