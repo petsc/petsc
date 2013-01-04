@@ -1982,9 +1982,6 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
 {
   PetscReal      initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
   PetscReal      minlambda,lambda,lambdatemp;
-#if defined(PETSC_USE_COMPLEX)
-  PetscScalar    cinitslope;
-#endif
   PetscErrorCode ierr;
   PetscInt       count;
   PetscBool      changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
@@ -2020,12 +2017,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
   minlambda = snes->steptol/rellength;
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
-  initslope = PetscRealPart(cinitslope);
-#else
-  ierr = VecDot(f,w,&initslope);CHKERRQ(ierr);
-#endif
+  ierr = VecDotRealPart(f,w,&initslope);CHKERRQ(ierr);
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
 
@@ -2203,9 +2195,6 @@ PetscErrorCode SNESLineSearchQuadratic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f
      where z(x) = .5 * fnorm*fnorm,and fnorm = || f ||_2.
    */
   PetscReal      initslope,minlambda,lambda,lambdatemp,rellength;
-#if defined(PETSC_USE_COMPLEX)
-  PetscScalar    cinitslope;
-#endif
   PetscErrorCode ierr;
   PetscInt       count;
   PetscBool      changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
@@ -2234,12 +2223,7 @@ PetscErrorCode SNESLineSearchQuadratic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f
   ierr      = VecMaxPointwiseDivide(y,x,&rellength);CHKERRQ(ierr);
   minlambda = snes->steptol/rellength;
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr      = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
-  initslope = PetscRealPart(cinitslope);
-#else
-  ierr = VecDot(f,w,&initslope);CHKERRQ(ierr);
-#endif
+  ierr      = VecDotRealPart(f,w,&initslope);CHKERRQ(ierr);
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
   ierr = PetscInfo1(snes,"Initslope %g \n",(double)initslope);CHKERRQ(ierr);

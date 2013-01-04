@@ -225,7 +225,8 @@ int main(int Argc,char **Args)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "computeMaxEigVal"
-PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) {
+PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) 
+{
   PetscErrorCode  ierr;
   PetscRandom     rctx;     /* random number generator context */
   Vec             x0, x, x_1, tmp;

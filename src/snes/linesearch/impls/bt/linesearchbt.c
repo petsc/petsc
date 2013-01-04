@@ -67,7 +67,6 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscReal      t1,t2,a,b,d;
   PetscReal      f;
   PetscReal      g,gprev;
-  PetscScalar    cinitslope;
   PetscBool      domainerror;
   PetscViewer    monitor;
   PetscInt       max_its,count;
@@ -133,13 +132,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   /* compute the initial slope */
   if (obj) {
     /* slope comes from the function (assumed to be the gradient of the objective */
-    ierr = VecDot(Y,F,&cinitslope);CHKERRQ(ierr);
-    initslope = PetscRealPart(cinitslope);
+    ierr = VecDotRealPart(Y,F,&initslope);CHKERRQ(ierr);
   } else {
     /* slope comes from the normal equations */
     ierr      = MatMult(jac,Y,W);CHKERRQ(ierr);
-    ierr      = VecDot(F,W,&cinitslope);CHKERRQ(ierr);
-    initslope = PetscRealPart(cinitslope);
+    ierr      = VecDotRealPart(F,W,&initslope);CHKERRQ(ierr);
     if (initslope > 0.0)  initslope = -initslope;
     if (initslope == 0.0) initslope = -1.0;
   }

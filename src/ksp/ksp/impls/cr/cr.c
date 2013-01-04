@@ -83,7 +83,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr   = KSP_PCApply(ksp,AP,Q);CHKERRQ(ierr);/*   Q <- B* AP          */
 
     ierr   = VecDot(AP,Q,&apq);CHKERRQ(ierr);
-    if (PetscAbsScalar(apq) <= 0.0) {
+    if (PetscRealPart(apq) <= 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       ierr = PetscInfo(ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n");CHKERRQ(ierr);
       break;

@@ -239,9 +239,9 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
       ierr = VecDot(dX[k], dF[k], &dXtdF[k]);CHKERRQ(ierr);
     }
     if (qn->scale_type == SNES_QN_SCALE_SHANNO) {
-      PetscScalar dFtdF;
-      ierr = VecDot(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
-      qn->scaling = PetscRealPart(dXtdF[k]) / PetscRealPart(dFtdF);
+      PetscReal dFtdF;
+      ierr = VecDotRealPart(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
+      qn->scaling = PetscRealPart(dXtdF[k])/dFtdF;
     } else if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
       ierr = SNESLineSearchGetLambda(snes->linesearch,&qn->scaling);CHKERRQ(ierr);
     }

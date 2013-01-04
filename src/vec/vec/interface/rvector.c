@@ -82,7 +82,7 @@ $     val = (x,y) = y^T x,
    Concepts: inner product
    Concepts: vector^inner product
 
-.seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd()
+.seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecDotRealPart()
 @*/
 PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
 {
@@ -101,6 +101,52 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   if (PetscIsInfOrNanScalar(*val)) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecDotRealPart"
+/*@
+   VecDotRealPart - Computes the real part of the vector dot product.
+
+   Collective on Vec
+
+   Input Parameters:
+.  x, y - the vectors
+
+   Output Parameter:
+.  val - the dot product, this is returned in a PetscScalar only the real part is nonzero
+
+   Performance Issues:
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
+
+   Notes for Users of Complex Numbers:
+     See VecDot() for more details on the definition of the dot product for complex numbers
+
+     For real numbers this returns the same value as VecDot()
+
+     For complex numbers in C^n (that is a vector of n components with a complex number for each component) this is equal to the usual real dot product on the
+     the space R^{2n} (that is a vector of 2n components with the real or imaginary part of the complex numbers for components)
+
+   Developer Note: This is not currently optimized to compute only the real part of the dot product.
+ 
+   Level: intermediate
+
+   Concepts: inner product
+   Concepts: vector^inner product
+
+.seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecDot()
+@*/
+PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
+{
+  PetscErrorCode ierr;
+  PetscScalar    fdot;
+
+  PetscFunctionBegin;
+  ierr = VecDot(x,y,&fdot);CHKERRQ(ierr);
+  *val = PetscRealPart(fdot);
   PetscFunctionReturn(0);
 }
 

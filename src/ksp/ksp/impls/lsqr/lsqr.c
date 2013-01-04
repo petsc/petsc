@@ -61,7 +61,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,size1,size2;
-  PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,tau,alphac;
+  PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,tau;
   PetscReal      beta,alpha,rnorm;
   Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = PETSC_NULL;
   Mat            Amat,Pmat;
@@ -133,12 +133,12 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
      ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   } else {
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
-    ierr = VecDot(V,Z,&alphac);CHKERRQ(ierr);
-    if (PetscRealPart(alphac) <= 0.0) {
+    ierr = VecDotRealPart(V,Z,&alpha);CHKERRQ(ierr);
+    if (alpha <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscFunctionReturn(0);
     }
-    alpha = PetscSqrtReal(PetscRealPart(alphac));
+    alpha = PetscSqrtReal(alpha);
     ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
   }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
@@ -173,12 +173,12 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
     } else {
       ierr = PCApply(ksp->pc,V1,Z);CHKERRQ(ierr);
-      ierr = VecDot(V1,Z,&alphac);CHKERRQ(ierr);
-      if (PetscRealPart(alphac) <= 0.0) {
+      ierr = VecDotRealPart(V1,Z,&alpha);CHKERRQ(ierr);
+      if (alpha <= 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
-      alpha = PetscSqrtReal(PetscRealPart(alphac));
+      alpha = PetscSqrtReal(alpha);
       ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
     ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);

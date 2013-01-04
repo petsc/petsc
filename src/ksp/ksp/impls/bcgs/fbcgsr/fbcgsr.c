@@ -72,8 +72,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     ierr = MatMult(pc->mat,X,P2);CHKERRQ(ierr); /* P2 is used as temporary storage */
     ierr = VecCopy(B,R);CHKERRQ(ierr);
     ierr = VecAXPY(R,-1.0,P2);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecCopy(B,R);CHKERRQ(ierr);
   }
 
@@ -105,8 +104,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     if (i==0) {
       tau = rho*rho;
       ierr = VecDot(V,RP,&sigma);CHKERRQ(ierr); /* sigma <- (v,rp) */
-    }
-    else {
+    } else {
       ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
       tau = sigma = 0.0;
       for (j=0; j<N; j++) {

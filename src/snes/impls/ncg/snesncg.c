@@ -159,7 +159,6 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
   ierr = VecNorm(X, NORM_2, xnorm);CHKERRQ(ierr);
   ierr = VecNorm(Y, NORM_2, ynorm);CHKERRQ(ierr);
-
  PetscFunctionReturn(0);
 }
 
@@ -187,9 +186,11 @@ EXTERN_C_END
  Assuming F = SNESComputeFunction(X) compute Y^tJ^tF using a simple secant approximation of the jacobian.
 
  */
-PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar * ytJtf) {
+PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W, Vec G, PetscScalar * ytJtf)
+ {
   PetscErrorCode ierr;
   PetscScalar    ftf, ftg, fty, h;
+
   PetscFunctionBegin;
   ierr = VecDot(F, F, &ftf);CHKERRQ(ierr);
   ierr = VecDot(F, Y, &fty);CHKERRQ(ierr);

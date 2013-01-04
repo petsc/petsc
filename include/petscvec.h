@@ -138,6 +138,7 @@ PETSC_EXTERN PetscErrorCode VecSetSizes(Vec,PetscInt,PetscInt);
 
 PETSC_EXTERN PetscErrorCode VecDotNorm2(Vec,Vec,PetscScalar*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode VecDot(Vec,Vec,PetscScalar*);
+PETSC_EXTERN PetscErrorCode VecDotRealPart(Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode VecTDot(Vec,Vec,PetscScalar*);
 PETSC_EXTERN PetscErrorCode VecMDot(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode VecMTDot(Vec,PetscInt,const Vec[],PetscScalar[]);

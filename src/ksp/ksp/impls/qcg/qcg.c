@@ -2,7 +2,7 @@
 #include <petsc-private/kspimpl.h>             /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/qcg/qcgimpl.h>
 
-static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal,PetscReal*,PetscReal*);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius"
@@ -113,16 +113,14 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   MatStructure   pflag;
   Mat            Amat,Pmat;
   Vec            W,WA,WA2,R,P,ASP,BS,X,B;
-  PetscScalar    scal,btx,xtax,beta,rntrn,step;
-  PetscReal      ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
+  PetscScalar    scal,beta,rntrn,step;
+  PetscReal      q1,q2,xnorm,step1,step2,rnrm,btx,xtax;
+  PetscReal      ptasp,rtr,wtasp,bstp;
   PetscReal      dzero = 0.0,bsnrm;
   PetscErrorCode ierr;
   PetscInt       i,maxit;
   PC             pc = ksp->pc;
   PCSide         side;
-#if defined(PETSC_USE_COMPLEX)
-  PetscScalar    cstep1,cstep2,cbstp,crtr,cwtasp,cptasp;
-#endif
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -168,12 +166,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecCopy(BS,R);CHKERRQ(ierr);
   ierr = VecScale(R,-1.0);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(R,R,&crtr);CHKERRQ(ierr);
-  rtr  = PetscRealPart(crtr);
-#else
-  ierr = VecDot(R,R,&rtr);CHKERRQ(ierr);
-#endif
+  ierr = VecDotRealPart(R,R,&rtr);CHKERRQ(ierr);
 
   for (i=0; i<=maxit; i++) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -186,12 +179,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
     ierr = PCApplySymmetricLeft(pc,WA2,ASP);CHKERRQ(ierr);
 
     /* Check for negative curvature */
-#if defined(PETSC_USE_COMPLEX)
-    ierr  = VecDot(P,ASP,&cptasp);CHKERRQ(ierr);
-    ptasp = PetscRealPart(cptasp);
-#else
-    ierr = VecDot(P,ASP,&ptasp);CHKERRQ(ierr);	/* ptasp = p^T asp */
-#endif
+    ierr  = VecDotRealPart(P,ASP,&ptasp);CHKERRQ(ierr);
     if (ptasp <= dzero) {
 
       /* Scaled negative curvature direction:  Compute a step so that
@@ -204,29 +192,14 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          ierr = VecScale(X,scal);CHKERRQ(ierr);
        } else {
          /* Compute roots of quadratic */
-         ierr = KSPQCGQuadraticRoots(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-         ierr  = VecDot(W,ASP,&cwtasp);CHKERRQ(ierr); 
-         wtasp = PetscRealPart(cwtasp);
-         ierr  = VecDot(BS,P,&cbstp);CHKERRQ(ierr);  
-         bstp  = PetscRealPart(cbstp);
-#else
-         ierr = VecDot(W,ASP,&wtasp);CHKERRQ(ierr);
-         ierr = VecDot(BS,P,&bstp);CHKERRQ(ierr);
-#endif
+         ierr = KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2);CHKERRQ(ierr);
+         ierr = VecDotRealPart(W,ASP,&wtasp);CHKERRQ(ierr);
+         ierr = VecDotRealPart(BS,P,&bstp);CHKERRQ(ierr);
          ierr = VecCopy(W,X);CHKERRQ(ierr);
-         q1 = step1*(bstp + wtasp + p5*step1*ptasp);
-         q2 = step2*(bstp + wtasp + p5*step2*ptasp);
-#if defined(PETSC_USE_COMPLEX)
-         if (q1 <= q2) {
-           cstep1 = step1; ierr = VecAXPY(X,cstep1,P);CHKERRQ(ierr);
-         } else {
-           cstep2 = step2; ierr = VecAXPY(X,cstep2,P);CHKERRQ(ierr);
-         }
-#else
+         q1 = step1*(bstp + wtasp + .5*step1*ptasp);
+         q2 = step2*(bstp + wtasp + .5*step2*ptasp);
          if (q1 <= q2) {ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);}
          else          {ierr = VecAXPY(X,step2,P);CHKERRQ(ierr);}
-#endif
        }
        pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
        ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
@@ -257,14 +230,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
            ierr = VecScale(X,scal);CHKERRQ(ierr);
          } else {
            /* Compute roots of quadratic */
-           ierr = KSPQCGQuadraticRoots(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
+           ierr = KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2);CHKERRQ(ierr);
            ierr = VecCopy(W,X);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-           cstep1 = step1; 
-           ierr   = VecAXPY(X,cstep1,P);CHKERRQ(ierr);
-#else
            ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);  /*  x <- step1*p + x  */
-#endif
          }
          pcgP->ltsnrm = pcgP->delta;
          ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED;	/* convergence along constrained step */
@@ -310,9 +278,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = PCApplySymmetricRight(pc,WA2,X);CHKERRQ(ierr);
 
   ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
-  ierr = VecDot(B,X,&btx);CHKERRQ(ierr);
-  ierr = VecDot(X,WA,&xtax);CHKERRQ(ierr);
-  pcgP->quadratic = PetscRealPart(btx) + p5* PetscRealPart(xtax);
+  ierr = VecDotRealPart(B,X,&btx);CHKERRQ(ierr);
+  ierr = VecDotRealPart(X,WA,&xtax);CHKERRQ(ierr);
+  pcgP->quadratic = btx + .5*xtax;
   PetscFunctionReturn(0);
 }
 
@@ -501,30 +469,18 @@ EXTERN_C_END
    C code is translated from the Fortran version of the MINPACK-2 Project,
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
-static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
+static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal delta,PetscReal *step1,PetscReal *step2)
 {
   PetscReal      dsq,ptp,pts,rad,sts;
   PetscErrorCode ierr;
-#if defined(PETSC_USE_COMPLEX)
-  PetscScalar    cptp,cpts,csts;
-#endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(p,s,&cpts);CHKERRQ(ierr); 
-  pts  = PetscRealPart(cpts);
-  ierr = VecDot(p,p,&cptp);CHKERRQ(ierr); 
-  ptp  = PetscRealPart(cptp);
-  ierr = VecDot(s,s,&csts);CHKERRQ(ierr);
-  sts  = PetscRealPart(csts);
-#else
-  ierr = VecDot(p,s,&pts);CHKERRQ(ierr);
-  ierr = VecDot(p,p,&ptp);CHKERRQ(ierr);
-  ierr = VecDot(s,s,&sts);CHKERRQ(ierr);
-#endif
-  dsq  = (*delta)*(*delta);
+  ierr = VecDotRealPart(p,s,&pts);CHKERRQ(ierr);
+  ierr = VecDotRealPart(p,p,&ptp);CHKERRQ(ierr);
+  ierr = VecDotRealPart(s,s,&sts);CHKERRQ(ierr);
+  dsq  = delta*delta;
   rad  = PetscSqrtReal((pts*pts) - ptp*(sts - dsq));
-  if (pts > 0.0) {
+  if (PetscRealPart(pts) > 0.0) {
     *step2 = -(pts + rad)/ptp;
     *step1 = (sts - dsq)/(ptp * *step2);
   } else {
