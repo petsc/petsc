@@ -488,7 +488,7 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   }
   if (r < next_sc->r) {
     if (r+1 != next_sc->r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
-    ierr = VecZeroEntries(X[r]);
+    ierr = VecZeroEntries(X[r]);CHKERRQ(ierr);
     for (j=0; j<s; j++) brow[j] = h*Pow(ratio,p+1)*sc->phi[0*s+j];
     ierr = VecMAXPY(X[r],s,brow,Ydot);CHKERRQ(ierr);
     for (j=0; j<r; j++) vrow[j] = Pow(ratio,p+1)*sc->psi[0*r+j];
@@ -1000,7 +1000,7 @@ static PetscErrorCode TSSolve_GL(TS ts)
             ierr = VecWAXPY(Y,c[i]*h,X[1],X[0]);CHKERRQ(ierr);
           } else {
             /* Linear extrapolation from the last stage */
-            ierr = VecAXPY(Y,(c[i]-c[i-1])*h,Ydot[i-1]);
+            ierr = VecAXPY(Y,(c[i]-c[i-1])*h,Ydot[i-1]);CHKERRQ(ierr);
           }
         } else if (i==0) {        /* Directly use solution from the last step, otherwise reuse the last stage (do nothing) */
           ierr = VecCopy(X[0],Y);CHKERRQ(ierr);

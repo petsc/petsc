@@ -407,7 +407,7 @@ PetscErrorCode  PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool  sk
 @*/
 PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *skip)
 {
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+  PetscViewer_Binary *vbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);

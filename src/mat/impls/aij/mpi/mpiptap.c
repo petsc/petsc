@@ -225,7 +225,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* set initial free space to be fill*(nnz(p->B) + nnz(AP)) */
   nnz           = fill*(poti[pon] + api[am]);
-  ierr          = PetscFreeSpaceGet(nnz,&free_space);
+  ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   for (i=0; i<pon; i++) {
@@ -374,7 +374,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* set initial free space to be fill*(nnz(P) + nnz(AP)) */
   nnz           = fill*(pi_loc[pm] + api[am]);
-  ierr          = PetscFreeSpaceGet(nnz,&free_space);
+  ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);

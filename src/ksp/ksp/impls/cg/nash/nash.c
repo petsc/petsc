@@ -143,7 +143,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   cg->o_fcn = 0.0;
 
-  ierr = VecSet(d, 0.0);CHKERRQ(ierr);			/* d = 0             */
+  ierr = VecSet(d, 0.0);CHKERRQ(ierr);                  /* d = 0             */
   cg->norm_d = 0.0;
 
   /***************************************************************************/
@@ -152,8 +152,8 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   /* need be performed only once.                                            */
   /***************************************************************************/
 
-  ierr = VecCopy(ksp->vec_rhs, r);CHKERRQ(ierr);	/* r = -grad         */
-  ierr = VecDot(r, r, &rr);CHKERRQ(ierr);		/* rr = r^T r        */
+  ierr = VecCopy(ksp->vec_rhs, r);CHKERRQ(ierr);        /* r = -grad         */
+  ierr = VecDot(r, r, &rr);CHKERRQ(ierr);               /* rr = r^T r        */
   if (PetscIsInfOrNanScalar(rr)) {
     /*************************************************************************/
     /* The right-hand side contains not-a-number or an infinite value.       */
@@ -171,8 +171,8 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   /* performed only once.                                                    */
   /***************************************************************************/
 
-  ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);		/* z = inv(M) r      */
-  ierr = VecDot(r, z, &rz);CHKERRQ(ierr);		/* rz = r^T inv(M) r */
+  ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);          /* z = inv(M) r      */
+  ierr = VecDot(r, z, &rz);CHKERRQ(ierr);               /* rz = r^T inv(M) r */
   if (PetscIsInfOrNanScalar(rz)) {
     /*************************************************************************/
     /* The preconditioner contains not-a-number or an infinite value.        */
@@ -192,7 +192,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);	/* d = d + alpha r   */
+      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -228,7 +228,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);	/* d = d + alpha r   */
+      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -252,15 +252,15 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   switch(ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
-    ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);	/* norm_r = |z|      */
+    ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);   /* norm_r = |z|      */
     break;
 
   case KSP_NORM_UNPRECONDITIONED:
-    norm_r = PetscSqrtReal(rr);					/* norm_r = |r|      */
+    norm_r = PetscSqrtReal(rr);                                 /* norm_r = |r|      */
     break;
 
   case KSP_NORM_NATURAL:
-    norm_r = PetscSqrtReal(rz);					/* norm_r = |r|_M    */
+    norm_r = PetscSqrtReal(rz);                                 /* norm_r = |r|_M    */
     break;
 
   default:
@@ -278,15 +278,15 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   /* Compute the first direction and update the iteration.                   */
   /***************************************************************************/
 
-  ierr = VecCopy(z, p);CHKERRQ(ierr);			/* p = z             */
-  ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);	/* z = Q * p         */
+  ierr = VecCopy(z, p);CHKERRQ(ierr);                   /* p = z             */
+  ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);    /* z = Q * p         */
   ++ksp->its;
 
   /***************************************************************************/
   /* Check the matrix for numerical problems.                                */
   /***************************************************************************/
 
-  ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);		/* kappa = p^T Q p   */
+  ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);            /* kappa = p^T Q p   */
   if (PetscIsInfOrNanScalar(kappa)) {
     /*************************************************************************/
     /* The matrix produced not-a-number or an infinite value.  In this case, */
@@ -307,7 +307,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);	/* d = d + alpha r   */
+      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -361,7 +361,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       step = PetscSqrtReal(r2 / norm_p);
       cg->norm_d = cg->radius;
 
-      ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
+      ierr = VecAXPY(d, step, p);CHKERRQ(ierr); /* d = d + step p    */
 
       /***********************************************************************/
       /* Update objective function.                                          */
@@ -384,7 +384,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);	/* d = d + alpha r   */
+      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -429,14 +429,14 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       ierr = PetscInfo1(ksp, "KSPSolve_NASH: constrained step: radius=%g\n", cg->radius);CHKERRQ(ierr);
 
       if (norm_p > 0.0) {
-	/*********************************************************************/
-	/* Follow the direction to the boundary of the trust region.         */
-	/*********************************************************************/
+        /*********************************************************************/
+        /* Follow the direction to the boundary of the trust region.         */
+        /*********************************************************************/
 
         step = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
-        ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
+        ierr = VecAXPY(d, step, p);CHKERRQ(ierr);       /* d = d + step p    */
 
         /*********************************************************************/
         /* Update objective function.                                        */
@@ -456,9 +456,9 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /* Now we can update the direction and residual.                         */
     /*************************************************************************/
 
-    ierr = VecAXPY(d, alpha, p);CHKERRQ(ierr);		/* d = d + alpha p   */
-    ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha Q p */
-    ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);	/* z = inv(M) r      */
+    ierr = VecAXPY(d, alpha, p);CHKERRQ(ierr);          /* d = d + alpha p   */
+    ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
+    ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
 
     switch(cg->dtype) {
     case NASH_PRECONDITIONED_DIRECTION:
@@ -482,7 +482,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     rzm1 = rz;
-    ierr = VecDot(r, z, &rz);CHKERRQ(ierr);		/* rz = r^T z        */
+    ierr = VecDot(r, z, &rz);CHKERRQ(ierr);             /* rz = r^T z        */
     if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
@@ -508,7 +508,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       break;
 
     case KSP_NORM_NATURAL:
-      norm_r = PetscSqrtReal(rz);				/* norm_r = |r|_M    */
+      norm_r = PetscSqrtReal(rz);                               /* norm_r = |r|_M    */
       break;
 
     default:
@@ -577,8 +577,8 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /* Compute the new direction and update the iteration.                   */
     /*************************************************************************/
 
-    ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);	/* z = Q * p         */
-    ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);		/* kappa = p^T Q p   */
+    ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);  /* z = Q * p         */
+    ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);          /* kappa = p^T Q p   */
     ++ksp->its;
 
     /*************************************************************************/
@@ -762,11 +762,11 @@ PetscErrorCode  KSPCreate_NASH(KSP ksp)
   ksp->ops->view                 = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-				           "KSPNASHSetRadius_C",
+                                           "KSPNASHSetRadius_C",
                                            "KSPNASHSetRadius_NASH",
                                             KSPNASHSetRadius_NASH);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-				           "KSPNASHGetNormD_C",
+                                           "KSPNASHGetNormD_C",
                                            "KSPNASHGetNormD_NASH",
                                             KSPNASHGetNormD_NASH);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,

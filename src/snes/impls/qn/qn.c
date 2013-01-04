@@ -310,7 +310,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
       ierr = VecDot(dF[k], Y, &t);CHKERRQ(ierr);
       beta[k] = t / dXtdF[k];
     }
-    ierr = VecAXPY(Y, (alpha[k] - beta[k]), dX[k]);
+    ierr = VecAXPY(Y, (alpha[k] - beta[k]), dX[k]);CHKERRQ(ierr);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d alpha - beta: %14.12e\n", it, k, PetscRealPart(alpha[k] - beta[k]));CHKERRQ(ierr);

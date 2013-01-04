@@ -29,7 +29,7 @@ PetscErrorCode SNESDestroy_GS(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESReset_GS(snes);CHKERRQ(ierr);
-  ierr = PetscFree(snes->data);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

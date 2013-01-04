@@ -245,7 +245,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     }
 
     /* hash tables marking c->garray */
-    ierr = ISGetIndices(garray_gl,&idx_i);
+    ierr = ISGetIndices(garray_gl,&idx_i);CHKERRQ(ierr);
     for (i=0; i<size; i++){
       table_i = table[i];
       ierr    = PetscBTMemzero(Mbs,table_i);CHKERRQ(ierr);
@@ -392,7 +392,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   if (len_unused < len_max){ /* allocate more space for odata2 */
     ierr = PetscMalloc((len_est+1)*sizeof(PetscInt),&odata2);CHKERRQ(ierr);
     odata2_ptr[++nodata2] = odata2;
-    len_unused = len_est;
   }
 
   data = odata2;
@@ -409,7 +408,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   k = 0;
   while (k < nrqs){
     /* Receive messages */
-    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag2,comm,&flag,&r_status);
+    ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag2,comm,&flag,&r_status);CHKERRQ(ierr);
     if (flag){
       ierr = MPI_Get_count(&r_status,MPIU_INT,&len);CHKERRQ(ierr);
       proc_id = r_status.MPI_SOURCE;

@@ -263,8 +263,9 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
     {j+=nsep[i];}
 
   m = j-xxt_handle->ns;
-  if (m!=j)
-    {ierr = PetscPrintf(PETSC_COMM_WORLD,"xxt_generate() :: null space exists %D %D %D\n",m,j,xxt_handle->ns);}
+  if (m!=j) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"xxt_generate() :: null space exists %D %D %D\n",m,j,xxt_handle->ns);CHKERRQ(ierr);
+  }
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */

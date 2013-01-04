@@ -57,9 +57,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
     }
 
     /* get scalar copy (norms) of matrix -- AIJ specific!!! */
-    ierr = MatCreateAIJ(wcomm, nloc, nloc,
-                            PETSC_DETERMINE, PETSC_DETERMINE,
-                            0, d_nnz, 0, o_nnz, &Gmat);
+    ierr = MatCreateAIJ(wcomm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE,0, d_nnz, 0, o_nnz, &Gmat);CHKERRQ(ierr);
 
     ierr = PetscFree(d_nnz);CHKERRQ(ierr);
     ierr = PetscFree(o_nnz);CHKERRQ(ierr);

@@ -734,7 +734,7 @@ PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   for (i=0;i < n; i++) indices[i] = rstart + i;
-  ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
+  ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);CHKERRQ(ierr);
 
   /* set the line search functions */
   if (!snes->linesearch) {

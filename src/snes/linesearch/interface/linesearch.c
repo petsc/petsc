@@ -535,7 +535,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch) {
   PetscValidHeaderSpecific((*linesearch),SNESLINESEARCH_CLASSID,1);
   if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = 0; PetscFunctionReturn(0);}
   ierr = PetscObjectDepublish((*linesearch));CHKERRQ(ierr);
-  ierr = SNESLineSearchReset(*linesearch);
+  ierr = SNESLineSearchReset(*linesearch);CHKERRQ(ierr);
   if ((*linesearch)->ops->destroy) {
     (*linesearch)->ops->destroy(*linesearch);
   }

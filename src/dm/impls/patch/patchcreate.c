@@ -142,8 +142,8 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
     DM da;
     PetscInt dof = 1, width = 1;
 
-    ierr = DMCreate(comm, &da);
-    ierr = DMSetType(da, DMDA);
+    ierr = DMCreate(comm, &da);CHKERRQ(ierr);
+    ierr = DMSetType(da, DMDA);CHKERRQ(ierr);
     ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(da, patchSize.i+width*2, patchSize.j+width*2, patchSize.k+width*2);CHKERRQ(ierr);
     ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
@@ -156,8 +156,8 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
     DM da;
     PetscInt dof = 1, width = 1;
 
-    ierr = DMCreate(comm, &da);
-    ierr = DMSetType(da, DMDA);
+    ierr = DMCreate(comm, &da);CHKERRQ(ierr);
+    ierr = DMSetType(da, DMDA);CHKERRQ(ierr);
     ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k);CHKERRQ(ierr);
     ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);

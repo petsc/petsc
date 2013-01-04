@@ -689,7 +689,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
     }
   }
   for (f = 0; f < s->numFields; ++f) {
-    ierr = PetscSectionSetUpBC(s->field[f]);
+    ierr = PetscSectionSetUpBC(s->field[f]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

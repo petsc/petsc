@@ -25,7 +25,7 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
   ail->chk_sz = 0;
   /* allocate array */
   ail->size = a_size;
-  ierr = PetscMalloc(a_size*sizeof(PetscCDIntNd*), &ail->array);
+  ierr = PetscMalloc(a_size*sizeof(PetscCDIntNd*), &ail->array);CHKERRQ(ierr);
   for (ii=0;ii<a_size;ii++) ail->array[ii] = PETSC_NULL;
   ail->extra_nodes = PETSC_NULL;
   ail->mat = PETSC_NULL;
@@ -847,7 +847,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
         }
         /* recieve requests, send response, clear lists */
         kk = nactive_edges;
-        ierr = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,wcomm); /* not correct syncronization and global */
+        ierr = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,wcomm);CHKERRQ(ierr); /* not correct syncronization and global */
         nSend2 = 0;
         while(1){
 #define BF_SZ 10000
@@ -860,7 +860,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
           if (count > BF_SZ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for recieve: %d",count);
           proc = status.MPI_SOURCE;
           /* recieve request tag1 [n, proc, n*[gid1,lid0] ] */
-          ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, wcomm, &status);
+          ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, wcomm, &status);CHKERRQ(ierr);
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
           n = *pt++; kk = *pt++;           assert(kk==proc);
@@ -879,7 +879,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
           assert(pt-rbuff==count);
           if (count2 > count3*CHUNCK_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Irecv will be too small: %d",count2);
           /* send tag2 *[lid0, n, n*[gid] ] */
-          ierr = PetscMalloc(count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff);
+          ierr = PetscMalloc(count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff);CHKERRQ(ierr);
           request = (MPI_Request*)sbuff;
           sreqs2[nSend2++] = request; /* cache request */
           if (nSend2==REQ_BF_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for requests: %d",nSend2);

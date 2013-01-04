@@ -74,7 +74,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
     spec->radius = rad;
 
     ierr = KSPChebyshevSetEigenvalues(spec->kspcheap,spec->max*spec->maxfactor,spec->min*spec->minfactor);CHKERRQ(ierr);
-    ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);
+    ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);CHKERRQ(ierr);
     ierr = PetscInfo3(ksp,"Estimated singular value min=%G max=%G, spectral radius=%G",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
     spec->current = PETSC_TRUE;
   }

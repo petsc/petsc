@@ -800,7 +800,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
     a->inode.node_count = node_count;
     ierr = PetscMalloc(node_count*sizeof(PetscInt),&a->inode.size);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(A,node_count*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(a->inode.size,ns,node_count*sizeof(PetscInt));
+    ierr = PetscMemcpy(a->inode.size,ns,node_count*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscFree(ns);CHKERRQ(ierr);
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
 
@@ -842,7 +842,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
 	  CHKMEMQ;
       row += a->inode.size[i];
     }
-    ierr = PetscIntView(2*cnt,counts,0);
+    ierr = PetscIntView(2*cnt,counts,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

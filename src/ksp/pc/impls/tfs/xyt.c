@@ -274,8 +274,9 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
     {j+=nsep[i];}
 
   m = j-xyt_handle->ns;
-  if (m!=j)
-    {ierr = PetscPrintf(PETSC_COMM_WORLD,"xyt_generate() :: null space exists %D %D %D\n",m,j,xyt_handle->ns);}
+  if (m!=j) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"xyt_generate() :: null space exists %D %D %D\n",m,j,xyt_handle->ns);CHKERRQ(ierr);
+  }
 
   ierr = PetscInfo2(0,"xyt_generate() :: X(%D,%D)\n",n,m);CHKERRQ(ierr);
 

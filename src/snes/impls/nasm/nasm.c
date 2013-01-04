@@ -59,7 +59,7 @@ PetscErrorCode SNESDestroy_NASM(SNES snes)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = SNESReset_NASM(snes);CHKERRQ(ierr);
-  ierr = PetscFree(snes->data);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

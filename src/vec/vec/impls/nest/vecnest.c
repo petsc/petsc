@@ -450,13 +450,12 @@ static PetscErrorCode VecWAXPY_Nest(Vec w,PetscScalar alpha,Vec x,Vec y)
 #define __FUNCT__ "VecMax_Nest_Recursive"
 static PetscErrorCode VecMax_Nest_Recursive(Vec x,PetscInt *cnt,PetscInt *p,PetscReal *max)
 {
-  Vec_Nest  *bx = (Vec_Nest*)x->data;
-
-  PetscInt     i,nr;
-  PetscBool    isnest;
-  PetscInt     L;
-  PetscInt     _entry_loc;
-  PetscReal    _entry_val;
+  Vec_Nest       *bx;
+  PetscInt       i,nr;
+  PetscBool      isnest;
+  PetscInt       L;
+  PetscInt       _entry_loc;
+  PetscReal      _entry_val;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -593,7 +592,7 @@ static PetscErrorCode VecView_Nest(Vec x,PetscViewer viewer)
 #define __FUNCT__ "VecSize_Nest_Recursive"
 static PetscErrorCode VecSize_Nest_Recursive(Vec x,PetscBool globalsize,PetscInt *L)
 {
-  Vec_Nest       *bx = (Vec_Nest*)x->data;
+  Vec_Nest       *bx;
   PetscInt       size,i,nr;
   PetscBool      isnest;
   PetscErrorCode ierr;

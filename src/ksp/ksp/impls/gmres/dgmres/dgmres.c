@@ -870,7 +870,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig)
   ierr = PetscMalloc (n*sizeof (PetscReal),&modul);CHKERRQ(ierr);
   ierr = PetscMalloc (n*sizeof (PetscInt),&perm);CHKERRQ(ierr);
   /* copy the Hessenberg matrix to work space */
-  ierr = PetscMemcpy(A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));
+  ierr = PetscMemcpy(A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscOptionsHasName (PETSC_NULL, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
   if (flag){
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */

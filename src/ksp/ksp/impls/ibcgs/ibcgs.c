@@ -75,7 +75,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
   Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,PETSC_NULL);CHKERRQ(ierr);
-  B  = ksp->vec_rhs;ierr = VecGetArrayRead(B,(const PetscScalar**)&b);ierr = VecRestoreArrayRead(B,PETSC_NULL);CHKERRQ(ierr);
+  B  = ksp->vec_rhs;ierr = VecGetArrayRead(B,(const PetscScalar**)&b);CHKERRQ(ierr);ierr = VecRestoreArrayRead(B,PETSC_NULL);CHKERRQ(ierr);
   R0 = ksp->work[0];ierr = VecGetArrayRead(R0,(const PetscScalar**)&r0);CHKERRQ(ierr);ierr = VecRestoreArrayRead(R0,PETSC_NULL);CHKERRQ(ierr);
   Rn = ksp->work[1];ierr = VecGetArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,PETSC_NULL);CHKERRQ(ierr);
   Un = ksp->work[2];ierr = VecGetArrayRead(Un_1,(const PetscScalar**)&un_1);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Un_1,PETSC_NULL);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     taun   = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
     alphan = rhon/taun;
-    ierr = PetscLogFlops(15.0);
+    ierr = PetscLogFlops(15.0);CHKERRQ(ierr);
 
     /*
         zn = alphan*rn_1 + (alphan/alphan_1)betan*zn_1 - alphan*deltan*vn_1
@@ -151,7 +151,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       vn[i] = un_1[i] + betan*vn_1[i] - deltan*qn_1[i];
       sn[i] = rn_1[i] - alphan*vn[i];
     }
-    ierr = PetscLogFlops(3.0+11.0*N);
+    ierr = PetscLogFlops(3.0+11.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
     /*
@@ -183,7 +183,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       thetan += sn[i]*tn[i];
       kappan += tn[i]*tn[i];
     }
-    ierr = PetscLogFlops(12.0*N);
+    ierr = PetscLogFlops(12.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
     insums[0] = phin;
     insums[1] = pin;
@@ -232,7 +232,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       xn[i]   += zn[i] + omegan*sn[i];
     }
     ierr = PetscObjectStateIncrease((PetscObject)Xn);CHKERRQ(ierr);
-    ierr = PetscLogFlops(7.0*N);
+    ierr = PetscLogFlops(7.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
     if (!ksp->lagnorm && ksp->chknorm < ksp->its) {

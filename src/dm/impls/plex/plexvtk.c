@@ -456,7 +456,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     if ((link->ft == PETSC_VTK_CELL_FIELD)  || (link->ft == PETSC_VTK_CELL_VECTOR_FIELD))  hasCell  = PETSC_TRUE;
   }
   if (hasPoint) {
-    ierr = PetscFPrintf(comm, fp, "POINT_DATA %d\n", totVertices);
+    ierr = PetscFPrintf(comm, fp, "POINT_DATA %d\n", totVertices);CHKERRQ(ierr);
     for (link = vtk->link; link; link = link->next) {
       Vec          X = (Vec) link->vec;
       DM           dmX;
@@ -469,7 +469,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
       ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
       if (dmX) {
-        ierr = DMGetDefaultSection(dmX, &section);
+        ierr = DMGetDefaultSection(dmX, &section);CHKERRQ(ierr);
       } else {
         PetscContainer c;
 
@@ -485,7 +485,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   }
   /* Cell Fields */
   if (hasCell) {
-    ierr = PetscFPrintf(comm, fp, "CELL_DATA %d\n", totCells);
+    ierr = PetscFPrintf(comm, fp, "CELL_DATA %d\n", totCells);CHKERRQ(ierr);
     for (link = vtk->link; link; link = link->next) {
       Vec            X = (Vec) link->vec;
       DM             dmX;
@@ -498,7 +498,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
       ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
       if (dmX) {
-        ierr = DMGetDefaultSection(dmX, &section);
+        ierr = DMGetDefaultSection(dmX, &section);CHKERRQ(ierr);
       } else {
         PetscContainer c;
 

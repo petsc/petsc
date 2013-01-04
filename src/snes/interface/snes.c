@@ -808,7 +808,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
 
     flg = PETSC_FALSE;
-    ierr = SNESGetPCSide(snes,&pcside);
+    ierr = SNESGetPCSide(snes,&pcside);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-snes_npc_side","SNES nonlinear preconditioner side","SNESSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetPCSide(snes,pcside);CHKERRQ(ierr);}
 
@@ -828,7 +828,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
-  ierr = KSPGetOperators(snes->ksp,PETSC_NULL,PETSC_NULL,&matflag);
+  ierr = KSPGetOperators(snes->ksp,PETSC_NULL,PETSC_NULL,&matflag);CHKERRQ(ierr);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,matflag);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
@@ -2570,9 +2570,13 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = DMCreateGlobalVector(dm,&snes->vec_func);CHKERRQ(ierr);
   }
 
-  if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
+  if (!snes->ksp) {
+    ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);
+  }
 
-  if (!snes->linesearch) {ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);}
+  if (!snes->linesearch) {
+    ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+  }
 
   if (snes->pc && (snes->pcside == PC_LEFT)) {
     snes->mf = PETSC_TRUE;
@@ -4136,7 +4140,7 @@ PetscErrorCode  SNESTestLocalMin(SNES snes)
   ierr = VecDuplicate(u,&fh);CHKERRQ(ierr);
 
   /* currently only works for sequential */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Testing FormFunction() for local min\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Testing FormFunction() for local min\n");CHKERRQ(ierr);
   ierr = VecGetSize(u,&N);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecCopy(u,uh);CHKERRQ(ierr);

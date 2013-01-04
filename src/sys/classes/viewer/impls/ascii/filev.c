@@ -1001,7 +1001,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     tab *= 2;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,&fullLength,Argp);
+    ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
   PetscFunctionReturn(0);

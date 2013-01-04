@@ -24,7 +24,7 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
 PetscErrorCode SNESDestroy_NGMRES(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*)snes->data;
 
   PetscFunctionBegin;
   ierr = SNESReset_NGMRES(snes);CHKERRQ(ierr);
@@ -32,10 +32,10 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
   ierr = PetscFree(ngmres->xnorms);CHKERRQ(ierr);
 #if PETSC_USE_COMPLEX
-  ierr = PetscFree(ngmres->rwork);
+  ierr = PetscFree(ngmres->rwork);CHKERRQ(ierr);
 #endif
-  ierr = PetscFree(ngmres->work);
-  ierr = PetscFree(snes->data);
+  ierr = PetscFree(ngmres->work);CHKERRQ(ierr);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -75,9 +75,9 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     ierr = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ngmres->lwork = 12*msize;
 #if PETSC_USE_COMPLEX
-    ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);
+    ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);
 #endif
-    ierr = PetscMalloc(sizeof(PetscScalar)*ngmres->lwork,&ngmres->work);
+    ierr = PetscMalloc(sizeof(PetscScalar)*ngmres->lwork,&ngmres->work);CHKERRQ(ierr);
   }
 
   /* linesearch setup */

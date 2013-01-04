@@ -1456,7 +1456,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       ierr = PetscFree(bmdnnz);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&bmsf);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(bNis,&bNindices);
+    ierr = ISRestoreIndices(bNis,&bNindices);CHKERRQ(ierr);
     ierr = ISDestroy(&bNis);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJSetPreallocation(C,0,dnnz);CHKERRQ(ierr);

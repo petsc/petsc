@@ -57,7 +57,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
     ierr = spbas_delete( Pattern_0 );CHKERRQ(ierr);
 
     /* Keep only upper triangle of pattern */
-    ierr = spbas_keep_upper( &Pattern_P );
+    ierr = spbas_keep_upper( &Pattern_P );CHKERRQ(ierr);
 
     /* Convert to Sparse Row Storage  */
     ierr = spbas_matrix_to_crs(Pattern_P, PETSC_NULL, &ui, &uj);CHKERRQ(ierr);
