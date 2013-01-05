@@ -339,6 +339,7 @@ PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStru
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Quad_Private"
 PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+  DM             dmCoord;
   SNES           snes;
   KSP            ksp;
   PC             pc;
@@ -350,6 +351,7 @@ PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xL
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes, "quad_interp_");CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
@@ -377,7 +379,7 @@ PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xL
     PetscInt           c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     if (4*2 != coordSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", coordSize, 4*2);}
     ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (4*ctx->dof != xSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", xSize, 4*ctx->dof);}
@@ -395,6 +397,7 @@ PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xL
       a[p*ctx->dof+comp] = x[0*ctx->dof+comp]*(1 - xir[0])*(1 - xir[1]) + x[1*ctx->dof+comp]*xir[0]*(1 - xir[1]) + x[2*ctx->dof+comp]*xir[0]*xir[1] + x[3*ctx->dof+comp]*(1 - xir[0])*xir[1];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
@@ -552,6 +555,7 @@ PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStruc
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Hex_Private"
 PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+  DM             dmCoord;
   SNES           snes;
   KSP            ksp;
   PC             pc;
@@ -563,6 +567,7 @@ PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLo
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes, "hex_interp_");CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
@@ -590,7 +595,7 @@ PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLo
     PetscInt           c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     if (8*3 != coordSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", coordSize, 8*3);}
     ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (8*ctx->dof != xSize) {SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", xSize, 8*ctx->dof);}
@@ -618,7 +623,7 @@ PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLo
         x[7*ctx->dof+comp]*(1-xir[0])*    xir[1]*   xir[2];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
-    ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);

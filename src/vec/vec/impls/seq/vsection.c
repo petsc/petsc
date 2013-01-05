@@ -1484,6 +1484,45 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionReset"
+/*@
+  PetscSectionReset - Frees all section data.
+
+  Not collective
+
+  Input Parameters:
+. s - the PetscSection
+
+  Level: developer
+
+.seealso: PetscSection, PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionReset(PetscSection s)
+{
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(s->numFieldComponents);CHKERRQ(ierr);
+  for(f = 0; f < s->numFields; ++f) {
+    ierr = PetscSectionDestroy(&s->field[f]);CHKERRQ(ierr);
+    ierr = PetscFree(s->fieldNames[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(s->fieldNames);CHKERRQ(ierr);
+  ierr = PetscFree(s->field);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s->bc);CHKERRQ(ierr);
+  ierr = PetscFree(s->bcIndices);CHKERRQ(ierr);
+  ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
+  s->atlasLayout.pStart = -1;
+  s->atlasLayout.pEnd   = -1;
+  s->atlasLayout.numDof = 1;
+  s->maxDof             = 0;
+  s->setup              = PETSC_FALSE;
+  s->numFields          = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionDestroy"
 /*@
   PetscSectionDestroy - Frees a section object and frees its range if that exists.
@@ -1507,19 +1546,8 @@ PetscErrorCode  PetscSectionDestroy(PetscSection *s)
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(0);
   if (!(*s)->refcnt--) {
-    PetscInt f;
-
-    ierr = PetscFree((*s)->numFieldComponents);CHKERRQ(ierr);
-    for (f = 0; f < (*s)->numFields; ++f) {
-      ierr = PetscSectionDestroy(&(*s)->field[f]);CHKERRQ(ierr);
-      ierr = PetscFree((*s)->fieldNames[f]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree((*s)->fieldNames);CHKERRQ(ierr);
-    ierr = PetscFree((*s)->field);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&(*s)->bc);CHKERRQ(ierr);
-    ierr = PetscFree((*s)->bcIndices);CHKERRQ(ierr);
-    ierr = PetscFree2((*s)->atlasDof, (*s)->atlasOff);CHKERRQ(ierr);
-    ierr = PetscFree((*s));CHKERRQ(ierr);
+    ierr = PetscSectionReset(*s);CHKERRQ(ierr);
+    ierr = PetscFree(*s);CHKERRQ(ierr);
   }
   *s = PETSC_NULL;
   PetscFunctionReturn(0);
