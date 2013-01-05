@@ -450,12 +450,13 @@ static PetscErrorCode TSComputeLinearStability_Theta(TS ts,PetscReal xr,PetscRea
    Level: beginner
 
    Options Database:
-      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1);  Theta = 1.0 (
+      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
       -ts_theta_extrapolate <flg> Extrapolate stage solution from previous solution (sometimes unstable)
-      -ts_theta_endpoint <flag> - Use the endpoint instead of midpoint form of the Theta method
+      -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
 
    Notes:
-$  -ts_type theta -ts_theta 1.0 corresponds to backward Euler (TSBEULER)
+$  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
+$  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
 $  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (TSCN)
 
 
