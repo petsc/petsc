@@ -473,8 +473,6 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "no symmetric preconditioning for KSPBCGSL");
-  else if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "no right preconditioning for KSPBCGSL");
   ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
   ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
