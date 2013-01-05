@@ -906,6 +906,11 @@ class GNUPackage(Package):
     self.setupDownload()
     return Package.checkDownload(self,requireDownload)
 
+  def formGNUConfigureExtraArgs(self):
+    '''Intended to be overridden by subclasses'''
+    args = []
+    return args
+
   def formGNUConfigureDepArgs(self):
     '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
     args = []
@@ -972,6 +977,7 @@ class GNUPackage(Package):
     else:
         args.append('--disable-shared')
     args.extend(self.formGNUConfigureDepArgs())
+    args.extend(self.formGNUConfigureExtraArgs())
     return args
 
   def Install(self):
