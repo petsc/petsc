@@ -16,7 +16,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionBegin;
   options->debug = 0;
   options->patchSize.i = options->patchSize.j = options->patchSize.k = 2;
-  options->gridSize.i  = options->gridSize.j  = options->gridSize.k  = 2;
+  options->gridSize.i  = options->gridSize.j  = options->gridSize.k  = 6;
 
   ierr = PetscOptionsBegin(comm, "", "Patch Test Options", "DMPATCH");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
@@ -39,6 +39,7 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMPatchSolve(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

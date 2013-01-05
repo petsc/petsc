@@ -6,7 +6,6 @@
 PetscErrorCode DMSetFromOptions_Patch(DM dm)
 {
   DM_Patch      *mesh = (DM_Patch *) dm->data;
-  PetscInt       p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -15,9 +14,6 @@ PetscErrorCode DMSetFromOptions_Patch(DM dm)
     /* Handle associated vectors */
     /* Handle viewing */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  for (p = 0; p < mesh->numPatches; ++p) {
-    ierr = DMSetFromOptions(mesh->patches[p]);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -77,10 +73,11 @@ PetscErrorCode DMCreate_Patch(DM dm)
   dm->data = mesh;
 
   mesh->refct       = 1;
-  mesh->numPatches  = 0;
-  mesh->patches     = PETSC_NULL;
   mesh->dmCoarse    = PETSC_NULL;
-  mesh->activePatch = -1;
+  mesh->patchSize.i = 0;
+  mesh->patchSize.j = 0;
+  mesh->patchSize.k = 0;
+  mesh->patchSize.c = 0;
 
   ierr = DMInitialize_Patch(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -120,13 +117,13 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil gridSize, DM *dm)
 {
   DM_Patch      *mesh;
-  PetscInt       p;
+  DM             da;
+  PetscInt       dof = 1, width = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPatchCreate(comm, dm);CHKERRQ(ierr);
   mesh = (DM_Patch *) (*dm)->data;
-  mesh->dim        = dim;
   if (dim < 2) {
     gridSize.j  = 1;
     patchSize.j = 1;
@@ -135,36 +132,15 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
     gridSize.k  = 1;
     patchSize.k = 1;
   }
-  mesh->numPatches = gridSize.i*gridSize.j*gridSize.k;
-  ierr = PetscMalloc(mesh->numPatches * sizeof(DM), &mesh->patches);CHKERRQ(ierr);
-  for (p = 0; p < mesh->numPatches; ++p) {
-    /* Patches are overlapping: Right now we do not account for boundaries */
-    DM da;
-    PetscInt dof = 1, width = 1;
-
-    ierr = DMCreate(comm, &da);CHKERRQ(ierr);
-    ierr = DMSetType(da, DMDA);CHKERRQ(ierr);
-    ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
-    ierr = DMDASetSizes(da, patchSize.i+width*2, patchSize.j+width*2, patchSize.k+width*2);CHKERRQ(ierr);
-    ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
-    ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
-    ierr = DMDASetStencilType(da, DMDA_STENCIL_BOX);CHKERRQ(ierr);
-    ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);
-    mesh->patches[p] = da;
-  }
-  {
-    DM da;
-    PetscInt dof = 1, width = 1;
-
-    ierr = DMCreate(comm, &da);CHKERRQ(ierr);
-    ierr = DMSetType(da, DMDA);CHKERRQ(ierr);
-    ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
-    ierr = DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k);CHKERRQ(ierr);
-    ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
-    ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
-    ierr = DMDASetStencilType(da, DMDA_STENCIL_BOX);CHKERRQ(ierr);
-    ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);
-    mesh->dmCoarse = da;
-  }
+  ierr = DMCreate(comm, &da);
+  ierr = DMSetType(da, DMDA);
+  ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da, DMDA_STENCIL_BOX);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);
+  mesh->dmCoarse  = da;
+  ierr = DMPatchSetPatchSize(*dm, patchSize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

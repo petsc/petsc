@@ -6,12 +6,9 @@
 #include "petsc-private/dmimpl.h"
 
 typedef struct {
-  PetscInt refct;
-  PetscInt dim;
-  PetscInt numPatches;
-  DM      *patches;
-  DM       dmCoarse;
-  PetscInt activePatch;
+  PetscInt   refct;
+  DM         dmCoarse;
+  MatStencil patchSize;
 } DM_Patch;
 
 #endif /* _PATCHIMPL_H */
