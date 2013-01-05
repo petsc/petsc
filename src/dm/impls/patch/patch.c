@@ -176,6 +176,9 @@ PetscErrorCode DMPatchSolve(DM dm)
     /* Compute global residual Rcoarse */
     /* TauCoarse = Rcoarse - Rcoarse_restricted */
 #endif
+        ierr = PetscSFDestroy(&sfz);CHKERRQ(ierr);
+        ierr = PetscSFDestroy(&sfzr);CHKERRQ(ierr);
+        ierr = DMDestroy(&dmz);CHKERRQ(ierr);
       }
     }
   }
