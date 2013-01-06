@@ -142,7 +142,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     }
   }
   /* Let the lowest rank process own each point */
-  ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
