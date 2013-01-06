@@ -47,7 +47,7 @@ PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,c
 
 /* ---------------------------------------------------------------------------------------*/
 
-static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
+static char  arch[128],hostname[128],username[128],pname[PETSC_MAX_PATH_LEN],date[128];
 static PetscBool  PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char version[256];
 
@@ -63,12 +63,12 @@ PetscErrorCode  PetscErrorPrintfInitialize()
   PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
-  ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
+  ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
+  ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-  ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
+  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-error_output_stdout",&use_stdout,PETSC_NULL);CHKERRQ(ierr);
   if (use_stdout) {
