@@ -480,7 +480,7 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal delta,PetscReal
   ierr = VecDotRealPart(s,s,&sts);CHKERRQ(ierr);
   dsq  = delta*delta;
   rad  = PetscSqrtReal((pts*pts) - ptp*(sts - dsq));
-  if (PetscRealPart(pts) > 0.0) {
+  if (pts > 0.0) {
     *step2 = -(pts + rad)/ptp;
     *step1 = (sts - dsq)/(ptp * *step2);
   } else {
