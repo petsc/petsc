@@ -740,27 +740,14 @@ class Configure(config.package.Package):
     self.executeTest(self.findMPIInc)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
-    if self.libraries.check(self.dlib, "MPI_Comm_spawn"):
-      self.addDefine('HAVE_MPI_COMM_SPAWN',1)
     if self.libraries.check(self.dlib, "MPI_Win_create"):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
-    if self.libraries.check(self.dlib, "MPI_Type_get_envelope"):
-      self.addDefine('HAVE_MPI_TYPE_GET_ENVELOPE',1)
-    if self.libraries.check(self.dlib, "MPI_Type_get_extent"):
-      self.addDefine('HAVE_MPI_TYPE_GET_EXTENT',1)
-    if self.libraries.check(self.dlib, "MPI_Type_dup"):
-      self.addDefine('HAVE_MPI_TYPE_DUP',1)
-    if self.libraries.check(self.dlib, 'MPI_Init_thread'):
-        self.addDefine('HAVE_MPI_INIT_THREAD',1)
-    if self.libraries.check(self.dlib, "MPIX_Iallreduce"):
-      self.addDefine('HAVE_MPIX_IALLREDUCE',1)
-    if self.libraries.check(self.dlib, "MPI_Iallreduce"):
-      self.addDefine('HAVE_MPI_IALLREDUCE',1)
-    if self.libraries.check(self.dlib, "MPI_Finalized"):
-      self.addDefine('HAVE_MPI_FINALIZED',1)
-    if self.libraries.check(self.dlib, "MPI_Exscan"):
-      self.addDefine('HAVE_MPI_EXSCAN',1)
+    funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
+      MPIX_Iallreduce MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
+    for f in funcs:
+      if self.libraries.check(self.dlib, f):
+        self.addDefine('HAVE_' + f.upper(),1)
 
 if __name__ == '__main__':
   import config.framework
