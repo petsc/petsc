@@ -69,7 +69,7 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP k
 
       ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(cheb->kspest,nonzero);CHKERRQ(ierr);
-      ierr = KSPSetComputeSingularValues(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetComputeEigenvalues(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
 
       /* Estimate with a fixed number of iterations */
       ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
@@ -314,6 +314,33 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevComputeExtremeEigenvalues_Private"
+/*
+ * Must be passed a KSP solver that has "converged", with KSPSetComputeEigenvalues() called before the solve
+ */
+static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,PetscReal *emin,PetscReal *emax)
+{
+  PetscErrorCode ierr;
+  PetscInt       n,neig;
+  PetscReal      *re,*im,min,max;
+
+  PetscFunctionBegin;
+  ierr = KSPGetIterationNumber(kspest,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,PetscReal,&re,n,PetscReal,&im);CHKERRQ(ierr);
+  ierr = KSPComputeEigenvalues(kspest,n,re,im,&neig);CHKERRQ(ierr);
+  min = PETSC_MAX_REAL;
+  max = PETSC_MIN_REAL;
+  for (n=0; n<neig; n++) {
+    min = PetscMin(min,re[n]);
+    max = PetscMax(max,re[n]);
+  }
+  ierr = PetscFree2(re,im);CHKERRQ(ierr);
+  *emax = max;
+  *emin = min;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Chebyshev"
 PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 {
@@ -357,7 +384,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
         ierr = VecZeroEntries(X);CHKERRQ(ierr);
       }
     }
-    ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
+    ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
     cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
     cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
     cheb->estimate_current = PETSC_TRUE;
@@ -412,7 +439,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
       ierr = VecCopy(p[k],X);CHKERRQ(ierr); /* p[k] = previous p[kp1] */
       ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr);
-      ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
+      ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
       cheb->estimate_current = PETSC_TRUE;
