@@ -728,17 +728,10 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = PCMGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr);
   /* set default smoothers */
   for (level=1; level<=fine_level; level++){
-    if (size == 1){
-      ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
-      ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
-      ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
-      ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
-    } else {
-      ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
-      ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
-      ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
-      ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
-    }
+    ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
+    ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
+    ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
+    ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
