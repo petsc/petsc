@@ -309,56 +309,40 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 {
   PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode ierr;
-  PetscMPIInt i,size,nsends,nrecvs,*rflags,*rlengths,*ilengths;
-  PetscInt *pilengths;
+  PetscInt *rlengths,*ilengths,i;
   MPI_Comm comm;
   MPI_Request *rootreqs,*leafreqs;
 
   PetscFunctionBegin;
   comm = ((PetscObject)sf)->comm;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)sf,&bas->tag);CHKERRQ(ierr);
   /*
-   * Inform roots about their leaves
+   * Inform roots about how many leaves and from which ranks
    */
-  ierr = PetscMalloc2(size,PetscMPIInt,&rflags,size,PetscMPIInt,&rlengths);CHKERRQ(ierr);
-  ierr = PetscMemzero(rflags,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(rlengths,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(sf->nranks*sizeof(PetscInt),&rlengths);CHKERRQ(ierr);
   /* Determine number, sending ranks, and length of incoming  */
-  nsends = PetscMPIIntCast(sf->nranks);
-  for (i=0; i<nsends; i++) {
-    rflags[sf->ranks[i]] = 1;                        /* Ranks that my leaves reference */
-    rlengths[sf->ranks[i]] = sf->roffset[i+1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */
+  for (i=0; i<sf->nranks; i++) {
+    rlengths[i] = sf->roffset[i+1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */
   }
-  ierr = PetscGatherNumberOfMessages(comm,rflags,PETSC_NULL,&nrecvs);CHKERRQ(ierr);
-  bas->niranks = nrecvs;
-  ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,rlengths,&bas->iranks,&ilengths);CHKERRQ(ierr);
-  ierr = PetscFree2(rflags,rlengths);CHKERRQ(ierr);
-#if defined(PETSC_USE_64BIT_INDICES)
-  ierr = PetscMalloc(nrecvs*sizeof(PetscInt),&pilengths);CHKERRQ(ierr);
-  for (i=0; i<nrecvs; i++) {
-    pilengths[i] = PetscMPIIntCast(ilengths[i]);
-  }
-  ierr = PetscFree(ilengths);CHKERRQ(ierr);
-#else
-  pilengths = ilengths;
-#endif
+  ierr = PetscCommBuildTwoSided(comm,1,MPIU_INT,sf->nranks,sf->ranks,rlengths,&bas->niranks,&bas->iranks,(void**)&ilengths);CHKERRQ(ierr);
+  ierr = PetscFree(rlengths);CHKERRQ(ierr);
 
-  for (i=0,bas->itotal=0; i<bas->niranks; i++) bas->itotal += pilengths[i];
+  /* Send leaf identities to roots */
+  for (i=0,bas->itotal=0; i<bas->niranks; i++) bas->itotal += ilengths[i];
   ierr = PetscMalloc2(bas->niranks+1,PetscInt,&bas->ioffset,bas->itotal,PetscInt,&bas->irootloc);CHKERRQ(ierr);
   ierr = PetscMalloc((bas->niranks+sf->nranks)*sizeof(MPI_Request),&rootreqs);CHKERRQ(ierr);
   leafreqs = rootreqs + bas->niranks;
   bas->ioffset[0] = 0;
   for (i=0; i<bas->niranks; i++) {
-    bas->ioffset[i+1] = bas->ioffset[i] + pilengths[i];
-    ierr = MPI_Irecv(bas->irootloc+bas->ioffset[i],pilengths[i],MPIU_INT,bas->iranks[i],bas->tag,comm,&rootreqs[i]);CHKERRQ(ierr);
+    bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i];
+    ierr = MPI_Irecv(bas->irootloc+bas->ioffset[i],ilengths[i],MPIU_INT,bas->iranks[i],bas->tag,comm,&rootreqs[i]);CHKERRQ(ierr);
   }
   for (i=0; i<sf->nranks; i++) {
     PetscMPIInt npoints = PetscMPIIntCast(sf->roffset[i+1] - sf->roffset[i]);
     ierr = MPI_Isend(sf->rremote+sf->roffset[i],npoints,MPIU_INT,sf->ranks[i],bas->tag,comm,&leafreqs[i]);CHKERRQ(ierr);
   }
   ierr = MPI_Waitall(sf->nranks+bas->niranks,rootreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = PetscFree(pilengths);CHKERRQ(ierr);
+  ierr = PetscFree(ilengths);CHKERRQ(ierr);
   ierr = PetscFree(rootreqs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
