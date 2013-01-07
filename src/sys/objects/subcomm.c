@@ -205,21 +205,20 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
 
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-
+  {
+    PetscThreadComm tcomm;
+    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(dupcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+    ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+  }
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
 
-  {
-    PetscThreadComm tcomm;
-    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(psubcomm->dupparent,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-    ierr = MPI_Attr_put(psubcomm->comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -288,21 +287,20 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
 
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-
+  {
+    PetscThreadComm tcomm;
+    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(dupcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+    ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+  }
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
 
-  {
-    PetscThreadComm tcomm;
-    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(psubcomm->dupparent,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-    ierr = MPI_Attr_put(psubcomm->comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
-    tcomm->refct++;
-  }
   PetscFunctionReturn(0);
 }
 

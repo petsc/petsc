@@ -197,13 +197,16 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
     *first_tag = counter->tag--;
   }
 
-  /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscInt trank;
-    ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
-    if (!trank) counter->refcount++; /* number of references to this comm */
-  } else counter->refcount++;
+  if(!flg) {
+    /* Threadcomm does not exist on this communicator, get the global threadcomm and attach it to this communicator */
+    ierr = PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
+    ierr = PetscThreadCommAttach(*comm_out,tcomm);CHKERRQ(ierr);
+  }
+  /* Only the main thread updates counter->refcount */
+  PetscInt trank;
+  ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
+  if (!trank) counter->refcount++; /* number of references to this comm */
 
   PetscFunctionReturn(0);
 }

@@ -58,6 +58,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommBarrier(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm,PetscInt,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetRank(PetscThreadComm,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommAttach(MPI_Comm,PetscThreadComm);
 
 /* Reduction operations */
 PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelPost(PetscInt,PetscThreadCommReduction,void*);
