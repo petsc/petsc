@@ -966,7 +966,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
     level = fine_level;
     for (mllevel = 0; mllevel < Nlevels; mllevel++) {
-      ML_Aggregate_Viz_Stats *grid_info = ml_object->Amat[mllevel].to->Grid->Grid;
+      ML_Aggregate_Viz_Stats *grid_info = (ML_Aggregate_Viz_Stats *)ml_object->Amat[mllevel].to->Grid->Grid;
       MPI_Comm comm = ((PetscObject)gridctx[level].A)->comm;
 
       ierr = MatGetBlockSize (gridctx[level].A, &bs);CHKERRQ(ierr);
