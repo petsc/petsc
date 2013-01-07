@@ -1,6 +1,118 @@
 #include <petsc-private/daimpl.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDACreatePatchIS"
+
+PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *is)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,idx;
+  PetscInt       ii,jj,kk;
+  Vec            v;
+  PetscInt       n,pn,bs;
+  PetscMPIInt    rank;
+  PetscSF        sf,psf;
+  PetscLayout    map;
+  MPI_Comm       comm;
+  PetscInt       *natidx,*globidx,*leafidx;
+  PetscInt       *pnatidx,*pleafidx;
+  PetscInt       base;
+  PetscInt       ox,oy,oz;
+  DM_DA          *dd;
+  PetscFunctionBegin;
+
+  comm = ((PetscObject)da)->comm;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  dd = (DM_DA *)da->data;
+
+  /* construct the natural mapping */
+  ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(v,&base,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&v);CHKERRQ(ierr);
+
+  /* construct the layout */
+  ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(map,n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+
+  /* construct the list of natural indices on this process when PETSc ordering is considered */
+  ierr = DMDAGetOffset(da,&ox,&oy,&oz);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*n,&natidx);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*n,&globidx);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*n,&leafidx);CHKERRQ(ierr);
+  idx = 0;
+  for (k=dd->zs;k<dd->ze;k++) {
+    for (j=dd->ys;j<dd->ye;j++) {
+      for (i=dd->xs;i<dd->xe;i++) {
+        natidx[idx] = i + dd->w*(j*dd->M + k*dd->M*dd->N);
+        globidx[idx] = base + idx;
+        leafidx[idx] = 0;
+        idx++;
+      }
+    }
+  }
+
+  if (idx != n) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE, "for some reason the count is wrong.");
+
+  /* construct the SF going from the natural indices to the local set of PETSc indices */
+  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,map,n,PETSC_NULL,PETSC_OWN_POINTER,natidx);CHKERRQ(ierr);
+
+  /* broadcast the global indices over to the corresponding natural indices */
+  ierr = PetscSFGatherBegin(sf,MPIU_INT,globidx,leafidx);CHKERRQ(ierr);
+  ierr = PetscSFGatherEnd(sf,MPIU_INT,globidx,leafidx);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+
+
+  pn = dd->w*(upper->k - lower->k)*(upper->j - lower->j)*(upper->i - lower->i);
+  ierr = PetscMalloc(sizeof(PetscInt)*pn,&pnatidx);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*pn,&pleafidx);CHKERRQ(ierr);
+  idx = 0;
+  for (k=lower->k-oz;k<upper->k-oz;k++) {
+    for (j=lower->j-oy;j<upper->j-oy;j++) {
+      for (i=dd->w*(lower->i-ox);i<dd->w*(upper->i-ox);i++) {
+        ii = i % (dd->w*dd->M);
+        jj = j % dd->N;
+        kk = k % dd->P;
+        if (ii < 0) ii = dd->w*dd->M + ii;
+        if (jj < 0) jj = dd->N + jj;
+        if (kk < 0) kk = dd->P + kk;
+        pnatidx[idx] = ii + dd->w*(jj*dd->M + kk*dd->M*dd->N);
+        idx++;
+      }
+    }
+  }
+
+  if (idx != pn) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE, "for some reason the count is wrong");
+
+  ierr = PetscSFCreate(comm,&psf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(psf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(psf,map,pn,PETSC_NULL,PETSC_OWN_POINTER,pnatidx);CHKERRQ(ierr);
+
+  /* broadcast the global indices through to the patch */
+  ierr = PetscSFBcastBegin(psf,MPIU_INT,leafidx,pleafidx);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(psf,MPIU_INT,leafidx,pleafidx);CHKERRQ(ierr);
+
+  /* create the IS */
+  ierr = ISCreateGeneral(comm,pn,pleafidx,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+
+  ierr = PetscSFDestroy(&psf);CHKERRQ(ierr);
+
+  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
+
+  ierr = PetscFree(globidx);CHKERRQ(ierr);
+  ierr = PetscFree(leafidx);CHKERRQ(ierr);
+  ierr = PetscFree(natidx);CHKERRQ(ierr);
+  ierr = PetscFree(pnatidx);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDASubDomainDA_Private"
 PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
   DM               da;
@@ -8,7 +120,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
   PetscErrorCode   ierr;
   DMDALocalInfo    info;
   PetscReal        lmin[3],lmax[3];
-  PetscInt         i,xsize,ysize,zsize;
+  PetscInt         xsize,ysize,zsize;
   PetscInt         xo,yo,zo;
 
   PetscFunctionBegin;
@@ -65,7 +177,6 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
 
   /* todo - nonuniform coordinates */
   ierr = DMDAGetLocalBoundingBox(dm,lmin,lmax);CHKERRQ(ierr);
-  for (i=info.dim; i<3; i++) {lmin[i] = 0; lmax[i] = 0;}
   ierr = DMDASetUniformCoordinates(da,lmin[0],lmax[0],lmin[1],lmax[1],lmin[2],lmax[2]);CHKERRQ(ierr);
 
   dd = (DM_DA *)da->data;

@@ -28,9 +28,11 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec) {
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
-        g[j][i] = i*i + j*j;
+        g[j][2*i] = i*i + j*j;
+        g[j][2*i+1] = rank;
       } else {
-        g[j][i] = i*i + j*j;
+        g[j][2*i] = i*i + j*j;
+        g[j][2*i+1] = rank;
       }
     }
   }
@@ -56,16 +58,60 @@ int main(int argc,char **argv)
   VecScatter       oscata;
   VecScatter       *iscat,*oscat,*gscat;
 
+  DMDALocalInfo    info;
+
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   ierr = DMCreateDomainDecomposition(da,PETSC_NULL,PETSC_NULL,&iis,&ois,&subda);CHKERRQ(ierr);
   ierr = DMCreateDomainDecompositionScatters(da,1,subda,&iscat,&oscat,&gscat);CHKERRQ(ierr);
+
+  {
+    DMDALocalInfo subinfo;
+    MatStencil lower,upper;
+    IS         patchis;
+    Vec        smallvec;
+    Vec        largevec;
+    VecScatter patchscat;
+
+    ierr = DMDAGetLocalInfo(subda[0],&subinfo);CHKERRQ(ierr);
+
+    lower.i = subinfo.xs;
+    lower.j = subinfo.ys;
+    lower.k = subinfo.zs;
+    upper.i = subinfo.xs + subinfo.xm;
+    upper.j = subinfo.ys + subinfo.ym;
+    upper.k = subinfo.zs + subinfo.zm;
+
+    /* test the patch IS as a thing to scatter to/from */
+    ierr = DMDACreatePatchIS(da,&lower,&upper,&patchis);CHKERRQ(ierr);
+    ierr = ISView(patchis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(da,&largevec);CHKERRQ(ierr);
+
+    ierr = VecCreate(PETSC_COMM_SELF,&smallvec);CHKERRQ(ierr);
+    ierr = VecSetSizes(smallvec,2*(upper.i - lower.i)*(upper.j - lower.j),PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(smallvec);CHKERRQ(ierr);
+    ierr = VecScatterCreate(largevec,patchis,smallvec,PETSC_NULL,&patchscat);CHKERRQ(ierr);
+
+    ierr = VecSet(smallvec,1.);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(patchscat,smallvec,largevec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(patchscat,smallvec,largevec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+
+    ierr = VecView(largevec,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+
+    ierr = VecDestroy(&smallvec);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(da,&largevec);CHKERRQ(ierr);
+    ierr = ISDestroy(&patchis);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&patchscat);CHKERRQ(ierr);
+  }
 
   /* view the various parts */
   for (i = 0; i < size; i++) {
@@ -152,6 +198,15 @@ int main(int argc,char **argv)
   ierr = VecScatterDestroy(&oscat[0]);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&gscat[0]);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&oscata);CHKERRQ(ierr);
+
+  ierr = PetscFree(iscat);CHKERRQ(ierr);
+  ierr = PetscFree(oscat);CHKERRQ(ierr);
+  ierr = PetscFree(gscat);CHKERRQ(ierr);
+  ierr = PetscFree(oscata);CHKERRQ(ierr);
+
+  ierr = PetscFree(subda);CHKERRQ(ierr);
+  ierr = PetscFree(ois);CHKERRQ(ierr);
+  ierr = PetscFree(iis);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
