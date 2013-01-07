@@ -194,136 +194,70 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
 /*
  Fills the local vector problem on the subdomain from the global problem.
 
+ Right now this assumes one subdomain per processor.
+
  */
 PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM *subdms,VecScatter **iscat,VecScatter **oscat, VecScatter **lscat) {
   PetscErrorCode   ierr;
-  DMDALocalInfo    dinfo,sinfo;
-  IS               isis,idis,osis,odis,gsis,gdis;
-  PetscInt         *ididx,*isidx,*odidx,*osidx,*gdidx,*gsidx,*idx_global,n_global,*idx_sub,n_sub;
-  PetscInt         l,i,j,k,d,n_i,n_o,n_g,sl,dl,di,dj,dk,si,sj,sk;
-  Vec              dvec,svec,slvec;
+  DMDALocalInfo    info,subinfo;
   DM               subdm;
+  MatStencil       upper,lower;
+  IS               idis,isis,odis,osis,gdis;
+  Vec              svec,dvec,slvec;
 
   PetscFunctionBegin;
+
+  if (nsubdms != 1) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot have more than one subdomain per processor (yet)");
 
   /* allocate the arrays of scatters */
   if (iscat) {ierr = PetscMalloc(sizeof(VecScatter *),iscat);CHKERRQ(ierr);}
   if (oscat) {ierr = PetscMalloc(sizeof(VecScatter *),oscat);CHKERRQ(ierr);}
   if (lscat) {ierr = PetscMalloc(sizeof(VecScatter *),lscat);CHKERRQ(ierr);}
 
-  ierr = DMDAGetLocalInfo(dm,&dinfo);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dm,&n_global,&idx_global);CHKERRQ(ierr);
-  for (l = 0;l < nsubdms;l++) {
-    n_i = 0;
-    n_o = 0;
-    n_g = 0;
-    subdm = subdms[l];
-    ierr = DMDAGetLocalInfo(subdm,&sinfo);CHKERRQ(ierr);
-    ierr = DMDAGetGlobalIndices(subdm,&n_sub,&idx_sub);CHKERRQ(ierr);
-    /* count the three region sizes */
-    for (k=sinfo.gzs;k<sinfo.gzs+sinfo.gzm;k++) {
-      for (j=sinfo.gys;j<sinfo.gys+sinfo.gym;j++) {
-        for (i=sinfo.gxs;i<sinfo.gxs+sinfo.gxm;i++) {
-          for (d=0;d<sinfo.dof;d++) {
-            if (k >= sinfo.zs           && j >= sinfo.ys         && i >= sinfo.xs &&
-                k <  sinfo.zs+sinfo.zm  && j < sinfo.ys+sinfo.ym && i < sinfo.xs+sinfo.xm) {
+  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  subdm = subdms[0];
+  ierr = DMDAGetLocalInfo(subdm,&subinfo);CHKERRQ(ierr);
 
-              /* interior - subinterior overlap */
-              if (k >= dinfo.zs            && j >= dinfo.ys          && i >= dinfo.xs &&
-                  k <  dinfo.zs+dinfo.zm  && j < dinfo.ys+dinfo.ym && i < dinfo.xs+dinfo.xm) {
-                n_i++;
-              }
-              /* ghost - subinterior overlap */
-              if (k >= dinfo.gzs            && j >= dinfo.gys          && i >= dinfo.gxs &&
-                  k <  dinfo.gzs+dinfo.gzm  && j < dinfo.gys+dinfo.gym && i < dinfo.gxs+dinfo.gxm) {
-                n_o++;
-              }
-            }
+  /* create the global and subdomain index sets for the inner domain */
+  /* TODO - make this actually support multiple subdomains -- subdomain needs to provide where it's nonoverlapping portion belongs */
+  lower.i = info.xs;
+  lower.j = info.ys;
+  lower.k = info.zs;
+  upper.i = info.xs+info.xm;
+  upper.j = info.ys+info.ym;
+  upper.k = info.zs+info.zm;
+  ierr = DMDACreatePatchIS(dm,&lower,&upper,&idis);CHKERRQ(ierr);
+  ierr = DMDACreatePatchIS(subdm,&lower,&upper,&isis);CHKERRQ(ierr);
 
-            /* ghost - subghost overlap */
-            if (k >= dinfo.gzs            && j >= dinfo.gys          && i >= dinfo.gxs &&
-                k <  dinfo.gzs+dinfo.gzm  && j < dinfo.gys+dinfo.gym && i < dinfo.gxs+dinfo.gxm) {
-              n_g++;
-            }
-          }
-        }
-      }
-    }
+  /* create the global and subdomain index sets for the outer subdomain */
+  lower.i = subinfo.xs;
+  lower.j = subinfo.ys;
+  lower.k = subinfo.zs;
+  upper.i = subinfo.xs+subinfo.xm;
+  upper.j = subinfo.ys+subinfo.ym;
+  upper.k = subinfo.zs+subinfo.zm;
+  ierr = DMDACreatePatchIS(dm,&lower,&upper,&odis);CHKERRQ(ierr);
+  ierr = DMDACreatePatchIS(subdm,&lower,&upper,&osis);CHKERRQ(ierr);
 
-    if (n_g == 0) SETERRQ(((PetscObject)subdm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Processor-local domain and subdomain do not intersect!");
+  /* global and subdomain ISes for the local indices of the subdomain */
+  /* todo - make this not loop over at nonperiodic boundaries, which will be more involved */
+  lower.i = subinfo.gxs;
+  lower.j = subinfo.gys;
+  lower.k = subinfo.gzs;
+  upper.i = subinfo.gxs+subinfo.gxm;
+  upper.j = subinfo.gys+subinfo.gym;
+  upper.k = subinfo.gzs+subinfo.gzm;
 
-    /* local and subdomain local index set indices */
-    ierr = PetscMalloc(sizeof(PetscInt)*n_i,&ididx);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt)*n_i,&isidx);CHKERRQ(ierr);
-
-    ierr = PetscMalloc(sizeof(PetscInt)*n_o,&odidx);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt)*n_o,&osidx);CHKERRQ(ierr);
-
-    ierr = PetscMalloc(sizeof(PetscInt)*n_g,&gdidx);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt)*n_g,&gsidx);CHKERRQ(ierr);
-
-    n_i = 0; n_o = 0;n_g = 0;
-    for (k=sinfo.gzs;k<sinfo.gzs+sinfo.gzm;k++) {
-      for (j=sinfo.gys;j<sinfo.gys+sinfo.gym;j++) {
-        for (i=sinfo.gxs;i<sinfo.gxs+sinfo.gxm;i++) {
-          for (d=0;d<sinfo.dof;d++) {
-            si = i - sinfo.gxs;
-            sj = j - sinfo.gys;
-            sk = k - sinfo.gzs;
-            sl = d + sinfo.dof*(si + sinfo.gxm*(sj + sinfo.gym*sk));
-            di = i - dinfo.gxs;
-            dj = j - dinfo.gys;
-            dk = k - dinfo.gzs;
-            dl = d + dinfo.dof*(di + dinfo.gxm*(dj + dinfo.gym*dk));
-
-            if (k >= sinfo.zs           && j >= sinfo.ys         && i >= sinfo.xs &&
-                k <  sinfo.zs+sinfo.zm  && j < sinfo.ys+sinfo.ym && i < sinfo.xs+sinfo.xm) {
-
-              /* interior - subinterior overlap */
-              if (k >= dinfo.zs            && j >= dinfo.ys          && i >= dinfo.xs &&
-                  k <  dinfo.zs+dinfo.zm  && j < dinfo.ys+dinfo.ym && i < dinfo.xs+dinfo.xm) {
-                ididx[n_i] = idx_global[dl];
-                isidx[n_i] = idx_sub[sl];
-                n_i++;
-              }
-              /* ghost - subinterior overlap */
-              if (k >= dinfo.gzs            && j >= dinfo.gys          && i >= dinfo.gxs &&
-                  k <  dinfo.gzs+dinfo.gzm  && j < dinfo.gys+dinfo.gym && i < dinfo.gxs+dinfo.gxm) {
-                odidx[n_o] = idx_global[dl];
-                osidx[n_o] = idx_sub[sl];
-                n_o++;
-              }
-            }
-
-            /* ghost - subghost overlap */
-            if (k >= dinfo.gzs            && j >= dinfo.gys          && i >= dinfo.gxs &&
-                k <  dinfo.gzs+dinfo.gzm  && j < dinfo.gys+dinfo.gym && i < dinfo.gxs+dinfo.gxm) {
-              gdidx[n_g] = idx_global[dl];
-              gsidx[n_g] = sl;
-              n_g++;
-            }
-          }
-        }
-      }
-    }
-
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_i,ididx,PETSC_OWN_POINTER,&idis);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_i,isidx,PETSC_OWN_POINTER,&isis);CHKERRQ(ierr);
-
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_o,odidx,PETSC_OWN_POINTER,&odis);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_o,osidx,PETSC_OWN_POINTER,&osis);CHKERRQ(ierr);
-
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_g,gdidx,PETSC_OWN_POINTER,&gdis);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n_g,gsidx,PETSC_OWN_POINTER,&gsis);CHKERRQ(ierr);
+  ierr = DMDACreatePatchIS(dm,&lower,&upper,&gdis);CHKERRQ(ierr);
 
     /* form the scatter */
     ierr = DMGetGlobalVector(dm,&dvec);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(subdm,&svec);CHKERRQ(ierr);
     ierr = DMGetLocalVector(subdm,&slvec);CHKERRQ(ierr);
 
-    if (iscat) {ierr = VecScatterCreate(dvec,idis,svec,isis,&(*iscat)[l]);CHKERRQ(ierr);}
-    if (oscat) {ierr = VecScatterCreate(dvec,odis,svec,osis,&(*oscat)[l]);CHKERRQ(ierr);}
-    if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,gsis,&(*lscat)[l]);CHKERRQ(ierr);}
+    if (iscat) {ierr = VecScatterCreate(dvec,idis,svec,isis,&(*iscat)[0]);CHKERRQ(ierr);}
+    if (oscat) {ierr = VecScatterCreate(dvec,odis,svec,osis,&(*oscat)[0]);CHKERRQ(ierr);}
+    if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,PETSC_NULL,&(*lscat)[0]);CHKERRQ(ierr);}
 
     ierr = DMRestoreGlobalVector(dm,&dvec);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(subdm,&svec);CHKERRQ(ierr);
@@ -336,10 +270,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
     ierr = ISDestroy(&osis);CHKERRQ(ierr);
 
     ierr = ISDestroy(&gdis);CHKERRQ(ierr);
-    ierr = ISDestroy(&gsis);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -366,56 +297,31 @@ Therefore, for each point in the overall, we must check if it's:
 PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois) {
   PetscErrorCode   ierr;
   DMDALocalInfo    info,subinfo;
-  PetscInt         *iiidx,*oiidx,*gidx,gindx;
-  PetscInt         i,j,k,d,n,nsub,nover,llindx,lindx,li,lj,lk,gi,gj,gk;
+  MatStencil       lower,upper;
 
   PetscFunctionBegin;
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(subdm,&subinfo);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dm,&n,&gidx);CHKERRQ(ierr);
-  /* todo -- overlap */
-  nsub = info.xm*info.ym*info.zm*info.dof;
-  nover = subinfo.xm*subinfo.ym*subinfo.zm*subinfo.dof;
-  /* iis is going to have size of the local problem's global part but have a lot of fill-in */
-  ierr = PetscMalloc(sizeof(PetscInt)*nsub,&iiidx);CHKERRQ(ierr);
-  /* ois is going to have size of the local problem's global part */
-  ierr = PetscMalloc(sizeof(PetscInt)*nover,&oiidx);CHKERRQ(ierr);
-  /* loop over the ghost region of the subdm and fill in the indices */
-  for (k=subinfo.gzs;k<subinfo.gzs+subinfo.gzm;k++) {
-    for (j=subinfo.gys;j<subinfo.gys+subinfo.gym;j++) {
-      for (i=subinfo.gxs;i<subinfo.gxs+subinfo.gxm;i++) {
-        for (d=0;d<subinfo.dof;d++) {
-          li = i - subinfo.xs;
-          lj = j - subinfo.ys;
-          lk = k - subinfo.zs;
-          lindx = d + subinfo.dof*(li + subinfo.xm*(lj + subinfo.ym*lk));
-          li = i - info.xs;
-          lj = j - info.ys;
-          lk = k - info.zs;
-          llindx = d + info.dof*(li + info.xm*(lj + info.ym*lk));
-          gi = i - info.gxs;
-          gj = j - info.gys;
-          gk = k - info.gzs;
-          gindx = d + info.dof*(gi + info.gxm*(gj + info.gym*gk));
 
-          /* check if the current point is inside the interior region */
-          if (k >= info.zs          && j >= info.ys          && i >= info.xs &&
-              k <  info.zs+info.zm  && j < info.ys+info.ym   && i < info.xs+info.xm) {
-            iiidx[llindx] = gidx[gindx];
-            oiidx[lindx] = gidx[gindx];
-            /* overlap region */
-          } else if (k >= subinfo.zs             && j >= subinfo.ys                && i >= subinfo.xs &&
-                     k <  subinfo.zs+subinfo.zm  && j < subinfo.ys+subinfo.ym   && i < subinfo.xs+subinfo.xm) {
-            oiidx[lindx] = gidx[gindx];
-          }
-        }
-      }
-    }
-  }
+  /* create the inner IS */
+  lower.i = info.xs;
+  lower.j = info.ys;
+  lower.k = info.zs;
+  upper.i = info.xs+info.xm;
+  upper.j = info.ys+info.ym;
+  upper.k = info.zs+info.zm;
 
-  /* create the index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nsub,iiidx,PETSC_OWN_POINTER,iis);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nover,oiidx,PETSC_OWN_POINTER,ois);CHKERRQ(ierr);
+  ierr = DMDACreatePatchIS(dm,&lower,&upper,iis);CHKERRQ(ierr);
+
+  /* create the outer IS */
+  lower.i = subinfo.xs;
+  lower.j = subinfo.ys;
+  lower.k = subinfo.zs;
+  upper.i = subinfo.xs+subinfo.xm;
+  upper.j = subinfo.ys+subinfo.ym;
+  upper.k = subinfo.zs+subinfo.zm;
+  ierr = DMDACreatePatchIS(dm,&lower,&upper,ois);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
