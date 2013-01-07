@@ -16,6 +16,7 @@ EXTERN_C_BEGIN
 #define HAVE_CONFIG_H
 #endif
 #include <ml_include.h>
+#include <ml_viz_stats.h>
 EXTERN_C_END
 
 typedef enum {PCML_NULLSPACE_AUTO,PCML_NULLSPACE_USER,PCML_NULLSPACE_BLOCK,PCML_NULLSPACE_SCALAR} PCMLNullSpaceType;
@@ -26,6 +27,7 @@ typedef struct {
   Vec        x,b,r;           /* global vectors */
   Mat        A,P,R;
   KSP        ksp;
+  Vec        coords;          /* projected by ML, if PCSetCoordinates is called; values packed by node */
 } GridCtx;
 
 /* The context used to input PETSc matrix into ML at fine grid */
@@ -50,12 +52,15 @@ typedef struct {
   ML_Aggregate      *agg_object;
   GridCtx           *gridctx;
   FineGridCtx       *PetscMLdata;
-  PetscInt          Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization;
-  PetscReal         Threshold,DampingFactor,EnergyMinimizationDropTol;
-  PetscBool         SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
+  PetscInt          Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization,MinPerProc,PutOnSingleProc,RepartitionType,ZoltanScheme;
+  PetscReal         Threshold,DampingFactor,EnergyMinimizationDropTol,MaxMinRatio,AuxThreshold;
+  PetscBool         SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable,Repartition,Aux;
   PetscBool         reuse_interpolation;
   PCMLNullSpaceType nulltype;
   PetscMPIInt       size; /* size of communicator for pc->pmat */
+  PetscInt          dim;  /* data from PCSetCoordinates(_ML) */
+  PetscInt          nloc;
+  PetscReal        *coords; /* ML has a grid object for each level: the finest grid will point into coords */
 } PC_ML;
 
 #undef __FUNCT__
@@ -293,7 +298,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscErrorCode        ierr;
   PetscInt              m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz = PETSC_NULL,nz_max;
-  PetscInt              *ml_cols=matdata->columns,*ml_rowptr=matdata->rowptr,*aj,i,j,k;
+  PetscInt              *ml_cols=matdata->columns,*ml_rowptr=matdata->rowptr,*aj,i;
   PetscScalar           *ml_vals=matdata->values,*aa;
 
   PetscFunctionBegin;
@@ -321,35 +326,25 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     PetscFunctionReturn(0);
   }
 
-  /* ML Amat is in MSR format. Copy its data into SeqAIJ matrix */
-  if (reuse) {
-    for (nz_max=0,i=0; i<m; i++) nz_max = PetscMax(nz_max,ml_cols[i+1] - ml_cols[i] + 1);
-  } else {
+  nz_max = PetscMax(1,mlmat->max_nz_per_row);
+  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
+  if (!reuse) {
     ierr = MatCreate(PETSC_COMM_SELF,newmat);CHKERRQ(ierr);
     ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
+    /* keep track of block size for A matrices */
+    ierr = MatSetBlockSize (*newmat, mlmat->num_PDEs);CHKERRQ(ierr);
 
-    ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);
-    nz_max = 1;
-    for (i=0; i<m; i++) {
-      nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
-      if (nnz[i] > nz_max) nz_max = nnz[i];
+    ierr = PetscMalloc(m*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+    for (i=0; i<m; i++){
+      ML_Operator_Getrow(mlmat,1,&i,nz_max,aj,aa,&nnz[i]);
     }
     ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     PetscInt ncols;
-    k = 0;
-    /* diagonal entry */
-    aj[k] = i; aa[k++] = ml_vals[i];
-    /* off diagonal entries */
-    for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
-      aj[k] = ml_cols[j]; aa[k++] = ml_vals[j];
-    }
-    ncols = ml_cols[i+1] - ml_cols[i] + 1;
-    /* sort aj and aa */
-    ierr = PetscSortIntWithScalarArray(ncols,aj,aa);CHKERRQ(ierr);
+
+    ML_Operator_Getrow(mlmat,1,&i,nz_max,aj,aa,&ncols);
     ierr = MatSetValues(*newmat,1,&i,ncols,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -398,11 +393,10 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
 #define __FUNCT__ "MatWrapML_MPIAIJ"
 static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
 {
-  struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
-  PetscInt              *ml_cols=matdata->columns,*aj;
-  PetscScalar           *ml_vals=matdata->values,*aa;
+  PetscInt              *aj;
+  PetscScalar           *aa;
   PetscErrorCode        ierr;
-  PetscInt              i,j,k,*gordering;
+  PetscInt              i,j,*gordering;
   PetscInt              m=mlmat->outvec_leng,n,nz_max,row;
   Mat                   A;
 
@@ -411,46 +405,40 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   n = mlmat->invec_leng;
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
+  nz_max = PetscMax(1,mlmat->max_nz_per_row);
+  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
   if (reuse) {
     A = *newmat;
-    for (nz_max=0,i=0; i<m; i++) nz_max = PetscMax(nz_max,ml_cols[i+1] - ml_cols[i] + 1);
   } else {
     PetscInt *nnzA,*nnzB,*nnz;
     ierr = MatCreate(mlmat->comm->USR_comm,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    /* keep track of block size for A matrices */
+    ierr = MatSetBlockSize (A,mlmat->num_PDEs);CHKERRQ(ierr);
     ierr = PetscMalloc3(m,PetscInt,&nnzA,m,PetscInt,&nnzB,m,PetscInt,&nnz);CHKERRQ(ierr);
 
-    nz_max = 0;
     for (i=0; i<m; i++){
-      nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
-      if (nz_max < nnz[i]) nz_max = nnz[i];
-      nnzA[i] = 1; /* diag */
-      for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
-        if (ml_cols[j] < m) nnzA[i]++;
+      ML_Operator_Getrow(mlmat,1,&i,nz_max,aj,aa,&nnz[i]);
+      nnzA[i] = 0;
+      for (j=0; j<nnz[i]; j++){
+        if (aj[j] < m) nnzA[i]++;
       }
       nnzB[i] = nnz[i] - nnzA[i];
     }
     ierr = MatMPIAIJSetPreallocation(A,0,nnzA,0,nnzB);CHKERRQ(ierr);
     ierr = PetscFree3(nnzA,nnzB,nnz);
   }
-
-  /* insert mat values -- remap row and column indices */
-  nz_max++;
-  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
   /* create global row numbering for a ML_Operator */
   ML_build_global_numbering(mlmat,&gordering,"rows");
   for (i=0; i<m; i++) {
     PetscInt ncols;
     row = gordering[i];
-    k = 0;
-    /* diagonal entry */
-    aj[k] = row; aa[k++] = ml_vals[i];
-    /* off diagonal entries */
-    for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
-      aj[k] = gordering[ml_cols[j]]; aa[k++] = ml_vals[j];
+
+    ML_Operator_Getrow(mlmat,1,&i,nz_max,aj,aa,&ncols);
+    for (j = 0; j < ncols; j++) {
+      aj[j] = gordering[aj[j]];
     }
-    ncols = ml_cols[i+1] - ml_cols[i] + 1;
     ierr = MatSetValues(A,1,&row,ncols,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
   ML_free(gordering);
@@ -462,6 +450,55 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   PetscFunctionReturn(0);
 }
 
+/* -------------------------------------------------------------------------- */
+/*
+   PCSetCoordinates_ML
+
+   Input Parameter:
+   .  pc - the preconditioner context
+*/
+#undef __FUNCT__
+#define __FUNCT__ "PCSetCoordinates_ML"
+PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords )
+{
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_ML          *pc_ml = (PC_ML*)mg->innerctx;
+  PetscErrorCode ierr;
+  PetscInt       arrsz,oldarrsz,bs,my0,kk,ii,nloc,Iend;
+  Mat            Amat = pc->pmat;
+
+  /* this function copied and modified from PCSetCoordinates_GEO -TGI */
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
+  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+
+  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
+  nloc = (Iend-my0)/bs;
+
+  if(nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
+  if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+
+  oldarrsz = pc_ml->dim * pc_ml->nloc;
+  pc_ml->dim = ndm;
+  pc_ml->nloc = a_nloc;
+  arrsz = ndm * a_nloc;
+
+  /* create data - syntactic sugar that should be refactored at some point */
+  if (pc_ml->coords==0 || (oldarrsz != arrsz)) {
+    ierr = PetscFree( pc_ml->coords );  CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz)*sizeof(PetscReal), &pc_ml->coords ); CHKERRQ(ierr);
+  }
+  for(kk=0;kk<arrsz;kk++)pc_ml->coords[kk] = -999.;
+  /* copy data in - column oriented */
+  for( kk = 0 ; kk < nloc ; kk++ ){
+    for( ii = 0 ; ii < ndm ; ii++ ) {
+      pc_ml->coords[ii*nloc + kk] =  coords[kk*ndm + ii];
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
+
 /* -----------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_ML"
@@ -470,9 +507,22 @@ PetscErrorCode PCReset_ML(PC pc)
   PetscErrorCode  ierr;
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
-  PetscInt        level,fine_level=pc_ml->Nlevels-1;
+  PetscInt        level,fine_level=pc_ml->Nlevels-1,dim=pc_ml->dim;
 
   PetscFunctionBegin;
+  if (dim) {
+    ML_Aggregate_Viz_Stats * grid_info = (ML_Aggregate_Viz_Stats *) pc_ml->ml_object->Grid[0].Grid;
+
+    for (level=0; level<=fine_level; level++){
+      ierr = VecDestroy(&pc_ml->gridctx[level].coords);CHKERRQ(ierr);
+    }
+
+    grid_info->x = 0; /* do this so ML doesn't try to free coordinates */
+    grid_info->y = 0;
+    grid_info->z = 0;
+
+    ML_Aggregate_VizAndStats_Clean(pc_ml->ml_object);
+  }
   ML_Aggregate_Destroy(&pc_ml->agg_object);
   ML_Destroy(&pc_ml->ml_object);
 
@@ -495,6 +545,9 @@ PetscErrorCode PCReset_ML(PC pc)
     }
   }
   ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);
+  ierr = PetscFree(pc_ml->coords);CHKERRQ(ierr);
+  pc_ml->dim = 0;
+  pc_ml->nloc = 0;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -639,6 +692,31 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = VecSetType(PetscMLdata->y,VECSEQ);CHKERRQ(ierr);
   PetscMLdata->A    = A;
   PetscMLdata->Aloc = Aloc;
+  if (pc_ml->dim) { /* create vecs around the coordinate data given */
+    PetscInt i,j,dim=pc_ml->dim;
+    PetscInt nloc = pc_ml->nloc,nlocghost;
+    PetscReal *ghostedcoords;
+
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    nlocghost = Aloc->cmap->n / bs;
+    ierr = PetscMalloc(dim*nlocghost*sizeof(PetscReal),&ghostedcoords);CHKERRQ(ierr);
+    for (i = 0; i < dim; i++) {
+      /* copy coordinate values into first component of pwork */
+      for (j = 0; j < nloc; j++) {
+        PetscMLdata->pwork[bs * j] = pc_ml->coords[nloc * i + j];
+      }
+      /* get the ghost values */
+      ierr = PetscML_comm(PetscMLdata->pwork,PetscMLdata);CHKERRQ(ierr);
+      /* write into the vector */
+      for (j = 0; j < nlocghost; j++) {
+        ghostedcoords[i * nlocghost + j] = PetscMLdata->pwork[bs * j];
+      }
+    }
+    /* replace the original coords with the ghosted coords, because these are
+     * what ML needs */
+    ierr = PetscFree(pc_ml->coords);CHKERRQ(ierr);
+    pc_ml->coords = ghostedcoords;
+  }
 
   /* create ML discretization matrix at fine grid */
   /* ML requires input of fine-grid matrix. It determines nlevels. */
@@ -715,6 +793,77 @@ PetscErrorCode PCSetUp_ML(PC pc)
   agg_object->minimizing_energy         = (int)pc_ml->EnergyMinimization;
   agg_object->minimizing_energy_droptol = (double)pc_ml->EnergyMinimizationDropTol;
   agg_object->cheap_minimizing_energy   = (int)pc_ml->EnergyMinimizationCheap;
+
+  if (pc_ml->Aux) {
+    if (!pc_ml->dim) {
+      SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
+    }
+    ml_object->Amat[0].aux_data->threshold = pc_ml->AuxThreshold;
+    ml_object->Amat[0].aux_data->enable = 1;
+    ml_object->Amat[0].aux_data->max_level = 10;
+    ml_object->Amat[0].num_PDEs = bs;
+  }
+
+  if (pc_ml->dim) {
+    PetscInt i,dim = pc_ml->dim;
+    ML_Aggregate_Viz_Stats *grid_info;
+    PetscInt nlocghost;
+
+    ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+    nlocghost = Aloc->cmap->n / bs;
+
+    ML_Aggregate_VizAndStats_Setup(ml_object); /* create ml info for coords */
+    grid_info = (ML_Aggregate_Viz_Stats *) ml_object->Grid[0].Grid;
+    for (i = 0; i < dim; i++) {
+      /* set the finest level coordinates to point to the column-order array
+       * in pc_ml */
+      /* NOTE: must point away before VizAndStats_Clean so ML doesn't free */
+      switch (i) {
+      case 0: grid_info->x = pc_ml->coords + nlocghost * i; break;
+      case 1: grid_info->y = pc_ml->coords + nlocghost * i; break;
+      case 2: grid_info->z = pc_ml->coords + nlocghost * i; break;
+      default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"PCML coordinate dimension must be <= 3");
+      }
+    }
+    grid_info->Ndim = dim;
+  }
+
+  /* repartitioning */
+  if (pc_ml->Repartition) {
+    ML_Repartition_Activate (ml_object);
+    ML_Repartition_Set_LargestMinMaxRatio(ml_object,pc_ml->MaxMinRatio);
+    ML_Repartition_Set_MinPerProc(ml_object,pc_ml->MinPerProc);
+    ML_Repartition_Set_PutOnSingleProc(ml_object,pc_ml->PutOnSingleProc);
+#if 0                           /* Function not yet defined in ml-6.2 */
+    /* I'm not sure what compatibility issues might crop up if we partitioned
+     * on the finest level, so to be safe repartition starts on the next
+     * finest level (reflection default behavior in
+     * ml_MultiLevelPreconditioner) */
+    ML_Repartition_Set_StartLevel(ml_object,1);
+#endif
+
+    if (!pc_ml->RepartitionType) {
+      PetscInt i;
+
+      if (!pc_ml->dim) {
+        SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
+      }
+      ML_Repartition_Set_Partitioner(ml_object,ML_USEZOLTAN);
+      ML_Aggregate_Set_Dimensions(agg_object, pc_ml->dim);
+
+      for (i = 0;i < ml_object->ML_num_levels;i++) {
+        ML_Aggregate_Viz_Stats *grid_info = (ML_Aggregate_Viz_Stats *)ml_object->Grid[i].Grid;
+        grid_info->zoltan_type = pc_ml->ZoltanScheme + 1; /* ml numbers options 1, 2, 3 */
+        /* defaults from ml_agg_info.c */
+        grid_info->zoltan_estimated_its = 40; /* only relevant to hypergraph / fast hypergraph */
+        grid_info->zoltan_timers = 0;
+        grid_info->smoothing_steps = 4;       /* only relevant to hypergraph / fast hypergraph */
+      }
+    }
+    else {
+      ML_Repartition_Set_Partitioner(ml_object,ML_USEPARMETIS);
+    }
+  }
 
   if (pc_ml->OldHierarchy) {
     Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
@@ -808,6 +957,45 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr);
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
+  /* put coordinate info in levels */
+  if (pc_ml->dim) {
+    PetscInt i,j,dim = pc_ml->dim;
+    PetscInt bs, nloc;
+    PC subpc;
+    PetscReal *array;
+
+    level = fine_level;
+    for (mllevel = 0; mllevel < Nlevels; mllevel++) {
+      ML_Aggregate_Viz_Stats *grid_info = ml_object->Amat[mllevel].to->Grid->Grid;
+      MPI_Comm comm = ((PetscObject)gridctx[level].A)->comm;
+
+      ierr = MatGetBlockSize (gridctx[level].A, &bs);CHKERRQ(ierr);
+      ierr = MatGetLocalSize (gridctx[level].A, PETSC_NULL, &nloc);CHKERRQ(ierr);
+      nloc /= bs; /* number of local nodes */
+
+      ierr = VecCreate(comm,&gridctx[level].coords);CHKERRQ(ierr);
+      ierr = VecSetSizes(gridctx[level].coords,dim * nloc,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetType(gridctx[level].coords,VECMPI);CHKERRQ(ierr);
+      ierr = VecGetArray(gridctx[level].coords,&array);CHKERRQ(ierr);
+      for (j = 0; j < nloc; j++) {
+        for (i = 0; i < dim; i++) {
+          switch (i) {
+          case 0: array[dim * j + i] = grid_info->x[j]; break;
+          case 1: array[dim * j + i] = grid_info->y[j]; break;
+          case 2: array[dim * j + i] = grid_info->z[j]; break;
+          default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"PCML coordinate dimension must be <= 3");
+          }
+        }
+      }
+
+      /* passing coordinates to smoothers/coarse solver, should they need them */
+      ierr = KSPGetPC(gridctx[level].ksp,&subpc);CHKERRQ(ierr);
+      ierr = PCSetCoordinates(subpc,dim,nloc,array);CHKERRQ(ierr);
+      ierr = VecRestoreArray(gridctx[level].coords,&array);CHKERRQ(ierr);
+      level--;
+    }
+  }
+
   /* setupcalled is set to 0 so that MG is setup from scratch */
   pc->setupcalled = 0;
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
@@ -836,6 +1024,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   ierr = PCReset_ML(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -844,8 +1033,13 @@ PetscErrorCode PCDestroy_ML(PC pc)
 PetscErrorCode PCSetFromOptions_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PetscInt        indx,PrintLevel;
+  PetscInt        indx,PrintLevel,partindx;
   const char      *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
+  const char      *part[] = {"Zoltan","ParMETIS"};
+#if defined(HAVE_ML_ZOLTAN)
+  PetscInt zidx;
+  const char      *zscheme[] = {"RCB","hypergraph","fast_hypergraph"};
+#endif
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
   PetscMPIInt     size;
@@ -856,6 +1050,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   ierr = PetscOptionsHead("ML options");CHKERRQ(ierr);
   PrintLevel    = 0;
   indx          = 0;
+  partindx      = 0;
   ierr = PetscOptionsInt("-pc_ml_PrintLevel","Print level","ML_Set_PrintLevel",PrintLevel,&PrintLevel,PETSC_NULL);CHKERRQ(ierr);
   ML_Set_PrintLevel(PrintLevel);
   ierr = PetscOptionsInt("-pc_ml_maxNlevels","Maximum number of levels","None",pc_ml->MaxNlevels,&pc_ml->MaxNlevels,PETSC_NULL);CHKERRQ(ierr);
@@ -901,6 +1096,30 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
     this context, but ML doesn't provide a way to find out which ones.
    */
   ierr = PetscOptionsBool("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_repartition", "Allow ML to repartition levels of the heirarchy","ML_Repartition_Activate",pc_ml->Repartition,&pc_ml->Repartition,PETSC_NULL);CHKERRQ(ierr);
+  if (pc_ml->Repartition) {
+    ierr = PetscOptionsReal("-pc_ml_repartitionMaxMinRatio", "Acceptable ratio of repartitioned sizes","ML_Repartition_Set_LargestMinMaxRatio",pc_ml->MaxMinRatio,&pc_ml->MaxMinRatio,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_ml_repartitionMinPerProc", "Smallest repartitioned size","ML_Repartition_Set_MinPerProc",pc_ml->MinPerProc,&pc_ml->MinPerProc,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_ml_repartitionPutOnSingleProc", "Problem size automatically repartitioned to one processor","ML_Repartition_Set_PutOnSingleProc",pc_ml->PutOnSingleProc,&pc_ml->PutOnSingleProc,PETSC_NULL);CHKERRQ(ierr);
+#if defined(HAVE_ML_ZOLTAN)
+    partindx = 0;
+    ierr = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[0],&partindx,PETSC_NULL);CHKERRQ(ierr);
+    pc_ml->RepartitionType = partindx;
+    if (!partindx) {
+      zindx = 0;
+      ierr = PetscOptionsEList("-pc_ml_repartitionZoltanScheme", "Repartitioning scheme to use","None",zscheme,3,zscheme[0],&zindx,PETSC_NULL);CHKERRQ(ierr);
+      pc_ml->ZoltanScheme = zindx;
+    }
+#else
+    partindx = 1;
+    ierr = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,PETSC_NULL);CHKERRQ(ierr);
+    if (!partindx) {
+      SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
+    }
+#endif
+    ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ml_AuxThreshold","Auxiliary smoother drop tol","None",pc_ml->AuxThreshold,&pc_ml->AuxThreshold,PETSC_NULL);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -936,7 +1155,15 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 .  -pc_ml_CoarsenScheme <Uncoupled>: (one of) Uncoupled Coupled MIS METIS
 .  -pc_ml_DampingFactor <1.33333>: P damping factor (ML_Aggregate_Set_DampingFactor)
 .  -pc_ml_Threshold <0>: Smoother drop tol (ML_Aggregate_Set_Threshold)
--  -pc_ml_SpectralNormScheme_Anorm <false>: Method used for estimating spectral radius (ML_Set_SpectralNormScheme_Anorm)
+.  -pc_ml_SpectralNormScheme_Anorm <false>: Method used for estimating spectral radius (ML_Set_SpectralNormScheme_Anorm)
+.  -pc_ml_repartition <false>: Allow ML to repartition levels of the heirarchy (ML_Repartition_Activate)
+.  -pc_ml_repartitionMaxMinRatio <1.3>: Acceptable ratio of repartitioned sizes (ML_Repartition_Set_LargestMinMaxRatio)
+.  -pc_ml_repartitionMinPerProc <512>: Smallest repartitioned size (ML_Repartition_Set_MinPerProc)
+.  -pc_ml_repartitionPutOnSingleProc <5000>: Problem size automatically repartitioned to one processor (ML_Repartition_Set_PutOnSingleProc)
+.  -pc_ml_repartitionType <Zoltan>: Repartitioning library to use (ML_Repartition_Set_Partitioner)
+.  -pc_ml_repartitionZoltanScheme <RCB>: Repartitioning scheme to use (None)
+.  -pc_ml_Aux <false>: Aggregate using auxiliary coordinate-based laplacian (None)
+-  -pc_ml_AuxThreshold <0.0>: Auxiliary smoother drop tol (None)
 
    Level: intermediate
 
@@ -983,6 +1210,20 @@ PetscErrorCode  PCCreate_ML(PC pc)
   pc_ml->DampingFactor = 4.0/3.0;
   pc_ml->SpectralNormScheme_Anorm = PETSC_FALSE;
   pc_ml->size          = 0;
+  pc_ml->dim           = 0;
+  pc_ml->nloc          = 0;
+  pc_ml->coords        = 0;
+  pc_ml->Repartition   = PETSC_FALSE;
+  pc_ml->MaxMinRatio   = 1.3;
+  pc_ml->MinPerProc    = 512;
+  pc_ml->PutOnSingleProc = 5000;
+  pc_ml->RepartitionType = 0;
+  pc_ml->ZoltanScheme  = 0;
+  pc_ml->Aux           = PETSC_FALSE;
+  pc_ml->AuxThreshold  = 0.0;
+
+  /* allow for coordinates to be passed */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_ML",PCSetCoordinates_ML);CHKERRQ(ierr);
 
   /* overwrite the pointers of PCMG by the functions of PCML */
   pc->ops->setfromoptions = PCSetFromOptions_ML;
