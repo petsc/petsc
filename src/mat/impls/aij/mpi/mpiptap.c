@@ -567,6 +567,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   api = ptap->api; apj = ptap->apj;
 
   if (!scalable){ /* Do dense axpy on apa (length of pN, stores A[i,:]*P) - nonscalable, but fast */
+    ierr = PetscInfo(C,"Using non-scalable dense axpy\n");CHKERRQ(ierr);
     /*-----------------------------------------------------------------------------------------------------*/
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
@@ -661,6 +662,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #endif
     }
   } else {/* Do sparse axpy on apa (length of ap_rmax, stores A[i,:]*P) - scalable, but slower */
+    ierr = PetscInfo(C,"Using scalable sparse axpy\n");CHKERRQ(ierr);
     /*-----------------------------------------------------------------------------------------*/
     pA=pa_loc;
     for (i=0; i<am; i++) {
@@ -815,15 +817,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #if defined(PTAP_PROFILE)
   ierr = PetscGetTime(&t4);CHKERRQ(ierr);
   if (rank==1) PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPNum %g/P + %g/PtAP( %g + %g ) + %g/comm + %g/Cloc = %g\n\n",rank,t1-t0,t2-t1,et2_AP,et2_PtAP,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
-#endif
-
-
-#if defined(PETSC_USE_INFO)
-  if (scalable){
-    ierr = PetscInfo(C,"Use scalable sparse axpy\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(C,"Use non-scalable dense axpy\n");CHKERRQ(ierr);
-  }
 #endif
   PetscFunctionReturn(0);
 }
