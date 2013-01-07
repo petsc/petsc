@@ -223,7 +223,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   const PetscInt   N            = dd->N;
   PetscInt         m            = dd->m;
   PetscInt         n            = dd->n;
-  PetscInt         o            = dd->overlap;
   const PetscInt   dof          = dd->w;
   const PetscInt   s            = dd->s;
   DMDABoundaryType bx         = dd->bx;
@@ -340,14 +339,14 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s+o) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s+o);
-  if ((y < s+o) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s+o);
+  if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  if ((y < s) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
   xe = xs + x;
   ye = ys + y;
 
   /* determine ghost region (Xs) and region scattered into (IXs)  */
-  if (xs-s-o > 0) {
-    Xs = xs - s - o; IXs = xs - s - o;
+  if (xs-s > 0) {
+    Xs = xs - s; IXs = xs - s;
   } else {
     if (bx) {
       Xs = xs - s;
@@ -356,11 +355,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
     IXs = 0;
   }
-  if (xe+s+o <= M) {
-    Xe = xe + s + o; IXe = xe + s + o;
+  if (xe+s <= M) {
+    Xe = xe + s; IXe = xe + s;
   } else {
     if (bx) {
-      Xs = xs - s - o; Xe = xe + s;
+      Xs = xs - s; Xe = xe + s;
     } else {
       Xe = M;
     }
@@ -368,14 +367,14 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   }
 
   if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
-    IXs = xs - s - o;
-    IXe = xe + s + o;
-    Xs = xs - s - o;
-    Xe = xe + s + o;
+    IXs = xs - s;
+    IXe = xe + s;
+    Xs = xs - s;
+    Xe = xe + s;
   }
 
-  if (ys-s-o > 0) {
-    Ys = ys - s - o; IYs = ys - s - o;
+  if (ys-s > 0) {
+    Ys = ys - s; IYs = ys - s;
   } else {
     if (by) {
       Ys = ys - s;
@@ -384,8 +383,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
     IYs = 0;
   }
-  if (ye+s+o <= N) {
-    Ye = ye + s + o; IYe = ye + s + o;
+  if (ye+s <= N) {
+    Ye = ye + s; IYe = ye + s;
   } else {
     if (by) {
       Ye = ye + s;
@@ -396,15 +395,15 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   }
 
   if (by == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
-    IYs = ys - s - o;
-    IYe = ye + s + o;
-    Ys = ys - s - o;
-    Ye = ye + s + o;
+    IYs = ys - s;
+    IYe = ye + s;
+    Ys = ys - s;
+    Ye = ye + s;
   }
 
   /* stencil length in each direction */
-  s_x = s + o;
-  s_y = s + o;
+  s_x = s;
+  s_y = s;
 
   /* determine starting point of each processor */
   nn    = x*y;
@@ -448,7 +447,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
-  if (stencil_type == DMDA_STENCIL_BOX || o > 0) {
+  if (stencil_type == DMDA_STENCIL_BOX) {
     count = (IXe-IXs)*(IYe-IYs);
     ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
 
@@ -578,7 +577,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   dd->neighbors[7] = n7;
   dd->neighbors[8] = n8;
 
-  if (stencil_type == DMDA_STENCIL_STAR && o == 0) {
+  if (stencil_type == DMDA_STENCIL_STAR) {
     /* save corner processor numbers */
     sn0 = n0; sn2 = n2; sn6 = n6; sn8 = n8;
     n0 = n2 = n6 = n8 = -1;
@@ -667,13 +666,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
-  if (stencil_type == DMDA_STENCIL_STAR && o == 0) {
+  if (stencil_type == DMDA_STENCIL_STAR) {
     n0 = sn0; n2 = sn2; n6 = sn6; n8 = sn8;
   }
 
   if (((stencil_type == DMDA_STENCIL_STAR)  ||
        (bx && bx != DMDA_BOUNDARY_PERIODIC) ||
-       (by && by != DMDA_BOUNDARY_PERIODIC)) && o == 0) {
+       (by && by != DMDA_BOUNDARY_PERIODIC))) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers and any ghosted

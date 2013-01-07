@@ -109,9 +109,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   const PetscInt   M     = dd->M;
   const PetscInt   dof   = dd->w;
   const PetscInt   s     = dd->s;
-  const PetscInt   o     = dd->overlap;
   const PetscInt   sDist = s*dof;  /* absolute stencil distance */
-  const PetscInt   oDist = o*dof;
   const PetscInt   *lx    = dd->lx;
   DMDABoundaryType bx  = dd->bx;
   MPI_Comm         comm;
@@ -179,7 +177,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s+o) & ((M > 1) | (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s+o);
+  if ((x < s) & ((M > 1) | (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   /* From now on x,xs,xe,Xs,Xe are the exact location in the array */
   x  *= dof;
@@ -187,9 +185,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   xe  = xs + x;
 
   /* determine ghost region (Xs) and region scattered into (IXs)  */
-  if (xs-sDist-oDist > 0) {
-    Xs = xs - sDist - oDist;
-    IXs = xs - sDist - oDist;
+  if (xs-sDist > 0) {
+    Xs = xs - sDist;
+    IXs = xs - sDist;
   } else {
     if (bx) {
       Xs = xs - sDist;
@@ -198,9 +196,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     }
     IXs = 0;
   }
-  if (xe+sDist+oDist <= M*dof) {
-    Xe = xe + sDist + oDist;
-    IXe = xe + sDist + oDist;
+  if (xe+sDist <= M*dof) {
+    Xe = xe + sDist;
+    IXe = xe + sDist;
   } else {
     if (bx) {
       Xe = xe + sDist;
@@ -211,10 +209,10 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   }
 
   if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
-    Xs = xs - sDist - oDist;
-    Xe = xe + sDist + oDist;
-    IXs = xs - sDist - oDist;
-    IXe = xe + sDist + oDist;
+    Xs = xs - sDist;
+    Xe = xe + sDist;
+    IXs = xs - sDist;
+    IXe = xe + sDist;
   }
 
   /* allocate the base parallel and sequential vectors */
@@ -237,47 +235,47 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(IXe-IXs),IXs-Xs,1,&to);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((x+2*(sDist+oDist))*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,(x+2*(sDist+oDist))*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc((x+2*(sDist))*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<IXs-Xs; i++) {idx[i] = -1; } /* prepend with -1s if needed for ghosted case*/
 
   nn = IXs-Xs;
   if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
-    for (i=0; i<sDist+oDist; i++) {  /* Left ghost points */
-      if ((xs-sDist-oDist+i)>=0) {idx[nn++] = xs-sDist-oDist+i;}
-      else                       {idx[nn++] = M*dof+(xs-sDist-oDist+i);}
+    for (i=0; i<sDist; i++) {  /* Left ghost points */
+      if ((xs-sDist+i)>=0) {idx[nn++] = xs-sDist+i;}
+      else                       {idx[nn++] = M*dof+(xs-sDist+i);}
     }
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
 
-    for (i=0; i<sDist+oDist; i++) { /* Right ghost points */
+    for (i=0; i<sDist; i++) { /* Right ghost points */
       if ((xe+i)<M*dof) {idx [nn++] =  xe+i; }
       else              {idx [nn++] = (xe+i) - M*dof;}
     }
   } else if (bx == DMDA_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
-    for (i=0; i<(sDist+oDist)/dof; i++) {  /* Left ghost points */
+    for (i=0; i<(sDist)/dof; i++) {  /* Left ghost points */
       for (j=0; j<dof; j++) {
-        if ((xs-sDist-oDist+i*dof + j)>=0) {idx[nn++] = xs-sDist-oDist+i*dof +j;}
-        else                               {idx[nn++] = sDist+oDist - dof*(i) + j;}
+        if ((xs-sDist+i*dof + j)>=0) {idx[nn++] = xs-sDist+i*dof +j;}
+        else                               {idx[nn++] = sDist - dof*(i) + j;}
       }
     }
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
 
-    for (i=0; i<(sDist+oDist)/dof; i++) { /* Right ghost points */
+    for (i=0; i<(sDist)/dof; i++) { /* Right ghost points */
       for (j=0; j<dof; j++) {
         if ((xe+i)<M*dof) {idx[nn++] =  xe+i*dof+j; }
         else              {idx[nn++] = M*dof - dof*(i + 2) + j ;}
       }
     }
   } else {      /* Now do all cases with no periodicity */
-    if (0 <= xs-sDist-oDist) {for (i=0; i<sDist+oDist; i++) {idx[nn++] = xs - sDist - oDist + i;}}
+    if (0 <= xs-sDist) {for (i=0; i<sDist; i++) {idx[nn++] = xs - sDist + i;}}
     else                     {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
 
-    if ((xe+sDist+oDist)<=M*dof) {for (i=0;  i<sDist+oDist;   i++) {idx[nn++]=xe+i;}}
+    if ((xe+sDist)<=M*dof) {for (i=0;  i<sDist;   i++) {idx[nn++]=xe+i;}}
     else                         {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
