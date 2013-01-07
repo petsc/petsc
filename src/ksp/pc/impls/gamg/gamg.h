@@ -11,6 +11,7 @@ typedef struct gamg_TAG{
   PetscInt       Nlevels;
   PetscInt       setup_count;
   PetscBool      repart;
+  PetscBool      reuse_prol;
   PetscBool      use_aggs_in_gasm;
   PetscInt       min_eq_proc;
   PetscInt       coarse_eq_limit;

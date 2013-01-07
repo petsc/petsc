@@ -545,16 +545,18 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   GAMGKKTMat       kktMatsArr[GAMG_MAXLEVELS];
   PetscLogDouble   nnz0=0.,nnztot=0.;
   MatInfo          info;
-  PetscBool        stokes = PETSC_FALSE, redo_mesh_setup = PETSC_FALSE;
+  PetscBool        stokes = PETSC_FALSE, redo_mesh_setup = !pc_gamg->reuse_prol;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+
   if (pc_gamg->verbose>2) PetscPrintf(wcomm,"[%d]%s pc_gamg->setup_count=%d pc->setupcalled=%d\n",mype,__FUNCT__,pc_gamg->setup_count,pc->setupcalled);
+
   if (pc_gamg->setup_count++ > 0) {
     if (redo_mesh_setup) {
       /* reset everything */
-      ierr = PCReset_MG(pc);CHKERRQ(ierr);
+      ierr = PCReset_MG(pc);   CHKERRQ(ierr);
       pc->setupcalled = 0;
     } else {
       PC_MG_Levels **mglevels = mg->levels;
@@ -578,15 +580,15 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
             ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
           }
-        ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        dB = B;
+          ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+          dB = B;
         }
       }
 
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
       /* PCSetUp_MG seems to insists on setting this to GMRES */
-      ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr);
+      /* ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr); */
 
       PetscFunctionReturn(0);
     }
@@ -1154,6 +1156,50 @@ PetscErrorCode PCGAMGSetRepartitioning_GAMG(PC pc, PetscBool n)
 EXTERN_C_END
 
 #undef __FUNCT__
+#define __FUNCT__ "PCGAMGSetReuseProl"
+/*@
+   PCGAMGSetReuseProl - Reuse prlongation
+
+   Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_gamg_reuse_interpolation
+
+   Level: intermediate
+
+   Concepts: Unstructured multrigrid preconditioner
+
+.seealso: ()
+@*/
+PetscErrorCode PCGAMGSetReuseProl(PC pc, PetscBool n)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGSetReuseProl_C",(PC,PetscBool),(pc,n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGSetReuseProl_GAMG"
+PetscErrorCode PCGAMGSetReuseProl_GAMG(PC pc, PetscBool n)
+{
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+  pc_gamg->reuse_prol = n;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetUseASMAggs"
 /*@
    PCGAMGSetUseASMAggs -
@@ -1342,7 +1388,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("GAMG options");   CHKERRQ(ierr);
   {
     /* -pc_gamg_verbose */
     ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG",
@@ -1354,6 +1400,13 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                             "PCGAMGRepartitioning",
                             pc_gamg->repart,
                             &pc_gamg->repart,
+                            &flag);CHKERRQ(ierr);
+    /* -pc_gamg_reuse_interpolation */
+    ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation",
+                            "Reuse prolongation operator (true)",
+                            "PCGAMGReuseProl",
+                            pc_gamg->reuse_prol,
+                            &pc_gamg->reuse_prol,
                             &flag);CHKERRQ(ierr);
     /* -pc_gamg_use_agg_gasm */
     ierr = PetscOptionsBool("-pc_gamg_use_agg_gasm",
@@ -1476,6 +1529,10 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    "PCGAMGSetRepartitioning_GAMG",
 					    PCGAMGSetRepartitioning_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
+					    "PCGAMGSetReuseProl_C",
+					    "PCGAMGSetReuseProl_GAMG",
+					    PCGAMGSetReuseProl_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
 					    "PCGAMGSetUseASMAggs_C",
 					    "PCGAMGSetUseASMAggs_GAMG",
 					    PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
@@ -1488,6 +1545,7 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    "PCGAMGSetType_GAMG",
 					    PCGAMGSetType_GAMG);CHKERRQ(ierr);
   pc_gamg->repart = PETSC_FALSE;
+  pc_gamg->reuse_prol = PETSC_TRUE;
   pc_gamg->use_aggs_in_gasm = PETSC_FALSE;
   pc_gamg->min_eq_proc = 100;
   pc_gamg->coarse_eq_limit = 800;
