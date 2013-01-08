@@ -263,7 +263,6 @@ M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM,DMDALocalInfo*);
-PETSC_EXTERN PetscErrorCode DMDAGetLocalBlockInfo(DM,DMDALocalInfo*);
 
 PETSC_EXTERN PetscErrorCode MatRegisterDAAD(void);
 PETSC_EXTERN PetscErrorCode MatCreateDAAD(DM,Mat*);
