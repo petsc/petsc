@@ -444,7 +444,7 @@
 
           <li>
             It's best to install some external packages like SuperLU_DIST, MUMPS,
-            Hypre with the option <code>--download-PACKAGENAME</code>.  [the
+            Hypre, METIS, and ParMETIS with the option <code>--download-PACKAGENAME</code>.  [the
             correct options for these packages are <code>--download-superlu_dist
               --download-mumps --download-hypre</code>]
 
@@ -454,6 +454,12 @@
                 A generic install of this package might not be compatible with
                 PETSc [perhaps due to version differences - or perhaps due to the
                 requirement of additional patches for it to work with PETSc]
+              </li>
+
+              <li>
+                Some packages have bug fixes, portability patches, and upgrades
+                for dependent packages that have not yet been included in an
+                upstream release.
               </li>
 
               <li>
