@@ -262,6 +262,8 @@ extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
 extern PetscErrorCode MatSetUp_SeqAIJ(Mat);
 extern PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
+extern PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
+extern PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat);
 extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );
 extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
 

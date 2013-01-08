@@ -3894,6 +3894,17 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool  samestructure)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJInvalidateDiagonal_Inode"
+PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
+{
+  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  a->inode.ibdiagvalid = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /*
      This is really ugly. if inodes are used this replaces the 
   permutations with ones that correspond to rows/cols of the matrix
