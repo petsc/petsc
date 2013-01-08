@@ -588,7 +588,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
       /* PCSetUp_MG seems to insists on setting this to GMRES */
-      /* ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr); */
+      ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr);
 
       PetscFunctionReturn(0);
     }
@@ -979,7 +979,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
-    if (PETSC_FALSE){
+    if (PETSC_TRUE){
       KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
       ierr = PCMGGetSmoother(pc, 0, &smoother);CHKERRQ(ierr);
       ierr = KSPSetType(smoother, KSPPREONLY);CHKERRQ(ierr);
