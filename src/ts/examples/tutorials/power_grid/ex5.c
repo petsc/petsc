@@ -54,6 +54,9 @@ typedef struct {
   PetscReal Hm; /* Motor inertia constant */
   PetscReal Xp; /* Xs + Xm*Xr/(Xm + Xr) */
   PetscScalar Te; /* Electrical Torque */
+
+  Mat        Sol; /* Solution matrix */
+  PetscInt   stepnum; /* Column number of solution matrix */
 } AppCtx;
 
 /* Initial values computed by Power flow and initialization */
@@ -67,6 +70,35 @@ const PetscScalar Eqp = 0.930016956074682;
 PetscScalar Ids = -0.315782941309702;
 PetscScalar Iqs =   0.081163163902447;
 PetscReal tmax = 20.0;
+
+/* Saves the solution at each time to a matrix */
+#undef __FUNCT__
+#define __FUNCT__ "SaveSolution"
+PetscErrorCode SaveSolution(TS ts)
+{
+  PetscErrorCode ierr;
+  AppCtx  *user;
+  Vec       X;
+  PetscScalar *x,*mat;
+  PetscInt   idx;
+  PetscReal  t;
+
+  PetscFunctionBegin;
+  ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+  idx =  3*user->stepnum;
+  ierr = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  mat[idx] = t;
+  ierr = PetscMemcpy(mat+idx+1,x,2*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  user->stepnum++;
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "WindSpeeds"
@@ -235,6 +267,10 @@ int main(int argc,char **argv)
   u[1] = s;
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
 
+  /* Create matrix to save solutions at each time step */
+  user.stepnum = 0;
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,2010,PETSC_NULL,&user.Sol);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -253,21 +289,49 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
+  /* Save initial solution */
+  PetscScalar *x,*mat;
+  PetscInt idx=3*user.stepnum;
+  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&x);CHKERRQ(ierr);
+  mat[idx] = 0.0;
+  ierr = PetscMemcpy(mat+idx+1,x,2*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = VecRestoreArray(U,&x);CHKERRQ(ierr);
+  user.stepnum++;
+
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,2000,20.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
+  ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
+  Mat B;
+  PetscScalar *amat;
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(B,&amat);CHKERRQ(ierr);
+  ierr = PetscMemcpy(amat,mat,user.stepnum*3*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B,&amat);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
+  PetscViewer viewer;
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  ierr = MatView(B,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.Sol);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecDestroy(&user.wind_data);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.t_wind);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
