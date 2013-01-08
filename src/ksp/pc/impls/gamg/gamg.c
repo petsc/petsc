@@ -545,8 +545,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   GAMGKKTMat       kktMatsArr[GAMG_MAXLEVELS];
   PetscLogDouble   nnz0=0.,nnztot=0.;
   MatInfo          info;
-  PetscBool        stokes = PETSC_FALSE, redo_mesh_setup = !pc_gamg->reuse_prol;
-
+  PetscBool        stokes = PETSC_FALSE, redo_mesh_setup = (PetscBool)(!pc_gamg->reuse_prol);
+  
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
