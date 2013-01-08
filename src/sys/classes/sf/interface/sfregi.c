@@ -1,6 +1,8 @@
 #include <petsc-private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
 PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF);
+#endif
 PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Basic(PetscSF);
 
 PetscFList PetscSFList;
@@ -24,7 +26,9 @@ PetscErrorCode  PetscSFRegisterAll(const char path[])
 
   PetscFunctionBegin;
   PetscSFRegisterAllCalled = PETSC_TRUE;
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
   ierr = PetscSFRegisterDynamic(PETSCSFWINDOW,       path,"PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
+#endif
   ierr = PetscSFRegisterDynamic(PETSCSFBASIC,        path,"PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

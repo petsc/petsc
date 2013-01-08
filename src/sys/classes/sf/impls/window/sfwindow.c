@@ -3,10 +3,6 @@
 typedef struct _n_PetscSFDataLink *PetscSFDataLink;
 typedef struct _n_PetscSFWinLink  *PetscSFWinLink;
 
-#if !defined(PETSC_HAVE_MPI_WIN_CREATE) /* The intent here is to be able to compile even without a complete MPI. */
-typedef struct MPI_Win_MISSING *MPI_Win;
-#endif
-
 typedef struct {
   PetscSFWindowSyncType sync; /* FENCE, LOCK, or ACTIVE synchronization */
   PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
@@ -30,35 +26,6 @@ struct _n_PetscSFWinLink {
 };
 
 const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWindowSyncType","PETSCSF_WINDOW_SYNC_",0};
-
-#if !defined(PETSC_HAVE_MPI_WIN_CREATE)
-#define MPI_WIN_NULL ((MPI_Win)0)
-#define MPI_REPLACE 0
-#define MPI_Win_create(base,size,disp_unit,info,comm,win) 1;SETERRQ(comm,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_free(win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_start(group,assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_post(group,assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_complete(win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_wait(win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_lock(lock_type,rank,assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_unlock(rank,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Win_fence(assert,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Get(origin_addr,origin_count,origin_datatype,target_rank,target_displ,target_count,target_datatype,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Accumulate(origin_addr,origin_count,origin_datatype,target_rank,target_displ,target_count,target_datatype,op,win) 1;SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_MODE_NOPUT     0
-#define MPI_MODE_NOPRECEDE 0
-#define MPI_MODE_NOSUCCEED 0
-#define MPI_MODE_NOSTORE   0
-#endif
-
-#if !defined(PETSC_HAVE_MPI_TYPE_DUP)
-#define MPI_Type_dup(datatype,newtype) (*(newtype)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_create_indexed_block(count,blocklength,displs,oldtype,newtype) (*(newtype)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_get_true_extent(type,lb,bytes) (*(lb)=0,*(bytes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#endif
-#if !defined(PETSC_HAVE_MPI_TYPE_GET_EXTENT) && !defined(PETSC_HAVE_MPIUNI) /* MPIUNI defines this, although it is not in the library */
-#define MPI_Type_get_extent(type,lb,bytes) (*(lb)=0,*(bytes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFWindowOpTranslate"
@@ -393,6 +360,24 @@ static PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,const vo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFSetUp_Window"
+static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
+{
+  PetscSF_Window *w = (PetscSF_Window*)sf->data;
+  PetscErrorCode ierr;
+  MPI_Group ingroup,outgroup;
+
+  PetscFunctionBegin;
+  switch (w->sync) {
+  case PETSCSF_WINDOW_SYNC_ACTIVE:
+    ierr = PetscSFGetGroups(sf,&ingroup,&outgroup);CHKERRQ(ierr);
+  default:
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Window"
 static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf)
 {
@@ -474,9 +459,15 @@ static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf,PetscSFDuplicateOption 
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
+  PetscSFWindowSyncType synctype;
 
   PetscFunctionBegin;
-  ierr = PetscSFWindowSetSyncType(newsf,w->sync);CHKERRQ(ierr);
+  synctype = w->sync;
+  if (!sf->setupcalled) {
+    /* HACK: Must use FENCE or LOCK when called from PetscSFGetGroups() because ACTIVE here would cause recursion. */
+    synctype = PETSCSF_WINDOW_SYNC_LOCK;
+  }
+  ierr = PetscSFWindowSetSyncType(newsf,synctype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -601,6 +592,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  sf->ops->SetUp           = PetscSFSetUp_Window;
   sf->ops->SetFromOptions  = PetscSFSetFromOptions_Window;
   sf->ops->Reset           = PetscSFReset_Window;
   sf->ops->Destroy         = PetscSFDestroy_Window;

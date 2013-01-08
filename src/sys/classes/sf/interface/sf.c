@@ -714,11 +714,6 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
       remote[i].index = 0;
     }
     ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_CONFONLY,&bgcount);CHKERRQ(ierr);
-    {                           /* Hack to prevent possible recursion */
-      PetscBool isWindow;
-      ierr = PetscObjectTypeCompare((PetscObject)bgcount,PETSCSFWINDOW,&isWindow);CHKERRQ(ierr);
-      if (isWindow) {ierr = PetscSFWindowSetSyncType(bgcount,PETSCSF_WINDOW_SYNC_LOCK);CHKERRQ(ierr);} /* or FENCE, ACTIVE here would cause recursion */
-    }
     ierr = PetscSFSetGraph(bgcount,1,sf->nranks,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeBegin(bgcount,&indegree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
