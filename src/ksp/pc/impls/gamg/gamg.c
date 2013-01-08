@@ -556,7 +556,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   if (pc_gamg->setup_count++ > 0) {
     if (redo_mesh_setup) {
       /* reset everything */
-      ierr = PCReset_MG(pc);   CHKERRQ(ierr);
+      ierr = PCReset_MG(pc);CHKERRQ(ierr);
       pc->setupcalled = 0;
     } else {
       PC_MG_Levels **mglevels = mg->levels;
@@ -1388,7 +1388,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG options");   CHKERRQ(ierr);
+  ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
   {
     /* -pc_gamg_verbose */
     ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG",
@@ -1421,7 +1421,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                            "PCGAMGSetProcEqLim",
                            pc_gamg->min_eq_proc,
                            &pc_gamg->min_eq_proc,
-                           &flag); CHKERRQ(ierr);
+                           &flag);CHKERRQ(ierr);
     /* -pc_gamg_coarse_eq_limit */
     ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit",
                            "Limit on number of equations for the coarse grid",
