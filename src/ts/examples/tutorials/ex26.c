@@ -8,7 +8,7 @@ The flow can be driven with the lid or with bouyancy or both:\n\
   -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
   -contours : draw contour plots of solution\n\n";
 /*
-      See src/snes/examples/tutorials/ex50.c for the steady-state version.
+      See src/snes/examples/tutorials/ex19.c for the steady-state version.
 
       See src/snes/examples/tutorials/ex27.c for a version written specifically
       for pseudo-transient continuation, without using TS.
