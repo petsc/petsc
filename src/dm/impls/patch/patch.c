@@ -101,7 +101,7 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
       }
     }
   }
-  ierr = PetscSFCreate(commz, sfzr);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, sfzr);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sfzr, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
   /* Create SF for buffered map */
@@ -120,7 +120,7 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
       }
     }
   }
-  ierr = PetscSFCreate(commz, sfz);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, sfz);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sfz, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
   ierr = PetscFree2(localPoints, remotePoints);CHKERRQ(ierr);
@@ -149,33 +149,35 @@ PetscErrorCode DMPatchSolve(DM dm)
   for(k = 0; k < P; k += PetscMax(patchSize.k, 1)) {
     for(j = 0; j < N; j += PetscMax(patchSize.j, 1)) {
       for(i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
+        DM  dmf;
+        Mat interpz;
+        PetscScalar *xcarray, *xzarray;
+
+        /* Zoom to coarse patch */
         lower.i = i; lower.j = j; lower.k = k;
         upper.i = i + patchSize.i; upper.j = j + patchSize.j; upper.k = k + patchSize.k;
         ierr = DMPatchZoom(cdm, lower, upper, comm, &dmz, &sfz, &sfzr);CHKERRQ(ierr);
-
+        /* Debug */
         ierr = PetscPrintf(comm, "Patch %d: (%d, %d, %d)--(%d, %d, %d)\n", p, lower.i, lower.j, lower.k, upper.i, upper.j, upper.k);CHKERRQ(ierr);
         ierr = DMView(dmz, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
         ierr = PetscSFView(sfz,  PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
         ierr = PetscSFView(sfzr, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#if 0
-    DM  dmf;
-    Mat interpz;
-    /* Scatter Xcoarse -> Xzoom */
-    ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
-    /* Interpolate Xzoom -> Xfine, note that this may be on subcomms */
-    ierr = DMRefine(dmz, MPI_COMM_NULL, &dmf);CHKERRQ(ierr);
-    ierr = DMCreateInterpolation(dmz, dmf, &interpz, PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMInterpolate(dmz, interpz, dmf);CHKERRQ(ierr);
-    /* Smooth Xfine using two-step smoother, normal smoother plus Kaczmarz---moves back and forth from dmzoom to dmfine */
-    /* Compute residual Rfine */
-    /* Restrict Rfine to Rzoom_restricted */
-    /* Scatter Rzoom_restricted -> Rcoarse_restricted */
-    ierr = PetscSFBcastBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
-    /* Compute global residual Rcoarse */
-    /* TauCoarse = Rcoarse - Rcoarse_restricted */
-#endif
+        /* Scatter Xcoarse -> Xzoom */
+        ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, (void *) xcarray, (void *) xzarray);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, (void *) xcarray, (void *) xzarray);CHKERRQ(ierr);
+        /* Interpolate Xzoom -> Xfine, note that this may be on subcomms */
+        ierr = DMRefine(dmz, MPI_COMM_NULL, &dmf);CHKERRQ(ierr);
+        ierr = DMCreateInterpolation(dmz, dmf, &interpz, PETSC_NULL);CHKERRQ(ierr);
+        ierr = DMInterpolate(dmz, interpz, dmf);CHKERRQ(ierr);
+        /* Smooth Xfine using two-step smoother, normal smoother plus Kaczmarz---moves back and forth from dmzoom to dmfine */
+        /* Compute residual Rfine */
+        /* Restrict Rfine to Rzoom_restricted */
+        /* Scatter Rzoom_restricted -> Rcoarse_restricted */
+        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, (void *) xzarray, (void *) xcarray, MPI_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, (void *) xzarray, (void *) xcarray, MPI_SUM);CHKERRQ(ierr);
+        /* Compute global residual Rcoarse */
+        /* TauCoarse = Rcoarse - Rcoarse_restricted */
+
         ierr = PetscSFDestroy(&sfz);CHKERRQ(ierr);
         ierr = PetscSFDestroy(&sfzr);CHKERRQ(ierr);
         ierr = DMDestroy(&dmz);CHKERRQ(ierr);

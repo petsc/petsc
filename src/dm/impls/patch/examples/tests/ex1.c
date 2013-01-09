@@ -1,5 +1,12 @@
 static char help[] = "Make a 2D grid of patches and view them\n\n";
 
+Serial Test
+Parallel Test where all zooms are serials
+Parallel Test where zooms are parallel
+
+Return DMPatch from Zoom
+Override refine from DMPatch to split cells
+
 #include <petscdmpatch.h>
 
 typedef struct {
