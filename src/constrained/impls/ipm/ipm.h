@@ -12,6 +12,7 @@ typedef struct {
   PetscScalar muaff;
   TaoLineSearch lag_ls;
   Vec work, dx; 
+  Vec Xold,Gold;
   Vec lamdai, dlamdai;
   Vec lamdae, dlamdae;
   Vec yi, dyi;

@@ -15,7 +15,7 @@ static  char help[]="";
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector(); 
    Routines: TaoSetObjectiveAndGradientRoutine();
-   Routiens: TaoSetEqualityConstraintsRoutine();
+   Routines: TaoSetEqualityConstraintsRoutine();
    Routines: TaoSetInequalityConstraintsRoutine();
    Routines: TaoSetEqualityJacobianRoutine();
    Routines: TaoSetInequalityJacobianRoutine();
@@ -319,6 +319,8 @@ PetscErrorCode FormEqualityConstraints(TaoSolver tao, Vec x, Vec ce,void *ctx)
 
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormInequalityJacobian"
 PetscErrorCode FormInequalityJacobian(TaoSolver tao, Vec x, Mat *JI, Mat *JIpre,  MatStructure *ms, void *ctx)
 {
   AppCtx *user = (AppCtx*)ctx;
@@ -330,6 +332,8 @@ PetscErrorCode FormInequalityJacobian(TaoSolver tao, Vec x, Mat *JI, Mat *JIpre,
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "FormEqualityJacobian"
 PetscErrorCode FormEqualityJacobian(TaoSolver tao, Vec x, Mat *JE, Mat *JEpre, MatStructure *ms, void *ctx)
 {
   AppCtx *user = (AppCtx*)ctx;

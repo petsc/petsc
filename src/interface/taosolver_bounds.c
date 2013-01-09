@@ -374,7 +374,7 @@ PetscErrorCode TaoComputeEqualityConstraints(TaoSolver tao, Vec X, Vec CE)
     ierr = PetscLogEventBegin(TaoSolver_ConstraintsEval,tao,X,CE,PETSC_NULL); CHKERRQ(ierr);
     PetscStackPush("TaoSolver equality constraints evaluation routine");
     CHKMEMQ;
-    ierr = (*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_conP);
+    ierr = (*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP);
     CHKERRQ(ierr);
     CHKMEMQ;
     PetscStackPop;
@@ -420,7 +420,7 @@ PetscErrorCode TaoComputeInequalityConstraints(TaoSolver tao, Vec X, Vec CI)
     ierr = PetscLogEventBegin(TaoSolver_ConstraintsEval,tao,X,CI,PETSC_NULL); CHKERRQ(ierr);
     PetscStackPush("TaoSolver inequality constraints evaluation routine");
     CHKMEMQ;
-    ierr = (*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_conP);
+    ierr = (*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP);
     CHKERRQ(ierr);
     CHKMEMQ;
     PetscStackPop;

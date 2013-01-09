@@ -24,6 +24,7 @@ typedef enum {
 #define TAOLINESEARCH_MT "more-thuente"
 #define TAOLINESEARCH_GPCG "gpcg"
 #define TAOLINESEARCH_ARMIJO "armijo"
+#define TAOLINESEARCH_IPM "ipm"
 
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
 
