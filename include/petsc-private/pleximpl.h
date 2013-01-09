@@ -38,6 +38,7 @@ typedef struct {
   PetscInt            *supports;          /* Cone for each point */
   PetscBool            refinementUniform; /* Flag for uniform cell refinement */
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
+  PetscInt             hybridPointMax[8]; /* Allow segregation of some points, each dimension has a divider (used in VTK output and refinement) */
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
@@ -53,7 +54,6 @@ typedef struct {
   PetscInt             preallocCenterDim; /* Dimension of the points which connect adjacent points for preallocation */
 
   /* Output */
-  PetscInt             vtkCellMax, vtkVertexMax; /* Allow exclusion of some points in the VTK output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
 

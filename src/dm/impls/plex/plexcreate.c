@@ -538,8 +538,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DMCreate_Plex"
 PetscErrorCode DMCreate_Plex(DM dm)
 {
-  DM_Plex    *mesh;
-  PetscInt       unit;
+  DM_Plex       *mesh;
+  PetscInt       unit, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -570,8 +570,9 @@ PetscErrorCode DMCreate_Plex(DM dm)
   mesh->labels               = PETSC_NULL;
   mesh->globalVertexNumbers  = PETSC_NULL;
   mesh->globalCellNumbers    = PETSC_NULL;
-  mesh->vtkCellMax           = PETSC_DETERMINE;
-  mesh->vtkVertexMax         = PETSC_DETERMINE;
+  for(d = 0; d < 8; ++d) {
+    mesh->hybridPointMax[d]  = PETSC_DETERMINE;
+  }
   mesh->vtkCellHeight        = 0;
   mesh->preallocCenterDim    = -1;
 
