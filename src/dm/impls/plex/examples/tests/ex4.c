@@ -67,6 +67,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
     ierr = DMPlexSetConeSize(dm, e, 2);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+  ierr = DMPlexSetHybridBounds(dm, 2, PETSC_DETERMINE, 15, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
   /* Build cells */
   {
     const PetscInt cone[3] = {9, 10, 11};
