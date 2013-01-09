@@ -16,6 +16,9 @@ typedef struct {
   Vec lamdai, dlamdai;
   Vec lamdae, dlamdae;
   Vec yi, dyi;
+  Vec Yaff,Laff,dYaff, dLaff;
+  Vec Zero_mi,Zero_me,Ninf_n,Inf_mi,Inf_me,Inf_n;
+  Vec biglb,bigub;
   PetscScalar kkt_f; /* d'*x + (1/2)*x'*H*x; */
   Vec rd;            /* H*x + d + Ae'*lamdae - Ai'*lamdai */
   Vec rpe; /* residual  Ae*x - be */
