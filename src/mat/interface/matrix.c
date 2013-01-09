@@ -8523,7 +8523,9 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
     ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
     ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -8551,7 +8553,11 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     }
   }
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
-  ierr = (*mult)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = (*mult)(A,B,scall,fill,C);CHKERRQ(ierr); 
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8667,50 +8673,9 @@ PetscErrorCode  MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
 PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*Anumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*Bnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*numeric)(Mat,Mat,Mat)=PETSC_NULL;
-
+ 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-
-  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
-  PetscValidType(B,2);
-  MatCheckPreallocated(B,2);
-  if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (B->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-
-  PetscValidHeaderSpecific(C,MAT_CLASSID,3);
-  PetscValidType(C,3);
-  MatCheckPreallocated(C,3);
-  if (C->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-
-  if (B->cmap->N!=C->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->cmap->N,C->cmap->N);
-  if (B->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
-  if (A->rmap->N!=C->rmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",A->rmap->N,C->rmap->N);
-  MatCheckPreallocated(A,1);
-
-  Anumeric = A->ops->matmultnumeric;
-  Bnumeric = B->ops->matmultnumeric;
-  if (Anumeric == Bnumeric) {
-    if (!Bnumeric) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMultNumeric not supported for B of type %s",((PetscObject)B)->type_name);
-    numeric = Bnumeric;
-  } else {
-    char  numericname[256];
-    ierr = PetscStrcpy(numericname,"MatMatMultNumeric_");CHKERRQ(ierr);
-    ierr = PetscStrcat(numericname,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(numericname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(numericname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(numericname,"_C");CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,numericname,(void (**)(void))&numeric);CHKERRQ(ierr);
-    if (!numeric) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMultNumeric requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-  }
-  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = (*numeric)(A,B,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,0.0,&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

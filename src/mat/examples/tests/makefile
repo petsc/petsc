@@ -1370,6 +1370,17 @@ runex93:
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex93_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
+runex93_2:
+	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_scalable 0 -C_matmatmult_scalable 0 > ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
+runex93_3:
+	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_scalable 1 -C_matmatmult_scalable 1 > ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex94_matmatmult:
 	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
@@ -1818,6 +1829,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex86.PETSc runex86 ex86.rm \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
+                                 ex93.PETSc runex93 runex93_2 runex93_3 ex93.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
                                  ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
@@ -1847,7 +1859,7 @@ TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex5.PETSc runex5 \
                                  ex5.rm ex6.PETSc runex6 ex6.rm ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm \
                                  ex15.PETSc runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex35.PETSc \
-                                 runex35 ex35.rm  ex48.PETSc runex48 ex48.rm ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm \
+                                 runex35 ex35.rm  ex48.PETSc runex48 ex48.rm ex71.PETSc ex71.rm \
                                  ex95.PETSc  ex95.rm ex101.PETSc runex101 ex101.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm ex41.PETSc runex41 ex41.rm  ex50.PETSc ex50.rm
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 \

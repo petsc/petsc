@@ -1,4 +1,4 @@
-static char help[] = "Test sequential MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
+static char help[] = "Test MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 #include <petscmat.h>
 
@@ -14,37 +14,45 @@ int main(int argc,char **argv) {
   PetscErrorCode ierr;
   PetscReal      fill=4;
   PetscReal      norm;
+  PetscMPIInt    size,rank;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,3,3,3,3);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetValues(A,3,ij,3,ij,a,ADD_VALUES);CHKERRQ(ierr);
+  if (!rank){
+    ierr = MatSetValues(A,3,ij,3,ij,a,ADD_VALUES);CHKERRQ(ierr);
+  }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
   /* Test MatMatMult() */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);      /* B = A^T */
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A */
-  ierr = MatSetOptionsPrefix(C,"C=B*A=A^T*A_");CHKERRQ(ierr);
+  ierr = MatMatMultNumeric(B,A,C);CHKERRQ(ierr);                   /* recompute C=B*A */
+  ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);   /* recompute C=B*A */
+  ierr = MatSetOptionsPrefix(C,"C_");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
   ierr = MatMatMultSymbolic(C,A,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);  /* D = C*A = (A^T*A)*A */
-  ierr = MatSetOptionsPrefix(D,"D=C*A=(A^T*A)*A_");CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(D,"D_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
   /* Repeat the numeric product to test reuse of the previous symbolic product */
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -54,7 +62,7 @@ int main(int argc,char **argv) {
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(D,NORM_FROBENIUS,&norm);
-  if (norm > 1.e-15){
+  if (norm > 1.e-15 && !rank){
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -64,44 +72,46 @@ int main(int argc,char **argv) {
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(C,"C=BtAB_");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
   ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
   ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(D,"D=BtAB_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
   /* Repeat numeric product to test reuse of the previous symbolic product */
   ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(D,NORM_FROBENIUS,&norm);
+  ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   if (norm > 1.e-15){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error in symbolic/numeric MatPtAP: %g\n",norm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);
   }
-  ierr = MatDestroy(&B);
-  ierr = MatDestroy(&C);
-  ierr = MatDestroy(&D);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
-  ierr = testPTAPRectangular();CHKERRQ(ierr);
+  if (size == 1){
+    /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
+    ierr = testPTAPRectangular();CHKERRQ(ierr);
 
-  /* test MatMatTransposeMult(): A*B^T */
-  ierr = MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
-  ierr = MatSetOptionsPrefix(D,"D=A*A^T_");CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+    /* test MatMatTransposeMult(): A*B^T */
+    ierr = MatMatTransposeMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A*A^T */
+    ierr = MatSetOptionsPrefix(D,"D=A*A^T_");CHKERRQ(ierr);
+    ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
-  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C=A*B */
-  ierr = MatSetOptionsPrefix(C,"D=A*B=A*A^T_");CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
+    ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C=A*B */
+    ierr = MatSetOptionsPrefix(C,"D=A*B=A*A^T_");CHKERRQ(ierr);
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  }
 
-  ierr = MatDestroy(&A);
-  ierr = MatDestroy(&B);
-  ierr = MatDestroy(&C);
-  ierr = MatDestroy(&D);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
   PetscFinalize();
   return(0);
 }
