@@ -10,7 +10,9 @@ typedef struct {
   PetscInt        ell;		/* Number of search directions. */
   PetscReal	delta;		/* Threshold for recomputing exact residual norm */
   PetscBool 	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
-
+  PetscBool 	pinv;	/* Use pseudoinverse to calculate polynomial correction when set 
+                       to PETSC_TRUE */
+  
   /* Workspace Vectors */
   Vec	vB;
   Vec	vRt;
@@ -22,6 +24,8 @@ typedef struct {
   /* Workspace Arrays */
   PetscScalar	*vY0c, *vYlc, *vYtc;
   PetscScalar	*mZa, *mZb;
+  PetscScalar *s, *u, *v, *work;
+  PetscInt lwork;
 } KSP_BCGSL;
 
 /* predefined shorthands */
