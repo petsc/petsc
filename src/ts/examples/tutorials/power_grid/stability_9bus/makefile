@@ -16,3 +16,4 @@ include ${PETSC_DIR}/conf/rules
 ex9bus: ex9bus.o  chkopts
 	-${CLINKER} -o ex9bus ex9bus.o  ${PETSC_TS_LIB}
 	${RM} ex9bus.o
+
