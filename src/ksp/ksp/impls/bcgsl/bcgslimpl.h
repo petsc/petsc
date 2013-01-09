@@ -24,8 +24,9 @@ typedef struct {
   /* Workspace Arrays */
   PetscScalar	*vY0c, *vYlc, *vYtc;
   PetscScalar	*mZa, *mZb;
-  PetscScalar *s, *u, *v, *work;
-  PetscInt lwork;
+  PetscScalar   *u, *v, *work;
+  PetscReal     *s, *realwork;
+  PetscBLASInt  lwork;
 } KSP_BCGSL;
 
 /* predefined shorthands */

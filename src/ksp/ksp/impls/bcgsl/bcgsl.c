@@ -29,8 +29,8 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscInt       maxit;
   PetscInt       h, i, j, k, vi, ell;
   PetscBLASInt   ldMZ,bierr;
-  PetscScalar    max_s, pinv_tol, utb;
-
+  PetscScalar    utb;
+  PetscReal      max_s, pinv_tol;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -164,8 +164,11 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_GESVD)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable.");
 #else
-        LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,
-            bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,&bierr);
+#  if defined(PETSC_USE_COMPLEX)
+        LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,bcgsl->realwork,&bierr);
+#  else
+        LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,&bierr);
+#  endif
 #endif
         if (bierr!=0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
@@ -216,7 +219,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 #else
       LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr);
 #endif
-      if (ierr!=0) {
+      if (bierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
       }
@@ -353,9 +356,9 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPBCGSLSetPinv"
+#define __FUNCT__ "KSPBCGSLSetUsePseudoinverse"
 /*@
-   KSPBCGSLSetPinv - 
+   KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of update
 
    Logically Collective on KSP
 
@@ -371,16 +374,14 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
 .keywords: KSP, BiCGStab(L), set, polynomial
 
-.seealso: @()
+.seealso: KSPBCGSLSetEll()
 @*/
-PetscErrorCode  KSPBCGSLSetPinv(KSP ksp, PetscBool use_pinv)
+PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
-
   bcgsl->pinv = use_pinv;
-
   PetscFunctionReturn(0);
 }
 
@@ -447,9 +448,14 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
 
    Level: intermediate
 
+   Notes:
+   For large ell it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
+   test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
+   allows the iteration to complete successfully. See KSPBCGSLSetUsePseudoinverse() to switch to a conventional solve.
+
 .keywords: KSP, BiCGStab(L), set, exact residuals,
 
-.seealso: @()
+.seealso: KSPBCGSLSetUsePseudoinverse()
 @*/
 PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
 {
@@ -533,8 +539,9 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   }
 
   /* Use pseudoinverse? */
-  ierr = PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetPinv", flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-  ierr = KSPBCGSLSetPinv(ksp, flg);CHKERRQ(ierr);
+  flg = bcgsl->pinv;
+  ierr = PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetUsePseudoinverse",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPBCGSLSetUsePseudoinverse(ksp,flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -550,8 +557,8 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
   ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
-  bcgsl->lwork = 5*ell;
-  ierr  = PetscMalloc4(bcgsl->lwork,PetscScalar,&bcgsl->work,ell,PetscScalar,&bcgsl->s,ell*ell,PetscScalar,&bcgsl->u,ell*ell,PetscScalar,&bcgsl->v);CHKERRQ(ierr); 
+  bcgsl->lwork = PetscBLASIntCast(5*ell);
+  ierr  = PetscMalloc5(bcgsl->lwork,PetscScalar,&bcgsl->work,ell,PetscReal,&bcgsl->s,ell*ell,PetscScalar,&bcgsl->u,ell*ell,PetscScalar,&bcgsl->v,5*ell,PetscReal,&bcgsl->realwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -564,7 +571,7 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
   PetscFunctionBegin;
   ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
-  ierr = PetscFree4(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v);CHKERRQ(ierr);
+  ierr = PetscFree5(bcgsl->work,bcgsl->s,bcgsl->u,bcgsl->v,bcgsl->realwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -605,9 +612,8 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 +  -ksp_bcgsl_ell <ell> Number of Krylov search directions, defaults to 2 -- KSPBCGSLSetEll()
 .  -ksp_bcgsl_cxpol - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes -- KSPBCGSLSetPol()
 .  -ksp_bcgsl_mrpoly - Use the default MinRes polynomial after the BiCG step  -- KSPBCGSLSetPol()
--  -ksp_bcgsl_xres <res> Threshold used to decide when to refresh computed residuals -- KSPBCGSLSetXRes()
-
-   Notes: Supports left preconditioning only
+.  -ksp_bcgsl_xres <res> Threshold used to decide when to refresh computed residuals -- KSPBCGSLSetXRes()
+-  -ksp_bcgsl_pinv <true/false> - (de)activate use of pseudoinverse -- KSPBCGSLSetUsePseudoinverse()
 
    Level: beginner
 
@@ -644,6 +650,8 @@ PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
 
   /*Choose between a single MR step or an averaged MR/OR */
   bcgsl->bConvex = PETSC_FALSE;
+
+  bcgsl->pinv = PETSC_TRUE;     /* Use the reliable method by default */
 
   /* Set the threshold for when exact residuals will be used */
   bcgsl->delta = 0.0;

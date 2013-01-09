@@ -271,6 +271,7 @@ PETSC_EXTERN PetscErrorCode KSPQCGGetTrialStepNorm(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetXRes(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetPol(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPBCGSLSetEll(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP,PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
