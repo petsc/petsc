@@ -100,7 +100,11 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
-  /* the only spacial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I */
+  /* The only spatial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I 
+     The ofill (thought of as a dof by dof 2d (row-oriented) array represents the nonzero coupling between degrees
+     of freedom at one point with degrees of freedom on the adjacent point to the left or right. A 1 at i,j in the 
+     ofill array indicates that the degree of freedom i at a point is coupled to degree of freedom j at the 
+     adjacent point. In this case ofill is diagonal since the only spatial coupling is regular diffusion. */
   ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
   ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
   for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1; ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
