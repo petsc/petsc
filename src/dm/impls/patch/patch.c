@@ -162,9 +162,12 @@ PetscErrorCode DMPatchSolve(DM dm)
         ierr = DMView(dmz, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
         ierr = PetscSFView(sfz,  PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
         ierr = PetscSFView(sfzr, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        /* TODO: Need coarse and zoomed state vectors here: */
+        xcarray = PETSC_NULL;
+        xzarray = PETSC_NULL;
         /* Scatter Xcoarse -> Xzoom */
-        ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, (void *) xcarray, (void *) xzarray);CHKERRQ(ierr);
-        ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, (void *) xcarray, (void *) xzarray);CHKERRQ(ierr);
+        ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
         /* Interpolate Xzoom -> Xfine, note that this may be on subcomms */
         ierr = DMRefine(dmz, MPI_COMM_NULL, &dmf);CHKERRQ(ierr);
         ierr = DMCreateInterpolation(dmz, dmf, &interpz, PETSC_NULL);CHKERRQ(ierr);
@@ -173,8 +176,8 @@ PetscErrorCode DMPatchSolve(DM dm)
         /* Compute residual Rfine */
         /* Restrict Rfine to Rzoom_restricted */
         /* Scatter Rzoom_restricted -> Rcoarse_restricted */
-        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, (void *) xzarray, (void *) xcarray, MPI_SUM);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, (void *) xzarray, (void *) xcarray, MPI_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
         /* Compute global residual Rcoarse */
         /* TauCoarse = Rcoarse - Rcoarse_restricted */
 
