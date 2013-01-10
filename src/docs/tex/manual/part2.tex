@@ -5226,7 +5226,7 @@ Current routines include:
 \begin{tabbing}
  VecGetArrayF90(), VecRestoreArrayF90()\\
  VecDuplicateVecsF90(), VecDestroyVecsF90()\\
- DMDAGetGlobalIndicesF90()\\
+ DMDAVecGetArrayF90(), DMDAGetGlobalIndicesF90()\\
  MatDenseGetArrayF90(), MatDenseRestoreArrayF90()\\
  ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{tabbing}
@@ -5239,10 +5239,6 @@ use the Fortran90 vector include file,
 \end{tabbing}
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
-
-Unfortunately, these routines currently work only on certain machines with
-certain compilers. They currently work with the SGI, Solaris, the Cray T3E, the
-IBM and the NAG Fortran 90 compiler.
 
 \section{Sample Fortran77 Programs}
 \label{sec_fortran-examples}
