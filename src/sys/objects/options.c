@@ -361,6 +361,8 @@ static char *Petscgetline(FILE * f)
 -   require - if PETSC_TRUE will generate an error if the file does not exist
 
 
+  Notes: Use  # for lines that are comments and which should be ignored.
+
   Level: developer
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
@@ -379,7 +381,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
   FILE           *fd;
   PetscToken     token;
   int            err;
-  char           cmt[3]={'#','!','%'},*cmatch;
+  char           cmt[1]={'#'},*cmatch;
   PetscMPIInt    rank,cnt=0,acnt=0;
 
   PetscFunctionBegin;
@@ -400,7 +402,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
-        for (i=0; i<3; i++){
+        for (i=0; i<1; i++){
           ierr = PetscStrchr(string,cmt[i],&cmatch);CHKERRQ(ierr);
           if (cmatch) *cmatch = 0;
         }
