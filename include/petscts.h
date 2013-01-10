@@ -344,6 +344,7 @@ M*/
 #endif
 
 PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
+PETSC_EXTERN PetscErrorCode TSSetSNES(TS,SNES);
 PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);

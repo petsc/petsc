@@ -1725,6 +1725,37 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetSNES"
+/*@
+   TSSetSNES - Set the SNES (nonlinear solver) to be used by the timestepping context
+
+   Collective
+
+   Input Parameter:
++  ts - the TS context obtained from TSCreate()
+-  snes - the nonlinear solver context
+
+   Notes:
+   Most users should have the TS created by calling TSGetSNES()
+
+   Level: developer
+
+.keywords: timestep, set, SNES
+@*/
+PetscErrorCode TSSetSNES(TS ts,SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)snes);CHKERRQ(ierr);
+  ierr = SNESDestroy(&ts->snes);CHKERRQ(ierr);
+  ts->snes = snes;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSGetKSP"
 /*@
    TSGetKSP - Returns the KSP (linear solver) associated with
