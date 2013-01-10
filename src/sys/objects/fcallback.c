@@ -40,7 +40,7 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFortranCallbackRegister"
-/*@
+/*@C
    PetscFortranCallbackRegister - register a type+subtype callback
 
    Not Collective
@@ -104,7 +104,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFortranCallbackGetSizes"
-/*@
+/*@C
    PetscFortranCallbackGetSizes - get sizes of class and subtype pointer arrays
 
    Collective

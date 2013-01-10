@@ -178,7 +178,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetFortranCallback"
-/*@
+/*@C
    PetscObjectSetFortranCallback - set fortran callback function pointer and context
 
    Logically Collective
@@ -219,7 +219,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbac
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetFortranCallback"
-/*@
+/*@C
    PetscObjectGetFortranCallback - get fortran callback function pointer and context
 
    Logically Collective
