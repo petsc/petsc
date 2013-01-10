@@ -86,14 +86,14 @@ PetscErrorCode main(int argc,char **argv)
   ierr = PetscStrncpy(user.name,"HS21",8); CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_SELF,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);
   ierr = VecDuplicate(user.d,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.beq,&ceq);CHKERRQ(ierr);
   ierr = VecDuplicate(user.bin,&cin);CHKERRQ(ierr);
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
 
-  ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,"tao_ipm");CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   char        filename[128];
 
   PetscFunctionBegin;
-  comm = PETSC_COMM_SELF;
+  comm = PETSC_COMM_WORLD;
   ierr = PetscStrncpy(filebase,user->name,128);CHKERRQ(ierr);
   ierr = PetscStrncat(filebase,"/",1);CHKERRQ(ierr);
 
@@ -224,7 +224,10 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MatCreate(comm,&user->Ain);CHKERRQ(ierr);
   ierr = MatSetType(user->Ain,MATAIJ); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Ain,user->mi,user->mi,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+
+  ierr = MatMPIAIJSetPreallocation(user->Ain,1,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Ain,1,PETSC_NULL);CHKERRQ(ierr);
+
   for (i=0;i<user->mi;i++) {
     ierr = MatSetValues(user->Ain,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
   }

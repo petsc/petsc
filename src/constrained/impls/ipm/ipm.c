@@ -359,6 +359,7 @@ static PetscErrorCode TaoDestroy_IPM(TaoSolver tao)
 {
   TAO_IPM *ipmP = (TAO_IPM*)tao->data;
   PetscErrorCode ierr;
+  PetscFunctionBegin;
   ierr = VecDestroy(&ipmP->Xold); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->Gold); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->rd); CHKERRQ(ierr);
@@ -383,15 +384,22 @@ static PetscErrorCode TaoDestroy_IPM(TaoSolver tao)
   ierr = VecDestroy(&ipmP->bigrhs); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->bigx); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->bigstep); CHKERRQ(ierr);
-
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions"
+#define __FUNCT__ "TaoSetFromOptions_IPM"
 static PetscErrorCode TaoSetFromOptions_IPM(TaoSolver tao)
 {
-  return 0;
+  TAO_IPM *ipmP = (TAO_IPM*)tao->data;
+  PetscErrorCode ierr;
+  PetscBool flg;
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("IPM method for constrained optimization"); CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ipm_monitorkkt","monitor kkt status",PETSC_NULL,ipmP->monitorkkt,&ipmP->monitorkkt,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsTail(); CHKERRQ(ierr);
+  ierr =KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -444,6 +452,7 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
   PetscScalar norm;
   PetscErrorCode ierr;
   
+  
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&ipmP->kkt_f,ipmP->rd); CHKERRQ(ierr);
   ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian,&tao->hessian_pre,&ipmP->Hflag); CHKERRQ(ierr);
   
@@ -493,7 +502,9 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
     ierr = VecNorm(ipmP->complementarity,NORM_2,&norm); CHKERRQ(ierr);
     ipmP->phi += norm; 
   }
-
+  if (ipmP->monitorkkt) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"obj=%G,\tphi = %G,\tmu=%G\n",ipmP->kkt_f,ipmP->phi,ipmP->mu);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -551,8 +562,9 @@ PetscErrorCode TaoCreate_IPM(TaoSolver tao)
   tao->max_funcs = 4000;
   tao->fatol = 1e-4;
   tao->frtol = 1e-4;
-  ipmP->dec = 0.99; /* line search critera */
+  ipmP->dec = 0.9; /* line search critera */
   ipmP->taumin = 0.995;
+  ipmP->monitorkkt = PETSC_FALSE;
   /*
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, ipmls_type); CHKERRQ(ierr);
