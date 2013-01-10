@@ -292,6 +292,7 @@ PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
   dmdest->dmts = dmsrc->dmts;
   ierr = PetscObjectReference(dmdest->dmts);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

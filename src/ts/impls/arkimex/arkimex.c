@@ -907,6 +907,36 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Ma
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainHook_TSARKIMEX"
+static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm,DM subdm,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainRestrictHook_TSARKIMEX"
+static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
+{
+  TS             ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec            Z,Z_c;
+
+  PetscFunctionBegin;
+  ierr = TSARKIMEXGetVecs(ts,dm,&Z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,subdm,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Z,Z_c,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Z,Z_c,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = TSARKIMEXRestoreVecs(ts,dm,&Z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,subdm,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TSSetUp_ARKIMEX"
 static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
@@ -933,6 +963,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSARKIMEX,DMRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSARKIMEX,DMSubDomainRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

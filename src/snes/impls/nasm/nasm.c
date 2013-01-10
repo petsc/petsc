@@ -99,11 +99,11 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
       ierr = PetscMalloc(nasm->n*sizeof(SNES),&nasm->subsnes);CHKERRQ(ierr);
 
       for (i=0;i<nasm->n;i++) {
-        ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[0]);CHKERRQ(ierr);
-        ierr = SNESAppendOptionsPrefix(nasm->subsnes[0],optionsprefix);CHKERRQ(ierr);
-        ierr = SNESAppendOptionsPrefix(nasm->subsnes[0],"sub_");CHKERRQ(ierr);
-        ierr = SNESSetDM(nasm->subsnes[0],subdms[i]);CHKERRQ(ierr);
-        ierr = SNESSetFromOptions(nasm->subsnes[0]);CHKERRQ(ierr);
+        ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[i]);CHKERRQ(ierr);
+        ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
+        ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],"sub_");CHKERRQ(ierr);
+        ierr = SNESSetDM(nasm->subsnes[i],subdms[i]);CHKERRQ(ierr);
+        ierr = SNESSetFromOptions(nasm->subsnes[i]);CHKERRQ(ierr);
         ierr = DMDestroy(&subdms[i]);CHKERRQ(ierr);
       }
       ierr = PetscFree(subdms);CHKERRQ(ierr);
