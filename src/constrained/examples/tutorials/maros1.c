@@ -174,7 +174,6 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     ierr = MatSetSizes(user->H,PETSC_DECIDE,PETSC_DECIDE,nrows,nrows);CHKERRQ(ierr);
     ierr = MatLoad(user->H,loader);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
-    ierr = MatView(user->H,PETSC_VIEWER_STDOUT_SELF);
     ierr = MatGetSize(user->H,&nrows,&ncols);CHKERRQ(ierr);
     if (nrows != user->n) {
       SETERRQ(comm,0,"H: nrows != n\n");
@@ -291,15 +290,14 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure
 #define __FUNCT__ "FormInequalityConstraints"
 PetscErrorCode FormInequalityConstraints(TaoSolver tao, Vec x, Vec ci, void *ctx)
 {
-  //AppCtx *user = (AppCtx*)ctx;
+  AppCtx *user = (AppCtx*)ctx;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* 
   ierr = MatMult(user->Ain,x,ci);CHKERRQ(ierr);
   ierr = VecAXPY(ci,-1.0,user->bin);CHKERRQ(ierr);*/
 
-  /* Special case -- Ain =I and bin =0 */
-  ierr = VecCopy(x,ci);CHKERRQ(ierr);
+  ierr = VecCopy(user->bin,ci);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   
 }
@@ -312,8 +310,11 @@ PetscErrorCode FormEqualityConstraints(TaoSolver tao, Vec x, Vec ce,void *ctx)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
+  /*
   ierr = MatMult(user->Aeq,x,ce);CHKERRQ(ierr);
   ierr = VecAXPY(ce,-1.0,user->beq);CHKERRQ(ierr);
+  */
+  ierr = VecCopy(user->beq,ce); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 

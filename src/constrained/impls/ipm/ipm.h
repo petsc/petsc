@@ -8,16 +8,16 @@
 
 typedef struct {
   PetscInt mi,me,n;
-  PetscScalar sig;
+  PetscScalar sig,mu,taumin,dec;
   PetscScalar muaff;
   TaoLineSearch lag_ls;
-  Vec work, dx; 
+  Vec work, dx, rhs_x; 
   Vec Xold,Gold;
-  Vec lamdai, dlamdai;
-  Vec lamdae, dlamdae;
-  Vec yi, dyi;
+  Vec lamdai, dlamdai, rhs_lamdai;
+  Vec lamdae, dlamdae, rhs_lamdae;
+  Vec yi, dyi, rhs_yi;
   Vec Yaff,Laff,dYaff, dLaff;
-  Vec Zero_mi,Zero_me,Ninf_n,Inf_mi,Inf_me,Inf_n;
+  Vec Zero_mi,Zero_me,Ninf_n,Inf_mi,Inf_me,Inf_n,One_mi;
   Vec biglb,bigub;
   PetscScalar kkt_f; /* d'*x + (1/2)*x'*H*x; */
   Vec rd;            /* H*x + d + Ae'*lamdae - Ai'*lamdai */
@@ -36,8 +36,9 @@ typedef struct {
             [Ai ,-Imi, 0 ,  0];  
             [ 0 , L ,  0 ,  Y ];  */
 
-  Vec bigrhs; /* [x; lamdae; yi; lamdai] */
+  Vec bigrhs; /* rhs [x; lamdae; yi; lamdai] */
   Vec bigstep; /* [dx; dyi; dlamdae; dlamdai] */
+  Vec bigx;  /* [x; lamdae; yi; lamdai] */
 } TAO_IPM;
 
 #endif /* ifndef __TAO_IPM_H */

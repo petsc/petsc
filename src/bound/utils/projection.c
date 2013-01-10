@@ -150,11 +150,19 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundm
   ierr=VecRestoreArray(DX,&dx);CHKERRQ(ierr);
   ierr=PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
   
-  if (boundmin){ ierr = MPI_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);}
-  if (wolfemin){ ierr = MPI_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);}
-  if (boundmax) { ierr = MPI_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);}
+  if (boundmin){ 
+    ierr = MPI_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = PetscInfo1(X,"Step Bound Info: Closest Bound: %G \n",*boundmin); CHKERRQ(ierr);
+  }
+  if (wolfemin){ 
+    ierr = MPI_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = PetscInfo1(X,"Step Bound Info: Wolfe: %G \n",*wolfemin); CHKERRQ(ierr);
+  }
+  if (boundmax) { 
+    ierr = MPI_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = PetscInfo1(X,"Step Bound Info: Max: %G \n",*boundmax); CHKERRQ(ierr);
+  }
 
-  ierr = PetscInfo3(X,"Step Bound Info: Closest Bound: %G, Wolfe: %G, Max: %G \n",*boundmin,*wolfemin,*boundmax); CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
 
