@@ -73,7 +73,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_monitor_draw_solution - Monitor solution graphically
 .  -ts_monitor_draw_error - Monitor error graphically
 .  -ts_monitor_draw_solution_binary <filename> - Save each solution to a binary file
--  -ts_monitor_draw_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
+-  -ts_monitor_draw_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%03D.vts
 
    Level: beginner
 
