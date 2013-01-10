@@ -45,31 +45,39 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 */
 PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
 {
-  const PetscInt numVertices  = 3 + 3;
-  const PetscInt numEdges     = 6 + 2;
-  const PetscInt numCells     = 3;
-  const PetscInt firstVertex  = numCells;
-  const PetscInt firstEdge    = numCells + numVertices;
   Vec            coordinates;
   PetscSection   coordSection;
   PetscScalar   *coords;
-  PetscInt       coordSize;
-  PetscInt       v;
-  PetscInt       c, e;
+  PetscInt       numVertices  = 0, numEdges = 0, numCells = 0, cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
+  PetscInt       firstVertex, firstEdge, coordSize;
+  PetscInt       v, e;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    numVertices = 3 + 3;
+    numEdges    = 6 + 2;
+    numCells    = 3;
+    cMax        = 2;
+    fMax        = 15;
+  }
+  firstVertex  = numCells;
+  firstEdge    = numCells + numVertices;
   ierr = DMPlexSetChart(dm, 0, numCells+numEdges+numVertices);CHKERRQ(ierr);
-  ierr = DMPlexSetConeSize(dm, 0, 3);CHKERRQ(ierr);
-  ierr = DMPlexSetConeSize(dm, 1, 3);CHKERRQ(ierr);
-  ierr = DMPlexSetConeSize(dm, 2, 4);CHKERRQ(ierr);
+  if (numCells) {
+    ierr = DMPlexSetConeSize(dm, 0, 3);CHKERRQ(ierr);
+    ierr = DMPlexSetConeSize(dm, 1, 3);CHKERRQ(ierr);
+    ierr = DMPlexSetConeSize(dm, 2, 4);CHKERRQ(ierr);
+  }
   for(e = firstEdge; e < firstEdge+numEdges; ++e) {
     ierr = DMPlexSetConeSize(dm, e, 2);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-  ierr = DMPlexSetHybridBounds(dm, 2, PETSC_DETERMINE, 15, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
+  ierr = DMPlexSetHybridBounds(dm, cMax, PETSC_DETERMINE, fMax, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
   /* Build cells */
-  {
+  if (numCells > 0) {
     const PetscInt cone[3] = {9, 10, 11};
     const PetscInt ornt[3] = {0,  0,  0};
     const PetscInt cell    = 0;
@@ -77,7 +85,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
     ierr = DMPlexSetCone(dm, cell, cone);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, cell, ornt);CHKERRQ(ierr);
   }
-  {
+  if (numCells > 1) {
     const PetscInt cone[3] = {12, 14, 13};
     const PetscInt ornt[3] = { 0, -2,  0};
     const PetscInt cell    = 1;
@@ -85,7 +93,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
     ierr = DMPlexSetCone(dm, cell, cone);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, cell, ornt);CHKERRQ(ierr);
   }
-  {
+  if (numCells > 2) {
     const PetscInt cone[4] = {10, 14, 15, 16};
     const PetscInt ornt[4] = { 0,  0,  0,  0};
     const PetscInt cell    = 2;
@@ -94,53 +102,53 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
     ierr = DMPlexSetConeOrientation(dm, cell, ornt);CHKERRQ(ierr);
   }
   /* Build edges*/
-  {
+  if (numEdges > 0) {
     const PetscInt cone[2] = {3, 4};
     const PetscInt edge    = 9;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
     ierr = DMPlexSetLabelValue(dm, "marker", edge, 1);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 1) {
     const PetscInt cone[2] = {4, 5};
     const PetscInt edge    = 10;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 2) {
     const PetscInt cone[2] = {5, 3};
     const PetscInt edge    = 11;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
     ierr = DMPlexSetLabelValue(dm, "marker", edge, 1);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 3) {
     const PetscInt cone[2] = {6, 8};
     const PetscInt edge    = 12;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
     ierr = DMPlexSetLabelValue(dm, "marker", edge, 1);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 4) {
     const PetscInt cone[2] = {7, 6};
     const PetscInt edge    = 13;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
     ierr = DMPlexSetLabelValue(dm, "marker", edge, 1);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 5) {
     const PetscInt cone[2] = {7, 8};
     const PetscInt edge    = 14;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 6) {
     const PetscInt cone[2] = {4, 7};
     const PetscInt edge    = 15;
 
     ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
   }
-  {
+  if (numEdges > 7) {
     const PetscInt cone[2] = {5, 8};
     const PetscInt edge    = 16;
 
@@ -151,7 +159,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
   /* Build coordinates */
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
-  for (v = firstVertex; v < firstVertex+numVertices; ++v) {
+  for(v = firstVertex; v < firstVertex+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
@@ -160,12 +168,14 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  coords[0]  = -0.5; coords[1]  = 0.5;
-  coords[2]  = -0.2; coords[3]  = 0.0;
-  coords[4]  = -0.2; coords[5]  = 1.0;
-  coords[6]  =  0.5; coords[7]  = 0.5;
-  coords[8]  =  0.2; coords[9]  = 0.0;
-  coords[10] =  0.2; coords[11] = 1.0;
+  if (numVertices) {
+    coords[0]  = -0.5; coords[1]  = 0.5;
+    coords[2]  = -0.2; coords[3]  = 0.0;
+    coords[4]  = -0.2; coords[5]  = 1.0;
+    coords[6]  =  0.5; coords[7]  = 0.5;
+    coords[8]  =  0.2; coords[9]  = 0.0;
+    coords[10] =  0.2; coords[11] = 1.0;
+  }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
@@ -180,9 +190,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      refinementUniform = user->refinementUniform;
   PetscBool      cellSimplex       = user->cellSimplex;
   const char    *partitioner       = "chaco";
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -204,6 +216,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
+      PetscInt cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
+
+      /* Do not know how to preserve this after distribution */
+      if (rank) {
+        cMax = 1;
+        fMax = 11;
+      }
+      ierr = DMPlexSetHybridBounds(distributedMesh, cMax, PETSC_DETERMINE, fMax, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
