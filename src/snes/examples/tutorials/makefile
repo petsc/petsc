@@ -534,15 +534,15 @@ runex14_2:
 	   else  echo  ${PWD} "\nPossible problem with with ex14_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex14_2.tmp
 runex15:
-	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 4 > ex15_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype NEWTON > ex15_1.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15_1.tmp || echo  ${PWD} "\nPossible problem with with ex15_1, diffs above \n========================================="; \
 	   ${RM} -f ex15_1.tmp
 runex15_2:
-	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 2 -precheck 1 > ex15_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -precheck 1 > ex15_2.tmp 2>&1; \
 	   ${DIFF} output/ex15_2.out ex15_2.tmp || echo  ${PWD} "\nPossible problem with with ex15_2, diffs above \n========================================="; \
 	   ${RM} -f ex15_2.tmp
 runex15_3:
-	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 2 -picard -precheck 1 > ex15_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 > ex15_3.tmp 2>&1; \
 	   ${DIFF} output/ex15_3.out ex15_3.tmp || echo  ${PWD} "\nPossible problem with with ex15_3, diffs above \n========================================="; \
 	   ${RM} -f ex15_3.tmp
 runex19:

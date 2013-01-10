@@ -6,6 +6,8 @@ The command line options include:\n\
   -p <2>: `p' in p-Laplacian term\n\
   -epsilon <1e-05>: Strain-regularization in p-Laplacian\n\
   -lambda <6>: Bratu parameter\n\
+  -blocks <bx,by>: number of coefficient interfaces in x and y direction\n\
+  -kappa <1e-3>: diffusivity in odd regions\n\
 \n";
 
 
@@ -47,6 +49,10 @@ F*/
 #include <petscdmda.h>
 #include <petscsnes.h>
 
+
+typedef enum {JAC_BRATU,JAC_PICARD,JAC_STAR,JAC_NEWTON} JacType;
+static const char *const JacTypes[] = {"BRATU","PICARD","STAR","NEWTON","JacType","JAC_",0};
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobianLocal() and
@@ -57,8 +63,10 @@ typedef struct {
   PassiveReal p;              /* Exponent in p-Laplacian */
   PassiveReal epsilon;        /* Regularization */
   PassiveReal source;         /* Source term */
-  PetscInt    jtype;          /* What type of Jacobian to assemble */
+  JacType     jtype;          /* What type of Jacobian to assemble */
   PetscBool   picard;
+  PetscInt    blocks[2];
+  PetscReal   kappa;
 } AppCtx;
 
 /*
@@ -92,6 +100,8 @@ int main(int argc,char **argv)
   PetscInt               its;                  /* iterations for convergence */
   SNESConvergedReason    reason;               /* Check convergence */
   PetscBool              alloc_star;           /* Only allocate for the STAR stencil  */
+  PetscBool              write_output;
+  char                   filename[PETSC_MAX_PATH_LEN] = "ex15.vts";
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   DM                     da,dastar;            /* distributed array data structure */
   PreCheck               precheck = PETSC_NULL; /* precheck context for version in this file */
@@ -109,23 +119,29 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.lambda = 6.0; user.p = 2.0; user.epsilon = 1e-5; user.source = 0.1; user.jtype = 4; alloc_star = PETSC_FALSE;
+  user.lambda = 0.0; user.p = 2.0; user.epsilon = 1e-5; user.source = 0.1; user.jtype = JAC_NEWTON;
+  user.blocks[0] = 1; user.blocks[1] = 1; user.kappa = 1e-3;
+  alloc_star = PETSC_FALSE;
   use_precheck = 0; precheck_angle = 10.;
   user.picard = PETSC_FALSE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"p-Bratu options",__FILE__);CHKERRQ(ierr);
   {
+    PetscInt two=2;
     ierr = PetscOptionsReal("-lambda","Bratu parameter","",user.lambda,&user.lambda,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-p","Exponent `p' in p-Laplacian","",user.p,&user.p,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-epsilon","Strain-regularization in p-Laplacian","",user.epsilon,&user.epsilon,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-source","Constant source term","",user.source,&user.source,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-jtype","Jacobian type, 1=plain, 2=first term 3=star 4=full","",user.jtype,&user.jtype,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-jtype","Jacobian approximation to assemble","",JacTypes,user.jtype,(PetscEnum*)&user.jtype,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-picard","Solve with defect-correction Picard iteration","",&user.picard);CHKERRQ(ierr);
-    if (user.picard) {user.jtype = 2; user.p = 3;}
+    if (user.picard) {user.jtype = JAC_PICARD; user.p = 3;}
     ierr = PetscOptionsBool("-alloc_star","Allocate for STAR stencil (5-point)","",alloc_star,&alloc_star,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-precheck","Use a pre-check correction intended for use with Picard iteration 1=this version, 2=library","",use_precheck,&use_precheck,NULL);CHKERRQ(ierr);
     if (use_precheck == 2) {    /* Using library version, get the angle */
       ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck_angle,&precheck_angle,PETSC_NULL);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsIntArray("-blocks","number of coefficient interfaces in x and y direction","",user.blocks,&two,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kappa","diffusivity in odd regions","",user.kappa,&user.kappa,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-o","Output solution in vts format","",filename,filename,sizeof(filename),&write_output);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (user.lambda > bratu_lambda_max || user.lambda < bratu_lambda_min) {
@@ -224,6 +240,13 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s Number of nonlinear iterations = %D\n",SNESConvergedReasons[reason],its);CHKERRQ(ierr);
 
+  if (write_output) {
+    PetscViewer viewer;
+    ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(x,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
@@ -320,14 +343,18 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
+{
+  return (((PetscInt)(x*ctx->blocks[0])) + ((PetscInt)(y*ctx->blocks[1]))) % 2 ? ctx->kappa : 1.0;
+}
 /* p-Laplacian diffusivity */
-PETSC_STATIC_INLINE PetscScalar eta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
-{return pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));}
-PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
+PETSC_STATIC_INLINE PetscScalar eta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
+{return kappa(ctx,x,y) * pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));}
+PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
   return (ctx->p == 2)
     ? 0
-    : pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-4)) * 0.5 * (ctx->p-2.);
+    : kappa(ctx,x,y)*pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-4)) * 0.5 * (ctx->p-2.);
 }
 
 
@@ -354,6 +381,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
   */
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
+      PetscReal xx = i*hx,yy = j*hy;
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         f[j][i] = x[j][i];
       } else {
@@ -367,10 +395,10 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
           uy_N = dhy*(x[j+1][i]-x[j][i]),
           ux_S = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]),
           uy_S = dhy*(x[j][i]-x[j-1][i]),
-          e_E = eta(user,ux_E,uy_E),
-          e_W = eta(user,ux_W,uy_W),
-          e_N = eta(user,ux_N,uy_N),
-          e_S = eta(user,ux_S,uy_S),
+          e_E = eta(user,xx,yy,ux_E,uy_E),
+          e_W = eta(user,xx,yy,ux_W,uy_W),
+          e_N = eta(user,xx,yy,ux_N,uy_N),
+          e_S = eta(user,xx,yy,ux_S,uy_S),
           uxx = -hy * (e_E*ux_E - e_W*ux_W),
           uyy = -hx * (e_N*uy_N - e_S*uy_S);
         /** For p=2, these terms decay to:
@@ -448,6 +476,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   */
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
+      PetscReal xx = i*hx,yy = j*hy;
       row.j = j; row.i = i;
       /* boundary points */
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
@@ -465,14 +494,14 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
           ux_S = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]),
           uy_S = dhy*(x[j][i]-x[j-1][i]),
           u = x[j][i],
-          e_E = eta(user,ux_E,uy_E),
-          e_W = eta(user,ux_W,uy_W),
-          e_N = eta(user,ux_N,uy_N),
-          e_S = eta(user,ux_S,uy_S),
-          de_E = deta(user,ux_E,uy_E),
-          de_W = deta(user,ux_W,uy_W),
-          de_N = deta(user,ux_N,uy_N),
-          de_S = deta(user,ux_S,uy_S),
+          e_E = eta(user,xx,yy,ux_E,uy_E),
+          e_W = eta(user,xx,yy,ux_W,uy_W),
+          e_N = eta(user,xx,yy,ux_N,uy_N),
+          e_S = eta(user,xx,yy,ux_S,uy_S),
+          de_E = deta(user,xx,yy,ux_E,uy_E),
+          de_W = deta(user,xx,yy,ux_W,uy_W),
+          de_N = deta(user,xx,yy,ux_N,uy_N),
+          de_S = deta(user,xx,yy,ux_S,uy_S),
           skew_E = de_E*ux_E*uy_E,
           skew_W = de_W*ux_W*uy_W,
           skew_N = de_N*ux_N*uy_N,
@@ -485,7 +514,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
           newt_S = e_S+de_S*PetscSqr(uy_S);
       /* interior grid points */
         switch (user->jtype) {
-          case 1:
+          case JAC_BRATU:
             /* Jacobian from p=2 */
             v[0] = -hxdhy;                                           col[0].j = j-1;   col[0].i = i;
             v[1] = -hydhx;                                           col[1].j = j;     col[1].i = i-1;
@@ -494,7 +523,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[4] = -hxdhy;                                           col[4].j = j+1;   col[4].i = i;
             ierr = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
-          case 2:
+          case JAC_PICARD:
             /* Jacobian arising from Picard linearization */
             v[0] = -hxdhy*e_S;                                           col[0].j = j-1;   col[0].i = i;
             v[1] = -hydhx*e_W;                                           col[1].j = j;     col[1].i = i-1;
@@ -503,7 +532,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[4] = -hxdhy*e_N;                                           col[4].j = j+1;   col[4].i = i;
             ierr = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
-          case 3:
+          case JAC_STAR:
             /* Full Jacobian, but only a star stencil */
             col[0].j = j-1; col[0].i = i;
             col[1].j = j;   col[1].i = i-1;
@@ -517,7 +546,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
             v[4] = -hxdhy*newt_N - cross_EW;
             ierr = MatSetValuesStencil(B,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
             break;
-          case 4:
+          case JAC_NEWTON:
             /** The Jacobian is
             *
             * -div [ eta (grad u) + deta (grad u0 . grad u) grad u0 ] - (eE u0) u
