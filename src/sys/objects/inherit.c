@@ -116,6 +116,8 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->name);CHKERRQ(ierr);
   ierr = PetscFree(h->prefix);CHKERRQ(ierr);
   ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
+  ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_CLASS]);CHKERRQ(ierr);
+  ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
 
   /* Record object removal from list of all objects */
   for (i=0; i<PetscObjectsMaxCounts; i++) {
@@ -151,6 +153,8 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObject dest)
 {
   PetscErrorCode ierr;
+  PetscFortranCallbackType cbtype;
+  PetscInt numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
 
   PetscFunctionBegin;
   PetscValidHeader(src,1);
@@ -161,6 +165,90 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
   ierr = PetscMalloc(src->num_fortran_func_pointers*sizeof(void(*)(void)),&dest->fortran_func_pointers);CHKERRQ(ierr);
   ierr = PetscMemcpy(dest->fortran_func_pointers,src->fortran_func_pointers,src->num_fortran_func_pointers*sizeof(void(*)(void)));CHKERRQ(ierr);
   dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
+
+  ierr = PetscFortranCallbackGetSizes(src->classid,&numcb[PETSC_FORTRAN_CALLBACK_CLASS],&numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
+  for (cbtype=PETSC_FORTRAN_CALLBACK_CLASS; cbtype<PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
+    ierr = PetscFree(dest->fortrancallback[cbtype]);CHKERRQ(ierr);
+    ierr = PetscMalloc(numcb[cbtype]*sizeof(PetscFortranCallback),&dest->fortrancallback[cbtype]);CHKERRQ(ierr);
+    ierr = PetscMemzero(dest->fortrancallback[cbtype],numcb[cbtype]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
+    ierr = PetscMemcpy(dest->fortrancallback[cbtype],src->fortrancallback[cbtype],src->num_fortrancallback[cbtype]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectSetFortranCallback"
+/*@
+   PetscObjectSetFortranCallback - set fortran callback function pointer and context
+
+   Logically Collective
+
+   Input Arguments:
++  obj - object on which to set callback
+.  cbtype - callback type (class or subtype)
+.  cid - address of callback Id, updated if not yet initialized (zero)
+.  func - Fortran function
+-  ctx - Fortran context
+
+   Level: developer
+
+.seealso: PetscObjectGetFortranCallback()
+@*/
+PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbackType cbtype,PetscFortranCallbackId *cid,void (*func)(void),void *ctx)
+{
+  PetscErrorCode ierr;
+  const char *subtype = PETSC_NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  if (cbtype == PETSC_FORTRAN_CALLBACK_SUBTYPE) subtype = obj->type_name;
+  if (!*cid) {ierr = PetscFortranCallbackRegister(obj->classid,subtype,cid);CHKERRQ(ierr);}
+  if (*cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype]) {
+    PetscInt oldnum = obj->num_fortrancallback[cbtype],newnum = PetscMax(1,2*oldnum);
+    PetscFortranCallback *callback;
+    ierr = PetscMalloc(newnum*sizeof(callback[0]),&callback);CHKERRQ(ierr);
+    ierr = PetscMemcpy(callback,obj->fortrancallback[cbtype],oldnum*sizeof(*obj->fortrancallback[cbtype]));CHKERRQ(ierr);
+    ierr = PetscFree(obj->fortrancallback[cbtype]);CHKERRQ(ierr);
+    obj->fortrancallback[cbtype] = callback;
+    obj->num_fortrancallback[cbtype] = newnum;
+  }
+  obj->fortrancallback[cbtype][*cid-PETSC_SMALLEST_FORTRAN_CALLBACK].func = func;
+  obj->fortrancallback[cbtype][*cid-PETSC_SMALLEST_FORTRAN_CALLBACK].ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectGetFortranCallback"
+/*@
+   PetscObjectGetFortranCallback - get fortran callback function pointer and context
+
+   Logically Collective
+
+   Input Arguments:
++  obj - object on which to get callback
+.  cbtype - callback type
+-  cid - address of callback Id
+
+   Output Arguments:
++  func - Fortran function (or PETSC_NULL if not needed)
+-  ctx - Fortran context (or PETSC_NULL if not needed)
+
+   Level: developer
+
+.seealso: PetscObjectSetFortranCallback()
+@*/
+PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbackType cbtype,PetscFortranCallbackId cid,void (**func)(void),void **ctx)
+{
+  PetscFortranCallback *cb;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidPointer(func,4);
+  if (PetscUnlikely(cid < PETSC_SMALLEST_FORTRAN_CALLBACK)) SETERRQ(obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback Id invalid");
+  if (PetscUnlikely(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype])) SETERRQ(obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback not set on this object");
+  cb = &obj->fortrancallback[cbtype][cid-PETSC_SMALLEST_FORTRAN_CALLBACK];
+  if (func) *func = cb->func;
+  if (ctx) *ctx = cb->ctx;
   PetscFunctionReturn(0);
 }
 

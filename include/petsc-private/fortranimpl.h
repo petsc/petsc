@@ -200,4 +200,18 @@ typedef size_t PetscFortranAddr;
       ((PetscObject)obj)->num_fortran_func_pointers = (N);              \
     }                                                                   \
   } while (0)
+
+/* Entire function body, _ctx is a "special" variable that can be passed along */
+#define PetscObjectUseFortranCallback_Private(obj,cid,types,args,cbclass) { \
+    PetscErrorCode ierr;                                                \
+    void (PETSC_STDCALL *func) types,*_ctx;                             \
+    PetscFunctionBegin;                                                 \
+    ierr = PetscObjectGetFortranCallback((PetscObject)(obj),(cbclass),(cid),(PetscVoidFunction*)&func,&_ctx);CHKERRQ(ierr); \
+    (*func)args;CHKERRQ(ierr);                                          \
+    PetscFunctionReturn(0);                                             \
+  }
+#define PetscObjectUseFortranCallback(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_CLASS)
+#define PetscObjectUseFortranCallbackSubType(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_SUBTYPE)
+
+
 #endif

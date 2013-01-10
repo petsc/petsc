@@ -42,6 +42,17 @@ typedef struct {
    PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
+typedef enum {PETSC_FORTRAN_CALLBACK_CLASS,PETSC_FORTRAN_CALLBACK_SUBTYPE,PETSC_FORTRAN_CALLBACK_MAXTYPE} PetscFortranCallbackType;
+typedef int PetscFortranCallbackId;
+#define PETSC_SMALLEST_FORTRAN_CALLBACK ((PetscFortranCallbackId)1000)
+PETSC_EXTERN PetscErrorCode PetscFortranCallbackRegister(PetscClassId,const char*,PetscFortranCallbackId*);
+PETSC_EXTERN PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId,PetscInt*,PetscInt*);
+
+typedef struct {
+  void (*func)(void);
+  void *ctx;
+} PetscFortranCallback;
+
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.
    The PetscObject is a way of examining these fields regardless of
@@ -83,6 +94,8 @@ typedef struct _p_PetscObject {
   PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;
   void           (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscInt       num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
+  PetscFortranCallback *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  PetscInt       num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
   void           *python_context;
   PetscErrorCode (*python_destroy)(void*);
 
@@ -154,6 +167,9 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,P
 
 PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId*,void(*)(void),void *ctx);
+PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
+
 
 /* ---------------------------------------------------------------------------------------*/
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
