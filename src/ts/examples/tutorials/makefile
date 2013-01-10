@@ -146,6 +146,10 @@ ex28: ex28.o chkopts
 	-${CLINKER} -o ex28 ex28.o ${PETSC_TS_LIB}
 	${RM} ex28.o
 
+ex29: ex29.o chkopts
+	-${CLINKER} -o ex29 ex29.o ${PETSC_TS_LIB}
+	${RM} ex29.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
@@ -381,6 +385,13 @@ runex26_3:
         -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex26_3.tmp 2>&1; \
 	   ${DIFF} output/ex26_3.out ex26_3.tmp || echo  ${PWD} "\nPossible problem with ex26_3, diffs above \n=========================================";  \
 	   ${RM} -f ex26_3.tmp
+
+runex29:
+	-@${MPIEXEC} -n 16 ./ex29 -da_refine 4 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 \
+        -ts_type arkimex -ts_monitor -snes_monitor -snes_type ngmres \
+        -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex29.tmp 2>&1; \
+	   ${DIFF} output/ex29.out ex29.tmp || echo  ${PWD} "\nPossible problem with ex29, diffs above \n=========================================";  \
+	   ${RM} -f ex29.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
