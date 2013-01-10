@@ -205,6 +205,7 @@ void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,Pets
 {
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(r);
+  *ierr = SNESGetFunction(*snes,r,PETSC_NULL,PETSC_NULL); if (*ierr) return;
   *ierr = PetscObjectGetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function,PETSC_NULL,ctx);
 }
 
@@ -262,7 +263,9 @@ void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,int *func,void **ct
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(A);
   CHKFORTRANNULLOBJECT(B);
-  *ierr = SNESGetJacobian(*snes,A,B,0,ctx);
+  *ierr = SNESGetJacobian(*snes,A,B,0,PETSC_NULL); if (*ierr) return;
+  *ierr = PetscObjectGetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.jacobian,PETSC_NULL,ctx);
+
 }
 
 void PETSC_STDCALL snesgetconvergencehistory_(SNES *snes,PetscInt *na,PetscErrorCode *ierr)
