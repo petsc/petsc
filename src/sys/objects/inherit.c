@@ -153,8 +153,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObject dest)
 {
   PetscErrorCode ierr;
-  PetscFortranCallbackType cbtype;
-  PetscInt numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  PetscInt cbtype,numcb[PETSC_FORTRAN_CALLBACK_MAXTYPE];
 
   PetscFunctionBegin;
   PetscValidHeader(src,1);
