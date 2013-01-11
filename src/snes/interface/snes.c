@@ -1,7 +1,6 @@
 
 #include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
-#include <petscdmshell.h>                /*I "petscdmshell.h" I*/
-#include <petscsys.h>                    /*I "petscsys.h" I*/
+#include <petscdmshell.h>
 
 PetscBool  SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;

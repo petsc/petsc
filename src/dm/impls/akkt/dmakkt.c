@@ -1,6 +1,6 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <../src/dm/impls/akkt/dmakkt.h>          /*I "petscdmakkt.h" I*/
-#include <petsc-private/dmimpl.h>                 /*I "petscdm.h" I*/
+#include <../src/dm/impls/akkt/dmakkt.h>          
+#include <petsc-private/dmimpl.h>
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTSetDM"

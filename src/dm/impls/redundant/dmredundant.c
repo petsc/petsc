@@ -1,6 +1,5 @@
-#include <petsc-private/dmimpl.h>     /*I      "petscdm.h"          I*/
+#include <petsc-private/dmimpl.h>
 #include <petscdmredundant.h>   /*I      "petscdmredundant.h" I*/
-#include <petscmat.h>           /*I      "petscmat.h"         I*/
 
 typedef struct  {
   PetscInt rank;                /* owner */

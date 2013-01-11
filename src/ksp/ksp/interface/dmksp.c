@@ -1,6 +1,6 @@
-#include <petsc-private/dmimpl.h> /*I "petscdm.h" I*/
+#include <petsc-private/dmimpl.h> 
 #include <petsc-private/kspimpl.h> /*I "petscksp.h" I*/
-#include <petscdm.h>         /*I "petscdm.h"  I*/
+#include <petscdm.h>         
 
 #undef __FUNCT__
 #define __FUNCT__ "DMKSPDestroy"

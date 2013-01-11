@@ -1,6 +1,6 @@
 
-#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
-#include <petscksp.h>                              /*I "petscksp.h" I*/
+#include <petsc-private/matimpl.h>
+#include <petscksp.h>                 /*I "petscksp.h" I*/
 
 typedef struct {
   Mat A,Ap,B,C,D;

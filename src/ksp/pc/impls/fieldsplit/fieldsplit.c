@@ -1,6 +1,6 @@
 
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
-#include <petscdmcomposite.h>   /*I "petscdmcomposite.h" I*/
+#include <petscdmcomposite.h>   
 
 /*
   There is a nice discussion of block preconditioners in

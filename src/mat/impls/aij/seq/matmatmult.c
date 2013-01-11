@@ -8,7 +8,7 @@
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/utils/petscheap.h>
 #include <petscbt.h>
-#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/dense/seq/dense.h> 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"

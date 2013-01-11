@@ -5,7 +5,7 @@
   some special cases for parallel scatters.
 */
 
-#include <petsc-private/isimpl.h>              /*I "petscis.h" I*/
+#include <petsc-private/isimpl.h>
 #include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
 
 /* Logging support */

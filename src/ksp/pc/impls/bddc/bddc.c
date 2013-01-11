@@ -19,7 +19,7 @@
    C. Dohrmann "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149-168, March 2007
    ---------------------------------------------------------------------------------------------------------------------------------------------- */
 
-#include "bddc.h" /*I "petscpc.h" I*/  /* includes for fortran wrappers */
+#include "bddc.h" /*I "petscpc.h" I*/
 #include <petscblaslapack.h>
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__

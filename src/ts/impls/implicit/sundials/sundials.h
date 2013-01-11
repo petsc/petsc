@@ -8,7 +8,7 @@
 #define __PETSCSUNDIALS_H
 
 #include <petsc-private/tsimpl.h>       /*I   "petscts.h"   I*/
-#include <petsc-private/pcimpl.h>               /*I   "petscpc.h"   I*/
+#include <petsc-private/pcimpl.h>       
 #include <petsc-private/matimpl.h>
 
 /*

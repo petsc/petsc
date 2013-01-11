@@ -1,5 +1,4 @@
 
-#include <petscvec.h>   /*I "petscvec.h" I*/
 #include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
 
 PetscClassId  IS_LTOGM_CLASSID;
