@@ -1,18 +1,17 @@
+#requirespackage 'PETSC_HAVE_SIEVE'
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dmsnes.c dmdasnes.c dmlocalsnes.c dmplexsnes.c
+SOURCEC  = dmmeshsnes.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = mesh
-EDIRS    =
-LOCDIR   = src/snes/utils/
+DIRS     =
+LOCDIR   = src/snes/utils/mesh/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-
