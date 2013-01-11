@@ -1,5 +1,6 @@
 #include "taolinesearch.h"
 #include "ipm.h" /*I "ipm.h" I*/
+PetscErrorCode  MatNestSetVecType_Nest(Mat A,const VecType vtype);
 
 
 /*
@@ -328,6 +329,7 @@ static PetscErrorCode TaoSetup_IPM(TaoSolver tao)
   }
   */
   ierr = MatCreateNest(comm,4,PETSC_NULL,4,PETSC_NULL,kgrid,&ipmP->K); CHKERRQ(ierr);
+  ierr = MatNestSetVecType_Nest(ipmP->K,VECNEST); CHKERRQ(ierr);
 
   vgrid[0] = tao->solution;
   vgrid[1] = ipmP->lamdae;
