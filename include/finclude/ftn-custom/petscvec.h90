@@ -22,6 +22,24 @@
       End Interface
 
       Interface
+        Subroutine VecGetArrayReadF90(v,array,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecRestoreArrayReadF90(v,array,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine VecSetValuesSection(v,section,point,values,mode,ierr)
           USE_VEC_HIDE
           PetscScalar, pointer :: values(:)
