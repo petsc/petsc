@@ -69,7 +69,7 @@ struct _p_PetscThreadCommRedCtx{
 
 struct _p_PetscThreadCommReduction{
   PetscInt              nreds;                              /* Number of reductions in operation */
-  PetscThreadCommRedCtx redctx[PETSC_REDUCTIONS_MAX];       /* Reduction objects */
+  PetscThreadCommRedCtx redctx;                             /* Reduction objects */
   PetscInt               ctr;                               /* Global Reduction counter */
   PetscInt              *thread_ctr;                        /* Reduction counter for each thread */
 };
