@@ -62,7 +62,6 @@ PetscErrorCode PetscThreadReductionBegin(MPI_Comm comm,PetscThreadCommReductionO
 PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommReduction red)
 {
   PetscErrorCode        ierr;
-  PetscInt              i;
 
   PetscFunctionBegin;
   if (!red) PetscFunctionReturn(0);
@@ -458,7 +457,7 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
     redctx = &redout->redctx[i];
     redctx->thread_status = redout->redctx[0].thread_status + i*tcomm->nworkThreads;
     for(j=0;j<tcomm->nworkThreads;j++) redctx->thread_status[j] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
-    redctx->local_red = redout->redctx[0].local_red + i*2*tcomm->nworkThreads;
+    redctx->local_red = (char*)redout->redctx[0].local_red + i*2*tcomm->nworkThreads*sizeof(PetscScalar);
     redctx->red_status = THREADCOMM_REDUCTION_NONE;
   }
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscScalar),&redout->thread_ctr);CHKERRQ(ierr);
