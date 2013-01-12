@@ -1506,6 +1506,23 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    SNESFunction - function used to convey the nonlinear function to be solved by SNES
+
+     Synopsis:
+     SNESFunction(SNES snes,Vec x,Vec f,void *ctx);
+
+     Input Parameters:
++     snes - the SNES context
+.     x    - state at which to evaluate residual
+-     ctx     - optional user-defined function context, passed in with SNESSetFunction()
+
+     Output Parameter:
+.     f  - vector to put residual (function value)
+
+.seealso:   SNESSetFunction(), SNESGetFunction()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFunction"
 /*@C
@@ -1518,17 +1535,9 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
    Input Parameters:
 +  snes - the SNES context
 .  r - vector to store function value
-.  func - function evaluation routine
+.  SNESFunction - function evaluation routine
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be PETSC_NULL)
-
-   Calling sequence of func:
-$    func (SNES snes,Vec x,Vec f,void *ctx);
-
-+  snes - the SNES context
-.  x - state at which to evaluate residual
-.  f - vector to put residual
--  ctx - optional user-defined function context
 
    Notes:
    The Newton-like methods typically solve linear systems of the form
@@ -1541,7 +1550,7 @@ $      f'(x) x = -f(x),
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetPicard()
 @*/
-PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
+PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1556,7 +1565,7 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
     snes->vec_func = r;
   }
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESSetFunction(dm,func,ctx);CHKERRQ(ierr);
+  ierr = DMSNESSetFunction(dm,SNESFunction,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4286,7 +4295,7 @@ PetscErrorCode  SNESKSPGetUseEW(SNES snes, PetscBool  *flag)
 .seealso: SNESKSPSetUseEW(), SNESKSPGetUseEW(), SNESKSPGetParametersEW()
 @*/
 PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,
-							    PetscReal gamma,PetscReal alpha,PetscReal alpha2,PetscReal threshold)
+                                                            PetscReal gamma,PetscReal alpha,PetscReal alpha2,PetscReal threshold)
 {
   SNESKSPEW *kctx;
   PetscFunctionBegin;
@@ -4359,7 +4368,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
 .seealso: SNESKSPSetUseEW(), SNESKSPGetUseEW(), SNESKSPSetParametersEW()
 @*/
 PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rtol_0,PetscReal *rtol_max,
-							    PetscReal *gamma,PetscReal *alpha,PetscReal *alpha2,PetscReal *threshold)
+                                                            PetscReal *gamma,PetscReal *alpha,PetscReal *alpha2,PetscReal *threshold)
 {
   SNESKSPEW *kctx;
   PetscFunctionBegin;
@@ -4792,7 +4801,7 @@ PetscErrorCode  SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
   PetscErrorCode    ierr;
   SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
   int               nlhs = 1,nrhs = 5;
-  mxArray	    *plhs[1],*prhs[5];
+  mxArray           *plhs[1],*prhs[5];
   long long int     lx = 0,ly = 0,ls = 0;
 
   PetscFunctionBegin;
@@ -4899,7 +4908,7 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat *A,Mat *B,MatStru
   PetscErrorCode    ierr;
   SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
   int               nlhs = 2,nrhs = 6;
-  mxArray	    *plhs[2],*prhs[6];
+  mxArray           *plhs[2],*prhs[6];
   long long int     lx = 0,lA = 0,ls = 0, lB = 0;
 
   PetscFunctionBegin;
@@ -4990,7 +4999,7 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
   PetscErrorCode  ierr;
   SNESMatlabContext *sctx = (SNESMatlabContext *)ctx;
   int             nlhs = 1,nrhs = 6;
-  mxArray	  *plhs[1],*prhs[6];
+  mxArray         *plhs[1],*prhs[6];
   long long int   lx = 0,ls = 0;
   Vec             x=snes->vec_sol;
 

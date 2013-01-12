@@ -139,8 +139,6 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-/*PetscErrorCode MatSetValuesBatch_MPIAIJCUSPARSE(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats); */
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPARSESetFormat_MPIAIJCUSPARSE"

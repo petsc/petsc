@@ -1050,7 +1050,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                  PetscDrawResizeWindow_OpenGL,
                                  PetscDrawDestroy_OpenGL,
                                  0,
-                                 0, /*PetscDrawGetSingleton_OpenGL,*/
+                                 0, /* PetscDrawGetSingleton_OpenGL,*/
                                  0, /* PetscDrawRestoreSingleton_OpenGL,*/
                                  0,
                                  0,
