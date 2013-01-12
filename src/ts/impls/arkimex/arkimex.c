@@ -564,7 +564,7 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   t->explicit_first_stage = PETSC_TRUE;
   for (i=0; i<s; i++) if (t->At[i] != 0.0) t->explicit_first_stage = PETSC_FALSE;
   /*def of FSAL can be made more precise*/
-  t->FSAL_implicit = t->explicit_first_stage & t->stiffly_accurate;
+  t->FSAL_implicit = (PetscBool)(t->explicit_first_stage && t->stiffly_accurate);
   if (bembedt) {
     ierr = PetscMalloc2(s,PetscReal,&t->bembedt,s,PetscReal,&t->bembed);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembedt,bembedt,s*sizeof(bembedt[0]));CHKERRQ(ierr);

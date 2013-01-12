@@ -173,7 +173,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetEnum(((PetscObject) dm)->prefix, "-dm_patch_zoom_comm", commTypes, &commType, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(((PetscObject) dm)->prefix, "-dm_patch_zoom_comm", commTypes, (PetscEnum*)&commType, PETSC_NULL);CHKERRQ(ierr);
   if (commType == PATCH_COMM_TYPE_WORLD) {
     commz = comm;
   } else if (commType == PATCH_COMM_TYPE_SELF) {
