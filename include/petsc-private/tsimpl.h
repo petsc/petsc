@@ -116,6 +116,7 @@ struct _p_TS {
   PetscInt num_snes_failures;
   PetscInt max_snes_failures;
   TSConvergedReason reason;
+  TSEquationType equation_type;
   PetscBool errorifstepfailed;
   TSExactFinalTimeOption  exact_final_time;
   PetscBool retain_stages;

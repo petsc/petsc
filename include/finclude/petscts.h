@@ -19,6 +19,37 @@
       parameter (TS_DIVERGED_STEP_REJECTED   = -2)
 
 !
+!  Equation type flags
+!
+      PetscEnum TS_EQ_UNSPECIFIED
+      PetscEnum TS_EQ_EXPLICIT
+      PetscEnum TS_EQ_ODE_EXPLICIT
+      PetscEnum TS_EQ_DAE_SEMI_EXPLICIT_INDEX1
+      PetscEnum TS_EQ_DAE_SEMI_EXPLICIT_INDEX2
+      PetscEnum TS_EQ_DAE_SEMI_EXPLICIT_INDEX3
+      PetscEnum TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI
+      PetscEnum TS_EQ_IMPLICIT
+      PetscEnum TS_EQ_ODE_IMPLICIT
+      PetscEnum TS_EQ_DAE_IMPLICIT_INDEX1
+      PetscEnum TS_EQ_DAE_IMPLICIT_INDEX2
+      PetscEnum TS_EQ_DAE_IMPLICIT_INDEX3
+      PetscEnum TS_EQ_DAE_IMPLICIT_INDEXHI
+
+      parameter (TS_EQ_UNSPECIFIED               = -1)
+      parameter (TS_EQ_EXPLICIT                  = 0)
+      parameter (TS_EQ_ODE_EXPLICIT              = 1)
+      parameter (TS_EQ_DAE_SEMI_EXPLICIT_INDEX1  = 100)
+      parameter (TS_EQ_DAE_SEMI_EXPLICIT_INDEX2  = 200)
+      parameter (TS_EQ_DAE_SEMI_EXPLICIT_INDEX3  = 300)
+      parameter (TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI = 500)
+      parameter (TS_EQ_IMPLICIT                  = 1000)
+      parameter (TS_EQ_ODE_IMPLICIT              = 1001)
+      parameter (TS_EQ_DAE_IMPLICIT_INDEX1       = 1100)
+      parameter (TS_EQ_DAE_IMPLICIT_INDEX2       = 1200)
+      parameter (TS_EQ_DAE_IMPLICIT_INDEX3       = 1300)
+      parameter (TS_EQ_DAE_IMPLICIT_INDEXHI      = 1500)
+
+!
 !  TSExactFinalTime
 !
       PetscEnum TS_EXACTFINALTIME_STEPOVER
