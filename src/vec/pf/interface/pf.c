@@ -310,6 +310,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
    PFRegisterDynamic - Adds a method to the mathematical function package.
 
    Synopsis:
+   #include "petscpf.h"
    PetscErrorCode PFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PF))
 
    Not collective

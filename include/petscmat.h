@@ -183,6 +183,7 @@ PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
    MatRegisterDynamic - Adds a new matrix type
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatRegisterDynamic(const char *name,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Mat))
 
    Not Collective
@@ -633,6 +634,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
 
    Collective on MPI_Comm
@@ -677,6 +679,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -719,6 +722,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateSymmetricSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -760,6 +764,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -803,6 +808,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateSymmetricSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -842,6 +848,7 @@ M*/
    MatPreallocateLocation -  An alternative to MatPreallocationSet() that puts the nonzero locations into the matrix if it exists
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateLocations(Mat A,PetscInt row,PetscInt ncols,PetscInt *cols,PetscInt *dnz,PetscInt *onz)
 
    Not Collective
@@ -877,6 +884,7 @@ M*/
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPreallocateFinalize(PetscInt *dnz, PetscInt *onz)
 
    Collective on MPI_Comm
@@ -979,6 +987,7 @@ PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const 
    MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the matrix package.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatOrderingRegisterDynamic(const char *name_ordering,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatOrdering))
 
    Not Collective
@@ -1132,6 +1141,7 @@ PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],const char[],const 
                                matrix package.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatColoringRegisterDynamic(const char *name_coloring,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatColoring))
 
    Not Collective
@@ -1265,6 +1275,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],const char[],co
    matrix package.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatPartitioningRegisterDynamic(const char *name_partitioning,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatPartitioning))
 
    Not Collective
@@ -1432,6 +1443,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],const char[],const c
    matrix package.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatCoarsenRegisterDynamic(const char *name_coarsen,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatCoarsen))
 
    Not Collective
@@ -1732,6 +1744,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],const char[],const char
    MatMFFDRegisterDynamic - Adds a method to the MatMFFD registry.
 
    Synopsis:
+   #include "petscmat.h"
    PetscErrorCode MatMFFDRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatMFFD))
 
    Not Collective

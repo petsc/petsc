@@ -83,6 +83,7 @@ PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],const char
    PetscSFRegisterDynamic - Adds an implementation of the PetscSF communication protocol.
 
    Synopsis:
+    #include "petscsf.h"
    PetscErrorCode PetscSFRegisterDynamic(const char *name_method,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscSF))
 
    Not collective

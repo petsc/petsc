@@ -387,6 +387,7 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
    and converts them to the global numbering.
 
    Synopsis:
+   #include "petscis.h"
    PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
 
    Not collective

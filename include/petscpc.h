@@ -139,6 +139,7 @@ PETSC_EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],Pe
    PCRegisterDynamic - Adds a method to the preconditioner package.
 
    Synopsis:
+    #include "petscpc.h"
    PetscErrorCode PCRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PC))
 
    Not collective

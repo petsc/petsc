@@ -1510,6 +1510,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
     SNESFunction - function used to convey the nonlinear function to be solved by SNES
 
      Synopsis:
+#include "petscsnes.h"
      SNESFunction(SNES snes,Vec x,Vec f,void *ctx);
 
      Input Parameters:

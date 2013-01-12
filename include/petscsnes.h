@@ -80,6 +80,7 @@ PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],
    SNESRegisterDynamic - Adds a method to the nonlinear solver package.
 
    Synopsis:
+    #include "petscsnes.h"
    PetscErrorCode SNESRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(SNES))
 
    Not collective

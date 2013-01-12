@@ -87,6 +87,7 @@ PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(const char[]);
    KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
+   #include "petscksp.h"
    PetscErrorCode KSPRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(KSP))
 
    Not Collective

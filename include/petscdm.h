@@ -57,6 +57,7 @@ PETSC_EXTERN PetscErrorCode DMRegisterDestroy(void);
   DMRegisterDynamic - Adds a new DM component implementation
 
   Synopsis:
+  #include "petscdm.h"
   PetscErrorCode DMRegisterDynamic(const char *name,const char *path,const char *func_name, PetscErrorCode (*create_func)(DM))
 
   Not Collective

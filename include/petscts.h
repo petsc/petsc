@@ -331,6 +331,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
   TSRegisterDynamic - Adds a creation method to the TS package.
 
   Synopsis:
+  #include "petscts.h"
   PetscErrorCode TSRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(TS))
 
   Not Collective
@@ -446,6 +447,7 @@ typedef const char *TSAdaptType;
    TSAdaptRegisterDynamic - adds a TSAdapt implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -541,6 +543,7 @@ typedef const char *TSGLAdaptType;
    TSGLAdaptRegisterDynamic - adds a TSGLAdapt implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -616,6 +619,7 @@ PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],const char[],const c
    TSGLAcceptRegisterDynamic - adds a TSGL acceptance scheme
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLAcceptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -673,6 +677,7 @@ typedef const char* TSGLType;
    TSGLRegisterDynamic - adds a TSGL implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective

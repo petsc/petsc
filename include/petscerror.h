@@ -93,6 +93,7 @@
    SETERRQ - Macro that is called when an error has been detected,
 
    Synopsis:
+   #include "petscsys.h"
    PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode errorcode,char *message)
 
    Not Collective
@@ -122,6 +123,7 @@ M*/
    SETERRQ1 - Macro that is called when an error has been detected,
 
    Synopsis:
+   #include "petscsys.h"
    PetscErrorCode SETERRQ1(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg)
 
    Not Collective
@@ -148,6 +150,7 @@ M*/
    SETERRQ2 - Macro that is called when an error has been detected,
 
    Synopsis:
+   #include "petscsys.h"
    PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
    Not Collective
@@ -175,6 +178,7 @@ M*/
    SETERRQ3 - Macro that is called when an error has been detected,
 
    Synopsis:
+   #include "petscsys.h"
    PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
    Not Collective
@@ -212,6 +216,7 @@ M*/
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
 
    Synopsis:
+   #include "petscsys.h"
    PetscErrorCode CHKERRQ(PetscErrorCode errorcode)
 
    Not Collective
@@ -255,6 +260,7 @@ M*/
    CHKERRXX - Checks error code, if non-zero it calls the C++ error handler which throws an exception
 
    Synopsis:
+   #include "petscsys.h"
    void CHKERRXX(PetscErrorCode errorcode)
 
    Not Collective
@@ -282,6 +288,7 @@ M*/
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 
    Synopsis:
+   #include "petscsys.h"
    CHKMEMQ;
 
    Not Collective
@@ -463,6 +470,7 @@ PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
         used for error handling.
 
    Synopsis:
+   #include "petscsys.h"
    void PetscFunctionBegin;
 
    Not Collective
@@ -503,6 +511,7 @@ M*/
    PetscFunctionBeginUser - First executable line of user provided PETSc routine
 
    Synopsis:
+   #include "petscsys.h"
    void PetscFunctionBeginUser;
 
    Not Collective
@@ -591,6 +600,7 @@ M*/
         used for error handling. Replaces return()
 
    Synopsis:
+   #include "petscsys.h"
    void PetscFunctionReturn(0);
 
    Not Collective

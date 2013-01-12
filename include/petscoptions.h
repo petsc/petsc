@@ -59,7 +59,9 @@ PETSC_EXTERN PetscInt PetscOptionsPublishCount;
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-   Synopsis: PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
+   Synopsis:
+    #include "petscoptions.h"
+    PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 
     Collective on MPI_Comm
 
@@ -105,7 +107,9 @@ M*/
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
-   Synopsis: PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
+   Synopsis:
+    #include "petscoptions.h"
+    PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
 
     Collective on PetscObject
 
@@ -136,7 +140,9 @@ M*/
 
     Collective on the MPI_Comm used in PetscOptionsBegin()
 
-   Synopsis: PetscErrorCode PetscOptionsEnd(void)
+   Synopsis:
+     #include "petscoptions.h"
+     PetscErrorCode PetscOptionsEnd(void)
 
   Level: intermediate
 
@@ -164,7 +170,9 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(const char[]);
 
    Collective on the communicator passed in PetscOptionsBegin()
 
-   Synopsis: PetscErrorCode PetscOptionsTail(void)
+   Synopsis:
+     #include "petscoptions.h"
+     PetscErrorCode PetscOptionsTail(void)
 
   Level: intermediate
 
