@@ -463,7 +463,7 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
     redctx->red_status = THREADCOMM_REDUCTION_NONE;
     for(j=0;j<tcomm->nworkThreads;j++) redctx->thread_status[j] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
   }
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscScalar),&redout->thread_ctr);CHKERRQ(ierr);
+  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&redout->thread_ctr);CHKERRQ(ierr);
   for(j=0;j<tcomm->nworkThreads;j++) redout->thread_ctr[j] = 0;
   *newred = redout;
   PetscFunctionReturn(0);
