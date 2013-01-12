@@ -12,6 +12,7 @@
 #endif
 #define TSType character*(80)
 #define TSAdaptType character*(80)
+#define TSEquationType PetscEnum
 #define TSConvergedReason PetscEnum
 #define TSExactFinalTimeOption PetscEnum
 #define TSSundialsType PetscEnum
@@ -49,6 +50,11 @@
 #define TSADAPTCFL   'cfl'
 
 #define TSARKIMEXType character*(80)
+#define TSARKIMEX1BEE   '1bee'
+#define TSARKIMEXA2     'a2'
+#define TSARKIMEXL2     'l2'
+#define TSARKIMEXARS122 'ars122'
+#define TSARKIMEX2C     '2c'
 #define TSARKIMEX2D     '2d'
 #define TSARKIMEX2E     '2e'
 #define TSARKIMEXPRSSP2 'prssp2'

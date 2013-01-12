@@ -14,17 +14,16 @@ EXTERN_C_BEGIN
 PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
-  PetscInt       trank;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(tcomm->type,OPENMP);CHKERRQ(ierr);
   tcomm->ops->runkernel = PetscThreadCommRunKernel_OpenMP;
   tcomm->ops->getrank   = PetscThreadCommGetRank_OpenMP;
-#pragma omp parallel num_threads(tcomm->nworkThreads) shared(tcomm) private(ierr,trank)
+#pragma omp parallel num_threads(tcomm->nworkThreads) shared(tcomm)
   {
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     cpu_set_t mset;
-    PetscInt ncores, icorr;
+    PetscInt ncores, icorr,trank;
     PetscGetNCores(&ncores);
     CPU_ZERO(&mset);
     trank = omp_get_thread_num();

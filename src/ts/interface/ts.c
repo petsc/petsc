@@ -73,7 +73,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_monitor_draw_solution - Monitor solution graphically
 .  -ts_monitor_draw_error - Monitor error graphically
 .  -ts_monitor_draw_solution_binary <filename> - Save each solution to a binary file
--  -ts_monitor_draw_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%03D.vts
+-  -ts_monitor_draw_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
 
    Level: beginner
 
@@ -3297,6 +3297,58 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
 {
   PetscFunctionBegin;
   *flg = SAME_PRECONDITIONER;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSGetEquationType"
+/*@
+   TSGetEquationType - Gets the type of the equation that TS is solving.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  equation_type - see TSEquatioType 
+
+   Level: beginner
+
+.keywords: TS, equation type
+
+.seealso: TSSetEquationType(), TSEquationType
+@*/
+PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(equation_type,2);
+  *equation_type = ts->equation_type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetEquationType"
+/*@
+   TSSetEquationType - Sets the type of the equation that TS is solving.
+
+   Not Collective
+
+   Input Parameter:
++  ts - the TS context
+.  equation_type - see TSEquatioType 
+
+   Level: advanced
+
+.keywords: TS, equation type
+
+.seealso: TSGetEquationType(), TSEquationType
+@*/
+PetscErrorCode  TSSetEquationType(TS ts,TSEquationType equation_type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->equation_type = equation_type;
   PetscFunctionReturn(0);
 }
 

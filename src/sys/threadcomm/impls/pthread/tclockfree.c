@@ -67,7 +67,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
   while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
     glob_kernel_ctr = PetscReadOnce(int,PetscJobQueue->kernel_ctr);
     if (my_kernel_ctr < glob_kernel_ctr) {
-      job = PetscJobQueue->jobs[my_job_counter];
+      job = &PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
       if (job->job_status[PetscPThreadRank] == THREAD_JOB_RECIEVED) {
@@ -76,7 +76,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 	/* Post job completed status */
 	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
       }
-      my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
+      my_job_counter = (my_job_counter+1)%job->tcomm->nkernels;
       my_kernel_ctr++;
     }
     PetscCPURelax();
@@ -92,7 +92,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
   PetscInt active_threads=0,i;
   PetscBool wait=PETSC_TRUE;
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
-  PetscThreadCommJobCtx job=PetscJobQueue->jobs[tcomm->job_ctr];
+  PetscThreadCommJobCtx job=&PetscJobQueue->jobs[tcomm->job_ctr];
   PetscInt job_status;
 
   PetscFunctionBegin;
@@ -121,14 +121,9 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
 
   PetscFunctionBegin;
 
-#if defined(PETSC_HAVE_MEMALIGN)
-  /* Align data and my_job_status so that each thread reads from/writes to a seperate cache line */
-  job_lockfree.data = (PetscThreadCommJobCtx*)memalign(PETSC_LEVEL1_DCACHE_LINESIZE,tcomm->nworkThreads*PETSC_LEVEL1_DCACHE_LINESIZE);
-  job_lockfree.my_job_status = (int*)memalign(PETSC_LEVEL1_DCACHE_LINESIZE,tcomm->nworkThreads*PETSC_LEVEL1_DCACHE_LINESIZE);
-#else
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscThreadCommJobCtx),&job_lockfree.data);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&job_lockfree.my_job_status);CHKERRQ(ierr);
-#endif
+
   /* Create threads */
   for (i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.my_job_status[i] = THREAD_CREATED;
@@ -164,13 +159,9 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
     job_lockfree.my_job_status[i] = THREAD_TERMINATE;
     ierr = pthread_join(ptcomm->tid[i],&jstatus);CHKERRQ(ierr);
   }
-#if defined(PETSC_HAVE_MEMALIGN)
-  free(job_lockfree.my_job_status);
-  free(job_lockfree.data);
-#else
   ierr = PetscFree(job_lockfree.my_job_status);CHKERRQ(ierr);
   ierr = PetscFree(job_lockfree.data);CHKERRQ(ierr);
-#endif
+
   PetscFunctionReturn(0);
 }
 
