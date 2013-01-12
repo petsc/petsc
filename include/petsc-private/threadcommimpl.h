@@ -93,7 +93,7 @@ typedef struct _p_PetscThreadCommJobQueue* PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
   PetscInt ctr;                                         /* job counter */
   PetscInt kernel_ctr;                                  /* kernel counter .. need this otherwise race conditions are unavoidable */
-  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];        /* queue of jobs */
+  PetscThreadCommJobCtx jobs;                           /* queue of jobs */
 };
 
 extern PetscThreadCommJobQueue PetscJobQueue;
