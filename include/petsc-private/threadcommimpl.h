@@ -25,9 +25,6 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
 
-/* Max. number of kernels */
-#define PETSC_KERNELS_MAX 32
-
 /* Reduction status of threads */
 #define THREADCOMM_THREAD_WAITING_FOR_NEWRED 0
 #define THREADCOMM_THREAD_POSTED_LOCALRED    1
@@ -120,6 +117,7 @@ struct _p_PetscThreadComm{
   PetscThreadCommReduction red;          /* Reduction context */
   PetscInt                job_ctr;      /* which job is this threadcomm running in the job queue */
   PetscBool               isnothread;   /* No threading model used */
+  PetscInt                nkernels;     /* Maximum kernels launched */
 };
 
 /* register thread communicator models */

@@ -76,7 +76,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 	/* Post job completed status */
 	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
       }
-      my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
+      my_job_counter = (my_job_counter+1)%job->tcomm->nkernels;
       my_kernel_ctr++;
     }
     PetscCPURelax();

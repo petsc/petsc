@@ -554,7 +554,7 @@ PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, Petsc
 
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  job_num = PetscJobQueue->ctr%PETSC_KERNELS_MAX;
+  job_num = PetscJobQueue->ctr%tcomm->nkernels;
   job = &PetscJobQueue->jobs[job_num];
   if (val1) *val1 = &job->scalars[0];
   if (val2) *val2 = &job->scalars[1];
@@ -606,7 +606,7 @@ PetscErrorCode PetscThreadCommGetInts(MPI_Comm comm,PetscInt **val1, PetscInt **
 
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  job_num = PetscJobQueue->ctr%PETSC_KERNELS_MAX;
+  job_num = PetscJobQueue->ctr%tcomm->nkernels;
   job = &PetscJobQueue->jobs[job_num];
   if (val1) *val1 = &job->ints[0];
   if (val2) *val2 = &job->ints[1];
@@ -675,7 +675,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   va_end(argptr);
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
   if (tcomm->isnothread) {
     ierr = PetscRunKernel(0,job->nargs,job);CHKERRQ(ierr);
@@ -744,7 +744,7 @@ PetscErrorCode PetscThreadCommRunKernel0(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
 
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
@@ -812,7 +812,7 @@ PetscErrorCode PetscThreadCommRunKernel1(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
 
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
@@ -882,7 +882,7 @@ PetscErrorCode PetscThreadCommRunKernel2(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
 
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
@@ -954,7 +954,7 @@ PetscErrorCode PetscThreadCommRunKernel3(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
 
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
@@ -1028,7 +1028,7 @@ PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
 
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
@@ -1107,7 +1107,7 @@ PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
 
-  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%tcomm->nkernels; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
 
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
@@ -1221,9 +1221,15 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
-  ierr = PetscMalloc(PETSC_KERNELS_MAX*sizeof(struct _p_PetscThreadCommJobCtx),&PetscJobQueue->jobs);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*PETSC_KERNELS_MAX*sizeof(PetscInt),&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
-  for (i=0;i<PETSC_KERNELS_MAX;i++) {
+
+  tcomm->nkernels = 16;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting number of kernels",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-threadcomm_nkernels","number of kernels that can be launched simultaneously","",16,&tcomm->nkernels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscMalloc(tcomm->nkernels*sizeof(struct _p_PetscThreadCommJobCtx),&PetscJobQueue->jobs);CHKERRQ(ierr);
+  ierr = PetscMalloc(tcomm->nworkThreads*tcomm->nkernels*sizeof(PetscInt),&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
+  for (i=0;i<tcomm->nkernels;i++) {
     PetscJobQueue->jobs[i].job_status = PetscJobQueue->jobs[0].job_status + i*tcomm->nworkThreads;
     for (j=0;j<tcomm->nworkThreads;j++) PetscJobQueue->jobs[i].job_status[j] = THREAD_JOB_NONE;
   }
