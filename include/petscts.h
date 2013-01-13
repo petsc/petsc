@@ -51,6 +51,37 @@ E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /*E
+   TSEquationType - type of TS problem that is solved
+
+   Level: beginner
+
+   Developer Notes: this must match finclude/petscts.h
+
+   Supported types are:
+     TS_EQ_UNSPECIFIED (default)
+     TS_EQ_EXPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) := M(t) U_t - G(U,t) = 0
+     TS_EQ_IMPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) = 0
+
+.seealso: TSGetEquationType(), TSSetEquationType()
+E*/
+typedef enum {
+  TS_EQ_UNSPECIFIED               = -1,
+  TS_EQ_EXPLICIT                  = 0,
+  TS_EQ_ODE_EXPLICIT              = 1,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEX1  = 100,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEX2  = 200,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEX3  = 300,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI = 500,
+  TS_EQ_IMPLICIT                  = 1000,
+  TS_EQ_ODE_IMPLICIT              = 1001,
+  TS_EQ_DAE_IMPLICIT_INDEX1       = 1100,
+  TS_EQ_DAE_IMPLICIT_INDEX2       = 1200,
+  TS_EQ_DAE_IMPLICIT_INDEX3       = 1300,
+  TS_EQ_DAE_IMPLICIT_INDEXHI      = 1500,
+} TSEquationType;
+PETSC_EXTERN const char *const*TSEquationTypes;
+
+/*E
    TSConvergedReason - reason a TS method has converged or not
 
    Level: beginner
@@ -177,6 +208,8 @@ PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
 PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
+PETSC_EXTERN PetscErrorCode TSGetEquationType(TS,TSEquationType*);
+PETSC_EXTERN PetscErrorCode TSSetEquationType(TS,TSEquationType);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
 PETSC_EXTERN PetscErrorCode TSSetConvergedReason(TS,TSConvergedReason);
 PETSC_EXTERN PetscErrorCode TSGetSolveTime(TS,PetscReal*);
@@ -298,6 +331,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
   TSRegisterDynamic - Adds a creation method to the TS package.
 
   Synopsis:
+  #include "petscts.h"
   PetscErrorCode TSRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(TS))
 
   Not Collective
@@ -413,6 +447,7 @@ typedef const char *TSAdaptType;
    TSAdaptRegisterDynamic - adds a TSAdapt implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -508,6 +543,7 @@ typedef const char *TSGLAdaptType;
    TSGLAdaptRegisterDynamic - adds a TSGLAdapt implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -583,6 +619,7 @@ PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],const char[],const c
    TSGLAcceptRegisterDynamic - adds a TSGL acceptance scheme
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLAcceptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -640,6 +677,7 @@ typedef const char* TSGLType;
    TSGLRegisterDynamic - adds a TSGL implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -700,6 +738,7 @@ PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,TSGLAcceptType);
 .seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
 J*/
 typedef const char* TSARKIMEXType;
+#define TSARKIMEX1BEE   "1bee"
 #define TSARKIMEXA2     "a2"
 #define TSARKIMEXL2     "l2"
 #define TSARKIMEXARS122 "ars122"

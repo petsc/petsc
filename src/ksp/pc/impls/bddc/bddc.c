@@ -39,7 +39,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsBool("-pc_bddc_faces_only"      ,"Use only faces among constraints of coarse space (i.e. discard edges)"         ,"none",pcbddc->faces_flag      ,&pcbddc->faces_flag      ,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_edges_only"      ,"Use only edges among constraints of coarse space (i.e. discard faces)"         ,"none",pcbddc->edges_flag      ,&pcbddc->edges_flag      ,PETSC_NULL);CHKERRQ(ierr);
   /* Coarse solver context */
-  static const char * const avail_coarse_problems[] = {"sequential","replicated","parallel","multilevel","CoarseProblemType","PC_BDDC_",0}; /*order of choiches depends on ENUM defined in bddc.h */
+  static const char * const avail_coarse_problems[] = {"sequential","replicated","parallel","multilevel","CoarseProblemType","PC_BDDC_",0}; /* order of choiches depends on ENUM defined in bddc.h */
   ierr = PetscOptionsEnum("-pc_bddc_coarse_problem_type","Set coarse problem type","none",avail_coarse_problems,(PetscEnum)pcbddc->coarse_problem_type,(PetscEnum*)&pcbddc->coarse_problem_type,PETSC_NULL);CHKERRQ(ierr);
   /* Two different application of BDDC to the whole set of dofs, internal and interface */
   ierr = PetscOptionsBool("-pc_bddc_switch_preconditioning_type","Switch between M_2 (default) and M_3 preconditioners (as defined by Dohrmann)","none",pcbddc->inexact_prec_type,&pcbddc->inexact_prec_type,PETSC_NULL);CHKERRQ(ierr);
@@ -1566,29 +1566,6 @@ static PetscErrorCode PCBDDCAdaptNullSpace(PC pc)
   ierr = VecNormalize(new_nsp_vecs[0],PETSC_NULL);CHKERRQ(ierr);
   /* TODO : Orthonormalize vecs when new_nsp_size > 0! */
 
-  /*PetscBool nsp_t=PETSC_FALSE;
-  ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
-  printf("Original Null Space test: %d\n",nsp_t);
-  Mat temp_mat;
-  Mat_IS* matis = (Mat_IS*)pc->pmat->data;
-    temp_mat = matis->A;
-    matis->A = pcbddc->local_mat;
-    pcbddc->local_mat = temp_mat;
-  ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
-  printf("Original Null Space, mat changed test: %d\n",nsp_t);
-  {
-    PetscReal test_norm;
-    for (i=0;i<new_nsp_size;i++) {
-      ierr = MatMult(pc->pmat,new_nsp_vecs[i],pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecNorm(pcis->vec1_global,NORM_2,&test_norm);CHKERRQ(ierr);
-      if (test_norm > 1.e-12) {
-        printf("------------ERROR VEC %d------------------\n",i);
-        ierr = VecView(pcis->vec1_global,PETSC_VIEWER_STDOUT_WORLD);
-        printf("------------------------------------------\n");
-      }
-    }
-  }*/
-
   ierr = KSPDestroy(&inv_change);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(((PetscObject)pc)->comm,PETSC_FALSE,new_nsp_size,new_nsp_vecs,&new_nsp);CHKERRQ(ierr);
   ierr = PCBDDCSetNullSpace(pc,new_nsp);CHKERRQ(ierr);
@@ -1788,9 +1765,6 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
       partial_sum++;
     }
   }
-  /*printf("I found %d local lambda dofs\n",n_local_lambda);
-  printf("I found %d boundary dofs (should be %d)\n",n_boundary_dofs,pcis->n_B);
-  printf("Partial sum %d should be %d\n",partial_sum,dual_size);*/
   ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
 
   ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
@@ -2064,9 +2038,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-    /******************************************************************/
     /* TEST A/B: Test numbering of global lambda dofs             */
-    /******************************************************************/
 
     ierr = VecDuplicate(fetidpmat_ctx->lambda_local,&test_vec);CHKERRQ(ierr);
     ierr = VecSet(lambda_global,1.0);CHKERRQ(ierr);
@@ -2089,10 +2061,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
 
-    /******************************************************************/
     /* TEST C: It should holds B_delta*w=0, w\in\widehat{W}           */
     /* This is the meaning of the B matrix                            */
-    /******************************************************************/
 
     ierr = VecSetRandom(pcis->vec1_N,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
@@ -2111,12 +2081,10 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     ierr = PetscViewerASCIIPrintf(viewer,"C[coll]: CHECK infty norm of B_delta*w (w continuous): % 1.14e\n",scalar_value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-    /******************************************************************/
     /* TEST D: It should holds E_Dw = w - P_Dw w\in\widetilde{W}     */
     /* E_D = R_D^TR                                                   */
     /* P_D = B_{D,delta}^T B_{delta}                                  */
     /* eq.44 Mandel Tezaur and Dohrmann 2005                          */
-    /******************************************************************/
 
     /* compute a random vector in \widetilde{W} */
     ierr = VecSetRandom(pcis->vec1_N,PETSC_NULL);CHKERRQ(ierr);
@@ -2168,10 +2136,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"D[%04d] CHECK infty norm of E_D + P_D - I: % 1.14e\n",rank,scalar_value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-    /******************************************************************/
     /* TEST E: It should holds R_D^TP_Dw=0 w\in\widetilde{W}          */
     /* eq.48 Mandel Tezaur and Dohrmann 2005                          */
-    /******************************************************************/
 
     ierr = VecSetRandom(pcis->vec1_N,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
@@ -2206,10 +2172,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     if (!fully_redundant) {
-      /******************************************************************/
       /* TEST F: It should holds B_{delta}B^T_{D,delta}=I               */
       /* Corollary thm 14 Mandel Tezaur and Dohrmann 2005               */
-      /******************************************************************/
       ierr = VecDuplicate(lambda_global,&test_vec);CHKERRQ(ierr);
       ierr = VecSetRandom(lambda_global,PETSC_NULL);CHKERRQ(ierr);
       /* Action of B_Ddelta^T */
@@ -2643,12 +2607,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     abs_tol=1.e-8;
-/*    LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,&temp_work,&lwork,&lierr); */
     LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,
                  &abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,&temp_work,&lwork,iwork,ifail,&lierr);
 #else
-/*    LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,&temp_work,&lwork,rwork,&lierr); */
-/*  LAPACK call is missing here! TODO */
     SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
 #endif
     if ( lierr ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEVX Lapack routine %d",(int)lierr);
@@ -3696,16 +3657,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,coarse_submat_vals,&coarse_sub_mat);CHKERRQ(ierr);
       ierr = MatConvert(coarse_sub_mat,checkmattype,MAT_REUSE_MATRIX,&coarse_sub_mat);CHKERRQ(ierr);
 
-      /*PetscViewer view_out;
-      PetscMPIInt myrank;
-      char filename[256];
-      MPI_Comm_rank(((PetscObject)pc)->comm,&myrank);
-      sprintf(filename,"coarsesubmat_%04d.m",myrank);
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&view_out);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(view_out,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-      ierr = MatView(coarse_sub_mat,view_out);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);*/
-
       ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Check coarse sub mat and local basis functions\n");CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -4010,12 +3961,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
 
   if (dbg_flag) {
     ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem is %d\n",pcbddc->coarse_size);CHKERRQ(ierr);
-    /*ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
-    for (i=0;i<pcbddc->local_primal_size;i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"local_primal_indices[%d]=%d \n",i,pcbddc->local_primal_indices[i]);
-    }*/
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   }
 
@@ -4192,13 +4137,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = PetscFree(array_int);CHKERRQ(ierr);
       if (rank_prec_comm == master_proc) {
         for (i=0;i<total_faces;i++) faces_adjncy[i]=(MetisInt)(petsc_faces_adjncy[i]/ranks_stretching_ratio); /* cast to MetisInt */
-        /*printf("This is the face connectivity (actual ranks)\n");
-        for (i=0;i<n_subdomains;i++){
-          printf("proc %d is connected with \n",i);
-          for (j=faces_xadj[i];j<faces_xadj[i+1];j++)
-            printf("%d ",faces_adjncy[j]);
-          printf("\n");
-        }*/
         ierr = PetscFree(faces_displacements);CHKERRQ(ierr);
         ierr = PetscFree(number_of_faces);CHKERRQ(ierr);
         ierr = PetscFree(petsc_faces_adjncy);CHKERRQ(ierr);
@@ -4284,26 +4222,26 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             }
           }
         }
-        /*for (j=0;j<size_coarse_comm;j++) {
+        /* for (j=0;j<size_coarse_comm;j++) {
           printf("process %d in new rank will receive from %d processes (original ranks follows)\n",j,total_count_recv[j]);
           for (i=0;i<total_count_recv[j];i++) {
             printf("%d ",total_ranks_recv[displacements_recv[j]+i]);
           }
           printf("\n");
-        }*/
+        } */
 
         /* identify new decomposition in terms of ranks in the old communicator */
         for (i=0;i<n_subdomains;i++) {
           coarse_subdivision[ranks_stretching_ratio*i]=coarse_subdivision[ranks_stretching_ratio*i]*procs_jumps_coarse_comm;
         }
-        /*printf("coarse_subdivision in old end new ranks\n");
+        /* printf("coarse_subdivision in old end new ranks\n");
         for (i=0;i<size_prec_comm;i++)
           if (coarse_subdivision[i]!=MPI_PROC_NULL) {
             printf("%d=(%d %d), ",i,coarse_subdivision[i],coarse_subdivision[i]/procs_jumps_coarse_comm);
           } else {
             printf("%d=(%d %d), ",i,coarse_subdivision[i],coarse_subdivision[i]);
           }
-        printf("\n");*/
+        printf("\n"); */
       }
 
       /* Scatter new decomposition for send details */
@@ -4315,13 +4253,13 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         ierr = MPI_Scatterv(&total_ranks_recv[0],total_count_recv,displacements_recv,MPIU_INT,&ranks_recv[0],count_recv,MPIU_INT,master_proc,coarse_comm);CHKERRQ(ierr);
       }
 
-      /*printf("I will send my matrix data to proc  %d\n",rank_coarse_proc_send_to);
+      /* printf("I will send my matrix data to proc  %d\n",rank_coarse_proc_send_to);
       if (coarse_color == 0) {
         printf("I will receive some matrix data from %d processes (ranks follows)\n",count_recv);
         for (i=0;i<count_recv;i++)
           printf("%d ",ranks_recv[i]);
         printf("\n");
-      }*/
+      } */
 
       if (rank_prec_comm == master_proc) {
         ierr = PetscFree(coarse_subdivision);CHKERRQ(ierr);

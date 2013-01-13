@@ -60,7 +60,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const ch
 /*MC
    PetscViewerRegisterDynamic - Adds a viewer
 
-   Synopsis:
+   Synopsis
+   #include "petscviewer.h"
    PetscErrorCode PetscViewerRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
 
    Not Collective

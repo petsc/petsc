@@ -24,6 +24,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    PetscTime - Returns the current time of day in seconds.
 
    Synopsis:
+    #include "petsctime.h"
    PetscTime(PetscLogDouble v)
 
    Not Collective
@@ -54,6 +55,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    the value v.
 
    Synopsis:
+    #include "petsctime.h"
    PetscTimeSubtract(PetscLogDouble v)
 
    Not Collective
@@ -80,6 +82,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    PetscTimeAdd - Adds the current time of day (in seconds) to the value v.
 
    Synopsis:
+    #include "petsctime.h"
    PetscTimeAdd(PetscLogDouble v)
 
    Not Collective

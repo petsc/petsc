@@ -192,6 +192,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
@@ -1938,7 +1939,6 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
    Input Arguments:
 +  global - global DM
-.
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
 
@@ -1965,7 +1965,7 @@ $    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 @*/
 PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*),void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   DMSubDomainHookLink link,*p;
 
   PetscFunctionBegin;

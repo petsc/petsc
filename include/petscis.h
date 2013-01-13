@@ -48,9 +48,10 @@ PETSC_EXTERN PetscErrorCode ISRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode ISCreate(MPI_Comm,IS*);
 
 /*MC
-  ISRegisterDynamic - Adds a new vector component implementation
+  ISRegisterDynamic - Adds a new index set implementation
 
   Synopsis:
+  #include "petscis.h"
   PetscErrorCode ISRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(IS))
 
   Not Collective

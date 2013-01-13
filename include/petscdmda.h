@@ -179,6 +179,7 @@ typedef struct {
       DMDAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DMDA
 
    Synopsis:
+   #include "petscdm.h"
    void  DMDAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
 
    Not Collective
@@ -196,6 +197,7 @@ M*/
       DMDAForEachPointEnd2d - Ends a loop over the local part of a two dimensional DMDA
 
    Synopsis:
+   #include "petscdm.h"
    void  DMDAForEachPointEnd2d;
 
    Not Collective

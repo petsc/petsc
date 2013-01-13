@@ -1378,6 +1378,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
    when you no longer need access to the array.
 
    Synopsis:
+   #include "petscvec.h"
    PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 
    Collective on Vec
@@ -1504,6 +1505,7 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
    Synopsis:
+   #include "petscvec.h"
    PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
    Collective on Vec
