@@ -802,7 +802,7 @@ FILTER_PATTERNS        = */src/vec/pf/*=../src/docs/doxygen/pf-commentfilter.sh 
 # INPUT_FILTER) will be used to filter the input files when producing source
 # files to browse (i.e. when SOURCE_BROWSER is set to YES).
 
-FILTER_SOURCE_FILES    = YES
+FILTER_SOURCE_FILES    = NO
 
 # The FILTER_SOURCE_PATTERNS tag can be used to specify source filters per file
 # pattern. A pattern will override the setting for FILTER_PATTERN (if any)
@@ -810,7 +810,7 @@ FILTER_SOURCE_FILES    = YES
 # using *.ext= (so without naming a filter). This option only has effect when
 # FILTER_SOURCE_FILES is enabled.
 
-FILTER_SOURCE_PATTERNS = *.c=../src/docs/doxygen/example-filter.sh
+FILTER_SOURCE_PATTERNS = 
 
 # If the USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that
 # is part of the input, its contents will be placed on the main page (index.html).
