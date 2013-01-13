@@ -365,7 +365,7 @@ LOOKUP_CACHE_SIZE      = 0
 # Private class members and static file members will be hidden unless
 # the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES
 
-EXTRACT_ALL            = YES
+EXTRACT_ALL            = NO
 
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class
 # will be included in the documentation.
@@ -386,7 +386,7 @@ EXTRACT_STATIC         = NO
 # defined locally in source files will be included in the documentation.
 # If set to NO only classes defined in header files are included.
 
-EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_CLASSES  = NO
 
 # This flag is only useful for Objective-C code. When set to YES local
 # methods, which are defined in the implementation section but not in
@@ -728,23 +728,23 @@ EXCLUDE_SYMBOLS        = __FUNCT__ ALE::PCICE
 # directories that contain example code fragments that are included (see
 # the \include command).
 
-EXAMPLE_PATH           = ../src/vec/vec/examples/tutorials/ \
-                         ../src/vec/is/examples/tutorials/ \
-                         ../src/vec/pf/examples/tutorials/ \
-                         ../src/ts/examples/tutorials/ \
-                         ../src/dm/ao/examples/tutorials/ \
-                         ../src/dm/impls/mesh/examples/tutorials/ \
-                         ../src/dm/examples/tutorials/ \
-                         ../src/ksp/ksp/examples/tutorials/ \
-                         ../src/sys/threadcomm/examples/tutorials/ \
-                         ../src/sys/shell/examples/tutorials/ \
-                         ../src/sys/classes/sf/examples/tutorials/ \
-                         ../src/sys/classes/viewer/examples/tutorials/ \
-                         ../src/sys/classes/draw/examples/tutorials/ \
-                         ../src/sys/classes/random/examples/tutorials/ \
-                         ../src/sys/examples/tutorials/ \
-                         ../src/mat/examples/tutorials/ \
-                         ../src/snes/examples/tutorials/ \
+EXAMPLE_PATH           = ../src2/vec/vec/examples/tutorials/ \
+                         ../src2/vec/is/examples/tutorials/ \
+                         ../src2/vec/pf/examples/tutorials/ \
+                         ../src2/ts/examples/tutorials/ \
+                         ../src2/dm/ao/examples/tutorials/ \
+                         ../src2/dm/impls/mesh/examples/tutorials/ \
+                         ../src2/dm/examples/tutorials/ \
+                         ../src2/ksp/ksp/examples/tutorials/ \
+                         ../src2/sys/threadcomm/examples/tutorials/ \
+                         ../src2/sys/shell/examples/tutorials/ \
+                         ../src2/sys/classes/sf/examples/tutorials/ \
+                         ../src2/sys/classes/viewer/examples/tutorials/ \
+                         ../src2/sys/classes/draw/examples/tutorials/ \
+                         ../src2/sys/classes/random/examples/tutorials/ \
+                         ../src2/sys/examples/tutorials/ \
+                         ../src2/mat/examples/tutorials/ \
+                         ../src2/snes/examples/tutorials/ \
                          ../src/docs/doxygen/ \
                          ../src/docs/doxygen/examples/
 
@@ -802,7 +802,7 @@ FILTER_PATTERNS        = */src/vec/pf/*=../src/docs/doxygen/pf-commentfilter.sh 
 # INPUT_FILTER) will be used to filter the input files when producing source
 # files to browse (i.e. when SOURCE_BROWSER is set to YES).
 
-FILTER_SOURCE_FILES    = NO
+FILTER_SOURCE_FILES    = YES
 
 # The FILTER_SOURCE_PATTERNS tag can be used to specify source filters per file
 # pattern. A pattern will override the setting for FILTER_PATTERN (if any)
@@ -810,7 +810,7 @@ FILTER_SOURCE_FILES    = NO
 # using *.ext= (so without naming a filter). This option only has effect when
 # FILTER_SOURCE_FILES is enabled.
 
-FILTER_SOURCE_PATTERNS =
+FILTER_SOURCE_PATTERNS = *.c=../src/docs/doxygen/example-filter.sh
 
 # If the USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that
 # is part of the input, its contents will be placed on the main page (index.html).
