@@ -728,23 +728,24 @@ EXCLUDE_SYMBOLS        = __FUNCT__ ALE::PCICE
 # directories that contain example code fragments that are included (see
 # the \include command).
 
-EXAMPLE_PATH           = ../src2/vec/vec/examples/tutorials/ \
-                         ../src2/vec/is/examples/tutorials/ \
-                         ../src2/vec/pf/examples/tutorials/ \
-                         ../src2/ts/examples/tutorials/ \
-                         ../src2/dm/ao/examples/tutorials/ \
-                         ../src2/dm/impls/mesh/examples/tutorials/ \
-                         ../src2/dm/examples/tutorials/ \
-                         ../src2/ksp/ksp/examples/tutorials/ \
-                         ../src2/sys/threadcomm/examples/tutorials/ \
-                         ../src2/sys/shell/examples/tutorials/ \
-                         ../src2/sys/classes/sf/examples/tutorials/ \
-                         ../src2/sys/classes/viewer/examples/tutorials/ \
-                         ../src2/sys/classes/draw/examples/tutorials/ \
-                         ../src2/sys/classes/random/examples/tutorials/ \
-                         ../src2/sys/examples/tutorials/ \
-                         ../src2/mat/examples/tutorials/ \
-                         ../src2/snes/examples/tutorials/ \
+EXAMPLE_PATH           = ../src/vec/vec/examples/tutorials/ \
+                         ../src/vec/is/examples/tutorials/ \
+                         ../src/vec/pf/examples/tutorials/ \
+                         ../src/ts/examples/tutorials/ \
+                         ../src/dm/ao/examples/tutorials/ \
+                         ../src/dm/impls/mesh/examples/tutorials/ \
+                         ../src/dm/examples/tutorials/ \
+                         ../src/ksp/pc/examples/tutorials/ \
+                         ../src/ksp/ksp/examples/tutorials/ \
+                         ../src/sys/threadcomm/examples/tutorials/ \
+                         ../src/sys/shell/examples/tutorials/ \
+                         ../src/sys/classes/sf/examples/tutorials/ \
+                         ../src/sys/classes/viewer/examples/tutorials/ \
+                         ../src/sys/classes/draw/examples/tutorials/ \
+                         ../src/sys/classes/random/examples/tutorials/ \
+                         ../src/sys/examples/tutorials/ \
+                         ../src/mat/examples/tutorials/ \
+                         ../src/snes/examples/tutorials/ \
                          ../src/docs/doxygen/ \
                          ../src/docs/doxygen/examples/
 
@@ -788,7 +789,8 @@ INPUT_FILTER           = ../src/docs/doxygen/commentfilter.sh
 # info on how filters are used. If FILTER_PATTERNS is empty or if
 # non of the patterns match the file name, INPUT_FILTER is applied.
 
-FILTER_PATTERNS        = */src/vec/pf/*=../src/docs/doxygen/pf-commentfilter.sh \
+FILTER_PATTERNS        = *examples/tutorials/*=../src/docs/doxygen/example-filter.sh \
+                         */src/vec/pf/*=../src/docs/doxygen/pf-commentfilter.sh \
                          */src/vec/is/*=../src/docs/doxygen/is-commentfilter.sh \
                          */src/vec/vec/*=../src/docs/doxygen/vec-commentfilter.sh \
                          */src/mat/*=../src/docs/doxygen/mat-commentfilter.sh \
@@ -796,13 +798,14 @@ FILTER_PATTERNS        = */src/vec/pf/*=../src/docs/doxygen/pf-commentfilter.sh 
                          */src/ksp/pc/*=../src/docs/doxygen/pc-commentfilter.sh \
                          */src/snes/*=../src/docs/doxygen/snes-commentfilter.sh \
                          */src/ts/*=../src/docs/doxygen/ts-commentfilter.sh \
-                         */src/dm/*=../src/docs/doxygen/dm-commentfilter.sh 
+                         */src/dm/*=../src/docs/doxygen/dm-commentfilter.sh
+                         
 
 # If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using
 # INPUT_FILTER) will be used to filter the input files when producing source
 # files to browse (i.e. when SOURCE_BROWSER is set to YES).
 
-FILTER_SOURCE_FILES    = NO
+FILTER_SOURCE_FILES    = YES
 
 # The FILTER_SOURCE_PATTERNS tag can be used to specify source filters per file
 # pattern. A pattern will override the setting for FILTER_PATTERN (if any)
