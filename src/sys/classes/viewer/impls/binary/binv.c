@@ -710,11 +710,12 @@ static PetscErrorCode PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,Petsc
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
   MPI_Datatype       mdtype;
-  PetscMPIInt        cnt = PetscMPIIntCast(count);
+  PetscMPIInt        cnt;
   MPI_Status         status;
   MPI_Aint           ul,dsize;
 
   PetscFunctionBegin;
+  cnt = PetscMPIIntCast(count);
   ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);
   ierr = MPI_File_set_view(vbinary->mfdes,vbinary->moff,mdtype,mdtype,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
   if (write) {

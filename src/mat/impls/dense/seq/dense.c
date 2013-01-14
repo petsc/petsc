@@ -236,10 +236,11 @@ PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
   PetscErrorCode ierr;
   PetscScalar    *b,*x;
   PetscInt       n;
-  PetscBLASInt   nrhs,info,m=PetscBLASIntCast(A->rmap->n);
+  PetscBLASInt   nrhs,info,m;
   PetscBool      flg;
 
   PetscFunctionBegin;
+  m = PetscBLASIntCast(A->rmap->n);
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
