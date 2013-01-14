@@ -657,8 +657,7 @@ static PetscOpFList   opallhead = 0;
 #undef __FUNCT__
 #define __FUNCT__ "PetscOpFListAdd"
 /*@C
-   PetscOpFListAdd - Given a routine and a string id, saves that routine in the
-   specified registry.
+   PetscOpFListAdd - Given a routine, a string id, and the type names of arguments saves that routine in the  specified registry.
 
    Formally collective on comm.
 
@@ -681,7 +680,7 @@ static PetscOpFList   opallhead = 0;
 
    Level: developer
 
-.seealso: PetscOpFListDestroy(),PetscOpFList,  PetscFListAdd(), PetscFList
+.seealso: PetscOpFListDestroy(), PetscOpFList,  PetscFListAdd(), PetscFList
 @*/
 PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[],PetscVoidFunction fnc,const char op[], PetscInt numArgs, char* argTypes[])
 {
@@ -868,8 +867,9 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscOpFListFind"
 /*@C
-    PetscOpFListFind - Given a name, finds the matching op routine.
-    Formally collective on comm.
+    PetscOpFListFind - Given a name, finds the matching op routine based on the declared arguments' type names.
+
+    Formally collective on MPI_Comm
 
     Input Parameters:
 +   comm     - processes looking for the op
@@ -878,11 +878,12 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
 .   numArgs  - number of op arguments
 -   argTypes - list of argument type names
 
-
     Output Parameters:
 .   r       - routine implementing op with the given arg types
 
     Level: developer
+
+    Notes: This is used to implement double dispatch and multiple dispatch based on the type names of the function arguments
 
 .seealso: PetscOpFListAdd(), PetscOpFList
 @*/

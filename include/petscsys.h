@@ -1215,9 +1215,11 @@ typedef struct _n_PetscFList *PetscFList;
 
 /*S
      PetscOpFList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries,
-                    accessed by string op name together with string argument types.
+                    accessed by string op name together with declared string argument type names.
 
    Level: advanced
+
+    Notes: This is used to implement double dispatch and multiple dispatch based on the type names of the function arguments
 
 .seealso:  PetscFList, PetscOpFListAdd(), PetscOpFListFind(), PetscOpFListDestroy()
 S*/

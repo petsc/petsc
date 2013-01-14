@@ -211,13 +211,17 @@ PetscOpFList MatOpList = 0;
 -  ...      - list of argument type names (const char*)
 
   Level: advanced
+
+.seealso: PetscOpFListAdd(), PetscOpFListFind()
 @*/
-PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction function, const char op[], PetscInt numArgs, ...) {
+PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction function, const char op[], PetscInt numArgs, ...)
+{
   PetscErrorCode ierr;
-  va_list ap;
-  PetscInt i;
-  const char *argType;
-  char **argTypes = PETSC_NULL;
+  va_list        ap;
+  PetscInt       i;
+  const char     *argType;
+  char           **argTypes = PETSC_NULL;
+
   PetscFunctionBegin;
   va_start(ap,numArgs);
   if (numArgs) {
@@ -253,14 +257,18 @@ PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction
   Output Parameters:
 .  function -- function pointer
 
+    Notes: This is used to implement double dispatch and multiple dispatch based on the type names of the functions Mat arguments
+
   Level: advanced
 @*/
-PetscErrorCode  MatQueryOp(MPI_Comm comm, PetscVoidFunction* function, const char op[], PetscInt numArgs, ...) {
+PetscErrorCode  MatQueryOp(MPI_Comm comm, PetscVoidFunction* function, const char op[], PetscInt numArgs, ...) 
+{
   PetscErrorCode ierr;
-  va_list ap;
-  PetscInt i;
-  const char *argType;
-  char **argTypes = PETSC_NULL;
+  va_list        ap;
+  PetscInt       i;
+  const char     *argType;
+  char           **argTypes = PETSC_NULL;
+
   PetscFunctionBegin;
   va_start(ap,numArgs);
   if (numArgs) {
