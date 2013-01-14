@@ -25,7 +25,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscReal       delFnrm, delFnrm_old, del2Fnrm;
   PetscInt        i, max_its;
 
-  SNESObjective   obj;
+  PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*);
 
   PetscFunctionBegin;
 
@@ -37,12 +37,12 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
-  ierr = SNESGetObjective(snes,&obj,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetObjective(snes,&SNESObjectiveFunction,PETSC_NULL);CHKERRQ(ierr);
 
   /* precheck */
   ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
-  if (!obj) {
+  if (!SNESObjectiveFunction) {
     fnrm_old = gnorm*gnorm;
   } else {
     ierr = SNESComputeObjective(snes,X,&fnrm_old);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
-    if (!obj) {
+    if (!SNESObjectiveFunction) {
       ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
       if (linesearch->ops->vinorm) {
         fnrm_mid = gnorm;
@@ -120,7 +120,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
-      if (!obj) {
+      if (!SNESObjectiveFunction) {
         ierr = PetscViewerASCIIPrintf(monitor,"    Line search: lambdas = [%g, %g, %g], fnorms = [%g, %g, %g]\n",
                                       (double)lambda, (double)lambda_mid, (double)lambda_old, (double)PetscSqrtReal(fnrm), (double)PetscSqrtReal(fnrm_mid), (double)PetscSqrtReal(fnrm_old));CHKERRQ(ierr);
       } else {

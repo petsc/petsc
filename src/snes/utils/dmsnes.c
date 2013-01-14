@@ -382,24 +382,24 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**SNESFunction)(SNES,Vec,
 
    Input Arguments:
 +  dm - DM to be used with SNES
-.  func - residual evaluation function, see SNESSetObjective() for calling sequence
+.  SNESObjectiveFunction - residual evaluation function
 -  ctx - context for residual evaluation
 
    Level: advanced
 
 .seealso: DMSNESSetContext(), SNESGetObjective(), DMSNESSetFunction()
 @*/
-PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
+PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx) {
+  if (SNESObjectiveFunction || ctx) {
     ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
-  if (func) sdm->ops->computeobjective = func;
+  if (SNESObjectiveFunction) sdm->ops->computeobjective = SNESObjectiveFunction;
   if (ctx)  sdm->objectivectx = ctx;
   PetscFunctionReturn(0);
 }
@@ -415,7 +415,7 @@ PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  func - residual evaluation function, see SNESSetObjective() for calling sequence
++  SNESObjectiveFunction- residual evaluation function
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -426,7 +426,7 @@ PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
 
 .seealso: DMSNESSetContext(), DMSNESSetObjective(), SNESSetFunction()
 @*/
-PetscErrorCode DMSNESGetObjective(DM dm,SNESObjective *func,void **ctx)
+PetscErrorCode DMSNESGetObjective(DM dm,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -434,7 +434,7 @@ PetscErrorCode DMSNESGetObjective(DM dm,SNESObjective *func,void **ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (func) *func = sdm->ops->computeobjective;
+  if (SNESObjectiveFunction) *SNESObjectiveFunction = sdm->ops->computeobjective;
   if (ctx)  *ctx = sdm->objectivectx;
   PetscFunctionReturn(0);
 }
