@@ -331,7 +331,19 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   PetscErrorCode ierr;
   IS             iis0,ois0;
   DM             subdm0;
+  DM_DA          *dd = (DM_DA*)dm;
   PetscFunctionBegin;
+
+  /* fix to enable PCASM default behavior as taking overlap from the matrix */
+  if (!dd->decompositiondm) {
+    if (len)*len=0;
+    if (names)*names=0;
+    if (iis)*iis=0;
+    if (ois)*ois=0;
+    if (subdm)*subdm=0;
+    PetscFunctionReturn(0);
+  }
+
   if (len)*len = 1;
 
   if (iis) {ierr = PetscMalloc(sizeof(IS *),iis);CHKERRQ(ierr);}
@@ -352,5 +364,22 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   }
   if (subdm) (*subdm)[0] = subdm0;
   if (names) (*names)[0] = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDomainDecompositionDM_DA"
+PetscErrorCode DMCreateDomainDecompositionDM_DA(DM dm,const char *name,DM *ddm) {
+  DM_DA          *dd = (DM_DA*)dm;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscStrcmp(name,"default",&flg);CHKERRQ(ierr);
+  if (flg) {
+    dd->decompositiondm = PETSC_TRUE;
+    *ddm = dm;
+  } else {
+    dd->decompositiondm = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }

@@ -79,7 +79,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 {
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;
   PetscErrorCode ierr;
-  DM             dm;
+  DM             dm,ddm;
   DM             *subdms;
   PetscInt       i;
   const char     *optionsprefix;
@@ -88,11 +88,22 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   PetscFunctionBegin;
 
   if (!nasm->subsnes) {
-    if (snes->dm) {
-      ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    if (dm) {
       nasm->usesdm = PETSC_TRUE;
-      /* create the subdomain dms on this proc */
       ierr = DMCreateDomainDecomposition(dm,&nasm->n,PETSC_NULL,PETSC_NULL,PETSC_NULL,&subdms);CHKERRQ(ierr);
+      if (!subdms) {
+        ierr = DMCreateDomainDecompositionDM(dm,"default",&ddm);CHKERRQ(ierr);
+        if (!ddm) {
+          SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
+        }
+        ierr = SNESSetDM(snes,ddm);CHKERRQ(ierr);
+        ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+        ierr = DMCreateDomainDecomposition(dm,&nasm->n,PETSC_NULL,PETSC_NULL,PETSC_NULL,&subdms);CHKERRQ(ierr);
+      }
+      if (!subdms) {
+        SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
+      }
       ierr = DMCreateDomainDecompositionScatters(dm,nasm->n,subdms,&nasm->iscatter,&nasm->oscatter,&nasm->gscatter);CHKERRQ(ierr);
 
       ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
@@ -138,6 +149,8 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
 {
   PetscErrorCode ierr;
+  DM             dm,ddm;
+  char           ddm_name[1024];
   PCASMType      asmtype;
   const char *const SNESNASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
   PetscBool      flg;
@@ -146,6 +159,20 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   ierr = PetscOptionsHead("Nonlinear Additive Schwartz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
   if (flg) {nasm->type = asmtype;}
+  ierr = PetscOptionsString("-snes_nasm_decomposition", "Name of the DM defining the composition", "SNESSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  if (flg) {
+    if (dm) {
+      ierr = DMCreateDomainDecompositionDM(dm, ddm_name, &ddm);CHKERRQ(ierr);
+      if (!ddm) {
+        SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Unknown DM decomposition name %s", ddm_name);
+      }
+      ierr = PetscInfo(snes,"Using domain decomposition DM defined using options database\n");CHKERRQ(ierr);
+      ierr = SNESSetDM(snes,ddm);CHKERRQ(ierr);
+    } else {
+      SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "No DM to decompose");
+    }
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -155,6 +182,8 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
 PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 {
   PetscFunctionBegin;
+  
+
   PetscFunctionReturn(0);
 }
 

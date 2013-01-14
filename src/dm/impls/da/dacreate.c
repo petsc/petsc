@@ -124,6 +124,7 @@ extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
 extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char ***,IS**,IS**,DM**);
+extern PetscErrorCode  DMCreateDomainDecompositionDM_DA(DM,const char*,DM*);
 extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter **,VecScatter**,VecScatter**);
 
 #undef __FUNCT__
@@ -296,6 +297,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->xs = -1; dd->xe = -1; dd->ys = -1; dd->ye = -1; dd->zs = -1; dd->ze = -1;
   dd->Xs = -1; dd->Xe = -1; dd->Ys = -1; dd->Ye = -1; dd->Zs = -1; dd->Ze = -1;
 
+  dd->decompositiondm = PETSC_FALSE;
   dd->overlap      = 0;
   dd->xo           = 0;
   dd->yo           = 0;
@@ -347,6 +349,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->createsubdm         = DMCreateSubDM_DA;
   da->ops->createfielddecomposition = DMCreateFieldDecomposition_DA;
   da->ops->createdomaindecomposition = DMCreateDomainDecomposition_DA;
+  da->ops->createdomaindecompositiondm = DMCreateDomainDecompositionDM_DA;
   da->ops->createddscatters = DMCreateDomainDecompositionScatters_DA;
   PetscFunctionReturn(0);
 }
