@@ -57,10 +57,11 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *ya,*xa;
-  PetscBLASInt      one = 1,bn = PetscBLASIntCast(xin->map->n);
+  PetscBLASInt      one = 1,bn;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  bn = PetscBLASIntCast(xin->map->n);
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
   /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
@@ -79,10 +80,11 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *ya,*xa;
-  PetscBLASInt      one = 1, bn = PetscBLASIntCast(xin->map->n);
+  PetscBLASInt      one = 1,bn;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  bn = PetscBLASIntCast(xin->map->n);
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
   *z = BLASdotu_(&bn,xa,&one,ya,&one);

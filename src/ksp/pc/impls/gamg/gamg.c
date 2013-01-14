@@ -674,8 +674,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         }
         
         if( stokes ) {
-          IS is_row[2] = {kktMatsArr[level].prim_is,kktMatsArr[level].constr_is};
-          Mat a[4] = {Prol11, PETSC_NULL, PETSC_NULL, Prol22 };
+          IS is_row[2];
+          Mat a[4];
+          is_row[0] = kktMatsArr[level].prim_is;
+          is_row[1] = kktMatsArr[level].constr_is;
+          a[0] = Prol11;     a[1] = PETSC_NULL;
+          a[2] = PETSC_NULL; a[3] = Prol22;
           ierr = MatCreateNest(wcomm,2,is_row, 2, is_row, a, &Parr[level1] ); CHKERRQ(ierr);
         }
         else {
