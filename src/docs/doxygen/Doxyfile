@@ -1891,3 +1891,7 @@ GENERATE_LEGEND        = YES
 # the various graphs.
 
 DOT_CLEANUP            = YES
+
+
+EXAMPLE_LINE_NUMBERS  = YES
+
