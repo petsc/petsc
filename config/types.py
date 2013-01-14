@@ -25,7 +25,7 @@ class Configure(config.base.Configure):
     self.headers   = framework.require('config.headers', self)
     return
 
-  def check(self, typeName, defaultType = None):
+  def check(self, typeName, defaultType = None, includes = []):
     '''Checks that "typeName" exists, and if not defines it to "defaultType" if given'''
     self.framework.log.write('Checking for type: '+typeName+'\n')
     include = '''
@@ -33,8 +33,9 @@ class Configure(config.base.Configure):
 #if STDC_HEADERS
 #include <stdlib.h>
 #include <stddef.h>
+%s
 #endif
-    '''
+    ''' % ('\n'.join(['#include<%s>' % inc for inc in includes]))
     found = self.checkCompile(include,typeName+' a;')
     if not found and defaultType:
       self.addTypedef(defaultType, typeName)
@@ -43,8 +44,8 @@ class Configure(config.base.Configure):
     return found
 
   def check_siginfo_t(self):
-    '''Checks if siginfo_t exists in signal.h. This check is primarily for windows.'''
-    if self.outputPreprocess('#include <signal.h>').find('siginfo_t') >=0:
+    '''Checks if siginfo_t exists in signal.h. This check is for windows, and C89 check.'''
+    if self.check('siginfo_t', includes = ['signal.h']):
       self.addDefine('HAVE_SIGINFO_T',1)
     return
 
