@@ -77,10 +77,20 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 #define __FUNCT__ "DMInterpolationSetUp"
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints) {
   MPI_Comm       comm = ctx->comm;
-  PetscScalar   *a;
+  PetscScalar    *a;
   PetscInt       p, q, i;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
+  Vec            pointVec;
+  IS             cellIS;
+  PetscLayout    layout;
+  PetscReal      *globalPoints;
+  PetscScalar    *globalPointsScalar;
+  const PetscInt *ranges;
+  PetscMPIInt    *counts, *displs;
+  const PetscInt *foundCells;
+  PetscMPIInt    *foundProcs, *globalProcs;
+  PetscInt       n, N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -89,18 +99,8 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   if (ctx->dim < 0) {
     SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
   }
-  // Locate points
-  Vec             pointVec;
-  IS              cellIS;
-  PetscLayout     layout;
-  PetscReal      *globalPoints;
-  PetscScalar    *globalPointsScalar;
-  const PetscInt *ranges;
-  PetscMPIInt    *counts, *displs;
-  const PetscInt *foundCells;
-  PetscMPIInt    *foundProcs, *globalProcs;
-  PetscInt        n = ctx->nInput, N;
-
+  /* Locate points */
+  n = ctx->nInput;
   if (!redundantPoints) {
     ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   }
 #if 0
   ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
-  //foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
+  /* foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]); */
 #else
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscMalloc(N*sizeof(PetscScalar),&globalPointsScalar);CHKERRQ(ierr);

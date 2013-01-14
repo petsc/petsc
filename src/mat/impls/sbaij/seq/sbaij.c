@@ -1948,7 +1948,7 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
                                      MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqSBAIJ",
-                                     (void*)MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
+                                     MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
                                      "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
                                      MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);

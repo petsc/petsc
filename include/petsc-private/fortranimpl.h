@@ -78,7 +78,7 @@ if (flg) {					\
 #define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
 #define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_OBJECT_Fortran)
 #define FORTRANNULLBOOL(a)    (((void*)a) == PETSC_NULL_BOOL_Fortran)
-#define FORTRANNULLFUNCTION(a) (((void(*)(void))a) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLFUNCTION(a) (((void(*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
 
 
 #define CHKFORTRANNULLINTEGER(a)					\

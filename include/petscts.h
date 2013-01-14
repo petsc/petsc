@@ -77,7 +77,7 @@ typedef enum {
   TS_EQ_DAE_IMPLICIT_INDEX1       = 1100,
   TS_EQ_DAE_IMPLICIT_INDEX2       = 1200,
   TS_EQ_DAE_IMPLICIT_INDEX3       = 1300,
-  TS_EQ_DAE_IMPLICIT_INDEXHI      = 1500,
+  TS_EQ_DAE_IMPLICIT_INDEXHI      = 1500
 } TSEquationType;
 PETSC_EXTERN const char *const*TSEquationTypes;
 

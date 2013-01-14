@@ -689,14 +689,15 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     if (!isvalid || valid_time != ts->ptime) {
       TS             ts_start;
       SNES           snes_start;
-      ierr = TSCreate(PETSC_COMM_WORLD,&ts_start);CHKERRQ(ierr);
-      ierr = TSGetSNES(ts,&snes_start);CHKERRQ(ierr);
-      ierr = TSSetSNES(ts_start,snes_start);CHKERRQ(ierr);
       TSRHSFunction  rhsfunction;
       TSIFunction    ifunction;
       TSIJacobian    ijacobian;
       void           *ctxrhs,*ctxif,*ctxij;
       DM             dm,dm_start;
+
+      ierr = TSCreate(PETSC_COMM_WORLD,&ts_start);CHKERRQ(ierr);
+      ierr = TSGetSNES(ts,&snes_start);CHKERRQ(ierr);
+      ierr = TSSetSNES(ts_start,snes_start);CHKERRQ(ierr);
       ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
       ierr = TSGetDM(ts_start,&dm_start);CHKERRQ(ierr);
 

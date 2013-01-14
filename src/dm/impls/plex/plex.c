@@ -2497,17 +2497,17 @@ static PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt numCorners, Petsc
     break;
   case 2:
     switch(numCorners) {
-    case 3: // triangle
-      *numFaceVertices = 2; // Edge has 2 vertices
+    case 3: /* triangle */
+      *numFaceVertices = 2; /* Edge has 2 vertices */
       break;
-    case 4: // quadrilateral
-      *numFaceVertices = 2; // Edge has 2 vertices
+    case 4: /* quadrilateral */
+      *numFaceVertices = 2; /* Edge has 2 vertices */
       break;
-    case 6: // quadratic triangle, tri and quad cohesive Lagrange cells
-      *numFaceVertices = 3; // Edge has 3 vertices
+    case 6: /* quadratic triangle, tri and quad cohesive Lagrange cells */
+      *numFaceVertices = 3; /* Edge has 3 vertices */
       break;
-    case 9: // quadratic quadrilateral, quadratic quad cohesive Lagrange cells
-      *numFaceVertices = 3; // Edge has 3 vertices
+    case 9: /* quadratic quadrilateral, quadratic quad cohesive Lagrange cells */
+      *numFaceVertices = 3; /* Edge has 3 vertices */
       break;
     default:
       SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %d for dimension %d", numCorners, cellDim);
@@ -2515,29 +2515,29 @@ static PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt numCorners, Petsc
     break;
   case 3:
     switch(numCorners)	{
-    case 4: // tetradehdron
-      *numFaceVertices = 3; // Face has 3 vertices
+    case 4: /* tetradehdron */
+      *numFaceVertices = 3; /* Face has 3 vertices */
       break;
-    case 6: // tet cohesive cells
-      *numFaceVertices = 4; // Face has 4 vertices
+    case 6: /* tet cohesive cells */
+      *numFaceVertices = 4; /* Face has 4 vertices */
       break;
-    case 8: // hexahedron
-      *numFaceVertices = 4; // Face has 4 vertices
+    case 8: /* hexahedron */
+      *numFaceVertices = 4; /* Face has 4 vertices */
       break;
-    case 9: // tet cohesive Lagrange cells
-      *numFaceVertices = 6; // Face has 6 vertices
+    case 9: /* tet cohesive Lagrange cells */
+      *numFaceVertices = 6; /* Face has 6 vertices */
       break;
-    case 10: // quadratic tetrahedron
-      *numFaceVertices = 6; // Face has 6 vertices
+    case 10: /* quadratic tetrahedron */
+      *numFaceVertices = 6; /* Face has 6 vertices */
       break;
-    case 12: // hex cohesive Lagrange cells
-      *numFaceVertices = 6; // Face has 6 vertices
+    case 12: /* hex cohesive Lagrange cells */
+      *numFaceVertices = 6; /* Face has 6 vertices */
       break;
-    case 18: // quadratic tet cohesive Lagrange cells
-      *numFaceVertices = 6; // Face has 6 vertices
+    case 18: /* quadratic tet cohesive Lagrange cells */
+      *numFaceVertices = 6; /* Face has 6 vertices */
       break;
-    case 27: // quadratic hexahedron, quadratic hex cohesive Lagrange cells
-      *numFaceVertices = 9; // Face has 9 vertices
+    case 27: /* quadratic hexahedron, quadratic hex cohesive Lagrange cells */
+      *numFaceVertices = 9; /* Face has 9 vertices */
       break;
     default:
       SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %d for dimension %d", numCorners, cellDim);
@@ -4829,12 +4829,12 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
-  // TODO: Put in boundary faces with markers
+  /* TODO: Put in boundary faces with markers */
   if (!rank) {
     char args[32];
 
     /* Take away 'Q' for verbose output */
-    //ierr = PetscStrcpy(args, "qezQra");CHKERRQ(ierr);
+    /*ierr = PetscStrcpy(args, "qezQra");CHKERRQ(ierr); */
     ierr = PetscStrcpy(args, "qezraVVVV");CHKERRQ(ierr);
     ::tetrahedralize(args, &in, &out);
   }
@@ -6885,7 +6885,7 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
 #if 0
   DM_Plex *mesh = (DM_Plex *) dm->data;
   PetscInt    dim, cStart, cEnd, cMax, c, vStart, vEnd, vMax;
-  //ALE::ISieveVisitor::PointRetriever<mesh_type::sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
+  /* ALE::ISieveVisitor::PointRetriever<mesh_type::sieve_type> cV(std::max(1, sieve->getMaxConeSize())); */
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -6899,12 +6899,12 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
   PetscInt newNumCellsNormal = 0, newNumCellsExtra = 0, newNumCells;
   for(c = cStart; c < cEnd2; ++c) {
     PetscInt n;
-    ierr = CellRefinerGetNumSubcells(c, &n);CHKERRQ(ierr); // refiner.numNewCells
+    ierr = CellRefinerGetNumSubcells(c, &n);CHKERRQ(ierr); /* refiner.numNewCells */
     newNumCellsNormal += n;
   }
   for(c = cEnd2; c < cEnd; ++c) {
     PetscInt n;
-    ierr = CellRefinerGetNumSubcells(c, &n);CHKERRQ(ierr); // refiner.numNewCells
+    ierr = CellRefinerGetNumSubcells(c, &n);CHKERRQ(ierr); /* refiner.numNewCells */
     newNumCellsExtra += n;
   }
   newNumCells = newNumCellsNormal + newNumCellsExtra;
@@ -6922,7 +6922,7 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
         closure[numCorners++] = point;
       }
     }
-    ierr = CellRefinerSplitCell(c, closure, numCorners, &newVertex);CHKERRQ(ierr); // refiner.splitCell
+    ierr = CellRefinerSplitCell(c, closure, numCorners, &newVertex);CHKERRQ(ierr); /* refiner.splitCell */
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
   newNumVerticesNormal = newVertex - newFirstVertex + (vEnd2 - vStart);
@@ -6937,9 +6937,9 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
         closure[numCorners++] = point;
       }
     }
-    ierr = CellRefinerSplitCellExtra(c, closure, numCorners, &newVertex);CHKERRQ(ierr); // refiner.splitCellUncensored
+    ierr = CellRefinerSplitCellExtra(c, closure, numCorners, &newVertex);CHKERRQ(ierr); /* refiner.splitCellUncensored */
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-  } // for
+  } /* for */
   newNumVerticesExtra = newVertex - newFirstVertex - newNumVerticesNormal;
   newNumVertices = newNumVerticesNormal + newNumVerticesExtra;
 
@@ -6968,7 +6968,7 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
     PetscInt coneSize, n, i;
 
     ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-    ierr = CellRefinerGetNumSubcells(refiner, c, &n); // refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+    ierr = CellRefinerGetNumSubcells(refiner, c, &n); /* refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh); */
     for(i = 0; i < n; ++i, ++newCell) {
       ierr = DMPlexSetConeSize(*dmRefined, newCell, coneSize);CHKERRQ(ierr);
     }
@@ -6983,15 +6983,15 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
         closure[numCorners++] = point;
       }
     }
-    // ierr = CellRefinerGetSubcells(refiner, c, numCorners, closure, &numNewCells, &newCells);CHKERRQ(ierr); // refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+    /* ierr = CellRefinerGetSubcells(refiner, c, numCorners, closure, &numNewCells, &newCells);CHKERRQ(ierr); // refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh); */
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
 
-  // Reset current new cell value and loop over censored cells.
+  /* Reset current new cell value and loop over censored cells. */
   curNewCell = _orderNewMesh->cellsCensored().min();
   oldCellsEnd = _orderOldMesh->cellsCensored().end();
   for (interval_type::const_iterator c_iter=_orderOldMesh->cellsCensored().begin(); c_iter != oldCellsEnd; ++c_iter) {
-    // Set new cone and support sizes
+    /* Set new cone and support sizes */
     cV.clear();
     sieve->cone(*c_iter, cV);
     const point_type* cone = cV.getPoints();
@@ -7005,14 +7005,14 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
       newSieve->setConeSize(curNewCell, coneSize);
       for(int iVertex=0; iVertex < coneSize; ++iVertex) {
 	newSieve->addSupportSize(newCells[iCell*coneSize+iVertex], 1);
-      } // for
-    } // for
-  } // for
+      } /* for */
+    } /* for */
+  } /* for */
   newSieve->allocate();
 
   ierr = DMPlexSymmetrizeSizes();CHKERRQ(ierr);
 
-  // Create refined cells in new sieve.
+  /* Create refined cells in new sieve. */
   curNewCell = _orderNewMesh->cellsNormal().min();
   oldCellsEnd = _orderOldMesh->cellsNormal().end();
   for (interval_type::const_iterator c_iter=_orderOldMesh->cellsNormal().begin(); c_iter != oldCellsEnd; ++c_iter) {
@@ -7027,8 +7027,8 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
 
     for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
       newSieve->setCone(&newCells[iCell*coneSize], curNewCell);
-    } // for
-  } // for
+    } /* for */
+  } /* for */
   curNewCell = _orderNewMesh->cellsCensored().min();
   oldCellsEnd = _orderOldMesh->cellsCensored().end();
   for (interval_type::const_iterator c_iter=_orderOldMesh->cellsCensored().begin(); c_iter != oldCellsEnd; ++c_iter) {
@@ -7043,11 +7043,11 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
 
     for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
       newSieve->setCone(&newCells[iCell*coneSize], curNewCell);
-    } // for
-  } // for
+    } /* for */
+  } /* for */
   newSieve->symmetrize();
 
-  // Set coordinates in refined mesh.
+  /* Set coordinates in refined mesh. */
   const Obj<mesh_type::real_section_type>& coordinates = mesh->getRealSection("coordinates");
   assert(!coordinates.isNull());
   const Obj<mesh_type::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
@@ -7062,23 +7062,23 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
   const interval_type::const_iterator newVerticesEnd = _orderNewMesh->verticesCensored().end();
   for (interval_type::const_iterator v_iter=_orderNewMesh->verticesNormal().begin(); v_iter != newVerticesEnd; ++v_iter) {
     newCoordinates->setFiberDimension(*v_iter, spaceDim);
-  } // for
+  } /* for */
   newCoordinates->allocatePoint();
 
   interval_type::const_iterator oldVerticesEnd = _orderOldMesh->verticesNormal().end();
   for (interval_type::const_iterator vOld_iter=_orderOldMesh->verticesNormal().begin(), vNew_iter=_orderNewMesh->verticesNormal().begin(); vOld_iter != oldVerticesEnd; ++vOld_iter, ++vNew_iter) {
-    //std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl;
+    /*std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl; */
     newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
-  } // for
+  } /* for */
   oldVerticesEnd = _orderOldMesh->verticesCensored().end();
   for (interval_type::const_iterator vOld_iter=_orderOldMesh->verticesCensored().begin(), vNew_iter=_orderNewMesh->verticesCensored().begin(); vOld_iter != oldVerticesEnd; ++vOld_iter, ++vNew_iter) {
-    //std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl;
+    /*std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl; */
     newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
-  } // for
+  } /* for */
 
   refiner.setCoordsNewVertices(newCoordinates, coordinates);
 
-  // Create sensored depth
+  /* Create sensored depth */
   const ALE::Obj<SieveFlexMesh::label_type>& censoredLabel = newMesh->createLabel("censored depth");
   assert(!censoredLabel.isNull());
 
@@ -7086,16 +7086,16 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
 
   newSieve->roots(depthVisitor);
   while(depthVisitor.isModified()) {
-    // FIX: Avoid the copy here somehow by fixing the traversal
+    /* FIX: Avoid the copy here somehow by fixing the traversal */
     std::vector<mesh_type::point_type> modifiedPoints(depthVisitor.getModifiedPoints().begin(), depthVisitor.getModifiedPoints().end());
 
     depthVisitor.clear();
     newSieve->support(modifiedPoints, depthVisitor);
-  } // while
-  // Stratify refined mesh
-  // Calculate new point SF
+  } /* while */
+  /* Stratify refined mesh */
+  /* Calculate new point SF */
   _calcNewOverlap(newMesh, mesh, refiner);
-  // Calculate new labels
+  /* Calculate new labels */
   _createLabels(newMesh, mesh, refiner);
 #endif
   PetscFunctionReturn(0);
@@ -9659,12 +9659,12 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char label[], DM *subdm)
     ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (faceSize >= nFV) {
       if (faceSize > nFV && !boundaryFaces) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
-      // Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron)
-      //   We have to take all the faces, and discard those in the interior
-      //   We check the join of the face vertices, which produces 2 cells if in the interior
+      /* Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron) */
+      /*   We have to take all the faces, and discard those in the interior */
+      /*   We check the join of the face vertices, which produces 2 cells if in the interior */
 #if 0
-      // This object just calls insert on each face that comes from subsets()
-      // In fact, we can just always acll subsets(), since when we pass a single face it is a single call
+      /* This object just calls insert on each face that comes from subsets() */
+      /* In fact, we can just always acll subsets(), since when we pass a single face it is a single call */
       FaceInserterV<FlexMesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
       PointArray                          faceVec(face->begin(), face->end());
 

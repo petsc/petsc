@@ -158,9 +158,9 @@ PETSC_EXTERN PetscErrorCode PetscSFBcastEnd(PetscSF,MPI_Datatype,const void *roo
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 /* Reduce leafdata into rootdata using provided operation */
 PETSC_EXTERN PetscErrorCode PetscSFReduceBegin(PetscSF,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op)
-  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);;
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op)
-  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);;
+  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 /* Atomically modifies (using provided operation) rootdata using leafdata from each leaf, value at root at time of modification is returned in leafupdate. */
 PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
