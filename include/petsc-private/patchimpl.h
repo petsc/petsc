@@ -9,6 +9,7 @@ typedef struct {
   PetscInt   refct;
   DM         dmCoarse;
   MatStencil patchSize;
+  MatStencil commSize;
 } DM_Patch;
 
 #endif /* _PATCHIMPL_H */

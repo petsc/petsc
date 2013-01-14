@@ -114,7 +114,7 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPatchCreateGrid"
-PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil gridSize, DM *dm)
+PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm)
 {
   DM_Patch      *mesh;
   DM             da;
@@ -142,5 +142,6 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);
   mesh->dmCoarse  = da;
   ierr = DMPatchSetPatchSize(*dm, patchSize);CHKERRQ(ierr);
+  ierr = DMPatchSetCommSize(*dm, commSize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

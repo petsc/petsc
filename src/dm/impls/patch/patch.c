@@ -40,15 +40,14 @@ Solver loop to update \tau:
 
 .seealso: DMPatchSolve()
 */
-PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
+PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
 {
   DMDAStencilType st;
   MatStencil      blower, bupper, loclower, locupper;
-  Vec             X;
   IS              is;
   const PetscInt *ranges, *indices;
-  PetscInt       *localPoints;
-  PetscSFNode    *remotePoints;
+  PetscInt       *localPoints  = PETSC_NULL;
+  PetscSFNode    *remotePoints = PETSC_NULL;
   PetscInt        dim, dof;
   PetscInt        M, N, P, rM, rN, rP, halo = 1, sxb, syb, szb, sxr, syr, szr, exr, eyr, ezr, mxb, myb, mzb, i, j, k, q;
   PetscMPIInt     size;
@@ -56,10 +55,6 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
-  if (commz == MPI_COMM_NULL) {
-    /* Split communicator */
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
-  }
   /* Create patch DM */
   ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0, &dof, 0,0,0,0, &st);CHKERRQ(ierr);
 
@@ -71,29 +66,31 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
   rN = bupper.j - blower.j;
   rP = bupper.k - blower.k;
 
-  ierr = DMDACreate(commz, dmz);CHKERRQ(ierr);
-  ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
-  ierr = DMDASetSizes(*dmz, rM, rN, rP);CHKERRQ(ierr);
-  ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
-  ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
-  ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
-  ierr = DMDASetStencilWidth(*dmz, 0);CHKERRQ(ierr);
-  ierr = DMDASetOwnershipRanges(*dmz, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dmz);CHKERRQ(ierr);
-  ierr = DMSetUp(*dmz);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(*dmz, &sxb, &syb, &szb, &mxb, &myb, &mzb);CHKERRQ(ierr);
-  sxr  = PetscMax(sxb,     lower.i - blower.i);
-  syr  = PetscMax(syb,     lower.j - blower.j);
-  szr  = PetscMax(szb,     lower.k - blower.k);
-  exr  = PetscMin(sxb+mxb, upper.i - blower.i);
-  eyr  = PetscMin(syb+myb, upper.j - blower.j);
-  ezr  = PetscMin(szb+mzb, upper.k - blower.k);
-
-  ierr = PetscMalloc2(rM*rN*rP,PetscInt,&localPoints,rM*rN*rP,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+  if (commz != MPI_COMM_NULL) {
+    ierr = DMDACreate(commz, dmz);CHKERRQ(ierr);
+    ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
+    ierr = DMDASetSizes(*dmz, rM, rN, rP);CHKERRQ(ierr);
+    ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+    ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
+    ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
+    ierr = DMDASetStencilWidth(*dmz, 0);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(*dmz, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(*dmz);CHKERRQ(ierr);
+    ierr = DMSetUp(*dmz);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(*dmz, &sxb, &syb, &szb, &mxb, &myb, &mzb);CHKERRQ(ierr);
+    sxr  = PetscMax(sxb,     lower.i - blower.i);
+    syr  = PetscMax(syb,     lower.j - blower.j);
+    szr  = PetscMax(szb,     lower.k - blower.k);
+    exr  = PetscMin(sxb+mxb, upper.i - blower.i);
+    eyr  = PetscMin(syb+myb, upper.j - blower.j);
+    ezr  = PetscMin(szb+mzb, upper.k - blower.k);
+    ierr = PetscMalloc2(rM*rN*rP,PetscInt,&localPoints,rM*rN*rP,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+  } else {
+    sxr = syr = szr = exr = eyr = ezr = sxb = syb = szb = mxb = myb = mzb = 0;
+  }
 
   /* Create SF for restricted map */
-  ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(X->map, &ranges);CHKERRQ(ierr);
   loclower.i = blower.i + sxr; locupper.i = blower.i + exr;
   loclower.j = blower.j + syr; locupper.j = blower.j + eyr;
@@ -149,7 +146,6 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
   ierr = PetscObjectSetName((PetscObject) *sfz, "Buffered Map");CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sfz, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
-  ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscFree2(localPoints, remotePoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -161,56 +157,89 @@ typedef enum {PATCH_COMM_TYPE_WORLD = 0, PATCH_COMM_TYPE_SELF = 1} PatchCommType
 PetscErrorCode DMPatchSolve(DM dm)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
-  const char    *commTypes[] = {"world", "self", "PatchCommTypes", "PATCH_COMM_TYPE_", PETSC_NULL};
-  PatchCommType  commType    = PATCH_COMM_TYPE_WORLD;
-  MPI_Comm       commz       = comm;
-  DM             dmc, dmz;
+  DM_Patch      *mesh = (DM_Patch *) dm->data;
+  MPI_Comm       commz;
+  DM             dmc;
   PetscSF        sfz, sfzr;
-  Vec            XC, XZ;
-  MatStencil     patchSize, lower, upper;
-  PetscInt       M, N, P, i, j, k, p = 0;
+  Vec            XC;
+  MatStencil     patchSize, commSize, gridRank, lower, upper;
+  PetscInt       M, N, P, i, j, k, l, m, n, p = 0;
+  PetscMPIInt    rank, size;
+  PetscInt       debug = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetEnum(((PetscObject) dm)->prefix, "-dm_patch_zoom_comm", commTypes, (PetscEnum*)&commType, PETSC_NULL);CHKERRQ(ierr);
-  if (commType == PATCH_COMM_TYPE_WORLD) {
-    commz = comm;
-  } else if (commType == PATCH_COMM_TYPE_SELF) {
-    commz = PETSC_COMM_SELF;
-  }
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMPatchGetCoarse(dm, &dmc);CHKERRQ(ierr);
   ierr = DMPatchGetPatchSize(dm, &patchSize);CHKERRQ(ierr);
+  ierr = DMPatchGetCommSize(dm, &commSize);CHKERRQ(ierr);
+  ierr = DMPatchGetCommSize(dm, &commSize);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmc, &XC);CHKERRQ(ierr);
-  /* Stupid loop over whole mesh can be replaced */
-  ierr = DMDAGetInfo(dmc, 0, &M, &N, &P, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  M    = PetscMax(M, 1);
-  N    = PetscMax(N, 1);
-  P    = PetscMax(P, 1);
+  ierr = DMDAGetInfo(dmc, 0, &M, &N, &P, &l, &m, &n, 0,0,0,0,0,0);CHKERRQ(ierr);
+  M    = PetscMax(M, 1); l = PetscMax(l, 1);
+  N    = PetscMax(N, 1); m = PetscMax(m, 1);
+  P    = PetscMax(P, 1); n = PetscMax(n, 1);
+  gridRank.i = rank       % l;
+  gridRank.j = rank/l     % m;
+  gridRank.k = rank/(l*m) % n;
+  if (commSize.i*commSize.j*commSize.k == size || commSize.i*commSize.j*commSize.k == 0) {
+    commSize.i = l; commSize.j = m; commSize.k = n;
+    commz = comm;
+  } else if (commSize.i*commSize.j*commSize.k == 1) {
+    commz = PETSC_COMM_SELF;
+  } else {
+    const PetscMPIInt newComm = ((gridRank.k/commSize.k)*(m/commSize.j) + gridRank.j/commSize.j)*(l/commSize.i) + (gridRank.i/commSize.i);
+    const PetscMPIInt newRank = ((gridRank.k%commSize.k)*commSize.j     + gridRank.j%commSize.j)*commSize.i     + (gridRank.i%commSize.i);
+
+    ierr = MPI_Comm_split(comm, newComm, newRank, &commz);CHKERRQ(ierr);
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Rank %d color %d key %d commz %d\n", rank, newComm, newRank, (PetscInt) commz);CHKERRQ(ierr);}
+  }
+  /*
+   Assumptions:
+     - patchSize divides gridSize
+     - commSize divides gridSize
+     - commSize divides l,m,n
+   Ignore multiple patches per rank for now
+
+   Multiple ranks per patch:
+     - l,m,n divides patchSize
+     - commSize divides patchSize
+   */
   for(k = 0; k < P; k += PetscMax(patchSize.k, 1)) {
     for(j = 0; j < N; j += PetscMax(patchSize.j, 1)) {
       for(i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
-        PetscScalar *xcarray, *xzarray;
+        MPI_Comm     commp   = MPI_COMM_NULL;
+        DM           dmz     = PETSC_NULL;
+        DM           dmf     = PETSC_NULL;
+        Mat          interpz = PETSC_NULL;
+        Vec          XZ      = PETSC_NULL;
+        PetscScalar *xcarray = PETSC_NULL;
+        PetscScalar *xzarray = PETSC_NULL;
 
+        if ((gridRank.k/commSize.k == p/(l/commSize.i * m/commSize.j) % n/commSize.k) &&
+            (gridRank.j/commSize.j == p/(l/commSize.i)                % m/commSize.j) &&
+            (gridRank.i/commSize.i == p                               % l/commSize.i)) {
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Rank %d is accepting Patch %d\n", rank, p);CHKERRQ(ierr);}
+          commp = commz;
+        }
         /* Zoom to coarse patch */
         lower.i = i; lower.j = j; lower.k = k;
         upper.i = i + patchSize.i; upper.j = j + patchSize.j; upper.k = k + patchSize.k;
-        ierr = DMPatchZoom(dmc, lower, upper, commz, &dmz, &sfz, &sfzr);CHKERRQ(ierr);
+        ierr = DMPatchZoom(dmc, XC, lower, upper, commp, &dmz, &sfz, &sfzr);CHKERRQ(ierr);
         /* Debug */
         ierr = PetscPrintf(comm, "Patch %d: (%d, %d, %d)--(%d, %d, %d)\n", p, lower.i, lower.j, lower.k, upper.i, upper.j, upper.k);CHKERRQ(ierr);
-        ierr = DMView(dmz, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = PetscSFView(sfz,  PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = PetscSFView(sfzr, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        /* TODO: Need coarse and zoomed state vectors here: */
-        xcarray = PETSC_NULL;
-        xzarray = PETSC_NULL;
+        if (dmz) {ierr = DMView(dmz, PETSC_VIEWER_STDOUT_(commz));CHKERRQ(ierr);}
+        ierr = PetscSFView(sfz,  PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+        ierr = PetscSFView(sfzr, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
         /* Scatter Xcoarse -> Xzoom */
-        ierr = DMGetGlobalVector(dmz, &XZ);CHKERRQ(ierr);
+        if (dmz) {ierr = DMGetGlobalVector(dmz, &XZ);CHKERRQ(ierr);}
+        if (XZ)  {ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);}
         ierr = VecGetArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);
         ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
         ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
         ierr = VecRestoreArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);
+        if (XZ)  {ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);}
 #if 0
         /* Interpolate Xzoom -> Xfine, note that this may be on subcomms */
         ierr = DMRefine(dmz, MPI_COMM_NULL, &dmf);CHKERRQ(ierr);
@@ -221,13 +250,13 @@ PetscErrorCode DMPatchSolve(DM dm)
         /* Restrict Rfine to Rzoom_restricted */
 #endif
         /* Scatter Rzoom_restricted -> Rcoarse_restricted */
+        if (XZ)  {ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);}
         ierr = VecGetArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = VecGetArray(XZ, &xzarray);CHKERRQ(ierr);
         ierr = PetscSFReduceBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
         ierr = PetscSFReduceEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
         ierr = VecRestoreArray(XC, &xcarray);CHKERRQ(ierr);
-        ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);
-        ierr = DMRestoreGlobalVector(dmz, &XZ);CHKERRQ(ierr);
+        if (XZ)  {ierr = VecRestoreArray(XZ, &xzarray);CHKERRQ(ierr);}
+        if (dmz) {ierr = DMRestoreGlobalVector(dmz, &XZ);CHKERRQ(ierr);}
         /* Compute global residual Rcoarse */
         /* TauCoarse = Rcoarse - Rcoarse_restricted */
 
@@ -382,5 +411,30 @@ PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->patchSize = patchSize;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPatchGetCommSize"
+PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
+{
+  DM_Patch *mesh = (DM_Patch *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(commSize, 2);
+  *commSize = mesh->commSize;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPatchSetCommSize"
+PetscErrorCode DMPatchSetCommSize(DM dm, MatStencil commSize)
+{
+  DM_Patch *mesh = (DM_Patch *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->commSize = commSize;
   PetscFunctionReturn(0);
 }
