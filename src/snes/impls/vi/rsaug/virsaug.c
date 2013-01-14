@@ -864,9 +864,9 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     /*
-    if (snes->ops->precheckstep) {
+    if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
+      ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
     if (PetscLogPrintInfo){
@@ -1328,9 +1328,9 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     /*
-    if (snes->ops->precheckstep) {
+    if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
+      ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
     if (PetscLogPrintInfo){
@@ -1718,9 +1718,9 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     /*
-    if (snes->ops->precheckstep) {
+    if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
+      ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
     if (PetscLogPrintInfo){
@@ -1913,8 +1913,8 @@ PetscErrorCode SNESLineSearchNo_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec y,
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
   ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   ierr = SNESVIProjectOntoBounds(snes,w);CHKERRQ(ierr);
-  if (snes->ops->postcheckstep) {
-   ierr = (*snes->ops->postcheckstep)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (snes->ops->postcheck) {
+   ierr = (*snes->ops->postcheck)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
@@ -1956,8 +1956,8 @@ PetscErrorCode SNESLineSearchNoNorms_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,V
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y      */
   ierr = SNESVIProjectOntoBounds(snes,w);CHKERRQ(ierr);
-  if (snes->ops->postcheckstep) {
-   ierr = (*snes->ops->postcheckstep)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (snes->ops->postcheck) {
+   ierr = (*snes->ops->postcheck)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
@@ -2155,8 +2155,8 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
   }
   theend1:
   /* Optional user-defined check for line search step validity */
-  if (snes->ops->postcheckstep && *flag) {
-    ierr = (*snes->ops->postcheckstep)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (snes->ops->postcheck && *flag) {
+    ierr = (*snes->ops->postcheck)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
     if (changed_y) {
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
       ierr = SNESVIProjectOntoBounds(snes,w);CHKERRQ(ierr);
@@ -2308,8 +2308,8 @@ PetscErrorCode SNESLineSearchQuadratic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f
   }
   theend2:
   /* Optional user-defined check for line search step validity */
-  if (snes->ops->postcheckstep) {
-    ierr = (*snes->ops->postcheckstep)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
+  if (snes->ops->postcheck) {
+    ierr = (*snes->ops->postcheck)(snes,x,y,w,snes->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
     if (changed_y) {
       ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
       ierr = SNESVIProjectOntoBounds(snes,w);CHKERRQ(ierr);

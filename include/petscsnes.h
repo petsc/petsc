@@ -523,10 +523,8 @@ PETSC_EXTERN PetscLogEvent SNESLineSearch_Apply;
 #define SNES_LINESEARCH_ORDER_QUADRATIC 2
 #define SNES_LINESEARCH_ORDER_CUBIC     3
 
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchPostCheckFunc)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchApplyFunc)(SNESLineSearch);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchUserFunc)(SNESLineSearch, void *);
 
@@ -544,11 +542,11 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchGetWork(SNESLineSearch, PetscInt);
 
 /* set the functions for precheck and postcheck */
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetPreCheck(SNESLineSearch, SNESLineSearchPreCheckFunc, void *ctx);
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetPostCheck(SNESLineSearch, SNESLineSearchPostCheckFunc, void *ctx);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetPreCheck(SNESLineSearch, PetscErrorCode (*SNESLineSearchPreCheckFunction)(SNESLineSearch,Vec,Vec,PetscBool*,void*), void *ctx);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetPostCheck(SNESLineSearch, PetscErrorCode (*SNESLineSearchPostCheckFunction)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*), void *ctx);
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch, SNESLineSearchPreCheckFunc*, void **ctx);
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch, SNESLineSearchPostCheckFunc*, void **ctx);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch, PetscErrorCode (**SNESLineSearchPreCheckFunction)(SNESLineSearch,Vec,Vec,PetscBool*,void*), void **ctx);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch, PetscErrorCode (**SNESLineSearchPostCheckFunction)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*), void **ctx);
 
 /* set the functions for VI-specific line search operations */
 

@@ -2524,19 +2524,19 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**SNESJac
 @*/
 PetscErrorCode  SNESSetUp(SNES snes)
 {
-  PetscErrorCode              ierr;
-  DM                          dm;
-  DMSNES                      sdm;
-  SNESLineSearch              linesearch, pclinesearch;
-  void                        *lsprectx,*lspostctx;
-  SNESLineSearchPreCheckFunc  lsprefunc;
-  SNESLineSearchPostCheckFunc lspostfunc;
-  PetscErrorCode              (*func)(SNES,Vec,Vec,void*);
-  Vec                         f,fpc;
-  void                        *funcctx;
-  PetscErrorCode              (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-  void                        *jacctx,*appctx;
-  Mat                         A,B;
+  PetscErrorCode ierr;
+  DM             dm;
+  DMSNES         sdm;
+  SNESLineSearch linesearch, pclinesearch;
+  void           *lsprectx,*lspostctx;
+  PetscErrorCode (*precheck)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
+  PetscErrorCode (*postcheck)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
+  PetscErrorCode (*func)(SNES,Vec,Vec,void*);
+  Vec            f,fpc;
+  void           *funcctx;
+  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  void           *jacctx,*appctx;
+  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2612,10 +2612,10 @@ PetscErrorCode  SNESSetUp(SNES snes)
     /* copy the line search context over */
     ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(snes->pc,&pclinesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPreCheck(linesearch,&lsprefunc,&lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchGetPostCheck(linesearch,&lspostfunc,&lspostctx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(pclinesearch,lsprefunc,lsprectx);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(pclinesearch,lspostfunc,lspostctx);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPreCheck(pclinesearch,precheck,lsprectx);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPostCheck(pclinesearch,postcheck,lspostctx);CHKERRQ(ierr);
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)pclinesearch);CHKERRQ(ierr);
   }
 

@@ -331,9 +331,9 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     /*
-    if (snes->ops->precheckstep) {
+    if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
+      ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
     if (PetscLogPrintInfo){
