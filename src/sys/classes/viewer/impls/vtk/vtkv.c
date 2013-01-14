@@ -1,5 +1,19 @@
 #include "../src/sys/classes/viewer/impls/vtk/vtkvimpl.h" /*I "petscviewer.h" I*/
 
+/*MC
+    PetscViewerVTKWriteFunction - functional form used to provide writer to the PetscViewerVTK
+
+     Synopsis:
+     #include "petscviewer.h"
+     PetscViewerVTKWriteFunction(PetscObject object,PetscViewer viewer)
+
+     Input Parameters:
++      object - the PETSc object to be written
+-      viewer - viewer it is to be written to
+
+.seealso:   PetscViewerVTKAddField()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerVTKAddField"
 /*@C
@@ -10,7 +24,7 @@
    Input Arguments:
 + viewer - VTK viewer
 . dm - DM on which Vec lives
-. func - function to write this Vec
+. PetscViewerVTKWriteFunction - function to write this Vec
 . fieldtype - Either PETSC_VTK_POINT_FIELD or PETSC_VTK_CELL_FIELD
 - vec - Vec to write
 
@@ -19,9 +33,9 @@
    Note:
    This routine keeps exclusive ownership of the Vec. The caller should not use or destroy the Vec after adding it.
 
-.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll()
+.seealso: PetscViewerVTKOpen(), DMDAVTKWriteAll(), PetscViewerVTKWriteFunction
 @*/
-PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction func,PetscViewerVTKFieldType fieldtype,PetscObject vec)
+PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscObject vec)
 {
   PetscErrorCode ierr;
 
@@ -29,7 +43,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscVie
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(dm,2);
   PetscValidHeader(vec,4);
-  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscViewerVTKFieldType,PetscObject),(viewer,dm,func,fieldtype,vec));CHKERRQ(ierr);
+  ierr = PetscUseMethod(viewer,"PetscViewerVTKAddField_C",(PetscViewer,PetscObject,PetscErrorCode (*)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscObject),(viewer,dm,PetscViewerVTKWriteFunction,fieldtype,vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -58,15 +72,15 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   PetscViewerVTKObjectLink   link,next;
 
   PetscFunctionBegin;
-  if (vtk->link && (!vtk->dm || !vtk->dmwriteall)) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_WRONGSTATE,"No fields or no grid");
-  if (vtk->dmwriteall) {ierr = (*vtk->dmwriteall)(vtk->dm,viewer);CHKERRQ(ierr);}
+  if (vtk->link && (!vtk->dm || !vtk->write)) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_WRONGSTATE,"No fields or no grid");
+  if (vtk->write) {ierr = (*vtk->write)(vtk->dm,viewer);CHKERRQ(ierr);}
   for (link=vtk->link; link; link=next) {
     next = link->next;
     ierr = PetscObjectDestroy(&link->vec);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
   ierr = PetscObjectDestroy(&vtk->dm);CHKERRQ(ierr);
-  vtk->dmwriteall = PETSC_NULL;
+  vtk->write = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -119,18 +133,18 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerVTKAddField_VTK"
-PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscViewerVTKWriteFunction dmwriteall,PetscViewerVTKFieldType fieldtype,PetscObject vec)
+PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscObject vec)
 {
-  PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
+  PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link, tail = vtk->link;
-  PetscErrorCode ierr;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   if (vtk->dm) {
     if (dm != vtk->dm) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
   }
   vtk->dm = dm;
-  vtk->dmwriteall = dmwriteall;
+  vtk->write = PetscViewerVTKWriteFunction;
   ierr = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
   link->ft = fieldtype;
   link->vec = vec;

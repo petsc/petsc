@@ -1505,7 +1505,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 }
 
 /*MC
-    SNESFunction - function used to convey the nonlinear function to be solved by SNES
+    SNESFunction - functional form used to convey the nonlinear function to be solved by SNES
 
      Synopsis:
      #include "petscsnes.h"
