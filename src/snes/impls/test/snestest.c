@@ -17,7 +17,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   MatStructure   flg;
   PetscReal      nrm,gnorm;
   SNES_Test      *neP = (SNES_Test*)snes->data;
-  PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*);
+  PetscErrorCode (*objective)(SNES,Vec,PetscReal *,void*);
   void           *ctx;
   PetscReal      fnorm,f1norm,dnorm;
 
@@ -84,8 +84,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (!gnorm) gnorm = 1; /* just in case */
     ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %g difference %g (%s)\n",(double)(nrm/gnorm),(double)nrm,loc[i]);CHKERRQ(ierr);
 
-    ierr = SNESGetObjective(snes,&SNESObjectiveFunction,&ctx);CHKERRQ(ierr);
-    if (SNESObjectiveFunction) {
+    ierr = SNESGetObjective(snes,&objective,&ctx);CHKERRQ(ierr);
+    if (objective) {
       ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
       ierr = VecNorm(f,NORM_2,&fnorm);CHKERRQ(ierr);
       if (neP->complete_print) {
@@ -222,7 +222,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   PetscErrorCode ierr;
   MatStructure   flg;
   PetscReal      nrm,gnorm;
-  PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*);
+  PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
   void           *ctx;
   PetscReal      fnorm,f1norm,dnorm;
   PetscInt       m,n,M,N;
@@ -269,8 +269,8 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   if (!gnorm) gnorm = 1; /* just in case */
   ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||//J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
 
-  ierr = SNESGetObjective(snes,&SNESObjectiveFunction,&ctx);CHKERRQ(ierr);
-  if (SNESObjectiveFunction) {
+  ierr = SNESGetObjective(snes,&objective,&ctx);CHKERRQ(ierr);
+  if (objective) {
     ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
     ierr = VecNorm(f,NORM_2,&fnorm);CHKERRQ(ierr);
     if (complete_print) {
