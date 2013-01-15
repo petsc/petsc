@@ -21,13 +21,6 @@
 
 #include <petsc-private/vecimpl.h>                              /*I   "petscvec.h"   I*/
 
-#if defined(PETSC_HAVE_PAMI)
-PetscErrorCode MPIPetsc_Iallreduce_PAMI(void*,void*,PetscMPIInt,MPI_Datatype,MPI_Op,MPI_Comm,MPI_Request*);
-#endif
-#if defined(PETSC_HAVE_DCMF)
-PetscErrorCode MPIPetsc_Iallreduce_DCMF(void*,void*,PetscMPIInt,MPI_Datatype,MPI_Op,MPI_Comm,MPI_Request*);
-#endif
-
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {
   PETSC_UNUSED PetscErrorCode ierr;
@@ -36,10 +29,6 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
   ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_MPIX_IALLREDUCE)
   ierr = MPIX_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_PAMI)
-  ierr = MPIPetsc_Iallreduce_PAMI(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_DCMF)
-  ierr = MPIPetsc_Iallreduce_DCMF(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRQ(ierr);
   *request = MPI_REQUEST_NULL;
@@ -98,7 +87,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->request     = MPI_REQUEST_NULL;
   ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async = PETSC_FALSE;
-#if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI) || defined(PETSC_HAVE_DCMF)
+#if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-splitreduction_async",&(*sr)->async,PETSC_NULL);CHKERRQ(ierr);
 #endif
