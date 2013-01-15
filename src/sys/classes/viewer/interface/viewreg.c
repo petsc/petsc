@@ -199,7 +199,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
-  ierr =  PetscFListFind(PetscViewerList,((PetscObject)viewer)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(((PetscObject)viewer)->comm,PetscViewerList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const cha
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscViewerList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PetscViewerList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

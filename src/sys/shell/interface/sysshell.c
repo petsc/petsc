@@ -365,17 +365,19 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellCall_NONE"
-PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message) {
-  PetscShellCallFunction call = PETSC_NULL;
+PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message)
+ {
+  PetscShellCallFunction    call = PETSC_NULL;
   PetscShellMessageFunction msg = PETSC_NULL;
-  PetscErrorCode ierr;
+  PetscErrorCode            ierr;
+
   PetscFunctionBegin;
-  ierr = PetscFListFind(((PetscObject)shell)->qlist, ((PetscObject)shell)->comm, message,PETSC_FALSE, (QueryFunction*)(&msg));CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  message,PETSC_FALSE, (QueryFunction*)(&msg));CHKERRQ(ierr);
   if (msg) {
     ierr = (*msg)(shell);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscFListFind(((PetscObject)shell)->qlist, ((PetscObject)shell)->comm, "call",PETSC_FALSE, (QueryFunction*)(&call));CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  "call",PETSC_FALSE, (QueryFunction*)(&call));CHKERRQ(ierr);
   if (call) {
     ierr = (*call)(shell, message);CHKERRQ(ierr);
     PetscFunctionReturn(0);

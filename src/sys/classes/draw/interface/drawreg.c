@@ -151,7 +151,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     draw->data = 0;
   }
 
-  ierr =  PetscFListFind(PetscDrawList,((PetscObject)draw)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(((PetscObject)draw)->comm,PetscDrawList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
   ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
   draw->data        = 0;
@@ -214,7 +214,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscDrawList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PetscDrawList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

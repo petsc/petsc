@@ -98,7 +98,7 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],con
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatPartitioningList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&MatPartitioningList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -516,7 +516,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
     part->setupcalled = 0;
   }
 
-  ierr =  PetscFListFind(MatPartitioningList,((PetscObject)part)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(((PetscObject)part)->comm,MatPartitioningList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(((PetscObject)part)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 

@@ -169,10 +169,11 @@ static PetscFList   dlallhead = 0;
    PetscFListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
-     Not Collective
+     Formally Collective on MPI_Comm
 
    Input Parameters:
-+  fl    - pointer registry
++  comm  - the comm where this exists (currently not used)
+.  fl    - pointer registry
 .  name  - string to identify routine
 .  rname - routine name in dynamic library
 -  fnc   - function pointer (optional if using dynamic libraries)
@@ -193,7 +194,7 @@ static PetscFList   dlallhead = 0;
 .seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
           PCRegisterDynamic(), TSRegisterDynamic(), PetscFList
 @*/
-PetscErrorCode  PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
+PetscErrorCode  PetscFListAdd(MPI_Comm comm,PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
 {
   PetscFList     entry,ne;
   PetscErrorCode ierr;
@@ -340,7 +341,7 @@ PetscErrorCode  PetscFListDestroyAll(void)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],PetscBool searchlibraries,void (**r)(void))
+PetscErrorCode  PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],PetscBool searchlibraries,void (**r)(void))
 {
   PetscFList     entry = fl;
   PetscErrorCode ierr;
@@ -424,7 +425,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
     ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
     ierr = PetscFree(path);CHKERRQ(ierr);
     if (*r) {
-      ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
+      ierr = PetscFListAdd(comm,&fl,name,name,*r);CHKERRQ(ierr);
     }
   }
 #endif
@@ -594,7 +595,7 @@ PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
     } else {
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }
-    ierr = PetscFListAdd(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = PetscFListAdd(PETSC_COMM_WORLD,nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
   PetscFunctionReturn(0);
@@ -725,10 +726,8 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
       PetscBool  match;
       ierr = PetscStrcmp(ne->op,op,&match);CHKERRQ(ierr);
       if (!match) goto next;
-      if (numArgs == ne->numArgs)
-        match = PETSC_TRUE;
-      else
-        match = PETSC_FALSE;
+      if (numArgs == ne->numArgs) match = PETSC_TRUE;
+      else match = PETSC_FALSE;
       if (!match) goto next;
       if (numArgs) {
         for (i = 0; i < numArgs; ++i) {
@@ -750,8 +749,7 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
           ierr = PetscFree(ne->argTypes);CHKERRQ(ierr);
         }
         ierr = PetscFree(ne);CHKERRQ(ierr);
-      }
-      else {
+      } else {
         /* Replace url, fpath, fname and fnc. */
         ierr = PetscStrallocpy(url, &(ne->url));CHKERRQ(ierr);
         ierr = PetscFListGetPathAndFunction(url,&fpath,&fname);CHKERRQ(ierr);

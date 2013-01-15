@@ -1369,7 +1369,7 @@ PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   PetscErrorCode ierr,(*r)(PC);
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(GAMGList,((PetscObject)pc)->comm,type,PETSC_FALSE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)pc)->comm,GAMGList,type,PETSC_FALSE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown GAMG type %s given",type);
   ierr = (*r)(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1506,8 +1506,8 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 
   /* register AMG type */
   if (!GAMGList){
-    ierr = PetscFListAdd(&GAMGList,GAMGGEO,"PCCreateGAMG_GEO",(void(*)(void))PCCreateGAMG_GEO);CHKERRQ(ierr);
-    ierr = PetscFListAdd(&GAMGList,GAMGAGG,"PCCreateGAMG_AGG",(void(*)(void))PCCreateGAMG_AGG);CHKERRQ(ierr);
+    ierr = PetscFListAdd(PETSC_COMM_WORLD,&GAMGList,GAMGGEO,"PCCreateGAMG_GEO",(void(*)(void))PCCreateGAMG_GEO);CHKERRQ(ierr);
+    ierr = PetscFListAdd(PETSC_COMM_WORLD,&GAMGList,GAMGAGG,"PCCreateGAMG_AGG",(void(*)(void))PCCreateGAMG_AGG);CHKERRQ(ierr);
   }
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */

@@ -807,7 +807,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   ierr = PetscObjectTypeCompare((PetscObject)linesearch,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(SNESLineSearchList,((PetscObject)linesearch)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(((PetscObject)linesearch)->comm,SNESLineSearchList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Line Search type %s",type);
   /* Destroy the previous private linesearch context */
   if (linesearch->ops->destroy) {
@@ -1652,6 +1652,6 @@ PetscErrorCode  SNESLineSearchRegister(const char sname[],const char path[],cons
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&SNESLineSearchList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&SNESLineSearchList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

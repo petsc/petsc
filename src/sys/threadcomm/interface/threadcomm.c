@@ -425,7 +425,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
   if (!flg) {
     ierr = PetscStrcpy(ttype,type);CHKERRQ(ierr);
   }
-  ierr = PetscFListFind(PetscThreadCommList,PETSC_COMM_WORLD,ttype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(PETSC_COMM_WORLD,PetscThreadCommList,ttype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscThreadComm type %s",ttype);
   ierr = (*r)(tcomm);CHKERRQ(ierr);
   ierr = PetscStrcmp(NOTHREAD,tcomm->type,&tcomm->isnothread);CHKERRQ(ierr);
@@ -507,7 +507,7 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscThreadCommList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PetscThreadCommList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

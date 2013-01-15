@@ -2140,18 +2140,18 @@ int main(int argc, char **argv)
   mod->comm = comm;
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFListAdd(&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PhysicsList,"euler"              ,"",(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PhysicsList,"euler"              ,"",(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
 
-  ierr = PetscFListAdd(&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
@@ -2167,7 +2167,7 @@ int main(int argc, char **argv)
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscFListFind(PhysicsList,comm,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
+    ierr = PetscFListFind(comm,PhysicsList,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(mod,phys);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
@@ -2181,7 +2181,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,PETSC_NULL);CHKERRQ(ierr);
     if (user->reconstruct) {
       ierr = PetscOptionsList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscFListFind(LimitList,comm,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
+      ierr = PetscFListFind(comm,LimitList,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
     }
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }

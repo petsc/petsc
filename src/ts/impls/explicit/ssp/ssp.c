@@ -374,7 +374,7 @@ PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(TSSSPList,((PetscObject)ts)->comm,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)ts)->comm,TSSSPList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
@@ -498,9 +498,9 @@ PetscErrorCode  TSCreate_SSP(TS ts)
 
   PetscFunctionBegin;
   if (!TSSSPList) {
-    ierr = PetscFListAdd(&TSSSPList,TSSSPRKS2,  "TSSSPStep_RK_2",   (void(*)(void))TSSSPStep_RK_2);CHKERRQ(ierr);
-    ierr = PetscFListAdd(&TSSSPList,TSSSPRKS3,  "TSSSPStep_RK_3",   (void(*)(void))TSSSPStep_RK_3);CHKERRQ(ierr);
-    ierr = PetscFListAdd(&TSSSPList,TSSSPRK104, "TSSSPStep_RK_10_4",(void(*)(void))TSSSPStep_RK_10_4);CHKERRQ(ierr);
+    ierr = PetscFListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRKS2,  "TSSSPStep_RK_2",   (void(*)(void))TSSSPStep_RK_2);CHKERRQ(ierr);
+    ierr = PetscFListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRKS3,  "TSSSPStep_RK_3",   (void(*)(void))TSSSPStep_RK_3);CHKERRQ(ierr);
+    ierr = PetscFListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRK104, "TSSSPStep_RK_10_4",(void(*)(void))TSSSPStep_RK_10_4);CHKERRQ(ierr);
   }
 
   ts->ops->setup           = TSSetUp_SSP;

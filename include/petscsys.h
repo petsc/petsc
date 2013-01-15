@@ -1463,14 +1463,14 @@ PETSC_EXTERN PetscErrorCode PetscOListDuplicate(PetscOList,PetscOList *);
     Dynamic library lists. Lists of names of routines in objects or in dynamic
   link libraries that will be loaded as needed.
 */
-PETSC_EXTERN PetscErrorCode PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscFListAdd(MPI_Comm,PetscFList*,const char[],const char[],void (*)(void));
 PETSC_EXTERN PetscErrorCode PetscFListDestroy(PetscFList*);
-PETSC_EXTERN PetscErrorCode PetscFListFind(PetscFList,MPI_Comm,const char[],PetscBool,void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscFListFind(MPI_Comm,PetscFList,const char[],PetscBool,void (**)(void));
 PETSC_EXTERN PetscErrorCode PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFList,const char[]);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,0)
+#define    PetscFListAddDynamic(mc,a,b,p,c) PetscFListAdd(mc,a,b,p,0)
 #else
-#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,(void (*)(void))c)
+#define    PetscFListAddDynamic(mc,a,b,p,c) PetscFListAdd(mc,a,b,p,(void (*)(void))c)
 #endif
 PETSC_EXTERN PetscErrorCode PetscFListDuplicate(PetscFList,PetscFList *);
 PETSC_EXTERN PetscErrorCode PetscFListView(PetscFList,PetscViewer);

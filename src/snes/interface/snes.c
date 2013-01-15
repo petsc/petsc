@@ -3795,7 +3795,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   ierr = PetscObjectTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(SNESList,((PetscObject)snes)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(((PetscObject)snes)->comm,SNESList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
   if (snes->ops->destroy) {
@@ -4129,7 +4129,7 @@ PetscErrorCode  SNESRegister(const char sname[],const char path[],const char nam
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

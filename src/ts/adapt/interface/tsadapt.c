@@ -26,7 +26,7 @@ PetscErrorCode  TSAdaptRegister(const char sname[],const char path[],const char 
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&TSAdaptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&TSAdaptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,7 +132,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(TSAdaptList,((PetscObject)adapt)->comm,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)adapt)->comm,TSAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);

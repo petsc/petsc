@@ -2400,7 +2400,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   if (match) PetscFunctionReturn(0);
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)dm)->comm, DMList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
@@ -2558,7 +2558,7 @@ PetscErrorCode  DMRegister(const char sname[], const char path[], const char nam
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&DMList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(PETSC_COMM_WORLD,&DMList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
