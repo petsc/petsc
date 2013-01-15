@@ -2085,8 +2085,6 @@ PetscErrorCode MatCreate_IJ(Mat A)
   A->ops->destroy               = MatDestroy_IJ;
   A->ops->view                  = MatView_IJ;
 
-  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL, (PetscVoidFunction)MatMatMult_IJ_IJ, "MatMatMult", 2, MATIJ,MATIJ);CHKERRQ(ierr);
-  ierr = MatRegisterOp(((PetscObject)A)->comm, PETSC_NULL, (PetscVoidFunction)MatTransposeMatMult_IJ_IJ, "MatTransposeMatMult", 2, MATIJ,MATIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A, MATIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
