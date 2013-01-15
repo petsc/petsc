@@ -185,7 +185,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, PetscSF 
     }
   }
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
-  if (numIndices != ind) {SETERRQ2(((PetscObject) sf)->comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);}
+  if (numIndices != ind) SETERRQ2(((PetscObject) sf)->comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);
   ierr = PetscSFCreate(((PetscObject) sf)->comm, sectionSF);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sectionSF, numIndices, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFView(*sectionSF, PETSC_NULL);CHKERRQ(ierr);

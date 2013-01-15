@@ -521,7 +521,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
       const PetscInt *points = pV.getPoints();
       PetscScalar    *coordsA, *coordsB;
 
-      if (pV.getSize() != 2) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", pV.getSize(), e);}
+      if (pV.getSize() != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", pV.getSize(), e);
       ierr = VecGetValuesSection(coordinates, cSection, points[0], &coordsA);CHKERRQ(ierr);
       ierr = VecGetValuesSection(coordinates, cSection, points[1], &coordsB);CHKERRQ(ierr);
       for (PetscInt d = 0; d < dim; ++d) {
@@ -769,7 +769,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     const PetscScalar *x;
 
     ierr = DMMeshComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
-    if (detJ[c] <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);}
+    if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
     ierr = DMMeshVecGetClosure(dm, X, c, &x);CHKERRQ(ierr);
 
     for (PetscInt i = 0; i < cellDof; ++i) {
@@ -1031,7 +1031,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
     const PetscScalar *x;
 
     ierr = DMMeshComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
-    if (detJ[c] <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);}
+    if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
     ierr = DMMeshVecGetClosure(dm, X, c, &x);CHKERRQ(ierr);
 
     for (int i = 0; i < cellDof; ++i) {
@@ -1168,7 +1168,7 @@ int main(int argc, char **argv)
 
       ierr = SNESDMMeshComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
-      if (!isNull) {SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");}
+      if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESDMMeshComputeFunction(snes, r, b, &user);CHKERRQ(ierr);

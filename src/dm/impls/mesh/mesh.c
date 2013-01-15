@@ -58,7 +58,7 @@ PetscErrorCode DMMeshGetMesh(DM dm, ALE::Obj<PETSC_MESH_TYPE>& m)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (mesh->useNewImpl) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C++ implementation meshes.");}
+  if (mesh->useNewImpl) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C++ implementation meshes.");
   m = mesh->m;
   PetscFunctionReturn(0);
 }
@@ -1103,7 +1103,7 @@ PetscErrorCode DMMeshSetCone(DM dm, PetscInt p, const PetscInt cone[])
     ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
     for(c = 0; c < dof; ++c) {
-      if ((cone[c] < pStart) || (cone[c] >= pEnd)) {SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %d is not in the valid range [%d. %d)", cone[c], pStart, pEnd);}
+      if ((cone[c] < pStart) || (cone[c] >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %d is not in the valid range [%d. %d)", cone[c], pStart, pEnd);
       mesh->cones[off+c] = cone[c];
     }
   } else {
@@ -1537,7 +1537,7 @@ PetscErrorCode DMMeshGetLabelValue(DM dm, const char name[], PetscInt point, Pet
       if (flg) break;
       next = next->next;
     }
-    if (!flg) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);}
+    if (!flg) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
     /* Find, or add, label value */
     for(v = 0; v < next->numStrata; ++v) {
       for(p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
@@ -2461,7 +2461,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
 
       ierr = DMMeshGetConeSize(dm, c, &corners);CHKERRQ(ierr);
       if (!cornersSeen[corners]) {
-        if (numFaceCases >= maxFaceCases) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");}
+        if (numFaceCases >= maxFaceCases) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
         cornersSeen[corners] = 1;
         if (corners == dim+1) {
           numFaceVertices[numFaceCases] = dim;
@@ -2745,7 +2745,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
     close(fd_stdout);
     close(fd_pipe[0]);
     close(fd_pipe[1]);
-    if (ierr) {SETERRQ1(comm, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);}
+    if (ierr) SETERRQ1(comm, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
 #endif
   /* Convert to PetscSection+IS */
@@ -2761,7 +2761,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  if (i != nvtxs) {SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %d should be %d", i, nvtxs);}
+  if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %d should be %d", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   if (global_method == INERTIAL_METHOD) {
     /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */
@@ -3537,7 +3537,7 @@ PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
   /* PetscValidLogicalCollectiveLogical(dm, interpolate, 2); */
   if (bd->useNewImpl) {
-    if (interpolate) {SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+    if (interpolate) SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
 #ifdef PETSC_HAVE_TRIANGLE
     ierr = DMMeshGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
 #endif
@@ -3665,7 +3665,7 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
       if (flg) break;
       next = next->next;
     }
-    if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
+    if (!flg) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
     /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
     depth = stratumValue;
     if ((depth < 0) || (depth >= next->numStrata)) {
@@ -3719,7 +3719,7 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
       if (flg) break;
       next = next->next;
     }
-    if (!flg) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);}
+    if (!flg) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
     /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
     depth = next->stratumValues[next->numStrata-1] - stratumValue;
     if ((depth < 0) || (depth >= next->numStrata)) {
@@ -3820,7 +3820,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
 
       ierr = PetscSectionGetConstraintDof(*section, p, &cDof);CHKERRQ(ierr);
       if (cDof) {
-        if (cDof > maxConstraints[numFields]) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, point %d cDof %d > maxConstraints %d", p, cDof, maxConstraints);}
+        if (cDof > maxConstraints[numFields]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, point %d cDof %d > maxConstraints %d", p, cDof, maxConstraints);
         if (numFields) {
           PetscInt numConst = 0, fOff = 0;
 
@@ -3836,7 +3836,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
             numConst += cfDof;
             fOff     += fDof;
           }
-          if (cDof != numConst) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of field constraints %d should be %d", numConst, cDof);}
+          if (cDof != numConst) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of field constraints %d should be %d", numConst, cDof);
         } else {
           for(PetscInt d = 0; d < cDof; ++d) {
             indices[d] = d;
@@ -4051,7 +4051,7 @@ PetscErrorCode DMMeshGetConeSection(DM dm, PetscSection *section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->useNewImpl) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C implementation meshes.");}
+  if (!mesh->useNewImpl) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C implementation meshes.");
   if (section) *section = mesh->coneSection;
   PetscFunctionReturn(0);
 }
@@ -4063,7 +4063,7 @@ PetscErrorCode DMMeshGetCones(DM dm, PetscInt *cones[]) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->useNewImpl) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C implementation meshes.");}
+  if (!mesh->useNewImpl) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C implementation meshes.");
   if (cones) *cones = mesh->cones;
   PetscFunctionReturn(0);
 }

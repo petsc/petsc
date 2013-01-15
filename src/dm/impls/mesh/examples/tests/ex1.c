@@ -174,13 +174,13 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   match = PETSC_FALSE;
   do {
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);}
+    if (!ret) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);
     ierr = PetscStrncmp(line, "coor", 4, &match);CHKERRQ(ierr);
   } while(!match);
   // Rank 0 determines the length of a coordinate line and broadcasts it
   if (!rank) {
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Missing coordinate line in FEAP file");}
+    if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Missing coordinate line in FEAP file");
     ierr = PetscStrlen(line, &coordLineSize);CHKERRQ(ierr);
     //ierr = PetscBinarySeek(fd, -coordLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
     fseek(fp, -coordLineSize, SEEK_CUR);
@@ -200,7 +200,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     PetscInt num, id;
 
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad coordinate line");}
+    if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad coordinate line");
     if (5 != sscanf(line, "%d %d %le %le %le", &num, &id, &coords[n*dim+0], &coords[n*dim+1], &coords[n*dim+2])) {
       SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Malformed coordinate line in FEAP file <%s>", line);
     }
@@ -212,13 +212,13 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   match = PETSC_FALSE;
   do {
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);}
+    if (!ret) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);
     ierr = PetscStrncmp(line, "elem", 4, &match);CHKERRQ(ierr);
   } while(!match);
   // Rank 0 determines the length of a coordinate line and broadcasts it
   if (!rank) {
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Missing element line in FEAP file");}
+    if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Missing element line in FEAP file");
     ierr = PetscStrlen(line, &elemLineSize);CHKERRQ(ierr);
     //ierr = PetscBinarySeek(fd, -elemLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
     fseek(fp, -elemLineSize, SEEK_CUR);
@@ -240,7 +240,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     PetscInt e[8];
 
     ret = fgets(line, 1023, fp);
-    if (!ret) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad element line in FEAP file");}
+    if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad element line in FEAP file");
     switch(numCorners) {
     case 8:
       if (3+8 != sscanf(line, "%d %d %d %d %d %d %d %d %d %d %d", &num, &id, &matid, &e[0], &e[1], &e[2], &e[3], &e[4], &e[5], &e[6], &e[7])) {

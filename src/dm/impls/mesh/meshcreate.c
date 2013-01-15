@@ -158,8 +158,8 @@ PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Must have at least 1 face per side");}
-  if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");}
+  if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Must have at least 1 face per side");
+  if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");
   ierr = PetscMalloc(numVertices*2 * sizeof(PetscReal), &coords);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   if (!rank) {
@@ -235,7 +235,7 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   if (flg) {
     DM boundary;
 
-    if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+    if (interpolate) SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
     ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
     PetscValidLogicalCollectiveInt(boundary,dim,2);
     ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
@@ -311,7 +311,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
   PetscValidPointer(cellVertices, 5);
   /* PetscValidLogicalCollectiveBool(comm,interpolate,6); */
   PetscValidPointer(dm, 7);
-  if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+  if (interpolate) SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
   ierr = PetscOptionsGetInt(PETSC_NULL, "-dm_mesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
   Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, debug);
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
@@ -355,7 +355,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, 
   PetscValidPointer(cellVertices, 5);
   /* PetscValidLogicalCollectiveBool(comm,interpolate,6); */
   PetscValidPointer(dm, 7);
-  if (interpolate) {SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");}
+  if (interpolate) SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
   ierr = PetscOptionsGetInt(PETSC_NULL, "-dmmesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
   Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, debug);
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
@@ -439,7 +439,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
       }
     }
   }
-  if (c != numCells) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Error in generated cell numbering, %d should be %d", c, numCells);}
+  if (c != numCells) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Error in generated cell numbering, %d should be %d", c, numCells);
   /* Get vertex renumbering */
   for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
     for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
@@ -450,7 +450,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
       }
     }
   }
-  if (v != numVertices) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Error in generated vertex numbering, %d should be %d", v, numVertices);}
+  if (v != numVertices) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Error in generated vertex numbering, %d should be %d", v, numVertices);
   /* Calculate support sizes */
   for(PetscInt k = info.zs; k < ze; ++k, ++c) {
     for(PetscInt j = info.ys; j < ye; ++j) {
