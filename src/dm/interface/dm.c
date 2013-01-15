@@ -1325,20 +1325,23 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len)           {PetscValidPointer(len,2);            *len         = PETSC_NULL;}
+  if (len)           {PetscValidPointer(len,2);            *len         = 0;}
   if (namelist)      {PetscValidPointer(namelist,3);       *namelist    = PETSC_NULL;}
   if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = PETSC_NULL;}
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DMCreateDomainDecomposition not supported for this DM type!");CHKERRQ(ierr);
-  if (len) *len = l;
-  for (i = 0; i < l; i++) {
-    for (link=dm->subdomainhook; link; link=link->next) {
-      if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
+    /* copy subdomain hooks and context over to the subdomain DMs */
+    if (dmlist) {
+      for (i = 0; i < l; i++) {
+        for (link=dm->subdomainhook; link; link=link->next) {
+          if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
+        }
+        (*dmlist)[i]->ctx = dm->ctx;
+      }
     }
-    (*dmlist)[i]->ctx = dm->ctx;
+    if (len) *len = l;
   }
   PetscFunctionReturn(0);
 }
