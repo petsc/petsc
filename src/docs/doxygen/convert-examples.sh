@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rm -rf src2/
-cp -R src/ src2/
-find src2/*/examples/tutorials/*.c | xargs sed -i 's/ierr = //g'
-find src2/*/examples/tutorials/*.c | xargs sed -i 's/CHKERRQ(ierr);//g'
+find . -name *c-example.html -type f | xargs sed -i '/ierr;/d'
+find . -name *c-example.html -type f | xargs sed -i '/__FUNCT__/d'
+find . -name *c-example.html -type f | xargs sed -i '/PetscFunctionBeginUser;/d'
+find . -name *c-example.html -type f | xargs sed -i 's/PetscFunctionReturn/return/g'
 
