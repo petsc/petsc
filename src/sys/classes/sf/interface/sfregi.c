@@ -5,7 +5,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF);
 #endif
 PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Basic(PetscSF);
 
-PetscFList PetscSFList;
+PetscFunctionList PetscSFunctionList;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFRegisterAll"
@@ -46,8 +46,8 @@ PetscErrorCode  PetscSFRegister(const char sname[],const char path[],const char 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PetscSFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscSFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -69,7 +69,7 @@ PetscErrorCode  PetscSFRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&PetscSFList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscSFunctionList);CHKERRQ(ierr);
   PetscSFRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

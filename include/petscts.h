@@ -319,8 +319,8 @@ PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
 
 
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFList TSList;
-PETSC_EXTERN PetscBool TSRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList TSList;
+PETSC_EXTERN PetscBool         TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
 PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
 PETSC_EXTERN PetscErrorCode TSRegister(const char[], const char[], const char[], PetscErrorCode (*)(TS));

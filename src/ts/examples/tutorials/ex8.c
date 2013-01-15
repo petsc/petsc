@@ -343,18 +343,18 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscFList     plist = PETSC_NULL;
-  char           pname[256];
-  TS             ts;            /* nonlinear solver */
-  Vec            x,r;           /* solution, residual vectors */
-  Mat            A;             /* Jacobian matrix */
-  Problem        problem;
-  PetscBool      use_monitor;
-  PetscInt       steps,maxsteps = 1000,nonlinits,linits,snesfails,rejects;
-  PetscReal      ftime;
-  MonitorCtx     mon;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
+  PetscFunctionList plist = PETSC_NULL;
+  char              pname[256];
+  TS                ts;            /* nonlinear solver */
+  Vec               x,r;           /* solution, residual vectors */
+  Mat               A;             /* Jacobian matrix */
+  Problem           problem;
+  PetscBool         use_monitor;
+  PetscInt          steps,maxsteps = 1000,nonlinits,linits,snesfails,rejects;
+  PetscReal         ftime;
+  MonitorCtx        mon;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -364,9 +364,9 @@ int main(int argc,char **argv)
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   /* Register the available problems */
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&plist,"rober","",(void (*)(void))&RoberCreate);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&plist,"ce",   "",(void (*)(void))&CECreate);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&plist,"orego","",(void (*)(void))&OregoCreate);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&plist,"rober","",(void (*)(void))&RoberCreate);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&plist,"ce",   "",(void (*)(void))&CECreate);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&plist,"orego","",(void (*)(void))&OregoCreate);CHKERRQ(ierr);
   ierr = PetscStrcpy(pname,"ce");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -386,7 +386,7 @@ int main(int argc,char **argv)
   {
     PetscErrorCode (*pcreate)(Problem);
 
-    ierr = PetscFListFind(,MPI_COMM_WORLD,plistpname,PETSC_FALSE,(void (**)(void))&pcreate);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(,MPI_COMM_WORLD,plistpname,PETSC_FALSE,(void (**)(void))&pcreate);CHKERRQ(ierr);
     if (!pcreate) SETERRQ1(PETSC_COMM_SELF,1,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }
@@ -461,7 +461,7 @@ int main(int argc,char **argv)
     ierr = (*problem->destroy)(problem);CHKERRQ(ierr);
   }
   ierr = PetscFree(problem);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&plist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&plist);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);

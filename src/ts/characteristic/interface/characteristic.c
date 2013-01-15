@@ -1,18 +1,18 @@
 
 #include <petsc-private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
 
-PetscClassId CHARACTERISTIC_CLASSID;
+PetscClassId   CHARACTERISTIC_CLASSID;
 PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
 PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
 PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
-PetscBool   CharacteristicRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered characteristic routines
 */
-PetscFList  CharacteristicList = PETSC_NULL;
+PetscFunctionList  CharacteristicList = PETSC_NULL;
+PetscBool          CharacteristicRegisterAllCalled = PETSC_FALSE;
 
 PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt []);
-PetscInt DMDAGetNeighborRelative(DM, PassiveReal, PassiveReal);
+PetscInt       DMDAGetNeighborRelative(DM, PassiveReal, PassiveReal);
 PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar [] );
 
 PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
@@ -183,7 +183,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
     c->data = 0;
   }
 
-  ierr =  PetscFListFind(((PetscObject)c)->comm,CharacteristicList, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)c)->comm,CharacteristicList, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   ierr = (*r)(c);CHKERRQ(ierr);
@@ -243,8 +243,8 @@ PetscErrorCode CharacteristicRegister(const char sname[],const char path[],const
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&CharacteristicList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&CharacteristicList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,10 +1,10 @@
 
 #include <../src/ts/impls/implicit/gl/gl.h> /*I  "petscts.h" I*/
 
-static PetscFList TSGLAdaptList;
-static PetscBool  TSGLAdaptPackageInitialized;
-static PetscBool  TSGLAdaptRegisterAllCalled;
-static PetscClassId TSGLADAPT_CLASSID;
+static PetscFunctionList TSGLAdaptList;
+static PetscBool         TSGLAdaptPackageInitialized;
+static PetscBool         TSGLAdaptRegisterAllCalled;
+static PetscClassId      TSGLADAPT_CLASSID;
 
 struct _TSGLAdaptOps {
   PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
@@ -37,8 +37,8 @@ PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const cha
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&TSGLAdaptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAdaptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,7 @@ PetscErrorCode  TSGLAdaptRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&TSGLAdaptList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSGLAdaptList);CHKERRQ(ierr);
   TSGLAdaptRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,TSGLAdaptType type)
   PetscErrorCode ierr,(*r)(TSGLAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(((PetscObject)adapt)->comm,TSGLAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)adapt)->comm,TSGLAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);

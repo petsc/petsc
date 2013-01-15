@@ -304,7 +304,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         }
         break;
       case OPTION_LIST:
-        ierr = PetscFListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject.prefix,next->option,next->text,next->man,next->flist,(char*)next->data);CHKERRQ(ierr);
+        ierr = PetscFunctionListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject.prefix,next->option,next->text,next->man,next->flist,(char*)next->data);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
 	  PetscOptionsObject.changedmethod = PETSC_TRUE;
@@ -427,7 +427,7 @@ PetscErrorCode PetscOptionsAMSInput()
 	ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
 	ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
 	ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
-	ierr = PetscFListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
+	ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
 	ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;}
       case OPTION_ELIST:
@@ -905,7 +905,7 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -919,7 +919,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = PetscFListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,defaultv);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscFunctionListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,defaultv);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -947,7 +947,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   See PetscOptionsList() for when the choices are given in a PetscFList()
+   See PetscOptionsList() for when the choices are given in a PetscFunctionList()
 
    Concepts: options database^list
 

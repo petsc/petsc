@@ -14,8 +14,8 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 #define DIM 2                   /* Geometric dimension */
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
-static PetscFList PhysicsList;
-static PetscFList LimitList;
+static PetscFunctionList PhysicsList;
+static PetscFunctionList LimitList;
 
 /* Represents continuum physical equations. */
 typedef struct _n_Physics *Physics;
@@ -2140,18 +2140,18 @@ int main(int argc, char **argv)
   mod->comm = comm;
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PhysicsList,"euler"              ,"",(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PhysicsList,"euler"              ,"",(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
 
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
@@ -2167,7 +2167,7 @@ int main(int argc, char **argv)
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscFListFind(comm,PhysicsList,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(comm,PhysicsList,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(mod,phys);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
@@ -2181,7 +2181,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,PETSC_NULL);CHKERRQ(ierr);
     if (user->reconstruct) {
       ierr = PetscOptionsList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscFListFind(comm,LimitList,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
+      ierr = PetscFunctionListFind(comm,LimitList,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
     }
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
@@ -2256,8 +2256,8 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&user->cellgeom);CHKERRQ(ierr);
   ierr = VecDestroy(&user->facegeom);CHKERRQ(ierr);
   ierr = DMDestroy(&user->dmGrad);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&PhysicsList);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&LimitList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&LimitList);CHKERRQ(ierr);
   ierr = BoundaryLinkDestroy(&user->model->boundary);CHKERRQ(ierr);
   ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);

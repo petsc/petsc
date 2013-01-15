@@ -6,10 +6,10 @@
 #include <petscvec.h>
 
 /*
-    PFList contains the list of preconditioners currently registered
+    PFunctionList contains the list of preconditioners currently registered
    These are added with the PFRegisterDynamic() macro
 */
-PETSC_EXTERN PetscFList PFList;
+PETSC_EXTERN PetscFunctionList PFunctionList;
 
 /*J
     PFType - Type of PETSc mathematical function, a string name

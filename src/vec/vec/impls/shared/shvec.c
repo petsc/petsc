@@ -30,8 +30,8 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
-  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
+  ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
 
   (*v)->ops->duplicate = VecDuplicate_Shared;
   (*v)->bstash.bs = win->bstash.bs;

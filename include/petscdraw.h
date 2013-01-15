@@ -33,7 +33,7 @@ typedef const char* PetscDrawType;
 S*/
 typedef struct _p_PetscDraw* PetscDraw;
 
-PETSC_EXTERN PetscFList PetscDrawList;
+PETSC_EXTERN PetscFunctionList PetscDrawList;
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterDestroy(void);

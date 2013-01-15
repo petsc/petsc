@@ -227,11 +227,11 @@ M*/
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 
-PETSC_EXTERN PetscBool MatRegisterAllCalled;
-PETSC_EXTERN PetscFList MatList;
-PETSC_EXTERN PetscFList MatColoringList;
-PETSC_EXTERN PetscFList MatPartitioningList;
-PETSC_EXTERN PetscFList MatCoarsenList;
+PETSC_EXTERN PetscBool         MatRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList MatList;
+PETSC_EXTERN PetscFunctionList MatColoringList;
+PETSC_EXTERN PetscFunctionList MatPartitioningList;
+PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*E
     MatStructure - Indicates if the matrix has the same nonzero structure
@@ -980,7 +980,7 @@ typedef const char* MatOrderingType;
 #define MATORDERINGAMD         "amd"            /* only works if UMFPACK is installed with PETSc */
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
-PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFList *list);
+PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);
 PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
 
 /*MC
@@ -1028,8 +1028,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(const char[]);
-PETSC_EXTERN PetscBool MatOrderingRegisterAllCalled;
-PETSC_EXTERN PetscFList MatOrderingList;
+PETSC_EXTERN PetscBool         MatOrderingRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList MatOrderingList;
 
 PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 

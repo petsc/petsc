@@ -125,7 +125,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
        * VecDuplicate() with the state Vec and store inside the MatFDColoring. This Vec will duplicate the Vec, but the
        * MatFDColoring is composed with the DM. We dereference the DM here so that the reference count will eventually
        * drop to 0. Note the code in DMDestroy() that exits early for a negative reference count. That code path will be
-       * taken when the PetscOList for the Vec inside MatFDColoring is destroyed.
+       * taken when the PetscObjectList for the Vec inside MatFDColoring is destroyed.
        */
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     }

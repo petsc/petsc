@@ -3,11 +3,9 @@
 */
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
-/* Logging support */
-PetscClassId PF_CLASSID = 0;
-
-PetscFList PFList         = PETSC_NULL; /* list of all registered PD functions */
-PetscBool  PFRegisterAllCalled = PETSC_FALSE;
+PetscClassId      PF_CLASSID = 0;
+PetscFunctionList PFunctionList         = PETSC_NULL; /* list of all registered PD functions */
+PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSet"
@@ -356,8 +354,8 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -435,7 +433,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   pf->data        = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFListFind(((PetscObject)pf)->comm,PFList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)pf)->comm,PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy             = 0;
   pf->ops->view                = 0;
@@ -481,7 +479,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
     }
@@ -512,7 +510,7 @@ PetscErrorCode  PFFinalizePackage(void)
 {
   PetscFunctionBegin;
   PFPackageInitialized = PETSC_FALSE;
-  PFList               = PETSC_NULL;
+  PFunctionList               = PETSC_NULL;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

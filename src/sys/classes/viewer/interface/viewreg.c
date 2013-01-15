@@ -1,7 +1,7 @@
 
 #include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/
 
-PetscFList PetscViewerList              = 0;
+PetscFunctionList PetscViewerList              = 0;
 
 PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char *[],PetscBool*);
 #undef __FUNCT__
@@ -199,7 +199,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
-  ierr =  PetscFListFind(((PetscObject)viewer)->comm,PetscViewerList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)viewer)->comm,PetscViewerList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ PetscErrorCode  PetscViewerRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&PetscViewerList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -236,8 +236,8 @@ PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const cha
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&PetscViewerList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscViewerList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

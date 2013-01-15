@@ -106,12 +106,12 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
     h->python_destroy = 0;
     ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
   }
-  ierr = PetscOListDestroy(&h->olist);CHKERRQ(ierr);
+  ierr = PetscObjectListDestroy(&h->olist);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   /* next destroy other things */
   h->classid = PETSCFREEDHEADER;
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscFree(h->type_name);CHKERRQ(ierr);
   ierr = PetscFree(h->name);CHKERRQ(ierr);
   ierr = PetscFree(h->prefix);CHKERRQ(ierr);
@@ -613,7 +613,7 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscOListRemoveReference(&obj->olist,name);CHKERRQ(ierr);
+  ierr = PetscObjectListRemoveReference(&obj->olist,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -627,10 +627,10 @@ PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscO
 
   PetscFunctionBegin;
   if (ptr) {
-    ierr = PetscOListReverseFind(ptr->olist,obj,&tname,&skipreference);CHKERRQ(ierr);
+    ierr = PetscObjectListReverseFind(ptr->olist,obj,&tname,&skipreference);CHKERRQ(ierr);
     if (tname && !skipreference) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was composed with it");
   }
-  ierr = PetscOListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
+  ierr = PetscObjectListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -642,7 +642,7 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscOListFind(obj->olist,name,ptr);CHKERRQ(ierr);
+  ierr = PetscObjectListFind(obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -654,7 +654,7 @@ PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFListAdd(obj->comm,&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(obj->comm,&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -666,7 +666,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFListFind(obj->comm,obj->qlist,name,PETSC_FALSE,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(obj->comm,obj->qlist,name,PETSC_FALSE,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

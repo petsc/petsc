@@ -50,7 +50,7 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERMATLAB       "matlab"
 #define PETSCVIEWERAMS          "ams"
 
-PETSC_EXTERN PetscFList PetscViewerList;
+PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(const char *);
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(const char[]);

@@ -27,7 +27,7 @@ extern FILE *petsc_history;
 
 extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
 extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
-extern PetscErrorCode PetscFListDestroyAll(void);
+extern PetscErrorCode PetscFunctionListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
@@ -1121,7 +1121,7 @@ PetscErrorCode  PetscFinalize(void)
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc
   */
-  ierr = PetscFListDestroyAll();CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroyAll();CHKERRQ(ierr);
 
   /*
      Destroy any packages that registered a finalize

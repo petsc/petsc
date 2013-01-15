@@ -2,8 +2,8 @@
 #include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 
-PetscBool  SNESRegisterAllCalled = PETSC_FALSE;
-PetscFList SNESList              = PETSC_NULL;
+PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList SNESList              = PETSC_NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
@@ -3795,7 +3795,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   ierr = PetscObjectTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(((PetscObject)snes)->comm,SNESList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)snes)->comm,SNESList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
   if (snes->ops->destroy) {
@@ -3840,7 +3840,7 @@ PetscErrorCode  SNESRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&SNESList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&SNESList);CHKERRQ(ierr);
   SNESRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -4128,8 +4128,8 @@ PetscErrorCode  SNESRegister(const char sname[],const char path[],const char nam
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

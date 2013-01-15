@@ -85,8 +85,8 @@ EXTERN_C_END
 
 /* ===========================================================================================*/
 
-PetscFList MatPartitioningList = 0;
-PetscBool  MatPartitioningRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList MatPartitioningList = 0;
+PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 
 #undef __FUNCT__
@@ -94,11 +94,11 @@ PetscBool  MatPartitioningRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&MatPartitioningList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatPartitioningList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +121,7 @@ PetscErrorCode  MatPartitioningRegisterDestroy(void)
 
   PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
-  ierr = PetscFListDestroy(&MatPartitioningList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatPartitioningList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -500,7 +500,7 @@ $      (for instance, parmetis)
 PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
-  PetscBool  match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
@@ -516,8 +516,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
     part->setupcalled = 0;
   }
 
-  ierr =  PetscFListFind(((PetscObject)part)->comm,MatPartitioningList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
-
+  ierr =  PetscFunctionListFind(((PetscObject)part)->comm,MatPartitioningList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)part)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 
   part->ops->destroy      = (PetscErrorCode (*)(MatPartitioning)) 0;

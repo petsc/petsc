@@ -80,7 +80,4 @@ PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
 
-PETSC_EXTERN PetscBool CharacteristicRegisterAllCalled;
-PETSC_EXTERN PetscFList CharacteristicList;
-
 #endif /*__CHARACTERISTICIMPL_H*/

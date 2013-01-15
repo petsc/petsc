@@ -59,7 +59,7 @@ PetscErrorCode  SNESLineSearchRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
   SNESLineSearchRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

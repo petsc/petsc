@@ -43,8 +43,8 @@ typedef const char* DMType;
 #define DMAKKT      "akkt"
 #define DMPATCH     "patch"
 
-PETSC_EXTERN PetscFList DMList;
-PETSC_EXTERN PetscBool DMRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList DMList;
+PETSC_EXTERN PetscBool         DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);

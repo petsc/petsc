@@ -9,7 +9,7 @@ PetscBool  PCRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered KSP routines
 */
-PetscFList PCList = 0;
+PetscFunctionList PCList = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetType"
@@ -63,7 +63,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   ierr = PetscObjectTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(((PetscObject)pc)->comm,PCList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)pc)->comm,PCList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
@@ -71,7 +71,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
     pc->ops->destroy = PETSC_NULL;
     pc->data = 0;
   }
-  ierr = PetscFListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
   /* Reinitialize function pointers in PCOps structure */
   ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
   /* XXX Is this OK?? */
@@ -109,7 +109,7 @@ PetscErrorCode  PCRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&PCList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PCList);CHKERRQ(ierr);
   PCRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

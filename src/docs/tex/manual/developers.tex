@@ -660,22 +660,22 @@ not have to ``reinvent the wheel.''
 
 In \trl{src/sys/objects/olist.c} PETSc defines a C struct
 \begin{tabbing}
-typedef struct \_PetscOList *PetscOList;\\
-struct \_PetscOList \{\\
-    char        name[128];\\
-    PetscObject obj;\\
-    PetscOList  next;\\
+typedef struct \_PetscObjectList *PetscObjectList;\\
+struct \_PetscObjectList \{\\
+    char             name[128];\\
+    PetscObject      obj;\\
+    PetscObjectList  next;\\
 \};
 \end{tabbing}
 from which linked lists of composed objects may be constructed. The routines
 to manipulate these elementary objects are
 \begin{tabbing}
-  int PetscOListAdd(PetscOList *fl,char *name,PetscObject obj );\\
-  int PetscOListDestroy(PetscOList fl );\\
-  int PetscOListFind(PetscOList fl, char *name, PetscObject *obj)\\
-  int PetscOListDuplicate(PetscOList fl, PetscOList *nl);
+  int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj );\\
+  int PetscObjectListDestroy(PetscObjectList fl );\\
+  int PetscObjectListFind(PetscObjectList fl, const char *name, PetscObject *obj)\\
+  int PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl);
 \end{tabbing}
-The function PetscOListAdd() will create the initial PetscOList if the argument
+The function PetscObjectListAdd() will create the initial PetscObjectList if the argument
 \trl{fl} points to a null.
 
 The PETSc object \trl{compose()} and \trl{query()} functions are then simply
@@ -686,7 +686,7 @@ The PETSc object \trl{compose()} and \trl{query()} functions are then simply
     PetscErrorCode ierr;\\
 \\
     PetscFunctionBegin;\\
-    ierr = PetscOListAdd(\&obj-$>$olist,name,ptr);CHKERRQ(ierr);\\
+    ierr = PetscObjectListAdd(\&obj-$>$olist,name,ptr);CHKERRQ(ierr);\\
     PetscFunctionReturn(0);\\
   \}\\
 \\
@@ -695,7 +695,7 @@ The PETSc object \trl{compose()} and \trl{query()} functions are then simply
     PetscErrorCode ierr;\\
 \\
     PetscFunctionBegin;\\
-    ierr = PetscOListFind(obj-$>$olist,name,ptr);CHKERRQ(ierr);\\
+    ierr = PetscObjectListFind(obj-$>$olist,name,ptr);CHKERRQ(ierr);\\
     PetscFunctionReturn(0); \\
   \}
 \end{tabbing}
@@ -707,17 +707,17 @@ a dynamic library) or by function pointer. In \trl{src/sys/dll/reg.c}
 PETSc defines the C structure
 
 \begin{tabbing}
-typedef struct \_PetscFList* PetscFList;\\
-struct \_PetscFList \{\\
+typedef struct \_PetscFunctionList* PetscFunctionList;\\
+struct \_PetscFunctionList \{\\
   int    (*routine)(void *);\\
   char   *path;\\
   char   *name;  \\
   char   *rname;            /* name of create function in link library */\\
-  PetscFList  *next;\\
+  PetscFunctionList  *next;\\
 \};
 \end{tabbing}
 
-The PetscFList object is a linked list of function data; each
+The PetscFunctionList object is a linked list of function data; each
 of which contains
 \begin{itemize}
 \item a function pointer (if it has already been loaded into memory from the dynamic library)
@@ -728,7 +728,7 @@ of which contains
       to load in the actual function pointer).
 \end{itemize}
 
-Each PETSc object contains a PetscFList object. The \trl{composefunction()} and
+Each PETSc object contains a PetscFunctionList object. The \trl{composefunction()} and
 \trl{queryfunction()} are given by
 
 \begin{tabbing}
@@ -737,7 +737,7 @@ PetscErrorCode PetscObjectComposeFunction\_Petsc(PetscObject obj,char *name,char
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFListAdd(\&obj-$>$qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);\\
+  ierr = PetscFunctionListAdd(\&obj-$>$qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}\\
 \\
@@ -746,7 +746,7 @@ PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,char *name,void *
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
+  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
@@ -761,18 +761,18 @@ compile it in and link in all those functions; thus one could not take advantage
 dynamic libraries. This is done with macros like the following
 \begin{tabbing}
 \#if defined(USE\_DYNAMIC\_LIBRARIES)\\
-\#define       PetscFListAdd(a,b,p,c) PetscFListAdd\_Private(a,b,p,0)\\
+\#define       PetscFunctionListAdd(a,b,p,c) PetscFunctionListAdd\_Private(a,b,p,0)\\
 \#else\\
-\#define       PetscFListAdd(a,b,p,c) PetscFListAdd\_Private(a,b,p,(int (*)(void *))c)\\
+\#define       PetscFunctionListAdd(a,b,p,c) PetscFunctionListAdd\_Private(a,b,p,(int (*)(void *))c)\\
 \#endif\\
 \end{tabbing}
 Thus when the code is compiled with the dynamic link library flag the function pointer
 argument is removed from the code; otherwise it is retained. Ugly, but neccessary.
 
-The \trl{PetscFListAdd\_Private()} and all related routines can be found in the directory
+The \trl{PetscFunctionListAdd\_Private()} and all related routines can be found in the directory
 \trl{src/sys/dll}.
 
-In addition to using the PetscFList mechanism to compose functions into PETSc objects, it is
+In addition to using the PetscFunctionList mechanism to compose functions into PETSc objects, it is
 also used to allow registration of new class implementations; for example, new
 preconditioners, see Section \ref{sec:registeringnewmethods}.
 

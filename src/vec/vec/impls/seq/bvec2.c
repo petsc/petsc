@@ -1173,8 +1173,8 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
-  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
+  ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
   (*V)->ops->view = win->ops->view;
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
 

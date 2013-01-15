@@ -11,7 +11,7 @@ PETSC_EXTERN PetscErrorCode PCInitializePackage(const char[]);
     PCList contains the list of preconditioners currently registered
    These are added with the PCRegisterDynamic() macro
 */
-PETSC_EXTERN PetscFList PCList;
+PETSC_EXTERN PetscFunctionList PCList;
 
 /*S
      PC - Abstract PETSc object that manages all preconditioners

@@ -6,8 +6,8 @@
 #include <petscsys.h>           /*I "petscsys.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListGetPathAndFunction"
-PetscErrorCode  PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
+#define __FUNCT__ "PetscFunctionListGetPathAndFunction"
+PetscErrorCode  PetscFunctionListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   PetscErrorCode ierr;
   char           work[PETSC_MAX_PATH_LEN],*lfunction;
@@ -149,24 +149,24 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 
 
 /* ------------------------------------------------------------------------------*/
-struct _n_PetscFList {
-  void        (*routine)(void);   /* the routine */
-  char        *path;              /* path of link library containing routine */
-  char        *name;              /* string to identify routine */
-  char        *rname;             /* routine name in dynamic library */
-  PetscFList  next;               /* next pointer */
-  PetscFList  next_list;          /* used to maintain list of all lists for freeing */
+struct _n_PetscFunctionList {
+  void               (*routine)(void);   /* the routine */
+  char               *path;              /* path of link library containing routine */
+  char               *name;              /* string to identify routine */
+  char               *rname;             /* routine name in dynamic library */
+  PetscFunctionList  next;               /* next pointer */
+  PetscFunctionList  next_list;          /* used to maintain list of all lists for freeing */
 };
 
 /*
-     Keep a linked list of PetscFLists so that we can destroy all the left-over ones.
+     Keep a linked list of PetscFunctionLists so that we can destroy all the left-over ones.
 */
-static PetscFList   dlallhead = 0;
+static PetscFunctionList   dlallhead = 0;
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListAdd"
+#define __FUNCT__ "PetscFunctionListAdd"
 /*@C
-   PetscFListAdd - Given a routine and a string id, saves that routine in the
+   PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
      Formally Collective on MPI_Comm
@@ -184,27 +184,27 @@ static PetscFList   dlallhead = 0;
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
    for that particular component (e.g., SNESRegisterDynamic()) instead of
-   calling PetscFListAdd() directly.
+   calling PetscFunctionListAdd() directly.
 
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
   occuring in pathname will be replaced with appropriate values.
 
    Level: developer
 
-.seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
-          PCRegisterDynamic(), TSRegisterDynamic(), PetscFList
+.seealso: PetscFunctionListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
+          PCRegisterDynamic(), TSRegisterDynamic(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFListAdd(MPI_Comm comm,PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
+PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const char name[],const char rname[],void (*fnc)(void))
 {
-  PetscFList     entry,ne;
-  PetscErrorCode ierr;
-  char           *fpath,*fname;
+  PetscFunctionList entry,ne;
+  PetscErrorCode    ierr;
+  char              *fpath,*fname;
 
   PetscFunctionBegin;
   if (!*fl) {
-    ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+    ierr           = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
     entry->routine = fnc;
@@ -228,7 +228,7 @@ PetscErrorCode  PetscFListAdd(MPI_Comm comm,PetscFList *fl,const char name[],con
 
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
-        ierr = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+        ierr = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
         ierr = PetscFree(ne->path);CHKERRQ(ierr);
         ierr = PetscFree(ne->rname);CHKERRQ(ierr);
         ne->path    = fpath;
@@ -239,9 +239,9 @@ PetscErrorCode  PetscFListAdd(MPI_Comm comm,PetscFList *fl,const char name[],con
       if (ne->next) ne = ne->next; else break;
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+    ierr           = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
     entry->routine = fnc;
@@ -252,21 +252,21 @@ PetscErrorCode  PetscFListAdd(MPI_Comm comm,PetscFList *fl,const char name[],con
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListDestroy"
+#define __FUNCT__ "PetscFunctionListDestroy"
 /*@
-    PetscFListDestroy - Destroys a list of registered routines.
+    PetscFunctionListDestroy - Destroys a list of registered routines.
 
     Input Parameter:
 .   fl  - pointer to list
 
     Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFListDestroy(PetscFList *fl)
+PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 {
-  PetscFList     next,entry,tmp = dlallhead;
-  PetscErrorCode ierr;
+  PetscFunctionList next,entry,tmp = dlallhead;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!*fl) PetscFunctionReturn(0);
@@ -307,16 +307,16 @@ PetscErrorCode  PetscFListDestroy(PetscFList *fl)
    Destroys all the function lists that anyone has every registered, such as KSPList, VecList, etc.
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListDestroyAll"
-PetscErrorCode  PetscFListDestroyAll(void)
+#define __FUNCT__ "PetscFunctionListDestroyAll"
+PetscErrorCode  PetscFunctionListDestroyAll(void)
 {
-  PetscFList     tmp2,tmp1 = dlallhead;
-  PetscErrorCode ierr;
+  PetscFunctionList tmp2,tmp1 = dlallhead;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   while (tmp1) {
     tmp2 = tmp1->next_list;
-    ierr = PetscFListDestroy(&tmp1);CHKERRQ(ierr);
+    ierr = PetscFunctionListDestroy(&tmp1);CHKERRQ(ierr);
     tmp1 = tmp2;
   }
   dlallhead = 0;
@@ -324,9 +324,9 @@ PetscErrorCode  PetscFListDestroyAll(void)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListFind"
+#define __FUNCT__ "PetscFunctionListFind"
 /*@C
-    PetscFListFind - Given a name, finds the matching routine.
+    PetscFunctionListFind - Given a name, finds the matching routine.
 
     Input Parameters:
 +   fl   - pointer to list
@@ -339,23 +339,23 @@ PetscErrorCode  PetscFListDestroyAll(void)
 
     Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],PetscBool searchlibraries,void (**r)(void))
+PetscErrorCode  PetscFunctionListFind(MPI_Comm comm,PetscFunctionList fl,const char name[],PetscBool searchlibraries,void (**r)(void))
 {
-  PetscFList     entry = fl;
-  PetscErrorCode ierr;
-  char           *function,*path;
-  PetscBool      flg,f1,f2,f3;
+  PetscFunctionList entry = fl;
+  PetscErrorCode    ierr;
+  char              *function,*path;
+  PetscBool         flg,f1,f2,f3;
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  char           *newpath;
+  char              *newpath;
 #endif
 
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = 0;
-  ierr = PetscFListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
+  ierr = PetscFunctionListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
 
   /*
         If path then append it to search libraries
@@ -425,7 +425,7 @@ PetscErrorCode  PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],Pet
     ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
     ierr = PetscFree(path);CHKERRQ(ierr);
     if (*r) {
-      ierr = PetscFListAdd(comm,&fl,name,name,*r);CHKERRQ(ierr);
+      ierr = PetscFunctionListAdd(comm,&fl,name,name,*r);CHKERRQ(ierr);
     }
   }
 #endif
@@ -434,9 +434,9 @@ PetscErrorCode  PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],Pet
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListView"
+#define __FUNCT__ "PetscFunctionListView"
 /*@
-   PetscFListView - prints out contents of an PetscFList
+   PetscFunctionListView - prints out contents of an PetscFunctionList
 
    Collective over MPI_Comm
 
@@ -446,9 +446,9 @@ PetscErrorCode  PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],Pet
 
    Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFListPrintTypes(), PetscFList
+.seealso: PetscFunctionListAddDynamic(), PetscFunctionListPrintTypes(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
+PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -474,9 +474,9 @@ PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListGet"
+#define __FUNCT__ "PetscFunctionListGet"
 /*@C
-   PetscFListGet - Gets an array the contains the entries in PetscFList, this is used
+   PetscFunctionListGet - Gets an array the contains the entries in PetscFunctionList, this is used
          by help etc.
 
    Collective over MPI_Comm
@@ -494,13 +494,13 @@ PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
 
    Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFListGet(PetscFList list,const char ***array,int *n)
+PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,int *n)
 {
-  PetscErrorCode ierr;
-  PetscInt       count = 0;
-  PetscFList     klist = list;
+  PetscErrorCode    ierr;
+  PetscInt          count = 0;
+  PetscFunctionList klist = list;
 
   PetscFunctionBegin;
   while (list) {
@@ -521,9 +521,9 @@ PetscErrorCode  PetscFListGet(PetscFList list,const char ***array,int *n)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListPrintTypes"
+#define __FUNCT__ "PetscFunctionListPrintTypes"
 /*@C
-   PetscFListPrintTypes - Prints the methods available.
+   PetscFunctionListPrintTypes - Prints the methods available.
 
    Collective over MPI_Comm
 
@@ -539,9 +539,9 @@ PetscErrorCode  PetscFListGet(PetscFList list,const char ***array,int *n)
 
    Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list,const char def[])
+PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;
@@ -565,9 +565,9 @@ PetscErrorCode  PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListDuplicate"
+#define __FUNCT__ "PetscFunctionListDuplicate"
 /*@
-    PetscFListDuplicate - Creates a new list from a given object list.
+    PetscFunctionListDuplicate - Creates a new list from a given object list.
 
     Input Parameters:
 .   fl   - pointer to list
@@ -577,10 +577,10 @@ PetscErrorCode  PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],
 
     Level: developer
 
-.seealso: PetscFList, PetscFListAdd(), PetscFlistDestroy()
+.seealso: PetscFunctionList, PetscFunctionListAdd(), PetscFlistDestroy()
 
 @*/
-PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
+PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionList *nl)
 {
   PetscErrorCode ierr;
   char           path[PETSC_MAX_PATH_LEN];
@@ -595,7 +595,7 @@ PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
     } else {
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }
-    ierr = PetscFListAdd(PETSC_COMM_WORLD,nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
   PetscFunctionReturn(0);
@@ -603,9 +603,9 @@ PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFListConcat"
+#define __FUNCT__ "PetscFunctionListConcat"
 /*
-    PetscFListConcat - joins name of a libary, and the path where it is located
+    PetscFunctionListConcat - joins name of a libary, and the path where it is located
     into a single string.
 
     Input Parameters:
@@ -621,7 +621,7 @@ PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
     the path as path:name
 
 */
-PetscErrorCode  PetscFListConcat(const char path[],const char name[],char fullname[])
+PetscErrorCode  PetscFunctionListConcat(const char path[],const char name[],char fullname[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

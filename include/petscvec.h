@@ -307,8 +307,8 @@ PETSC_EXTERN PetscErrorCode VecGetBlockSize(Vec,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecSetValuesBlocked(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFList VecList;
-PETSC_EXTERN PetscBool VecRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList VecList;
+PETSC_EXTERN PetscBool         VecRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));

@@ -6,8 +6,8 @@
 #include <petsc-private/matimpl.h>
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
-PetscFList      MatOrderingList = 0;
-PetscBool  MatOrderingRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList MatOrderingList = 0;
+PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 
@@ -103,8 +103,8 @@ PetscErrorCode  MatOrderingRegister(const char sname[],const char path[],const c
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&MatOrderingList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatOrderingList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -126,7 +126,7 @@ PetscErrorCode  MatOrderingRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&MatOrderingList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
   MatOrderingRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -260,7 +260,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(((PetscObject)mat)->comm,MatOrderingList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)mat)->comm,MatOrderingList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrderingList"
-PetscErrorCode MatGetOrderingList(PetscFList *list)
+PetscErrorCode MatGetOrderingList(PetscFunctionList *list)
 {
   PetscFunctionBegin;
   *list = MatOrderingList;

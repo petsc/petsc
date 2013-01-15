@@ -372,12 +372,12 @@ PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message)
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  message,PETSC_FALSE, (QueryFunction*)(&msg));CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  message,PETSC_FALSE, (QueryFunction*)(&msg));CHKERRQ(ierr);
   if (msg) {
     ierr = (*msg)(shell);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscFListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  "call",PETSC_FALSE, (QueryFunction*)(&call));CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  "call",PETSC_FALSE, (QueryFunction*)(&call));CHKERRQ(ierr);
   if (call) {
     ierr = (*call)(shell, message);CHKERRQ(ierr);
     PetscFunctionReturn(0);

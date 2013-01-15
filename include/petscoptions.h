@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsBool(const char[],const char[],const cha
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupBegin(const char[],const char[],const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroup(const char[],const char[],const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupEnd(const char[],const char[],const char[],PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],size_t,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsList(const char[],const char[],const char[],PetscFunctionList,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsEList(const char[],const char[],const char[],const char*const*,PetscInt,const char[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
@@ -227,7 +227,7 @@ struct _n_PetscOptions {
   char              *option;
   char              *text;
   void              *data;         /* used to hold the default value and then any value it is changed to by GUI */
-  PetscFList        flist;         /* used for available values for PetscOptionsList() */
+  PetscFunctionList flist;         /* used for available values for PetscOptionsList() */
   const char *const *list;        /* used for available values for PetscOptionsEList() */
   char              nlist;         /* number of entries in list */
   char              *man;

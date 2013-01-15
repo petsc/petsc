@@ -38,8 +38,8 @@ typedef const char* ISType;
 #define ISBLOCK        "block"
 
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFList ISList;
-PETSC_EXTERN PetscBool ISRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList ISList;
+PETSC_EXTERN PetscBool         ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISSetType(IS, ISType);
 PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
 PETSC_EXTERN PetscErrorCode ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));

@@ -76,8 +76,8 @@ PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 
-PETSC_EXTERN PetscFList KSPList;
-PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList KSPList;
+PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode KSPRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));

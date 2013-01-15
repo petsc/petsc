@@ -3606,7 +3606,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
   ierr = MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,a->B);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(((PetscObject)matin)->qlist,&((PetscObject)mat)->qlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDuplicate(((PetscObject)matin)->qlist,&((PetscObject)mat)->qlist);CHKERRQ(ierr);
   *newmat = mat;
 
   PetscFunctionReturn(0);

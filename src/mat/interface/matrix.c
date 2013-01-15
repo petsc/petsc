@@ -8154,7 +8154,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",((PetscObject)A)->type_name);
     ptap = fA;
   } else {
-    /* dispatch based on the type of A and P from their PetscObject's PetscFLists. */
+    /* dispatch based on the type of A and P from their PetscObject's PetscFunctionLists. */
     char  ptapname[256];
     ierr = PetscStrcpy(ptapname,"MatPtAP_");CHKERRQ(ierr);
     ierr = PetscStrcat(ptapname,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -8530,7 +8530,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     if (!fB) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",((PetscObject)B)->type_name);
     mult = fB;
   } else {
-    /* dispatch based on the type of A and B from their PetscObject's PetscFLists. */
+    /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
     char  multname[256];
     ierr = PetscStrcpy(multname,"MatMatMult_");CHKERRQ(ierr);
     ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -8879,7 +8879,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
     if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMatMult not supported for A of type %s",((PetscObject)A)->type_name);
     mult = fA;
   } else {
-    /* dispatch based on the type of A, B and C from their PetscObject's PetscFLists. */
+    /* dispatch based on the type of A, B and C from their PetscObject's PetscFunctionLists. */
     char  multname[256];
     ierr = PetscStrcpy(multname,"MatMatMatMult_");CHKERRQ(ierr);
     ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);

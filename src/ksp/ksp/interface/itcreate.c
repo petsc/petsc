@@ -7,13 +7,13 @@
 /* Logging support */
 PetscClassId  KSP_CLASSID;
 PetscClassId  DMKSP_CLASSID;
-PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 /*
    Contains the list of registered KSP routines
 */
-PetscFList KSPList = 0;
-PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList KSPList = 0;
+PetscBool         KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLoad"
@@ -751,7 +751,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ierr = PetscObjectTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(((PetscObject)ksp)->comm,KSPList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)ksp)->comm,KSPList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
@@ -794,7 +794,7 @@ PetscErrorCode  KSPRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&KSPList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
   KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -840,8 +840,8 @@ PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

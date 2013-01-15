@@ -29,7 +29,7 @@ typedef const char* PetscThreadCommType;
 #define NOTHREAD            "nothread"
 #define OPENMP              "openmp"
 
-PETSC_EXTERN PetscFList PetscThreadCommList;
+PETSC_EXTERN PetscFunctionList PetscThreadCommList;
 
 typedef enum {THREADCOMM_SUM,THREADCOMM_PROD,THREADCOMM_MAX,THREADCOMM_MIN,THREADCOMM_MAXLOC,THREADCOMM_MINLOC} PetscThreadCommReductionOp;
 PETSC_EXTERN const char* const PetscThreadCommReductionOps[];

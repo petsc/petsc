@@ -3,15 +3,15 @@
 */
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
-PetscFList TSSSPList = 0;
+PetscFunctionList TSSSPList = 0;
 
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
-  char *type_name;
-  PetscInt nstages;
-  Vec *work;
-  PetscInt nwork;
-  PetscBool  workout;
+  char           *type_name;
+  PetscInt       nstages;
+  Vec            *work;
+  PetscInt       nwork;
+  PetscBool      workout;
 } TS_SSP;
 
 
@@ -19,7 +19,7 @@ typedef struct {
 #define __FUNCT__ "TSSSPGetWorkVectors"
 static PetscErrorCode TSSSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
 {
-  TS_SSP *ssp = (TS_SSP*)ts->data;
+  TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -371,10 +371,10 @@ EXTERN_C_BEGIN
 PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 {
   PetscErrorCode ierr,(*r)(TS,PetscReal,PetscReal,Vec);
-  TS_SSP *ssp = (TS_SSP*)ts->data;
+  TS_SSP         *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(((PetscObject)ts)->comm,TSSSPList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)ts)->comm,TSSSPList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
@@ -493,14 +493,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_SSP"
 PetscErrorCode  TSCreate_SSP(TS ts)
 {
-  TS_SSP       *ssp;
+  TS_SSP         *ssp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!TSSSPList) {
-    ierr = PetscFListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRKS2,  "TSSSPStep_RK_2",   (void(*)(void))TSSSPStep_RK_2);CHKERRQ(ierr);
-    ierr = PetscFListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRKS3,  "TSSSPStep_RK_3",   (void(*)(void))TSSSPStep_RK_3);CHKERRQ(ierr);
-    ierr = PetscFListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRK104, "TSSSPStep_RK_10_4",(void(*)(void))TSSSPStep_RK_10_4);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRKS2,  "TSSSPStep_RK_2",   (void(*)(void))TSSSPStep_RK_2);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRKS3,  "TSSSPStep_RK_3",   (void(*)(void))TSSSPStep_RK_3);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(((PetscObject)ts)->comm,&TSSSPList,TSSSPRK104, "TSSSPStep_RK_10_4",(void(*)(void))TSSSPStep_RK_10_4);CHKERRQ(ierr);
   }
 
   ts->ops->setup           = TSSetUp_SSP;

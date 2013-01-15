@@ -61,50 +61,50 @@ typedef struct {
 */
 #define PETSC_MAX_OPTIONS_HANDLER 5
 typedef struct _p_PetscObject {
-  PetscClassId   classid;
-  PetscOps       *bops;
-  MPI_Comm       comm;
-  PetscInt       type;
-  PetscLogDouble flops,time,mem;
-  PetscInt       id;
-  PetscInt       refct;
-  PetscMPIInt    tag;
-  PetscFList     qlist;
-  PetscOList     olist;
-  char           *class_name;
-  char           *description;
-  char           *mansec;
-  char           *type_name;
-  PetscObject    parent;
-  PetscInt       parentid;
-  char*          name;
-  char           *prefix;
-  PetscInt       tablevel;
-  void           *cpp;
-  PetscInt       amem;
-  PetscInt       state;
-  PetscInt       int_idmax,        intstar_idmax;
-  PetscInt       *intcomposedstate,*intstarcomposedstate;
-  PetscInt       *intcomposeddata, **intstarcomposeddata;
-  PetscInt       real_idmax,        realstar_idmax;
-  PetscInt       *realcomposedstate,*realstarcomposedstate;
-  PetscReal      *realcomposeddata, **realstarcomposeddata;
-  PetscInt       scalar_idmax,        scalarstar_idmax;
-  PetscInt       *scalarcomposedstate,*scalarstarcomposedstate;
-  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;
-  void           (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
-  PetscInt       num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
+  PetscClassId         classid;
+  PetscOps             *bops;
+  MPI_Comm             comm;
+  PetscInt             type;
+  PetscLogDouble       flops,time,mem;
+  PetscInt             id;
+  PetscInt             refct;
+  PetscMPIInt          tag;
+  PetscFunctionList    qlist;
+  PetscObjectList      olist;
+  char                 *class_name;
+  char                 *description;
+  char                 *mansec;
+  char                 *type_name;
+  PetscObject          parent;
+  PetscInt             parentid;
+  char*                name;
+  char                 *prefix;
+  PetscInt             tablevel;
+  void                 *cpp;
+  PetscInt             amem;
+  PetscInt             state;
+  PetscInt             int_idmax,        intstar_idmax;
+  PetscInt             *intcomposedstate,*intstarcomposedstate;
+  PetscInt             *intcomposeddata, **intstarcomposeddata;
+  PetscInt             real_idmax,        realstar_idmax;
+  PetscInt             *realcomposedstate,*realstarcomposedstate;
+  PetscReal            *realcomposeddata, **realstarcomposeddata;
+  PetscInt             scalar_idmax,        scalarstar_idmax;
+  PetscInt             *scalarcomposedstate,*scalarstarcomposedstate;
+  PetscScalar          *scalarcomposeddata, **scalarstarcomposeddata;
+  void                 (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
+  PetscInt             num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
   PetscFortranCallback *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
-  PetscInt       num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
-  void           *python_context;
-  PetscErrorCode (*python_destroy)(void*);
+  PetscInt             num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  void                 *python_context;
+  PetscErrorCode       (*python_destroy)(void*);
 
-  PetscInt       noptionhandler;
-  PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
-  PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
-  void           *optionctx[PETSC_MAX_OPTIONS_HANDLER];
-  PetscPrecision precision;
-  PetscBool      optionsprinted;
+  PetscInt             noptionhandler;
+  PetscErrorCode       (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
+  PetscErrorCode       (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
+  void                 *optionctx[PETSC_MAX_OPTIONS_HANDLER];
+  PetscPrecision       precision;
+  PetscBool            optionsprinted;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \

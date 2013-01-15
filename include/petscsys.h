@@ -1204,26 +1204,26 @@ S*/
 typedef struct _p_PetscObject* PetscObject;
 
 /*S
-     PetscFList - Linked list of functions, possibly stored in dynamic libraries, accessed
+     PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
       by string name
 
    Level: advanced
 
-.seealso:  PetscFListAdd(), PetscFListDestroy(), PetscOpFlist
+.seealso:  PetscFunctionListAdd(), PetscFunctionListDestroy(), PetscOpFlist
 S*/
-typedef struct _n_PetscFList *PetscFList;
+typedef struct _n_PetscFunctionList *PetscFunctionList;
 
 /*S
-     PetscOpFList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries,
+     PetscOpFunctionList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries,
                     accessed by string op name together with declared string argument type names.
 
    Level: advanced
 
     Notes: This is used to implement double dispatch and multiple dispatch based on the type names of the function arguments
 
-.seealso:  PetscFList, PetscOpFListAdd(), PetscOpFListFind(), PetscOpFListDestroy()
+.seealso:  PetscFunctionList, PetscOpFunctionListAdd(), PetscOpFunctionListFind(), PetscOpFunctionListDestroy()
 S*/
-typedef struct _n_PetscOpFList *PetscOpFList;
+typedef struct _n_PetscOpFunctionList *PetscOpFunctionList;
 
 /*E
   PetscFileMode - Access mode for a file.
@@ -1442,50 +1442,50 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE*,PetscBool);
 
 /*S
-     PetscOList - Linked list of PETSc objects, each accessable by string name
+     PetscObjectList - Linked list of PETSc objects, each accessable by string name
 
    Level: developer
 
    Notes: Used by PetscObjectCompose() and PetscObjectQuery()
 
-.seealso:  PetscOListAdd(), PetscOListDestroy(), PetscOListFind(), PetscObjectCompose(), PetscObjectQuery(), PetscFList
+.seealso:  PetscObjectListAdd(), PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectCompose(), PetscObjectQuery(), PetscFunctionList
 S*/
-typedef struct _n_PetscOList *PetscOList;
+typedef struct _n_PetscObjectList *PetscObjectList;
 
-PETSC_EXTERN PetscErrorCode PetscOListDestroy(PetscOList*);
-PETSC_EXTERN PetscErrorCode PetscOListFind(PetscOList,const char[],PetscObject*);
-PETSC_EXTERN PetscErrorCode PetscOListReverseFind(PetscOList,PetscObject,char**,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscOListAdd(PetscOList *,const char[],PetscObject);
-PETSC_EXTERN PetscErrorCode PetscOListRemoveReference(PetscOList *,const char[]);
-PETSC_EXTERN PetscErrorCode PetscOListDuplicate(PetscOList,PetscOList *);
+PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList*);
+PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList,const char[],PetscObject*);
+PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList,PetscObject,char**,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscObjectListAdd(PetscObjectList *,const char[],PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *,const char[]);
+PETSC_EXTERN PetscErrorCode PetscObjectListDuplicate(PetscObjectList,PetscObjectList *);
 
 /*
     Dynamic library lists. Lists of names of routines in objects or in dynamic
   link libraries that will be loaded as needed.
 */
-PETSC_EXTERN PetscErrorCode PetscFListAdd(MPI_Comm,PetscFList*,const char[],const char[],void (*)(void));
-PETSC_EXTERN PetscErrorCode PetscFListDestroy(PetscFList*);
-PETSC_EXTERN PetscErrorCode PetscFListFind(MPI_Comm,PetscFList,const char[],PetscBool,void (**)(void));
-PETSC_EXTERN PetscErrorCode PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFList,const char[]);
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(MPI_Comm,PetscFunctionList*,const char[],const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList*);
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind(MPI_Comm,PetscFunctionList,const char[],PetscBool,void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFunctionList,const char[]);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define    PetscFListAddDynamic(mc,a,b,p,c) PetscFListAdd(mc,a,b,p,0)
+#define    PetscFunctionListAddDynamic(mc,a,b,p,c) PetscFunctionListAdd(mc,a,b,p,0)
 #else
-#define    PetscFListAddDynamic(mc,a,b,p,c) PetscFListAdd(mc,a,b,p,(void (*)(void))c)
+#define    PetscFunctionListAddDynamic(mc,a,b,p,c) PetscFunctionListAdd(mc,a,b,p,(void (*)(void))c)
 #endif
-PETSC_EXTERN PetscErrorCode PetscFListDuplicate(PetscFList,PetscFList *);
-PETSC_EXTERN PetscErrorCode PetscFListView(PetscFList,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscFListConcat(const char [],const char [],char []);
-PETSC_EXTERN PetscErrorCode PetscFListGet(PetscFList,const char ***,int*);
+PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFunctionList *);
+PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscFunctionListConcat(const char [],const char [],char []);
+PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
 
 /*
     Multiple dispatch operation function lists. Lists of names of routines with corresponding
     argument type names with function pointers or in dynamic link libraries that will be loaded
     as needed.  Search on the op name and argument type names.
 */
-PETSC_EXTERN PetscErrorCode PetscOpFListAdd(MPI_Comm, PetscOpFList*,const char[],PetscVoidFunction, const char[], PetscInt, char*[]);
-PETSC_EXTERN PetscErrorCode PetscOpFListDestroy(PetscOpFList*);
-PETSC_EXTERN PetscErrorCode PetscOpFListFind(MPI_Comm, PetscOpFList, PetscVoidFunction*, const char[], PetscInt, char*[]);
-PETSC_EXTERN PetscErrorCode PetscOpFListView(PetscOpFList,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscOpFunctionListAdd(MPI_Comm, PetscOpFunctionList*,const char[],PetscVoidFunction, const char[], PetscInt, char*[]);
+PETSC_EXTERN PetscErrorCode PetscOpFunctionListDestroy(PetscOpFunctionList*);
+PETSC_EXTERN PetscErrorCode PetscOpFunctionListFind(MPI_Comm, PetscOpFunctionList, PetscVoidFunction*, const char[], PetscInt, char*[]);
+PETSC_EXTERN PetscErrorCode PetscOpFunctionListView(PetscOpFunctionList,PetscViewer);
 
 /*S
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
@@ -2260,8 +2260,8 @@ S*/
 typedef struct _p_PetscRandom*   PetscRandom;
 
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFList PetscRandomList;
-PETSC_EXTERN PetscBool PetscRandomRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList PetscRandomList;
+PETSC_EXTERN PetscBool         PetscRandomRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));

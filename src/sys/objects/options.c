@@ -1394,7 +1394,7 @@ PetscErrorCode  PetscOptionsGetInt(const char pre[],const char name[],PetscInt *
 
    Level: intermediate
 
-   See PetscOptionsList() for when the choices are given in a PetscFList()
+   See PetscOptionsList() for when the choices are given in a PetscFunctionList()
 
    Concepts: options database^list
 

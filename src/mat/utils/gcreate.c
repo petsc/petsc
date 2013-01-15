@@ -313,8 +313,8 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
-  ierr = PetscOListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
+  ierr = PetscObjectListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
 
   /* copy C over to A */
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);

@@ -74,7 +74,7 @@ E*/
 typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICATE_GRAPH} PetscSFDuplicateOption;
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
-PETSC_EXTERN PetscFList PetscSFList;
+PETSC_EXTERN PetscFunctionList PetscSFunctionList;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscSF));

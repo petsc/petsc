@@ -229,9 +229,6 @@ PETSC_EXTERN PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,Pets
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscBool SNESRegisterAllCalled;
-PETSC_EXTERN PetscFList SNESList;
-
 PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 
 #endif

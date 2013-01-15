@@ -238,12 +238,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSetFromOptions_Factor"
 PetscErrorCode  PCSetFromOptions_Factor(PC pc)
 {
-  PC_Factor       *factor = (PC_Factor*)pc->data;
-  PetscErrorCode  ierr;
-  PetscBool       flg = PETSC_FALSE,set;
-  char            tname[256], solvertype[64];
-  PetscFList      ordlist;
-  PetscEnum       etmp;
+  PC_Factor         *factor = (PC_Factor*)pc->data;
+  PetscErrorCode    ierr;
+  PetscBool         flg = PETSC_FALSE,set;
+  char              tname[256], solvertype[64];
+  PetscFunctionList ordlist;
+  PetscEnum         etmp;
 
   PetscFunctionBegin;
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}

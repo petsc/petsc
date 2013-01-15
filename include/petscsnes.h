@@ -70,7 +70,6 @@ PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 PETSC_EXTERN PetscErrorCode SNESDefaultUpdate(SNES, PetscInt);
 
-PETSC_EXTERN PetscFList SNESList;
 PETSC_EXTERN PetscErrorCode SNESRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode SNESRegisterAll(const char[]);
 
@@ -514,10 +513,12 @@ typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHCP                 "cp"
 #define SNESLINESEARCHSHELL              "shell"
 
-PETSC_EXTERN PetscClassId SNESLINESEARCH_CLASSID;
-PETSC_EXTERN PetscBool SNESLineSearchRegisterAllCalled;
-PETSC_EXTERN PetscFList SNESLineSearchList;
-PETSC_EXTERN PetscLogEvent SNESLineSearch_Apply;
+PETSC_EXTERN PetscBool         SNESRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList SNESList;
+PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;
+PETSC_EXTERN PetscBool         SNESLineSearchRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList SNESLineSearchList;
+PETSC_EXTERN PetscLogEvent     SNESLineSearch_Apply;
 
 #define SNES_LINESEARCH_ORDER_LINEAR    1
 #define SNES_LINESEARCH_ORDER_QUADRATIC 2

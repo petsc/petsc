@@ -1,8 +1,8 @@
 
 #include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
 
-PetscFList ISList                       = PETSC_NULL;
-PetscBool  ISRegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList ISList                       = PETSC_NULL;
+PetscBool         ISRegisterAllCalled          = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate"
@@ -80,7 +80,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   if (match) PetscFunctionReturn(0);
 
   if (!ISRegisterAllCalled) {ierr = ISRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind( ((PetscObject)is)->comm,ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind( ((PetscObject)is)->comm,ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode  ISRegister(const char sname[], const char path[], const char nam
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&ISList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&ISList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ PetscErrorCode  ISRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&ISList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
   ISRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

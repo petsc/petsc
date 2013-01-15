@@ -2,11 +2,11 @@
 #include <../src/ts/impls/implicit/gl/gl.h>                /*I   "petscts.h"   I*/
 #include <petscblaslapack.h>
 
-static const char *TSGLErrorDirections[] = {"FORWARD","BACKWARD","TSGLErrorDirection","TSGLERROR_",0};
-static PetscFList TSGLList;
-static PetscFList TSGLAcceptList;
-static PetscBool  TSGLPackageInitialized;
-static PetscBool  TSGLRegisterAllCalled;
+static const char        *TSGLErrorDirections[] = {"FORWARD","BACKWARD","TSGLErrorDirection","TSGLERROR_",0};
+static PetscFunctionList TSGLList;
+static PetscFunctionList TSGLAcceptList;
+static PetscBool         TSGLPackageInitialized;
+static PetscBool         TSGLRegisterAllCalled;
 
 /* C++ does not promote int64_t to scalar or int32_t for std::pow() */
 static PetscScalar Pow(PetscScalar b,PetscInt p)
@@ -817,7 +817,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
     ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);
   }
 
-  ierr = PetscFListFind(((PetscObject)ts)->comm,TSGLList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)ts)->comm,TSGLList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGL type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
@@ -833,7 +833,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
   TS_GL *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(((PetscObject)ts)->comm,TSGLAcceptList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)ts)->comm,TSGLAcceptList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
@@ -1219,8 +1219,8 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 #define __FUNCT__ "TSSetFromOptions_GL"
 static PetscErrorCode TSSetFromOptions_GL(TS ts)
 {
-  TS_GL *gl = (TS_GL*)ts->data;
-  char tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";
+  TS_GL          *gl = (TS_GL*)ts->data;
+  char           tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1315,8 +1315,8 @@ PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char nam
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&TSGLList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1333,8 +1333,8 @@ PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const ch
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&TSGLAcceptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAcceptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1381,7 +1381,7 @@ PetscErrorCode  TSGLRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&TSGLList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSGLList);CHKERRQ(ierr);
   TSGLRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

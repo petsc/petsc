@@ -42,7 +42,7 @@ def main(args):
   if not os.path.isdir('src/java'): os.mkdir('src/java')
   outfile = open('src/java/petsc.java','w')
 
-  notclasses = ['PetscMalloc','PetscStr','PetscDLLibrary','PetscFList']
+  notclasses = ['PetscMalloc','PetscStr','PetscDLLibrary','PetscFunctionList']
   for i in enums:
     outfile.write("enum "+i+"\n")
     outfile.write("{\n")

@@ -2,11 +2,11 @@
 #include <petsc-private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
-PetscFList MatMFFDList        = 0;
-PetscBool  MatMFFDRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList MatMFFDList        = 0;
+PetscBool         MatMFFDRegisterAllCalled = PETSC_FALSE;
 
 PetscClassId  MATMFFD_CLASSID;
-PetscLogEvent  MATMFFD_Mult;
+PetscLogEvent MATMFFD_Mult;
 
 static PetscBool  MatMFFDPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -126,7 +126,7 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  ierr =  PetscFListFind(((PetscObject)ctx)->comm,MatMFFDList,ftype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)ctx)->comm,MatMFFDList,ftype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
@@ -182,8 +182,8 @@ PetscErrorCode  MatMFFDRegister(const char sname[],const char path[],const char 
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&MatMFFDList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatMFFDList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -207,7 +207,7 @@ PetscErrorCode  MatMFFDRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&MatMFFDList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatMFFDList);CHKERRQ(ierr);
   MatMFFDRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

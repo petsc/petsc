@@ -4,8 +4,8 @@
 /* Logging support */
 PetscClassId  MAT_COARSEN_CLASSID;
 
-PetscFList MatCoarsenList = 0;
-PetscBool  MatCoarsenRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList MatCoarsenList = 0;
+PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenRegister"
@@ -15,8 +15,8 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const ch
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(PETSC_COMM_WORLD,&MatCoarsenList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatCoarsenList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -39,7 +39,7 @@ PetscErrorCode  MatCoarsenRegisterDestroy(void)
 
   PetscFunctionBegin;
   MatCoarsenRegisterAllCalled = PETSC_FALSE;
-  ierr = PetscFListDestroy(&MatCoarsenList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatCoarsenList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -377,7 +377,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
     coarser->setupcalled = 0;
   }
 
-  ierr =  PetscFListFind(((PetscObject)coarser)->comm,MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(((PetscObject)coarser)->comm,MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(((PetscObject)coarser)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
 
