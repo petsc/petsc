@@ -232,7 +232,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
         b[3] = {0.0,0.5,0.5},
           bembedt[3] = {1.0,0.0,0.0};
           /* binterpt[2][2] = {{1.0,-1.0},{0.0,1.0}};  second order dense output has poor stability properties and hence it is not currently in use*/
-          ierr = TSARKIMEXRegister(TSARKIMEX1BEE,1,3,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
+          ierr = TSARKIMEXRegister(TSARKIMEX1BEE,2,3,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -826,9 +826,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
       break;
     } else {                    /* Roll back the current step */
-      for (j=0; j<s; j++) w[j] = h*bt[j];
+      for (j=0; j<s; j++) w[j] = -h*bt[j];
       ierr = VecMAXPY(ts->vec_sol,s,w,ark->YdotI);CHKERRQ(ierr);
-      for (j=0; j<s; j++) w[j] = h*b[j];
+      for (j=0; j<s; j++) w[j] = -h*b[j];
       ierr = VecMAXPY(ts->vec_sol,s,w,ark->YdotRHS);CHKERRQ(ierr);
       ts->time_step = next_time_step;
       ark->status = TS_STEP_INCOMPLETE;
