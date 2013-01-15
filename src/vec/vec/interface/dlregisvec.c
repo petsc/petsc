@@ -231,7 +231,8 @@ PetscErrorCode  VecInitializePackage(const char path[])
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  VecFinalizePackage(void) {
+PetscErrorCode  VecFinalizePackage(void)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);

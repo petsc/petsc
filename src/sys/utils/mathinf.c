@@ -13,7 +13,8 @@
      Level: beginner
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128)
-PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
+{
   return isinfq(PetscAbsScalar(a)) || isnanq(PetscAbsScalar(a));
 }
  PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {

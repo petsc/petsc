@@ -688,7 +688,8 @@ PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGGetObjFcn_STCG"
-PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn){
+PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
+{
   KSP_STCG *cg = (KSP_STCG *)ksp->data;
 
   PetscFunctionBegin;

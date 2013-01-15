@@ -387,7 +387,8 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateBoxMesh"
-PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
+{
   DM             boundary;
   PetscErrorCode ierr;
 

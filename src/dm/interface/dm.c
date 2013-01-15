@@ -2689,7 +2689,8 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
 
 .seealso: DMSetDefaultSection(), DMGetDefaultGlobalSection()
 @*/
-PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section) {
+PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(section, 2);
@@ -2712,7 +2713,8 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section) {
 
 .seealso: DMSetDefaultSection(), DMGetDefaultGlobalSection()
 @*/
-PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
+PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
+{
   PetscInt       numFields;
   PetscInt       f;
   PetscErrorCode ierr;
@@ -2754,7 +2756,8 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
 
 .seealso: DMSetDefaultSection(), DMGetDefaultSection()
 @*/
-PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section) {
+PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2784,7 +2787,8 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section) {
 
 .seealso: DMGetDefaultGlobalSection(), DMSetDefaultSection()
 @*/
-PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section) {
+PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2812,7 +2816,8 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section) {
 
 .seealso: DMSetDefaultSF(), DMCreateDefaultSF()
 @*/
-PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf) {
+PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf)
+{
   PetscInt       nroots;
   PetscErrorCode ierr;
 
@@ -2851,7 +2856,8 @@ PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf) {
 
 .seealso: DMGetDefaultSF(), DMCreateDefaultSF()
 @*/
-PetscErrorCode DMSetDefaultSF(DM dm, PetscSF sf) {
+PetscErrorCode DMSetDefaultSF(DM dm, PetscSF sf)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2968,7 +2974,8 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
 
 .seealso: DMSetPointSF(), DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
 @*/
-PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf) {
+PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(sf, 2);
@@ -2989,7 +2996,8 @@ PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf) {
 
 .seealso: DMGetPointSF(), DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
 @*/
-PetscErrorCode DMSetPointSF(DM dm, PetscSF sf) {
+PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

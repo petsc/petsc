@@ -1025,7 +1025,8 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatTransposeMatMult_SeqAIJ_SeqAIJ"
-PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
+PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

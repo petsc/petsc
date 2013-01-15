@@ -2430,7 +2430,8 @@ PetscErrorCode DMMeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numEle
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateNeighborCSR"
-PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency) {
+PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
+{
   const PetscInt maxFaceCases = 30;
   PetscInt       numFaceCases = 0;
   PetscInt       numFaceVertices[maxFaceCases];
@@ -2785,7 +2786,8 @@ PetscErrorCode DMMeshPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreatePartition"
-PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *partition, PetscInt height) {
+PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *partition, PetscInt height)
+{
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -2842,7 +2844,8 @@ PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *parti
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreatePartitionClosure"
-PetscErrorCode DMMeshCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition) {
+PetscErrorCode DMMeshCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition)
+{
   const PetscInt *partArray;
   PetscInt       *allPoints, *partPoints = PETSC_NULL;
   PetscInt        rStart, rEnd, rank, maxPartSize = 0, newSize;
@@ -3302,7 +3305,8 @@ PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], D
 
 #undef __FUNCT__
 #define __FUNCT__ "TriangleInitInput"
-PetscErrorCode TriangleInitInput(struct triangulateio *inputCtx) {
+PetscErrorCode TriangleInitInput(struct triangulateio *inputCtx)
+{
   PetscFunctionBegin;
   inputCtx->numberofpoints = 0;
   inputCtx->numberofpointattributes = 0;
@@ -3323,7 +3327,8 @@ PetscErrorCode TriangleInitInput(struct triangulateio *inputCtx) {
 
 #undef __FUNCT__
 #define __FUNCT__ "TriangleInitOutput"
-PetscErrorCode TriangleInitOutput(struct triangulateio *outputCtx) {
+PetscErrorCode TriangleInitOutput(struct triangulateio *outputCtx)
+{
   PetscFunctionBegin;
   outputCtx->numberofpoints = 0;
   outputCtx->pointlist = PETSC_NULL;
@@ -3342,7 +3347,8 @@ PetscErrorCode TriangleInitOutput(struct triangulateio *outputCtx) {
 
 #undef __FUNCT__
 #define __FUNCT__ "TriangleFiniOutput"
-PetscErrorCode TriangleFiniOutput(struct triangulateio *outputCtx) {
+PetscErrorCode TriangleFiniOutput(struct triangulateio *outputCtx)
+{
   PetscFunctionBegin;
   free(outputCtx->pointmarkerlist);
   free(outputCtx->edgelist);
@@ -3612,7 +3618,8 @@ PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_Mesh"
-PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
+PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling)
+{
   SETERRQ(((PetscObject) dmCoarse)->comm, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
 }
 
@@ -3630,7 +3637,8 @@ PetscErrorCode DMMeshMarkBoundaryCells(DM dm, const char labelName[], PetscInt m
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetDepthStratum"
-PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
+PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
+{
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
@@ -3684,7 +3692,8 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetHeightStratum"
-PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
+PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
+{
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
@@ -3974,7 +3983,8 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
 /*
   Note: This gets a borrowed reference, so the user should not destroy this PetscSection.
 */
-PetscErrorCode DMMeshGetDefaultSection(DM dm, PetscSection *section) {
+PetscErrorCode DMMeshGetDefaultSection(DM dm, PetscSection *section)
+{
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
@@ -3991,8 +4001,9 @@ PetscErrorCode DMMeshGetDefaultSection(DM dm, PetscSection *section) {
 /*
   Note: This reference will be stolen, so the user should not destroy this PetscSection.
 */
-PetscErrorCode DMMeshSetDefaultSection(DM dm, PetscSection section) {
-  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+PetscErrorCode DMMeshSetDefaultSection(DM dm, PetscSection section)
+{
+  DM_Mesh        *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4005,7 +4016,8 @@ PetscErrorCode DMMeshSetDefaultSection(DM dm, PetscSection section) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCoordinateSection"
-PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section) {
+PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section)
+{
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
@@ -4022,7 +4034,8 @@ PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshSetCoordinateSection"
-PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section) {
+PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4032,7 +4045,8 @@ PetscErrorCode DMMeshSetCoordinateSection(DM dm, PetscSection section) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetConeSection"
-PetscErrorCode DMMeshGetConeSection(DM dm, PetscSection *section) {
+PetscErrorCode DMMeshGetConeSection(DM dm, PetscSection *section)
+{
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
 
   PetscFunctionBegin;
@@ -4056,7 +4070,8 @@ PetscErrorCode DMMeshGetCones(DM dm, PetscInt *cones[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateConeSection"
-PetscErrorCode DMMeshCreateConeSection(DM dm, PetscSection *section) {
+PetscErrorCode DMMeshCreateConeSection(DM dm, PetscSection *section)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscInt       p;
   PetscErrorCode ierr;
@@ -4074,7 +4089,8 @@ PetscErrorCode DMMeshCreateConeSection(DM dm, PetscSection *section) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCoordinateVec"
-PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
+PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates)
+{
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
@@ -4094,7 +4110,8 @@ PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshComputeCellGeometry"
-PetscErrorCode DMMeshComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ) {
+PetscErrorCode DMMeshComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 

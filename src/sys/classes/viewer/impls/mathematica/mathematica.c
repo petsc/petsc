@@ -199,7 +199,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaParseLinkMode_Private"
-PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkMode *mode) {
+PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkMode *mode)
+{
   PetscBool      isCreate, isConnect, isLaunch;
   PetscErrorCode ierr;
 
@@ -323,7 +324,8 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetLinkName"
-PetscErrorCode  PetscViewerMathematicaSetLinkName(PetscViewer v, const char *name) {
+PetscErrorCode  PetscViewerMathematicaSetLinkName(PetscViewer v, const char *name)
+{
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
   PetscErrorCode          ierr;
 
@@ -336,7 +338,8 @@ PetscErrorCode  PetscViewerMathematicaSetLinkName(PetscViewer v, const char *nam
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaLinkPort"
-PetscErrorCode  PetscViewerMathematicaSetLinkPort(PetscViewer v, int port) {
+PetscErrorCode  PetscViewerMathematicaSetLinkPort(PetscViewer v, int port)
+{
   char           name[16];
   PetscErrorCode ierr;
 
@@ -348,7 +351,8 @@ PetscErrorCode  PetscViewerMathematicaSetLinkPort(PetscViewer v, int port) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetLinkHost"
-PetscErrorCode  PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *host) {
+PetscErrorCode  PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *host)
+{
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
   PetscErrorCode          ierr;
 
@@ -361,7 +365,8 @@ PetscErrorCode  PetscViewerMathematicaSetLinkHost(PetscViewer v, const char *hos
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaSetLinkHost"
-PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode) {
+PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
+{
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
 
   PetscFunctionBegin;
@@ -574,7 +579,8 @@ PetscErrorCode  PetscViewerMathematicaClearName(PetscViewer viewer)
 .keywords PetscViewer, Mathematica, vector
 .seealso VecView(), PetscViewerMathematicaPutVector()
 @*/
-PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v) {
+PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
+{
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                   link;   /* The link to Mathematica */
   char                    *name;

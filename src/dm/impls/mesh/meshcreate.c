@@ -224,7 +224,8 @@ PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateBoxMesh"
-PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
+PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) 
+{
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -299,7 +300,8 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 .seealso DMMESH, DMMeshCreateMeshFromAdjacencyHybrid(), DMMeshCreateBoxMesh()
 @*/
-PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners, PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners, PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) 
+{
   PetscInt      *cone;
   PetscInt      *coneO;
   PetscInt       debug = 0;
@@ -343,7 +345,8 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMeshFromAdjacencyHybrid"
-PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners[], PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners[], PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) 
+{
   PetscInt       debug = 0;
   PetscErrorCode ierr;
 

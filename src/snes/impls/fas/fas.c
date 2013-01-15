@@ -464,7 +464,8 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
 /*
 Defines the action of the upsmoother
  */
-PetscErrorCode SNESFASUpSmooth_Private (SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm) {
+PetscErrorCode SNESFASUpSmooth_Private (SNES snes, Vec B, Vec X, Vec F, PetscReal *fnorm)
+{
   PetscErrorCode      ierr = 0;
   SNESConvergedReason reason;
   Vec                 FPC;
@@ -562,7 +563,8 @@ coarse problem: F^c(x) = b^c
 b^c = F^c(I^c_fx^f - I^c_fF(x))
 
  */
-PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new) {
+PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
+{
   PetscErrorCode      ierr;
   Vec                 X_c, Xo_c, F_c, B_c;
   SNESConvergedReason reason;
@@ -620,7 +622,8 @@ x = x + nu*(xhat - x);
 With the coarse RHS (defect correction) as below.
 
  */
-PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X) {
+PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
+{
   Vec                 F, B, Xhat;
   Vec                 X_c, Xo_c, F_c, B_c;
   PetscErrorCode      ierr;
@@ -707,7 +710,8 @@ correction:
 x = x + I(x^c - Rx)
 
  */
-PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X) {
+PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
+{
 
   PetscErrorCode      ierr;
   Vec                 F,B;

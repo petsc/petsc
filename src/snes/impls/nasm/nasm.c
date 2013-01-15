@@ -65,7 +65,8 @@ PetscErrorCode SNESDestroy_NASM(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalSubDomainDirichletHook_Private"
-PetscErrorCode DMGlobalToLocalSubDomainDirichletHook_Private(DM dm,Vec g,InsertMode mode,Vec l,void *ctx) {
+PetscErrorCode DMGlobalToLocalSubDomainDirichletHook_Private(DM dm,Vec g,InsertMode mode,Vec l,void *ctx)
+{
   PetscErrorCode ierr;
   Vec bcs = (Vec)ctx;
   PetscFunctionBegin;
@@ -252,7 +253,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
-PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X) {
+PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
+{
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;
   SNES           subsnes;
   PetscInt       i;
@@ -260,6 +262,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X) {
   Vec            Xlloc,Xl,Bl,Yl;
   VecScatter     iscat,oscat,gscat;
   DM             dm,subdm;
+
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);

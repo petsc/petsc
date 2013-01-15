@@ -684,7 +684,8 @@ void alias_list_delete(alias_list_t *list) {
 
 #undef __FUNCT__
 #define __FUNCT__ "file_to_string"
-PetscErrorCode file_to_string(char* filename, char** str) {
+PetscErrorCode file_to_string(char* filename, char** str)
+{
   FILE *fh;
   char *line;
   PetscErrorCode ierr;

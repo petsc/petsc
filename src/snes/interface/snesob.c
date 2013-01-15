@@ -124,7 +124,8 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDefaultObjectiveComputeFunctionFD"
-PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void *ctx) {
+PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void *ctx)
+{
   /* Quadratically interpolates the change in the objective based upon a change in a particular direction */
 
   Vec            Xh;

@@ -43,10 +43,12 @@ int main(int argc, char *argv[])
 
 #undef  __FUNCT__
 #define __FUNCT__ "testBiGraphDiv2"
-PetscErrorCode testBiGraphDiv2() {
-  PetscInt debug;
-  PetscBool  flag;
+PetscErrorCode testBiGraphDiv2()
+{
+  PetscInt       debug;
+  PetscBool      flag;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   debug = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);

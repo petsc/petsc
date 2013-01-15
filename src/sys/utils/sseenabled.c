@@ -141,12 +141,12 @@ static PetscBool  petsc_sse_local_is_untested  = PETSC_TRUE;
 static PetscBool  petsc_sse_enabled_local      = PETSC_FALSE;
 static PetscBool  petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscBool  petsc_sse_enabled_global     = PETSC_FALSE;
-PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gflag) {
+PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gflag)
+{
   PetscErrorCode ierr;
-  PetscBool  disabled_option;
+  PetscBool      disabled_option;
 
   PetscFunctionBegin;
-
   if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
     disabled_option = PETSC_FALSE;
 

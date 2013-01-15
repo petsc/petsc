@@ -145,7 +145,8 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -206,7 +207,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
-PetscErrorCode SetupQuadrature(AppCtx *user) {
+PetscErrorCode SetupQuadrature(AppCtx *user)
+{
   PetscFunctionBeginUser;
   user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   user->q[0].quadPoints    = points_0;
@@ -228,7 +230,8 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
 /* This is now Q_1-P_0 */
-PetscErrorCode SetupSection(DM dm, AppCtx *user) {
+PetscErrorCode SetupSection(DM dm, AppCtx *user)
+{
   PetscInt       dim             = user->dim;
   PetscInt       numComp[2]      = {dim, 1};
   PetscInt       numVertexDof[2] = {dim, 0};
@@ -249,7 +252,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(AppCtx *user) {
+PetscErrorCode SetupExactSolution(AppCtx *user)
+{
   PetscFunctionBeginUser;
   user->f0Funcs[0] = f0_u;
   user->f0Funcs[1] = f0_p;

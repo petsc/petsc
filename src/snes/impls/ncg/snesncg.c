@@ -231,7 +231,8 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 
 .keywords: SNES, SNESNCG, selection, type, set
 @*/
-PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype) {
+PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -243,7 +244,8 @@ PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESNCGSetType_NCG"
-PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype) {
+PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
+{
   SNES_NCG *ncg = (SNES_NCG *)snes->data;
   PetscFunctionBegin;
   ncg->type = btype;

@@ -237,7 +237,8 @@ PetscScalar linear_p_3d(const PetscReal x[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       bc, run;
@@ -386,7 +387,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
-PetscErrorCode SetupQuadrature(AppCtx *user) {
+PetscErrorCode SetupQuadrature(AppCtx *user)
+{
   PetscFunctionBeginUser;
   user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   user->q[0].quadPoints    = points_0;
@@ -411,7 +413,8 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
   There is a problem here with uninterpolated meshes. The index in numDof[] is not dimension in this case,
   but sieve depth.
 */
-PetscErrorCode SetupSection(DM dm, AppCtx *user) {
+PetscErrorCode SetupSection(DM dm, AppCtx *user)
+{
   PetscSection   section;
   PetscInt       dim                = user->dim;
   PetscInt       numBC              = 0;
@@ -450,7 +453,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(AppCtx *user) {
+PetscErrorCode SetupExactSolution(AppCtx *user)
+{
   PetscFunctionBeginUser;
   user->f0Funcs[0] = f0_u;
   user->f0Funcs[1] = f0_p;
@@ -492,7 +496,8 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeError"
-PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
+PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user)
+{
   PetscScalar   (**exactFuncs)(const PetscReal []) = user->exactFuncs;
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
@@ -679,7 +684,8 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
 
 #undef __FUNCT__
 #define __FUNCT__ "CreatePressureNullSpace"
-PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) {
+PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) 
+{
   Vec            pressure, localP;
   PetscErrorCode ierr;
 

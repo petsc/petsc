@@ -6,7 +6,8 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDefaultApplyGS"
-PetscErrorCode SNESDefaultApplyGS(SNES snes,Vec X,Vec F,void *ctx) {
+PetscErrorCode SNESDefaultApplyGS(SNES snes,Vec X,Vec F,void *ctx)
+{
   PetscFunctionBegin;
   /* see if there's a coloring on the DM */
 

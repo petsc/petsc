@@ -141,7 +141,8 @@ int main(int argc, char **argv)
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
+PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
+{
   AppCtx       *user = (AppCtx *) ptr;
   int          info;
   PetscInt     i,j;

@@ -2551,7 +2551,8 @@ static PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt numCorners, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateNeighborCSR"
-PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency) {
+PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
+{
   const PetscInt maxFaceCases = 30;
   PetscInt       numFaceCases = 0;
   PetscInt       numFaceVertices[30]; /* maxFaceCases, C89 sucks sucks sucks */
@@ -2896,7 +2897,8 @@ PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const Petsc
 
 .seealso DMPlexDistribute()
 */
-PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition) {
+PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition)
+{
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -2957,7 +2959,8 @@ PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreatePartitionClosure"
-PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition) {
+PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition)
+{
   /* const PetscInt  height = 0; */
   const PetscInt *partArray;
   PetscInt       *allPoints, *partPoints = PETSC_NULL;
@@ -4335,7 +4338,8 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
 
 #undef __FUNCT__
 #define __FUNCT__ "InitInput_Triangle"
-PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx) {
+PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
+{
   PetscFunctionBegin;
   inputCtx->numberofpoints = 0;
   inputCtx->numberofpointattributes = 0;
@@ -4356,7 +4360,8 @@ PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx) {
 
 #undef __FUNCT__
 #define __FUNCT__ "InitOutput_Triangle"
-PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
+PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
+{
   PetscFunctionBegin;
   outputCtx->numberofpoints = 0;
   outputCtx->pointlist = PETSC_NULL;
@@ -4376,7 +4381,8 @@ PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
 
 #undef __FUNCT__
 #define __FUNCT__ "FiniOutput_Triangle"
-PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
+PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
+{
   PetscFunctionBegin;
   free(outputCtx->pointmarkerlist);
   free(outputCtx->edgelist);
@@ -7327,7 +7333,8 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 .keywords: mesh, points
 .seealso: DMPlexGetHeightStratum(), DMPlexGetDepth()
 @*/
-PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
+PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
+{
   DM_Plex    *mesh = (DM_Plex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
@@ -7387,8 +7394,9 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 .keywords: mesh, points
 .seealso: DMPlexGetDepthStratum(), DMPlexGetDepth()
 @*/
-PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
+PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
+{
+  DM_Plex        *mesh = (DM_Plex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscInt       depth;
@@ -7512,7 +7520,8 @@ PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcF
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSectionBCIndicesAll"
 /* Set the constrained indices on each point and separate by fields */
-PetscErrorCode DMPlexCreateSectionBCIndicesAll(DM dm, PetscSection section) {
+PetscErrorCode DMPlexCreateSectionBCIndicesAll(DM dm, PetscSection section)
+{
   PetscInt      *maxConstraints;
   PetscInt       numFields, f, pStart = 0, pEnd = 0, p;
   PetscErrorCode ierr;
@@ -7585,7 +7594,8 @@ PetscErrorCode DMPlexCreateSectionBCIndicesAll(DM dm, PetscSection section) {
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSectionBCIndicesField"
 /* Set the constrained field indices on each point */
-PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bcPoints, IS constraintIndices, PetscSection section) {
+PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bcPoints, IS constraintIndices, PetscSection section)
+{
   const PetscInt *points, *indices;
   PetscInt        numFields, maxDof, numPoints, p, numConstraints;
   PetscErrorCode  ierr;
@@ -7625,7 +7635,8 @@ PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bcPoi
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSectionBCIndices"
 /* Set the constrained indices on each point and separate by fields */
-PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section) {
+PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section) 
+{
   PetscInt      *indices;
   PetscInt       numFields, maxDof, f, pStart = 0, pEnd = 0, p;
   PetscErrorCode ierr;
@@ -7712,7 +7723,8 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateCoordinateDM_Plex"
-PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm) {
+PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
+{
   PetscSection   section;
   PetscErrorCode ierr;
 
@@ -7741,8 +7753,9 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm) {
 .keywords: mesh, coordinates
 .seealso: DMGetCoordinateDM(), DMPlexGetDefaultSection(), DMPlexSetDefaultSection()
 @*/
-PetscErrorCode DMPlexGetCoordinateSection(DM dm, PetscSection *section) {
-  DM cdm;
+PetscErrorCode DMPlexGetCoordinateSection(DM dm, PetscSection *section)
+{
+  DM             cdm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -7769,7 +7782,8 @@ PetscErrorCode DMPlexGetCoordinateSection(DM dm, PetscSection *section) {
 .keywords: mesh, coordinates
 .seealso: DMPlexGetCoordinateSection(), DMPlexGetDefaultSection(), DMPlexSetDefaultSection()
 @*/
-PetscErrorCode DMPlexSetCoordinateSection(DM dm, PetscSection section) {
+PetscErrorCode DMPlexSetCoordinateSection(DM dm, PetscSection section)
+{
   DM             cdm;
   PetscErrorCode ierr;
 
@@ -7782,7 +7796,8 @@ PetscErrorCode DMPlexSetCoordinateSection(DM dm, PetscSection section) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetConeSection"
-PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section) {
+PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
+{
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
@@ -8821,7 +8836,8 @@ PetscErrorCode DMPlexComputeHexahedronGeometry_private(DM dm, PetscInt e, PetscR
 
 .seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
 @*/
-PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ) {
+PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
+{
   PetscInt       dim, coneSize;
   PetscErrorCode ierr;
 

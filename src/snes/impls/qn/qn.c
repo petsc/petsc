@@ -11,17 +11,17 @@ typedef enum {SNES_QN_LBFGS      = 0,
               SNES_QN_BADBROYDEN = 2} SNESQNType;
 
 typedef struct {
-  Vec          *U;               /* Stored past states (vary from method to method) */
-  Vec          *V;               /* Stored past states (vary from method to method) */
-  PetscInt     m;                /* The number of kept previous steps */
-  PetscScalar  *alpha, *beta;
-  PetscScalar  *dXtdF, *dFtdX, *YtdX;
-  PetscBool    singlereduction;  /* Aggregated reduction implementation */
-  PetscScalar  *dXdFmat;         /* A matrix of values for dX_i dot dF_j */
-  PetscViewer  monitor;
-  PetscReal    powell_gamma;     /* Powell angle restart condition */
-  PetscReal    powell_downhill;  /* Powell descent restart condition */
-  PetscReal    scaling;          /* scaling of H0 */
+  Vec                   *U;               /* Stored past states (vary from method to method) */
+  Vec                   *V;               /* Stored past states (vary from method to method) */
+  PetscInt              m;                /* The number of kept previous steps */
+  PetscScalar           *alpha, *beta;
+  PetscScalar           *dXtdF, *dFtdX, *YtdX;
+  PetscBool             singlereduction;  /* Aggregated reduction implementation */
+  PetscScalar           *dXdFmat;         /* A matrix of values for dX_i dot dF_j */
+  PetscViewer           monitor;
+  PetscReal             powell_gamma;     /* Powell angle restart condition */
+  PetscReal             powell_downhill;  /* Powell descent restart condition */
+  PetscReal             scaling;          /* scaling of H0 */
 
   SNESQNType            type;             /* the type of quasi-newton method used */
   SNESQNScaleType       scale_type;       /* the type of scaling used */
@@ -106,33 +106,26 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNApply_BadBroyden"
-PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D,Vec Dold) {
-
-  PetscErrorCode ierr;
-
-  SNES_QN *qn = (SNES_QN*)snes->data;
-
-  Vec W = snes->work[3];
-
-  Vec *U = qn->U;
-  Vec *T = qn->V;
+PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D,Vec Dold)
+{
+  PetscErrorCode     ierr;
+  SNES_QN            *qn = (SNES_QN*)snes->data;
+  Vec                W = snes->work[3];
+  Vec                *U = qn->U;
+  Vec                *T = qn->V;
 
   /* ksp thing for jacobian scaling */
   KSPConvergedReason kspreason;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
+  PetscInt           k, i, lits;
+  PetscInt           m = qn->m;
+  PetscScalar        gdot;
+  PetscInt           l = m;
+  Mat                jac, jac_pre;
 
-  PetscInt k, i, lits;
-  PetscInt m = qn->m;
-  PetscScalar gdot;
-  PetscInt l = m;
-
-  Mat jac, jac_pre;
   PetscFunctionBegin;
-
   if (it < m) l = it;
-
   ierr = VecCopy(D,Y);CHKERRQ(ierr);
-
   if (l > 0) {
     k = (it-1)%l;
     ierr = VecCopy(Dold,U[k]);CHKERRQ(ierr);
@@ -186,38 +179,30 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNApply_LBFGS"
-PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D,Vec Dold) {
-
-  PetscErrorCode ierr;
-
-  SNES_QN *qn = (SNES_QN*)snes->data;
-
-  Vec W = snes->work[3];
-
-  Vec *dX = qn->U;
-  Vec *dF = qn->V;
-
-  PetscScalar *alpha    = qn->alpha;
-  PetscScalar *beta     = qn->beta;
-  PetscScalar *dXtdF    = qn->dXtdF;
-  PetscScalar *dFtdX    = qn->dFtdX;
-  PetscScalar *YtdX     = qn->YtdX;
+PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D,Vec Dold)
+{
+  PetscErrorCode     ierr;
+  SNES_QN            *qn = (SNES_QN*)snes->data;
+  Vec                W = snes->work[3];
+  Vec                *dX = qn->U;
+  Vec                *dF = qn->V;
+  PetscScalar        *alpha    = qn->alpha;
+  PetscScalar        *beta     = qn->beta;
+  PetscScalar        *dXtdF    = qn->dXtdF;
+  PetscScalar        *dFtdX    = qn->dFtdX;
+  PetscScalar        *YtdX     = qn->YtdX;
 
   /* ksp thing for jacobian scaling */
   KSPConvergedReason kspreason;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
-
-  PetscInt k,i,j,g,lits;
-  PetscInt m = qn->m;
-  PetscScalar t;
-  PetscInt l = m;
-
-  Mat jac,jac_pre;
+  PetscInt           k,i,j,g,lits;
+  PetscInt           m = qn->m;
+  PetscScalar        t;
+  PetscInt           l = m;
+  Mat                jac,jac_pre;
 
   PetscFunctionBegin;
-
   if (it < m) l = it;
-
   if (it > 0) {
     k = (it - 1) % l;
     ierr = VecCopy(D, dF[k]);CHKERRQ(ierr);
@@ -324,22 +309,17 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 #define __FUNCT__ "SNESSolve_QN"
 static PetscErrorCode SNESSolve_QN(SNES snes)
 {
-
-  PetscErrorCode ierr;
-  SNES_QN *qn = (SNES_QN*) snes->data;
-
-  Vec X,Xold;
-  Vec F,B;
-  Vec Y,FPC,D,Dold;
+  PetscErrorCode      ierr;
+  SNES_QN             *qn = (SNES_QN*) snes->data;
+  Vec                 X,Xold;
+  Vec                 F,B;
+  Vec                 Y,FPC,D,Dold;
   SNESConvergedReason reason;
-  PetscInt i, i_r;
-
-  PetscReal fnorm,xnorm,ynorm,gnorm;
-  PetscBool lssucceed,powell,periodic;
-
-  PetscScalar DolddotD,DolddotDold,DdotD,YdotD;
-
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
+  PetscInt            i, i_r;
+  PetscReal           fnorm,xnorm,ynorm,gnorm;
+  PetscBool           lssucceed,powell,periodic;
+  PetscScalar         DolddotD,DolddotDold,DdotD,YdotD;
+  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
 
   /* basically just a regular newton's method except for the application of the jacobian */
   PetscFunctionBegin;
@@ -523,7 +503,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_QN"
 static PetscErrorCode SNESSetUp_QN(SNES snes)
@@ -557,7 +536,8 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 static PetscErrorCode SNESReset_QN(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_QN *qn;
+  SNES_QN        *qn;
+
   PetscFunctionBegin;
   if (snes->data) {
     qn = (SNES_QN*)snes->data;
@@ -699,7 +679,8 @@ PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNSetScaleType_QN"
-PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype) {
+PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
+{
   SNES_QN *qn = (SNES_QN *)snes->data;
   PetscFunctionBegin;
   qn->scale_type = stype;
@@ -708,7 +689,8 @@ PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNSetRestartType_QN"
-PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype) {
+PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
+{
   SNES_QN *qn = (SNES_QN *)snes->data;
   PetscFunctionBegin;
   qn->restart_type = rtype;
@@ -756,9 +738,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_QN"
 PetscErrorCode  SNESCreate_QN(SNES snes)
 {
-
   PetscErrorCode ierr;
-  SNES_QN *qn;
+  SNES_QN        *qn;
 
   PetscFunctionBegin;
   snes->ops->setup           = SNESSetUp_QN;
@@ -794,7 +775,6 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESQNSetScaleType_C","SNESQNSetScaleType_QN",SNESQNSetScaleType_QN);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESQNSetRestartType_C","SNESQNSetRestartType_QN",SNESQNSetRestartType_QN);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -62,7 +62,8 @@ void quadratic_2d_elas(const PetscReal x[], PetscScalar u[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char    *opTypes[2]  = {"laplacian", "elasticity"};
   PetscInt       op;
   PetscErrorCode ierr;
@@ -154,7 +155,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
-PetscErrorCode SetupQuadrature(AppCtx *user) {
+PetscErrorCode SetupQuadrature(AppCtx *user)
+{
   PetscFunctionBeginUser;
   switch(user->dim) {
   case 2:
@@ -175,7 +177,8 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
-PetscErrorCode SetupSection(DM dm, AppCtx *user) {
+PetscErrorCode SetupSection(DM dm, AppCtx *user)
+{
   PetscSection   section;
   /* These can be generated using config/PETSc/FEM.py */
   PetscInt       dim        = user->dim;

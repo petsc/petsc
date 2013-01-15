@@ -46,7 +46,8 @@ TO ADD:
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateCells"
-PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats) {
+PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats)
+{
   DMDALocalInfo  info;
   PetscInt      *er;
   PetscScalar   *em;

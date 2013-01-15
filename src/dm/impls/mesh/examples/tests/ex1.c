@@ -70,7 +70,8 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

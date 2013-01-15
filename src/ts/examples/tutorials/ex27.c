@@ -74,7 +74,8 @@ extern PetscErrorCode ReactingFlowPostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool
 #undef __FUNCT__
 #define __FUNCT__ "SetFromOptions"
 
-PetscErrorCode SetFromOptions(AppCtx * ctx) {
+PetscErrorCode SetFromOptions(AppCtx * ctx)
+{
   PetscErrorCode ierr;
   PetscInt i,j;
   PetscFunctionBeginUser;
@@ -318,7 +319,8 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
 #undef __FUNCT__
 #define __FUNCT__ "ReactingFlowPostCheck"
 
-PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w, void *vctx) {
+PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w, void *vctx)
+{
   PetscFunctionBeginUser;
   PetscInt       i,j,l,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;

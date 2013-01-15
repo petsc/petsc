@@ -464,7 +464,8 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
 /*
   Destroy the dummy context used in KSPMonitorDynamicTolerance()
 */
-PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy) {
+PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(*dummy);CHKERRQ(ierr);

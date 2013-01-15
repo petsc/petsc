@@ -49,7 +49,8 @@ PetscScalar quadratic_zx(const PetscReal coords[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -111,7 +112,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
-PetscErrorCode SetupSection(DM dm, AppCtx *user) {
+PetscErrorCode SetupSection(DM dm, AppCtx *user)
+{
   PetscSection   section;
   const PetscInt numFields           = NUM_FIELDS;
   PetscInt       dim                 = user->dim;

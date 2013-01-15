@@ -4,7 +4,8 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexVTKGetCellType"
-PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
+PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
+{
   PetscFunctionBegin;
   *cellType = -1;
   switch(dim) {
@@ -229,7 +230,8 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexVTKWriteSection_ASCII"
-PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale) {
+PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+{
   MPI_Comm           comm    = ((PetscObject) dm)->comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;

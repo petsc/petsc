@@ -283,7 +283,8 @@ PetscErrorCode PCComputeSpectralRadius_ASA(PC_ASA_level *asa_lev)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetRichardsonScale_ASA"
-PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal richardson_scale) {
+PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal richardson_scale)
+{
   PetscErrorCode ierr;
   PC             pc;
   PetscBool      flg;

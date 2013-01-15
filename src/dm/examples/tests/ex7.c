@@ -40,8 +40,7 @@ int main(int argc,char **argv)
   } else if (flg3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,periodic,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 

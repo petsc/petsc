@@ -19,8 +19,8 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   PetscInt       base;
   PetscInt       ox,oy,oz;
   DM_DA          *dd;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   comm = ((PetscObject)da)->comm;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   dd = (DM_DA *)da->data;
@@ -114,7 +114,8 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASubDomainDA_Private"
-PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
+PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
+{
   DM               da;
   DM_DA            *dd;
   PetscErrorCode   ierr;
@@ -197,7 +198,8 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
  Right now this assumes one subdomain per processor.
 
  */
-PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM *subdms,VecScatter **iscat,VecScatter **oscat, VecScatter **lscat) {
+PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM *subdms,VecScatter **iscat,VecScatter **oscat, VecScatter **lscat)
+{
   PetscErrorCode   ierr;
   DMDALocalInfo    info,subinfo;
   DM               subdm;
@@ -206,7 +208,6 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   Vec              svec,dvec,slvec;
 
   PetscFunctionBegin;
-
   if (nsubdms != 1) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot have more than one subdomain per processor (yet)");
 
   /* allocate the arrays of scatters */
@@ -294,7 +295,8 @@ Therefore, for each point in the overall, we must check if it's:
 4. -: In the nonshared ghost region
  */
 
-PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois) {
+PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
+{
   PetscErrorCode   ierr;
   DMDALocalInfo    info,subinfo;
   MatStencil       lower,upper;
@@ -327,13 +329,14 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDomainDecomposition_DA"
-PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,IS **iis,IS **ois,DM **subdm) {
+PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,IS **iis,IS **ois,DM **subdm)
+{
   PetscErrorCode ierr;
   IS             iis0,ois0;
   DM             subdm0;
   DM_DA          *dd = (DM_DA*)dm;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   /* fix to enable PCASM default behavior as taking overlap from the matrix */
   if (!dd->decompositiondm) {
     if (len)*len=0;
@@ -369,10 +372,12 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDomainDecompositionDM_DA"
-PetscErrorCode DMCreateDomainDecompositionDM_DA(DM dm,const char *name,DM *ddm) {
+PetscErrorCode DMCreateDomainDecompositionDM_DA(DM dm,const char *name,DM *ddm)
+{
   DM_DA          *dd = (DM_DA*)dm;
   PetscBool      flg;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = PetscStrcmp(name,"default",&flg);CHKERRQ(ierr);
   if (flg) {

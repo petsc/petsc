@@ -104,6 +104,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   PetscErrorCode ierr;
   PetscBool      debug;
   SNESLineSearch linesearch;
+
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_ngmres_select_type","Select type","SNESNGMRESSetSelectType",SNESNGMRESSelectTypes,
@@ -145,7 +146,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-
     ierr = PetscViewerASCIIPrintf(viewer, "  Number of stored past updates: %d\n", ngmres->msize);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n", ngmres->gammaA, ngmres->gammaC);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Difference restart: epsilonB=%1.0e, deltaB=%1.0e\n", ngmres->epsilonB, ngmres->deltaB);CHKERRQ(ierr);
@@ -155,7 +155,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_NGMRES"
-
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES        *ngmres = (SNES_NGMRES *) snes->data;
@@ -601,7 +600,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
 .keywords: SNES, SNESNGMRES, restart, type, set SNESLineSearch
 @*/
-PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype) {
+PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -636,8 +636,8 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype) 
 
 .keywords: SNES, SNESNGMRES, selection, type, set SNESLineSearch
 @*/
-
-PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype) {
+PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -645,12 +645,11 @@ PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype) {
   PetscFunctionReturn(0);
 }
 
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESSetSelectType_NGMRES"
-
-PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype) {
+PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscFunctionBegin;
   ngmres->select_type = stype;
@@ -659,15 +658,14 @@ PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType st
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESSetRestartType_NGMRES"
-
-PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype) {
+PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscFunctionBegin;
   ngmres->restart_type = rtype;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
 
 /*MC
   SNESNGMRES - The Nonlinear Generalized Minimum Residual method.

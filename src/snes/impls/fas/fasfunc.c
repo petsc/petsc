@@ -739,7 +739,8 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 
 .seealso: SNESFASSetInjection(), SNESFASSetRestriction(), SNESFASSetRScale()
 @*/
-PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
+PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
+{
   SNES_FAS       *fas;
   PetscErrorCode ierr;
   SNES           levelsnes;

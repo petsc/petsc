@@ -506,7 +506,8 @@ PetscScalar cubic_3d(const PetscReal x[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char    *runTypes[3] = {"full", "test", "mesh"};
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
   PetscReal      bratu_lambda_max = 6.81, bratu_lambda_min = 0.0;
@@ -549,7 +550,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
-PetscErrorCode SetupQuadrature(AppCtx *user) {
+PetscErrorCode SetupQuadrature(AppCtx *user)
+{
   PetscFunctionBeginUser;
   switch(user->dim) {
   case 1:
@@ -584,7 +586,8 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
-PetscErrorCode SetupSection(AppCtx *user) {
+PetscErrorCode SetupSection(AppCtx *user)
+{
   PetscSection   section;
   /* These can be generated using config/PETSc/FEM.py */
   PetscInt       numDof_0[2] = {1, 0};
@@ -624,7 +627,8 @@ PetscErrorCode SetupSection(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(AppCtx *user) {
+PetscErrorCode SetupExactSolution(AppCtx *user)
+{
   PetscFunctionBeginUser;
   switch(user->dim) {
   case 2:
@@ -663,7 +667,8 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeError"
-PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
+PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user)
+{
   PetscScalar    (*exactFunc)(const PetscReal []) = user->exactFunc;
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;

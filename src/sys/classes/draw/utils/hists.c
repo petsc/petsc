@@ -49,7 +49,8 @@ struct _p_PetscDrawHG {
 .seealso: PetscDrawHGDestroy()
 
 @*/
-PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
+PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
+{
   PetscDrawHG    h;
   MPI_Comm       comm;
   PetscBool      isnull;

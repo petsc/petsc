@@ -178,10 +178,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read element connectivity
   */
-  int      *eb_ids = PETSC_NULL,*num_elem_in_block = PETSC_NULL,*num_nodes_per_elem = PETSC_NULL,*num_attr = PETSC_NULL;
-  char    **eb_name = PETSC_NULL,**eb_elemtype = PETSC_NULL;
+  int       *eb_ids = PETSC_NULL,*num_elem_in_block = PETSC_NULL,*num_nodes_per_elem = PETSC_NULL,*num_attr = PETSC_NULL;
+  char      **eb_name = PETSC_NULL,**eb_elemtype = PETSC_NULL;
   PetscBool eb_hasnoname;
-  char     *elem_sig = PETSC_NULL;
+  char      *elem_sig = PETSC_NULL;
 
   ierr = PetscMalloc6(num_eb,int,&eb_ids,
                       num_eb,int,&num_elem_in_block,
@@ -240,9 +240,9 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read side sets
   */
-  int      *ss_ids = PETSC_NULL,*num_sides_in_set = PETSC_NULL;
-  int     **side_set_elem_list = PETSC_NULL,**side_set_side_list = PETSC_NULL;
-  char    **ss_name = PETSC_NULL;
+  int       *ss_ids = PETSC_NULL,*num_sides_in_set = PETSC_NULL;
+  int       **side_set_elem_list = PETSC_NULL,**side_set_side_list = PETSC_NULL;
+  char      **ss_name = PETSC_NULL;
   PetscBool ss_hasnoname;
   int       num_df_in_sset;
   int       num_faces = 0;
@@ -285,9 +285,9 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read node sets
   */
-  int  *ns_ids = PETSC_NULL,*num_nodes_in_set = PETSC_NULL;
-  int **node_list = PETSC_NULL;
-  char **ns_name = PETSC_NULL;
+  int       *ns_ids = PETSC_NULL,*num_nodes_in_set = PETSC_NULL;
+  int       **node_list = PETSC_NULL;
+  char      **ns_name = PETSC_NULL;
   PetscBool ns_hasnoname;
   ierr = PetscMalloc4(num_ns,int,&ns_ids,
                       num_ns,int,&num_nodes_in_set,
@@ -556,7 +556,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
 
 #undef __FUNCT__
 #define __FUNCT__ "EXOGetElemType"
-PetscErrorCode EXOGetElemType(const char *name,EXO_ELEM_TYPE *elem_type){
+PetscErrorCode EXOGetElemType(const char *name,EXO_ELEM_TYPE *elem_type)
+{
   PetscErrorCode ierr;
   char     *elem_sig;
   ierr = PetscStrstr("tri,tri3,triangle,triangle3",name,&elem_sig);CHKERRQ(ierr);

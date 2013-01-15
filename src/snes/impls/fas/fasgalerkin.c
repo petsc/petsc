@@ -17,7 +17,8 @@
 
 .seealso: SNESFASSetLevels(), SNESFASSetGalerkin()
 @*/
-PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg) {
+PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
+{
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   PetscFunctionBegin;
   *flg = fas->galerkin;
@@ -39,7 +40,8 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg) {
 
 .seealso: SNESFASSetLevels(), SNESFASGetGalerkin()
 @*/
-PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg) {
+PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
+{
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -54,16 +56,18 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg) {
 SNESFASGalerkinDefaultFunction
 
  */
-PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ctx) {
+PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ctx)
+{
   /* the Galerkin FAS function evalutation is defined as
    F^l(x^l) = I^l_0F^0(P^0_lx^l)
    */
-  SNES       fassnes;
-  SNES_FAS * fas;
-  SNES_FAS * prevfas;
-  SNES       prevsnes;
-  Vec b_temp;
+  SNES           fassnes;
+  SNES_FAS       *fas;
+  SNES_FAS       *prevfas;
+  SNES           prevsnes;
+  Vec            b_temp;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   /* prolong to the fine level and evaluate there. */
   fassnes = (SNES)ctx;

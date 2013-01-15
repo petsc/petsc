@@ -152,7 +152,8 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5OpenGroup"
-PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId) {
+PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
+{
   hid_t          file_id, group;
   const char    *groupName = PETSC_NULL;
   PetscErrorCode ierr;

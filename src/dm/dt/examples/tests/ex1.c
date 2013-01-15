@@ -7,8 +7,8 @@ static char help[] = "Tests 1D discretization tools.\n\n";
 static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscReal *points,PetscInt ndegrees,const PetscInt *degrees)
 {
   PetscErrorCode ierr;
-  PetscReal *B,*D,*D2;
-  PetscInt i,j;
+  PetscReal      *B,*D,*D2;
+  PetscInt       i,j;
 
   PetscFunctionBegin;
   ierr = PetscMalloc3(npoints*ndegrees,PetscReal,&B,npoints*ndegrees,PetscReal,&D,npoints*ndegrees,PetscReal,&D2);CHKERRQ(ierr);
@@ -30,9 +30,9 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt degrees[1000],ndegrees,npoints,two;
-  PetscReal points[1000],weights[1000],interval[2];
-  PetscBool flg;
+  PetscInt       degrees[1000],ndegrees,npoints,two;
+  PetscReal      points[1000],weights[1000],interval[2];
+  PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Discretization tools test options",PETSC_NULL);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscRealView(npoints,weights,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   {
     PetscReal a = interval[0],b = interval[1],zeroth,first,second;
-    PetscInt i;
+    PetscInt  i;
     zeroth = b - a;
     first = (b*b - a*a)/2;
     second = (b*b*b - a*a*a)/3;

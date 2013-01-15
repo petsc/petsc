@@ -54,8 +54,7 @@ int main(int argc,char **argv)
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 
@@ -84,8 +83,7 @@ int main(int argc,char **argv)
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da2);CHKERRQ(ierr);
   } else if (flg3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da2);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,PETSC_NULL,&da2);CHKERRQ(ierr);
   }
 

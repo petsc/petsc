@@ -43,8 +43,7 @@ int main(int argc,char **argv)
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,m,n,p,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 

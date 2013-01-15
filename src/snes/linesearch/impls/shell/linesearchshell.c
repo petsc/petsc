@@ -4,7 +4,7 @@
 
 typedef struct {
   SNESLineSearchUserFunc func;
-  void               *ctx;
+  void                   *ctx;
 } SNESLineSearch_Shell;
 
 #undef __FUNCT__
@@ -51,11 +51,12 @@ $  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, PETSC_NULL);CHKE
 
    .seealso: SNESLineSearchShellGetUserFunc(), SNESLINESEARCHSHELL
 @*/
-PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx) {
-
-  PetscErrorCode   ierr;
-  PetscBool        flg;
+PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc func, void *ctx)
+{
+  PetscErrorCode       ierr;
+  PetscBool            flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   ierr = PetscObjectTypeCompare((PetscObject)linesearch,SNESLINESEARCHSHELL,&flg);CHKERRQ(ierr);
@@ -80,11 +81,12 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 
    .seealso: SNESLineSearchShellSetUserFunc()
 @*/
-PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx) {
-
-  PetscErrorCode   ierr;
-  PetscBool        flg;
+PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLineSearchUserFunc *func, void **ctx)
+{
+  PetscErrorCode       ierr;
+  PetscBool            flg;
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (func) PetscValidPointer(func,2);
@@ -103,16 +105,14 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
 static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
-  PetscErrorCode   ierr;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
 
   /* apply the user function */
   if (shell->func) {
     ierr = (*shell->func)(linesearch, shell->ctx);CHKERRQ(ierr);
-  } else {
-    SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
-  }
+  } else SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +121,7 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell *)linesearch->data;
-  PetscErrorCode   ierr;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(shell);CHKERRQ(ierr);
@@ -146,11 +146,10 @@ M*/
 PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)
 {
 
-  SNESLineSearch_Shell     *shell;
+  SNESLineSearch_Shell *shell;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-
   linesearch->ops->apply          = SNESLineSearchApply_Shell;
   linesearch->ops->destroy        = SNESLineSearchDestroy_Shell;
   linesearch->ops->setfromoptions = PETSC_NULL;

@@ -145,7 +145,8 @@ PetscErrorCode tuned_STREAM_2A_Kernel(PetscInt myrank)
   return(0);
 }
 
-PetscErrorCode tuned_STREAM_Initialize_Kernel(PetscInt myrank) {
+PetscErrorCode tuned_STREAM_Initialize_Kernel(PetscInt myrank)
+{
   int        i;
 
   for (i=trstarts[myrank];i<trstarts[myrank+1];i++) {
@@ -165,7 +166,8 @@ PetscErrorCode tuned_STREAM_Copy_Kernel(PetscInt myrank)
   return(0);
 }
 
-PetscErrorCode tuned_STREAM_Scale_Kernel(PetscInt myrank,double *scalarp) {
+PetscErrorCode tuned_STREAM_Scale_Kernel(PetscInt myrank,double *scalarp)
+{
   double      scalar = *scalarp;
   int         j;
 
@@ -174,7 +176,8 @@ PetscErrorCode tuned_STREAM_Scale_Kernel(PetscInt myrank,double *scalarp) {
   return(0);
 }
 
-PetscErrorCode tuned_STREAM_Add_Kernel(PetscInt myrank) {
+PetscErrorCode tuned_STREAM_Add_Kernel(PetscInt myrank)
+{
   int j;
 
   for (j=trstarts[myrank]; j<trstarts[myrank+1]; j++)
@@ -183,7 +186,8 @@ PetscErrorCode tuned_STREAM_Add_Kernel(PetscInt myrank) {
   return(0);
 }
 
-PetscErrorCode tuned_STREAM_Triad_Kernel(PetscInt myrank,double *scalarp) {
+PetscErrorCode tuned_STREAM_Triad_Kernel(PetscInt myrank,double *scalarp)
+{
   double      scalar = *scalarp;
   int         j;
 

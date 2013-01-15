@@ -244,7 +244,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
     for (i=0; i<sDist; i++) {  /* Left ghost points */
       if ((xs-sDist+i)>=0) {idx[nn++] = xs-sDist+i;}
-      else                       {idx[nn++] = M*dof+(xs-sDist+i);}
+      else                 {idx[nn++] = M*dof+(xs-sDist+i);}
     }
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
@@ -257,7 +257,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     for (i=0; i<(sDist)/dof; i++) {  /* Left ghost points */
       for (j=0; j<dof; j++) {
         if ((xs-sDist+i*dof + j)>=0) {idx[nn++] = xs-sDist+i*dof +j;}
-        else                               {idx[nn++] = sDist - dof*(i) + j;}
+        else                         {idx[nn++] = sDist - dof*(i) + j;}
       }
     }
 
@@ -271,12 +271,12 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     }
   } else {      /* Now do all cases with no periodicity */
     if (0 <= xs-sDist) {for (i=0; i<sDist; i++) {idx[nn++] = xs - sDist + i;}}
-    else                     {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
+    else               {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
 
     if ((xe+sDist)<=M*dof) {for (i=0;  i<sDist;   i++) {idx[nn++]=xe+i;}}
-    else                         {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
+    else                   {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
   ierr = ISCreateGeneral(comm,nn-IXs+Xs,&idx[IXs-Xs],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);

@@ -13,12 +13,14 @@ Use the options
 
 #undef __FUNCT__
 #define __FUNCT__ "FillLocalSubdomain"
-PetscErrorCode FillLocalSubdomain(DM da, Vec gvec) {
-  PetscScalar **g;
-  DMDALocalInfo info;
-  PetscMPIInt   rank;
-  PetscInt      i,j;
+PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
+{
+  PetscScalar    **g;
+  DMDALocalInfo  info;
+  PetscMPIInt    rank;
+  PetscInt       i,j;
   PetscErrorCode ierr;
+
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);

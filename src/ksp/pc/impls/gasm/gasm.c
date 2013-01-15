@@ -767,7 +767,8 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetTotalSubdomains_GASM"
-PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create_local) {
+PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create_local)
+{
   PC_GASM         *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;

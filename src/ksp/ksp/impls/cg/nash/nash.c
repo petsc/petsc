@@ -664,7 +664,8 @@ PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHGetObjFcn_NASH"
-PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn){
+PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
+{
   KSP_NASH *cg = (KSP_NASH *)ksp->data;
 
   PetscFunctionBegin;

@@ -171,8 +171,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       t1 = CCmplxPow(zeta,2.0);
       XX[dim*i  ] = CCmplxRe(t1);
       XX[dim*i+1] = CCmplxIm(t1);
-    }
-    else if (idx==4) {
+    } else if (idx==4) {
       PetscScalar Ni[4];
       PetscScalar xi  = XX[dim*i  ];
       PetscScalar eta = XX[dim*i+1];

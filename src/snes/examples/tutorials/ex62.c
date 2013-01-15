@@ -235,7 +235,8 @@ PetscScalar linear_p_3d(const PetscReal x[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       bc, run;
@@ -352,7 +353,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
-PetscErrorCode SetupQuadrature(AppCtx *user) {
+PetscErrorCode SetupQuadrature(AppCtx *user)
+{
   PetscFunctionBeginUser;
   user->fem.quad[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   user->fem.quad[0].quadPoints    = points_0;
@@ -377,7 +379,8 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
   There is a problem here with uninterpolated meshes. The index in numDof[] is not dimension in this case,
   but sieve depth.
 */
-PetscErrorCode SetupSection(DM dm, AppCtx *user) {
+PetscErrorCode SetupSection(DM dm, AppCtx *user)
+{
   PetscSection   section;
   const PetscInt numFields           = NUM_FIELDS;
   PetscInt       dim                 = user->dim;
@@ -417,7 +420,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
+PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
+{
   PetscFEM      *fem = &user->fem;
   PetscErrorCode ierr;
 
@@ -463,7 +467,8 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "CreatePressureNullSpace"
-PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) {
+PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace)
+{
   Vec            vec, localVec;
   PetscErrorCode ierr;
 

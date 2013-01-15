@@ -123,11 +123,9 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  }
-  else if (function == CONSTANT) {
+  } else if (function == CONSTANT) {
     ierr = VecSet(x, 1.0);CHKERRQ(ierr);
-  }
-  else if (function == TANH) {
+  } else if (function == TANH) {
     PetscScalar *a;
     ierr = VecGetArray(x, &a);CHKERRQ(ierr);
     PetscInt j,k = 0;

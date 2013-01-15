@@ -2044,7 +2044,8 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDestroy_IJ"
-PetscErrorCode MatDestroy_IJ(Mat A) {
+PetscErrorCode MatDestroy_IJ(Mat A)
+{
   PetscErrorCode ierr;
   Mat_IJ          *pg = (Mat_IJ *)(A->data);
 
