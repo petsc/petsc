@@ -350,12 +350,12 @@ class VTKViewer {
         const int coneSize = ncV.getOrientedSize();
         if (coneSize != corners) {
           std::ostringstream msg;
-	  msg << "Inconsistency in topology found for mesh '"
-	      << mesh->getName() << "' during output.\n"
-	      << "Number of vertices (" << coneSize << ") in cell '"
-	      << *e_iter << "' does not expected number of vertices ("
-	      << corners << ").";
-	  throw ALE::Exception(msg.str());
+          msg << "Inconsistency in topology found for mesh '"
+              << mesh->getName() << "' during output.\n"
+              << "Number of vertices (" << coneSize << ") in cell '"
+              << *e_iter << "' does not expected number of vertices ("
+              << corners << ").";
+          throw ALE::Exception(msg.str());
         } // if
 
         if (opt3) {

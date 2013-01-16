@@ -26,17 +26,17 @@ namespace ALE {
       num_entities = new unsigned int[dim+1];
       int depth = m->depth();
       for (int i = 0; i < depth; i++) {
-	num_entities[i] = 0;
+        num_entities[i] = 0;
       }
       if (depth == 1) {
-	num_entities[0] = m->depthStratum(0);
-	num_entities[dim] = m->heightStratum(0);
+        num_entities[0] = m->depthStratum(0);
+        num_entities[dim] = m->heightStratum(0);
       } else {
-	if (depth != dim+1) throw Exception("Cannot handle partially interpolated sieves.");
-	for (int i = 0; i < dim+1; i++) {
-	  num_entities[i] = m->getDepthStratum(i)->size();
-	}
-	
+        if (depth != dim+1) throw Exception("Cannot handle partially interpolated sieves.");
+        for (int i = 0; i < dim+1; i++) {
+          num_entities[i] = m->getDepthStratum(i)->size();
+        }
+        
       }
     }
 
@@ -55,39 +55,39 @@ namespace ALE {
       //properly initialize the cell from the form
       int geometric_dimension = m->getRealSection("coordinates")->getFiberDimension(m->depthStratum(0)->begin());
       if (finite_element->cell_shape() == ufc::interval) {
-	num_corners = 2;
-	topological_dimension = m->getDimension(); //we must clarify what this means in the mesh library
-	element_entities = new int *[2];
-	element_entities[0] = new int[2]; //vertices
-	element_entities[1] = new int[1]; //line
-	double * tmpcoords = new double[coorddim*2];
+        num_corners = 2;
+        topological_dimension = m->getDimension(); //we must clarify what this means in the mesh library
+        element_entities = new int *[2];
+        element_entities[0] = new int[2]; //vertices
+        element_entities[1] = new int[1]; //line
+        double * tmpcoords = new double[coorddim*2];
         coordinates = new double *[2];
-	for (int i = 0; i < 2; i++) {
-	  coordinates[i] = &tmpcoords[coorddim*i];
-	}
+        for (int i = 0; i < 2; i++) {
+          coordinates[i] = &tmpcoords[coorddim*i];
+        }
       } else if (finite_element->cell_shape() == ufc::triangle) {
-	num_corners = 3;
-	element_entities = new int *[3];
-	element_entities[0] = new int[3]; //vertices
-	element_entities[1] = new int[3]; //edges
-	element_entities[2] = new int[1]; //cell
-	double * tmpcoords = new double[coorddim*3];
+        num_corners = 3;
+        element_entities = new int *[3];
+        element_entities[0] = new int[3]; //vertices
+        element_entities[1] = new int[3]; //edges
+        element_entities[2] = new int[1]; //cell
+        double * tmpcoords = new double[coorddim*3];
         coordinates = new double *[3];
-	for (int i = 0; i < 3; i++) {
-	  coordinates[i] = &tmpcoords[coorddim*i];
-	}
+        for (int i = 0; i < 3; i++) {
+          coordinates[i] = &tmpcoords[coorddim*i];
+        }
       } else if (finite_element->cell_shape() == ufc::tetrahedron) {
-	num_corners = 4;
-	element_entities = new int *[2];
-	element_entities[0] = new int[4]; //vertices
-	element_entities[1] = new int[6]; //edges
-	element_entities[2] = new int[4]; //faces
-	element_entities[3] = new int[1]; //tetrahedron
- 	double * tmpcoords = new double[coorddim*4];
+        num_corners = 4;
+        element_entities = new int *[2];
+        element_entities[0] = new int[4]; //vertices
+        element_entities[1] = new int[6]; //edges
+        element_entities[2] = new int[4]; //faces
+        element_entities[3] = new int[1]; //tetrahedron
+        double * tmpcoords = new double[coorddim*4];
         coordinates = new double *[4];
-	for (int i = 0; i < 4; i++) {
-	  coordinates[i] = &tmpcoords[coorddim*i];
-	}
+        for (int i = 0; i < 4; i++) {
+          coordinates[i] = &tmpcoords[coorddim*i];
+        }
       } else throw Exception("Unsupported geometry");
     }
     ~sieve_cell_wrapper() {
@@ -104,9 +104,9 @@ namespace ALE {
       //copy over the coordinates through the restrictClosure and copy
       const double * coords = m->;
       for (int i = 0; i < num_corners; i++) {
-	for (int j = 0; j < dim; j++) {
-	  coordinates[i][j] = coords[i*coordim+j];
-	}
+        for (int j = 0; j < dim; j++) {
+          coordinates[i][j] = coords[i*coordim+j];
+        }
       }
       //copy over the entity indices such that they're consistent with the
     }
@@ -176,13 +176,13 @@ namespace ALE {
       const double * coefficients = m->restrictClosure(_s, cell->current_point);
       const double * tmp_values = new double[_finite_element->value_rank()];
       for (int i = 0; i < _finite_element->value_rank(); i++) {
-	values[i] = 0.;
+        values[i] = 0.;
       }
       for (int i = 0; i < _finite_element->value_dimension(); i++) { //loop over basis functions
-	_finite_element->evaluate_basis(i, tmp_values, coordinates, cell);
-	for (int j = 0; j < _finite_element->value_rank()+1; i++) {
-	  values[i] += coefficients[i*(finite_element->value_rank()+1)+j]*tmp_values[j];
-	}
+        _finite_element->evaluate_basis(i, tmp_values, coordinates, cell);
+        for (int j = 0; j < _finite_element->value_rank()+1; i++) {
+          values[i] += coefficients[i*(finite_element->value_rank()+1)+j]*tmp_values[j];
+        }
       }
       delete tmp_values;
     }
@@ -252,7 +252,7 @@ namespace ALE {
       _num_finite_elements = bform->num_finite_elements();
       _finite_elements = new ufc::finite_element *[_num_finite_elements];
       for (int i = 0; i < _num_finite_elements; i++) {
-	
+        
       }
       //set up the linear form finite elements and cell integrals.
 
@@ -371,7 +371,7 @@ void Map_SieveCell_UFCCell(ALE::Obj<PETSC_MESH_TYPE> m, PETSC_MESH_TYPE::point_t
       //and coordinates
       const double * tmpcoords = coordinates->restrictPoint(oPoints[t]);
       for (int i = 0; i < dim; i++) {
-	cell->coordinates[vertex_index][i] = tmpcoords[i];
+        cell->coordinates[vertex_index][i] = tmpcoords[i];
       }
       vertex_index++;
     }
@@ -532,7 +532,7 @@ PetscErrorCode Assemble_RHS_UFC(Mesh mesh, ufc::form * bform, ufc::form * lform,
     for(unsigned int i = 0; i < lform->num_coefficients(); i++) {
       w[i] = new double[numBasisFuncs];
       for (int j = 0; j < numBasisFuncs; j++){
-	w[i][j] = elemVec[j];
+        w[i][j] = elemVec[j];
       }
     }
 
@@ -541,7 +541,7 @@ PetscErrorCode Assemble_RHS_UFC(Mesh mesh, ufc::form * bform, ufc::form * lform,
 
     for(int f = 0; f < numBasisFuncs; ++f) {
       for(int g = 0; g < numBasisFuncs; ++g) {
-	elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
+        elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
       }
       //PetscPrintf(m->comm(), "x[f]: %f\n", x[f]);
       //PetscPrintf(m->comm(), "elemVec[f]: %f\n", elemVec[f]);
@@ -629,7 +629,7 @@ PetscErrorCode Assemble_RHS_UFC(Mesh mesh, ufc::form * bform, ufc::form * lform,
     for(unsigned int i = 0; i < lform->num_coefficients(); i++) {
       w[i] = new double[numBasisFuncs];
       for (int j = 0; j < numBasisFuncs; j++){
-	w[i][j] = elemVec[j];
+        w[i][j] = elemVec[j];
       }
     }
 
@@ -638,7 +638,7 @@ PetscErrorCode Assemble_RHS_UFC(Mesh mesh, ufc::form * bform, ufc::form * lform,
 
     for(int f = 0; f < numBasisFuncs; ++f) {
       for(int g = 0; g < numBasisFuncs; ++g) {
-	elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
+        elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
       }
       //PetscPrintf(m->comm(), "x[f]: %f\n", x[f]);
       //PetscPrintf(m->comm(), "elemVec[f]: %f\n", elemVec[f]);
@@ -811,104 +811,104 @@ void SetupDiscretization_UFC(ALE::Obj<PETSC_MESH_TYPE> m, ufc::form * form) {
        //m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
        for(int f = 0; f < numFields; ++f) v[f] = 0;
        for(int t = 0; t < num_oPoints; t++) {
-	 const int cDim = s->getConstraintDimension(oPoints[t]);
-	 int       off  = 0;
-	 int       f    = 0;
-	 int       i    = -1;
-	 if (debug > 1) {std::cout << "    point " << oPoints[t] << std::endl;}
-	 if (cDim) {
-	   if (debug > 1) {std::cout << "      constrained excMarker: " << m->getValue(cellExclusion, *c_iter) << std::endl;}
-	   for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-	     const ALE::Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
-	     const ALE::Obj<PETSC_MESH_TYPE::names_type> bcs = disc->getBoundaryConditions();
-	     const int                       fDim    = s->getFiberDimension(oPoints[t], f);//disc->getNumDof(m->depth(*cl_iter));
-	     const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
-	     int                             b       = 0;
-	
-	     for(PETSC_MESH_TYPE::names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
-	       const ALE::Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
-	       const int                          value = m->getValue(m->getLabel(bc->getLabelName()), oPoints[t]);
-	
-	       if (b > 0) v[f] -= fDim;
-	
-	       if (value == bc->getMarker()) {
-		 if (debug > 1) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
-		 //instead, we use the form's dual integrator (evaluation
-		 sf.setFunction(bc->getFunction());
-		 /*
-		   for(int d = 0; d < fDim; ++d, ++v[f]) {
-		   dofs[++i] = off+d;
-		   if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
-		   if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-		   }
-		 */
-		
-		 for (int d = 0; d < fDim; ++d, ++v[f]) {
-		   dofs[++i] = off+d;
-		   if (!noUpdate) {
-		     values[indices[v[f]]] = finite_element->evaluate_dof(v[f], sf, cell);
-		     PetscPrintf(m->comm(), "evaluated DOF %d\n", f);
-		   }
-		
-		 }
-		 ++b;
-		 break;
-	       } else {
-		 if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
-		 for(int d = 0; d < fDim; ++d, ++v[f]) {
-		   values[indices[v[f]]] = 0.0;
-		   if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-		 }
-	       }
-	     }
-	     if (b == 0) {
-	       if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
-	       for(int d = 0; d < fDim; ++d, ++v[f]) {
-		 values[indices[v[f]]] = 0.0;
-		 if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-	       }
-	     }
-	     off += fDim;
-	   }
-	   if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
-	   s->setConstraintDof(oPoints[t], dofs);
-	 } else {
-	   if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
-	   for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-	     const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
-	     const int                       fDim    = s->getFiberDimension(oPoints[t], f);//disc->getNumDof(m->depth(*cl_iter));
-	     const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
-	
-	     if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
-	     for(int d = 0; d < fDim; ++d, ++v[f]) {
-	       values[indices[v[f]]] = 0.0;
-	       if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-	     }
-	   }
-	 }
+         const int cDim = s->getConstraintDimension(oPoints[t]);
+         int       off  = 0;
+         int       f    = 0;
+         int       i    = -1;
+         if (debug > 1) {std::cout << "    point " << oPoints[t] << std::endl;}
+         if (cDim) {
+           if (debug > 1) {std::cout << "      constrained excMarker: " << m->getValue(cellExclusion, *c_iter) << std::endl;}
+           for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+             const ALE::Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
+             const ALE::Obj<PETSC_MESH_TYPE::names_type> bcs = disc->getBoundaryConditions();
+             const int                       fDim    = s->getFiberDimension(oPoints[t], f);//disc->getNumDof(m->depth(*cl_iter));
+             const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
+             int                             b       = 0;
+        
+             for(PETSC_MESH_TYPE::names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
+               const ALE::Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
+               const int                          value = m->getValue(m->getLabel(bc->getLabelName()), oPoints[t]);
+        
+               if (b > 0) v[f] -= fDim;
+        
+               if (value == bc->getMarker()) {
+                 if (debug > 1) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
+                 //instead, we use the form's dual integrator (evaluation
+                 sf.setFunction(bc->getFunction());
+                 /*
+                   for(int d = 0; d < fDim; ++d, ++v[f]) {
+                   dofs[++i] = off+d;
+                   if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                   if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                   }
+                 */
+                
+                 for (int d = 0; d < fDim; ++d, ++v[f]) {
+                   dofs[++i] = off+d;
+                   if (!noUpdate) {
+                     values[indices[v[f]]] = finite_element->evaluate_dof(v[f], sf, cell);
+                     PetscPrintf(m->comm(), "evaluated DOF %d\n", f);
+                   }
+                
+                 }
+                 ++b;
+                 break;
+               } else {
+                 if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+                 for(int d = 0; d < fDim; ++d, ++v[f]) {
+                   values[indices[v[f]]] = 0.0;
+                   if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                 }
+               }
+             }
+             if (b == 0) {
+               if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+               for(int d = 0; d < fDim; ++d, ++v[f]) {
+                 values[indices[v[f]]] = 0.0;
+                 if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+               }
+             }
+             off += fDim;
+           }
+           if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
+           s->setConstraintDof(oPoints[t], dofs);
+         } else {
+           if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
+           for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+             const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
+             const int                       fDim    = s->getFiberDimension(oPoints[t], f);//disc->getNumDof(m->depth(*cl_iter));
+             const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
+        
+             if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+             for(int d = 0; d < fDim; ++d, ++v[f]) {
+               values[indices[v[f]]] = 0.0;
+               if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+             }
+           }
+         }
        }
 #if 0
        if (debug > 1) {
-	 const Obj<PETSC_MESH_TYPE::sieve_type::coneArray>      closure = PETSC_MESH_TYPE::sieve_alg_type::closure(m, m->getArrowSection("orientation"), *c_iter);
-	 const PETSC_MESH_TYPE::sieve_type::coneArray::iterator end     = closure->end();
-	
-	 for(int f = 0; f < numFields; ++f) v[f] = 0;
-	 for(PETSC_MESH_TYPE::sieve_type::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-	   int f = 0;
-	   for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-	     const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
-	     const int                       fDim    = s->getFiberDimension(*cl_iter, f);
-	     const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
-	
-	     for(int d = 0; d < fDim; ++d, ++v[f]) {
-	       std::cout << "    "<<*f_iter<<"-value["<<indices[v[f]]<<"] " << values[indices[v[f]]] << std::endl;
-	     }
-	   }
-	 }
+         const Obj<PETSC_MESH_TYPE::sieve_type::coneArray>      closure = PETSC_MESH_TYPE::sieve_alg_type::closure(m, m->getArrowSection("orientation"), *c_iter);
+         const PETSC_MESH_TYPE::sieve_type::coneArray::iterator end     = closure->end();
+        
+         for(int f = 0; f < numFields; ++f) v[f] = 0;
+         for(PETSC_MESH_TYPE::sieve_type::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+           int f = 0;
+           for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+             const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
+             const int                       fDim    = s->getFiberDimension(*cl_iter, f);
+             const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
+        
+             for(int d = 0; d < fDim; ++d, ++v[f]) {
+               std::cout << "    "<<*f_iter<<"-value["<<indices[v[f]]<<"] " << values[indices[v[f]]] << std::endl;
+             }
+           }
+         }
        }
 #endif
        if (!noUpdate) {
-	 m->updateAll(s, *c_iter, values);
+         m->updateAll(s, *c_iter, values);
        }
      }
      PetscPrintf(m->comm(), "Done with the cell loop.\n");
@@ -976,96 +976,96 @@ void SetupField_UFC(ALE::Obj<PETSC_MESH_TYPE> m, const ALE::Obj<PETSC_MESH_TYPE:
       m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
       for(int f = 0; f < numFields; ++f) v[f] = 0;
       for(int cl = 0; cl < oSize; ++cl) {
-	const int cDim = s->getConstraintDimension(oPoints[cl]);
-	int       off  = 0;
-	int       f    = 0;
-	int       i    = -1;
-	
-	if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
-	if (cDim) {
-	  if (debug > 1) {std::cout << "      constrained excMarker: " << m->getValue(cellExclusion, *c_iter) << std::endl;}
-	  for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-	    const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
-	    const Obj<PETSC_MESH_TYPE::names_type>           bcs     = disc->getBoundaryConditions();
-	    const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
-	    const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
-	    int                             b       = 0;
-	
-	    for(PETSC_MESH_TYPE::names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
-	      const Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
-	      const int                          value = m->getValue(m->getLabel(bc->getLabelName()), oPoints[cl]);
-	      sf.setFunction(bc->getFunction());
-	      if (b > 0) v[f] -= fDim;
-	      if (value == bc->getMarker()) {
-		if (debug > 1) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
-		for (int d = 0; d < fDim; ++d, ++v[f]) {
-		  dofs[++i] = off+d;
-		  if (!noUpdate) {
-		    values[indices[v[f]]] = finite_element->evaluate_dof(v[f], sf, cell);
-		    PetscPrintf(m->comm(), "evaluated DOF %d\n", f);
-		  }
-		}
-		/*
-		for(int d = 0; d < fDim; ++d, ++v[f]) {
-		  dofs[++i] = off+d;
-		  if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
-		  if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-		}
-		*/
-		// Allow only one condition per point
-		++b;
-		break;
-	      } else {
-		if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
-		for(int d = 0; d < fDim; ++d, ++v[f]) {
-		  values[indices[v[f]]] = 0.0;
-		  if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-		}
-	      }
-	    }
-	    if (b == 0) {
-	      if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
-	      for(int d = 0; d < fDim; ++d, ++v[f]) {
-		values[indices[v[f]]] = 0.0;
-		if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-	      }
-	    }
-	    off += fDim;
-	  }
-	  if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
-	  s->setConstraintDof(oPoints[cl], dofs);
-	} else {
-	  if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
-	  for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-	    const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
-	    const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
-	    const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
-	
-	    if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
-	    for(int d = 0; d < fDim; ++d, ++v[f]) {
-	      values[indices[v[f]]] = 0.0;
-	      if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
-	    }
-	  }
-	}
+        const int cDim = s->getConstraintDimension(oPoints[cl]);
+        int       off  = 0;
+        int       f    = 0;
+        int       i    = -1;
+        
+        if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
+        if (cDim) {
+          if (debug > 1) {std::cout << "      constrained excMarker: " << m->getValue(cellExclusion, *c_iter) << std::endl;}
+          for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+            const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
+            const Obj<PETSC_MESH_TYPE::names_type>           bcs     = disc->getBoundaryConditions();
+            const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
+            const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
+            int                             b       = 0;
+        
+            for(PETSC_MESH_TYPE::names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
+              const Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
+              const int                          value = m->getValue(m->getLabel(bc->getLabelName()), oPoints[cl]);
+              sf.setFunction(bc->getFunction());
+              if (b > 0) v[f] -= fDim;
+              if (value == bc->getMarker()) {
+                if (debug > 1) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
+                for (int d = 0; d < fDim; ++d, ++v[f]) {
+                  dofs[++i] = off+d;
+                  if (!noUpdate) {
+                    values[indices[v[f]]] = finite_element->evaluate_dof(v[f], sf, cell);
+                    PetscPrintf(m->comm(), "evaluated DOF %d\n", f);
+                  }
+                }
+                /*
+                for(int d = 0; d < fDim; ++d, ++v[f]) {
+                  dofs[++i] = off+d;
+                  if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                  if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                }
+                */
+                // Allow only one condition per point
+                ++b;
+                break;
+              } else {
+                if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+                for(int d = 0; d < fDim; ++d, ++v[f]) {
+                  values[indices[v[f]]] = 0.0;
+                  if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                }
+              }
+            }
+            if (b == 0) {
+              if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+              for(int d = 0; d < fDim; ++d, ++v[f]) {
+                values[indices[v[f]]] = 0.0;
+                if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+              }
+            }
+            off += fDim;
+          }
+          if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
+          s->setConstraintDof(oPoints[cl], dofs);
+        } else {
+          if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
+          for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+            const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
+            const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
+            const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
+        
+            if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+            for(int d = 0; d < fDim; ++d, ++v[f]) {
+              values[indices[v[f]]] = 0.0;
+              if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+            }
+          }
+        }
       }
       if (debug > 1) {
-	for(int f = 0; f < numFields; ++f) v[f] = 0;
-	for(int cl = 0; cl < oSize; ++cl) {
-	  int f = 0;
-	  for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-	    const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
-	    const int                       fDim    = s->getFiberDimension(oPoints[cl], f);
-	    const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
-	
-	    for(int d = 0; d < fDim; ++d, ++v[f]) {
-	      std::cout << "    "<<*f_iter<<"-value["<<indices[v[f]]<<"] " << values[indices[v[f]]] << std::endl;
-	    }
-	  }
-	}
+        for(int f = 0; f < numFields; ++f) v[f] = 0;
+        for(int cl = 0; cl < oSize; ++cl) {
+          int f = 0;
+          for(PETSC_MESH_TYPE::names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+            const Obj<ALE::Discretization>& disc    = m->getDiscretization(*f_iter);
+            const int                       fDim    = s->getFiberDimension(oPoints[cl], f);
+            const int                      *indices = disc->getIndices(m->getValue(cellExclusion, *c_iter));
+        
+            for(int d = 0; d < fDim; ++d, ++v[f]) {
+              std::cout << "    "<<*f_iter<<"-value["<<indices[v[f]]<<"] " << values[indices[v[f]]] << std::endl;
+            }
+          }
+        }
       }
       if (!noUpdate) {
-	m->updateAll(s, *c_iter, values);
+        m->updateAll(s, *c_iter, values);
       }
       pV.clear();
     }
@@ -1116,10 +1116,10 @@ void SetupField_UFC(ALE::Obj<PETSC_MESH_TYPE> m, const ALE::Obj<PETSC_MESH_TYPE:
        const int pointDim = s->getFiberDimension(*cl_iter);
        //FOR NOW: keep this, only get rid of the integration routine.
        if (pointDim) {
-	 for(int d = 0; d < pointDim; ++d, ++v) {
-	   values[v] = finite_element->evaluate_dof(v, sf, cell);
-	   //values[v] = (*options->integrate)(v0, J, v, options->exactFunc);
-	 }
+         for(int d = 0; d < pointDim; ++d, ++v) {
+           values[v] = finite_element->evaluate_dof(v, sf, cell);
+           //values[v] = (*options->integrate)(v0, J, v, options->exactFunc);
+         }
        }
      }
      m->updateAll(s, *c_iter, values);

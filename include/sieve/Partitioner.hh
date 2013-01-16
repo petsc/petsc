@@ -126,7 +126,7 @@ namespace ALE {
         long seed = 123636512;                  /* for random graph mutations */
         int maxSize = 0;
 
-	    if (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &x, &y, &z);}
+        if (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &x, &y, &z);}
         mesh_dims[0] = partition->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
         part_type *assignment = this->_allocator.allocate(nvtxs);
         for(int i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
@@ -155,7 +155,7 @@ namespace ALE {
         }
         delete [] values;
 
-	    if (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &x, &y, &z);}
+        if (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &x, &y, &z);}
         for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
         this->_allocator.deallocate(assignment, nvtxs);
       };
@@ -820,7 +820,7 @@ namespace ALE {
         } else if ((dim == 3) && (corners == 8)) {
           faceVertices = 4;
         } else if ((dim == 2) && (corners == 6)) {
-	  faceVertices = 3;
+          faceVertices = 3;
         } else if ((dim == 2) && (corners == 9)) {
           faceVertices = 3;
         } else if ((dim == 3) && (corners == 10)) {
@@ -1609,14 +1609,14 @@ namespace ALE {
             faceVertices = 2;
           } else if ((dim == 3) && (corners == 8)) {
             faceVertices = 4;
-	  } else if ((dim == 2) && (corners == 6)) {
-	    faceVertices = 3;
-	  } else if ((dim == 2) && (corners == 9)) {
-	    faceVertices = 3;
-	  } else if ((dim == 3) && (corners == 10)) {
-	    faceVertices = 6;
-	  } else if ((dim == 3) && (corners == 27)) {
-	    faceVertices = 9;
+          } else if ((dim == 2) && (corners == 6)) {
+            faceVertices = 3;
+          } else if ((dim == 2) && (corners == 9)) {
+            faceVertices = 3;
+          } else if ((dim == 3) && (corners == 10)) {
+            faceVertices = 6;
+          } else if ((dim == 3) && (corners == 27)) {
+            faceVertices = 9;
           } else {
             throw ALE::Exception("Could not determine number of face vertices");
           }
@@ -1789,36 +1789,36 @@ namespace ALE {
             int ndims = 1;                          /* number of eigenvectors (2^d sets) */
             double eigtol = 0.001;                  /* tolerance on eigenvectors */
             long seed = 123636512;                  /* for random graph mutations */
-	    float *vCoords[3];
+            float *vCoords[3];
             PetscErrorCode ierr;
 
-	    ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_global_method", &global_method, PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
-	    ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_local_method",  &local_method,  PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
-	    if (global_method == 3) {
-	      // Inertial Partitioning
-	      ierr = PetscMalloc3(nvtxs,float,&x,nvtxs,float,&y,nvtxs,float,&z);CHKERROR(ierr, "Error in PetscMalloc");
-	      vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
-	      const Obj<typename bundle_type::label_sequence>&    cells       = bundle->heightStratum(0);
-	      const Obj<typename bundle_type::real_section_type>& coordinates = bundle->getRealSection("coordinates");
-	      const int corners = bundle->size(coordinates, *(cells->begin()))/dim;
-	      int       c       = 0;
+            ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_global_method", &global_method, PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+            ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_local_method",  &local_method,  PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+            if (global_method == 3) {
+              // Inertial Partitioning
+              ierr = PetscMalloc3(nvtxs,float,&x,nvtxs,float,&y,nvtxs,float,&z);CHKERROR(ierr, "Error in PetscMalloc");
+              vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
+              const Obj<typename bundle_type::label_sequence>&    cells       = bundle->heightStratum(0);
+              const Obj<typename bundle_type::real_section_type>& coordinates = bundle->getRealSection("coordinates");
+              const int corners = bundle->size(coordinates, *(cells->begin()))/dim;
+              int       c       = 0;
 
-	      for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-		const double *coords = bundle->restrictClosure(coordinates, *c_iter);
+              for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
+                const double *coords = bundle->restrictClosure(coordinates, *c_iter);
 
-		for(int d = 0; d < dim; ++d) {
-		  vCoords[d][c] = 0.0;
-		}
-		for(int v = 0; v < corners; ++v) {
-		  for(int d = 0; d < dim; ++d) {
-		    vCoords[d][c] += coords[v*dim+d];
-		  }
-		}
-		for(int d = 0; d < dim; ++d) {
-		  vCoords[d][c] /= corners;
-		}
-	      }
-	    }
+                for(int d = 0; d < dim; ++d) {
+                  vCoords[d][c] = 0.0;
+                }
+                for(int v = 0; v < corners; ++v) {
+                  for(int d = 0; d < dim; ++d) {
+                    vCoords[d][c] += coords[v*dim+d];
+                  }
+                }
+                for(int d = 0; d < dim; ++d) {
+                  vCoords[d][c] /= corners;
+                }
+              }
+            }
 
             nvtxs = bundle->heightStratum(0)->size();
             mesh_dims[0] = bundle->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
@@ -1862,10 +1862,10 @@ namespace ALE {
             }
             delete [] msgLog;
 #endif
-	    if (global_method == 3) {
-	      // Inertial Partitioning
-	      ierr = PetscFree3(x, y, z);CHKERROR(ierr, "Error in PetscFree");
-	    }
+            if (global_method == 3) {
+              // Inertial Partitioning
+              ierr = PetscFree3(x, y, z);CHKERROR(ierr, "Error in PetscFree");
+            }
           }
           if (adjacency) delete [] adjacency;
           if (start)     delete [] start;

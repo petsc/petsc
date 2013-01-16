@@ -2123,7 +2123,7 @@ namespace ALE {
       for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.destroy(offsets+i);}
       indexAlloc.deallocate(offsets, this->chart.size()+1);
       index_type  size = std::max(this->coneOffsets[this->chart.max()] - this->coneOffsets[this->chart.min()],
-				   this->supportOffsets[this->chart.max()] - this->supportOffsets[this->chart.min()]);
+                                  this->supportOffsets[this->chart.max()] - this->supportOffsets[this->chart.min()]);
       index_type *orientations = offsets = indexAlloc.allocate(size);
       for(index_type i = 0; i < size; ++i) {indexAlloc.construct(orientations+i, index_type(0));}
       // Recalculate coneOrientations

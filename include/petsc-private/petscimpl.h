@@ -108,7 +108,7 @@ typedef struct _p_PetscObject {
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \
-  _p_PetscObject hdr;	       \
+  _p_PetscObject hdr;          \
   ObjectOps      *ops
 
 #define  PETSCFREEDHEADER -1
@@ -138,11 +138,11 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
 
 @*/
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,descr,mansec,com,des,vie) \
-  (PetscNew(struct tp,&(h)) ||						\
-   PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||			\
-   PetscNew(pops,&((h)->ops)) ||					\
+  (PetscNew(struct tp,&(h)) ||                                                  \
+   PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||                            \
+   PetscNew(pops,&((h)->ops)) ||                                                \
    PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
-   PetscLogObjectCreate(h) ||						\
+   PetscLogObjectCreate(h) ||                                                   \
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
@@ -158,11 +158,11 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,P
 
 .seealso: PetscHeaderCreate()
 @*/
-#define PetscHeaderDestroy(h)			   \
-  (PetscLogObjectDestroy((PetscObject)(*h)) ||	   \
+#define PetscHeaderDestroy(h)                         \
+  (PetscLogObjectDestroy((PetscObject)(*h)) ||        \
    PetscComposedQuantitiesDestroy((PetscObject)*h) || \
-   PetscHeaderDestroy_Private((PetscObject)(*h)) || \
-   PetscFree((*h)->ops) ||			   \
+   PetscHeaderDestroy_Private((PetscObject)(*h)) ||   \
+   PetscFree((*h)->ops) ||                            \
    PetscFree(*h))
 
 PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
@@ -789,7 +789,7 @@ M*/
   ((((obj)->scalarstarcomposedstate && ((obj)->scalarstarcomposedstate[id] == (obj)->state)) ? \
        (data = (obj)->scalarstarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 #else
-#define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)	         \
+#define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)         \
         PetscObjectComposedDataGetRealstar(obj,id,data,flag)
 #endif
 

@@ -391,7 +391,7 @@ namespace ALE {
         Partitioner::createLocalSieveV(origLabel, partition, renumbering, newLabel);
         newLabel->symmetrize();
 #else
-	distributeLabelV(newMesh->getSieve(), origLabel, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newLabel);
+        distributeLabelV(newMesh->getSieve(), origLabel, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newLabel);
 #endif
       }
       PETSc::Log::Event("DistributeLabels").end();
@@ -421,15 +421,15 @@ namespace ALE {
         // Inserts cones into newL (must renumber here)
         //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
         {
-	  typedef typename cones_type::point_type overlap_point_type;
+          typedef typename cones_type::point_type overlap_point_type;
           const Obj<typename RecvOverlap::baseSequence>      rPoints = recvOverlap->base();
-	  const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
+          const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
 
           for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
             const Obj<typename RecvOverlap::coneSequence>& points       = recvOverlap->cone(*p_iter);
             const typename RecvOverlap::target_type&       localPoint   = *p_iter;
             const typename cones_type::point_type&         remotePoint  = points->begin().color();
-	    const overlap_point_type                       overlapPoint = overlap_point_type(remotePoint.second, remotePoint.first);
+            const overlap_point_type                       overlapPoint = overlap_point_type(remotePoint.second, remotePoint.first);
             const int                                      size         = overlapCones->getFiberDimension(overlapPoint);
             const typename cones_type::value_type         *values       = overlapCones->restrictPoint(overlapPoint);
 
@@ -444,8 +444,8 @@ namespace ALE {
       Partitioner::createLocalSifter(l, partition, renumbering, newL);
       //completeCones(l, newL, renumbering, sendMeshOverlap, recvMeshOverlap);
       {
-	typedef typename Label::alloc_type::template rebind<int>::other alloc_type;
-	typedef LabelBaseSectionV<typename Mesh::sieve_type, Label, alloc_type> atlas_type;
+        typedef typename Label::alloc_type::template rebind<int>::other alloc_type;
+        typedef LabelBaseSectionV<typename Mesh::sieve_type, Label, alloc_type> atlas_type;
         typedef ALE::UniformSection<ALE::Pair<int, point_type>, int>            cones_type;
         typedef ALE::LabelSection<typename Mesh::sieve_type, Label, alloc_type, atlas_type> cones_wrapper_type;
         Obj<cones_wrapper_type> cones        = new cones_wrapper_type(sieve, l);
@@ -456,7 +456,7 @@ namespace ALE {
         // Inserts cones into newL (must renumber here)
         //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
         {
-	  typedef typename cones_type::point_type overlap_point_type;
+          typedef typename cones_type::point_type overlap_point_type;
           const typename RecvOverlap::capSequence::iterator rBegin = recvOverlap->capBegin();
           const typename RecvOverlap::capSequence::iterator rEnd   = recvOverlap->capEnd();
 

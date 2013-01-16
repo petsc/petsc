@@ -93,8 +93,8 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
       PetscFunctionReturn(0);
     } else if (!ta->keytable[hash]) {
       if (ta->count < 5*(ta->tablesize/6) - 1) {
-	ta->count++; /* add */
-	ta->keytable[hash] = key;
+        ta->count++; /* add */
+        ta->keytable[hash] = key;
         ta->table[hash] = ta->count;
       } else {
         ierr = PetscTableAddCountExpand(ta,key);CHKERRQ(ierr);

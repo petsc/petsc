@@ -113,8 +113,8 @@ struct _p_PetscThreadComm{
   char                    type[256];    /* Thread model type */
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
-					*/
-  PetscThreadCommReduction red;          /* Reduction context */
+                                        */
+  PetscThreadCommReduction red;         /* Reduction context */
   PetscInt                job_ctr;      /* which job is this threadcomm running in the job queue */
   PetscBool               isnothread;   /* No threading model used */
   PetscInt                nkernels;     /* Maximum kernels launched */

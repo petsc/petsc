@@ -8,11 +8,11 @@ typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {
   PetscErrorCode (*buildsolution)(KSP,Vec,Vec*);       /* Returns a pointer to the solution, or
-                                                calculates the solution in a
-				                user-provided area. */
+                                                          calculates the solution in a
+                                                          user-provided area. */
   PetscErrorCode (*buildresidual)(KSP,Vec,Vec,Vec*);   /* Returns a pointer to the residual, or
-				                calculates the residual in a
-				                user-provided area.  */
+                                                          calculates the residual in a
+                                                          user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
   PetscErrorCode (*setfromoptions)(KSP);

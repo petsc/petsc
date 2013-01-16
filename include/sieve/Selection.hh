@@ -112,7 +112,7 @@ namespace ALE {
         }
         break;
       case 3:
-        switch (numCorners)	{
+        switch (numCorners) {
         case 4 : // tetradehdron
           _numFaceVertices = 3; // Face has 3 vertices
           break;
@@ -156,7 +156,7 @@ namespace ALE {
         // Simplices
         posOrient = !(oppositeVertex%2);
       } else if (cellDim == 1 && numCorners == 3) {
-	posOrient = true;
+        posOrient = true;
       } else if (cellDim == 2 && numCorners == 4) {
         // Quads
         if ((indices[1] > indices[0]) && (indices[1] - indices[0] == 1)) {
@@ -625,7 +625,7 @@ namespace ALE {
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(typename sieveAlg::supportArray::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
           if (debug) std::cout << "  Checking cell " << *c_iter << std::endl;
-          if (submeshCells.find(*c_iter) != submeshCells.end())	continue;
+          if (submeshCells.find(*c_iter) != submeshCells.end()) continue;
           if (censor && (!mesh->getValue(depthLabel, *c_iter))) continue;
           const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *c_iter, height);
           const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
@@ -718,7 +718,7 @@ namespace ALE {
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(typename sieveAlg::supportArray::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
           if (debug) std::cout << "  Checking face " << *f_iter << std::endl;
-          if (submeshFaces->find(*f_iter) != submeshFaces->end())	continue;
+          if (submeshFaces->find(*f_iter) != submeshFaces->end()) continue;
           const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *f_iter, height-1);
           const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
           const typename sieveAlg::coneArray::iterator vEnd   = cone->end();

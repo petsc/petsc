@@ -935,19 +935,19 @@ namespace ALE {
         const Obj<typename Mesh::sieve_type> refSieve = refMesh->getSieve();
         delete [] localMaxVolumes;
 #if 0
-	typedef typename ALE::New::Completion<Mesh, typename Mesh::sieve_type::point_type> sieveCompletion;
-	// This is where we enforce consistency over the overlap
-	//   We need somehow to update the overlap to account for the new stuff
-	//
-	//   1) Since we are refining only, the vertices are invariant
-	//   2) We need to make another label for the interprocess boundaries so
-	//      that Triangle will respect them
-	//   3) We then throw all that label into the new overlap
-	//
-	// Alternative: Figure out explicitly which segments were refined, and then
-	//   communicated the refinement over the old overlap. Use this info to locally
-	//   construct the new overlap and flip to get a decent mesh
-	sieveCompletion::scatterCones(refSieve, refSieve, reMesh->getDistSendOverlap(), refMesh->getDistRecvOverlap(), refMesh);
+        typedef typename ALE::New::Completion<Mesh, typename Mesh::sieve_type::point_type> sieveCompletion;
+        // This is where we enforce consistency over the overlap
+        //   We need somehow to update the overlap to account for the new stuff
+        //
+        //   1) Since we are refining only, the vertices are invariant
+        //   2) We need to make another label for the interprocess boundaries so
+        //      that Triangle will respect them
+        //   3) We then throw all that label into the new overlap
+        //
+        // Alternative: Figure out explicitly which segments were refined, and then
+        //   communicated the refinement over the old overlap. Use this info to locally
+        //   construct the new overlap and flip to get a decent mesh
+        sieveCompletion::scatterCones(refSieve, refSieve, reMesh->getDistSendOverlap(), refMesh->getDistRecvOverlap(), refMesh);
 #endif
         return refMesh;
       };
@@ -989,7 +989,7 @@ namespace ALE {
           }
         }
 
-	if (boundary->depth() != 0) {  //our boundary mesh COULD be just a pointset; in which case depth = height = 0;
+        if (boundary->depth() != 0) {  //our boundary mesh COULD be just a pointset; in which case depth = height = 0;
           const Obj<typename Mesh::label_sequence>& facets     = boundary->depthStratum(boundary->depth());
           //PetscPrintf(boundary->comm(), "%d facets on the boundary\n", facets->size());
           const Obj<typename Mesh::numbering_type>& fNumbering = boundary->getFactory()->getLocalNumbering(boundary, boundary->depth());

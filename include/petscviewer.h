@@ -368,12 +368,12 @@ M*/
 #define PetscViewerFlowControlStepMaster(viewer,i,mcnt,cnt) ((i >= mcnt) ?  (mcnt += cnt,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm)) : 0)
 #define PetscViewerFlowControlEndMaster(viewer,mcnt) (mcnt = 0,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm))
 #define PetscViewerFlowControlStepWorker(viewer,rank,mcnt) 0; while (1) { PetscErrorCode _ierr; \
-    if (rank < mcnt) break;				\
+    if (rank < mcnt) break; \
   _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
   }
 #define PetscViewerFlowControlEndWorker(viewer,mcnt) 0; while (1) { PetscErrorCode _ierr; \
   _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
-    if (mcnt == 0) break;				\
+    if (mcnt == 0) break; \
   }
 
 /*

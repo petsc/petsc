@@ -64,9 +64,9 @@ EXTERN_C_END
 
 #define FREECHAR(a,b) if (a != b) PetscFreeVoid(b);
 
-#define FIXRETURNCHAR(flg,a,n)			\
-if (flg) {					\
-  int __i; \
+#define FIXRETURNCHAR(flg,a,n)               \
+if (flg) {                                   \
+  int __i;                                   \
   for (__i=0; __i<n && a[__i] != 0; __i++) ; \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }
@@ -81,13 +81,13 @@ if (flg) {					\
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
 
 
-#define CHKFORTRANNULLINTEGER(a)					\
+#define CHKFORTRANNULLINTEGER(a)  \
   if (FORTRANNULL(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLOBJECT(a) || FORTRANNULLFUNCTION(a)) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
   else if (FORTRANNULLINTEGER(a)) { a = PETSC_NULL; }
 
-#define CHKFORTRANNULLSCALAR(a)					\
+#define CHKFORTRANNULLSCALAR(a)   \
   if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLOBJECT(a) || FORTRANNULLFUNCTION(a)) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_SCALAR"); *ierr = 1; return; } \
