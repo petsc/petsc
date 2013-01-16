@@ -40,6 +40,7 @@ typedef struct {
   Vec bigstep; /* [dx; dyi; dlamdae; dlamdai] */
   Vec bigx;  /* [x; lamdae; yi; lamdai] */
   PetscBool monitorkkt;
+  PetscBool usenest;
 } TAO_IPM;
 
 #endif /* ifndef __TAO_IPM_H */
