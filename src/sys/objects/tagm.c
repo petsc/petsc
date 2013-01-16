@@ -137,6 +137,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscErrorCode   ierr;
   PetscCommCounter *counter;
   PetscMPIInt      *maxval,flg;
+  PetscInt         trank;
   PetscThreadComm  tcomm;
 
   PetscFunctionBegin;
@@ -204,7 +205,6 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
     ierr = PetscThreadCommAttach(*comm_out,tcomm);CHKERRQ(ierr);
   }
   /* Only the main thread updates counter->refcount */
-  PetscInt trank;
   ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
   if (!trank) counter->refcount++; /* number of references to this comm */
 
