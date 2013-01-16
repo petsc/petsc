@@ -85,7 +85,7 @@ The text assumes
 that you are familiar with PETSc and have access to PETSc source code and documentation
 (available via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}.)
 
-Before contributing code to PETSc please read Chapter 4, which contains the source code style guide.
+Before contributing code to PETSc please read Chapter 1, which contains the source code style guide.
 \href{http://www.mcs.anl.gov/petsc/developers/index.html}{http://www.mcs.anl.gov/petsc/developers/index.html}
 contains information on how to submit patches to PETSc.
 
@@ -111,6 +111,164 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \hbox{ }
 \newpage
 
+\chapter{Style Guide}
+
+The PETSc team uses certain conventions to make our source code consistent. Groups
+developing classs compatible with PETSc are, of course, free to organize their
+own source code anyway they like.
+
+\section{Names}
+Consistency of names for variables, functions, etc. is extremely
+important in making the package both usable and maintainable.
+We use several conventions:
+\begin{itemize}
+\item All function names and enum types consist of words, each of
+      which is capitalized, for example KSPSolve() and
+      MatGetOrdering().
+\item All enum elements and macro variables are capitalized. When
+      they consist of several complete words, there is an underscore between each word.
+\item Functions that are private to PETSc (not callable by the
+      application code) either
+      \begin{itemize}
+        \item have an appended \trl{_Private} (for example,
+           \trl{StashValues_Private}) or
+        \item have an appended \trl{_<class>Subtype} (for example,
+           \trl{MatMult_SeqAIJ}).
+      \end{itemize}
+
+      In addition, functions that are not intended for use outside
+      of a particular file are declared static.
+\item Function names in structures are the same as the base application
+      function name without the object prefix, and all are in small letters.
+      For example, MatMultTranspose() has a structure name of
+      \trl{multtranspose()}.
+\item Each application usable function begins with the name of the class object, followed by any subclass name,
+      for example, ISInvertPermutation(), MatMult() or KSPGMRESSetRestart().
+\item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word set. For example, \trl{-ksp_gmres_restart}.
+\end{itemize}
+
+\section{Coding Conventions and Style Guide}
+
+Within the PETSc source code, we adhere to the following guidelines
+so that the code is uniform and easily maintainable:
+
+\begin{itemize}
+\item All PETSc function bodies are indented two characters.
+\item Each additional level of loops, if statements, etc. is indented
+      two more characters.
+\item Wrapping lines should be avoided whenever possible.
+\item Source code lines do not have a hard length limit, generally we like then less than 150 characters wide.
+\item The local variable declarations should be aligned. For example,
+      use the style
+\begin{tabbing}
+   int    i,j;\\
+   Scalar a;
+\end{tabbing}
+instead of
+\begin{tabbing}
+   int i,j;\\
+   Scalar a;
+\end{tabbing}
+\item All local variables of a particular type (e.g., \trl{int}) should be
+      listed on the same line if possible; otherwise, they should be listed
+      on adjacent lines.
+\item Equal signs should be aligned in regions where possible.
+\item There {\em must} be a single blank line
+      between the local variable declarations and the body of the function.
+\item The first line of the executable statments must be PetscFunctionBegin;
+\item The following text should be before each function
+\begin{tabbing}
+\#undef \_\_FUNC\_\_\\
+\#define \_\_FUNC\_\_ ``FunctionName''
+\end{tabbing}
+this is used by various macros (for example the error handlers) to always know
+what function one is in.
+\item Use PetscFunctionReturn(returnvalue); not \trl{return(returnvalue);}
+\item {\em Never} put a function call in a return statment; do not do
+\begin{tabbing}
+   PetscFunctionReturn( somefunction(...) );
+\end{tabbing}
+\item Do {\bf not} put a blank line immediately after PetscFunctionBegin; or
+a blank line immediately before PetscFunctionReturn(0);.
+\item Indentation for \trl{if} statements {\em must}  be done  as
+as
+\begin{tabbing}
+   if (  ) \{\\
+     ....\\
+   \} else \{\\
+     ....\\
+   \}
+\end{tabbing}
+\item {\em Never}  have
+\begin{tabbing}
+   if (  ) \\
+     a single indented line
+\end{tabbing}
+or
+\begin{tabbing}
+   for (  )
+     a single indented line
+\end{tabbing}
+instead use either
+\begin{tabbing}
+   if (  ) a single line
+\end{tabbing}
+or
+\begin{tabbing}
+   if (  ) \{\\
+     a single indented line\\
+   \}
+\end{tabbing}
+\item {\em No} tabs are allowed in {\em any} of the source code.
+\item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on
+      its own line. The closing bracket \} should {\bf always} be on its own line.
+\item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
+      arguments. This is an exception to the rule above.
+\item The macros SETERRQ() and CHKERRQ() should be on the
+      same line as the routine to be checked unless this violates the
+      150 character width rule. Try to make error messages short, but
+      informative.
+\item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
+\begin{tabbing}
+   ierr = PetscMalloc( 10*sizeof(int),\&a ); CHKERRQ(ierr);
+\end{tabbing}
+instead write
+\begin{tabbing}
+   ierr = PetscMalloc(10*sizeof(int),\&a);CHKERRQ(ierr);
+\end{tabbing}
+\item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
+\item {\em No} space before or after a , in lists
+That is, do not write
+\begin{tabbing}
+    int a, b,c;\\
+    ierr = func(a, 22.0);CHKERRQ(ierr);
+\end{tabbing}
+instead write
+\begin{tabbing}
+    int a,b,c;\\
+    ierr = func(a,22.0);CHKERRQ(ierr);
+\end{tabbing}
+
+\item Subroutines that would normally have void ** argument to return a pointer to some data, should actually be protyped as as void*. This prevents the caller from having to put a (void**) caste in each function call. See, for example, DMDAVecGetArray().
+
+\item Do not use the {\em register} directive.
+\item Never use a local variable counter like PetscInt flops = 0; to accumulate flops and then call PetscLogFlops() {\em always} just
+      call PetscLogFlops() directly when needed.
+\item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)}
+instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
+\item Do not use {\em \#ifdef} or {\em \#ifndef} rather use {\em \#if defined(...} or {\em \#if !defined(...}
+\item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate ./configure checks and \#if defined() checks the code. Code should also be provided that works if the MPI feature is not available. For example,
+\begin{verbatim}
+#if defined(PETSC_HAVE_MPI_IN_PLACE)
+    ierr  = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
+#else
+    ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
+#endif
+\end{verbatim}
+\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine PetscGlobalSum() that takes a scalar value and performs an MPI\_Allreduce() on it. One should use MPI\_Allreduce() directly in the code.
+\item XXXTypes (for example KSPType) do not have an underscore in them, unless they refer to another package that uses an underscore, for example MATSOLVERSUPERLU\_DIST.
+\end{itemize}
+
 % -----------------------------------------------------------------------------------
 \chapter{The PETSc Kernel}
 \label{chapter:kernel}
@@ -125,6 +283,7 @@ code for the kernel is in \trl{src/sys}. It contains systematic support for
   \item object management
   \item file IO
   \item options database
+  \item basic objects for viewing and drawing.
 \end{itemize}
 Each of these is discussed in a section below.
 
@@ -140,7 +299,7 @@ generally not used in source code, rather it has:
   \item PetscBool
   \item PetscBT  - bit storate of logical true and false
 \end{itemize}
-PetscInt can be set using ./configure to be either \trl{int} (32 bit) or \trl{long long}
+PetscInt can be set using ./configure (option --with-64-bit-indices) to be either \trl{int} (32 bit) or \trl{long long}
 (64 bit)
 to allow indexing into very large arrays. PetscMPIInt are for integers passed to MPI
 as counts etc, these are always \trl{int} since that is what the MPI standard uses. Similarly
@@ -168,7 +327,7 @@ source code for the PETSc error handling is in
 
 \subsection{Simplified Interface}
 
-The simplified C/C++ macro-based interface consists of the following three calls
+The simplified C/C++ macro-based interface consists of the following two calls
 \begin{itemize}
 \item SETERRQ(comm,error code,''Error message'');
 \item CHKERRQ(ierr);
@@ -176,98 +335,107 @@ The simplified C/C++ macro-based interface consists of the following three calls
 
 The macro SETERRQ() is given by
 \begin{tabbing}
-return PetscError(comm,\_\_LINE\_\_,\_\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,specific,''Error message'');
+return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,error code,error type,\\
+\> ''Error message'');
 \end{tabbing}
 It calls the error handler with the current function name and location: line number,
-file and directory, plus an error codes and an error message.
+file and directory, plus an error code and an error message. Normally \trl{comm} is PETSC_COMM_SELF, it can only be another communicator if
+one is absolutely sure the same error will be generated on all processes in the communicator. This is to prevent the same error message from
+being printed by many processes. The \trl{error type} is \trl{PETSC_ERROR_INITIAL} on detection of the initial error and \trl{PETSC_ERROR_REPEAT} for any additional calls. This is so that
+the detailed error information is only printed once instead of for all levels of returned errors.
+
 The macro CHKERRQ() is defined by
 \begin{tabbing}
-  if (ierr) SETERRQ(PETSC\_COMM\_SELF,ierr,(char *)0);
+  if (ierr)  PetscError(\=PETSC\_COMM\_SELF,\_\_LINE\_\_,PETSC\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_, \\
+ \>ierr,PETSC\_ERROR\_REPEAT," ");
 \end{tabbing}
 
 In addition to SETERRQ() are the macros SETERRQ1(), SETERRQ2(), SETERRQ3()
 and SETERRQ4() that allow one to include additional arguments that the message
 string is formated. For example,
 \begin{tabbing}
-  SETERRQ2(PETSC\_ERR,''Iteration overflow: its \%d norm \%g'',its,norm);
+  SETERRQ2(comm,PETSC\_ERR,''Iteration overflow: its \%d norm \%g'',its,norm);
 \end{tabbing}
-The reason for the numbered format is because CPP macros cannot handle variable number
+The reason for the numbered format is because CPP macros cannot handle a variable number
 of arguments.
 
 \subsection{Error Handlers}
 The error handling function PetscError() calls the ``current'' error handler
 with the code
 \begin{tabbing}
-PetscErrorCode PetscError(MPI\_Comm,int line,char *func,char* file,char *dir,PetscErrorCode n,int p,char *mess)\\
+Pe\=tscErrorCode PetscError(\=MPI\_Comm,int line,char *func,char* file,char *dir,error code, \\
+ \> \> error type,char *mess)\\
 \{ \\
-  PetscErrorCode ierr;\\
-\\
-  PetscFunctionBegin;\\
-  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);\\
-  else         ierr = (*eh-$>$handler)(line,func,file,dir,n,p,mess,eh-$>$ctx);\\
-  PetscFunctionReturn(ierr);\\
+  \> PetscErrorCode ierr;\\
+  \>PetscFunctionBegin;\\
+  \>if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,error code,error type,mess,0);\\
+  \>else         ierr = (*eh-$>$handler)(line,func,file,dir,error code,error type,mess,eh-$>$ctx);\\
+  \>PetscFunctionReturn(ierr);\\
 \}
 \end{tabbing}
 The variable \trl{eh} is the current error handler context and is defined in
-\trl{src/sys/error/err.c} as
+ \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/sys/error/err.c.html}{src/sys/error/err.c} as
 \begin{tabbing}
-typedef struct \_EH* EH;\\
+ty\=pedef struct \_EH*\= EH;\\
 struct \_EH \{\\
-  int    classid;\\
-  int    (*handler)(int, char*,char*,char *,int,int,char*,void *);\\
-  void   *ctx;\\
-  EH     previous;\\
+  \>PetscErrorCode \> handler(\=MPI_Comm,int,const char*,const char*,const char *,\\
+\> \> \> PetscErrorCode,PetscErrorType,const char*,void *);\\
+  \>void \>  *ctx;\\
+  \>EH   \>  previous;\\
 \};
 \end{tabbing}
 
 One can set a new error handler with the command
 \begin{tabbing}
-int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,PetscErrorCode,\\
-                          int,char*,void*),void *ctx )\\
+Pe\=tscErrorCode PetscPushErrorHandler(\=PetscErrorCode (*handler)(int,char *,char*,char*,\\
+    \> \>                      PetscErrorCode,PetscErrorType,char*,void*),\\
+   \>  \>                      void *ctx )\\
 \{\\
-  EH neweh = (EH) PetscMalloc(sizeof(struct \_EH)); CHKPTRQ(neweh);\\
-\\
-  PetscFunctionBegin;\\
-  if (eh) {neweh-$>$previous = eh;} \\
-  else    {neweh-$>$previous = 0;}\\
-  neweh-$>$handler = handler;\\
-  neweh-$>$ctx     = ctx;\\
-  eh             = neweh;\\
-  PetscFunctionReturn(0);\\
+  \> PetscErrorCode ierr;\\
+  \>EH neweh; \\
+  \>PetscFunctionBegin;\\
+  \>ierr = PetscNew(struct \_EH,\&neweh);CHKERRQ(ierr);\\
+  \>if (eh) {neweh-$>$previous = eh;} \\
+  \>else    {neweh-$>$previous = 0;}\\
+  \>neweh-$>$handler = handler;\\
+  \>neweh-$>$ctx     = ctx;\\
+  \>eh             = neweh;\\
+  \>PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
 which maintains a linked list of error handlers. The most recent error handler is removed
 via
 \begin{tabbing}
-int PetscPopErrorHandler(void)\\
+Pe\=tscErrorCode PetscPopErrorHandler(void)\\
 \{\\
-  EH tmp;\\
-\\
-  PetscFunctionBegin;\\
-  if (!eh) PetscFunctionReturn(0);\\
-  tmp = eh;\\
-  eh  = eh-$>$previous;\\
-  PetscFree(tmp);\\
-  PetscFunctionReturn(0);\\
+ \> EH tmp;\\
+\>  PetscErrorCode ierr;\\
+\>  PetscFunctionBegin;\\
+\>  if (!eh) PetscFunctionReturn(0);\\
+\>  tmp = eh;\\
+\>  eh  = eh-$>$previous;\\
+\>  ierr = PetscFree(tmp);CHKERRQ(ierr);\\
+\>  PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
 
 PETSc provides several default error handlers
 \begin{itemize}
-\item PetscTraceBackErrorHandler(),
-\item PetscAbortErrorHandler(),
+\item PetscTraceBackErrorHandler(), 
+\item PetscAbortErrorHandler(), \trl{-on_error_abort},
 \item PetscReturnErrorHandler(),
-\item PetscEmacsClientErrorHandler(),
+\item PetscEmacsClientErrorHandler(), 
 \item PetscMPIAbortErrorHandler(), and
-\item PetscAttachDebuggerErrorHandler().
+\item PetscAttachDebuggerErrorHandler(). \trl{-on_error_attach_debugger}.
 \end{itemize}
 
 \subsection{Error Codes}
 
-The PETSc error handler take a generic error code.
-The generic error codes are defined in \trl{include/petscerror.h}, the same generic
+The PETSc error handler takes a generic error code.
+The generic error codes are defined in
+\href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petscerror.h.html}{include/petscerror.h}, the same generic
 error code would be used many times in the libraries. For example the
-generic error code PETSC\_ERR\_MEM is used whenever requested memory allocation
+generic error code \trl{PETSC_ERR_MEM} is used whenever requested memory allocation
 is not available.
 
 \subsection{Detailed Error Messages}
@@ -281,7 +449,7 @@ PETSc provides the replaceable function pointer
 that, by default prints to standard out. Thus error messages should not
 be printed with printf() or fprintf() rather it should be printed with
 (*PetscErrorPrintf)(). One can direct all error messages to
-stderr with the command line options \trl{-error\_output\_stderr}.
+stderr with the command line options \trl{-error_output_stderr}.
 
 
 % -----------------------------------------------------------------------------------
@@ -291,12 +459,12 @@ stderr with the command line options \trl{-error\_output\_stderr}.
 This section provides details about the implementation of event
 logging and profiling within the PETSc kernel.
 The interface for profiling in PETSc is contained in the file
-\trl{include/petsclog.h}. The source code for the profile logging
+\href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsclog.h.html}{include/petsclog.h}. The source code for the profile logging
 is in \trl{src/sys/plog/}.
 
 \subsection{Profiling Object Create and Destruction}
 
-The creation of objects may be profiled with the command
+The creation of objects is profiled with the command
  \findex{PetscLogObjectCreate()}
 \begin{tabbing}
    PetscLogObjectCreate(PetscObject h);
@@ -332,11 +500,11 @@ dimensions and number of nonzeros.
 Events are logged using the
 pair \findex{PetscLogEventBegin()}
 \begin{tabbing}
-   PetscLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);\\
-   PetscLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+   PetscLogEventBegin(PetscLogEvent event,PetscObject o1,...,PetscObject o4);\\
+   PetscLogEventEnd(PetscLogEvent event,PetscObject o1,...,PetscObject o4);
 \end{tabbing}
 This logging is usually done in the abstract
-interface file for the operations, for example, \trl{src/mat/src/matrix.c}.
+interface file for the operations, for example, \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/mat/interface/matrix.c.html}{src/mat/interface/matrix.c}.
 
 \subsection{Controling Profiling}
 
@@ -347,14 +515,11 @@ are \findex{PetscLogBegin()} \findex{PetscLogDump()} \findex{PetscLogAllBegin()}
    PetscLogBegin();\\
    PetscLogAllBegin();\\
    PetscLogDump(char *filename);\\
-   PetscLogView(FILE *fd);
+   PetscLogView(PetscViewer);
 \end{tabbing}
 These routines are normally called by the PetscInitialize()
-and PetscFinalize() routines when the option \trl{-log},
-\trl{-log\_summary}, or
-\trl{-log\_all} is given.
-
-\subsection{Details of the Logging Design}
+and PetscFinalize() routines when the option
+\trl{-log\_summary} is given.
 
 
 % -----------------------------------------------------------------------------------
@@ -783,10 +948,6 @@ the associated functionality. These objects are internally named as
 \_n\_$<$class$>$ as opposed to \_p\_$<$class$>$. For eg: \_n\_PetscTable
 vs \_p\_Vec.
 
-\chapter{Mimimal Class Standards}
-This chapter discusses the miminal functionality and format required of any
-class that is compatible with PETSc.
-
 % -----------------------------------------------------------------------------------
 \chapter{PetscObjects}
 
@@ -814,177 +975,6 @@ preconditioning (PC) method.
 
 
 % -----------------------------------------------------------------------------------
-\chapter{Style Guide}
-
-The PETSc team uses certain conventions to make our source code consistent. Groups
-developing classs compatible with PETSc are, of course, free to organize their
-own source code anyway they like.
-
-\section{Names}
-Consistency of names for variables, functions, etc. is extremely
-important in making the package both usable and maintainable.
-We use several conventions:
-\begin{itemize}
-\item All function names and enum types consist of words, each of
-      which is capitalized, for example KSPSolve() and
-      MatGetOrdering().
-\item All enum elements and macro variables are capitalized. When
-      they consist of several complete words, there is an underscore between each word.
-\item Functions that are private to PETSc (not callable by the
-      application code) either
-      \begin{itemize}
-        \item have an appended \trl{_Private} (for example,
-           \trl{StashValues_Private}) or
-        \item have an appended \trl{_<class>Subtype} (for example,
-           \trl{MatMult_SeqAIJ}).
-      \end{itemize}
-
-      In addition, functions that are not intended for use outside
-      of a particular file are declared static.
-\item Function names in structures are the same as the base application
-      function name without the object prefix, and all are in small letters.
-      For example, MatMultTranspose() has a structure name of
-      \trl{multtranspose()}.
-\item Each application usable function begins with the name of the class object, followed by any subclass name,
-      for example, ISInvertPermutation(), MatMult() or KSPGMRESSetRestart().
-\item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word set. For example, \trl{-ksp_gmres_restart}.
-\end{itemize}
-
-\section{Coding Conventions and Style Guide}
-
-Within the PETSc source code, we adhere to the following guidelines
-so that the code is uniform and easily maintainable:
-
-\begin{itemize}
-\item All PETSc function bodies are indented two characters.
-\item Each additional level of loops, if statements, etc. is indented
-      two more characters.
-\item Wrapping lines should be avoided whenever possible.
-\item Source code lines do not have a hard length limit, generally we like then less than 150 characters wide.
-\item The local variable declarations should be aligned. For example,
-      use the style
-\begin{tabbing}
-   int    i,j;\\
-   Scalar a;
-\end{tabbing}
-instead of
-\begin{tabbing}
-   int i,j;\\
-   Scalar a;
-\end{tabbing}
-\item All local variables of a particular type (e.g., \trl{int}) should be
-      listed on the same line if possible; otherwise, they should be listed
-      on adjacent lines.
-\item Equal signs should be aligned in regions where possible.
-\item There {\em must} be a single blank line
-      between the local variable declarations and the body of the function.
-\item The first line of the executable statments must be PetscFunctionBegin;
-\item The following text should be before each function
-\begin{tabbing}
-\#undef \_\_FUNC\_\_\\
-\#define \_\_FUNC\_\_ ``FunctionName''
-\end{tabbing}
-this is used by various macros (for example the error handlers) to always know
-what function one is in.
-\item Use PetscFunctionReturn(returnvalue); not \trl{return(returnvalue);}
-\item {\em Never} put a function call in a return statment; do not do
-\begin{tabbing}
-   PetscFunctionReturn( somefunction(...) );
-\end{tabbing}
-\item Do {\bf not} put a blank line immediately after PetscFunctionBegin; or
-a blank line immediately before PetscFunctionReturn(0);.
-\item Indentation for \trl{if} statements {\em must}  be done  as
-as
-\begin{tabbing}
-   if (  ) \{\\
-     ....\\
-   \} else \{\\
-     ....\\
-   \}
-\end{tabbing}
-\item {\em Never}  have
-\begin{tabbing}
-   if (  ) \\
-     a single indented line
-\end{tabbing}
-or
-\begin{tabbing}
-   for (  )
-     a single indented line
-\end{tabbing}
-instead use either
-\begin{tabbing}
-   if (  ) a single line
-\end{tabbing}
-or
-\begin{tabbing}
-   if (  ) \{\\
-     a single indented line\\
-   \}
-\end{tabbing}
-\item {\em No} tabs are allowed in {\em any} of the source code.
-\item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on
-      its own line. The closing bracket \} should {\bf always} be on its own line.
-\item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
-      arguments. This is an exception to the rule above.
-\item The macros SETERRQ() and CHKERRQ() should be on the
-      same line as the routine to be checked unless this violates the
-      150 character width rule. Try to make error messages short, but
-      informative.
-\item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
-\begin{tabbing}
-   ierr = PetscMalloc( 10*sizeof(int),\&a ); CHKERRQ(ierr);
-\end{tabbing}
-instead write
-\begin{tabbing}
-   ierr = PetscMalloc(10*sizeof(int),\&a);CHKERRQ(ierr);
-\end{tabbing}
-\item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
-\item {\em No} space before or after a , in lists
-That is, do not write
-\begin{tabbing}
-    int a, b,c;\\
-    ierr = func(a, 22.0);CHKERRQ(ierr);
-\end{tabbing}
-instead write
-\begin{tabbing}
-    int a,b,c;\\
-    ierr = func(a,22.0);CHKERRQ(ierr);
-\end{tabbing}
-
-\item Subroutines that would normally have void ** argument to return a pointer to some data, should actually be protyped as as void*. This prevents the caller from having to put a (void**) caste in each function call. See, for example, DMDAVecGetArray().
-
-\item Do not use the {\em register} directive.
-\item Never use a local variable counter like PetscInt flops = 0; to accumulate flops and then call PetscLogFlops() {\em always} just
-      call PetscLogFlops() directly when needed.
-\item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)}
-instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
-\item Do not use {\em \#ifdef} or {\em \#ifndef} rather use {\em \#if defined(...} or {\em \#if !defined(...}
-\item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate ./configure checks and \#if defined() checks the code. Code should also be provided that works if the MPI feature is not available. For example,
-\begin{verbatim}
-#if defined(PETSC_HAVE_MPI_IN_PLACE)
-    ierr  = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
-#else
-    ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
-#endif
-\end{verbatim}
-\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine PetscGlobalSum() that takes a scalar value and performs an MPI\_Allreduce() on it. One should use MPI\_Allreduce() directly in the code.
-\item XXXTypes (for example KSPType) do not have an underscore in them, unless they refer to another package that uses an underscore, for example MATSOLVERSUPERLU\_DIST.
-\end{itemize}
-
-\section{Option Names}
-
-Since consistency simplifies usage and code maintenance, the names of
-PETSc routines, flags, options, etc. have been selected with great care.
-The default option names are of the form \trl{-<class>_sub<class>_name}.
-For example, the option name for the basic convergence tolerance for
-the KSP package is \trl{-ksp_atol}. In addition, operations in different
-packages of a similar nature have a similar name.  For example, the option
-name for the basic convergence tolerance for the SNES package is
-\trl{-snes_atol}.
-
-When a \trl{Set} is included in a function name, it is dropped in the options key.
-For example \trl{KSPGMRESSetRestart()} becomes \trl{-ksp_gmres_restart}.
 
 % -----------------------------------------------------------------------------------
 \chapter{The Various Matrix Classes}

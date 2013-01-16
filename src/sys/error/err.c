@@ -10,7 +10,6 @@
 
 typedef struct _EH *EH;
 struct _EH {
-  int            classid;
   PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char *,PetscErrorCode,PetscErrorType,const char*,void *);
   void           *ctx;
   EH             previous;
