@@ -531,7 +531,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     PetscReal next_dt=0.0;
     if(ts->ptime + ts->time_step + *next_h >= max_time) {
       next_dt = max_time - (ts->ptime + ts->time_step);
-      if(next_dt != 0.0) *next_h = next_dt;
+      if(next_dt > PETSC_SMALL) *next_h = next_dt;
       else ts->reason = TS_CONVERGED_TIME;
     }
   }
