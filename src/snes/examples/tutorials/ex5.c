@@ -489,16 +489,19 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
  */
 PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
 {
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym,k,its,l;
+  PetscInt       i,j,k,Mx,My,xs,ys,xm,ym,its,tot_its,sweeps,l;
   PetscErrorCode ierr;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar    **x,**b,bij,F,J,u,uxx,uyy;
+  PetscScalar    **x,**b,bij,F,F0,J,u,un,us,ue,eu,uw,uxx,uyy,y;
+  PetscReal      atol,rtol,stol;
   DM             da;
   AppCtx         *user;
   Vec            localX,localB;
 
   PetscFunctionBeginUser;
-  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
+  tot_its = 0;
+  ierr = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
 
@@ -517,7 +520,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   if (B) {
     ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);
   }
-  for (l=0; l<1; l++) {
+  for (l=0; l<sweeps; l++) {
 
     ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -553,12 +556,26 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
             bij = 0.;
           }
           u       = x[j][i];
-          for (k=0; k<1; k++) {
-            uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
-            uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
-            F        = uxx + uyy - sc*PetscExpScalar(u) - bij;
-            J       = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(u);
-            u       = u - F/J;
+          un      = x[j-1][i];
+          us      = x[j+1][i];
+          ue      = x[j][i-1];
+          uw      = x[j][i+1];
+          for (k=0; k<its; k++) {
+            eu      = PetscExpScalar(u);
+            uxx     = (2.0*u - ue - uw)*hydhx;
+            uyy     = (2.0*u - un - us)*hxdhy;
+            F        = uxx + uyy - sc*eu - bij;
+            if (k == 0) F0 = F;
+            J       = 2.0*(hydhx + hxdhy) - sc*eu;
+            y       = F/J;
+            u       -= y;
+            tot_its++;
+
+            if (atol > PetscAbsReal(PetscRealPart(F)) ||
+                rtol*PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) ||
+                stol*PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) {
+              break;
+            }
           }
           x[j][i] = u;
         }
@@ -571,7 +588,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
     ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops((11.0 + 5)*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(tot_its*(21.0));CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
     ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);

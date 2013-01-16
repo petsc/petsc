@@ -381,8 +381,9 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   Vec            localX, localB;
   DM             da;
   PetscInt       xints,xinte,yints,yinte,i,j,k,l;
-  PetscInt       n_pointwise = 50;
-  PetscInt       n_sweeps = 3;
+  PetscInt       max_its,tot_its;
+  PetscInt       sweeps;
+  PetscReal      rtol,atol,stol;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
@@ -394,13 +395,16 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   PetscScalar    yu, yv, yo, yt;
   PetscScalar    bjiu, bjiv, bjiomega, bjitemp;
   PetscBool      ptconverged;
-  PetscScalar    pfnorm, pfnorm0;
+  PetscReal      pfnorm,pfnorm0,pynorm,pxnorm;
   AppCtx         *user = (AppCtx*)ctx;
 
   PetscFunctionBeginUser;
   grashof = user->grashof;
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
+  tot_its = 0;
+  ierr = SNESGSGetTolerances(snes,&rtol,&atol,&stol,&max_its);CHKERRQ(ierr);
+  ierr = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,(DM*)&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
@@ -502,7 +506,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
     }
   }
 
-  for (k=0; k < n_sweeps; k++) {
+  for (k=0; k < sweeps; k++) {
     for (j=info.ys; j<info.ys + info.ym; j++) {
       for (i=info.xs; i<info.xs + info.xm; i++) {
         ptconverged = PETSC_FALSE;
@@ -512,7 +516,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
         fv = 0.0;
         fomega = 0.0;
         ftemp = 0.0;
-        for (l = 0; l < n_pointwise && !ptconverged; l++) {
+        for (l = 0; l < max_its && !ptconverged; l++) {
           if (B) {
             bjiu = b[j][i].u;
             bjiv = b[j][i].v;
@@ -603,31 +607,46 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
           if (i == 0) {
             fomega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx - bjiomega;
             ftemp  = x[j][i].temp - bjitemp;
+            yo = fomega;
+            yt = ftemp;
             x[j][i].omega = x[j][i].omega - fomega;
             x[j][i].temp  = x[j][i].temp - ftemp;
           }
           if (i == info.mx - 1) {
             fomega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx - bjiomega;
             ftemp  = x[j][i].temp - (PetscReal)(grashof>0) - bjitemp;
+            yo = fomega;
+            yt = ftemp;
             x[j][i].omega = x[j][i].omega - fomega;
             x[j][i].temp  = x[j][i].temp - ftemp;
           }
           if (j == 0) {
             fomega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy - bjiomega;
             ftemp  = x[j][i].temp-x[j+1][i].temp - bjitemp;
+            yo = fomega;
+            yt = ftemp;
             x[j][i].omega = x[j][i].omega - fomega;
             x[j][i].temp  = x[j][i].temp - ftemp;
           }
           if (j == info.my - 1) {
             fomega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy - bjiomega;
             ftemp  = x[j][i].temp-x[j-1][i].temp - bjitemp;
+            yo = fomega;
+            yt = ftemp;
             x[j][i].omega = x[j][i].omega - fomega;
             x[j][i].temp  = x[j][i].temp - ftemp;
           }
-          pfnorm = fu*fu + fv*fv + fomega*fomega + ftemp*ftemp;
-          pfnorm = PetscSqrtScalar(pfnorm);
+          tot_its++;
+          pfnorm = PetscRealPart(fu*fu + fv*fv + fomega*fomega + ftemp*ftemp);
+          pfnorm = PetscSqrtReal(pfnorm);
+          pynorm = PetscRealPart(yu*yu + yv*yv + yo*yo + yt*yt);
+          pfnorm = PetscSqrtReal(pynorm);
+          pxnorm = PetscRealPart(x[j][i].u*x[j][i].u + x[j][i].v*x[j][i].v + x[j][i].omega*x[j][i].omega + x[j][i].temp*x[j][i].temp);
+          pxnorm = PetscSqrtReal(pxnorm);
           if (l == 0) pfnorm0 = pfnorm;
-          if (1e-15*PetscRealPart(pfnorm0) > PetscRealPart(pfnorm)) ptconverged = PETSC_TRUE;
+          if (rtol*pfnorm0 > pfnorm ||
+              atol > pfnorm ||
+              pxnorm*stol > pynorm) ptconverged = PETSC_TRUE;
         }
       }
     }
@@ -638,7 +657,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   }
   ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = PetscLogFlops(n_sweeps*n_pointwise*(84.0 + 41)*info.ym*info.xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(tot_its*(84.0 + 41.0 + 26.0));CHKERRQ(ierr);
   if (B) {
     ierr = DMLocalToGlobalBegin(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(da,localB,INSERT_VALUES,B);CHKERRQ(ierr);
