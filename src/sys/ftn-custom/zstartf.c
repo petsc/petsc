@@ -68,6 +68,7 @@ void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXE
 {
   PETSC_NULL_CHARACTER_Fortran  = fnull_character;
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
+  PETSC_NULL_Fortran            = fnull;
   PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
   PETSC_NULL_REAL_Fortran       = fnull_real;
