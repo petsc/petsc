@@ -4,18 +4,18 @@
 
 double second()
 {
-/* struct timeval { long	tv_sec;	
-	    long	tv_usec;	};
+/* struct timeval { long tv_sec;
+                    long tv_usec; };
 
-struct timezone { int	tz_minuteswest;
-	     int	tz_dsttime;	 };	*/
+struct timezone { int tz_minuteswest;
+                  int tz_dsttime; }; */
 
-	struct timeval tp;
-	struct timezone tzp;
-	int i;
+  struct timeval tp;
+  struct timezone tzp;
+  int i;
 
-	i = gettimeofday(&tp,&tzp);
-	return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+  i = gettimeofday(&tp,&tzp);
+  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
 # include <stdio.h>
 # include <math.h>
@@ -36,21 +36,21 @@ struct timezone { int	tz_minuteswest;
 *
 * INSTRUCTIONS:
 *
-*	1) Stream requires a good bit of memory to run.  Adjust the
+*       1) Stream requires a good bit of memory to run.  Adjust the
 *          value of 'N' (below) to give a 'timing calibration' of
 *          at least 20 clock-ticks.  This will provide rate estimates
 *          that should be good to about 5% precision.
 */
 
-# define N	200000
-# define NTIMES	50
-# define OFFSET	0
+# define N      200000
+# define NTIMES     50
+# define OFFSET      0
 
 /*
-*	3) Compile the code with full optimization.  Many compilers
-*	   generate unreasonably bad code before the optimizer tightens
-*	   things up.  If the results are unreasonably good, on the
-*	   other hand, the optimizer might be too smart for me!
+*      3) Compile the code with full optimization.  Many compilers
+*         generate unreasonably bad code before the optimizer tightens
+*         things up.  If the results are unreasonably good, on the
+*         other hand, the optimizer might be too smart for me!
 *
 *         Try compiling with:
 *               cc -O stream_d.c second.c -o stream_d -lm
@@ -58,11 +58,11 @@ struct timezone { int	tz_minuteswest;
 *         This is known to work on Cray, SGI, IBM, and Sun machines.
 *
 *
-*	4) Mail the results to mccalpin@cs.virginia.edu
-*	   Be sure to include:
-*		a) computer hardware model number and software revision
-*		b) the compiler flags
-*		c) all of the output from the test case.
+*      4) Mail the results to mccalpin@cs.virginia.edu
+*         Be sure to include:
+*                a) computer hardware model number and software revision
+*                b) the compiler flags
+*                c) all of the output from the test case.
 * Thanks!
 *
 */
@@ -76,9 +76,9 @@ struct timezone { int	tz_minuteswest;
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 
-static double	a[N+OFFSET],
-		b[N+OFFSET],
-		c[N+OFFSET];
+static double a[N+OFFSET],
+              b[N+OFFSET],
+              c[N+OFFSET];
 /*double *a,*b,*c;*/
 
 static double mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
@@ -163,22 +163,22 @@ int main(int argc,char **args)
    return 0;
 }
 
-# define	M	20
+# define        M        20
 
 int
 checktick()
    {
-   int		i, minDelta, Delta;
-   double	t1, t2, timesfound[M];
+   int           i, minDelta, Delta;
+   double        t1, t2, timesfound[M];
 
 /*  Collect a sequence of M unique time values from the system. */
 
    for (i = 0; i < M; i++) {
-	t1 = second();
-	while( ((t2=second()) - t1) < 1.0E-6 )
-	    ;
-	timesfound[i] = t1 = t2;
-	}
+        t1 = second();
+        while( ((t2=second()) - t1) < 1.0E-6 )
+            ;
+        timesfound[i] = t1 = t2;
+        }
 
 /*
 * Determine the minimum difference between these M values.
@@ -188,9 +188,9 @@ checktick()
 
    minDelta = 1000000;
    for (i = 1; i < M; i++) {
-	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
-	minDelta = MIN(minDelta, MAX(Delta,0));
-	}
+        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        minDelta = MIN(minDelta, MAX(Delta,0));
+        }
 
    return(minDelta);
    }

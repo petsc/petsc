@@ -1936,8 +1936,8 @@ c        icol(j) = irow(j)
 c        do k = 1,5
 c         in = k + 10*(j-1)
 c         val(in) = dfp(j,k)
-c	 enddo
-c	enddo
+c        enddo
+c       enddo
 c       call MatSetValuesLocal(A,5,irow,5,irow,val,ADD_VALUES,ierr)
 c       call CHK_ERR(irank,ierr,irow(1),irow(1))
 
@@ -1972,8 +1972,8 @@ c        icol(5+j) = 5*(node2-1)+j-1
 c        do k = 1,5
 c         in = k + 5 + 10*(j-1)
 c         val(in) = dfm(j,k)
-c	 enddo
-c	enddo
+c        enddo
+c       enddo
 #if defined(INTERLACING)
 #if defined(BLOCKING)
         irow(1) = node1 - 1
@@ -2038,8 +2038,8 @@ c        icol(j) = irow(j)
 c        do k = 1,5
 c         in = k + 10*(j-1)
 c         val(in) = -dfm(j,k)
-c	 enddo
-c	enddo
+c        enddo
+c       enddo
 c       call MatSetValuesLocal(A,5,irow,5,irow,val,ADD_VALUES,ierr)
 c       call CHK_ERR(irank,ierr,irow(1),irow(1))
 
@@ -2075,8 +2075,8 @@ c        icol(5+j) = 5*(node1-1)+j-1
 c        do k = 1,5
 c         in = k + 5 + 10*(j-1)
 c         val(in) = -dfp(j,k)
-c	 enddo
-c	enddo
+c        enddo
+c       enddo
 c Exchange elements in place
         do j = 1,5
          do k = 1,10
@@ -2084,8 +2084,8 @@ c         temp = -val1(k,j)
 c         val1(k,j) = -val1(k+5,j)
 c         val1(k+5,j) = temp
           val1(k,j) = -val1(k,j)
- 	 enddo
- 	enddo
+         enddo
+        enddo
 c
 c       call CHK_ERR(irank,ierr,irow(1),icol(1))
 #if defined(INTERLACING)
@@ -2686,7 +2686,7 @@ c
 #else
          do k = 1,5
           irow(k) = 5*(inode-1)+k-1
-	 enddo
+         enddo
          call MatSetValuesLocal(A,5,irow,5,irow,val,ADD_VALUES,ierr)
 #endif
 #else

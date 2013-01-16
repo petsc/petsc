@@ -79,8 +79,8 @@ int main( int argc, char **argv )
   GridCtx       *finegrid;
   int           ierr, its, lits, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           nlocal,i;
-  int	        maxit, maxf,flag;
-  double	atol, rtol, stol, litspit;
+  int           maxit, maxf,flag;
+  double        atol, rtol, stol, litspit;
   SLES          sles;
   PC            pc;
   PLogDouble    v1, v2, elapsed;
@@ -297,19 +297,19 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
 
-	/* general interior volume */
+        /* general interior volume */
 
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
         fw = dw*(t0 - tw);
 
-	te = x[row + 1];
+        te = x[row + 1];
         ae = 0.5*(t0 + te);
         de = pow(ae, beta);
         fe = de*(te - t0);
 
-	ts = x[row - Xm];
+        ts = x[row - Xm];
         as = 0.5*(t0 + ts);
         ds = pow(as, beta);
         fs = ds*(t0 - ts);
@@ -321,34 +321,34 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
       } else if (i == 0) {
 
-	/* left-hand boundary */
+        /* left-hand boundary */
         tw = tleft;
         aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
         fw = dw*(t0 - tw);
 
-	te = x[row + 1];
+        te = x[row + 1];
         ae = 0.5*(t0 + te);
         de = pow(ae, beta);
         fe = de*(te - t0);
 
-	if (j > 0) {
-	  ts = x[row - Xm];
+        if (j > 0) {
+          ts = x[row - Xm];
           as = 0.5*(t0 + ts);
           ds = pow(as, beta);
           fs = ds*(t0 - ts);
-	} else {
- 	  fs = 0.0;
-	}
+        } else {
+          fs = 0.0;
+        }
 
-	if (j < my-1) {
+        if (j < my-1) {
           tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           dn = pow(an, beta);
-	  fn = dn*(tn - t0);
-	} else {
-	  fn = 0.0;
-	}
+          fn = dn*(tn - t0);
+        } else {
+          fn = 0.0;
+        }
 
       } else if (i == mx-1) {
 
@@ -383,7 +383,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
       } else if (j == 0) {
 
-	/* bottom boundary, and i <> 0 or mx-1 */
+        /* bottom boundary, and i <> 0 or mx-1 */
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
@@ -403,7 +403,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
       } else if (j == my-1) {
 
-	/* top boundary, and i <> 0 or mx-1 */
+        /* top boundary, and i <> 0 or mx-1 */
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw, beta);
@@ -459,7 +459,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
-  beta = user->beta;	    bm1 = user->bm1;		coef = user->coef;
+  beta = user->beta;        bm1 = user->bm1;           coef = user->coef;
 
   /* Get ghost points */
   ierr = DMGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -484,40 +484,40 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
-	/* dw = bw * aw */
-	dw = pow(aw, beta);
-	gw = coef*bw*(t0 - tw);
+        /* dw = bw * aw */
+        dw = pow(aw, beta);
+        gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
         ae = 0.5*(t0 + te);
         be = pow(ae, bm1);
-	/* de = be * ae; */
-	de = pow(ae, beta);
+        /* de = be * ae; */
+        de = pow(ae, beta);
         ge = coef*be*(te - t0);
 
         ts = x[row - Xm];
         as = 0.5*(t0 + ts);
         bs = pow(as, bm1);
-	/* ds = bs * as; */
-	ds = pow(as, beta);
+        /* ds = bs * as; */
+        ds = pow(as, beta);
         gs = coef*bs*(t0 - ts);
 
         tn = x[row + Xm];
         an = 0.5*(t0 + tn);
         bn = pow(an, bm1);
-	/* dn = bn * an; */
-	dn = pow(an, beta);
+        /* dn = bn * an; */
+        dn = pow(an, beta);
         gn = coef*bn*(tn - t0);
 
-	col[0] = ltog[row - Xm];
+        col[0] = ltog[row - Xm];
         v[0] = - hxdhy*(ds - gs);
-	col[1] = ltog[row - 1];
+        col[1] = ltog[row - 1];
         v[1] = - hydhx*(dw - gw);
         col[2] = grow;
         v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);
-	col[3] = ltog[row + 1];
+        col[3] = ltog[row + 1];
         v[3] = - hydhx*(de + ge);
-	col[4] = ltog[row + Xm];
+        col[4] = ltog[row + Xm];
         v[4] = - hxdhy*(dn + gn);
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -527,25 +527,25 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         tw = tleft;
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
-	/* dw = bw * aw */
-	dw = pow(aw, beta);
+        /* dw = bw * aw */
+        dw = pow(aw, beta);
         gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
         ae = 0.5*(t0 + te);
         be = pow(ae, bm1);
-	/* de = be * ae; */
-	de = pow(ae, beta);
+        /* de = be * ae; */
+        de = pow(ae, beta);
         ge = coef*be*(te - t0);
 
-	/* left-hand bottom boundary */
-	if (j == 0) {
+        /* left-hand bottom boundary */
+        if (j == 0) {
 
           tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           bn = pow(an, bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an, beta);
+          /* dn = bn * an; */
+          dn = pow(an, beta);
           gn = coef*bn*(tn - t0);
 
           col[0] = grow;
@@ -556,21 +556,21 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[2] = - hxdhy*(dn + gn);
           ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
-	/* left-hand interior boundary */
-	} else if (j < my-1) {
+        /* left-hand interior boundary */
+        } else if (j < my-1) {
 
           ts = x[row - Xm];
           as = 0.5*(t0 + ts);
           bs = pow(as, bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as, beta);
+          /* ds = bs * as; */
+          ds = pow(as, beta);
           gs = coef*bs*(t0 - ts);
 
           tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           bn = pow(an, bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an, beta);
+          /* dn = bn * an; */
+          dn = pow(an, beta);
           gn = coef*bn*(tn - t0);
 
           col[0] = ltog[row - Xm];
@@ -582,14 +582,14 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           col[3] = ltog[row + Xm];
           v[3] = - hxdhy*(dn + gn);
           ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
-	/* left-hand top boundary */
-	} else {
+        /* left-hand top boundary */
+        } else {
 
           ts = x[row - Xm];
           as = 0.5*(t0 + ts);
           bs = pow(as, bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as, beta);
+          /* ds = bs * as; */
+          ds = pow(as, beta);
           gs = coef*bs*(t0 - ts);
 
           col[0] = ltog[row - Xm];
@@ -599,7 +599,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           col[2] = ltog[row + 1];
           v[2] = - hydhx*(de + ge);
           ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
-	}
+        }
 
       } else if (i == mx-1) {
 
@@ -607,25 +607,25 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
-	/* dw = bw * aw */
-	dw = pow(aw, beta);
+        /* dw = bw * aw */
+        dw = pow(aw, beta);
         gw = coef*bw*(t0 - tw);
 
         te = tright;
         ae = 0.5*(t0 + te);
         be = pow(ae, bm1);
-	/* de = be * ae; */
-	de = pow(ae, beta);
+        /* de = be * ae; */
+        de = pow(ae, beta);
         ge = coef*be*(te - t0);
 
-	/* right-hand bottom boundary */
-	if (j == 0) {
+        /* right-hand bottom boundary */
+        if (j == 0) {
 
           tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           bn = pow(an, bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an, beta);
+          /* dn = bn * an; */
+          dn = pow(an, beta);
           gn = coef*bn*(tn - t0);
 
           col[0] = ltog[row - 1];
@@ -636,21 +636,21 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[2] = - hxdhy*(dn + gn);
           ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
-	/* right-hand interior boundary */
-	} else if (j < my-1) {
+        /* right-hand interior boundary */
+        } else if (j < my-1) {
 
           ts = x[row - Xm];
           as = 0.5*(t0 + ts);
           bs = pow(as, bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as, beta);
+          /* ds = bs * as; */
+          ds = pow(as, beta);
           gs = coef*bs*(t0 - ts);
 
           tn = x[row + Xm];
           an = 0.5*(t0 + tn);
           bn = pow(an, bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an, beta);
+          /* dn = bn * an; */
+          dn = pow(an, beta);
           gn = coef*bn*(tn - t0);
 
           col[0] = ltog[row - Xm];
@@ -662,14 +662,14 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           col[3] = ltog[row + Xm];
           v[3] = - hxdhy*(dn + gn);
           ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
-	/* right-hand top boundary */
-	} else {
+        /* right-hand top boundary */
+        } else {
 
           ts = x[row - Xm];
           as = 0.5*(t0 + ts);
           bs = pow(as, bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as, beta);
+          /* ds = bs * as; */
+          ds = pow(as, beta);
           gs = coef*bs*(t0 - ts);
 
           col[0] = ltog[row - Xm];
@@ -679,7 +679,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           col[2] = grow;
           v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);
           ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
-	}
+        }
 
       /* bottom boundary, and i <> 0 or mx-1 */
       } else if (j == 0) {
@@ -687,22 +687,22 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
-	/* dw = bw * aw */
-	dw = pow(aw, beta);
+        /* dw = bw * aw */
+        dw = pow(aw, beta);
         gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
         ae = 0.5*(t0 + te);
         be = pow(ae, bm1);
-	/* de = be * ae; */
-	de = pow(ae, beta);
+        /* de = be * ae; */
+        de = pow(ae, beta);
         ge = coef*be*(te - t0);
 
         tn = x[row + Xm];
         an = 0.5*(t0 + tn);
         bn = pow(an, bm1);
-	/* dn = bn * an; */
-	dn = pow(an, beta);
+        /* dn = bn * an; */
+        dn = pow(an, beta);
         gn = coef*bn*(tn - t0);
 
         col[0] = ltog[row - 1];
@@ -721,22 +721,22 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         tw = x[row - 1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw, bm1);
-	/* dw = bw * aw */
-	dw = pow(aw, beta);
+        /* dw = bw * aw */
+        dw = pow(aw, beta);
         gw = coef*bw*(t0 - tw);
 
         te = x[row + 1];
         ae = 0.5*(t0 + te);
         be = pow(ae, bm1);
-	/* de = be * ae; */
-	de = pow(ae, beta);
+        /* de = be * ae; */
+        de = pow(ae, beta);
         ge = coef*be*(te - t0);
 
         ts = x[row - Xm];
         as = 0.5*(t0 + ts);
         bs = pow(as, bm1);
- 	/* ds = bs * as; */
-	ds = pow(as, beta);
+         /* ds = bs * as; */
+        ds = pow(as, beta);
         gs = coef*bs*(t0 - ts);
 
         col[0] = ltog[row - Xm];
@@ -817,7 +817,7 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   Scalar   v[4],x,y, one = 1.0;
   Mat      mat;
-  Vec	   Rscale;
+  Vec      Rscale;
 
   PetscFunctionBegin;
   ierr = DMDAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);

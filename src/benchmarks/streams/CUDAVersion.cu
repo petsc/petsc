@@ -458,7 +458,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   set_array<<<dimGrid,dimBlock>>>(d_b, .5f, N);
   set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
 
-  /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+  /* --- MAIN LOOP --- repeat test cases NTIMES times --- */
   PetscLogDouble cpuTimer = 0.0;
   cudaEvent_t start, stop;
 
@@ -727,7 +727,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   set_array_double<<<dimGrid,dimBlock>>>(d_b, .5, N);
   set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
 
-  /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+  /* --- MAIN LOOP --- repeat test cases NTIMES times --- */
   PetscLogDouble cpuTimer = 0.0;
   cudaEvent_t start, stop;
 
@@ -974,11 +974,11 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
 PetscErrorCode printResultsReadable(float times[][NTIMES]) {
   PetscErrorCode ierr;
   PetscInt       j, k;
-  float	avgtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
-  float	maxtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
-  float	mintime[8] = {1e30,1e30,1e30,1e30,1e30,1e30,1e30,1e30};
+  float          avgtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
+  float          maxtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};
+  float          mintime[8] = {1e30,1e30,1e30,1e30,1e30,1e30,1e30,1e30};
   char *label[8]   = {"Copy:      ", "Copy Opt.: ", "Scale:     ", "Scale Opt: ", "Add:       ", "Add Opt:   ", "Triad:     ", "Triad Opt: "};
-  float	bytes_per_kernel[8] = {
+  float          bytes_per_kernel[8] = {
     2. * sizeof(float) * N,
     2. * sizeof(float) * N,
     2. * sizeof(float) * N,
