@@ -733,7 +733,7 @@ c================================== INIT =============================72
         else if (ibnd .eq. 3) then
           write(c4,'(3hff.,i1.1)') i
           write(99,1000) c4,nnpts(i),nntet(i)
-	endif
+        endif
 !
         write(99,1010) (x(j),j=isp,isp+nnpts(i)-1)
         write(99,1010) (y(j),j=isp,isp+nnpts(i)-1)
@@ -2070,7 +2070,7 @@ c
           ubar  = xnorm*u + ynorm*v + znorm*w
           fmach = ubar/c
           ubp2a = -ubar + 2.*c
-	  flops = flops + 61.0
+          flops = flops + 61.0
 c
           if (abs(fmach).lt.1.0) then
            fluxp1 = area*0.25*rho*c*(fmach + 1)**2
@@ -2128,7 +2128,7 @@ c
           ubar  = xnorm*u + ynorm*v + znorm*w
           fmach = ubar/c
           ubm2a = -ubar - 2.*c
-	  flops = flops + 55.0
+          flops = flops + 55.0
 c
           if (abs(fmach).lt.1.0) then
            fluxm1 = -area*0.25*rho*c*(fmach - 1)**2
@@ -2228,21 +2228,21 @@ c
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-	        flops = flops + 6.0
+                flops = flops + 6.0
                endif
 
                if (node2 .le. nnodes) then
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-	        flops = flops + 6.0
+                flops = flops + 6.0
                endif
 
                if (node3 .le. nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-	        flops = flops + 6.0
+                flops = flops + 6.0
                endif
 
  2020 continue
@@ -2288,7 +2288,7 @@ c
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 c
-	       flops = flops + 35.0
+               flops = flops + 35.0
 c
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
@@ -2792,21 +2792,21 @@ c
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-	        flops = flops + 6.0
+                flops = flops + 6.0
                endif
 
                if (node2 .le. nnodes) then
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-	        flops = flops + 6.0
+                flops = flops + 6.0
                endif
 
                if (node3 .le. nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-	        flops = flops + 6.0
+                flops = flops + 6.0
                endif
 
  2020 continue
@@ -2853,7 +2853,7 @@ c
                pb = c68*p2 + c18*(p1 + p3)
                pc = c68*p3 + c18*(p1 + p2)
 c
-	       flops = flops + 35.0
+               flops = flops + 35.0
 c
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa

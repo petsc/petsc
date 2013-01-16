@@ -117,14 +117,14 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    Vec dq;                                    /* Delta Q                    */
    Vec qold;                                  /* Global distributed solution vector*/
    Vec res;                                   /* Residual                   */
-   Vec grad;              		      /* Gradient Vector	    */
-   Vec gradLoc;                  	      /* Local Gradient Vector	    */
+   Vec grad;                                  /* Gradient Vector            */
+   Vec gradLoc;                               /* Local Gradient Vector      */
    Vec B;                                     /* Right hand side            */
    Mat A;                                     /* Left hand side             */
    VecScatter scatter, gradScatter;           /* Scatter between local and global vectors */
    int *loc2pet;                              /* local to PETSc mapping     */
    int *loc2glo;                              /* local to global mapping     */
-   int *v2p;				      /* Vertex to processor mapping */
+   int *v2p;                                  /* Vertex to processor mapping */
    int *sface_bit, *vface_bit;
    int nnodesLoc, nedgeLoc, nvertices;        /* nnodesLoc=number of owned nodes, nedgeLoc=number of edges touching owned nodes, nvertices=includes ghost nodes */
    int nsnodeLoc, nvnodeLoc, nfnodeLoc;

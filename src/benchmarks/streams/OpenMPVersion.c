@@ -255,7 +255,7 @@ int main()
     for (j=0; j<4; j++) {
         avgtime[j] = avgtime[j]/(double)(NTIMES-1);
 
-	printf("%s%11.4f  \n", label[j], 1.0E-06 * bytes[j]/mintime[j]);
+        printf("%s%11.4f  \n", label[j], 1.0E-06 * bytes[j]/mintime[j]);
     }
     /* printf(HLINE);*/
 
@@ -266,22 +266,22 @@ int main()
     return 0;
 }
 
-# define	M	20
+# define        M        20
 
 int
 checktick()
     {
-    int		i, minDelta, Delta;
-    double	t1, t2, timesfound[M];
+    int           i, minDelta, Delta;
+    double        t1, t2, timesfound[M];
 
 /*  Collect a sequence of M unique time values from the system. */
 
     for (i = 0; i < M; i++) {
-	t1 = mysecond();
-	while( ((t2=mysecond()) - t1) < 1.0E-6 )
-	    ;
-	timesfound[i] = t1 = t2;
-	}
+        t1 = mysecond();
+        while( ((t2=mysecond()) - t1) < 1.0E-6 )
+            ;
+        timesfound[i] = t1 = t2;
+        }
 
 /*
  * Determine the minimum difference between these M values.
@@ -291,9 +291,9 @@ checktick()
 
     minDelta = 1000000;
     for (i = 1; i < M; i++) {
-	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
-	minDelta = MIN(minDelta, MAX(Delta,0));
-	}
+        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        minDelta = MIN(minDelta, MAX(Delta,0));
+        }
 
    return(minDelta);
     }
@@ -317,72 +317,72 @@ double mysecond()
 
 void checkSTREAMresults ()
 {
-	double aj,bj,cj,scalar;
-	double asum,bsum,csum;
-	double epsilon;
-	int	j,k;
+        double aj,bj,cj,scalar;
+        double asum,bsum,csum;
+        double epsilon;
+        int    j,k;
 
     /* reproduce initialization */
-	aj = 1.0;
-	bj = 2.0;
-	cj = 0.0;
+        aj = 1.0;
+        bj = 2.0;
+        cj = 0.0;
     /* a[] is modified during timing check */
-	aj = 2.0E0 * aj;
+        aj = 2.0E0 * aj;
     /* now execute timing loop */
-	scalar = 3.0;
-	for (k=0; k<NTIMES; k++)
+        scalar = 3.0;
+        for (k=0; k<NTIMES; k++)
         {
             cj = aj;
             bj = scalar*cj;
             cj = aj+bj;
             aj = bj+scalar*cj;
         }
-	aj = aj * (double) (N);
-	bj = bj * (double) (N);
-	cj = cj * (double) (N);
+        aj = aj * (double) (N);
+        bj = bj * (double) (N);
+        cj = cj * (double) (N);
 
-	asum = 0.0;
-	bsum = 0.0;
-	csum = 0.0;
-	for (j=0; j<N; j++) {
-		asum += a[j];
-		bsum += b[j];
-		csum += c[j];
-	}
+        asum = 0.0;
+        bsum = 0.0;
+        csum = 0.0;
+        for (j=0; j<N; j++) {
+                asum += a[j];
+                bsum += b[j];
+                csum += c[j];
+        }
 #ifdef VERBOSE
-	printf ("Results Comparison: \n");
-	printf ("        Expected  : %f %f %f \n",aj,bj,cj);
-	printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
+        printf ("Results Comparison: \n");
+        printf ("        Expected  : %f %f %f \n",aj,bj,cj);
+        printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
 #endif
 
 #ifndef abs
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
-	epsilon = 1.e-8;
+        epsilon = 1.e-8;
 
-	if (abs(aj-asum)/asum > epsilon) {
-		printf ("Failed Validation on array a[]\n");
-		printf ("        Expected  : %f \n",aj);
-		printf ("        Observed  : %f \n",asum);
-	}
-	else if (abs(bj-bsum)/bsum > epsilon) {
-		printf ("Failed Validation on array b[]\n");
-		printf ("        Expected  : %f \n",bj);
-		printf ("        Observed  : %f \n",bsum);
-	}
-	else if (abs(cj-csum)/csum > epsilon) {
-		printf ("Failed Validation on array c[]\n");
-		printf ("        Expected  : %f \n",cj);
-		printf ("        Observed  : %f \n",csum);
-	}
-	else {
-          ;/*	printf ("Solution Validates\n"); */
-	}
+        if (abs(aj-asum)/asum > epsilon) {
+                printf ("Failed Validation on array a[]\n");
+                printf ("        Expected  : %f \n",aj);
+                printf ("        Observed  : %f \n",asum);
+        }
+        else if (abs(bj-bsum)/bsum > epsilon) {
+                printf ("Failed Validation on array b[]\n");
+                printf ("        Expected  : %f \n",bj);
+                printf ("        Observed  : %f \n",bsum);
+        }
+        else if (abs(cj-csum)/csum > epsilon) {
+                printf ("Failed Validation on array c[]\n");
+                printf ("        Expected  : %f \n",cj);
+                printf ("        Observed  : %f \n",csum);
+        }
+        else {
+          ;/* printf ("Solution Validates\n"); */
+        }
 }
 
 void tuned_STREAM_Copy()
 {
-	int j;
+        int j;
 #pragma omp parallel for
         for (j=0; j<N; j++)
             c[j] = a[j];
@@ -390,24 +390,24 @@ void tuned_STREAM_Copy()
 
 void tuned_STREAM_Scale(double scalar)
 {
-	int j;
+        int j;
 #pragma omp parallel for
-	for (j=0; j<N; j++)
-	    b[j] = scalar*c[j];
+        for (j=0; j<N; j++)
+            b[j] = scalar*c[j];
 }
 
 void tuned_STREAM_Add()
 {
-	int j;
+        int j;
 #pragma omp parallel for
-	for (j=0; j<N; j++)
-	    c[j] = a[j]+b[j];
+        for (j=0; j<N; j++)
+            c[j] = a[j]+b[j];
 }
 
 void tuned_STREAM_Triad(double scalar)
 {
-	int j;
+        int j;
 #pragma omp parallel for
-	for (j=0; j<N; j++)
-	    a[j] = b[j]+scalar*c[j];
+        for (j=0; j<N; j++)
+            a[j] = b[j]+scalar*c[j];
 }

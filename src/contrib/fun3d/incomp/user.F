@@ -1397,7 +1397,7 @@
           res3 = 0.5d0*(fluxp3 + fluxm3 - rlen*t3)
           res4 = 0.5d0*(fluxp4 + fluxm4 - rlen*t4)
 !
-	  flops = flops + 318.0
+          flops = flops + 318.0
 
 !
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
@@ -1508,24 +1508,24 @@
 !
                flops = flops + 35.0
           if (node1.le.nnodes) then
-                res(2,node1) = res(2,node1) + xnorm*pa
-                res(3,node1) = res(3,node1) + ynorm*pa
-                res(4,node1) = res(4,node1) + znorm*pa
-	        flops = flops + 6.0
+               res(2,node1) = res(2,node1) + xnorm*pa
+               res(3,node1) = res(3,node1) + ynorm*pa
+               res(4,node1) = res(4,node1) + znorm*pa
+               flops = flops + 6.0
           endif
 
           if (node2.le.nnodes) then
-                res(2,node2) = res(2,node2) + xnorm*pb
-                res(3,node2) = res(3,node2) + ynorm*pb
-                res(4,node2) = res(4,node2) + znorm*pb
-	        flops = flops + 6.0
+               res(2,node2) = res(2,node2) + xnorm*pb
+               res(3,node2) = res(3,node2) + ynorm*pb
+               res(4,node2) = res(4,node2) + znorm*pb
+               flops = flops + 6.0
           endif
 
           if (node3.le.nnodes) then
-                res(2,node3) = res(2,node3) + xnorm*pc
-                res(3,node3) = res(3,node3) + ynorm*pc
-                res(4,node3) = res(4,node3) + znorm*pc
-	        flops = flops + 6.0
+               res(2,node3) = res(2,node3) + xnorm*pc
+               res(3,node3) = res(3,node3) + ynorm*pc
+               res(4,node3) = res(4,node3) + znorm*pc
+               flops = flops + 6.0
           endif
 
       enddo
@@ -1571,7 +1571,7 @@
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 !
-	       flops = flops + 35.0
+               flops = flops + 35.0
 !
           if (node1.le.nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa

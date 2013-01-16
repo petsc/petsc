@@ -42,15 +42,15 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
  *
  * INSTRUCTIONS:
  *
- *	1) Stream requires a good bit of memory to run.  Adjust the
+ *       1) Stream requires a good bit of memory to run.  Adjust the
  *          value of 'N' (below) to give a 'timing calibration' of
  *          at least 20 clock-ticks.  This will provide rate estimates
  *          that should be good to about 5% precision.
  */
 
 # define N      4000000
-# define NTIMES	100
-# define OFFSET	0
+# define NTIMES     100
+# define OFFSET       0
 
 # define HLINE "-------------------------------------------------------------\n"
 
@@ -76,8 +76,8 @@ int main(int argc,char *argv[])
                            3 * sizeof(double) * N,
                            3 * sizeof(double) * N};
   double rmstime[4] = {0},maxtime[4] = {0},mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
-  int	   quantum;
-  int	   BytesPerWord,j,k,size;
+  int    quantum;
+  int    BytesPerWord,j,k,size;
   PetscInt node = -1;
   double   scalar, t, times[4][NTIMES];
 #if !STATIC_ALLOC
@@ -159,7 +159,7 @@ int main(int argc,char *argv[])
   PetscPrintf(PETSC_COMM_WORLD,"precision of your system timer.\n");
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
 
-  /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+  /* --- MAIN LOOP --- repeat test cases NTIMES times --- */
 
   scalar = 3.0;
   for (k=0; k<NTIMES; k++) {
@@ -253,7 +253,7 @@ int main(int argc,char *argv[])
     times[3][k] = Second() - times[3][k];
   }
 
-  /*	--- SUMMARY --- */
+  /* --- SUMMARY --- */
 
   for (k=0; k<NTIMES; k++) {
     for (j=0; j<4; j++) {
@@ -282,8 +282,8 @@ static double Second() {
 #define M 20
 static int checktick()
 {
-  int		i, minDelta, Delta;
-  double	t1, t2, timesfound[M];
+  int          i, minDelta, Delta;
+  double       t1, t2, timesfound[M];
 
   /*  Collect a sequence of M unique time values from the system. */
 

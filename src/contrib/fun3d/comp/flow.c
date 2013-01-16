@@ -83,13 +83,13 @@ REAL dxtran[max_nbtran];
 
 int main(int argc,char **args)
 {
-  AppCtx 	user;
-  GRID 		f_pntr;
+  AppCtx        user;
+  GRID          f_pntr;
   TstepCtx      tsCtx ;
   SNES          snes;                  /* SNES context */
   Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
   PetscScalar   *qnode;
-  int     	ierr;
+  int           ierr;
   int ileast;
   PetscBool     flg;
   MPI_Comm      comm;
@@ -310,7 +310,7 @@ int FormInitialGuess(SNES snes, GRID *grid)
 
    ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
    f77INIT(&grid->nnodesLoc, qnode, grid->turbre,
-	   grid->amut, &grid->nvnodeLoc, grid->ivnode, &rank);
+           grid->amut, &grid->nvnodeLoc, grid->ivnode, &rank);
    ierr = VecRestoreArray(grid->qnode,&qnode);CHKERRQ(ierr);
    ierr = PetscOptionsGetBool(0,"-restart",&flg,PETSC_NULL);CHKERRQ(ierr);
    if (flg) {
@@ -338,7 +338,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    int          i,j,in,ierr;
    int          bs = 5;
    int          nbface, ires;
-   PetscScalar	time_ini, time_fin;
+   PetscScalar  time_ini, time_fin;
 
    ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
    ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -357,16 +357,16 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
      ierr = VecGetArray(grid->grad,&grad);CHKERRQ(ierr);
      ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
      f77LSTGS(&grid->nnodesLoc,&grid->nedgeLoc,grid->eptr,
-	      qnode,grad,grid->x,grid->y,grid->z,
-	      grid->rxy,
-	      &rank,&grid->nvertices);
+              qnode,grad,grid->x,grid->y,grid->z,
+              grid->rxy,
+              &rank,&grid->nvertices);
      ierr = PetscGetTime(&time_fin);CHKERRQ(ierr);
      grad_time += time_fin - time_ini;
      ierr = VecRestoreArray(grid->grad,&grad);CHKERRQ(ierr);
      ierr = VecScatterBegin(gradScatter,grid->grad,localGrad,INSERT_VALUES,
-			    SCATTER_FORWARD);CHKERRQ(ierr);
+                            SCATTER_FORWARD);CHKERRQ(ierr);
      ierr = VecScatterEnd(gradScatter,grid->grad,localGrad,INSERT_VALUES,
-			  SCATTER_FORWARD);CHKERRQ(ierr);
+                          SCATTER_FORWARD);CHKERRQ(ierr);
    }
    ierr = VecGetArray(localGrad,&grad);CHKERRQ(ierr);
    if ((!SecondOrder) && (c_info->ntt == 1)) {
@@ -479,22 +479,22 @@ int Update(SNES snes, void *ctx)
 /*---------------------------------------------------------------------*/
 {
 
- AppCtx 	*user = (AppCtx *) ctx;
- GRID 		*grid = user->grid;
- TstepCtx 	*tsCtx = user->tsCtx;
- VecScatter   	scatter = grid->scatter;
- Vec          	localX = grid->qnodeLoc;
- PetscScalar 	*qnode, *res;
- PetscScalar 	clift = 0.0, cdrag = 0.0, cmom = 0.0;
- int 		i, ierr, its;
- PetscScalar 	fratio;
- PetscScalar 	time1, time2, cpuloc, cpuglo;
- int 		max_steps;
- PetscScalar	max_time;
- FILE 		*fptr;
+ AppCtx         *user = (AppCtx *) ctx;
+ GRID           *grid = user->grid;
+ TstepCtx       *tsCtx = user->tsCtx;
+ VecScatter     scatter = grid->scatter;
+ Vec            localX = grid->qnodeLoc;
+ PetscScalar    *qnode, *res;
+ PetscScalar    clift = 0.0, cdrag = 0.0, cmom = 0.0;
+ int            i, ierr, its;
+ PetscScalar    fratio;
+ PetscScalar    time1, time2, cpuloc, cpuglo;
+ int            max_steps;
+ PetscScalar    max_time;
+ FILE           *fptr;
  static int     PreLoadFlag = 1;
  int            Converged = 0;
- int		nfailsCum = 0, nfails = 0;
+ int            nfailsCum = 0, nfails = 0;
  PetscScalar    cfl_damp_ratio = 1.0e-02, cfl_damp_power = 0.75;
  PetscBool      print_flag = PETSC_FALSE,cfl_damp_flag = PETSC_FALSE,flg;
 
@@ -617,7 +617,7 @@ int Update(SNES snes, void *ctx)
            &grid->nvfacetLoc,grid->f2ntv,&grid->nvbound,
             grid->eptr,qnode,grid->x,grid->y,grid->z,
            &grid->nvnodeLoc,grid->c2n,&grid->ncell,
-	    grid->amut,grid->sface_bit,grid->vface_bit,
+            grid->amut,grid->sface_bit,grid->vface_bit,
             &clift,&cdrag,&cmom,&rank,&grid->nvertices);
   ierr = VecRestoreArray(localX, &qnode);CHKERRQ(ierr);
   ierr = VecRestoreArray(grid->res, &res);CHKERRQ(ierr);
@@ -691,11 +691,11 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
   AppCtx *user = (AppCtx *) ctx;
   /*GRID *grid = user->grid;*/
   TstepCtx *tsCtx = user->tsCtx;
-  Vec	    func = tsCtx->func;
+  Vec       func = tsCtx->func;
   double    inc = 1.1;
   double    newcfl, fnorm;
   int       ierr;
-  /*int	    iramp = tsCtx->iramp;*/
+  /*int     iramp = tsCtx->iramp;*/
 
 
   /*VecDuplicate(tsCtx->qold,&func);*/
@@ -747,22 +747,22 @@ int GetLocalOrdering(GRID *grid)
 {
 
   int         ierr, i, j, k, inode, isurf, nno, nte, nb, node1, node2, node3;
-  int 	      nnodes, nedge, nnz, jstart, jend;
-  int	      nnodesLoc, nvertices, nedgeLoc,nnodesLocEst;
+  int         nnodes, nedge, nnz, jstart, jend;
+  int         nnodesLoc, nvertices, nedgeLoc,nnodesLocEst;
   int         nedgeLocEst, remEdges, readEdges, remNodes, readNodes;
-  int 	      nnfacet, nvfacet, nffacet;
-  int 	      nnfacetLoc, nvfacetLoc, nffacetLoc;
-  int	      nsnode, nvnode, nfnode;
-  int	      nsnodeLoc, nvnodeLoc, nfnodeLoc;
-  int	      nnbound, nvbound, nfbound;
+  int         nnfacet, nvfacet, nffacet;
+  int         nnfacetLoc, nvfacetLoc, nffacetLoc;
+  int         nsnode, nvnode, nfnode;
+  int         nsnodeLoc, nvnodeLoc, nfnodeLoc;
+  int         nnbound, nvbound, nfbound;
   int         bs = 5;
   int         fdes;
   off_t       currentPos = 0, newPos = 0;
   int         grid_param = 13;
   int         cross_edges = 0;
   int         *edge_bit, *pordering;
-  int	      *l2p, *l2a, *p2l, *a2l, *v2p, *eperm;
-  int	      *tmp, *tmp1, *tmp2;
+  int         *l2p, *l2a, *p2l, *a2l, *v2p, *eperm;
+  int         *tmp, *tmp1, *tmp2;
   PetscScalar time_ini, time_fin;
   PetscScalar *ftmp;
   char        mesh_file[PETSC_MAX_PATH_LEN];
@@ -836,14 +836,14 @@ int GetLocalOrdering(GRID *grid)
       ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try appending the number of processors */
-	sprintf(part_file,"part_vec.part.%d",CommSize);
-	ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
+        sprintf(part_file,"part_vec.part.%d",CommSize);
+        ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
       }
       fptr = fopen(spart_file,"r");
       if (!fptr) SETERRQ1(PETSC_COMM_SELF,1,"Cannot open file %s\n",part_file);
       for (inode = 0; inode < nnodes; inode++) {
-	fscanf(fptr,"%d\n",&node1);
-	v2p[inode] = node1;
+        fscanf(fptr,"%d\n",&node1);
+        v2p[inode] = node1;
       }
       fclose(fptr);
     }
@@ -1039,8 +1039,8 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
-	grid->xn[k] = ftmp[j];
-	k++;
+        grid->xn[k] = ftmp[j];
+        k++;
       }
     }
     i+= readEdges;
@@ -1064,8 +1064,8 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
-	grid->yn[k] = ftmp[j];
-	k++;
+        grid->yn[k] = ftmp[j];
+        k++;
       }
     }
     i+= readEdges;
@@ -1089,8 +1089,8 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
-	grid->zn[k] = ftmp[j];
-	k++;
+        grid->zn[k] = ftmp[j];
+        k++;
       }
     }
     i+= readEdges;
@@ -1114,8 +1114,8 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
-	grid->rl[k] = ftmp[j];
-	k++;
+        grid->rl[k] = ftmp[j];
+        k++;
       }
     }
     i+= readEdges;
@@ -1148,7 +1148,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
-	grid->x[a2l[i+j]] = ftmp[j];
+        grid->x[a2l[i+j]] = ftmp[j];
       }
     }
     i+= nnodesLocEst;
@@ -1164,7 +1164,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes, ftmp, readNodes, PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
-	grid->y[a2l[i+j]] = ftmp[j];
+        grid->y[a2l[i+j]] = ftmp[j];
       }
     }
     i+= nnodesLocEst;
@@ -1180,7 +1180,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes, PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
-	grid->z[a2l[i+j]] = ftmp[j];
+        grid->z[a2l[i+j]] = ftmp[j];
       }
     }
     i+= nnodesLocEst;
@@ -1198,7 +1198,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscBinarySynchronizedRead(comm,fdes, ftmp, readNodes, PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
-	grid->area[a2l[i+j]] = ftmp[j];
+        grid->area[a2l[i+j]] = ftmp[j];
       }
     }
     i+= nnodesLocEst;
@@ -1257,14 +1257,14 @@ int GetLocalOrdering(GRID *grid)
     for (k = inode; k < inode+grid->nnpts[i]; k++) {
       node1 = a2l[grid->isnode[k] - 1];
       if (node1 >= 0) {
-	tmp1[nsnodeLoc] = node1;
+        tmp1[nsnodeLoc] = node1;
         tmp2[node1] = nsnodeLoc;
-	ftmp[j++] = grid->sxn[k];
-	ftmp[j++] = grid->syn[k];
-	ftmp[j++] = grid->szn[k];
-	ftmp[j++] = grid->sa[k];
-	nsnodeLoc++;
-	nno++;
+        ftmp[j++] = grid->sxn[k];
+        ftmp[j++] = grid->syn[k];
+        ftmp[j++] = grid->szn[k];
+        ftmp[j++] = grid->sa[k];
+        nsnodeLoc++;
+        nno++;
       }
     }
    for (k = isurf; k < isurf + grid->nntet[i]; k++) {
@@ -1967,22 +1967,22 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 int FieldOutput(GRID *grid, int timeStep)
 /*---------------------------------------------------------------------*/
 {
-  int 		bs = 5;
-  int 		fdes;
+  int           bs = 5;
+  int           fdes;
   off_t         currentPos;
-  int 		i,ierr;
-  int		nnodes, nnodesLoc, openFile, closeFile, boundaryType;
-  int 		nnbound, nsnode, nnfacet;
-  int 		nvbound, nvnode, nvfacet;
-  int 		nfbound, nfnode, nffacet;
-  int 		*isnode, *isnodePet, *f2ntn, *nntet, *nnpts;
-  int 		*ivnode, *ivnodePet, *f2ntv, *nvtet, *nvpts;
-  int 		*ifnode, *ifnodePet, *f2ntf, *nftet, *nfpts;
-  int		*svertices;
-  PetscScalar 	*x, *y, *z, *qnode, *xyz;
-  Vec  		qnodeLoc, xyzLoc, xyzGlo;
-  IS 		islocal, isglobal;
-  VecScatter 	scatter;
+  int           i,ierr;
+  int           nnodes, nnodesLoc, openFile, closeFile, boundaryType;
+  int           nnbound, nsnode, nnfacet;
+  int           nvbound, nvnode, nvfacet;
+  int           nfbound, nfnode, nffacet;
+  int           *isnode, *isnodePet, *f2ntn, *nntet, *nnpts;
+  int           *ivnode, *ivnodePet, *f2ntv, *nvtet, *nvpts;
+  int           *ifnode, *ifnodePet, *f2ntf, *nftet, *nfpts;
+  int           *svertices;
+  PetscScalar   *x, *y, *z, *qnode, *xyz;
+  Vec           qnodeLoc, xyzLoc, xyzGlo;
+  IS            islocal, isglobal;
+  VecScatter    scatter;
 
   nnodes = grid->nnodes;
   nnodesLoc = grid->nnodesLoc;
@@ -2315,19 +2315,19 @@ int system(const char *string);
 int WriteRestartFile(GRID *grid, int timeStep)
 /*---------------------------------------------------------------------*/
 {
-  int 		bs = 5;
-  int 		fdes;
+  int           bs = 5;
+  int           fdes;
   off_t         startPos;
-  int 		i, j,in, ierr;
-  int		nnodes, nnodesLoc;
-  int		*loc2pet, *svertices;
+  int           i, j,in, ierr;
+  int           nnodes, nnodesLoc;
+  int           *loc2pet, *svertices;
   int           status;
   char          fileName[256],command[256];
-  PetscScalar        pgamma = 1.4,mach;
-  PetscScalar 	*qnode;
-  Vec  		qnodeLoc;
-  IS 		islocal, isglobal;
-  VecScatter 	scatter;
+  PetscScalar   pgamma = 1.4,mach;
+  PetscScalar   *qnode;
+  Vec           qnodeLoc;
+  IS            islocal, isglobal;
+  VecScatter    scatter;
   FILE          *fptr,*fptr1;
   PetscBool     flgIO,flg_vtk;
 
@@ -2439,7 +2439,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
       in = bs*j;
       mach = sqrt((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+
                    qnode[in+3]*qnode[in+3])/
-		   ((pgamma*qnode[in+4])/qnode[in]));
+                   ((pgamma*qnode[in+4])/qnode[in]));
       fprintf(fptr,"%g\n",mach);
     }
     /* Write Velocity Vector */
@@ -2503,15 +2503,15 @@ int WriteRestartFile(GRID *grid, int timeStep)
 int ReadRestartFile(GRID *grid)
 /*---------------------------------------------------------------------*/
 {
-  int 		bs = 5;
-  int 		fdes;
-  int 		i, ierr;
-  int		nnodes, nnodesLoc;
-  int		*loc2pet;
-  PetscScalar 	*qnode;
-  Vec  		qnodeLoc;
-  IS 		islocal, isglobal;
-  VecScatter 	scatter;
+  int           bs = 5;
+  int           fdes;
+  int           i, ierr;
+  int           nnodes, nnodesLoc;
+  int           *loc2pet;
+  PetscScalar   *qnode;
+  Vec           qnodeLoc;
+  IS            islocal, isglobal;
+  VecScatter    scatter;
   MPI_Status    status;
 
   nnodes = grid->nnodes;

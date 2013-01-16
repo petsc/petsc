@@ -461,8 +461,8 @@
 !         val1(k,j) = -val1(k+4,j)
 !         val1(k+4,j) = temp
           val1(k,j) = -val1(k,j)
- 	 enddo
- 	enddo
+         enddo
+        enddo
 !
 !       call CHK_ERR(irank,ierr,irow(1),icol(1))
 #if defined(INTERLACING)
@@ -820,7 +820,7 @@
 #else
          do k = 1,4
           irow(k) = 4*(inode-1)+k-1
-	 enddo
+         enddo
          call MatSetValuesLocal(A,4,irow,4,irow,val,ADD_VALUES,ierr)
 #endif
 #else
