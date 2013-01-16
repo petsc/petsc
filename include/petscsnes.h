@@ -474,8 +474,8 @@ PETSC_EXTERN PetscErrorCode SNESSetGS(SNES,PetscErrorCode (*SNESGSFunction)(SNES
 PETSC_EXTERN PetscErrorCode SNESGetGS(SNES,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESSetUseGS(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetUseGS(SNES,PetscBool *);
-PETSC_EXTERN PetscErrorCode SNESSetGSSweeps(SNES,PetscInt);
-PETSC_EXTERN PetscErrorCode SNESGetGSSweeps(SNES,PetscInt *);
+PETSC_EXTERN PetscErrorCode SNESGSSetSweeps(SNES,PetscInt);
+PETSC_EXTERN PetscErrorCode SNESGSGetSweeps(SNES,PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESComputeGS(SNES,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode SNESUpdateCheckJacobian(SNES,PetscInt);

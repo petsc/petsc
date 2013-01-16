@@ -809,9 +809,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsEnum("-snes_npc_side","SNES nonlinear preconditioner side","SNESSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetPCSide(snes,pcside);CHKERRQ(ierr);}
 
-    /* GS Options */
-    ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
-
     for (i = 0; i < numberofsetfromoptions; i++) {
       ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
     }
@@ -1474,7 +1471,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->norm_init         = 0.;
   snes->norm_init_set     = PETSC_FALSE;
   snes->reason            = SNES_CONVERGED_ITERATING;
-  snes->gssweeps          = 1;
 
   snes->pcside            = PC_RIGHT;
 
@@ -1749,53 +1745,6 @@ PetscErrorCode SNESSetGS(SNES snes,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESSetGS(dm,SNESGSFunction,ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetGSSweeps"
-/*@
-   SNESSetGSSweeps - Sets the number of sweeps of GS to use.
-
-   Input Parameters:
-+  snes   - the SNES context
--  sweeps  - the number of sweeps of GS to perform.
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, set, Gauss-Siedel
-
-.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGetGSSweeps()
-@*/
-
-PetscErrorCode SNESSetGSSweeps(SNES snes, PetscInt sweeps)
-{
-  PetscFunctionBegin;
-  snes->gssweeps = sweeps;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetGSSweeps"
-/*@
-   SNESGetGSSweeps - Gets the number of sweeps GS will use.
-
-   Input Parameters:
-.  snes   - the SNES context
-
-   Output Parameters:
-.  sweeps  - the number of sweeps of GS to perform.
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, set, Gauss-Siedel
-
-.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESSetGSSweeps()
-@*/
-PetscErrorCode SNESGetGSSweeps(SNES snes, PetscInt * sweeps)
-{
-  PetscFunctionBegin;
-  *sweeps = snes->gssweeps;
   PetscFunctionReturn(0);
 }
 
@@ -2081,7 +2030,6 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
   DM             dm;
   DMSNES         sdm;
 
@@ -2096,11 +2044,9 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computegs) {
-    for (i = 0; i < snes->gssweeps; i++) {
-      PetscStackPush("SNES user GS");
-      ierr = (*sdm->ops->computegs)(snes,x,b,sdm->gsctx);CHKERRQ(ierr);
-      PetscStackPop;
-    }
+    PetscStackPush("SNES user GS");
+    ierr = (*sdm->ops->computegs)(snes,x,b,sdm->gsctx);CHKERRQ(ierr);
+    PetscStackPop;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
   ierr = PetscLogEventEnd(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   VecValidValues(x,3,PETSC_FALSE);

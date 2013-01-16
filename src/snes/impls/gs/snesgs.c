@@ -4,6 +4,62 @@ typedef struct {
   PetscInt  sweeps;
 } SNES_GS;
 
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGSSetSweeps"
+/*@
+   SNESGSSetSweeps - Sets the number of sweeps of GS to use.
+
+   Input Parameters:
++  snes   - the SNES context
+-  sweeps  - the number of sweeps of GS to perform.
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, Gauss-Siedel
+
+.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGSGetSweeps()
+@*/
+
+PetscErrorCode SNESGSSetSweeps(SNES snes, PetscInt sweeps)
+{
+  SNES_GS *gs = (SNES_GS*)snes->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  gs->sweeps = sweeps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGSGetSweeps"
+/*@
+   SNESGSGetSweeps - Gets the number of sweeps GS will use.
+
+   Input Parameters:
+.  snes   - the SNES context
+
+   Output Parameters:
+.  sweeps  - the number of sweeps of GS to perform.
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, Gauss-Siedel
+
+.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGSSetSweeps()
+@*/
+PetscErrorCode SNESGSGetSweeps(SNES snes, PetscInt * sweeps)
+{
+  SNES_GS *gs = (SNES_GS*)snes->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  *sweeps = gs->sweeps;
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESDefaultApplyGS"
 PetscErrorCode SNESDefaultApplyGS(SNES snes,Vec X,Vec F,void *ctx)
@@ -46,10 +102,13 @@ PetscErrorCode SNESSetUp_GS(SNES snes)
 #define __FUNCT__ "SNESSetFromOptions_GS"
 PetscErrorCode SNESSetFromOptions_GS(SNES snes)
 {
-  PetscErrorCode ierr;
+  SNES_GS          *gs = (SNES_GS*)snes->data;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES GS options");CHKERRQ(ierr);
+  /* GS Options */
+  ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&gs->sweeps,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -207,7 +266,11 @@ PetscErrorCode SNESCreate_GS(SNES snes)
   }
 
   ierr = PetscNewLog(snes, SNES_GS, &gs);CHKERRQ(ierr);
+
+  gs->sweeps = 1;
+
   snes->data = (void*) gs;
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

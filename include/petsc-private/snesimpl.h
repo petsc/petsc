@@ -95,7 +95,6 @@ struct _p_SNES {
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
-  PetscInt    gssweeps;           /* number of GS sweeps */
 
   PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
 
@@ -150,7 +149,6 @@ typedef struct _p_DMSNES *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
   /* objective */
@@ -159,6 +157,9 @@ struct _DMSNESOps {
   /* Picard iteration functions */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
+  /* User-defined smoother */
+  PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
 
   PetscErrorCode (*destroy)(DMSNES);
   PetscErrorCode (*duplicate)(DMSNES,DMSNES);
