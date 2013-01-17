@@ -606,7 +606,7 @@ class Configure(config.base.Configure):
 
   def configureAtoll(self):
     '''Checks if atoll exists'''
-    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25")') or self.checkCompile ('#include <stdlib.h>','long v = atoll("25")'):
+    if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25")') or self.checkLink ('#include <stdlib.h>','long v = atoll("25")'):
        self.addDefine('HAVE_ATOLL', '1')
 
   def configureUnused(self):
