@@ -145,8 +145,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   if (side != PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
-  ierr = VecSet(W,0.0);CHKERRQ(ierr);	/* W = 0 */
-  ierr = VecSet(X,0.0);CHKERRQ(ierr);	/* X = 0 */
+  ierr = VecSet(W,0.0);CHKERRQ(ierr);  /* W = 0 */
+  ierr = VecSet(X,0.0);CHKERRQ(ierr);  /* X = 0 */
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
@@ -214,7 +214,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
        /* Compute step along p */
 
        step = rtr/ptasp;
-       ierr = VecCopy(W,X);CHKERRQ(ierr);	   /*  x = w  */
+       ierr = VecCopy(W,X);CHKERRQ(ierr);        /*  x = w  */
        ierr = VecAXPY(X,step,P);CHKERRQ(ierr);   /*  x <- step*p + x  */
        ierr = VecNorm(X,NORM_2,&pcgP->ltsnrm);CHKERRQ(ierr);
 
@@ -235,7 +235,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
            ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);  /*  x <- step1*p + x  */
          }
          pcgP->ltsnrm = pcgP->delta;
-         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED;	/* convergence along constrained step */
+         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
          if (!i) {
            ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
          } else {
@@ -246,7 +246,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
          /* Evaluate the current step */
 
-         ierr = VecCopy(X,W);CHKERRQ(ierr);	/* update interior iterate */
+         ierr = VecCopy(X,W);CHKERRQ(ierr);  /* update interior iterate */
          ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
          ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
@@ -261,11 +261,11 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          }
       }
     }
-    if (ksp->reason) break;	/* Convergence has been attained */
-    else {		/* Compute a new AS-orthogonal direction */
+    if (ksp->reason) break;  /* Convergence has been attained */
+    else {                   /* Compute a new AS-orthogonal direction */
       ierr = VecDot(R,R,&rntrn);CHKERRQ(ierr);
       beta = rntrn/rtr;
-      ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);	/*  p <- r + beta*p  */
+      ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);  /*  p <- r + beta*p  */
       rtr = PetscRealPart(rntrn);
     }
   }

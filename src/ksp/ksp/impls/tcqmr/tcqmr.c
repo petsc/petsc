@@ -69,8 +69,8 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     beta   = rho / (f*rhom1);
     rhom1  = rho;
     ierr   = VecCopy(z,utmp);CHKERRQ(ierr);    /* up1 = (A-alpha*I)*
-					         (z-2*beta*p) + f*beta*
-					         beta*um1 */
+                                                (z-2*beta*p) + f*beta*
+                                                beta*um1 */
     ierr = VecAXPY(utmp,-2.0*beta,p);CHKERRQ(ierr);
     ierr   = KSP_PCApplyBAorAB(ksp,utmp,up1,vtmp);CHKERRQ(ierr);
     ierr = VecAXPY(up1,-alpha,utmp);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 
   References:
   Transpose-free formulations of Lanczos-type methods for nonsymmetric linear systems,
-  Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Numerical Algorithms, 	
+  Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Numerical Algorithms,
   Volume 17, Numbers 1-2 / May, 1998 pp. 51-66.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTFQMR

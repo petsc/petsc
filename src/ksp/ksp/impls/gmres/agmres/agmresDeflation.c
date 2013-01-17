@@ -249,7 +249,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData (KSP ksp)
   } else { /* Form H^T */
     for (j = 0; j < N; j++) {
       for (i = 0; i < N; i++) {
-	MatEigR[j*N+i] = agmres->hes_origin[i*lC+j];
+        MatEigR[j*N+i] = agmres->hes_origin[i*lC+j];
       }
     }
   }

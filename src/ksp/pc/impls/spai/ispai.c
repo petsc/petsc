@@ -96,14 +96,14 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
                               verbose == 1 prints timing and matrix statistics */
 
   ierr = bspai(ispai->B,&ispai->M,
-		   stdout,
-		   ispai->epsilon,
-		   ispai->nbsteps,
-		   ispai->max,
-		   ispai->maxnew,
-		   ispai->block_size,
-		   ispai->cache_size,
-	       ispai->verbose);CHKERRQ(ierr);
+               stdout,
+               ispai->epsilon,
+               ispai->nbsteps,
+               ispai->max,
+               ispai->maxnew,
+               ispai->block_size,
+               ispai->cache_size,
+               ispai->verbose);CHKERRQ(ierr);
 
   ierr = ConvertMatrixToMat(((PetscObject)pc)->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
 
@@ -691,7 +691,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   */
 
   M = new_matrix((SPAI_Comm)comm);
-							
+
   M->n = n;
   M->bs = 1;
   M->max_block_size = 1;
@@ -810,9 +810,9 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
       row_indx = i - rstart;
       ierr     = MatGetRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
-	col = cols[j];
-	len = rows->rlen[row_indx]++;
-	rows->rptrs[row_indx][len] = mapping[col];
+        col = cols[j];
+        len = rows->rlen[row_indx]++;
+        rows->rptrs[row_indx][len] = mapping[col];
       }
       ierr = MatRestoreRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
     }
@@ -865,9 +865,9 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
       if ((global_col >= first_diag_col) && (global_col < last_diag_col))
-	d_nnz[i]++;
+        d_nnz[i]++;
       else
-	o_nnz[i]++;
+        o_nnz[i]++;
     }
   }
 

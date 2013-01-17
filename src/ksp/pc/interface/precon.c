@@ -27,19 +27,19 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
       ierr = MatIsSymmetricKnown(pc->pmat,&set,&flg3);CHKERRQ(ierr);
       if (flg1 && (!flg2 || (set && flg3))) {
-	*type = PCICC;
+        *type = PCICC;
       } else if (flg2) {
-	*type = PCILU;
+        *type = PCILU;
       } else if (f) { /* likely is a parallel matrix run on one processor */
-	*type = PCBJACOBI;
+        *type = PCBJACOBI;
       } else {
-	*type = PCNONE;
+        *type = PCNONE;
       }
     } else {
        if (f) {
-	*type = PCBJACOBI;
+        *type = PCBJACOBI;
       } else {
-	*type = PCNONE;
+        *type = PCNONE;
       }
     }
   } else {

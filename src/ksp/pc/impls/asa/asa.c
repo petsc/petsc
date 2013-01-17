@@ -299,7 +299,7 @@ PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal r
     ierr = PetscObjectTypeCompare((PetscObject)(pc), PCNONE, &flg);CHKERRQ(ierr);
     if (flg) {
       /* WORK: this is just an educated guess. Any number between 0 and 2/rho(A)
-	 should do. asa_lev->spec_rad has to be an upper bound on rho(A). */
+         should do. asa_lev->spec_rad has to be an upper bound on rho(A). */
       spec_rad_inv = 1.0/spec_rad;
       ierr = KSPRichardsonSetScale(ksp, spec_rad_inv);CHKERRQ(ierr);
     } else {
@@ -415,9 +415,9 @@ PetscErrorCode PCSetupDirectSolversOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_le
     if (flg) {
       ierr = MPI_Comm_size(asa_lev->comm, &comm_size);CHKERRQ(ierr);
       if (comm_size > 1) {
-	/* the LU PC will call MatSolve, we may have to set the correct type for the matrix
-	   to have support for this in parallel */
-	ierr = MatConvert(asa_lev->A, asa->coarse_mat_type, MAT_REUSE_MATRIX, &(asa_lev->A));CHKERRQ(ierr);
+        /* the LU PC will call MatSolve, we may have to set the correct type for the matrix
+           to have support for this in parallel */
+        ierr = MatConvert(asa_lev->A, asa->coarse_mat_type, MAT_REUSE_MATRIX, &(asa_lev->A));CHKERRQ(ierr);
       }
     }
   }
@@ -646,46 +646,46 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
   /* orthogonalize all submatrices and store them in b_orth_arr */
   for (a=0; a<mat_agg_loc_size; a++) {
        /* Get the entries for aggregate from B. This is row ordered (although internally
-	  it is column ordered and we will waste some energy transposing it).
-	  WORK: use something like MatGetArray(b_submat_arr[a], &b_submat) but be really
-	  careful about all the different matrix types */
+          it is column ordered and we will waste some energy transposing it).
+          WORK: use something like MatGetArray(b_submat_arr[a], &b_submat) but be really
+          careful about all the different matrix types */
        ierr = MatGetValues(b_submat_arr[a], cand_vec_length[a], idxm, cand_vecs_num, idxn, b_submat);CHKERRQ(ierr);
 
        if (construct_bridge) {
-	 /* if we are constructing a bridging restriction/interpolation operator, we have
-	    to use the same number of dofs as in our previous construction */
-	 max_cand_vecs_to_add = asa_lev->loc_agg_dofs[a];
+         /* if we are constructing a bridging restriction/interpolation operator, we have
+            to use the same number of dofs as in our previous construction */
+         max_cand_vecs_to_add = asa_lev->loc_agg_dofs[a];
        } else {
-	 /* for a normal restriction/interpolation operator, we should make sure that we
-	    do not create linear dependence by accident */
-	 max_cand_vecs_to_add = PetscMin(cand_vec_length[a], cand_vecs_num);
+         /* for a normal restriction/interpolation operator, we should make sure that we
+            do not create linear dependence by accident */
+         max_cand_vecs_to_add = PetscMin(cand_vec_length[a], cand_vecs_num);
        }
 
        /* We use LAPACK to compute the QR decomposition of b_submat. For LAPACK we have to
-	  transpose the matrix. We might throw out some column vectors during this process.
-	  We are keeping count of the number of column vectors that we use (and therefore the
-	  number of dofs on the lower level) in new_loc_agg_dofs[a]. */
+          transpose the matrix. We might throw out some column vectors during this process.
+          We are keeping count of the number of column vectors that we use (and therefore the
+          number of dofs on the lower level) in new_loc_agg_dofs[a]. */
        new_loc_agg_dofs[a] = 0;
        for (j=0; j<max_cand_vecs_to_add; j++) {
-	 /* check for condition (4.5) */
-	 norm = 0.0;
-	 for (i=0; i<cand_vec_length[a]; i++) {
-	   norm += PetscRealPart(b_submat[i*cand_vecs_num+j])*PetscRealPart(b_submat[i*cand_vecs_num+j])
-	     + PetscImaginaryPart(b_submat[i*cand_vecs_num+j])*PetscImaginaryPart(b_submat[i*cand_vecs_num+j]);
-	 }
-	 /* only add candidate vector if bigger than cutoff or first candidate */
-	 if ((!j) || (norm > cutoff*((PetscReal) cand_vec_length[a])/((PetscReal) nodes_on_lev))) {
-	   /* passed criterion (4.5), we have not implemented criterion (4.6) yet */
-	   for (i=0; i<cand_vec_length[a]; i++) {
-	     b_submat_tp[new_loc_agg_dofs[a]*cand_vec_length[a]+i] = b_submat[i*cand_vecs_num+j];
-	   }
-	   new_loc_agg_dofs[a]++;
-	 }
-	 /* #ifdef PCASA_VERBOSE */
-	 else {
-	   ierr = PetscPrintf(asa_lev->comm, "Cutoff criteria invoked\n");CHKERRQ(ierr);
-	 }
-	 /* #endif */
+         /* check for condition (4.5) */
+         norm = 0.0;
+         for (i=0; i<cand_vec_length[a]; i++) {
+           norm += PetscRealPart(b_submat[i*cand_vecs_num+j])*PetscRealPart(b_submat[i*cand_vecs_num+j])
+             + PetscImaginaryPart(b_submat[i*cand_vecs_num+j])*PetscImaginaryPart(b_submat[i*cand_vecs_num+j]);
+         }
+         /* only add candidate vector if bigger than cutoff or first candidate */
+         if ((!j) || (norm > cutoff*((PetscReal) cand_vec_length[a])/((PetscReal) nodes_on_lev))) {
+           /* passed criterion (4.5), we have not implemented criterion (4.6) yet */
+           for (i=0; i<cand_vec_length[a]; i++) {
+             b_submat_tp[new_loc_agg_dofs[a]*cand_vec_length[a]+i] = b_submat[i*cand_vecs_num+j];
+           }
+           new_loc_agg_dofs[a]++;
+         }
+         /* #ifdef PCASA_VERBOSE */
+         else {
+           ierr = PetscPrintf(asa_lev->comm, "Cutoff criteria invoked\n");CHKERRQ(ierr);
+         }
+         /* #endif */
        }
 
        CHKMEMQ;
@@ -709,29 +709,29 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
        ierr = PetscFPTrapPop();CHKERRQ(ierr);
 
        /* Transpose b_submat_tp and store it in b_orth_arr[a]. If we are constructing a
-	  bridging restriction/interpolation operator, we could end up with less dofs than
-	  we previously had. We fill those up with zeros. */
+          bridging restriction/interpolation operator, we could end up with less dofs than
+          we previously had. We fill those up with zeros. */
        if (!construct_bridge) {
-	 ierr = PetscMalloc(sizeof(PetscScalar)*cand_vec_length[a]*new_loc_agg_dofs[a], b_orth_arr+a);CHKERRQ(ierr);
-	 for (j=0; j<new_loc_agg_dofs[a]; j++) {
-	   for (i=0; i<cand_vec_length[a]; i++) {
-	     b_orth_arr[a][i*new_loc_agg_dofs[a]+j] = b_submat_tp[j*cand_vec_length[a]+i];
-	   }
-	 }
+         ierr = PetscMalloc(sizeof(PetscScalar)*cand_vec_length[a]*new_loc_agg_dofs[a], b_orth_arr+a);CHKERRQ(ierr);
+         for (j=0; j<new_loc_agg_dofs[a]; j++) {
+           for (i=0; i<cand_vec_length[a]; i++) {
+             b_orth_arr[a][i*new_loc_agg_dofs[a]+j] = b_submat_tp[j*cand_vec_length[a]+i];
+           }
+         }
        } else {
-	 /* bridge, might have to fill up */
-	 ierr = PetscMalloc(sizeof(PetscScalar)*cand_vec_length[a]*max_cand_vecs_to_add, b_orth_arr+a);CHKERRQ(ierr);
-	 for (j=0; j<new_loc_agg_dofs[a]; j++) {
-	   for (i=0; i<cand_vec_length[a]; i++) {
-	     b_orth_arr[a][i*max_cand_vecs_to_add+j] = b_submat_tp[j*cand_vec_length[a]+i];
-	   }
-	 }
-	 for (j=new_loc_agg_dofs[a]; j<max_cand_vecs_to_add; j++) {
-	   for (i=0; i<cand_vec_length[a]; i++) {
-	     b_orth_arr[a][i*max_cand_vecs_to_add+j] = 0.0;
-	   }
-	 }
-	 new_loc_agg_dofs[a] = max_cand_vecs_to_add;
+         /* bridge, might have to fill up */
+         ierr = PetscMalloc(sizeof(PetscScalar)*cand_vec_length[a]*max_cand_vecs_to_add, b_orth_arr+a);CHKERRQ(ierr);
+         for (j=0; j<new_loc_agg_dofs[a]; j++) {
+           for (i=0; i<cand_vec_length[a]; i++) {
+             b_orth_arr[a][i*max_cand_vecs_to_add+j] = b_submat_tp[j*cand_vec_length[a]+i];
+           }
+         }
+         for (j=new_loc_agg_dofs[a]; j<max_cand_vecs_to_add; j++) {
+           for (i=0; i<cand_vec_length[a]; i++) {
+             b_orth_arr[a][i*max_cand_vecs_to_add+j] = 0.0;
+           }
+         }
+         new_loc_agg_dofs[a] = max_cand_vecs_to_add;
        }
        /* the number of columns in asa_lev->P that are local to this process */
        total_loc_cols += new_loc_agg_dofs[a];
@@ -769,17 +769,17 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
 
   /* we now have enough information to create asa_lev->P */
   ierr = MatCreateAIJ(asa_lev->comm, a_loc_n,  total_loc_cols, asa_lev->size, PETSC_DETERMINE,
-			 cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->P));CHKERRQ(ierr);
+                         cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->P));CHKERRQ(ierr);
   /* create asa_lev->Pt */
   ierr = MatCreateAIJ(asa_lev->comm, total_loc_cols, a_loc_n, PETSC_DETERMINE, asa_lev->size,
-			 max_cand_vec_length, PETSC_NULL, max_cand_vec_length, PETSC_NULL, &(asa_lev->Pt));CHKERRQ(ierr);
+                         max_cand_vec_length, PETSC_NULL, max_cand_vec_length, PETSC_NULL, &(asa_lev->Pt));CHKERRQ(ierr);
   if (asa_lev->next) {
     /* create correlator for aggregates of next level */
     ierr = MatCreateAIJ(asa_lev->comm, mat_agg_loc_size, total_loc_cols, PETSC_DETERMINE, PETSC_DETERMINE,
-			   cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->next->agg_corr));CHKERRQ(ierr);
+                           cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->next->agg_corr));CHKERRQ(ierr);
     /* create asa_lev->next->bridge_corr matrix */
     ierr = MatCreateAIJ(asa_lev->comm, mat_agg_loc_size, total_loc_cols, PETSC_DETERMINE, PETSC_DETERMINE,
-			   cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->next->bridge_corr));CHKERRQ(ierr);
+                           cand_vecs_num, PETSC_NULL, cand_vecs_num, PETSC_NULL, &(asa_lev->next->bridge_corr));CHKERRQ(ierr);
   }
 
   /* this is my own hack, but it should give the columns that we should write to */
@@ -794,11 +794,11 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
     for (i=0; i<cand_vec_length[a]; i++) {
       row = agg_arr[a][i];
       for (j=0; j<new_loc_agg_dofs[a]; j++) {
-	col = mat_loc_col_start + loc_agg_dofs_sum + j;
-	val = b_orth_arr[a][i*new_loc_agg_dofs[a] + j];
-	ierr = MatSetValues(asa_lev->P, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
-	val = PetscConj(val);
-	ierr = MatSetValues(asa_lev->Pt, 1, &col, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
+        col = mat_loc_col_start + loc_agg_dofs_sum + j;
+        val = b_orth_arr[a][i*new_loc_agg_dofs[a] + j];
+        ierr = MatSetValues(asa_lev->P, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
+        val = PetscConj(val);
+        ierr = MatSetValues(asa_lev->Pt, 1, &col, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
       }
     }
 
@@ -806,15 +806,15 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
     if (asa_lev->next) {
       row = a+mat_agg_loc_start;
       for (i=0; i<new_loc_agg_dofs[a]; i++) {
-	col = mat_loc_col_start + loc_agg_dofs_sum + i;
-	val = 1.0;
-	ierr = MatSetValues(asa_lev->next->agg_corr, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
-	/* for the bridge operator we leave out the newest candidates, i.e.
-	   we set bridge_corr to 1.0 for all columns up to asa_lev->loc_agg_dofs[a] and to
-	   0.0 between asa_lev->loc_agg_dofs[a] and new_loc_agg_dofs[a] */
-	if (!(asa_lev->loc_agg_dofs && (i >= asa_lev->loc_agg_dofs[a]))) {
-	  ierr = MatSetValues(asa_lev->next->bridge_corr, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
-	}
+        col = mat_loc_col_start + loc_agg_dofs_sum + i;
+        val = 1.0;
+        ierr = MatSetValues(asa_lev->next->agg_corr, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
+        /* for the bridge operator we leave out the newest candidates, i.e.
+           we set bridge_corr to 1.0 for all columns up to asa_lev->loc_agg_dofs[a] and to
+           0.0 between asa_lev->loc_agg_dofs[a] and new_loc_agg_dofs[a] */
+        if (!(asa_lev->loc_agg_dofs && (i >= asa_lev->loc_agg_dofs[a]))) {
+          ierr = MatSetValues(asa_lev->next->bridge_corr, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
 
@@ -1094,7 +1094,7 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
   if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu_initial)) {
     /* converges by relaxation alone */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Relaxation should be sufficient to treat this problem. "
-	    "Use relaxation or decrease epsilon with -pc_asa_epsilon");
+            "Use relaxation or decrease epsilon with -pc_asa_epsilon");
   } else {
     /* set the number of relaxations to asa->mu from asa->mu_initial */
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->mu);CHKERRQ(ierr);
@@ -1126,7 +1126,7 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
       ierr = PCCreateAggregates_ASA(asa_lev);CHKERRQ(ierr);
 
       /* (c) Define tentatative prolongator P_{l+1}^l and candidate matrix B_{l+1}
-	     using P_{l+1}^l B_{l+1} = B_l and (P_{l+1}^l)^T P_{l+1}^l = I */
+             using P_{l+1}^l B_{l+1} = B_l and (P_{l+1}^l)^T P_{l+1}^l = I */
       ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE);CHKERRQ(ierr);
 
       /* future WORK: set correct fill ratios for all the operations below */
@@ -1148,47 +1148,47 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
       /* coarse enough for direct solver? */
       ierr = MatGetSize(asa_next_lev->A, &i, &j);CHKERRQ(ierr);
       if (PetscMax(i,j) <= asa->direct_solver) {
-	ierr = PetscPrintf(asa_lev->comm, "Level %D can be treated directly.\n"
-			   "Algorithm will use %D levels.\n", asa_next_lev->level,
-			   asa_next_lev->level);CHKERRQ(ierr);
-	break; /* go to step 5 */
+        ierr = PetscPrintf(asa_lev->comm, "Level %D can be treated directly.\n"
+                           "Algorithm will use %D levels.\n", asa_next_lev->level,
+                           asa_next_lev->level);CHKERRQ(ierr);
+        break; /* go to step 5 */
       }
 
       if (!skip_steps_f_i) {
-	/* (f) Set x_{l+1} = B_{l+1}, we just compute it again */
+        /* (f) Set x_{l+1} = B_{l+1}, we just compute it again */
         ierr = VecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
-	ierr = MatGetVecs(asa_lev->P, &(asa_next_lev->x), 0);CHKERRQ(ierr);
-	ierr = MatMult(asa_lev->Pt, asa_lev->x, asa_next_lev->x);CHKERRQ(ierr);
+        ierr = MatGetVecs(asa_lev->P, &(asa_next_lev->x), 0);CHKERRQ(ierr);
+        ierr = MatMult(asa_lev->Pt, asa_lev->x, asa_next_lev->x);CHKERRQ(ierr);
 
-/* 	/\* (g) Make copy \hat{x}_{l+1} = x_{l+1} *\/ */
-/* 	ierr = VecDuplicate(asa_next_lev->x, &xhat);CHKERRQ(ierr); */
-/* 	ierr = VecCopy(asa_next_lev->x, xhat);CHKERRQ(ierr); */
-	
-	/* Create b_{l+1} */
+/*      /\* (g) Make copy \hat{x}_{l+1} = x_{l+1} *\/ */
+/*      ierr = VecDuplicate(asa_next_lev->x, &xhat);CHKERRQ(ierr); */
+/*      ierr = VecCopy(asa_next_lev->x, xhat);CHKERRQ(ierr); */
+        
+        /* Create b_{l+1} */
         ierr = VecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
-	ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->b), 0);
-	ierr = VecSet(asa_next_lev->b, 0.0);
+        ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->b), 0);
+        ierr = VecSet(asa_next_lev->b, 0.0);
 
-	/* (h) Relax mu times on A_{l+1} x = 0 */
-	/* compute old norm */
-	ierr = MatGetVecs(asa_next_lev->A, 0, &ax);CHKERRQ(ierr);
-	ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
-	ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
-	prevnorm = PetscAbsScalar(tmp);
-	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm of starting guess on level %D: %f\n", asa_next_lev->level, prevnorm);CHKERRQ(ierr);
-	/* apply mu relaxations: WORK, make sure that mu is set correctly */
-	ierr = KSPSolve(asa_next_lev->smoothd, asa_next_lev->b, asa_next_lev->x);CHKERRQ(ierr);
-	/* compute new norm */
-	ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
-	ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
-	norm = PetscAbsScalar(tmp);
-	ierr = VecDestroy(&(ax));CHKERRQ(ierr);
-	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
-	/* (i) Check if it already converges by itself */
-	if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu)) {
-	  /* relaxation reduces error sufficiently */
-	  skip_steps_f_i = PETSC_TRUE;
-	}
+        /* (h) Relax mu times on A_{l+1} x = 0 */
+        /* compute old norm */
+        ierr = MatGetVecs(asa_next_lev->A, 0, &ax);CHKERRQ(ierr);
+        ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
+        ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
+        prevnorm = PetscAbsScalar(tmp);
+        ierr = PetscPrintf(asa_next_lev->comm, "Residual norm of starting guess on level %D: %f\n", asa_next_lev->level, prevnorm);CHKERRQ(ierr);
+        /* apply mu relaxations: WORK, make sure that mu is set correctly */
+        ierr = KSPSolve(asa_next_lev->smoothd, asa_next_lev->b, asa_next_lev->x);CHKERRQ(ierr);
+        /* compute new norm */
+        ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
+        ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
+        norm = PetscAbsScalar(tmp);
+        ierr = VecDestroy(&(ax));CHKERRQ(ierr);
+        ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
+        /* (i) Check if it already converges by itself */
+        if (norm/prevnorm <= pow(asa->epsilon, (PetscReal) asa->mu)) {
+          /* relaxation reduces error sufficiently */
+          skip_steps_f_i = PETSC_TRUE;
+        }
       }
       /* (j) go to next coarser level */
       l++;
@@ -1223,18 +1223,18 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
       cand_vec = asa_lev->x;
       asa_lev->x = 0;
       while(asa_lev->prev) {
-	/* interpolate to higher level */
-	ierr = MatGetVecs(asa_lev->prev->smP, 0, &cand_vec_new);CHKERRQ(ierr);
-	ierr = MatMult(asa_lev->prev->smP, cand_vec, cand_vec_new);CHKERRQ(ierr);
-	ierr = VecDestroy(&(cand_vec));CHKERRQ(ierr);
-	cand_vec = cand_vec_new;
-	
-	/* destroy all working vectors on the way */
-	ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
-	ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+        /* interpolate to higher level */
+        ierr = MatGetVecs(asa_lev->prev->smP, 0, &cand_vec_new);CHKERRQ(ierr);
+        ierr = MatMult(asa_lev->prev->smP, cand_vec, cand_vec_new);CHKERRQ(ierr);
+        ierr = VecDestroy(&(cand_vec));CHKERRQ(ierr);
+        cand_vec = cand_vec_new;
+        
+        /* destroy all working vectors on the way */
+        ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+        ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
 
-	/* move to next higher level */
-	asa_lev = asa_lev->prev;
+        /* move to next higher level */
+        asa_lev = asa_lev->prev;
       }
     }
     /* set the first column of B1 */
@@ -1360,9 +1360,9 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
   /* 1. If max. dof per node on level 2 equals K, stop */
   if (asa_next_lev->cand_vecs >= asa->max_dof_lev_2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,
-		       "Maximum dof on level 2 reached: %D\n"
-		       "Consider increasing this limit by setting it with -pc_asa_max_dof_lev_2\n",
-		       asa->max_dof_lev_2);CHKERRQ(ierr);
+                       "Maximum dof on level 2 reached: %D\n"
+                       "Consider increasing this limit by setting it with -pc_asa_max_dof_lev_2\n",
+                       asa->max_dof_lev_2);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1405,8 +1405,8 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
     norm = PetscAbsScalar(tmp);
     if (c>0) {
       if (norm/prevnorm < asa->epsilon) {
-	nd_fast = PETSC_TRUE;
-	break;
+        nd_fast = PETSC_TRUE;
+        break;
       }
     }
     prevnorm = norm;
@@ -1443,13 +1443,13 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
 
     /* (b) construct prolongator I_{l+1}^l = S_l P_{l+1}^l */
     ierr = PCSmoothProlongator_ASA(asa_lev);CHKERRQ(ierr);
-							
+
     /* (c) construct coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
     ierr = MatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
        ierr = MatMatMult(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
     ierr = MatMatMult(asa_lev->smPt, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
     ierr = MatDestroy(&AI);CHKERRQ(ierr);
-				 /* ierr = MatPtAP(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
+    /* ierr = MatPtAP(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu);CHKERRQ(ierr);
@@ -1462,7 +1462,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       ierr = VecGetOwnershipRange(asa_next_lev->x, &loc_vec_low, &loc_vec_high);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscInt)*(loc_vec_high-loc_vec_low), &idxm);CHKERRQ(ierr);
       for (i=loc_vec_low; i<loc_vec_high; i++)
-	idxm[i-loc_vec_low] = i;
+        idxm[i-loc_vec_low] = i;
       ierr = PetscMalloc(sizeof(PetscInt)*1, &idxn);CHKERRQ(ierr);
       idxn[0] = asa_next_lev->cand_vecs;
 
@@ -1478,7 +1478,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       ierr = PetscFree(idxn);CHKERRQ(ierr);
 
       /* (e) create bridge transfer operator P_{l+2}^{l+1}, by using the previously
-	 computed candidates */
+        computed candidates */
       ierr = PCCreateTransferOp_ASA(asa_next_lev, PETSC_TRUE);CHKERRQ(ierr);
 
       /* (f) construct bridging prolongator I_{l+2}^{l+1} = S_{l+1} P_{l+2}^{l+1} */
@@ -1499,7 +1499,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       ierr = VecSet(asa_next_lev->b, 0.0);
       /* apply V-cycle */
       for (c=0; c<asa->mu; c++) {
-	ierr = PCApplyVcycleOnLevel_ASA(asa_next_lev, asa->gamma);CHKERRQ(ierr);
+        ierr = PCApplyVcycleOnLevel_ASA(asa_next_lev, asa->gamma);CHKERRQ(ierr);
       }
 
       /* (i) check convergence */
@@ -1592,10 +1592,10 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
     ierr = VecGetArray(asa->invsqrtdiag, &d);CHKERRQ(ierr);
     for (i=0; i<le-ls; i++) {
       if (d[i] == 0.0) {
-	d[i]     = 1.0;
-	zeroflag = PETSC_TRUE;
+        d[i]     = 1.0;
+        zeroflag = PETSC_TRUE;
       } else {
-	d[i] = 1./PetscSqrtReal(PetscAbsScalar(d[i]));
+        d[i] = 1./PetscSqrtReal(PetscAbsScalar(d[i]));
       }
     }
     ierr = VecRestoreArray(asa->invsqrtdiag,&d);CHKERRQ(ierr);
@@ -1659,9 +1659,9 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
       /* improve interpolation by adding another candidate vector */
       ierr = PCGeneralSetupStage_ASA(asa, asa_lev->r, &cand_added);CHKERRQ(ierr);
       if (!cand_added) {
-	/* either too many candidates for storage or cycle is already effective */
-	ierr = PetscPrintf(asa->comm, "either too many candidates for storage or cycle is already effective\n");CHKERRQ(ierr);
-	break;
+        /* either too many candidates for storage or cycle is already effective */
+        ierr = PetscPrintf(asa->comm, "either too many candidates for storage or cycle is already effective\n");CHKERRQ(ierr);
+        break;
       }
       ierr = VecSetRandom(asa_lev->x, rctx);CHKERRQ(ierr);
       rq_prev = rq*10000.; /* give the new V-cycle some grace period */

@@ -94,7 +94,7 @@ int main(int argc,char **args)
      indx = 0;
      for (k=0;k<(p+1);++k) {
        for (j=0;j<(p+1);++j) {
-	 idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
+         idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
        }
      }
      ierr = MatSetValues(A,num2Dnodes,idx,num2Dnodes,idx,Ke2D,ADD_VALUES);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ int main(int argc,char **args)
      indx = 0;
      for (k=0;k<(p+1);++k) {
        for (j=0;j<(p+1);++j) {
-	 idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
+         idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
        }
      }
      ierr = FormNodalRhs(p,x,y,h,gllNode,r);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,double* gqn,
       indx = j*(P+1)+i;
       Me1D[indx] = 0.0;
       for (k=0; k<(P+1);++k) {
-	Me1D[indx] += H*gqw[k]*polyBasisFunc(P,i,gqn,gqn[k])*polyBasisFunc(P,j,gqn,gqn[k]);
+        Me1D[indx] += H*gqw[k]*polyBasisFunc(P,i,gqn,gqn[k])*polyBasisFunc(P,j,gqn,gqn[k]);
       }
     }
   }
@@ -265,7 +265,7 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,double* gqn,
       indx = j*(P+1)+i;
       Ke1D[indx] = 0.0;
       for (k=0; k<(P+1);++k) {
-	Ke1D[indx] += (1./H)*gqw[k]*derivPolyBasisFunc(P,i,gqn,gqn[k])*derivPolyBasisFunc(P,j,gqn,gqn[k]);
+        Ke1D[indx] += (1./H)*gqw[k]*derivPolyBasisFunc(P,i,gqn,gqn[k])*derivPolyBasisFunc(P,j,gqn,gqn[k]);
       }
     }
   }
@@ -287,12 +287,12 @@ static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar
   for (j2=0;j2<(P+1);++j2) {
     for (i2=0; i2<(P+1);++i2) {
       for (j1=0;j1<(P+1);++j1) {
-	for (i1=0;i1<(P+1);++i1) {
-	  indx1 = j1*(P+1)+i1;
-	  indx2 = j2*(P+1)+i2;
-	  indx3 = (j2*(P+1)+j1)*(P+1)*(P+1)+(i2*(P+1)+i1);
-	  Me2D[indx3] = Me1D[indx1]*Me1D[indx2];
-	}
+        for (i1=0;i1<(P+1);++i1) {
+          indx1 = j1*(P+1)+i1;
+          indx2 = j2*(P+1)+i2;
+          indx3 = (j2*(P+1)+j1)*(P+1)*(P+1)+(i2*(P+1)+i1);
+          Me2D[indx3] = Me1D[indx1]*Me1D[indx2];
+        }
       }
     }
   }
@@ -314,12 +314,12 @@ static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscS
   for (j2=0;j2<(P+1);++j2) {
     for (i2=0; i2<(P+1);++i2) {
       for (j1=0;j1<(P+1);++j1) {
-	for (i1=0;i1<(P+1);++i1) {
-	  indx1 = j1*(P+1)+i1;
-	  indx2 = j2*(P+1)+i2;
-	  indx3 = (j2*(P+1)+j1)*(P+1)*(P+1)+(i2*(P+1)+i1);
-	  Ke2D[indx3] = Ke1D[indx1]*Me1D[indx2] + Me1D[indx1]*Ke1D[indx2];
-	}
+        for (i1=0;i1<(P+1);++i1) {
+          indx1 = j1*(P+1)+i1;
+          indx2 = j2*(P+1)+i2;
+          indx3 = (j2*(P+1)+j1)*(P+1)*(P+1)+(i2*(P+1)+i1);
+          Ke2D[indx3] = Ke1D[indx1]*Me1D[indx2] + Me1D[indx1]*Ke1D[indx2];
+        }
       }
     }
   }
@@ -403,9 +403,9 @@ static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal* x
     if (j != basis) {
       numtmp = 1.;
       for (i=0;i<(order+1);++i) {
-	if (i!=basis && j!=i) {
-	  numtmp *= (xval-xLocVal[i]);
-	}
+        if (i!=basis && j!=i) {
+          numtmp *= (xval-xLocVal[i]);
+        }
       }
       numerator += numtmp;
     }
@@ -455,9 +455,9 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
       /* Starting with the above approximation to the ith root, we enter */
       /* the main loop of refinement by Newton's method.                 */
       do {
-	qAndLEvaluation(n,z,&q,&qp,&Ln);
-	z1=z;
-	z=z1-q/qp; /* Newton's method. */
+        qAndLEvaluation(n,z,&q,&qp,&Ln);
+        z1=z;
+        z=z1-q/qp; /* Newton's method. */
       } while (fabs(z-z1) > 3.0e-11);
       qAndLEvaluation(n,z,&q,&qp,&Ln);
       x[j]=xm+xl*z;      /* Scale the root to the desired interval, */

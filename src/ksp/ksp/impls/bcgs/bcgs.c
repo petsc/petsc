@@ -109,7 +109,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
-	 may be our solution.  Give it a try? */
+         may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;

@@ -503,10 +503,10 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
       } else {
-	ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}r */
-	ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
+        ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}r */
+        ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
@@ -517,10 +517,10 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     }
     if (ksp->its >= ksp->max_it) {
       if (ksp->normtype != KSP_NORM_NONE) {
-	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-	if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
+        ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+        if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       } else {
-	ksp->reason = KSP_CONVERGED_ITS;
+        ksp->reason = KSP_CONVERGED_ITS;
       }
     }
   }

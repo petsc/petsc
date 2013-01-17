@@ -284,7 +284,7 @@ int main(int argc,char **args)
         ierr = PetscStrcmp("lsqr",str,&lsqr);CHKERRQ(ierr);
       }
       if (lsqr) {
-	Mat BtB;
+        Mat BtB;
         ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
         ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatDestroy(&BtB);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ int main(int argc,char **args)
         cknorm = PETSC_FALSE;
         ierr = PetscOptionsGetBool(PETSC_NULL,"-cknorm",&cknorm,PETSC_NULL);CHKERRQ(ierr);
         while ( num_rhs-- ) {
-	  if (num_rhs == 1) VecSet(x,0.0);
+          if (num_rhs == 1) VecSet(x,0.0);
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -396,7 +396,7 @@ int main(int argc,char **args)
         PetscReal   norm;
 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[3],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-	ierr = VecCreate(PETSC_COMM_WORLD,&xstar);CHKERRQ(ierr);
+        ierr = VecCreate(PETSC_COMM_WORLD,&xstar);CHKERRQ(ierr);
         ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);

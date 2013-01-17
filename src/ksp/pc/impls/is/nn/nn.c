@@ -310,7 +310,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     for (i=0; i<n_neigh; i++) {
       mat[i*n_neigh+j] = 0.0;
       for (k=0; k<n_shared[i]; k++) {
-	mat[i*n_neigh+j] += DZ_IN[i][k] * pcis->work_N[shared[i][k]];
+        mat[i*n_neigh+j] += DZ_IN[i][k] * pcis->work_N[shared[i][k]];
       }
     }
   }

@@ -51,7 +51,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  CUSPMATRIX* mat;	
+  CUSPMATRIX* mat;
 #endif
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ static PetscErrorCode PCSetFromOptions_SACUSPPoly(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUSPPoly options");CHKERRQ(ierr);			
+  ierr = PetscOptionsHead("SACUSPPoly options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

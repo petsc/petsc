@@ -295,7 +295,7 @@ PetscErrorCode  PCISSetUp(PC pc)
       ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed,PETSC_NULL);CHKERRQ(ierr);
 
       ierr = PetscOptionsGetReal(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",
-			      &floating_factor,&set_damping_factor_floating);CHKERRQ(ierr);
+                              &floating_factor,&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 0.0; }
       ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating,PETSC_NULL);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 1.e-12; }
@@ -305,27 +305,27 @@ PetscErrorCode  PCISSetUp(PC pc)
       ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating,PETSC_NULL);CHKERRQ(ierr);
 
       if (pcis->pure_neumann) {  /* floating subdomain */
-	if (!(not_damp_floating)) {
+        if (!(not_damp_floating)) {
           ierr = PCFactorSetShiftType(pc_ctx,MAT_SHIFT_NONZERO);CHKERRQ(ierr);
           ierr = PCFactorSetShiftAmount(pc_ctx,floating_factor);CHKERRQ(ierr);
-	}
-	if (!(not_remove_nullspace_floating)){
-	  MatNullSpace nullsp;
-	  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
-	  ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
-	  ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-	}
+        }
+        if (!(not_remove_nullspace_floating)){
+          MatNullSpace nullsp;
+          ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
+          ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+        }
       } else {  /* fixed subdomain */
-	if (damp_fixed) {
+        if (damp_fixed) {
           ierr = PCFactorSetShiftType(pc_ctx,MAT_SHIFT_NONZERO);CHKERRQ(ierr);
           ierr = PCFactorSetShiftAmount(pc_ctx,floating_factor);CHKERRQ(ierr);
-	}
-	if (remove_nullspace_fixed) {
-	  MatNullSpace nullsp;
-	  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
-	  ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
-	  ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-	}
+        }
+        if (remove_nullspace_fixed) {
+          MatNullSpace nullsp;
+          ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
+          ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+        }
       }
     }
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */

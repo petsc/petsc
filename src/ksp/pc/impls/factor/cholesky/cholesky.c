@@ -286,7 +286,7 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool  flag)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
            PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftType(), PCFactorSetShiftAmount()
-	   PCFactorSetUseInPlace(), PCFactorSetMatOrderingType()
+           PCFactorSetUseInPlace(), PCFactorSetMatOrderingType()
 
 M*/
 

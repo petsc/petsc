@@ -62,7 +62,7 @@ typedef struct {
                   /* +-------+-------+                                                                        */
                   /* |   k   |   l   | subdomains k and l are neighbours                                      */
                   /* +-------+-------+                                                                        */
-		  /*                                                                                          */
+                  /*                                                                                          */
                   /* Let i and j be s.t. proc[k].neigh[i]==l and                                              */
                   /*                     proc[l].neigh[j]==k.                                                 */
                   /*                                                                                          */

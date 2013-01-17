@@ -69,9 +69,9 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   while (j  < m ) {
     if (im[j] != 0.0) {/* complex eigenvalue */
       if (im[j] < 0.0) { /* change the order */
-	temp = im[j+1];
-	im[j+1] = im[j];
-	im[j] = temp;
+        temp = im[j+1];
+        im[j+1] = im[j];
+        im[j] = temp;
       }
       j += 2;
     } else j++;

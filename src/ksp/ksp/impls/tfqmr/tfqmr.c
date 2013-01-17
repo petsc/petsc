@@ -91,7 +91,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       if (!m) {
         ierr = VecAYPX(D,cf,U);CHKERRQ(ierr);
       } else {
-	ierr = VecAYPX(D,cf,Q);CHKERRQ(ierr);
+        ierr = VecAYPX(D,cf,Q);CHKERRQ(ierr);
       }
       ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
 

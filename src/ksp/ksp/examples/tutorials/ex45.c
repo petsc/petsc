@@ -86,9 +86,9 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i<xs+xm; i++){
-	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
           barray[k][j][i] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
-	} else {
+        } else {
           barray[k][j][i] = Hx*Hy*Hz;
         }
       }
@@ -130,18 +130,18 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
-	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
-	  ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
-	} else {
-	  v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
-	  v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
-	  v[2] = -HyHzdHx;col[2].i = i-1; col[2].j = j; col[2].k = k;
-	  v[3] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);col[3].i = row.i; col[3].j = row.j; col[3].k = row.k;
-	  v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
-	  v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
-	  v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
-	  ierr = MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        } else {
+          v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
+          v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
+          v[2] = -HyHzdHx;col[2].i = i-1; col[2].j = j; col[2].k = k;
+          v[3] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);col[3].i = row.i; col[3].j = row.j; col[3].k = row.k;
+          v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
+          v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
+          v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
+          ierr = MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }

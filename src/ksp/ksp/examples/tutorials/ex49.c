@@ -541,9 +541,9 @@ static void FormStressOperatorQ1(PetscScalar Ke[],PetscScalar coords[],PetscScal
     prop_E  = E[p];
     prop_nu = nu[p];
     factor = prop_E / (  (1.0+prop_nu)*(1.0-2.0*prop_nu)  );
-    constit_D[0][0] = 1.0-prop_nu;	constit_D[0][1] = prop_nu; 			constit_D[0][2] = 0.0;
-    constit_D[1][0] = prop_nu;		  constit_D[1][1] = 1.0-prop_nu; 	constit_D[1][2] = 0.0;
-    constit_D[2][0] = 0.0;			    constit_D[2][1] = 0.0;					constit_D[2][2] = 0.5*(1.0-2.0*prop_nu);
+    constit_D[0][0] = 1.0-prop_nu;  constit_D[0][1] = prop_nu;      constit_D[0][2] = 0.0;
+    constit_D[1][0] = prop_nu;      constit_D[1][1] = 1.0-prop_nu;  constit_D[1][2] = 0.0;
+    constit_D[2][0] = 0.0;          constit_D[2][1] = 0.0;          constit_D[2][2] = 0.5*(1.0-2.0*prop_nu);
     for (i = 0; i < 3; i++) {
       for (j = 0; j < 3; j++) {
         constit_D[i][j] = factor * constit_D[i][j] * gp_weight[p] * J_p;

@@ -919,12 +919,12 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
       if (ksp->dm) {
-	ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
+        ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       } else {
-	Mat mat;
-	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-	ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatGetVecs(mat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+        Mat mat;
+        if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+        ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatGetVecs(mat,&vecr,PETSC_NULL);CHKERRQ(ierr);
       }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
@@ -932,7 +932,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       if (ksp->dm) {
         ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       } else {
-	ierr = VecDestroy(&vecr);CHKERRQ(ierr);
+        ierr = VecDestroy(&vecr);CHKERRQ(ierr);
       }
     }
   }
@@ -941,12 +941,12 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
       if (ksp->dm) {
-	ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
+        ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       } else {
-	Mat mat;
-	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-	ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatGetVecs(mat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+        Mat mat;
+        if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+        ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatGetVecs(mat,PETSC_NULL,&vecl);CHKERRQ(ierr);
       }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
@@ -954,7 +954,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       if (ksp->dm) {
         ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       } else {
-	ierr = VecDestroy(&vecl);CHKERRQ(ierr);
+        ierr = VecDestroy(&vecl);CHKERRQ(ierr);
       }
     }
   }

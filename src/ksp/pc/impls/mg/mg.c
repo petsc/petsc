@@ -133,7 +133,7 @@ PetscErrorCode PCReset_MG(PC pc)
     for (i=0; i<n; i++) {
       ierr = MatDestroy(&mglevels[i]->A);CHKERRQ(ierr);
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-	ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
+        ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
       }
       ierr = KSPReset(mglevels[i]->smoothu);CHKERRQ(ierr);
     }
@@ -187,7 +187,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     n = mglevels[0]->levels;
     for (i=0; i<n; i++) {
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-	ierr = KSPDestroy(&mglevels[i]->smoothd);CHKERRQ(ierr);
+        ierr = KSPDestroy(&mglevels[i]->smoothd);CHKERRQ(ierr);
       }
       ierr = KSPDestroy(&mglevels[i]->smoothu);CHKERRQ(ierr);
       ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
@@ -275,7 +275,7 @@ PetscErrorCode PCDestroy_MG(PC pc)
     n = mglevels[0]->levels;
     for (i=0; i<n; i++) {
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-	ierr = KSPDestroy(&mglevels[i]->smoothd);CHKERRQ(ierr);
+        ierr = KSPDestroy(&mglevels[i]->smoothd);CHKERRQ(ierr);
       }
       ierr = KSPDestroy(&mglevels[i]->smoothu);CHKERRQ(ierr);
       ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
@@ -391,7 +391,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
     if (mg->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGSetLevels",mg->cyclesperpcapply,&cycles,&flg);CHKERRQ(ierr);
       if (flg) {
-	ierr = PCMGMultiplicativeSetCycles(pc,cycles);CHKERRQ(ierr);
+        ierr = PCMGMultiplicativeSetCycles(pc,cycles);CHKERRQ(ierr);
       }
     }
     flg  = PETSC_FALSE;
@@ -588,9 +588,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
       kdm->ops->computerhs = PETSC_NULL;
       kdm->rhsctx          = PETSC_NULL;
       if (!mglevels[i+1]->interpolate) {
-	ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
-	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
-	if (rscale) {ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);}
+        ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
+        ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
+        if (rscale) {ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);}
         ierr = VecDestroy(&rscale);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
@@ -616,7 +616,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       for (i=n-2; i>-1; i--) {
         ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
         ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
-	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
+        if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
         dB   = B;
       }
       if (n > 1) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}

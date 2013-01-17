@@ -185,12 +185,12 @@ PetscErrorCode  PCCreate_ICC(PC pc)
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_ICC,&icc);CHKERRQ(ierr);
 
-  ((PC_Factor*)icc)->fact	          = 0;
+  ((PC_Factor*)icc)->fact               = 0;
   ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   ((PC_Factor*)icc)->factortype         = MAT_FACTOR_ICC;
-  ((PC_Factor*)icc)->info.levels	= 0.;
+  ((PC_Factor*)icc)->info.levels        = 0.;
   ((PC_Factor*)icc)->info.fill          = 1.0;
   icc->implctx            = 0;
 
@@ -199,12 +199,12 @@ PetscErrorCode  PCCreate_ICC(PC pc)
   ((PC_Factor*)icc)->info.shiftamount = 100.0*PETSC_MACHINE_EPSILON;
   ((PC_Factor*)icc)->info.zeropivot   = 100.0*PETSC_MACHINE_EPSILON;
 
-  pc->data	               = (void*)icc;
-  pc->ops->apply	       = PCApply_ICC;
+  pc->data                     = (void*)icc;
+  pc->ops->apply               = PCApply_ICC;
   pc->ops->applytranspose      = PCApply_ICC;
   pc->ops->setup               = PCSetup_ICC;
-  pc->ops->reset  	       = PCReset_ICC;
-  pc->ops->destroy	       = PCDestroy_ICC;
+  pc->ops->reset               = PCReset_ICC;
+  pc->ops->destroy             = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
   pc->ops->view                = PCView_ICC;
   pc->ops->getfactoredmatrix   = PCFactorGetMatrix_Factor;

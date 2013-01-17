@@ -83,13 +83,13 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
                   history if requested.
 
     input parameters:
-.	 fgmres  - structure containing parameters and work areas
+.        fgmres  - structure containing parameters and work areas
 
     output parameters:
 .        itcount - number of iterations used.  If null, ignored.
 .        converged - 0 if not converged
 
-		
+
     Notes:
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
@@ -328,9 +328,9 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 
     Input parameters:
         nrs - work area of size it + 1.
-	vguess  - index of initial guess
-	vdest - index of result.  Note that vguess may == vdest (replace
-	        guess with the solution).
+        vguess  - index of initial guess
+        vdest - index of result.  Note that vguess may == vdest (replace
+                guess with the solution).
         it - HH upper triangular part is a block of size (it+1) x (it+1)
 
      This is an internal routine that knows about the FGMRES internals.
@@ -392,13 +392,13 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
     input parameters:
 
 .        ksp -    Krylov space object
-.	 it  -    plane rotations are applied to the (it+1)th column of the
+.        it  -    plane rotations are applied to the (it+1)th column of the
                   modified hessenberg (i.e. HH(:,it))
 .        hapend - PETSC_FALSE not happy breakdown ending.
 
     output parameters:
 .        res - the new residual
-	
+
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESUpdateHessenberg"

@@ -80,12 +80,12 @@ xyt_ADT XYT_new(void)
 
 /**************************************xyt.c***********************************/
 PetscInt XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
-	   PetscInt *local2global,  /* global column mapping       */
-	   PetscInt n,              /* local num rows              */
-	   PetscInt m,              /* local num cols              */
-	   void *matvec,       /* b_loc=A_local.x_loc         */
-	   void *grid_data     /* grid data for matvec        */
-	   )
+           PetscInt *local2global,  /* global column mapping       */
+           PetscInt n,              /* local num rows              */
+           PetscInt m,              /* local num cols              */
+           void *matvec,       /* b_loc=A_local.x_loc         */
+           void *grid_data     /* grid data for matvec        */
+           )
 {
 
   PCTFS_comm_init();
@@ -338,8 +338,8 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       /* time to move to the next level? */
       while (i==segs[dim]){
         if (dim==level) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level\n");
-	stages[dim++]=i;
-	end+=lnsep[dim];
+        stages[dim++]=i;
+        end+=lnsep[dim];
       }
       stages[dim]=i;
 
@@ -351,27 +351,27 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
       /* shouldn't need this */
       if (col==INT_MAX)
-	{
-	  ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");CHKERRQ(ierr);
-	  continue;
-	}
+        {
+          ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");CHKERRQ(ierr);
+          continue;
+        }
 
       /* do I own it? I should */
       PCTFS_rvec_zero(v ,a_m);
       if (col==fo[start])
-	{
-	  start++;
-	  idx=PCTFS_ivec_linear_search(col, a_local2global, a_n);
-	  if (idx!=-1)
-	    {v[idx] = 1.0; j++;}
-	  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");
-	}
+        {
+          start++;
+          idx=PCTFS_ivec_linear_search(col, a_local2global, a_n);
+          if (idx!=-1)
+            {v[idx] = 1.0; j++;}
+          else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");
+        }
       else
-	{
-	  idx=PCTFS_ivec_linear_search(col, a_local2global, a_m);
-	  if (idx!=-1)
-	    {v[idx] = 1.0;}
-	}
+        {
+          idx=PCTFS_ivec_linear_search(col, a_local2global, a_m);
+          if (idx!=-1)
+            {v[idx] = 1.0;}
+        }
 
       /* perform u = A.v_l */
       PCTFS_rvec_zero(u,n);
@@ -384,13 +384,13 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       y_ptr=y;
       iptr = ycol_indices;
       for (k=0; k<i; k++)
-	{
-	  off = *iptr++;
-	  len = *iptr++;
+        {
+          off = *iptr++;
+          len = *iptr++;
           dlen = PetscBLASIntCast(len);
-	  uu[k] = BLASdot_(&dlen,u+off,&i1,y_ptr,&i1);
-	  y_ptr+=len;
-	}
+          uu[k] = BLASdot_(&dlen,u+off,&i1,y_ptr,&i1);
+          y_ptr+=len;
+        }
 
       /* uu = X^T.u_l (comm portion) */
       PCTFS_ssgl_radd  (uu, w, dim, stages);
@@ -400,13 +400,13 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       x_ptr=x;
       iptr = xcol_indices;
       for (k=0; k<i; k++)
-	{
-	  off = *iptr++;
-	  len = *iptr++;
+        {
+          off = *iptr++;
+          len = *iptr++;
           dlen = PetscBLASIntCast(len);
-	  BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1);
-	  x_ptr+=len;
-	}
+          BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1);
+          x_ptr+=len;
+        }
 
       /* compute v_l = v_l - z */
       PCTFS_rvec_zero(v+a_n,a_m-a_n);
@@ -415,7 +415,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
       /* compute u_l = A.v_l */
       if (a_n!=a_m)
-	{PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);}
+        {PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);}
       PCTFS_rvec_zero(u,n);
       do_matvec(xyt_handle->mvi,v,u);
 
@@ -439,118 +439,118 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       flag = 1;
       off=len=0;
       for (k=0; k<n; k++)
-	{
-	  if (v[k]!=0.0)
-	    {
-	      len=k;
-	      if (flag)
-		{off=k; flag=0;}
-	    }
-	}
+        {
+          if (v[k]!=0.0)
+            {
+              len=k;
+              if (flag)
+                {off=k; flag=0;}
+            }
+        }
 
       len -= (off-1);
 
       if (len>0)
-	{
-	  if ((xt_nnz+len)>xt_max_nnz)
-	    {
-	      ierr = PetscInfo(0,"increasing space for X by 2x!\n");CHKERRQ(ierr);
-	      xt_max_nnz *= 2;
-	      x_ptr = (PetscScalar *) malloc(xt_max_nnz*sizeof(PetscScalar));
-	      PCTFS_rvec_copy(x_ptr,x,xt_nnz);
-	      free(x);
-	      x = x_ptr;
-	      x_ptr+=xt_nnz;
-	    }
-	  xt_nnz += len;
-	  PCTFS_rvec_copy(x_ptr,v+off,len);
+        {
+          if ((xt_nnz+len)>xt_max_nnz)
+            {
+              ierr = PetscInfo(0,"increasing space for X by 2x!\n");CHKERRQ(ierr);
+              xt_max_nnz *= 2;
+              x_ptr = (PetscScalar *) malloc(xt_max_nnz*sizeof(PetscScalar));
+              PCTFS_rvec_copy(x_ptr,x,xt_nnz);
+              free(x);
+              x = x_ptr;
+              x_ptr+=xt_nnz;
+            }
+          xt_nnz += len;
+          PCTFS_rvec_copy(x_ptr,v+off,len);
 
           /* keep track of number of zeros */
-	  if (dim)
-	    {
-	      for (k=0; k<len; k++)
-		{
-		  if (x_ptr[k]==0.0)
-		    {xt_zero_nnz++;}
-		}
-	    }
-	  else
-	    {
-	      for (k=0; k<len; k++)
-		{
-		  if (x_ptr[k]==0.0)
-		    {xt_zero_nnz_0++;}
-		}
-	    }
-	  xcol_indices[2*i] = off;
-	  xcol_sz[i] = xcol_indices[2*i+1] = len;
-	  xcol_vals[i] = x_ptr;
-	}
+          if (dim)
+            {
+              for (k=0; k<len; k++)
+                {
+                  if (x_ptr[k]==0.0)
+                    {xt_zero_nnz++;}
+                }
+            }
+          else
+            {
+              for (k=0; k<len; k++)
+                {
+                  if (x_ptr[k]==0.0)
+                    {xt_zero_nnz_0++;}
+                }
+            }
+          xcol_indices[2*i] = off;
+          xcol_sz[i] = xcol_indices[2*i+1] = len;
+          xcol_vals[i] = x_ptr;
+        }
       else
-	{
-	  xcol_indices[2*i] = 0;
-	  xcol_sz[i] = xcol_indices[2*i+1] = 0;
-	  xcol_vals[i] = x_ptr;
-	}
+        {
+          xcol_indices[2*i] = 0;
+          xcol_sz[i] = xcol_indices[2*i+1] = 0;
+          xcol_vals[i] = x_ptr;
+        }
 
 
       /* add newly generated column, u_l, to Y */
       flag = 1;
       off=len=0;
       for (k=0; k<n; k++)
-	{
-	  if (u[k]!=0.0)
-	    {
-	      len=k;
-	      if (flag)
-		{off=k; flag=0;}
-	    }
-	}
+        {
+          if (u[k]!=0.0)
+            {
+              len=k;
+              if (flag)
+                {off=k; flag=0;}
+            }
+        }
 
       len -= (off-1);
 
       if (len>0)
-	{
-	  if ((yt_nnz+len)>yt_max_nnz)
-	    {
-	      ierr = PetscInfo(0,"increasing space for Y by 2x!\n");CHKERRQ(ierr);
-	      yt_max_nnz *= 2;
-	      y_ptr = (PetscScalar *) malloc(yt_max_nnz*sizeof(PetscScalar));
-	      PCTFS_rvec_copy(y_ptr,y,yt_nnz);
-	      free(y);
-	      y = y_ptr;
-	      y_ptr+=yt_nnz;
-	    }
-	  yt_nnz += len;
-	  PCTFS_rvec_copy(y_ptr,u+off,len);
+        {
+          if ((yt_nnz+len)>yt_max_nnz)
+            {
+              ierr = PetscInfo(0,"increasing space for Y by 2x!\n");CHKERRQ(ierr);
+              yt_max_nnz *= 2;
+              y_ptr = (PetscScalar *) malloc(yt_max_nnz*sizeof(PetscScalar));
+              PCTFS_rvec_copy(y_ptr,y,yt_nnz);
+              free(y);
+              y = y_ptr;
+              y_ptr+=yt_nnz;
+            }
+          yt_nnz += len;
+          PCTFS_rvec_copy(y_ptr,u+off,len);
 
           /* keep track of number of zeros */
-	  if (dim)
-	    {
-	      for (k=0; k<len; k++)
-		{
-		  if (y_ptr[k]==0.0)
-		    {yt_zero_nnz++;}
-		}
-	    }
-	  else
-	    {
-	      for (k=0; k<len; k++)
-		{
-		  if (y_ptr[k]==0.0)
-		    {yt_zero_nnz_0++;}
-		}
-	    }
-	  ycol_indices[2*i] = off;
-	  ycol_sz[i] = ycol_indices[2*i+1] = len;
-	  ycol_vals[i] = y_ptr;
-	}
+          if (dim)
+            {
+              for (k=0; k<len; k++)
+                {
+                  if (y_ptr[k]==0.0)
+                    {yt_zero_nnz++;}
+                }
+            }
+          else
+            {
+              for (k=0; k<len; k++)
+                {
+                  if (y_ptr[k]==0.0)
+                    {yt_zero_nnz_0++;}
+                }
+            }
+          ycol_indices[2*i] = off;
+          ycol_sz[i] = ycol_indices[2*i+1] = len;
+          ycol_vals[i] = y_ptr;
+        }
       else
-	{
-	  ycol_indices[2*i] = 0;
-	  ycol_sz[i] = ycol_indices[2*i+1] = 0;
-	  ycol_vals[i] = y_ptr;
-	}
+        {
+          ycol_indices[2*i] = 0;
+          ycol_sz[i] = ycol_indices[2*i+1] = 0;
+          ycol_vals[i] = y_ptr;
+        }
     }
 
   /* close off stages for execution phase */
@@ -692,10 +692,10 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   for (ct=i=0;i<n;i++)
     {
       if (lhs[i]!=0.0)
-	{rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i];}
+        {rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i];}
 
       if (lhs[i]!=1.0)
-	{
+        {
           shared=1;
         }
     }
@@ -716,200 +716,200 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
       /* initial separator set obtained from the symm. shared case  */
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"shared dof separator determination not ready ... see hmt!!!\n");
       for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
-	{
-	  /* set rsh of hc, fire, and collect lhs responses */
-	  (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
-	  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
-	
-	  /* set lsh of hc, fire, and collect rhs responses */
-	  (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
-	  PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
-	
-	  for (i=0;i<n;i++)
-	    {
-	      if (id< mask)
-		{		
-		  if (lhs[i]!=0.0)
-		    {lhs[i]=1.0;}
-		}
-	      if (id>=mask)
-		{		
-		  if (rhs[i]!=0.0)
-		    {rhs[i]=1.0;}
-		}
-	    }
+        {
+          /* set rsh of hc, fire, and collect lhs responses */
+          (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
+          PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
+        
+          /* set lsh of hc, fire, and collect rhs responses */
+          (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
+          PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
+        
+          for (i=0;i<n;i++)
+            {
+              if (id< mask)
+                {                
+                  if (lhs[i]!=0.0)
+                    {lhs[i]=1.0;}
+                }
+              if (id>=mask)
+                {                
+                  if (rhs[i]!=0.0)
+                    {rhs[i]=1.0;}
+                }
+            }
 
-	  if (id< mask)
-	    {PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge-1);}
-	  else
-	    {PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge-1);}
+          if (id< mask)
+            {PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge-1);}
+          else
+            {PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge-1);}
 
-	  /* count number of dofs I own that have signal and not in sep set */
-	  PCTFS_rvec_zero(rsum,4);
-	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
-	    {
-	      if (!used[i])
-		{
-		  /* number of unmarked dofs on node */
-		  ct++;
-		  /* number of dofs to be marked on lhs hc */
-		  if (id< mask)
-		    {		
-		      if (lhs[i]!=0.0)
-			{sum[0]++; rsum[0]+=1.0/lhs[i];}
-		    }
-		  /* number of dofs to be marked on rhs hc */
-		  if (id>=mask)
-		    {		
-		      if (rhs[i]!=0.0)
-			{sum[1]++; rsum[1]+=1.0/rhs[i];}
-		    }
-		}
-	    }
+          /* count number of dofs I own that have signal and not in sep set */
+          PCTFS_rvec_zero(rsum,4);
+          for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
+            {
+              if (!used[i])
+                {
+                  /* number of unmarked dofs on node */
+                  ct++;
+                  /* number of dofs to be marked on lhs hc */
+                  if (id< mask)
+                    {                
+                      if (lhs[i]!=0.0)
+                        {sum[0]++; rsum[0]+=1.0/lhs[i];}
+                    }
+                  /* number of dofs to be marked on rhs hc */
+                  if (id>=mask)
+                    {                
+                      if (rhs[i]!=0.0)
+                        {sum[1]++; rsum[1]+=1.0/rhs[i];}
+                    }
+                }
+            }
 
-	  /* go for load balance - choose half with most unmarked dofs, bias LHS */
-	  (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
-	  (id<mask) ? (rsum[2]=ct) : (rsum[3]=ct);
-	  PCTFS_giop_hc(sum,w,4,op,edge);
-	  PCTFS_grop_hc(rsum,rw,4,op,edge);
-	  rsum[0]+=0.1; rsum[1]+=0.1; rsum[2]+=0.1; rsum[3]+=0.1;
+          /* go for load balance - choose half with most unmarked dofs, bias LHS */
+          (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
+          (id<mask) ? (rsum[2]=ct) : (rsum[3]=ct);
+          PCTFS_giop_hc(sum,w,4,op,edge);
+          PCTFS_grop_hc(rsum,rw,4,op,edge);
+          rsum[0]+=0.1; rsum[1]+=0.1; rsum[2]+=0.1; rsum[3]+=0.1;
 
-	  if (id<mask)
-	    {
-	      /* mark dofs I own that have signal and not in sep set */
-	      for (ct=i=0;i<n;i++)
-		{
-		  if ((!used[i])&&(lhs[i]!=0.0))
-		    {
-		      ct++; nfo++;
+          if (id<mask)
+            {
+              /* mark dofs I own that have signal and not in sep set */
+              for (ct=i=0;i<n;i++)
+                {
+                  if ((!used[i])&&(lhs[i]!=0.0))
+                    {
+                      ct++; nfo++;
 
-		      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
+                      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
 
-		      *--iptr = local2global[i];
-		      used[i]=edge;
-		    }
-		}
-	      if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
+                      *--iptr = local2global[i];
+                      used[i]=edge;
+                    }
+                }
+              if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
 
-	      lnsep[edge]=ct;
-	      nsep[edge]=(PetscInt) rsum[0];
-	      dir [edge]=LEFT;
-	    }
+              lnsep[edge]=ct;
+              nsep[edge]=(PetscInt) rsum[0];
+              dir [edge]=LEFT;
+            }
 
-	  if (id>=mask)
-	    {
-	      /* mark dofs I own that have signal and not in sep set */
-	      for (ct=i=0;i<n;i++)
-		{
-		  if ((!used[i])&&(rhs[i]!=0.0))
-		    {
-		      ct++; nfo++;
+          if (id>=mask)
+            {
+              /* mark dofs I own that have signal and not in sep set */
+              for (ct=i=0;i<n;i++)
+                {
+                  if ((!used[i])&&(rhs[i]!=0.0))
+                    {
+                      ct++; nfo++;
 
-		      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
+                      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
 
-		      *--iptr = local2global[i];
-		      used[i]=edge;
-		    }
-		}
-	      if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
+                      *--iptr = local2global[i];
+                      used[i]=edge;
+                    }
+                }
+              if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
 
-	      lnsep[edge]=ct;
-	      nsep[edge]= (PetscInt) rsum[1];
-	      dir [edge]=RIGHT;
-	    }
+              lnsep[edge]=ct;
+              nsep[edge]= (PetscInt) rsum[1];
+              dir [edge]=RIGHT;
+            }
 
-	  /* LATER or we can recur on these to order seps at this level */
-	  /* do we need full set of separators for this?                */
+          /* LATER or we can recur on these to order seps at this level */
+          /* do we need full set of separators for this?                */
 
-	  /* fold rhs hc into lower */
-	  if (id>=mask)
-	    {id-=mask;}
-	}
+          /* fold rhs hc into lower */
+          if (id>=mask)
+            {id-=mask;}
+        }
     }
   else
     {
       for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
-	{
-	  /* set rsh of hc, fire, and collect lhs responses */
-	  (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
-	  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
+        {
+          /* set rsh of hc, fire, and collect lhs responses */
+          (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
+          PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
 
-	  /* set lsh of hc, fire, and collect rhs responses */
-	  (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
-	  PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
+          /* set lsh of hc, fire, and collect rhs responses */
+          (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
+          PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
 
-	  /* count number of dofs I own that have signal and not in sep set */
-	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
-	    {
-	      if (!used[i])
-		{
-		  /* number of unmarked dofs on node */
-		  ct++;
-		  /* number of dofs to be marked on lhs hc */
-		  if ((id< mask)&&(lhs[i]!=0.0)) {sum[0]++;}
-		  /* number of dofs to be marked on rhs hc */
-		  if ((id>=mask)&&(rhs[i]!=0.0)) {sum[1]++;}
-		}
-	    }
+          /* count number of dofs I own that have signal and not in sep set */
+          for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
+            {
+              if (!used[i])
+                {
+                  /* number of unmarked dofs on node */
+                  ct++;
+                  /* number of dofs to be marked on lhs hc */
+                  if ((id< mask)&&(lhs[i]!=0.0)) {sum[0]++;}
+                  /* number of dofs to be marked on rhs hc */
+                  if ((id>=mask)&&(rhs[i]!=0.0)) {sum[1]++;}
+                }
+            }
 
-	  /* for the non-symmetric case we need separators of width 2 */
-	  /* so take both sides */
-	  (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
-	  PCTFS_giop_hc(sum,w,4,op,edge);
+          /* for the non-symmetric case we need separators of width 2 */
+          /* so take both sides */
+          (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
+          PCTFS_giop_hc(sum,w,4,op,edge);
 
-	  ct=0;
-	  if (id<mask)
-	    {
-	      /* mark dofs I own that have signal and not in sep set */
-	      for (i=0;i<n;i++)
-		{
-		  if ((!used[i])&&(lhs[i]!=0.0))
-		    {
-		      ct++; nfo++;
-		      *--iptr = local2global[i];
-		      used[i]=edge;
-		    }
-		}
-	      /* LSH hc summation of ct should be sum[0] */
-	    }
-	  else
-	    {
-	      /* mark dofs I own that have signal and not in sep set */
-	      for (i=0;i<n;i++)
-		{
-		  if ((!used[i])&&(rhs[i]!=0.0))
-		    {
-		      ct++; nfo++;
-		      *--iptr = local2global[i];
-		      used[i]=edge;
-		    }
-		}
-	      /* RSH hc summation of ct should be sum[1] */
-	    }
+          ct=0;
+          if (id<mask)
+            {
+              /* mark dofs I own that have signal and not in sep set */
+              for (i=0;i<n;i++)
+                {
+                  if ((!used[i])&&(lhs[i]!=0.0))
+                    {
+                      ct++; nfo++;
+                      *--iptr = local2global[i];
+                      used[i]=edge;
+                    }
+                }
+              /* LSH hc summation of ct should be sum[0] */
+            }
+          else
+            {
+              /* mark dofs I own that have signal and not in sep set */
+              for (i=0;i<n;i++)
+                {
+                  if ((!used[i])&&(rhs[i]!=0.0))
+                    {
+                      ct++; nfo++;
+                      *--iptr = local2global[i];
+                      used[i]=edge;
+                    }
+                }
+              /* RSH hc summation of ct should be sum[1] */
+            }
 
-	  if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
-	  lnsep[edge]=ct;
-	  nsep[edge]=sum[0]+sum[1];
-	  dir [edge]=BOTH;
+          if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
+          lnsep[edge]=ct;
+          nsep[edge]=sum[0]+sum[1];
+          dir [edge]=BOTH;
 
-	  /* LATER or we can recur on these to order seps at this level */
-	  /* do we need full set of separators for this?                */
+          /* LATER or we can recur on these to order seps at this level */
+          /* do we need full set of separators for this?                */
 
-	  /* fold rhs hc into lower */
-	  if (id>=mask)
-	    {id-=mask;}
-	}
+          /* fold rhs hc into lower */
+          if (id>=mask)
+            {id-=mask;}
+        }
     }
 
   /* level 0 is on processor case - so mark the remainder */
   for (ct=i=0;i<n;i++)
     {
       if (!used[i])
-	{
-	  ct++; nfo++;
-	  *--iptr = local2global[i];
-	  used[i]=edge;
-	}
+        {
+          ct++; nfo++;
+          *--iptr = local2global[i];
+          used[i]=edge;
+        }
     }
   if (ct>1) {PCTFS_ivec_sort(iptr,ct);}
   lnsep[edge]=ct;

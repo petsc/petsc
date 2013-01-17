@@ -1004,8 +1004,8 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
           and use -ksp_max_it to control the number of V-cycles.
           (see the PETSc FAQ.html at the PETSc website under the Documentation tab).
 
-	  2007-02-03 Using HYPRE-1.11.1b, the routine HYPRE_BoomerAMGSolveT and the option
-	  -pc_hypre_parasails_reuse were failing with SIGSEGV. Dalcin L.
+          2007-02-03 Using HYPRE-1.11.1b, the routine HYPRE_BoomerAMGSolveT and the option
+          -pc_hypre_parasails_reuse were failing with SIGSEGV. Dalcin L.
 
           See PCPFMG for access to the hypre Struct PFMG solver
 

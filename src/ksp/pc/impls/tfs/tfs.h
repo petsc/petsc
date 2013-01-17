@@ -43,31 +43,31 @@ File Description:
 /*4096 8192 32768 65536 1048576 */
 #define MAX_MSG_BUF     32768
 
-#define FULL          2
-#define PARTIAL       1
-#define NONE          0
+#define FULL           2
+#define PARTIAL        1
+#define NONE           0
 
-#define BYTE		8
-#define BIT_0		0x1
-#define BIT_1		0x2
-#define BIT_2		0x4
-#define BIT_3		0x8
-#define BIT_4		0x10
-#define BIT_5		0x20
-#define BIT_6		0x40
-#define BIT_7		0x80
-#define TOP_BIT         PETSC_MIN_INT
+#define BYTE           8
+#define BIT_0          0x1
+#define BIT_1          0x2
+#define BIT_2          0x4
+#define BIT_3          0x8
+#define BIT_4          0x10
+#define BIT_5          0x20
+#define BIT_6          0x40
+#define BIT_7          0x80
+#define TOP_BIT        PETSC_MIN_INT
 
-#define C		0
+#define C              0
 
 
-#define MAX_VEC		1674
-#define FORMAT		30
-#define MAX_COL_LEN    	100
-#define MAX_LINE	FORMAT*MAX_COL_LEN
-#define   DELIM         " \n \t"
-#define LINE		12
-#define C_LINE		80
+#define MAX_VEC        1674
+#define FORMAT         30
+#define MAX_COL_LEN    100
+#define MAX_LINE       FORMAT*MAX_COL_LEN
+#define   DELIM        " \n \t"
+#define LINE           12
+#define C_LINE         80
 
 #define   UT            5               /* dump upper 1/2 */
 #define   LT            6               /* dump lower 1/2 */
@@ -84,7 +84,7 @@ File Description:
 #define MPI   1
 #define NX    2
 
-#define LOG2(x)		(PetscScalar)log((double)x)/log(2)
+#define LOG2(x)         (PetscScalar)log((double)x)/log(2)
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
 #define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
 
@@ -318,11 +318,11 @@ Usage:
 **************************************xxt.h***********************************/
 extern PetscInt XXT_factor(xxt_ADT xxt_handle,   /* prev. allocated xxt  handle */
                       PetscInt *local2global,    /* global column mapping       */
-		      PetscInt n,                /* local num rows              */
-		      PetscInt m,                /* local num cols              */
-		      void *mylocmatvec,    /* b_loc=A_local.x_loc         */
-		      void *grid_data       /* grid data for matvec        */
-		      );
+                      PetscInt n,                /* local num rows              */
+                      PetscInt m,                /* local num cols              */
+                      void *mylocmatvec,    /* b_loc=A_local.x_loc         */
+                      void *grid_data       /* grid data for matvec        */
+                      );
 
 
 /*************************************xxt.h************************************
@@ -433,11 +433,11 @@ Usage:
 **************************************xyt.h***********************************/
 extern PetscInt XYT_factor(xyt_ADT xyt_handle,   /* prev. allocated xyt  handle */
                       PetscInt *local2global,    /* global column mapping       */
-		      PetscInt n,                /* local num rows              */
-		      PetscInt m,                /* local num cols              */
-		      void *mylocmatvec,    /* b_loc=A_local.x_loc         */
-		      void *grid_data       /* grid data for matvec        */
-		      );
+                      PetscInt n,                /* local num rows              */
+                      PetscInt m,                /* local num cols              */
+                      void *mylocmatvec,    /* b_loc=A_local.x_loc         */
+                      void *grid_data       /* grid data for matvec        */
+                      );
 
 
 /*************************************xyt.h************************************

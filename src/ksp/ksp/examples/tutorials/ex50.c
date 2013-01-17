@@ -139,7 +139,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
 
       if (i==0 || j==0 || i==M-1 || j==N-1) {
         if (user->bcType == DIRICHLET){
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");	
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
         } else if (user->bcType == NEUMANN){
           num=0; numi=0; numj=0;
           if (j!=0) {

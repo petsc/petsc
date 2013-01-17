@@ -43,10 +43,10 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     if (ctx->modifypc) {
       ierr = (*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx);CHKERRQ(ierr);
     }
-		
+
     ierr = PCApply( pc, r, s );CHKERRQ(ierr); /* s = B^{-1} r */
     ierr = MatMult( A, s, v );CHKERRQ(ierr);  /* v = A s */
-		
+
     ierr = VecMDot( v,k, ctx->VV, ctx->val );CHKERRQ(ierr);
     for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
     ierr = VecMAXPY(v,k,ctx->val,ctx->VV);CHKERRQ(ierr); /* v = v - sum_{i=0}^{k-1} alpha_i v_i */
@@ -61,15 +61,15 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     ierr = VecAXPY( r, -r_dot_v, v );CHKERRQ(ierr);
     if (ksp->its > ksp->chknorm  ) {
       ierr = VecNorm( r, NORM_2, &norm_r );CHKERRQ(ierr);
-    }		
+    }
     /* update the local counter and the global counter */
     ksp->its++;
     res = norm_r;
     ksp->rnorm = res;
-		
+
     KSPLogResidualHistory(ksp,res);
     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
-		
+
     if ( ksp->its > ksp->chknorm  ) {
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
@@ -220,7 +220,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
 {
   KSP_GCR         *ctx = (KSP_GCR *)ksp->data;
-	
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ctx->modifypc         = function;

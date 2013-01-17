@@ -115,24 +115,24 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   for (k=0; k<m; k++) {
     for (j=0; j<m; j++) {
       for (i=0; i<m; i++) {
-	h1 = 0;
+        h1 = 0;
         base = 2*k*shiftz + 2*j*shifty + 2*i*shiftx;
-	for (k1=0; k1<3; k1++) {
-	  for (j_1=0; j_1<3; j_1++) {
-	    for (i1=0; i1<3; i1++) {
-	      h2 = 0;
-	      r1 = base + i1*shiftx + j_1*shifty + k1*shiftz;
-	      for (k2=0; k2<3; k2++) {
-	        for (j2=0; j2<3; j2++) {
-	          for (i2=0; i2<3; i2++) {
-	            r2 = base + i2*shiftx + j2*shifty + k2*shiftz;
-		    ierr = AddElement(mat,r1,r2,K,h1,h2);CHKERRQ(ierr);
-		    h2 += 3;
-	          }
+        for (k1=0; k1<3; k1++) {
+          for (j_1=0; j_1<3; j_1++) {
+            for (i1=0; i1<3; i1++) {
+              h2 = 0;
+              r1 = base + i1*shiftx + j_1*shifty + k1*shiftz;
+              for (k2=0; k2<3; k2++) {
+                for (j2=0; j2<3; j2++) {
+                  for (i2=0; i2<3; i2++) {
+                    r2 = base + i2*shiftx + j2*shifty + k2*shiftz;
+                    ierr = AddElement(mat,r1,r2,K,h1,h2);CHKERRQ(ierr);
+                    h2 += 3;
+                  }
                 }
               }
-	      h1 += 3;
-	    }
+              h1 += 3;
+            }
           }
         }
       }
@@ -194,33 +194,33 @@ PetscErrorCode AddElement(Mat mat,PetscInt r1,PetscInt r2,PetscReal **K,PetscInt
 */
       if (K[h1+l1][h2+l2] != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2];
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
   return 0;
 }
 /* -------------------------------------------------------------------- */
-PetscReal	N[20][64];	   /* Interpolation function. */
-PetscReal	part_N[3][20][64]; /* Partials of interpolation function. */
-PetscReal	rst[3][64];	   /* Location of integration pts in (r,s,t) */
-PetscReal	weight[64];	   /* Gaussian quadrature weights. */
-PetscReal	xyz[20][3];	   /* (x,y,z) coordinates of nodes  */
-PetscReal	E,nu;		   /* Physcial constants. */
-PetscInt	n_int,N_int;	   /* N_int = n_int^3, number of int. pts. */
+PetscReal        N[20][64];           /* Interpolation function. */
+PetscReal        part_N[3][20][64];   /* Partials of interpolation function. */
+PetscReal        rst[3][64];          /* Location of integration pts in (r,s,t) */
+PetscReal        weight[64];          /* Gaussian quadrature weights. */
+PetscReal        xyz[20][3];          /* (x,y,z) coordinates of nodes  */
+PetscReal        E,nu;                /* Physcial constants. */
+PetscInt         n_int,N_int;         /* N_int = n_int^3, number of int. pts. */
 /* Ordering of the vertices, (r,s,t) coordinates, of the canonical cell. */
-PetscReal	r2[20] = {-1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0,
-                 -1.0,1.0,-1.0,1.0,
-                 -1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0};
-PetscReal	s2[20] = {-1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0,
-                 -1.0,-1.0,1.0,1.0,
-                 -1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0};
-PetscReal	t2[20] =  {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
-                 0.0,0.0,0.0,0.0,
-                 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
-PetscInt     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
+PetscReal        r2[20] = {-1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0,
+                           -1.0,1.0,-1.0,1.0,
+                           -1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0};
+PetscReal        s2[20] = {-1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0,
+                           -1.0,-1.0,1.0,1.0,
+                           -1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0};
+PetscReal        t2[20] = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
+                            0.0,0.0,0.0,0.0,
+                            1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
+PetscInt       rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "Elastic20Stiff"
@@ -312,28 +312,28 @@ PetscErrorCode paulsetup20(void)
   /* Assign integration points and weights for
        Gaussian quadrature formulae. */
   if (n_int == 2)  {
-		x[0] = (-0.577350269189626);
-		x[1] = (0.577350269189626);
-		w[0] = 1.0000000;
-		w[1] = 1.0000000;
+    x[0] = (-0.577350269189626);
+    x[1] = (0.577350269189626);
+    w[0] = 1.0000000;
+    w[1] = 1.0000000;
   }
   else if (n_int == 3) {
-		x[0] = (-0.774596669241483);
-		x[1] = 0.0000000;
-		x[2] = 0.774596669241483;
-		w[0] = 0.555555555555555;
-		w[1] = 0.888888888888888;
-		w[2] = 0.555555555555555;
+    x[0] = (-0.774596669241483);
+    x[1] = 0.0000000;
+    x[2] = 0.774596669241483;
+    w[0] = 0.555555555555555;
+    w[1] = 0.888888888888888;
+    w[2] = 0.555555555555555;
   }
   else if (n_int == 4) {
-		x[0] = (-0.861136311594053);
-		x[1] = (-0.339981043584856);
-		x[2] = 0.339981043584856;
-		x[3] = 0.861136311594053;
-		w[0] = 0.347854845137454;
-		w[1] = 0.652145154862546;
-		w[2] = 0.652145154862546;
-		w[3] = 0.347854845137454;
+    x[0] = (-0.861136311594053);
+    x[1] = (-0.339981043584856);
+    x[2] = 0.339981043584856;
+    x[3] = 0.861136311594053;
+    w[0] = 0.347854845137454;
+    w[1] = 0.652145154862546;
+    w[2] = 0.652145154862546;
+    w[3] = 0.347854845137454;
   }
   else {
     SETERRQ(PETSC_COMM_SELF,1,"Unknown value for n_int");

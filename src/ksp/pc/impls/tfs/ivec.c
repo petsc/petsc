@@ -17,8 +17,8 @@ Last Modification:
 #include <../src/ksp/pc/impls/tfs/tfs.h>
 
 /* sorting args ivec.c ivec.c ... */
-#define   SORT_OPT	6
-#define   SORT_STACK	50000
+#define   SORT_OPT     6
+#define   SORT_STACK   50000
 
 
 /* allocate an address and size stack for sorter(s) */
@@ -160,34 +160,34 @@ PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2,  PetscInt 
       j=i+1;
       type = arg3[i];
       while ((j<n)&&(arg3[j]==type))
-	{j++;}
+        {j++;}
 
       /* how many together */
       j -= i;
 
       /* call appropriate ivec function */
       if (type == GL_MAX)
-	{PCTFS_ivec_max(arg1,arg2,j);}
+        {PCTFS_ivec_max(arg1,arg2,j);}
       else if (type == GL_MIN)
-	{PCTFS_ivec_min(arg1,arg2,j);}
+        {PCTFS_ivec_min(arg1,arg2,j);}
       else if (type == GL_MULT)
-	{PCTFS_ivec_mult(arg1,arg2,j);}
+        {PCTFS_ivec_mult(arg1,arg2,j);}
       else if (type == GL_ADD)
-	{PCTFS_ivec_add(arg1,arg2,j);}
+        {PCTFS_ivec_add(arg1,arg2,j);}
       else if (type == GL_B_XOR)
-	{PCTFS_ivec_xor(arg1,arg2,j);}
+        {PCTFS_ivec_xor(arg1,arg2,j);}
       else if (type == GL_B_OR)
-	{PCTFS_ivec_or(arg1,arg2,j);}
+        {PCTFS_ivec_or(arg1,arg2,j);}
       else if (type == GL_B_AND)
-	{PCTFS_ivec_and(arg1,arg2,j);}
+        {PCTFS_ivec_and(arg1,arg2,j);}
       else if (type == GL_L_XOR)
-	{PCTFS_ivec_lxor(arg1,arg2,j);}
+        {PCTFS_ivec_lxor(arg1,arg2,j);}
       else if (type == GL_L_OR)
-	{PCTFS_ivec_lor(arg1,arg2,j);}
+        {PCTFS_ivec_lor(arg1,arg2,j);}
       else if (type == GL_L_AND)
-	{PCTFS_ivec_land(arg1,arg2,j);}
+        {PCTFS_ivec_land(arg1,arg2,j);}
       else
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"unrecognized type passed to PCTFS_ivec_non_uniform()!");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"unrecognized type passed to PCTFS_ivec_non_uniform()!");
 
       arg1+=j; arg2+=j; i+=j;
     }
@@ -242,66 +242,66 @@ PetscErrorCode PCTFS_ivec_sort( PetscInt *ar,  PetscInt size)
     {
       /* if list is large enough use quicksort partition exchange code */
       if (size > SORT_OPT)
-	{	
-	  /* start up pointer at element 1 and down at size     */
-	  pi = ar+1;
-	  pj = ar+size;
+        {        
+          /* start up pointer at element 1 and down at size     */
+          pi = ar+1;
+          pj = ar+size;
 
-	  /* find middle element in list and swap w/ element 1 */
-	  SWAP(*(ar+(size>>1)),*pi)
+          /* find middle element in list and swap w/ element 1 */
+          SWAP(*(ar+(size>>1)),*pi)
 
-	  /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
-	  /* note ==> pivot_value in index 0                   */
-	  if (*pi > *pj)
-	    {SWAP(*pi,*pj)}
-	  if (*ar > *pj)
-	    {SWAP(*ar,*pj)}
-	  else if (*pi > *ar)
-	    {SWAP(*(ar),*(ar+1))}
+          /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
+          /* note ==> pivot_value in index 0                   */
+          if (*pi > *pj)
+            {SWAP(*pi,*pj)}
+          if (*ar > *pj)
+            {SWAP(*ar,*pj)}
+          else if (*pi > *ar)
+            {SWAP(*(ar),*(ar+1))}
 
-	  /* partition about pivot_value ...  	                    */
-	  /* note lists of length 2 are not guaranteed to be sorted */
-	  for (;;)
-	    {
-	      /* walk up ... and down ... swap if equal to pivot! */
-	      do pi++; while (*pi<*ar);
-	      do pj--; while (*pj>*ar);
+          /* partition about pivot_value ...                              */
+          /* note lists of length 2 are not guaranteed to be sorted */
+          for (;;)
+            {
+              /* walk up ... and down ... swap if equal to pivot! */
+              do pi++; while (*pi<*ar);
+              do pj--; while (*pj>*ar);
 
-	      /* if we've crossed we're done */
-	      if (pj<pi) break;
+              /* if we've crossed we're done */
+              if (pj<pi) break;
 
-	      /* else swap */
-	      SWAP(*pi,*pj)
-	    }
+              /* else swap */
+              SWAP(*pi,*pj)
+            }
 
-	  /* place pivot_value in it's correct location */
-	  SWAP(*ar,*pj)
+          /* place pivot_value in it's correct location */
+          SWAP(*ar,*pj)
 
-	  /* test stack_size to see if we've exhausted our stack */
-	  if (top_s-bottom_s >= SORT_STACK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort() :: STACK EXHAUSTED!!!");
+          /* test stack_size to see if we've exhausted our stack */
+          if (top_s-bottom_s >= SORT_STACK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort() :: STACK EXHAUSTED!!!");
 
-	  /* push right hand child iff length > 1 */
-	  if ((*top_s = size-((PetscInt) (pi-ar))))
-	    {
-	      *(top_a++) = pi;
-	      size -= *top_s+2;
-	      top_s++;
-	    }
-	  /* set up for next loop iff there is something to do */
-	  else if (size -= *top_s+2)
-	    {;}
-	  /* might as well pop - note NR_OPT >=2 ==> we're ok! */
-	  else
-	    {
-	      ar = *(--top_a);
-	      size = *(--top_s);
-	    }
-	}
+          /* push right hand child iff length > 1 */
+          if ((*top_s = size-((PetscInt) (pi-ar))))
+            {
+              *(top_a++) = pi;
+              size -= *top_s+2;
+              top_s++;
+            }
+          /* set up for next loop iff there is something to do */
+          else if (size -= *top_s+2)
+            {;}
+          /* might as well pop - note NR_OPT >=2 ==> we're ok! */
+          else
+            {
+              ar = *(--top_a);
+              size = *(--top_s);
+            }
+        }
 
       /* else sort small list directly then pop another off stack */
       else
-	{
-	  /* insertion sort for bottom */
+        {
+          /* insertion sort for bottom */
           for (pj=ar+1;pj<=ar+size;pj++)
             {
               temp = *pj;
@@ -311,15 +311,15 @@ PetscErrorCode PCTFS_ivec_sort( PetscInt *ar,  PetscInt size)
                   *(pi+1)=*pi;
                 }
               *(pi+1)=temp;
-	    }
+            }
 
-	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s)   PetscFunctionReturn(0);
-	
-	  /* else pop another list from the stack */
-	  ar = *(--top_a);
-	  size = *(--top_s);
-	}
+          /* check to see if stack is exhausted ==> DONE */
+          if (top_s==bottom_s)   PetscFunctionReturn(0);
+        
+          /* else pop another list from the stack */
+          ar = *(--top_a);
+          size = *(--top_s);
+        }
     }
   PetscFunctionReturn(0);
 }
@@ -343,76 +343,76 @@ PetscErrorCode PCTFS_ivec_sort_companion( PetscInt *ar,  PetscInt *ar2,  PetscIn
     {
       /* if list is large enough use quicksort partition exchange code */
       if (size > SORT_OPT)
-	{	
-	  /* start up pointer at element 1 and down at size     */
-	  mid = size>>1;
-	  pi = ar+1;
-	  pj = ar+mid;
-	  pi2 = ar2+1;
-	  pj2 = ar2+mid;
+        {        
+          /* start up pointer at element 1 and down at size     */
+          mid = size>>1;
+          pi = ar+1;
+          pj = ar+mid;
+          pi2 = ar2+1;
+          pj2 = ar2+mid;
 
-	  /* find middle element in list and swap w/ element 1 */
-	  SWAP(*pi,*pj)
-	  SWAP(*pi2,*pj2)
+          /* find middle element in list and swap w/ element 1 */
+          SWAP(*pi,*pj)
+          SWAP(*pi2,*pj2)
 
-	  /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
-	  /* note ==> pivot_value in index 0                   */
-	  pj = ar+size;
-	  pj2 = ar2+size;
-	  if (*pi > *pj)
-	    {SWAP(*pi,*pj) SWAP(*pi2,*pj2)}
-	  if (*ar > *pj)
-	    {SWAP(*ar,*pj) SWAP(*ar2,*pj2)}
-	  else if (*pi > *ar)
-	    {SWAP(*(ar),*(ar+1)) SWAP(*(ar2),*(ar2+1))}
+          /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
+          /* note ==> pivot_value in index 0                   */
+          pj = ar+size;
+          pj2 = ar2+size;
+          if (*pi > *pj)
+            {SWAP(*pi,*pj) SWAP(*pi2,*pj2)}
+          if (*ar > *pj)
+            {SWAP(*ar,*pj) SWAP(*ar2,*pj2)}
+          else if (*pi > *ar)
+            {SWAP(*(ar),*(ar+1)) SWAP(*(ar2),*(ar2+1))}
 
-	  /* partition about pivot_value ...  	                    */
-	  /* note lists of length 2 are not guaranteed to be sorted */
-	  for (;;)
-	    {
-	      /* walk up ... and down ... swap if equal to pivot! */
-	      do {pi++; pi2++;} while (*pi<*ar);
-	      do {pj--; pj2--;} while (*pj>*ar);
+          /* partition about pivot_value ...                              */
+          /* note lists of length 2 are not guaranteed to be sorted */
+          for (;;)
+            {
+              /* walk up ... and down ... swap if equal to pivot! */
+              do {pi++; pi2++;} while (*pi<*ar);
+              do {pj--; pj2--;} while (*pj>*ar);
 
-	      /* if we've crossed we're done */
-	      if (pj<pi) break;
+              /* if we've crossed we're done */
+              if (pj<pi) break;
 
-	      /* else swap */
-	      SWAP(*pi,*pj)
-	      SWAP(*pi2,*pj2)
-	    }
+              /* else swap */
+              SWAP(*pi,*pj)
+              SWAP(*pi2,*pj2)
+            }
 
-	  /* place pivot_value in it's correct location */
-	  SWAP(*ar,*pj)
-	  SWAP(*ar2,*pj2)
+          /* place pivot_value in it's correct location */
+          SWAP(*ar,*pj)
+          SWAP(*ar2,*pj2)
 
-	  /* test stack_size to see if we've exhausted our stack */
-	  if (top_s-bottom_s >= SORT_STACK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion() :: STACK EXHAUSTED!!!");
+          /* test stack_size to see if we've exhausted our stack */
+          if (top_s-bottom_s >= SORT_STACK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion() :: STACK EXHAUSTED!!!");
 
-	  /* push right hand child iff length > 1 */
-	  if ((*top_s = size-((PetscInt) (pi-ar))))
-	    {
-	      *(top_a++) = pi;
-	      *(top_a++) = pi2;
-	      size -= *top_s+2;
-	      top_s++;
-	    }
-	  /* set up for next loop iff there is something to do */
-	  else if (size -= *top_s+2)
-	    {;}
-	  /* might as well pop - note NR_OPT >=2 ==> we're ok! */
-	  else
-	    {
-	      ar2 = *(--top_a);
-	      ar  = *(--top_a);
-	      size = *(--top_s);
-	    }
-	}
+          /* push right hand child iff length > 1 */
+          if ((*top_s = size-((PetscInt) (pi-ar))))
+            {
+              *(top_a++) = pi;
+              *(top_a++) = pi2;
+              size -= *top_s+2;
+              top_s++;
+            }
+          /* set up for next loop iff there is something to do */
+          else if (size -= *top_s+2)
+            {;}
+          /* might as well pop - note NR_OPT >=2 ==> we're ok! */
+          else
+            {
+              ar2 = *(--top_a);
+              ar  = *(--top_a);
+              size = *(--top_s);
+            }
+        }
 
       /* else sort small list directly then pop another off stack */
       else
-	{
-	  /* insertion sort for bottom */
+        {
+          /* insertion sort for bottom */
           for (pj=ar+1, pj2=ar2+1;pj<=ar+size;pj++,pj2++)
             {
               temp = *pj;
@@ -425,16 +425,16 @@ PetscErrorCode PCTFS_ivec_sort_companion( PetscInt *ar,  PetscInt *ar2,  PetscIn
                 }
               *(pi+1)=temp;
               *(pi2+1)=temp2;
-	    }
+            }
 
-	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s)   PetscFunctionReturn(0);
-	
-	  /* else pop another list from the stack */
-	  ar2 = *(--top_a);
-	  ar  = *(--top_a);
-	  size = *(--top_s);
-	}
+          /* check to see if stack is exhausted ==> DONE */
+          if (top_s==bottom_s)   PetscFunctionReturn(0);
+        
+          /* else pop another list from the stack */
+          ar2 = *(--top_a);
+          ar  = *(--top_a);
+          size = *(--top_s);
+        }
     }
   PetscFunctionReturn(0);
 }
@@ -458,76 +458,76 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack( PetscInt *ar,  PetscInt **ar2, Pe
     {
       /* if list is large enough use quicksort partition exchange code */
       if (size > SORT_OPT)
-	{	
-	  /* start up pointer at element 1 and down at size     */
-	  mid = size>>1;
-	  pi = ar+1;
-	  pj = ar+mid;
-	  pi2 = ar2+1;
-	  pj2 = ar2+mid;
+        {        
+          /* start up pointer at element 1 and down at size     */
+          mid = size>>1;
+          pi = ar+1;
+          pj = ar+mid;
+          pi2 = ar2+1;
+          pj2 = ar2+mid;
 
-	  /* find middle element in list and swap w/ element 1 */
-	  SWAP(*pi,*pj)
-	  P_SWAP(*pi2,*pj2)
+          /* find middle element in list and swap w/ element 1 */
+          SWAP(*pi,*pj)
+          P_SWAP(*pi2,*pj2)
 
-	  /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
-	  /* note ==> pivot_value in index 0                   */
-	  pj = ar+size;
-	  pj2 = ar2+size;
-	  if (*pi > *pj)
-	    {SWAP(*pi,*pj) P_SWAP(*pi2,*pj2)}
-	  if (*ar > *pj)
-	    {SWAP(*ar,*pj) P_SWAP(*ar2,*pj2)}
-	  else if (*pi > *ar)
-	    {SWAP(*(ar),*(ar+1)) P_SWAP(*(ar2),*(ar2+1))}
+          /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
+          /* note ==> pivot_value in index 0                   */
+          pj = ar+size;
+          pj2 = ar2+size;
+          if (*pi > *pj)
+            {SWAP(*pi,*pj) P_SWAP(*pi2,*pj2)}
+          if (*ar > *pj)
+            {SWAP(*ar,*pj) P_SWAP(*ar2,*pj2)}
+          else if (*pi > *ar)
+            {SWAP(*(ar),*(ar+1)) P_SWAP(*(ar2),*(ar2+1))}
 
-	  /* partition about pivot_value ...  	                    */
-	  /* note lists of length 2 are not guaranteed to be sorted */
-	  for (;;)
-	    {
-	      /* walk up ... and down ... swap if equal to pivot! */
-	      do {pi++; pi2++;} while (*pi<*ar);
-	      do {pj--; pj2--;} while (*pj>*ar);
+          /* partition about pivot_value ...                              */
+          /* note lists of length 2 are not guaranteed to be sorted */
+          for (;;)
+            {
+              /* walk up ... and down ... swap if equal to pivot! */
+              do {pi++; pi2++;} while (*pi<*ar);
+              do {pj--; pj2--;} while (*pj>*ar);
 
-	      /* if we've crossed we're done */
-	      if (pj<pi) break;
+              /* if we've crossed we're done */
+              if (pj<pi) break;
 
-	      /* else swap */
-	      SWAP(*pi,*pj)
-	      P_SWAP(*pi2,*pj2)
-	    }
+              /* else swap */
+              SWAP(*pi,*pj)
+              P_SWAP(*pi2,*pj2)
+            }
 
-	  /* place pivot_value in it's correct location */
-	  SWAP(*ar,*pj)
-	  P_SWAP(*ar2,*pj2)
+          /* place pivot_value in it's correct location */
+          SWAP(*ar,*pj)
+          P_SWAP(*ar2,*pj2)
 
-	  /* test stack_size to see if we've exhausted our stack */
-	  if (top_s-bottom_s >= SORT_STACK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");
+          /* test stack_size to see if we've exhausted our stack */
+          if (top_s-bottom_s >= SORT_STACK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");
 
-	  /* push right hand child iff length > 1 */
-	  if ((*top_s = size-((PetscInt) (pi-ar))))
-	    {
-	      *(top_a++) = pi;
-	      *(top_a++) = (PetscInt*) pi2;
-	      size -= *top_s+2;
-	      top_s++;
-	    }
-	  /* set up for next loop iff there is something to do */
-	  else if (size -= *top_s+2)
-	    {;}
-	  /* might as well pop - note NR_OPT >=2 ==> we're ok! */
-	  else
-	    {
-	      ar2 = (PetscInt **) *(--top_a);
-	      ar  = *(--top_a);
-	      size = *(--top_s);
-	    }
-	}
+          /* push right hand child iff length > 1 */
+          if ((*top_s = size-((PetscInt) (pi-ar))))
+            {
+              *(top_a++) = pi;
+              *(top_a++) = (PetscInt*) pi2;
+              size -= *top_s+2;
+              top_s++;
+            }
+          /* set up for next loop iff there is something to do */
+          else if (size -= *top_s+2)
+            {;}
+          /* might as well pop - note NR_OPT >=2 ==> we're ok! */
+          else
+            {
+              ar2 = (PetscInt **) *(--top_a);
+              ar  = *(--top_a);
+              size = *(--top_s);
+            }
+        }
 
       /* else sort small list directly then pop another off stack */
       else
-	{
-	  /* insertion sort for bottom */
+        {
+          /* insertion sort for bottom */
           for (pj=ar+1, pj2=ar2+1;pj<=ar+size;pj++,pj2++)
             {
               temp = *pj;
@@ -540,16 +540,16 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack( PetscInt *ar,  PetscInt **ar2, Pe
                 }
               *(pi+1)=temp;
               *(pi2+1)=ptr;
-	    }
+            }
 
-	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s)   PetscFunctionReturn(0);
-	
-	  /* else pop another list from the stack */
-	  ar2 = (PetscInt **)*(--top_a);
-	  ar  = *(--top_a);
-	  size = *(--top_s);
-	}
+          /* check to see if stack is exhausted ==> DONE */
+          if (top_s==bottom_s)   PetscFunctionReturn(0);
+        
+          /* else pop another list from the stack */
+          ar2 = (PetscInt **)*(--top_a);
+          ar  = *(--top_a);
+          size = *(--top_s);
+        }
     }
   PetscFunctionReturn(0);
 }
@@ -587,11 +587,11 @@ PetscInt PCTFS_ivec_binary_search( PetscInt item,  PetscInt *list,  PetscInt rh)
     {
       mid = (lh+rh)>>1;
       if (*(list+mid) == item)
-	{return(mid);}
+        {return(mid);}
       if (*(list+mid) > item)
-	{rh = mid-1;}
+        {rh = mid-1;}
       else
-	{lh = mid+1;}
+        {lh = mid+1;}
     }
   return(-1);
 }
@@ -705,26 +705,26 @@ PetscErrorCode PCTFS_rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2,  Pet
       j=i+1;
       type = arg3[i];
       while ((j<n)&&(arg3[j]==type))
-	{j++;}
+        {j++;}
 
       /* how many together */
       j -= i;
 
       /* call appropriate ivec function */
       if (type == GL_MAX)
-	{PCTFS_rvec_max(arg1,arg2,j);}
+        {PCTFS_rvec_max(arg1,arg2,j);}
       else if (type == GL_MIN)
-	{PCTFS_rvec_min(arg1,arg2,j);}
+        {PCTFS_rvec_min(arg1,arg2,j);}
       else if (type == GL_MULT)
-	{PCTFS_rvec_mult(arg1,arg2,j);}
+        {PCTFS_rvec_mult(arg1,arg2,j);}
       else if (type == GL_ADD)
-	{PCTFS_rvec_add(arg1,arg2,j);}
+        {PCTFS_rvec_add(arg1,arg2,j);}
       else if (type == GL_MAX_ABS)
-	{PCTFS_rvec_max_abs(arg1,arg2,j);}
+        {PCTFS_rvec_max_abs(arg1,arg2,j);}
       else if (type == GL_MIN_ABS)
-	{PCTFS_rvec_min_abs(arg1,arg2,j);}
+        {PCTFS_rvec_min_abs(arg1,arg2,j);}
       else if (type == GL_EXISTS)
-	{PCTFS_rvec_exists(arg1,arg2,j);}
+        {PCTFS_rvec_exists(arg1,arg2,j);}
       else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"unrecognized type passed to PCTFS_rvec_non_uniform()!");
 
       arg1+=j; arg2+=j; i+=j;

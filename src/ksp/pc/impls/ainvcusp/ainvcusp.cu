@@ -55,7 +55,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  CUSPMATRIX* mat;	
+  CUSPMATRIX* mat;
 #endif
   PetscErrorCode  ierr;
 

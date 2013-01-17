@@ -1202,47 +1202,47 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
       const PetscInt *ia,*ja;
       ierr = MatGetRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done);CHKERRQ(ierr);
       if (done) {
-	/* Build adjacency matrix by hand. Unfortunately a call to
-	   MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
-	   remove the block-aij structure and we cannot expect
-	   MatPartitioning to split vertices as we need */
-	PetscInt i,j,len,nnz,cnt,*iia=0,*jja=0;
+        /* Build adjacency matrix by hand. Unfortunately a call to
+           MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
+           remove the block-aij structure and we cannot expect
+           MatPartitioning to split vertices as we need */
+        PetscInt i,j,len,nnz,cnt,*iia=0,*jja=0;
         const PetscInt *row;
-	nnz = 0;
-	for (i=0; i<na; i++) { /* count number of nonzeros */
-	  len = ia[i+1] - ia[i];
-	  row = ja + ia[i];
-	  for (j=0; j<len; j++) {
-	    if (row[j] == i) { /* don't count diagonal */
-	      len--; break;
-	    }
-	  }
-	  nnz += len;
-	}
-	ierr = PetscMalloc((na+1)*sizeof(PetscInt),&iia);CHKERRQ(ierr);
-	ierr = PetscMalloc((nnz)*sizeof(PetscInt),&jja);CHKERRQ(ierr);
-	nnz    = 0;
-	iia[0] = 0;
-	for (i=0; i<na; i++) { /* fill adjacency */
-	  cnt = 0;
-	  len = ia[i+1] - ia[i];
-	  row = ja + ia[i];
-	  for (j=0; j<len; j++) {
-	    if (row[j] != i) { /* if not diagonal */
-	      jja[nnz+cnt++] = row[j];
-	    }
-	  }
-	  nnz += cnt;
-	  iia[i+1] = nnz;
-	}
-	/* Partitioning of the adjacency matrix */
-	ierr = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,PETSC_NULL,&adj);CHKERRQ(ierr);
-	ierr = MatPartitioningSetAdjacency(mpart,adj);CHKERRQ(ierr);
-	ierr = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
-	ierr = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
-	ierr = ISPartitioningToNumbering(ispart,&isnumb);CHKERRQ(ierr);
-	ierr = MatDestroy(&adj);CHKERRQ(ierr);
-	foundpart = PETSC_TRUE;
+        nnz = 0;
+        for (i=0; i<na; i++) { /* count number of nonzeros */
+          len = ia[i+1] - ia[i];
+          row = ja + ia[i];
+          for (j=0; j<len; j++) {
+            if (row[j] == i) { /* don't count diagonal */
+              len--; break;
+            }
+          }
+          nnz += len;
+        }
+        ierr = PetscMalloc((na+1)*sizeof(PetscInt),&iia);CHKERRQ(ierr);
+        ierr = PetscMalloc((nnz)*sizeof(PetscInt),&jja);CHKERRQ(ierr);
+        nnz    = 0;
+        iia[0] = 0;
+        for (i=0; i<na; i++) { /* fill adjacency */
+          cnt = 0;
+          len = ia[i+1] - ia[i];
+          row = ja + ia[i];
+          for (j=0; j<len; j++) {
+            if (row[j] != i) { /* if not diagonal */
+              jja[nnz+cnt++] = row[j];
+            }
+          }
+          nnz += cnt;
+          iia[i+1] = nnz;
+        }
+        /* Partitioning of the adjacency matrix */
+        ierr = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,PETSC_NULL,&adj);CHKERRQ(ierr);
+        ierr = MatPartitioningSetAdjacency(mpart,adj);CHKERRQ(ierr);
+        ierr = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
+        ierr = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
+        ierr = ISPartitioningToNumbering(ispart,&isnumb);CHKERRQ(ierr);
+        ierr = MatDestroy(&adj);CHKERRQ(ierr);
+        foundpart = PETSC_TRUE;
       }
       ierr = MatRestoreRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done);CHKERRQ(ierr);
     }

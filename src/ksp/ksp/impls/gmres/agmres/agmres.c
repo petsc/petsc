@@ -295,7 +295,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
   while (j <= max_k){
     if (Ishift[j-1] == 0){
       if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
-        // 		/* Apply the precond-matrix operators */
+        /* Apply the precond-matrix operators */
         ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
         /* Then apply deflation as a preconditioner */
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
@@ -603,10 +603,10 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     if (!ksp->reason && agmres->neig > 0) {
       test = agmres->max_k * log(ksp->rtol/res) / log(res/res_old); /* estimate the remaining number of steps */
       if ((test > agmres->smv*(ksp->max_it-ksp->its)) || agmres->force) {
-	if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))){
-	  agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */
-	}
-	ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp,&agmres->neig);CHKERRQ(ierr);
+        if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))){
+          agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */
+        }
+        ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp,&agmres->neig);CHKERRQ(ierr);
       }
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
@@ -851,15 +851,15 @@ PetscErrorCode  KSPCreate_AGMRES(KSP ksp)
   agmres->orthogwork          = 0;
 
   /* Default values for the deflation */
-  agmres->r		= 0;
-  agmres->neig		= 0;
-  agmres->max_neig	= 0;
-  agmres->lambdaN	= 0.0;
-  agmres->smv		= SMV;
+  agmres->r             = 0;
+  agmres->neig          = 0;
+  agmres->max_neig      = 0;
+  agmres->lambdaN       = 0.0;
+  agmres->smv           = SMV;
   agmres->bgv           = 1;
-  agmres->force		= 0;
-  agmres->matvecs 	= 0;
-  agmres->improve	= 0;
+  agmres->force         = 0;
+  agmres->matvecs       = 0;
+  agmres->improve       = 0;
   agmres->HasShifts     = PETSC_FALSE;
   agmres->r             = 0;
   agmres->HasSchur      = PETSC_FALSE;

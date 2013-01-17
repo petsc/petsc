@@ -21,7 +21,7 @@ int main(int argc,char **args)
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PCDestroy(&pc);	CHKERRQ(ierr);
+  ierr = PCDestroy(&pc);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

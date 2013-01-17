@@ -676,9 +676,9 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp, PetscInt *ExtrNei
   PetscInt        neig;         /* number of eigenvalues to extract at each restart */
   PetscInt        neig1    = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
   PetscInt        max_neig = dgmres->max_neig; /* Max number of eigenvalues to extract during the iterative process */
-  PetscInt	  N        = dgmres->max_k+1;
+  PetscInt        N        = dgmres->max_k+1;
   PetscInt        n        = dgmres->it+1;
-  PetscReal	  alpha;
+  PetscReal       alpha;
 #if !defined(PETSC_MISSING_LAPACK_GETRF)
   PetscBLASInt    info;
 #endif
@@ -822,15 +822,15 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig)
   PetscBLASInt    bn, bN;
   PetscReal      *A;
   PetscBLASInt    ihi;
-  PetscBLASInt    ldA; 		/* leading dimension of A */
-  PetscBLASInt    ldQ;		/* leading dimension of Q */
-  PetscReal	 *Q; 		/*  orthogonal matrix of  (left) schur vectors */
-  PetscReal 	 *work;		/* working vector */
-  PetscBLASInt    lwork;	/* size of the working vector */
-  PetscInt	 *perm;		/* Permutation vector to sort eigenvalues */
-  PetscInt	  i, j;
-  PetscBLASInt    NbrEig; 	/* Number of eigenvalues really extracted */
-  PetscReal	 *wr, *wi, *modul; /* Real and imaginary part and modul of the eigenvalues of A*/
+  PetscBLASInt    ldA;         /* leading dimension of A */
+  PetscBLASInt    ldQ;         /* leading dimension of Q */
+  PetscReal      *Q;           /*  orthogonal matrix of  (left) schur vectors */
+  PetscReal      *work;        /* working vector */
+  PetscBLASInt    lwork;       /* size of the working vector */
+  PetscInt       *perm;        /* Permutation vector to sort eigenvalues */
+  PetscInt        i, j;
+  PetscBLASInt    NbrEig;      /* Number of eigenvalues really extracted */
+  PetscReal      *wr, *wi, *modul; /* Real and imaginary part and modul of the eigenvalues of A*/
   PetscBLASInt   *select;
   PetscBLASInt   *iwork;
   PetscBLASInt    liwork;
@@ -841,9 +841,9 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig)
 #if !defined(PETSC_MISSING_LAPACK_HSEQR)
   PetscBLASInt    ilo  = 1;
   PetscBLASInt    info;
-  PetscReal 	  CondEig;      /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
-  PetscReal 	  CondSub;      /* estimated reciprocal condition number of the specified invariant subspace. */
-  PetscBool flag; /* determine whether to use Ritz vectors or harmonic Ritz vectors */
+  PetscReal       CondEig;      /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
+  PetscReal       CondSub;      /* estimated reciprocal condition number of the specified invariant subspace. */
+  PetscBool       flag;         /* determine whether to use Ritz vectors or harmonic Ritz vectors */
 #endif
 
   PetscFunctionBegin;
@@ -1042,22 +1042,22 @@ EXTERN_C_BEGIN
 PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 {
   KSP_DGMRES   *dgmres     = (KSP_DGMRES*) ksp->data;
-  PetscInt	j,r_old, r = dgmres->r;
-  PetscBLASInt	i          = 0;
-  PetscInt	neig1      = dgmres->neig + EIG_OFFSET;
-  PetscInt	bmax       = dgmres->max_neig;
-  PetscInt	aug        = r + neig; /* actual size of the augmented invariant basis */
-  PetscInt	aug1       = bmax+neig1; /* maximum size of the augmented invariant basis */
-  PetscBLASInt 	ldA; 		/* leading dimension of AUAU and AUU*/
-  PetscBLASInt	N; 		/* size of AUAU */
-  PetscReal    *Q; 		/*  orthogonal matrix of  (left) schur vectors */
-  PetscReal    *Z; 		/*  orthogonal matrix of  (right) schur vectors */
-  PetscReal    *work;		/* working vector */
-  PetscBLASInt 	lwork;		/* size of the working vector */
-  PetscBLASInt 	info;		/* Output info from Lapack routines */
-  PetscInt     *perm;		/* Permutation vector to sort eigenvalues */
+  PetscInt      j,r_old, r = dgmres->r;
+  PetscBLASInt  i          = 0;
+  PetscInt      neig1      = dgmres->neig + EIG_OFFSET;
+  PetscInt      bmax       = dgmres->max_neig;
+  PetscInt      aug        = r + neig;   /* actual size of the augmented invariant basis */
+  PetscInt      aug1       = bmax+neig1; /* maximum size of the augmented invariant basis */
+  PetscBLASInt  ldA;           /* leading dimension of AUAU and AUU*/
+  PetscBLASInt  N;             /* size of AUAU */
+  PetscReal    *Q;             /*  orthogonal matrix of  (left) schur vectors */
+  PetscReal    *Z;             /*  orthogonal matrix of  (right) schur vectors */
+  PetscReal    *work;          /* working vector */
+  PetscBLASInt  lwork;         /* size of the working vector */
+  PetscBLASInt  info;          /* Output info from Lapack routines */
+  PetscInt     *perm;          /* Permutation vector to sort eigenvalues */
   PetscReal    *wr, *wi, *beta, *modul; /* Real and imaginary part and modul of the eigenvalues of A*/
-  PetscInt	ierr;
+  PetscInt      ierr;
   PetscBLASInt  NbrEig = 0,nr,bm;
   PetscBLASInt *select;
   PetscBLASInt  liwork, *iwork;
@@ -1305,13 +1305,13 @@ PetscErrorCode  KSPCreate_DGMRES (KSP ksp)
                                            KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
   ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESSetMaxEigen_C",
                                            "KSPDGMRESSetMaxEigen_DGMRES",
-                                           KSPDGMRESSetMaxEigen_DGMRES);	CHKERRQ(ierr);
+                                           KSPDGMRESSetMaxEigen_DGMRES);CHKERRQ(ierr);
   ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESSetRatio_C",
                                            "KSPDGMRESSetRatio_DGMRES",
-                                           KSPDGMRESSetRatio_DGMRES);	CHKERRQ(ierr);
+                                           KSPDGMRESSetRatio_DGMRES);CHKERRQ(ierr);
   ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESForce_C",
                                            "KSPDGMRESForce_DGMRES",
-                                           KSPDGMRESForce_DGMRES);	CHKERRQ(ierr);
+                                           KSPDGMRESForce_DGMRES);CHKERRQ(ierr);
   ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESComputeSchurForm_C",
                                            "KSPDGMRESComputeSchurForm_DGMRES",
                                            KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
@@ -1338,12 +1338,12 @@ PetscErrorCode  KSPCreate_DGMRES (KSP ksp)
   dgmres->orthogwork     = 0;
 
   /* Default values for the deflation */
-  dgmres->r	      = 0;
-  dgmres->neig	      = DGMRES_DEFAULT_EIG;
+  dgmres->r           = 0;
+  dgmres->neig        = DGMRES_DEFAULT_EIG;
   dgmres->max_neig    = DGMRES_DEFAULT_MAXEIG-1;
   dgmres->lambdaN     = 0.0;
-  dgmres->smv	      = SMV;
-  dgmres->force	      = 0;
+  dgmres->smv         = SMV;
+  dgmres->force       = 0;
   dgmres->matvecs     = 0;
   dgmres->improve     = 0;
   dgmres->GreatestEig = PETSC_FALSE; /* experimental */

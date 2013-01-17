@@ -18,11 +18,11 @@
 struct __PC_ASA_level {
   PetscInt   level;                        /* current level: 1 original level, 2 coarser, ... */
   PetscInt   size;                         /* The size of the matrices and vectors for the
-					      current level */
+                                              current level */
 
   Mat        A;                            /* The coarsened matrix for the current level */
   Mat        B;                            /* Near kernel components. We will
-					      allocate sufficient space for max_cand_vecs */
+                                              allocate sufficient space for max_cand_vecs */
   PetscInt   cand_vecs;                    /* How many candidate vectors are stored in B */
 
   /* Temp working vectors */
@@ -31,19 +31,19 @@ struct __PC_ASA_level {
   Vec        r;                            /* Current residual */
 
   DM         dm;                           /* Grid information about the layout.
-					      Undecided on data structure for algebraic case
-					      combine with DM in some way */
+                                              Undecided on data structure for algebraic case
+                                              combine with DM in some way */
 
   PetscInt   aggnum;                       /* The number of aggregates */
   Mat        agg;                          /* The aggregates. Row i has an entry in the columns j
-					      corresponding to the fine-level points that map to
-					      the i-th node on the coarse level */
+                                              corresponding to the fine-level points that map to
+                                              the i-th node on the coarse level */
   PetscInt   *loc_agg_dofs;                /* The dofs for each aggregate, each processor only stores
-					      the dof for the local aggregates */
+                                              the dof for the local aggregates */
   Mat        agg_corr, bridge_corr;        /* Correction terms for the aggregates that are introduced
-					      by adding candidate vectors. The final structure of the
-					      aggregate matrix agg is given by agg*agg_corr if we do not
-					      construct a bridge operator and agg*bridge_corr, if we do.*/
+                                              by adding candidate vectors. The final structure of the
+                                              aggregate matrix agg is given by agg*agg_corr if we do not
+                                              construct a bridge operator and agg*bridge_corr, if we do.*/
 
   Mat        P;                            /* tentative prolongator */
   Mat        Pt;                           /* tentative restriction operator (P^t) */
@@ -89,20 +89,20 @@ typedef struct {
   PetscReal  direct_dtol;                  /* Divergence tolerance for direct solver */
   /* parameters for various relaxation methods */
   PetscReal  richardson_scale;             /* Scaling parameter to use if relaxation KSP is Richardson.
-					      In this case each step is
-					      x^{(k+1)} = x^{(k)} + richardson_scale * M^{-1} (b - A x^{(k)})
-					      where M is the preconditioning matrix. */
+                                              In this case each step is
+                                              x^{(k+1)} = x^{(k)} + richardson_scale * M^{-1} (b - A x^{(k)})
+                                              where M is the preconditioning matrix. */
   PetscReal  sor_omega;                    /* omega parameter for SOR PC */
   /* parameters for direct solver */
   char *     coarse_mat_type;              /* matrix type to use for distributed LU factorization
-					      (e.g. superlu_dist, mumps, etc.)*/
+                                              (e.g. superlu_dist, mumps, etc.)*/
   /* parameters that limit the allocation */
   PetscInt   max_cand_vecs;                /* Maximum number of candidate vectors */
   PetscInt   max_dof_lev_2;                /* The maximum number of degrees of freedom per
-					      node on level 2 (K in paper) */
+                                              node on level 2 (K in paper) */
 
   PetscBool  multigrid_constructed;        /* Flag that checks whether we have constructed an
-					      applicable multigrid yet */
+                                              applicable multigrid yet */
 
   /* parameters that rule the behaviour of the iteration */
   PetscReal  rtol;                         /* relative error convergence criteria */
@@ -110,9 +110,9 @@ typedef struct {
   PetscReal  divtol;                       /* divergence threshold */
   PetscInt   max_it;                       /* maximum number of iterations */
   PetscReal  rq_improve;                   /* determines when we should add another candidate during
-					      the construction of the multigrid. candidate is added when
-					      the new Rayleigh quotient rq_new does not beat
-					      rq_improve*rq_old */
+                                              the construction of the multigrid. candidate is added when
+                                              the new Rayleigh quotient rq_new does not beat
+                                              rq_improve*rq_old */
 
   /* data regarding the problem */
   Mat        A;                            /* matrix used in forming residual, scaled by insqrtdiag */

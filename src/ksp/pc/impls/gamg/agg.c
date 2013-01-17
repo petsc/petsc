@@ -849,9 +849,9 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 
       /* pad with zeros */
       for (ii = asz*bs; ii < Mdata ; ii++) {
-	for (jj = 0; jj < N ; jj++, kk++) {
-	  qqc[jj*Mdata + ii] = .0;
-	}
+        for (jj = 0; jj < N ; jj++, kk++) {
+          qqc[jj*Mdata + ii] = .0;
+        }
       }
 
       ndone += aggID;
@@ -867,7 +867,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
           for (ii = 0; ii < nSAvec ; ii++) {
             assert(data[jj*out_data_stride + ii] == 1.e300);
             if (ii <= jj) data[jj*out_data_stride + ii] = PetscRealPart(qqc[jj*Mdata + ii]);
-	    else data[jj*out_data_stride + ii] = 0.;
+            else data[jj*out_data_stride + ii] = 0.;
           }
         }
       }

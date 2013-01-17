@@ -24,13 +24,13 @@
 -stokes_mg_levels_fieldsplit_0_ksp_type cg
 -stokes_mg_levels_fieldsplit_0_ksp_rtol 1.0e-10
 -stokes_mg_levels_fieldsplit_0_ksp_max_it 1
-	-stokes_mg_levels_fieldsplit_0_pc_type fieldsplit
-	-stokes_mg_levels_fieldsplit_0_pc_fieldsplit_block_size 3
-	-stokes_mg_levels_fieldsplit_0_fieldsplit_ksp_type cg
-	-stokes_mg_levels_fieldsplit_0_fieldsplit_ksp_max_it 10
-	-stokes_mg_levels_fieldsplit_0_fieldsplit_pc_type jacobi
+-stokes_mg_levels_fieldsplit_0_pc_type fieldsplit
+-stokes_mg_levels_fieldsplit_0_pc_fieldsplit_block_size 3
+-stokes_mg_levels_fieldsplit_0_fieldsplit_ksp_type cg
+-stokes_mg_levels_fieldsplit_0_fieldsplit_ksp_max_it 10
+-stokes_mg_levels_fieldsplit_0_fieldsplit_pc_type jacobi
 
-	-stokes_mg_levels_fieldsplit_0_pc_fieldsplit_type ADDITIVE
+-stokes_mg_levels_fieldsplit_0_pc_fieldsplit_type ADDITIVE
 ##
 -stokes_ksp_monitor_blocks
 -mx 16

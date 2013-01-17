@@ -15,10 +15,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
-  PetscInt    	 N, n=10, m, Istart, Iend, II, J, i,j;
+  PetscInt       N, n=10, m, Istart, Iend, II, J, i,j;
   PetscInt       nneg, nzero, npos;
-  PetscScalar 	 v,sigma;
-  PetscBool   	 flag,loadA=PETSC_FALSE,loadB=PETSC_FALSE;
+  PetscScalar    v,sigma;
+  PetscBool      flag,loadA=PETSC_FALSE,loadB=PETSC_FALSE;
   char           file[2][PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
   PetscMPIInt    rank;

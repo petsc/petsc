@@ -1330,10 +1330,10 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus( PCTFS_gs_id *gs,  PetscSca
       ierr = MPI_Wait(ids_in, &status);CHKERRQ(ierr);
       ids_in++;
       while (*iptr >= 0) {
-	dstep = PetscBLASIntCast(step);
+        dstep = PetscBLASIntCast(step);
         BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
-	in2+=step;
-	iptr++;
+        in2+=step;
+        iptr++;
       }
   }
 

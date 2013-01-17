@@ -135,10 +135,10 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      } else {
        b = beta/betaold;
        if (eigs) {
-	 if (ksp->max_it != stored_max_it) {
-	   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-	 }
-	 e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
+         if (ksp->max_it != stored_max_it) {
+           SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+         }
+         e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
@@ -155,9 +155,9 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
        ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
        if (transpose_pc) {
-	 ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+         ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
        } else {
-	 ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+         ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
        }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
@@ -174,9 +174,9 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      if (ksp->reason) break;
      if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
        if (transpose_pc) {
-	 ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+         ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
        } else {
-	 ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+         ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
        }
      }
      i++;

@@ -29,8 +29,8 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);	CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);	CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&rank, &First, 1, MPIU_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&rank, &Last, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
 
@@ -195,7 +195,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
         Qloc[k*nloc] =  s * old + c * Qloc[k*nloc];
       }
       Qloc[d*nloc] = rho;
-      if (rank != Last)	{
+      if (rank != Last) {
         ierr = MPI_Send(& (wbufptr[d]), len, MPIU_SCALAR, rank + 1, tag, comm);
       }
       /* zero-out the d-th diagonal of Rloc ...*/
@@ -265,10 +265,10 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   PetscFunctionBegin;
   tag  = 0x666;
   pas  = 1;
-  ierr = VecGetLocalSize(VEC_V(0), &nloc);	CHKERRQ(ierr);
+  ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);
   ierr = PetscMalloc(nvec*sizeof(PetscScalar), &y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y, In, nvec*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecGetArray(Out, &zloc);	CHKERRQ(ierr);
+  ierr = VecGetArray(Out, &zloc);CHKERRQ(ierr);
 
   if (rank == Last)
     for (i = 0;i < nvec;i++)  y[i] = sgn[i] * y[i];

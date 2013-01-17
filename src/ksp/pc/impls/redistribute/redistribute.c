@@ -112,9 +112,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = MatGetSize(pc->pmat,&NN,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));CHKERRQ(ierr);
     /*
-	this code is taken from VecScatterCreate_PtoS()
-	Determines what rows need to be moved where to
-	load balance the non-diagonal rows
+        this code is taken from VecScatterCreate_PtoS()
+        Determines what rows need to be moved where to
+        load balance the non-diagonal rows
     */
     /*  count number of contributors to each processor */
     ierr = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
@@ -124,11 +124,11 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     for (i=rstart; i<rend; i++) {
       if (i < nmap->range[j]) j = 0;
       for (; j<size; j++) {
-	if (i < nmap->range[j+1]) {
-	  if (!nprocs[j]++) nsends++;
-	  owner[i-rstart] = j;
-	  break;
-	}
+        if (i < nmap->range[j+1]) {
+          if (!nprocs[j]++) nsends++;
+          owner[i-rstart] = j;
+          break;
+        }
       }
     }
     /* inform other processors of number of messages and max length*/
@@ -165,7 +165,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     count = 0;
     for (i=0; i<size; i++) {
       if (nprocs[i]) {
-	ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+        ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
       }
     }
 

@@ -100,7 +100,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     Run gmres, possibly with restart.  Return residual history if requested.
     input parameters:
 
-.	gmres  - structure containing parameters and work areas
+.        gmres  - structure containing parameters and work areas
 
     output parameters:
 .        nres    - residuals (from preconditioned system) at each step.
@@ -108,7 +108,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
                   ignored
 .        itcount - number of iterations used.  nres[0] to nres[itcount]
                   are defined.  If null, ignored.
-		
+
     Notes:
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
@@ -298,9 +298,9 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 
     Input parameters:
         nrs - work area of size it + 1.
-	vs  - index of initial guess
-	vdest - index of result.  Note that vs may == vdest (replace
-	        guess with the solution).
+        vs  - index of initial guess
+        vdest - index of result.  Note that vs may == vdest (replace
+                guess with the solution).
 
      This is an internal routine that knows about the GMRES internals.
  */
@@ -488,7 +488,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
         cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
         break;
       default:
-	SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown orthogonalization");
+        SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown orthogonalization");
     }
   } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
     cstr = "Modified Gram-Schmidt Orthogonalization";

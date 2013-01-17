@@ -47,8 +47,8 @@ int main(int Argc,char **Args)
 
   /* Geometry info */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, n, n,
-		    PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
-		    1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+                      PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
+                      1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
 
   /* Random numbers */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
@@ -71,9 +71,9 @@ int main(int Argc,char **Args)
   for ( x=xs; x<xs+xm; x++ ) {
     for ( y=ys; y<ys+ym; y++ ) {
       /* each lattice point sets only the *forward* pointing parameters (right, down),
-	 i.e. Nabla_1^+ and Nabla_2^+.
-	 In this way we can use only local random number creation. That means
-	 we also have to set the corresponding backward pointing entries. */
+         i.e. Nabla_1^+ and Nabla_2^+.
+         In this way we can use only local random number creation. That means
+         we also have to set the corresponding backward pointing entries. */
       /* Compute some normally distributed random numbers via Box-Muller */
       ierr = PetscRandomGetValueReal(rctx, &r1);CHKERRQ(ierr);
       r1 = 1.-r1; /* to change from [0,1) to (0,1], which we need for the log */

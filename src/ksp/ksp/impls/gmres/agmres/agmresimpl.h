@@ -13,7 +13,7 @@ typedef struct {
   KSPDGMRESHEADER
 
   /* Data specific to AGMRES */
-  PetscReal	bgv;            /* large multiple of the remaining allowed number of steps -- used for the adaptive strategy */
+  PetscReal     bgv;            /* large multiple of the remaining allowed number of steps -- used for the adaptive strategy */
   PetscBool     ritz;           /* Compute the Harmonic Ritz vectors instead of the Ritz vectors */
   PetscBool     DeflPrecond;    /* Apply deflation by building adaptively a preconditioner, otherwise augment the basis */
   PetscScalar  *Qloc;           /* Orthogonal reflectors from the QR of the basis */

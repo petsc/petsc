@@ -213,9 +213,9 @@ static void ShapeFunctionQ13D_Evaluate_dx(PetscScalar GNi[][NODES_PER_EL],PetscS
     J22 = J22 + GNi[2][n] * cz;  /* J_zz */
   }
 
-  JJ[0][0] = J00;			JJ[0][1] = J01;			JJ[0][2] = J02;
-  JJ[1][0] = J10;			JJ[1][1] = J11;			JJ[1][2] = J12;
-  JJ[2][0] = J20;			JJ[2][1] = J21;			JJ[2][2] = J22;
+  JJ[0][0] = J00;      JJ[0][1] = J01;      JJ[0][2] = J02;
+  JJ[1][0] = J10;      JJ[1][1] = J11;      JJ[1][2] = J12;
+  JJ[2][0] = J20;      JJ[2][1] = J21;      JJ[2][2] = J22;
 
   matrix_inverse_3x3(JJ,iJ);
 

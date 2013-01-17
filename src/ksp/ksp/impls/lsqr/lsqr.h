@@ -16,10 +16,10 @@ PetscErrorCode read_command_line( int argc, char **argv,
      PetscScalar * epsdiag, PCType *pc_type);
 
 PetscErrorCode precond_lsqr_converged(
-			KSP       solksp, /* Krylov Subspace method context */
-			PetscInt  iter,   /* Current iteration number */
-			PetscReal rnorm,  /* Current residual norm */
-			KSPConvergedReason *reason, /* duh... */
-			void      *ctx    /* Pointer to user defined context */
-		       );
+                        KSP       solksp, /* Krylov Subspace method context */
+                        PetscInt  iter,   /* Current iteration number */
+                        PetscReal rnorm,  /* Current residual norm */
+                        KSPConvergedReason *reason, /* duh... */
+                        void      *ctx    /* Pointer to user defined context */
+                       );
 

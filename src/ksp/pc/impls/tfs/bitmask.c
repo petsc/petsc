@@ -27,26 +27,26 @@ PetscErrorCode PCTFS_bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list
       /* low to high */
       ptr+=(p_mask-1);
       for (i=p_mask-1;i>=0;i--)
-	{
-	  tmp = BYTE*(p_mask-i-1);
-	  if (*ptr&BIT_0)
-	    {*msg_list = tmp; msg_list++;}
-	  if (*ptr&BIT_1)
-	    {*msg_list = tmp+1; msg_list++;}
-	  if (*ptr&BIT_2)
-	    {*msg_list = tmp+2; msg_list++;}
-	  if (*ptr&BIT_3)
-	    {*msg_list = tmp+3; msg_list++;}
-	  if (*ptr&BIT_4)
-	    {*msg_list = tmp+4; msg_list++;}
-	  if (*ptr&BIT_5)
-	    {*msg_list = tmp+5; msg_list++;}
-	  if (*ptr&BIT_6)
-	    {*msg_list = tmp+6; msg_list++;}
-	  if (*ptr&BIT_7)
-	    {*msg_list = tmp+7; msg_list++;}
-	  ptr --;
-	}
+        {
+          tmp = BYTE*(p_mask-i-1);
+          if (*ptr&BIT_0)
+            {*msg_list = tmp; msg_list++;}
+          if (*ptr&BIT_1)
+            {*msg_list = tmp+1; msg_list++;}
+          if (*ptr&BIT_2)
+            {*msg_list = tmp+2; msg_list++;}
+          if (*ptr&BIT_3)
+            {*msg_list = tmp+3; msg_list++;}
+          if (*ptr&BIT_4)
+            {*msg_list = tmp+4; msg_list++;}
+          if (*ptr&BIT_5)
+            {*msg_list = tmp+5; msg_list++;}
+          if (*ptr&BIT_6)
+            {*msg_list = tmp+6; msg_list++;}
+          if (*ptr&BIT_7)
+            {*msg_list = tmp+7; msg_list++;}
+          ptr --;
+        }
   }
   PetscFunctionReturn(0);
 }

@@ -84,9 +84,9 @@ int main(int Argc,char **Args)
   for ( x=lcs[0]; x<lce[0]; x++ ) {
     for ( y=lcs[1]; y<lce[1]; y++ ) {
       /* each lattice point sets only the *forward* pointing parameters (right, down),
-	 i.e. Nabla_1^+ and Nabla_2^+.
-	 In this way we can use only local random number creation. That means
-	 we also have to set the corresponding backward pointing entries. */
+         i.e. Nabla_1^+ and Nabla_2^+.
+         In this way we can use only local random number creation. That means
+         we also have to set the corresponding backward pointing entries. */
       /* Compute some normally distributed random numbers via Box-Muller */
       ierr = PetscRandomGetValueReal(rctx, &r1);CHKERRQ(ierr);
       r1 = 1.-r1; /* to change from [0,1) to (0,1], which we need for the log */

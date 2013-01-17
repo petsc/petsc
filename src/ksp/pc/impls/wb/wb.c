@@ -682,7 +682,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
       ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
       if (!rank) {
-	ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
+        ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
       }
       ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

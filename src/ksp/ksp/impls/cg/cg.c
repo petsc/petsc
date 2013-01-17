@@ -206,7 +206,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Ap         */
        ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
      } else {
-	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Ap         */
+        ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Ap         */
         dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
      }
      betaold = beta;
@@ -239,7 +239,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
          vecs[0] = S; vecs[1] = R;
          ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
          /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
-	   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
+           ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
          ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
          delta = tmp[0]; beta = tmp[1];
        } else {
@@ -267,12 +267,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
          PetscScalar tmp[2];
          Vec         vecs[2];
          vecs[0] = S; vecs[1] = R;
-	 /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
+         /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
          /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
          ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
          delta = tmp[0]; beta = tmp[1];
        } else {
-	 ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
+         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
        }
        if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
      }

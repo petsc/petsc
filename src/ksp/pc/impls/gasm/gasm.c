@@ -354,7 +354,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     if (osm->sort_indices) {
       for (i=0; i<osm->n; i++) {
         ierr = ISSort(osm->ois[i]);CHKERRQ(ierr);
-	ierr = ISSort(osm->iis[i]);CHKERRQ(ierr);
+        ierr = ISSort(osm->iis[i]);CHKERRQ(ierr);
       }
     }
     /*
@@ -394,8 +394,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       /**/
       in = 0;
       for (i=0; i<osm->n; i++) {
-	ierr = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
-	in += ini;
+        ierr = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
+        in += ini;
       }
       ierr = PetscMalloc(in*sizeof(PetscInt), &iidx);CHKERRQ(ierr);
       ierr = PetscMalloc(in*sizeof(PetscInt), &ioidx);CHKERRQ(ierr);
@@ -408,20 +408,20 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         PetscInt       *ioidxi;       /* Local indices of the i-th local inner subdomain within the local outer subdomain. */
         PetscInt       ioni;          /* Number of indices in ioidxi; if ioni != ini the inner subdomain is not a subdomain of the outer subdomain (error). */
         PetscInt       k;
-	ierr = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
-	ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
-	ierr = ISGetIndices(osm->iis[i],&iidxi);CHKERRQ(ierr);
-	ierr = PetscMemcpy(iidx+in, iidxi, sizeof(PetscInt)*ini);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(osm->iis[i],&ini);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(osm->ois[i],&oni);CHKERRQ(ierr);
+        ierr = ISGetIndices(osm->iis[i],&iidxi);CHKERRQ(ierr);
+        ierr = PetscMemcpy(iidx+in, iidxi, sizeof(PetscInt)*ini);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingCreateIS(osm->ois[i],&ltogi);CHKERRQ(ierr);
         ioidxi = ioidx+in;
         ierr = ISGlobalToLocalMappingApply(ltogi,IS_GTOLM_DROP,ini,iidxi,&ioni,ioidxi);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingDestroy(&ltogi);CHKERRQ(ierr);
-	ierr = ISRestoreIndices(osm->iis[i], &iidxi);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(osm->iis[i], &iidxi);CHKERRQ(ierr);
         if (ioni != ini) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner subdomain %D contains %D indices outside of its outer subdomain", i, ini - ioni);
         for (k = 0; k < ini; ++k) {
           ioidxi[k] += gofirst+on;
         }
-	in += ini;
+        in += ini;
         on += oni;
       }
       ierr = ISCreateGeneral(((PetscObject)pc)->comm, in, iidx,  PETSC_OWN_POINTER, &giis);CHKERRQ(ierr);
@@ -1561,7 +1561,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(pc->pmat, &first, &last);CHKERRQ(ierr);
   if (first%dof || last%dof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%D,%D) "
-	     "does not respect the number of degrees of freedom per grid point %D", first, last, dof);
+             "does not respect the number of degrees of freedom per grid point %D", first, last, dof);
 
   /* Determine the number of domains with nonzero intersections with the local ownership range. */
   s = 0;
@@ -1580,7 +1580,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
       xleft   = PetscMax(xstart - overlap,0);
       xright  = PetscMin(xstart + maxwidth + overlap,M);
       /*
-	 Determine whether this subdomain intersects this processor's ownership range of pc->pmat.
+         Determine whether this subdomain intersects this processor's ownership range of pc->pmat.
       */
       PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,(&xleft_loc),(&ylow_loc),(&xright_loc),(&yhigh_loc),(&nidx));
       if (nidx) {
@@ -1616,19 +1616,19 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
       x[1][0] = xstart;
       x[1][1] = PetscMin(xstart+maxwidth,M);
       /*
-	 Determine whether this domain intersects this processor's ownership range of pc->pmat.
-	 Do this twice: first for the domains with overlaps, and once without.
-	 During the first pass create the subcommunicators, and use them on the second pass as well.
+         Determine whether this domain intersects this processor's ownership range of pc->pmat.
+         Do this twice: first for the domains with overlaps, and once without.
+         During the first pass create the subcommunicators, and use them on the second pass as well.
       */
       for (q = 0; q < 2; ++q) {
-	/*
-	  domain limits, (xleft, xright) and (ylow, yheigh) are adjusted
-	  according to whether the domain with an overlap or without is considered.
-	*/
-	xleft = x[q][0]; xright = x[q][1];
-	ylow  = y[q][0]; yhigh  = y[q][1];
+        /*
+          domain limits, (xleft, xright) and (ylow, yheigh) are adjusted
+          according to whether the domain with an overlap or without is considered.
+        */
+        xleft = x[q][0]; xright = x[q][1];
+        ylow  = y[q][0]; yhigh  = y[q][1];
         PCGASMLocalSubdomainBounds2D(M,N,xleft,ylow,xright,yhigh,first,last,(&xleft_loc),(&ylow_loc),(&xright_loc),(&yhigh_loc),(&nidx));
-	nidx *= dof;
+        nidx *= dof;
         n[q] = nidx;
         /*
          Based on the counted number of indices in the local domain *with an overlap*,
@@ -1637,14 +1637,14 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
          while the domain without an overlap might not.  Hence, the decision to participate
          in the subcommunicator must be based on the domain with an overlap.
          */
-	if (q == 0) {
-	  if (nidx) {
-	    color = 1;
-	  } else {
-	    color = MPI_UNDEFINED;
-	  }
-	  ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRQ(ierr);
-	}
+        if (q == 0) {
+          if (nidx) {
+            color = 1;
+          } else {
+            color = MPI_UNDEFINED;
+          }
+          ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRQ(ierr);
+        }
         /*
          Proceed only if the number of local indices *with an overlap* is nonzero.
          */
@@ -1667,7 +1667,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
             }
           }/* if (q == 1) */
           idx = PETSC_NULL;
-	  ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+          ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
           if (nidx) {
             k    = 0;
             for (jj=ylow_loc; jj<yhigh_loc; ++jj) {
@@ -1681,8 +1681,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
               }
             }
           }
-	  ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*xis)+s);CHKERRQ(ierr);
-	}/* if (n[0]) */
+          ierr = ISCreateGeneral(subcomm,nidx,idx,PETSC_OWN_POINTER,(*xis)+s);CHKERRQ(ierr);
+        }/* if (n[0]) */
       }/* for (q = 0; q < 2; ++q) */
       if (n[0]) {
         ++s;
