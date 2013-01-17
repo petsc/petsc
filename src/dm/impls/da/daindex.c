@@ -94,16 +94,16 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   } else if (dd->dim == 2) {
     for (j=dd->ys; j<dd->ye; j++) {
       for (i=dd->xs; i<dd->xe; i++) {
-	/*  global number in natural ordering */
-	lidx[lict++] = i + j*dd->M*dd->w;
+        /*  global number in natural ordering */
+        lidx[lict++] = i + j*dd->M*dd->w;
       }
     }
   } else if (dd->dim == 3) {
     for (k=dd->zs; k<dd->ze; k++) {
       for (j=dd->ys; j<dd->ye; j++) {
-	for (i=dd->xs; i<dd->xe; i++) {
-	  lidx[lict++] = i + j*dd->M*dd->w + k*dd->M*dd->N*dd->w;
-	}
+        for (i=dd->xs; i<dd->xe; i++) {
+          lidx[lict++] = i + j*dd->M*dd->w + k*dd->M*dd->N*dd->w;
+        }
       }
     }
   }

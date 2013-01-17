@@ -278,7 +278,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   DM_DA          *da;
   hid_t          filespace;  /* file dataspace identifier */
   hid_t          chunkspace; /* chunk dataset property identifier */
-  hid_t	         plist_id;   /* property list identifier */
+  hid_t          plist_id;   /* property list identifier */
   hid_t          dset_id;    /* dataset identifier */
   hid_t          memspace;   /* memory dataspace identifier */
   hid_t          file_id;
@@ -582,7 +582,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   PetscScalar    *x;
   const char     *vecname;
   hid_t          filespace; /* file dataspace identifier */
-  hid_t	         plist_id;  /* property list identifier */
+  hid_t          plist_id;  /* property list identifier */
   hid_t          dset_id;   /* dataset identifier */
   hid_t          memspace;  /* memory dataspace identifier */
   hid_t          file_id;

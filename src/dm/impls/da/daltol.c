@@ -45,7 +45,7 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
     count = 0;
     for (i=down; i<up; i++) {
       for (j=0; j<dd->xe-dd->xs; j++) {
-	idx[count++] = left + i*(dd->Xe-dd->Xs) + j;
+        idx[count++] = left + i*(dd->Xe-dd->Xs) + j;
       }
     }
   } else if (dd->dim == 3) {
@@ -57,9 +57,9 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
     count  = 0;
     for (i=down; i<up; i++) {
       for (j=bottom; j<top; j++) {
-	for (k=0; k<dd->xe-dd->xs; k++) {
-	  idx[count++] = (left+j*(dd->Xe-dd->Xs))+i*(dd->Xe-dd->Xs)*(dd->Ye-dd->Ys) + k;
-	}
+        for (k=0; k<dd->xe-dd->xs; k++) {
+          idx[count++] = (left+j*(dd->Xe-dd->Xs))+i*(dd->Xe-dd->Xs)*(dd->Ye-dd->Ys) + k;
+        }
       }
     }
   } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);

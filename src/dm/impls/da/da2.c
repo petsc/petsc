@@ -275,9 +275,9 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
       if (!m) m = 1;
       while (m > 0) {
-	n = size/m;
-	if (m*n == size) break;
-	m--;
+        n = size/m;
+        if (m*n == size) break;
+        m--;
       }
       if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }

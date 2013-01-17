@@ -40,8 +40,8 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
     fill[i] = nz;
     for (j=0; j<w; j++) {
       if (dfill[w*i+j]) {
-	fill[nz] = j;
-	nz++;
+        fill[nz] = j;
+        nz++;
       }
     }
   }
@@ -235,36 +235,36 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
                                                             by 2*stencil_width + 1 (%d)\n", n, col);
     if (ctype == IS_COLORING_GLOBAL) {
       if (!dd->localcoloring) {
-	ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
-	ii = 0;
-	for (j=ys; j<ys+ny; j++) {
-	  for (i=xs; i<xs+nx; i++) {
-	    for (k=0; k<nc; k++) {
-	      colors[ii++] = k + nc*((i % col) + col*(j % col));
-	    }
-	  }
-	}
+        ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
+        ii = 0;
+        for (j=ys; j<ys+ny; j++) {
+          for (i=xs; i<xs+nx; i++) {
+            for (k=0; k<nc; k++) {
+              colors[ii++] = k + nc*((i % col) + col*(j % col));
+            }
+          }
+        }
         ncolors = nc + nc*(col-1 + col*(col-1));
-	ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&dd->localcoloring);CHKERRQ(ierr);
+        ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&dd->localcoloring);CHKERRQ(ierr);
       }
       *coloring = dd->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
       if (!dd->ghostedcoloring) {
-	ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
-	ii = 0;
-	for (j=gys; j<gys+gny; j++) {
-	  for (i=gxs; i<gxs+gnx; i++) {
-	    for (k=0; k<nc; k++) {
-	      /* the complicated stuff is to handle periodic boundaries */
-	      colors[ii++] = k + nc*((SetInRange(i,m) % col) + col*(SetInRange(j,n) % col));
-	    }
-	  }
-	}
+        ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
+        ii = 0;
+        for (j=gys; j<gys+gny; j++) {
+          for (i=gxs; i<gxs+gnx; i++) {
+            for (k=0; k<nc; k++) {
+              /* the complicated stuff is to handle periodic boundaries */
+              colors[ii++] = k + nc*((SetInRange(i,m) % col) + col*(SetInRange(j,n) % col));
+            }
+          }
+        }
         ncolors = nc + nc*(col - 1 + col*(col-1));
-	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
+        ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
         /* PetscIntView(ncolors,(PetscInt *)colors,0); */
 
-	ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+        ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = dd->ghostedcoloring;
     } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
@@ -461,11 +461,11 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
       ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=ys; j<ys+ny; j++) {
-	for (i=xs; i<xs+nx; i++) {
-	  for (k=0; k<nc; k++) {
-	    colors[ii++] = k + nc*((3*j+i) % 5);
-	  }
-	}
+        for (i=xs; i<xs+nx; i++) {
+          for (k=0; k<nc; k++) {
+            colors[ii++] = k + nc*((3*j+i) % 5);
+          }
+        }
       }
       ncolors = 5*nc;
       ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&dd->localcoloring);CHKERRQ(ierr);
@@ -476,11 +476,11 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
       ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=gys; j<gys+gny; j++) {
-	for (i=gxs; i<gxs+gnx; i++) {
-	  for (k=0; k<nc; k++) {
-	    colors[ii++] = k + nc*((3*SetInRange(j,n) + SetInRange(i,m)) % 5);
-	  }
-	}
+        for (i=gxs; i<gxs+gnx; i++) {
+          for (k=0; k<nc; k++) {
+            colors[ii++] = k + nc*((3*SetInRange(j,n) + SetInRange(i,m)) % 5);
+          }
+        }
       }
       ncolors = 5*nc;
       ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
@@ -853,14 +853,14 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 
       cnt  = 0;
       for (k=0; k<nc; k++) {
-	for (l=lstart; l<lend+1; l++) {
-	  for (p=pstart; p<pend+1; p++) {
-	    if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
-	      cols[cnt++]  = k + nc*(slot + gnx*l + p);
-	    }
-	  }
-	}
-	rows[k] = k + nc*(slot);
+        for (l=lstart; l<lend+1; l++) {
+          for (p=pstart; p<pend+1; p++) {
+            if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
+              cols[cnt++]  = k + nc*(slot + gnx*l + p);
+            }
+          }
+        }
+        rows[k] = k + nc*(slot);
       }
       ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
     }
@@ -887,23 +887,23 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
       pend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
 
       for (j=ys; j<ys+ny; j++) {
-	slot = i - gxs + gnx*(j - gys);
+        slot = i - gxs + gnx*(j - gys);
 
-	lstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	lend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        lstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        lend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
 
-	cnt  = 0;
-	for (k=0; k<nc; k++) {
-	  for (l=lstart; l<lend+1; l++) {
-	    for (p=pstart; p<pend+1; p++) {
-	      if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
-		cols[cnt++]  = k + nc*(slot + gnx*l + p);
-	      }
-	    }
-	  }
-	  rows[k]      = k + nc*(slot);
-	}
-	ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        cnt  = 0;
+        for (k=0; k<nc; k++) {
+          for (l=lstart; l<lend+1; l++) {
+            for (p=pstart; p<pend+1; p++) {
+              if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
+                cols[cnt++]  = k + nc*(slot + gnx*l + p);
+              }
+            }
+          }
+          rows[k]      = k + nc*(slot);
+        }
+        ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -961,25 +961,25 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 
       for (k=0; k<nc; k++) {
         cnt  = 0;
-	for (l=lstart; l<lend+1; l++) {
-	  for (p=pstart; p<pend+1; p++) {
+        for (l=lstart; l<lend+1; l++) {
+          for (p=pstart; p<pend+1; p++) {
             if (l || p) {
-	      if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star */
+              if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star */
                 for (ifill_col=ofill[k]; ifill_col<ofill[k+1]; ifill_col++)
-		  cols[cnt++]  = ofill[ifill_col] + nc*(slot + gnx*l + p);
-	      }
+                  cols[cnt++]  = ofill[ifill_col] + nc*(slot + gnx*l + p);
+              }
             } else {
-	      if (dfill) {
-		for (ifill_col=dfill[k]; ifill_col<dfill[k+1]; ifill_col++)
-		  cols[cnt++]  = dfill[ifill_col] + nc*(slot + gnx*l + p);
-	      } else {
-		for (ifill_col=0; ifill_col<nc; ifill_col++)
-		  cols[cnt++]  = ifill_col + nc*(slot + gnx*l + p);
-	      }
+              if (dfill) {
+                for (ifill_col=dfill[k]; ifill_col<dfill[k+1]; ifill_col++)
+                  cols[cnt++]  = dfill[ifill_col] + nc*(slot + gnx*l + p);
+              } else {
+                for (ifill_col=0; ifill_col<nc; ifill_col++)
+                  cols[cnt++]  = ifill_col + nc*(slot + gnx*l + p);
+              }
             }
-	  }
-	}
-	row = k + nc*(slot);
+          }
+        }
+        row = k + nc*(slot);
         ierr = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
@@ -1004,34 +1004,34 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
       pend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
 
       for (j=ys; j<ys+ny; j++) {
-	slot = i - gxs + gnx*(j - gys);
+        slot = i - gxs + gnx*(j - gys);
 
-	lstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	lend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        lstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        lend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
 
-	for (k=0; k<nc; k++) {
-	  cnt  = 0;
-	  for (l=lstart; l<lend+1; l++) {
-	    for (p=pstart; p<pend+1; p++) {
-	      if (l || p) {
-		if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star */
-		  for (ifill_col=ofill[k]; ifill_col<ofill[k+1]; ifill_col++)
-		    cols[cnt++]  = ofill[ifill_col] + nc*(slot + gnx*l + p);
-		}
-	      } else {
-		if (dfill) {
-		  for (ifill_col=dfill[k]; ifill_col<dfill[k+1]; ifill_col++)
-		    cols[cnt++]  = dfill[ifill_col] + nc*(slot + gnx*l + p);
-		} else {
-		  for (ifill_col=0; ifill_col<nc; ifill_col++)
-		    cols[cnt++]  = ifill_col + nc*(slot + gnx*l + p);
-		}
-	      }
-	    }
-	  }
-	  row  = k + nc*(slot);
-	  ierr = MatSetValuesLocal(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-	}
+        for (k=0; k<nc; k++) {
+          cnt  = 0;
+          for (l=lstart; l<lend+1; l++) {
+            for (p=pstart; p<pend+1; p++) {
+              if (l || p) {
+                if ((st == DMDA_STENCIL_BOX) || (!l || !p)) {  /* entries on star */
+                  for (ifill_col=ofill[k]; ifill_col<ofill[k+1]; ifill_col++)
+                    cols[cnt++]  = ofill[ifill_col] + nc*(slot + gnx*l + p);
+                }
+              } else {
+                if (dfill) {
+                  for (ifill_col=dfill[k]; ifill_col<dfill[k+1]; ifill_col++)
+                    cols[cnt++]  = dfill[ifill_col] + nc*(slot + gnx*l + p);
+                } else {
+                  for (ifill_col=0; ifill_col<nc; ifill_col++)
+                    cols[cnt++]  = ifill_col + nc*(slot + gnx*l + p);
+                }
+              }
+            }
+          }
+          row  = k + nc*(slot);
+          ierr = MatSetValuesLocal(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1084,25 +1084,25 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
       jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
       jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
-	kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
-	
-	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
-	
-	cnt  = 0;
-	for (l=0; l<nc; l++) {
-	  for (ii=istart; ii<iend+1; ii++) {
-	    for (jj=jstart; jj<jend+1; jj++) {
-	      for (kk=kstart; kk<kend+1; kk++) {
-		if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
-		  cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		}
-	      }
-	    }
-	  }
-	  rows[l] = l + nc*(slot);
-	}
-	ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+        kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        
+        cnt  = 0;
+        for (l=0; l<nc; l++) {
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                  cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                }
+              }
+            }
+          }
+          rows[l] = l + nc*(slot);
+        }
+        ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -1125,29 +1125,29 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
-	jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
-	for (k=zs; k<zs+nz; k++) {
-	  kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	  kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
-	
-	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
-	
-	  cnt  = 0;
-	  for (l=0; l<nc; l++) {
-	    for (ii=istart; ii<iend+1; ii++) {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		for (kk=kstart; kk<kend+1; kk++) {
-		  if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
-		    cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		  }
-		}
-	      }
-	    }
-	    rows[l]      = l + nc*(slot);
-	  }
-	  ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-	}
+        jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        for (k=zs; k<zs+nz; k++) {
+          kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+          kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        
+          cnt  = 0;
+          for (l=0; l<nc; l++) {
+            for (ii=istart; ii<iend+1; ii++) {
+              for (jj=jstart; jj<jend+1; jj++) {
+                for (kk=kstart; kk<kend+1; kk++) {
+                  if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                    cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  }
+                }
+              }
+            }
+            rows[l]      = l + nc*(slot);
+          }
+          ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1356,10 +1356,10 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
 
       cnt  = 0;
       for (l=0; l<nc; l++) {
-	for (i1=istart; i1<iend+1; i1++) {
-	  cols[cnt++] = l + nc*(slot + i1);
-	}
-	rows[l]      = l + nc*(slot);
+        for (i1=istart; i1<iend+1; i1++) {
+          cols[cnt++] = l + nc*(slot + i1);
+        }
+        rows[l]      = l + nc*(slot);
       }
       ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -1443,10 +1443,10 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
-	jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
-	slot = i - gxs + gnx*(j - gys);
-	cnt  = 0;
+        jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        slot = i - gxs + gnx*(j - gys);
+        cnt  = 0;
         for (ii=istart; ii<iend+1; ii++) {
           for (jj=jstart; jj<jend+1; jj++) {
             if (st == DMDA_STENCIL_BOX || !ii || !jj) { /* BOX or on the STAR */
@@ -1454,7 +1454,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
             }
           }
         }
-	ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1506,23 +1506,23 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
       jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
       jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
-	kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+        kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
 
-	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 
-	/* Find block columns in block row */
-	cnt  = 0;
+        /* Find block columns in block row */
+        cnt  = 0;
         for (ii=istart; ii<iend+1; ii++) {
           for (jj=jstart; jj<jend+1; jj++) {
             for (kk=kstart; kk<kend+1; kk++) {
               if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
-		cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-	      }
-	    }
-	  }
-	}
-	ierr = MatPreallocateSetLocal(ltogb,1,&slot,ltogb,cnt,cols,dnz,onz);CHKERRQ(ierr);
+                cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
+              }
+            }
+          }
+        }
+        ierr = MatPreallocateSetLocal(ltogb,1,&slot,ltogb,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -1545,15 +1545,15 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
-	jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
-	for (k=zs; k<zs+nz; k++) {
-	  kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	  kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
-	
-	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
-	
-	  cnt  = 0;
+        jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        for (k=zs; k<zs+nz; k++) {
+          kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+          kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        
+          cnt  = 0;
           for (ii=istart; ii<iend+1; ii++) {
             for (jj=jstart; jj<jend+1; jj++) {
               for (kk=kstart; kk<kend+1; kk++) {
@@ -1563,8 +1563,8 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
               }
             }
           }
-	  ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-	}
+          ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1683,7 +1683,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
           }
         }
         ierr = L2GFilterUpperTriangular(ltogb,&slot,&cnt,cols);CHKERRQ(ierr);
-	ierr = MatSetValuesBlocked(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1736,12 +1736,12 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
       jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
         kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
 
-	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 
-	/* Find block columns in block row */
-	cnt  = 0;
+        /* Find block columns in block row */
+        cnt  = 0;
         for (ii=istart; ii<iend+1; ii++) {
           for (jj=jstart; jj<jend+1; jj++) {
             for (kk=kstart; kk<kend+1; kk++) {
@@ -1776,26 +1776,26 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
         jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
-	for (k=zs; k<zs+nz; k++) {
+        jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        for (k=zs; k<zs+nz; k++) {
           kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	  kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
-	
-	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
-	
-	  cnt  = 0;
+          kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        
+          cnt  = 0;
           for (ii=istart; ii<iend+1; ii++) {
             for (jj=jstart; jj<jend+1; jj++) {
               for (kk=kstart; kk<kend+1; kk++) {
                 if ((st == DMDA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) {
-		  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-		}
-	      }
-	    }
-	  }
+                  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
+                }
+              }
+            }
+          }
           ierr = L2GFilterUpperTriangular(ltogb,&slot,&cnt,cols);CHKERRQ(ierr);
           ierr = MatSetValuesBlocked(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-	}
+        }
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1860,34 +1860,34 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
       for (k=zs; k<zs+nz; k++) {
         kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
         kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
-	
+        
         slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
-	
-	for (l=0; l<nc; l++) {
-	  cnt  = 0;
-	  for (ii=istart; ii<iend+1; ii++) {
-	    for (jj=jstart; jj<jend+1; jj++) {
-	      for (kk=kstart; kk<kend+1; kk++) {
-		if (ii || jj || kk) {
-		  if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
-		    for (ifill_col=ofill[l]; ifill_col<ofill[l+1]; ifill_col++)
-		      cols[cnt++]  = ofill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		  }
-		} else {
-		  if (dfill) {
-		    for (ifill_col=dfill[l]; ifill_col<dfill[l+1]; ifill_col++)
-		      cols[cnt++]  = dfill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		  } else {
-		    for (ifill_col=0; ifill_col<nc; ifill_col++)
-		      cols[cnt++]  = ifill_col + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		  }
-		}
-	      }
-	    }
-	  }
-	  row  = l + nc*(slot);
-	  ierr = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
-	}
+        
+        for (l=0; l<nc; l++) {
+          cnt  = 0;
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                if (ii || jj || kk) {
+                  if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                    for (ifill_col=ofill[l]; ifill_col<ofill[l+1]; ifill_col++)
+                      cols[cnt++]  = ofill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  }
+                } else {
+                  if (dfill) {
+                    for (ifill_col=dfill[l]; ifill_col<dfill[l+1]; ifill_col++)
+                      cols[cnt++]  = dfill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  } else {
+                    for (ifill_col=0; ifill_col<nc; ifill_col++)
+                      cols[cnt++]  = ifill_col + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  }
+                }
+              }
+            }
+          }
+          row  = l + nc*(slot);
+          ierr = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -1909,40 +1909,40 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
-	jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
-	jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
-	for (k=zs; k<zs+nz; k++) {
-	  kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
-	  kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
-	
-	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
-	
-	  for (l=0; l<nc; l++) {
-	    cnt  = 0;
-	    for (ii=istart; ii<iend+1; ii++) {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		for (kk=kstart; kk<kend+1; kk++) {
-		  if (ii || jj || kk) {
-		    if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
-		      for (ifill_col=ofill[l]; ifill_col<ofill[l+1]; ifill_col++)
-			cols[cnt++]  = ofill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		    }
-		  } else {
-		    if (dfill) {
-		      for (ifill_col=dfill[l]; ifill_col<dfill[l+1]; ifill_col++)
-			cols[cnt++]  = dfill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		    } else {
-		      for (ifill_col=0; ifill_col<nc; ifill_col++)
-			cols[cnt++]  = ifill_col + nc*(slot + ii + gnx*jj + gnx*gny*kk);
-		    }
-		  }
-		}
-	      }
-	    }
-	    row  = l + nc*(slot);
-	    ierr = MatSetValuesLocal(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-	  }
-	}
+        jstart = (by == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        jend   = (by == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        for (k=zs; k<zs+nz; k++) {
+          kstart = (bz == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+          kend   = (bz == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+        
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+        
+          for (l=0; l<nc; l++) {
+            cnt  = 0;
+            for (ii=istart; ii<iend+1; ii++) {
+              for (jj=jstart; jj<jend+1; jj++) {
+                for (kk=kstart; kk<kend+1; kk++) {
+                  if (ii || jj || kk) {
+                    if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                      for (ifill_col=ofill[l]; ifill_col<ofill[l+1]; ifill_col++)
+                        cols[cnt++]  = ofill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                    }
+                  } else {
+                    if (dfill) {
+                      for (ifill_col=dfill[l]; ifill_col<dfill[l+1]; ifill_col++)
+                        cols[cnt++]  = dfill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                    } else {
+                      for (ifill_col=0; ifill_col<nc; ifill_col++)
+                        cols[cnt++]  = ifill_col + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                    }
+                  }
+                }
+              }
+            }
+            row  = l + nc*(slot);
+            ierr = MatSetValuesLocal(J,1,&row,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);

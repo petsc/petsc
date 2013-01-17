@@ -640,30 +640,30 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
-	/* convert to local "natural" numbering and then to PETSc global numbering */
-	row    = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
+        /* convert to local "natural" numbering and then to PETSc global numbering */
+        row    = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
 
-	i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
-	j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-	l_c = (l/ratiol);
+        i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+        j_c = (j/ratioj);    /* coarse grid node below fine grid node */
+        l_c = (l/ratiol);
 
-	if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
-	if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
-	if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+        if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
-	/*
-	   Only include those interpolation points that are truly
-	   nonzero. Note this is very important for final grid lines
-	   in x and y directions; since they have no right/top neighbors
-	*/
-	nc = 0;
-	/* one left and below; or we are right on it */
-	col        = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-	cols[nc++] = col_shift + idx_c[col]/dof;
-	ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
+        /*
+           Only include those interpolation points that are truly
+           nonzero. Note this is very important for final grid lines
+           in x and y directions; since they have no right/top neighbors
+        */
+        nc = 0;
+        /* one left and below; or we are right on it */
+        col        = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
+        cols[nc++] = col_shift + idx_c[col]/dof;
+        ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -678,19 +678,19 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
-	/* convert to local "natural" numbering and then to PETSc global numbering */
-	row    = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-	
-	i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
-	j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-	l_c = (l/ratiol);
-	nc = 0;
-	/* one left and below; or we are right on it */
-	col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-	cols[nc] = col_shift + idx_c[col]/dof;
-	v[nc++]  = 1.0;
+        /* convert to local "natural" numbering and then to PETSc global numbering */
+        row    = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
+        
+        i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+        j_c = (j/ratioj);    /* coarse grid node below fine grid node */
+        l_c = (l/ratiol);
+        nc = 0;
+        /* one left and below; or we are right on it */
+        col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
+        cols[nc] = col_shift + idx_c[col]/dof;
+        v[nc++]  = 1.0;
 
-	ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -1342,7 +1342,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   /* create the matrix that will contain the restriction operator */
   ierr = MatCreateAIJ( ((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
-			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
+                          max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */
   ierr = PetscMalloc2(max_agg_size,PetscScalar, &one_vec,max_agg_size,PetscInt, &fine_nodes);CHKERRQ(ierr);
@@ -1352,26 +1352,26 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   for (l_c=l_start_c; l_c<l_start_c+p_c; l_c++) {
     for (j_c=j_start_c; j_c<j_start_c+n_c; j_c++) {
       for (i_c=i_start_c; i_c<i_start_c+m_c; i_c++) {
-	for (d=0; d<dofc; d++) {
-	  /* convert to local "natural" numbering and then to PETSc global numbering */
-	  a = idx_c[dofc*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c))] + d;
+        for (d=0; d<dofc; d++) {
+          /* convert to local "natural" numbering and then to PETSc global numbering */
+          a = idx_c[dofc*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c))] + d;
 
-	  fn_idx = 0;
-	  /* Corresponding fine points are all points (i_f, j_f, l_f) such that
-	     i_c*Mf/Mc <= i_f < (i_c+1)*Mf/Mc
-	     (same for other dimensions)
-	  */
-	  for (l=l_c*Pf/Pc; l<PetscMin((l_c+1)*Pf/Pc,Pf); l++) {
-	    for (j=j_c*Nf/Nc; j<PetscMin((j_c+1)*Nf/Nc,Nf); j++) {
-	      for (i=i_c*Mf/Mc; i<PetscMin((i_c+1)*Mf/Mc,Mf); i++) {
-		fine_nodes[fn_idx] = idx_f[doff*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))] + d;
-		fn_idx++;
-	      }
-	    }
-	  }
-	  /* add all these points to one aggregate */
-	  ierr = MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
-	}
+          fn_idx = 0;
+          /* Corresponding fine points are all points (i_f, j_f, l_f) such that
+             i_c*Mf/Mc <= i_f < (i_c+1)*Mf/Mc
+             (same for other dimensions)
+          */
+          for (l=l_c*Pf/Pc; l<PetscMin((l_c+1)*Pf/Pc,Pf); l++) {
+            for (j=j_c*Nf/Nc; j<PetscMin((j_c+1)*Nf/Nc,Nf); j++) {
+              for (i=i_c*Mf/Mc; i<PetscMin((i_c+1)*Mf/Mc,Mf); i++) {
+                fine_nodes[fn_idx] = idx_f[doff*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))] + d;
+                fn_idx++;
+              }
+            }
+          }
+          /* add all these points to one aggregate */
+          ierr = MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
   }
