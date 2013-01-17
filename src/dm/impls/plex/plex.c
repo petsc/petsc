@@ -2514,7 +2514,7 @@ static PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt numCorners, Petsc
     }
     break;
   case 3:
-    switch(numCorners)	{
+    switch(numCorners) {
     case 4: /* tetradehdron */
       *numFaceVertices = 3; /* Face has 3 vertices */
       break;
@@ -7010,7 +7010,7 @@ PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefine
     for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
       newSieve->setConeSize(curNewCell, coneSize);
       for(int iVertex=0; iVertex < coneSize; ++iVertex) {
-	newSieve->addSupportSize(newCells[iCell*coneSize+iVertex], 1);
+        newSieve->addSupportSize(newCells[iCell*coneSize+iVertex], 1);
       } /* for */
     } /* for */
   } /* for */

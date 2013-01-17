@@ -120,7 +120,7 @@ PetscErrorCode TraverseCells(DM dm, Options *options)
       // Loop over vertices of the given face
       for(ALE::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         const ALE::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
-	
+
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (", *v_iter);CHKERRQ(ierr);
         for(int d = 0; d < m->getDimension(); ++d) {
           if (d > 0) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}

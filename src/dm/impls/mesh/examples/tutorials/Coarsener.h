@@ -47,38 +47,38 @@ namespace Coarsener {
     double vCoords[dim], nCoords[dim];
 
     while (v_iter != v_iter_end) {
-	//printf("vertex: %d\n", *v_iter);
+      //printf("vertex: %d\n", *v_iter);
       const double * rBuf = coords->restrict(patch, *v_iter);
       PetscMemcpy(vCoords, rBuf, dim*sizeof(double));
-	
+
       double minDist = -1; //using the max is silly.
-    ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(*v_iter);
-    ALE::Mesh::topology_type::label_sequence::iterator s_iter     = support->begin();
-    ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
-    while(s_iter != s_iter_end) {
-      ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
-      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
-      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
-      while(n_iter != n_iter_end) {
-	if (*v_iter != *n_iter) {
-	  rBuf = coords->restrict(patch, *n_iter);
-	  PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
-	  double d_tmp, dist    = 0.0;
+      ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(*v_iter);
+      ALE::Mesh::topology_type::label_sequence::iterator s_iter     = support->begin();
+      ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
+      while(s_iter != s_iter_end) {
+        ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
+        while(n_iter != n_iter_end) {
+          if (*v_iter != *n_iter) {
+            rBuf = coords->restrict(patch, *n_iter);
+            PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
+            double d_tmp, dist    = 0.0;
 
-	  for (int d = 0; d < dim; d++) {
-	    d_tmp = nCoords[d] - vCoords[d];
-	    dist += d_tmp * d_tmp;
-	  }
+            for (int d = 0; d < dim; d++) {
+              d_tmp = nCoords[d] - vCoords[d];
+              dist += d_tmp * d_tmp;
+            }
 
-	  if (dist < minDist || minDist == -1) minDist = dist;
-	}
-	n_iter++;
+            if (dist < minDist || minDist == -1) minDist = dist;
+          }
+          n_iter++;
+        }
+        s_iter++;
       }
-      s_iter++;
-     }
-    minDist = sqrt(minDist);
-    spacing->update(patch, *v_iter, &minDist);
-    v_iter++;
+      minDist = sqrt(minDist);
+      spacing->update(patch, *v_iter, &minDist);
+      v_iter++;
   }
   PetscFunctionReturn(0);
 }
@@ -120,9 +120,9 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
             throw ALE::Exception("Bad point");
           }
           if (topology->getValue(boundary, *p_iter) == 0) {
-	    topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(mesh, *p_iter));
-	    if (mesh->debug()) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
-	  }
+            topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(mesh, *p_iter));
+            if (mesh->debug()) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
+          }
           //boundVerts++;
           p_iter++;
         }
@@ -327,21 +327,21 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
       ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
       ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
       while(n_iter != n_iter_end) {
-	if (vertex != *n_iter) {
-	  if (!foundNeighbor) {
-	    const double *nCoords = coords->restrict(patch, *n_iter);
-	    f_n_x = nCoords[0]; f_n_y = nCoords[1];
-	    foundNeighbor = true;
-	  } else {
-	    const double *nCoords = coords->restrict(patch, *n_iter);
-	    double n_x = nCoords[0], n_y = nCoords[1];
-	    double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
+        if (vertex != *n_iter) {
+          if (!foundNeighbor) {
+            const double *nCoords = coords->restrict(patch, *n_iter);
+            f_n_x = nCoords[0]; f_n_y = nCoords[1];
+            foundNeighbor = true;
+          } else {
+            const double *nCoords = coords->restrict(patch, *n_iter);
+            double n_x = nCoords[0], n_y = nCoords[1];
+            double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
             double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
-	    if (parArea > .00001*len) isEssential = 2;
-	   if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
-	  }
-	}
-	n_iter++;
+            if (parArea > .00001*len) isEssential = 2;
+           if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
+          }
+        }
+        n_iter++;
       }
       }
     s_iter++;

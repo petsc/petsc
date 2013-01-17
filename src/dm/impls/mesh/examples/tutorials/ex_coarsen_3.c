@@ -123,13 +123,13 @@ PetscErrorCode  MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm
     //determine: the per-dimension distance: cases
     if (dim > 2) {
       for (int i = 0; i < dim; i++) {
-	cornerdist = 0.;
-	if (centerCoords[i] > singularity[i]) {
-	  for (int j = 0; j < dim; j++) {
-	    if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
-	  }
-	  if (cornerdist < dist || dist == 0.) dist = cornerdist;
-	}
+        cornerdist = 0.;
+        if (centerCoords[i] > singularity[i]) {
+          for (int j = 0; j < dim; j++) {
+            if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
+          }
+          if (cornerdist < dist || dist == 0.) dist = cornerdist;
+        }
       }
     }
     //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex

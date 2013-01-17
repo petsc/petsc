@@ -16,7 +16,7 @@ typedef struct {
   PetscBool           *periodic;             /* true, if that dimension is periodic */
   PetscInt            *lcs, *lce;            /* corners of the locally stored portion of the grid */
   PetscInt            *lgs, *lge;            /* corners of the local portion of the grid
-						including the ghost points */
+                                                including the ghost points */
   PetscInt            lsize;                 /* number of nodes in local region */
   PetscInt            lgsize;                /* number of nodes in local region including ghost points */
   Vec                 global;                /* global prototype vector */

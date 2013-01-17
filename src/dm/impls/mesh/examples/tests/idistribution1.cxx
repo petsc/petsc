@@ -477,7 +477,7 @@ public:
     if (this->_debug) {
       parallelMesh->view("Parallel Mesh");
       for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
-	std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
+        std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
       }
     }
     ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(this->_renumbering);
@@ -515,7 +515,7 @@ public:
     if (this->_debug) {
       newLabel->view("Parallel Label");
       for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
-	std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
+        std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
       }
     }
     this->checkLabel(newLabel, "2DUninterpolated");

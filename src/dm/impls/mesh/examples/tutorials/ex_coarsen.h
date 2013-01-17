@@ -142,16 +142,16 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
 
     int j = 0;
     while(j < src->numberofedges) {
-	sieve->addArrow(src->edgelist[2*j]+src->numberoftriangles, src->numberofpoints + src->numberoftriangles + j,  src->numberofpoints + src->numberoftriangles + j);
-	sieve->addArrow(src->edgelist[2*j+1]+src->numberoftriangles, src->numberofpoints + src->numberoftriangles + j,  src->numberofpoints + src->numberoftriangles + j);
+        sieve->addArrow(src->edgelist[2*j]+src->numberoftriangles, src->numberofpoints + src->numberoftriangles + j,  src->numberofpoints + src->numberoftriangles + j);
+        sieve->addArrow(src->edgelist[2*j+1]+src->numberoftriangles, src->numberofpoints + src->numberoftriangles + j,  src->numberofpoints + src->numberoftriangles + j);
       for (int i = 0; i < src->numberoftriangles; i++) {
-      	for (int k = 0; k < 3; k++) {  //triangle edge index, 0 is corner 0 to 1, 1 is corner 1 to 2, 2 is corner 2 to 0; also look for reverse.
-		if 	(((src->trianglelist[3*i + (k%3)] == src->edgelist[2*j]) && (src->trianglelist[3*i + ((k + 1)%3)] == src->edgelist[2*j + 1])) ||
-			 ((src->trianglelist[3*i + (k%3)] == src->edgelist[2*j + 1]) && (src->trianglelist[3*i + ((k + 1)%3)] == src->edgelist[2*j]))) {
-			sieve->addArrow(src->numberoftriangles + src->numberofpoints + j, i, k);
-                        //ierr = PetscPrintf(PETSC_COMM_WORLD, "Adding Arrow: Edge %d to Triangle %d\n", src->numberofpoints + j, src->numberofpoints + src->numberoPetscErrorCode GenerateMesh (Obj<ALE::Mesh>& mesh) {fedges + i);CHKERRQ(ierr);
-		}
-	}
+        for (int k = 0; k < 3; k++) {  //triangle edge index, 0 is corner 0 to 1, 1 is corner 1 to 2, 2 is corner 2 to 0; also look for reverse.
+          if (((src->trianglelist[3*i + (k%3)] == src->edgelist[2*j]) && (src->trianglelist[3*i + ((k + 1)%3)] == src->edgelist[2*j + 1])) ||
+              ((src->trianglelist[3*i + (k%3)] == src->edgelist[2*j + 1]) && (src->trianglelist[3*i + ((k + 1)%3)] == src->edgelist[2*j]))) {
+            sieve->addArrow(src->numberoftriangles + src->numberofpoints + j, i, k);
+               //ierr = PetscPrintf(PETSC_COMM_WORLD, "Adding Arrow: Edge %d to Triangle %d\n", src->numberofpoints + j, src->numberofpoints + src->numberoPetscErrorCode GenerateMesh (Obj<ALE::Mesh>& mesh) {fedges + i);CHKERRQ(ierr);
+          }
+        }
     }
     j++;  //check the next edge!
   }

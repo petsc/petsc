@@ -317,29 +317,29 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
     do {
       /* find corresponding fine grid nodes */
       for (i=0; i<dim; i++) {
-	fgs[i] = iter_c.x[i]*ddf->nodes[i]/ddc->nodes[i];
-	fge[i] = PetscMin((iter_c.x[i]+1)*ddf->nodes[i]/ddc->nodes[i], ddf->nodes[i]);
+        fgs[i] = iter_c.x[i]*ddf->nodes[i]/ddc->nodes[i];
+        fge[i] = PetscMin((iter_c.x[i]+1)*ddf->nodes[i]/ddc->nodes[i], ddf->nodes[i]);
       }
       /* treat all dof of the coarse grid */
       for (iter_c.d=0; iter_c.d<dofc; iter_c.d++) {
-	/* find corresponding fine grid dof's */
-	fgdofs = iter_c.d*doff/dofc;
-	fgdofe = PetscMin((iter_c.d+1)*doff/dofc, doff);
-	/* we now know the "box" of all the fine grid nodes that are mapped to one coarse grid node */
-	fn_idx = 0;
-	/* loop over those corresponding fine grid nodes */
-	if ( ADDAHCiterStartup(dim, fgs, fge, iter_f.x) ) {
-	  do {
-	    /* loop over all corresponding fine grid dof */
-	    for (iter_f.d=fgdofs; iter_f.d<fgdofe; iter_f.d++) {
-	      ierr = PetscMemcpy(fine_nodes[fn_idx].x, iter_f.x, sizeof(PetscInt)*dim);CHKERRQ(ierr);
-	      fine_nodes[fn_idx].d = iter_f.d;
-	      fn_idx++;
-	    }
-	  } while( ADDAHCiter(dim, fgs, fge, iter_f.x) );
-	}
-	/* add all these points to one aggregate */
-	ierr = DMADDAMatSetValues(*rest, dmc, 1, &iter_c, dmf, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
+        /* find corresponding fine grid dof's */
+        fgdofs = iter_c.d*doff/dofc;
+        fgdofe = PetscMin((iter_c.d+1)*doff/dofc, doff);
+        /* we now know the "box" of all the fine grid nodes that are mapped to one coarse grid node */
+        fn_idx = 0;
+        /* loop over those corresponding fine grid nodes */
+        if ( ADDAHCiterStartup(dim, fgs, fge, iter_f.x) ) {
+          do {
+            /* loop over all corresponding fine grid dof */
+            for (iter_f.d=fgdofs; iter_f.d<fgdofe; iter_f.d++) {
+              ierr = PetscMemcpy(fine_nodes[fn_idx].x, iter_f.x, sizeof(PetscInt)*dim);CHKERRQ(ierr);
+              fine_nodes[fn_idx].d = iter_f.d;
+              fn_idx++;
+            }
+          } while( ADDAHCiter(dim, fgs, fge, iter_f.x) );
+        }
+        /* add all these points to one aggregate */
+        ierr = DMADDAMatSetValues(*rest, dmc, 1, &iter_c, dmf, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
       }
     } while( ADDAHCiter(dim, lcs_c, lce_c, iter_c.x) );
   }
@@ -512,7 +512,7 @@ PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucor
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
 PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
-						  const PetscScalar v[], InsertMode addv)
+                                   const PetscScalar v[], InsertMode addv)
 {
   DM_ADDA        *ddm = (DM_ADDA*)dmm->data;
   DM_ADDA        *ddn = (DM_ADDA*)dmn->data;
@@ -537,20 +537,20 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
     idx = 0;
     for (j=ddm->dim-1; j>=0; j--) {
       if ( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-	if ( ddm->periodic[j] ) { /* periodic wraps around */
-	  x[j] += ddm->nodes[j];
-	} else { /* non-periodic get discarded */
-	  matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
-	  goto endofloop_m;
-	}
+        if ( ddm->periodic[j] ) { /* periodic wraps around */
+          x[j] += ddm->nodes[j];
+        } else { /* non-periodic get discarded */
+          matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
+          goto endofloop_m;
+        }
       }
       if ( x[j] >= ddm->nodes[j] ) { /* "right", "above", etc. of boundary */
-	if ( ddm->periodic[j] ) { /* periodic wraps around */
-	  x[j] -= ddm->nodes[j];
-	} else { /* non-periodic get discarded */
-	  matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
-	  goto endofloop_m;
-	}
+        if ( ddm->periodic[j] ) { /* periodic wraps around */
+          x[j] -= ddm->nodes[j];
+        } else { /* non-periodic get discarded */
+          matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
+          goto endofloop_m;
+        }
       }
       idx += x[j]*nodemult[j];
     }
@@ -573,20 +573,20 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
     idx = 0;
     for (j=ddn->dim-1; j>=0; j--) {
       if ( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-	if ( ddn->periodic[j] ) { /* periodic wraps around */
-	  x[j] += ddn->nodes[j];
-	} else { /* non-periodic get discarded */
-	  matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
-	  goto endofloop_n;
-	}
+        if ( ddn->periodic[j] ) { /* periodic wraps around */
+          x[j] += ddn->nodes[j];
+        } else { /* non-periodic get discarded */
+          matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
+          goto endofloop_n;
+        }
       }
       if ( x[j] >= ddn->nodes[j] ) { /* "right", "above", etc. of boundary */
-	if ( ddn->periodic[j] ) { /* periodic wraps around */
-	  x[j] -= ddn->nodes[j];
-	} else { /* non-periodic get discarded */
-	  matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
-	  goto endofloop_n;
-	}
+        if ( ddn->periodic[j] ) { /* periodic wraps around */
+          x[j] -= ddn->nodes[j];
+        } else { /* non-periodic get discarded */
+          matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
+          goto endofloop_n;
+        }
       }
       idx += x[j]*nodemult[j];
     }
@@ -641,19 +641,19 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
     /* figure out a good way to split the array to several processors */
     for (i=0; i<dim; i++) {
       if (i==dim-1) {
-	procs[i] = procsleft;
+        procs[i] = procsleft;
       } else {
-	/* calculate best partition */
-	procs[i] = (PetscInt)(((double) nodes[i])*pow(((double) procsleft)/((double) nodesleft),1./((double)(dim-i)))+0.5);
-	if (procs[i]<1) procs[i]=1;
-	while( procs[i] > 0 ) {
-	  if ( procsleft % procs[i] )
-	    procs[i]--;
-	  else
-	    break;
-	}
-	nodesleft /= nodes[i];
-	procsleft /= procs[i];
+        /* calculate best partition */
+        procs[i] = (PetscInt)(((double) nodes[i])*pow(((double) procsleft)/((double) nodesleft),1./((double)(dim-i)))+0.5);
+        if (procs[i]<1) procs[i]=1;
+        while( procs[i] > 0 ) {
+          if ( procsleft % procs[i] )
+            procs[i]--;
+          else
+            break;
+        }
+        nodesleft /= nodes[i];
+        procsleft /= procs[i];
       }
     }
   } else {

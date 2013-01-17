@@ -18,10 +18,10 @@ PetscErrorCode doit(DM da,Vec global)
     ierr = DMDAVecGetArray(da,global,(void*) &mystruct);
     for ( i=0; i<N; i++) {
       for ( j=0; j<M; j++) {
-	for ( k=0; k<dof; k++) {
-	  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d %d %G\n",i,j,mystruct[i][j].inside[0]);CHKERRQ(ierr);
-	  mystruct[i][j].inside[1] = 2.1;
-	}
+        for ( k=0; k<dof; k++) {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%d %d %G\n",i,j,mystruct[i][j].inside[0]);CHKERRQ(ierr);
+          mystruct[i][j].inside[1] = 2.1;
+        }
       }
     }
     ierr = DMDAVecRestoreArray(da,global,(void*) &mystruct);CHKERRQ(ierr);

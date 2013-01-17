@@ -142,8 +142,8 @@ namespace Hierarchy {
       label_sequence::iterator v_iter_end = vertices->end();
 
       while (v_iter != v_iter_end) {
-	topology->setValue(boundary, *v_iter, 0);
-	v_iter++;
+        topology->setValue(boundary, *v_iter, 0);
+        v_iter++;
       }
 
     //trace through the edges, initializing them to be non-boundary, then setting them as boundary.
@@ -155,25 +155,25 @@ namespace Hierarchy {
       while (e_iter != e_iter_end) {
       //topology->setValue(boundary, *e_iter, 0);
       //find out if the edge is not supported on both sides, if so, this is a boundary node
-	if (mesh->debug()) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
-	if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
+        if (mesh->debug()) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
+        if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
         //topology->setValue(boundary, *e_iter, 1);
-	  Obj<coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
-	  coneSequence::iterator p_iter     = endpoints->begin();
-	  coneSequence::iterator p_iter_end = endpoints->end();
-	  while (p_iter != p_iter_end) {
-	    if (topology->depth(patch, *p_iter) != 0) {
-	      throw ALE::Exception("Bad point");
-	    }
-	    if (topology->getValue(boundary, *p_iter) == 0) {
-	      topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(*p_iter));
-	      if (mesh->debug()) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
-	    }
+          Obj<coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
+          coneSequence::iterator p_iter     = endpoints->begin();
+          coneSequence::iterator p_iter_end = endpoints->end();
+          while (p_iter != p_iter_end) {
+            if (topology->depth(patch, *p_iter) != 0) {
+              throw ALE::Exception("Bad point");
+            }
+            if (topology->getValue(boundary, *p_iter) == 0) {
+              topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(*p_iter));
+              if (mesh->debug()) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
+            }
           //boundVerts++;
-	    p_iter++;
-	  }
-	}
-	e_iter++;
+            p_iter++;
+          }
+        }
+        e_iter++;
       }
     //boundary->view(std::cout, "Boundary label");
     } else if (dim == 3) {  //loop over the faces to determine the
@@ -234,16 +234,16 @@ namespace Hierarchy {
       coneSequence::iterator n_iter = neighbors->begin();
       coneSequence::iterator n_iter_end = neighbors->end();
       while (n_iter != n_iter_end) {
-	for (int i = 0; i < input->numberofpoints; i++) {
-	  if(input->pointmarkerlist[i] == *n_iter) {
-	    if (input->segmentlist[2*index] == -1) {
-	      input->segmentlist[2*index] = i;
-	    } else {
-	      input->segmentlist[2*index + 1] = i;
-	    }
-	  }
-	}
-	n_iter++;
+        for (int i = 0; i < input->numberofpoints; i++) {
+          if(input->pointmarkerlist[i] == *n_iter) {
+            if (input->segmentlist[2*index] == -1) {
+              input->segmentlist[2*index] = i;
+            } else {
+              input->segmentlist[2*index + 1] = i;
+            }
+          }
+        }
+        n_iter++;
       }
       index++;
       be_iter++;
@@ -307,26 +307,26 @@ namespace Hierarchy {
     label_sequence::iterator s_iter_end = support->end();
     while(s_iter != s_iter_end) {
       if (topology->getPatch(patch)->support(*s_iter)->size() < 2) {
-	Obj<coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
-	coneSequence::iterator n_iter = neighbors->begin();
-	coneSequence::iterator n_iter_end = neighbors->end();
-	while(n_iter != n_iter_end) {
-	  if (vertex != *n_iter) {
-	    if (!foundNeighbor) {
-	      const double *nCoords = coordinates->restrict(patch, *n_iter);
-	      f_n_x = nCoords[0]; f_n_y = nCoords[1];
-	      foundNeighbor = true;
-	    } else {
-	      const double *nCoords = coordinates->restrict(patch, *n_iter);
-	      double n_x = nCoords[0], n_y = nCoords[1];
-	      double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
-	      double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
-	      if (parArea > .001*len) isEssential = 2;
-	      if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
-	    }
-	  }
-	  n_iter++;
-	}
+        Obj<coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
+        coneSequence::iterator n_iter = neighbors->begin();
+        coneSequence::iterator n_iter_end = neighbors->end();
+        while(n_iter != n_iter_end) {
+          if (vertex != *n_iter) {
+            if (!foundNeighbor) {
+              const double *nCoords = coordinates->restrict(patch, *n_iter);
+              f_n_x = nCoords[0]; f_n_y = nCoords[1];
+              foundNeighbor = true;
+            } else {
+              const double *nCoords = coordinates->restrict(patch, *n_iter);
+              double n_x = nCoords[0], n_y = nCoords[1];
+              double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
+              double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
+              if (parArea > .001*len) isEssential = 2;
+              if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
+            }
+          }
+          n_iter++;
+        }
       }
       s_iter++;
     }
@@ -360,106 +360,106 @@ namespace Hierarchy {
     std::list<bound_trav *> trav_queue;
     while (c_iter != c_iter_end) {
       if (!sieve->capContains(*c_iter)) {  //if it has not already been found and added to the new topology. (check to see we don't need to stratify)
-	  // here we just create the first set of paths to travel on.
-	nBoundaries++;
-	ALE::Obj<supportSequence> support = topology->getPatch(srcPatch)->support(*c_iter);
-	label_sequence::iterator s_iter = support->begin();
-	label_sequence::iterator s_iter_end = support->end();
-	//boundary = topology->getLabel(srcPatch, "boundary");
-	  //bool foundNeighbor = false;
-	while (s_iter != s_iter_end) {
-	  Obj<coneSequence> neighbors = topology->getPatch(srcPatch)->cone(*s_iter);
-	  coneSequence::iterator n_iter = neighbors->begin();
-	  coneSequence::iterator n_iter_end = neighbors->end();
-	  while (n_iter != n_iter_end) {
-	    if (*n_iter != *c_iter) {
-	      if (topology->getValue(boundary, *n_iter) >= dim-1) { //if it's a boundary/edge-of-boundary(3D), or essential node
-		bound_trav * tmp_trav = new bound_trav;
-		tmp_trav->lastCorn = *c_iter;
-		tmp_trav->lastNode = *c_iter;
-		tmp_trav->thisNode = *n_iter;
-		tmp_trav->firstEdge = *s_iter;
-		tmp_trav->lastEdge = *s_iter;
-		tmp_trav->length = 0;
-		trav_queue.push_front(tmp_trav);
-		 // foundNeighbor = true;
-	      }
-	    }
-	    n_iter++;
-	  }
-	  s_iter++;
-	}
-	  //we have set up the initial conditions for the traversal, now we must traverse!
-	while (!trav_queue.empty()) {
-	  bound_trav * cur_trav = *trav_queue.begin();
-	  trav_queue.pop_front();
-	    //essential boundary node case.
-	  if ((topology->getValue(boundary, cur_trav->thisNode) == dim)) {
-	      //PetscPrintf(mesh->comm(), "-%d\n", cur_trav->thisNode);
-	    if (!sieve->capContains(cur_trav->thisNode)) { //if it has not yet been discovered.
-	      ALE::Obj<supportSequence> support = topology->getPatch(srcPatch)->support(cur_trav->thisNode);
-	      label_sequence::iterator s_iter = support->begin();
-	      label_sequence::iterator s_iter_end = support->end();
-	      while (s_iter != s_iter_end) {
-		Obj<coneSequence> neighbors = topology->getPatch(srcPatch)->cone(*s_iter);
-		coneSequence::iterator n_iter = neighbors->begin();
-		coneSequence::iterator n_iter_end = neighbors->end();
-		while (n_iter != n_iter_end) {
-		  if (*n_iter != cur_trav->thisNode && *n_iter != cur_trav->lastNode && topology->getPatch(srcPatch)->support(*s_iter)->size() == 1) {
-		    if (topology->getValue(boundary, *n_iter) >= dim-1) { //if it's a boundary/edge-of-boundary(3D), or essential node
-		      bound_trav * tmp_trav = new bound_trav;
-		      tmp_trav->lastCorn = cur_trav->thisNode;
-		      tmp_trav->lastNode = cur_trav->thisNode;
-		      tmp_trav->firstEdge = *s_iter;
-		      tmp_trav->lastEdge = *s_iter;
-		      tmp_trav->thisNode = *n_iter;
-		      tmp_trav->length = 0;
-		      trav_queue.push_front(tmp_trav);
-		    }
-		  }
-		  n_iter++;
-		}
-		s_iter++;
-	      }
-	    }
-	      // in either essential boundary node case (discovered or undiscovered) we must create the sieve elements.... hmm...
-	      //this will involve: creating a new edge, and creating arrows to it from lastCorn, and thisNode.
-	    if (!sieve->baseContains(cur_trav->lastEdge)) {  //makes sure we don't pick up the backwards edge as well.
-	      sieve->addArrow(cur_trav->thisNode, cur_trav->firstEdge, 0);
-	      sieve->addArrow(cur_trav->lastCorn, cur_trav->firstEdge, 0);
-	      //PetscPrintf(mesh->comm(), "Added edge from %d to %d of length %d\n", cur_trav->thisNode, cur_trav->lastCorn, cur_trav->length);
-	      nEdges++;
-	    }
-	    delete cur_trav; //we can get rid of this one.
-	  } else {
-	      //in this case we just continue travelling along the edge we already were at.  (assume that in 3D intersections DO NOT HAPPEN HERE or it would be essential.
-	      //PetscPrintf(mesh->comm(), "|%d\n", cur_trav->thisNode);
-	    Obj<supportSequence> support = topology->getPatch(srcPatch)->support(cur_trav->thisNode);
-	    label_sequence::iterator s_iter = support->begin();
-	    label_sequence::iterator s_iter_end = support->end();
-	    bool foundPath = false;
-	    while (s_iter != s_iter_end && !foundPath) {
-	      Obj<coneSequence> neighbors = topology->getPatch(srcPatch)->cone(*s_iter);
-	      coneSequence::iterator n_iter = neighbors->begin();
-	      coneSequence::iterator n_iter_end = neighbors->end();
-	      while (n_iter != n_iter_end && !foundPath) {
-		if (*n_iter != cur_trav->thisNode && *n_iter != cur_trav->lastNode) {
-		  if (topology->getValue(boundary, *n_iter) >= dim-1 && topology->getPatch(srcPatch)->support(*s_iter)->size() == 1 && !sieve->baseContains(*s_iter)) { //if it's a boundary or essential boundary node, AND we don't have the opposite direction already worked out
-		    foundPath = true; //breaks out of the loops.
-		    cur_trav->lastNode = cur_trav->thisNode;
-		    cur_trav->thisNode = *n_iter;
-		    cur_trav->lastEdge = *s_iter;
-		    cur_trav->length++;
-		    trav_queue.push_front(cur_trav);
-		      //printf("travelling on");
-		  }
-		}
-		n_iter++;
-	      }
-	      s_iter++;
-	    }
-	  }
-	}  //end traversal while
+          // here we just create the first set of paths to travel on.
+        nBoundaries++;
+        ALE::Obj<supportSequence> support = topology->getPatch(srcPatch)->support(*c_iter);
+        label_sequence::iterator s_iter = support->begin();
+        label_sequence::iterator s_iter_end = support->end();
+        //boundary = topology->getLabel(srcPatch, "boundary");
+          //bool foundNeighbor = false;
+        while (s_iter != s_iter_end) {
+          Obj<coneSequence> neighbors = topology->getPatch(srcPatch)->cone(*s_iter);
+          coneSequence::iterator n_iter = neighbors->begin();
+          coneSequence::iterator n_iter_end = neighbors->end();
+          while (n_iter != n_iter_end) {
+            if (*n_iter != *c_iter) {
+              if (topology->getValue(boundary, *n_iter) >= dim-1) { //if it's a boundary/edge-of-boundary(3D), or essential node
+                bound_trav * tmp_trav = new bound_trav;
+                tmp_trav->lastCorn = *c_iter;
+                tmp_trav->lastNode = *c_iter;
+                tmp_trav->thisNode = *n_iter;
+                tmp_trav->firstEdge = *s_iter;
+                tmp_trav->lastEdge = *s_iter;
+                tmp_trav->length = 0;
+                trav_queue.push_front(tmp_trav);
+                 // foundNeighbor = true;
+              }
+            }
+            n_iter++;
+          }
+          s_iter++;
+        }
+          //we have set up the initial conditions for the traversal, now we must traverse!
+        while (!trav_queue.empty()) {
+          bound_trav * cur_trav = *trav_queue.begin();
+          trav_queue.pop_front();
+            //essential boundary node case.
+          if ((topology->getValue(boundary, cur_trav->thisNode) == dim)) {
+              //PetscPrintf(mesh->comm(), "-%d\n", cur_trav->thisNode);
+            if (!sieve->capContains(cur_trav->thisNode)) { //if it has not yet been discovered.
+              ALE::Obj<supportSequence> support = topology->getPatch(srcPatch)->support(cur_trav->thisNode);
+              label_sequence::iterator s_iter = support->begin();
+              label_sequence::iterator s_iter_end = support->end();
+              while (s_iter != s_iter_end) {
+                Obj<coneSequence> neighbors = topology->getPatch(srcPatch)->cone(*s_iter);
+                coneSequence::iterator n_iter = neighbors->begin();
+                coneSequence::iterator n_iter_end = neighbors->end();
+                while (n_iter != n_iter_end) {
+                  if (*n_iter != cur_trav->thisNode && *n_iter != cur_trav->lastNode && topology->getPatch(srcPatch)->support(*s_iter)->size() == 1) {
+                    if (topology->getValue(boundary, *n_iter) >= dim-1) { //if it's a boundary/edge-of-boundary(3D), or essential node
+                      bound_trav * tmp_trav = new bound_trav;
+                      tmp_trav->lastCorn = cur_trav->thisNode;
+                      tmp_trav->lastNode = cur_trav->thisNode;
+                      tmp_trav->firstEdge = *s_iter;
+                      tmp_trav->lastEdge = *s_iter;
+                      tmp_trav->thisNode = *n_iter;
+                      tmp_trav->length = 0;
+                      trav_queue.push_front(tmp_trav);
+                    }
+                  }
+                  n_iter++;
+                }
+                s_iter++;
+              }
+            }
+              // in either essential boundary node case (discovered or undiscovered) we must create the sieve elements.... hmm...
+              //this will involve: creating a new edge, and creating arrows to it from lastCorn, and thisNode.
+            if (!sieve->baseContains(cur_trav->lastEdge)) {  //makes sure we don't pick up the backwards edge as well.
+              sieve->addArrow(cur_trav->thisNode, cur_trav->firstEdge, 0);
+              sieve->addArrow(cur_trav->lastCorn, cur_trav->firstEdge, 0);
+              //PetscPrintf(mesh->comm(), "Added edge from %d to %d of length %d\n", cur_trav->thisNode, cur_trav->lastCorn, cur_trav->length);
+              nEdges++;
+            }
+            delete cur_trav; //we can get rid of this one.
+          } else {
+              //in this case we just continue travelling along the edge we already were at.  (assume that in 3D intersections DO NOT HAPPEN HERE or it would be essential.
+              //PetscPrintf(mesh->comm(), "|%d\n", cur_trav->thisNode);
+            Obj<supportSequence> support = topology->getPatch(srcPatch)->support(cur_trav->thisNode);
+            label_sequence::iterator s_iter = support->begin();
+            label_sequence::iterator s_iter_end = support->end();
+            bool foundPath = false;
+            while (s_iter != s_iter_end && !foundPath) {
+              Obj<coneSequence> neighbors = topology->getPatch(srcPatch)->cone(*s_iter);
+              coneSequence::iterator n_iter = neighbors->begin();
+              coneSequence::iterator n_iter_end = neighbors->end();
+              while (n_iter != n_iter_end && !foundPath) {
+                if (*n_iter != cur_trav->thisNode && *n_iter != cur_trav->lastNode) {
+                  if (topology->getValue(boundary, *n_iter) >= dim-1 && topology->getPatch(srcPatch)->support(*s_iter)->size() == 1 && !sieve->baseContains(*s_iter)) { //if it's a boundary or essential boundary node, AND we don't have the opposite direction already worked out
+                    foundPath = true; //breaks out of the loops.
+                    cur_trav->lastNode = cur_trav->thisNode;
+                    cur_trav->thisNode = *n_iter;
+                    cur_trav->lastEdge = *s_iter;
+                    cur_trav->length++;
+                    trav_queue.push_front(cur_trav);
+                      //printf("travelling on");
+                  }
+                }
+                n_iter++;
+              }
+              s_iter++;
+            }
+          }
+        }  //end traversal while
       } //end not discovered if
       c_iter++;
     } //end while over boundary vertices
@@ -484,30 +484,30 @@ namespace Hierarchy {
     double vCoords[dim], nCoords[dim];
 
     while (v_iter != v_iter_end) {
-	//printf("vertex: %d\n", *v_iter);
+        //printf("vertex: %d\n", *v_iter);
       const double * rBuf = coordinates->restrict(patch, *v_iter);
       PetscMemcpy(vCoords, rBuf, dim*sizeof(double));
-	
+        
       double minDist = -1; //using the max is silly.
       Obj<supportSequence> support = topology->getPatch(patch)->support(*v_iter);
-	Obj<coneSet> neighbors = topology->getPatch(patch)->cone(support);
-	coneSet::iterator n_iter = neighbors->begin();
-	coneSet::iterator n_iter_end = neighbors->end();
-	while(n_iter != n_iter_end) {
-	  if (*v_iter != *n_iter) {
-	    rBuf = coordinates->restrict(patch, *n_iter);
-	    PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
-	    double d_tmp, dist    = 0.0;
+        Obj<coneSet> neighbors = topology->getPatch(patch)->cone(support);
+        coneSet::iterator n_iter = neighbors->begin();
+        coneSet::iterator n_iter_end = neighbors->end();
+        while(n_iter != n_iter_end) {
+          if (*v_iter != *n_iter) {
+            rBuf = coordinates->restrict(patch, *n_iter);
+            PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
+            double d_tmp, dist    = 0.0;
 
-	    for (int d = 0; d < dim; d++) {
-	      d_tmp = nCoords[d] - vCoords[d];
-	      dist += d_tmp * d_tmp;
-	    }
+            for (int d = 0; d < dim; d++) {
+              d_tmp = nCoords[d] - vCoords[d];
+              dist += d_tmp * d_tmp;
+            }
 
-	    if (dist < minDist || minDist == -1) minDist = dist;
-	  }
-	  n_iter++;
-	}
+            if (dist < minDist || minDist == -1) minDist = dist;
+          }
+          n_iter++;
+        }
       minDist = sqrt(minDist);
       spacing->update(patch, *v_iter, &minDist);
       v_iter++;
@@ -835,13 +835,13 @@ namespace Hierarchy {
       std::list<point_type>::iterator p_iter_end = incPoints.end();
       bool v_is_ok = true;
       while (p_iter != p_iter_end && v_is_ok) {
-	double p_space = *spacing->restrict(patch, *p_iter);
-	double p_coords[dim];
-	PetscMemcpy(p_coords, coordinates->restrict(patch, *p_iter), dim*sizeof(double));
-	if (PointsCollide(v_coords, p_coords, v_space*factor, p_space*factor)) {
-	  v_is_ok = false;
-	}
-	p_iter++;
+        double p_space = *spacing->restrict(patch, *p_iter);
+        double p_coords[dim];
+        PetscMemcpy(p_coords, coordinates->restrict(patch, *p_iter), dim*sizeof(double));
+        if (PointsCollide(v_coords, p_coords, v_space*factor, p_space*factor)) {
+          v_is_ok = false;
+        }
+        p_iter++;
       }
       //enforce the condition that the sphere packing must be within the coarsest domain.
       const Obj<label_sequence>& roughestEdges = topology->heightStratum(C_levels+1, 0);

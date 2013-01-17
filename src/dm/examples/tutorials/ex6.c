@@ -540,14 +540,14 @@ PetscErrorCode DrawPatch(PetscDraw draw,void *ctx)
 
     for (j=0; j<n-1; j++) {
       for (i=0; i<m-1; i++) {
-	id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];
-	id = i+j*m+1;  x2 = xy[2*id];y2  = xy[2*id+1];
-	id = i+j*m+1+m;x3 = xy[2*id];y3  = xy[2*id+1];
-	id = i+j*m+m;  x4 = xy[2*id];y4  = xy[2*id+1];
-	ierr = PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-	ierr = PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-	ierr = PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-	ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];
+        id = i+j*m+1;  x2 = xy[2*id];y2  = xy[2*id+1];
+        id = i+j*m+1+m;x3 = xy[2*id];y3  = xy[2*id+1];
+        id = i+j*m+m;  x4 = xy[2*id];y4  = xy[2*id+1];
+        ierr = PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
   }
@@ -673,11 +673,11 @@ PetscErrorCode FAMapRegion1(FA fa,Vec g)
   for (k=y; k<y+n; k++) {
     for (i=x; i<x+m; i++) {
       if (i < (fa->p1-fa->p2)/2) {
-	ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(i*Ascale3);
-	ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(i*Ascale3) - 4.*R;
+        ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(i*Ascale3);
+        ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(i*Ascale3) - 4.*R;
       } else if (i > fa->p2 + (fa->p1 - fa->p2)/2) {
-	ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(PETSC_PI+i*Ascale3);
-	ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(PETSC_PI+i*Ascale3) - 4.*R;
+        ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(PETSC_PI+i*Ascale3);
+        ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(PETSC_PI+i*Ascale3) - 4.*R;
       } else {
         ga[k][i].X = (2.*R + k*Rscale)*PetscCosScalar((i-(fa->p1-fa->p2)/2)*Ascale1 - PETSC_PI/2.0);
         ga[k][i].Y = (2.*R + k*Rscale)*PetscSinScalar((i-(fa->p1-fa->p2)/2)*Ascale1 - PETSC_PI/2.0);

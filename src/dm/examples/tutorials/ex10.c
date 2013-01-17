@@ -57,13 +57,13 @@ int main(int argc,char **argv)
       gauss_ptr[j][i]=exp(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
     }
   }
-  ierr = DMDAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);	
+  ierr = DMDAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
 
   // Create the HDF5 viewer
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);	
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"gauss.h5",FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
 
   // Write the H5 file
-  ierr = VecView(gauss,H5viewer);CHKERRQ(ierr);	
+  ierr = VecView(gauss,H5viewer);CHKERRQ(ierr);
 
   // Cleaning stage
   ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);

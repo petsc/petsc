@@ -83,15 +83,15 @@ PetscErrorCode SetCoordinates3d(DM da)
   for (i=mstart; i<mstart+m; i++) {
     for (j=nstart; j<nstart+n; j++) {
       for (k=pstart; k<pstart+p; k++) {
-	if (i % 2) {
-	  coors[k][j][i].x = coors[k][j][i-1].x + .1*(coors[k][j][i+1].x - coors[k][j][i-1].x);
-	}
-	if (j % 2) {
-	  coors[k][j][i].y = coors[k][j-1][i].y + .3*(coors[k][j+1][i].y - coors[k][j-1][i].y);
-	}
-	if (k % 2) {
-	  coors[k][j][i].z = coors[k-1][j][i].z + .4*(coors[k+1][j][i].z - coors[k-1][j][i].z);
-	}
+        if (i % 2) {
+          coors[k][j][i].x = coors[k][j][i-1].x + .1*(coors[k][j][i+1].x - coors[k][j][i-1].x);
+        }
+        if (j % 2) {
+          coors[k][j][i].y = coors[k][j-1][i].y + .3*(coors[k][j+1][i].y - coors[k][j-1][i].y);
+        }
+        if (k % 2) {
+          coors[k][j][i].z = coors[k-1][j][i].z + .4*(coors[k+1][j][i].z - coors[k-1][j][i].z);
+        }
       }
     }
   }

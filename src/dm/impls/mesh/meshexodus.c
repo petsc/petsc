@@ -62,7 +62,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
       ierr = ex_get_node_set_param (exoid, ns_ids[ns], &num_nodes_in_set[ns], &num_df_in_set);CHKERRQ(ierr);
       ierr = PetscMalloc(num_nodes_in_set[ns] * sizeof(int), &node_list[ns]);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, ns_ids[ns], node_list[ns]);
-	}
+    }
   }
   ierr = ex_close(exoid);CHKERRQ(ierr);
 
@@ -90,7 +90,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
       sieve->setChart(PETSC_MESH_TYPE::sieve_type::chart_type(0, num_elem+num_nodes));
       // Set cone and support sizes
       for (int c = 0; c < num_elem; ++c) {
-	sieve->setConeSize(c, numCorners);
+        sieve->setConeSize(c, numCorners);
       }
       sieve->symmetrizeSizes(num_elem, numCorners, cells, num_elem - 1); /* Notice the -1 for 1-based indexing in cells[] */
       // Allocate point storage
@@ -99,12 +99,12 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
       int *cone  = new int[numCorners];
       int *coneO = new int[numCorners];
       for (int v = 0; v < numCorners; ++v) {
-	coneO[v] = 1;
+        coneO[v] = 1;
       }
       for (int c = 0; c < num_elem; ++c) {
         for (int v = 0; v < numCorners; ++v) {
-	  cone[v] = cells[c*numCorners+v]+num_elem - 1;
-	}
+          cone[v] = cells[c*numCorners+v]+num_elem - 1;
+        }
         sieve->setCone(cone, c);
         sieve->setConeOrientation(coneO, c);
       } // for
