@@ -1,4 +1,5 @@
 -ts_type cn
+#-ts_arkimex_type 2e
 -ts_exact_final_time MATCHSTEP
 -ts_theta_endpoint
 -ts_monitor

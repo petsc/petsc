@@ -51,7 +51,6 @@ typedef struct {
   PetscReal    scoeff;           /* shift = scoeff/dt */
   PetscReal    stage_time;
   PetscBool    imex;
-  /*PetscBool    init_slope;*/
   TSStepStatus status;
 } TS_ARKIMEX;
 /*MC
@@ -231,7 +230,6 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                   {0.0,0.5,0.5}},
         b[3] = {0.0,0.5,0.5},
           bembedt[3] = {1.0,0.0,0.0};
-          /* binterpt[2][2] = {{1.0,-1.0},{0.0,1.0}};  second order dense output has poor stability properties and hence it is not currently in use*/
           ierr = TSARKIMEXRegister(TSARKIMEX1BEE,2,3,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
   }
   {
@@ -617,7 +615,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) { 
-      if(!ark->imex && tab->FSAL_implicit) {/* Only the stiffly accurate implicit formula is used */ 
+      if(!ark->imex && tab->stiffly_accurate) {/* Only the stiffly accurate implicit formula is used */ 
         ierr = VecCopy(ark->Y[s-1],X);CHKERRQ(ierr);
       } else { /* Use the standard completion formula (bt,b) */
         ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
@@ -675,10 +673,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
   PetscFunctionBegin;
 
-  /*ark->init_slope=PETSC_FALSE;*/
-
-
-  if (ts->equation_type>=TS_EQ_IMPLICIT && tab->explicit_first_stage) {
+  if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
     PetscReal valid_time;
     PetscBool isvalid;
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,
@@ -689,41 +684,36 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     if (!isvalid || valid_time != ts->ptime) {
       TS             ts_start;
       SNES           snes_start;
-      TSRHSFunction  rhsfunction;
-      TSIFunction    ifunction;
-      TSIJacobian    ijacobian;
-      void           *ctxrhs,*ctxif,*ctxij;
-      DM             dm,dm_start;
+      DM dm;
+      PetscReal atol;
+      Vec vatol;
+      PetscReal rtol;
+      Vec vrtol;
 
       ierr = TSCreate(PETSC_COMM_WORLD,&ts_start);CHKERRQ(ierr);
       ierr = TSGetSNES(ts,&snes_start);CHKERRQ(ierr);
       ierr = TSSetSNES(ts_start,snes_start);CHKERRQ(ierr);
       ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-      ierr = TSGetDM(ts_start,&dm_start);CHKERRQ(ierr);
-
-      ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctxrhs);CHKERRQ(ierr);
-      ierr = DMTSSetRHSFunction(dm_start,rhsfunction,ctxrhs);CHKERRQ(ierr);
-
-      ierr = DMTSGetIFunction(dm,&ifunction,&ctxif);CHKERRQ(ierr);
-      ierr = DMTSSetIFunction(dm_start,ifunction,ctxif);CHKERRQ(ierr);
-
-      ierr = DMTSGetIJacobian(dm,&ijacobian,&ctxij);CHKERRQ(ierr);
-      ierr = DMTSSetIJacobian(dm_start,ijacobian,ctxij);CHKERRQ(ierr);
+      ierr = TSSetDM(ts_start,dm);CHKERRQ(ierr);
       ts_start->adapt=ts->adapt;
+      PetscObjectReference((PetscObject)ts_start->adapt);
       ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSSetTime(ts_start,ts->ptime); CHKERRQ(ierr);
       ierr = TSSetDuration(ts_start,1,ts->time_step);CHKERRQ(ierr);
-      ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = TSSetTimeStep(ts_start,ts->time_step); CHKERRQ(ierr);
       ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
+      ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
       ierr = TSSetEquationType(ts_start,ts->equation_type);CHKERRQ(ierr);
+      ierr = TSGetTolerances(ts,&atol,&vatol,&rtol,&vrtol);CHKERRQ(ierr);
+      ierr = TSSetTolerances(ts_start,atol,vatol,rtol,vrtol); CHKERRQ(ierr);
       ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
-      PetscReal h=-ts->ptime;
-      ierr = TSGetTime(ts_start,&ts->ptime); CHKERRQ(ierr); 
-      ts->time_step = h + ts->ptime;
-      ts->steps = 1;
+      ierr = TSGetTime(ts_start,&ts->ptime); CHKERRQ(ierr);
+      ts->time_step = ts_start->time_step;
+      ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX *)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
-      /*ierr = TSDestroy(&ts_start);CHKERRQ(ierr); will this destroy snes as well?*/
+      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
+      ierr = TSSetSNES(ts,snes_start);CHKERRQ(ierr);
     }
   }
 
@@ -739,22 +729,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
       if (At[i*s+i] == 0) {           /* This stage is explicit */
-        /*if(ts->equation_type>=TS_EQ_IMPLICIT){
-          if(i!=0){
-            printf("Throw an error: we cannot have explicit stages for DAEs other than the first stage when used in FSAL\n");
-          }
-          if(ts->steps==0){ //initialize the slope - needs to be moved outside
-
-            ark->init_slope=PETSC_TRUE;
-            ierr = VecZeroEntries(Ydot0);CHKERRQ(ierr);
-            ierr = SNESSolve(snes,PETSC_NULL,Ydot0);CHKERRQ(ierr);
-
-            ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-            ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-            ts->snes_its += its; ts->ksp_its += lits;
-            ark->init_slope=PETSC_FALSE;
-          }
-        }*/
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Y[i],i,w,YdotI);CHKERRQ(ierr);
@@ -982,11 +956,8 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
   ierr = VecAXPBYPCZ(Ydot,-shift,shift,0,Z,X);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
   dmsave = ts->dm;
   ts->dm = dm;
-  /*  if(!ark->init_slope){*/
+
   ierr = TSComputeIFunction(ts,ark->stage_time,X,Ydot,F,ark->imex);CHKERRQ(ierr);
-    /*  }else{
-    ierr = TSComputeIFunction(ts,ark->stage_time,ts->vec_sol,X,F,ark->imex);CHKERRQ(ierr);
-     }*/
 
   ts->dm = dmsave;
   ierr = TSARKIMEXRestoreVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
@@ -1009,12 +980,9 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
   /* ark->Ydot has already been computed in SNESTSFormFunction_ARKIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
-  /*if(!ark->init_slope){*/
+
   ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,shift,A,B,str,ark->imex);CHKERRQ(ierr);
-    /*  }else{
-    ierr = VecZeroEntries(ark->Work);CHKERRQ(ierr);
-    ierr = TSComputeIJacobian(ts,ark->stage_time,ark->Work,X,1.0,A,B,str,ark->imex);CHKERRQ(ierr);
-     }*/
+
   ts->dm = dmsave;
   ierr = TSARKIMEXRestoreVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);

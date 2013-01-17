@@ -1745,6 +1745,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 PetscErrorCode TSSetSNES(TS ts,SNES snes)
 {
   PetscErrorCode ierr;
+  PetscErrorCode (*func)(SNES,Vec,Mat *,Mat *,MatStructure *,void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1752,6 +1753,11 @@ PetscErrorCode TSSetSNES(TS ts,SNES snes)
   ierr = PetscObjectReference((PetscObject)snes);CHKERRQ(ierr);
   ierr = SNESDestroy(&ts->snes);CHKERRQ(ierr);
   ts->snes = snes;
+  ierr = SNESSetFunction(ts->snes,PETSC_NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(ts->snes,PETSC_NULL,PETSC_NULL,&func,PETSC_NULL);CHKERRQ(ierr);
+  if (func == SNESTSFormJacobian) {
+    ierr = SNESSetJacobian(ts->snes,PETSC_NULL,PETSC_NULL,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
