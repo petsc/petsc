@@ -132,7 +132,7 @@ We use several conventions:
       \begin{itemize}
         \item have an appended \trl{_Private} (for example,
            \trl{StashValues_Private}) or
-        \item have an appended \trl{_<class>Subtype} (for example,
+        \item have an appended \trl{_Subtype} (for example,
            \trl{MatMult_SeqAIJ}).
       \end{itemize}
 
@@ -157,7 +157,7 @@ so that the code is uniform and easily maintainable:
 \item Each additional level of loops, if statements, etc. is indented
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
-\item Source code lines do not have a hard length limit, generally we like then less than 150 characters wide.
+\item Source code lines do not have a hard length limit, generally we like them less than 150 characters wide.
 \item The local variable declarations should be aligned. For example,
       use the style
 \begin{tabbing}
@@ -166,8 +166,8 @@ so that the code is uniform and easily maintainable:
 \end{tabbing}
 instead of
 \begin{tabbing}
-   int i,j;\\
-   Scalar a;
+   Scalar \=a;
+   int \>i,j;\\
 \end{tabbing}
 \item All local variables of a particular type (e.g., \trl{int}) should be
       listed on the same line if possible; otherwise, they should be listed
@@ -182,7 +182,7 @@ instead of
 \#define \_\_FUNC\_\_ ``FunctionName''
 \end{tabbing}
 this is used by various macros (for example the error handlers) to always know
-what function one is in.
+what function the process is in.
 \item Use PetscFunctionReturn(returnvalue); not \trl{return(returnvalue);}
 \item {\em Never} put a function call in a return statment; do not do
 \begin{tabbing}
@@ -201,13 +201,13 @@ as
 \end{tabbing}
 \item {\em Never}  have
 \begin{tabbing}
-   if (  ) \\
-     a single indented line
+   if\= (  ) \\
+     \>a single indented line
 \end{tabbing}
 or
 \begin{tabbing}
-   for (  )
-     a single indented line
+   fo\=r (  ) \\
+     \>a single indented line
 \end{tabbing}
 instead use either
 \begin{tabbing}
@@ -215,13 +215,22 @@ instead use either
 \end{tabbing}
 or
 \begin{tabbing}
-   if (  ) \{\\
-     a single indented line\\
+   if\= (  ) \{\\
+     \>a single indented line\\
    \}
 \end{tabbing}
 \item {\em No} tabs are allowed in {\em any} of the source code.
 \item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on
-      its own line. The closing bracket \} should {\bf always} be on its own line.
+      its own line unless followed by an \trl{else} or \trl{else if}, for example
+\begin{tabbing}
+   \} else \{ \\
+\end{tabbing}
+never
+\begin{tabbing}
+   \} \\
+   else \{.
+\end{tabbing}
+ The closing bracket \} should {\bf always} be on its own line.
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
 \item The macros SETERRQ() and CHKERRQ() should be on the
@@ -236,6 +245,7 @@ instead write
 \begin{tabbing}
    ierr = PetscMalloc(10*sizeof(int),\&a);CHKERRQ(ierr);
 \end{tabbing}
+\item Except in code that may be called before PETSc is fully initialized, always use PetscMalloc(), PetscNew(), and PetscFree(), not \trl{malloc()} and \trl{free()}.
 \item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
 \item {\em No} space before or after a , in lists
 That is, do not write

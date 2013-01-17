@@ -16,6 +16,9 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
           -ts_max_steps maxsteps                  -- maximum number of time-steps to take
           -ts_final_time time                     -- maximum time to compute to
 
+    Rules for maximum number of He allowed for V in cluster
+
+
 */
 
 #include <petscdmda.h>
@@ -382,18 +385,21 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*  He[He]-V[V]  + He[he]-V[v] -> He[He+he][V+v]  */
+    /*  Currently the reaction rates for this are zero */
     for (He=1; He<N; He++) {
       for (V=1; V<N; V++) {
         for (he=1; he<N-He+1; he++) {
           for (v=1; v<N-V+1; v++) {
-            f[xi].HeV[He+he][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            f[xi].HeV[He+he][V+v] -= 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
             /* remove the two clusters that merged to form the larger cluster */
-            f[xi].HeV[he][V]      += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].HeV[he][v];
-            f[xi].HeV[He][V]      += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            f[xi].HeV[he][V]      += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            f[xi].HeV[He][V]      += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
           }
         }
       }
     }
+    /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
+
 
     if (ctx->nodissociations) continue;
     /* -------------------------------------------------------------------------
@@ -451,6 +457,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         f[xi].HeV[He][V]   += 1000*ctx->reactionScale*c[xi].HeV[He][V];
       }
     }
+    /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
   }
 
   /*
