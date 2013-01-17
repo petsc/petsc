@@ -429,4 +429,23 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 #define MPIU_2INT MPI_2INT
 #endif
 
+PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
+  PetscInt result = 1;
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
+  PetscReal result = 1;
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+
 #endif

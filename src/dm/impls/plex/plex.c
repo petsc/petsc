@@ -511,8 +511,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSFGetGraph(sf, PETSC_NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  maxClosureSize = (PetscInt) (2*PetscMax(pow((PetscReal) mesh->maxConeSize, (int) depth)+1, pow((PetscReal) mesh->maxSupportSize, (int) depth)+1));
-  maxAdjSize     = (PetscInt) (pow((PetscReal) mesh->maxConeSize, (int) depth)*pow((PetscReal) mesh->maxSupportSize, (int) depth)+1);
+  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth)) + 2;
+  maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth) * PetscPowInt(mesh->maxSupportSize,depth) + 1;
   ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
 
   /*
@@ -904,7 +904,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  maxClosureSize = 2*PetscMax(pow(mesh->maxConeSize, (int) depth)+1, pow(mesh->maxSupportSize, (int) depth)+1);
+  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth));
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   npoints = pEnd - pStart;
   ierr = PetscMalloc3(maxClosureSize,PetscInt,&tmpClosure,npoints,PetscInt,&lvisits,npoints,PetscInt,&visits);CHKERRQ(ierr);
@@ -1573,7 +1573,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  maxSize = (PetscInt) (2*PetscMax(PetscMax(pow((PetscReal) mesh->maxConeSize, (int) depth)+1, pow((PetscReal) mesh->maxSupportSize, (int) depth)+1), depth+1));
+  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth)),depth) + 2;
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
   if (*points) {
     closure = *points;
@@ -2214,7 +2214,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   ierr = PetscMalloc(numPoints * sizeof(PetscInt *), &closures);CHKERRQ(ierr);
   ierr = PetscMemzero(closures,numPoints*sizeof(PetscInt*));CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numPoints*(depth+2), PETSC_INT, &offsets);CHKERRQ(ierr);
-  maxSize = (PetscInt) (pow((PetscReal) mesh->maxSupportSize, (int) depth)+1);
+  maxSize = PetscPowInt(mesh->maxSupportSize,depth);
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[0]);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[1]);CHKERRQ(ierr);
 
@@ -2416,7 +2416,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   ierr = DMPlexGetDepth(dm, &height);CHKERRQ(ierr);
   ierr = PetscMalloc(numPoints * sizeof(PetscInt *), &closures);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numPoints*(height+2), PETSC_INT, &offsets);CHKERRQ(ierr);
-  maxSize = (PetscInt) (pow((PetscReal) mesh->maxConeSize, (int) height)+1);
+  maxSize = PetscPowInt(mesh->maxConeSize,height);
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[0]);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[1]);CHKERRQ(ierr);
 
@@ -2593,8 +2593,8 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
       }
     }
   }
-  maxClosure   = (PetscInt) (2*PetscMax(pow((PetscReal) maxConeSize, (int) depth)+1, pow((PetscReal) maxSupportSize, (int) depth)+1));
-  maxNeighbors = (PetscInt) (pow((PetscReal) maxConeSize, (int) depth)*pow((PetscReal) maxSupportSize, (int) depth)+1);
+  maxClosure   = 2*PetscMax(PetscPowInt(maxConeSize,depth),PetscPowInt(maxSupportSize,depth));
+  maxNeighbors = PetscPowInt(maxConeSize,depth)*PetscPowInt(maxSupportSize,depth);
   ierr = PetscMalloc2(maxNeighbors,PetscInt,&neighborCells,maxClosure,PetscInt,&tmpClosure);CHKERRQ(ierr);
   ierr = PetscMalloc((numCells+1) * sizeof(PetscInt), &off);CHKERRQ(ierr);
   ierr = PetscMemzero(off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
@@ -9970,7 +9970,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (
 
   ierr = PetscMalloc(localDof * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
-  ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), (int) dim+1)+1, true);
+  ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV(PetscPowInt(this->_mesh->getSieve()->getMaxConeSize(),dim+1), true);
 
   for (PetscInt c = cStart; c < cEnd; ++c) {
     ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), c, pV);
