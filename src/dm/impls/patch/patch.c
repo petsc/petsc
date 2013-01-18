@@ -157,7 +157,6 @@ typedef enum {PATCH_COMM_TYPE_WORLD = 0, PATCH_COMM_TYPE_SELF = 1} PatchCommType
 PetscErrorCode DMPatchSolve(DM dm)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
-  DM_Patch      *mesh = (DM_Patch *) dm->data;
   MPI_Comm       commz;
   DM             dmc;
   PetscSF        sfz, sfzr;
@@ -211,8 +210,10 @@ PetscErrorCode DMPatchSolve(DM dm)
       for(i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
         MPI_Comm     commp   = MPI_COMM_NULL;
         DM           dmz     = PETSC_NULL;
+#if 0
         DM           dmf     = PETSC_NULL;
         Mat          interpz = PETSC_NULL;
+#endif
         Vec          XZ      = PETSC_NULL;
         PetscScalar *xcarray = PETSC_NULL;
         PetscScalar *xzarray = PETSC_NULL;
