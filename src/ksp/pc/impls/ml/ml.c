@@ -1106,7 +1106,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
     ierr = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[0],&partindx,PETSC_NULL);CHKERRQ(ierr);
     pc_ml->RepartitionType = partindx;
     if (!partindx) {
-      zindx = 0;
+      PetscInt zindx = 0;
       ierr = PetscOptionsEList("-pc_ml_repartitionZoltanScheme", "Repartitioning scheme to use","None",zscheme,3,zscheme[0],&zindx,PETSC_NULL);CHKERRQ(ierr);
       pc_ml->ZoltanScheme = zindx;
     }
