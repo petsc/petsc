@@ -9,7 +9,7 @@
 # - exclude all open brackets on their own line
 # - exclude all lines with 'if (', 'else {', 'for (), etc.'
 
-find src/ -name *.[ch] \
+find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
  | grep -v 'ftn-auto' \
  | xargs grep "{" \

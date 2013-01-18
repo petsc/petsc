@@ -6,5 +6,6 @@
 # Steps:
 # - Run custom python script on each file in src/ tree
 
-find src/ -name *.[ch] | xargs python src/contrib/style/checks/PetscFunctionReturn.py
+find src/ -name *.[ch] -or -name *.cu \
+ | xargs python src/contrib/style/checks/PetscFunctionReturn.py
 

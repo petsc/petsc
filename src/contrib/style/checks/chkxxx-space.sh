@@ -10,7 +10,7 @@
 
 
 
-find src/ -name *.[ch] \
+find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
  | xargs grep ";\s\s*CHK"
 
