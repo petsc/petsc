@@ -10,12 +10,12 @@
 #endif
 
 #define MPIBAIJHEADER \
-  PetscInt      *rangebs;              /* rmap->range/bs */                      		\
-  PetscInt      rstartbs,rendbs,cstartbs,cendbs;  /* map values / bs  */                        \
+  PetscInt      *rangebs;              /* rmap->range/bs */                                    \
+  PetscInt      rstartbs,rendbs,cstartbs,cendbs;  /* map values / bs  */                       \
   Mat           A,B;                   /* local submatrices: A (diag part), B (off-diag part) */ \
   PetscMPIInt   size;                   /* size of communicator */                             \
   PetscMPIInt   rank;                   /* rank of proc in communicator */                     \
-  PetscInt      bs2;                    /* block size, bs2 = bs*bs */                           \
+  PetscInt      bs2;                    /* block size, bs2 = bs*bs */                          \
   PetscInt      Mbs,Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */      \
   PetscInt      mbs,nbs;               /* number block rows/cols on processor; m/bs, n/bs */   \
                                                                                                \
@@ -29,7 +29,7 @@
   PetscInt      rmax;                   /* maximum message length */                           \
   PETSCTABLE    colmap;                 /* local col number of off-diag col */                 \
                                                                                                \
-  PetscInt     *garray;                /* work array */                                       \
+  PetscInt     *garray;                /* work array */                                        \
                                                                                                \
   /* The following variable is used by blocked matrix assembly */                              \
   MatScalar     *barray;                /* Block array of size bs2 */                          \

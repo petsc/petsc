@@ -2273,7 +2273,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
       qm = k;
       for (j=jmin; j<jmax; j++){
         incrlev = lev[j-shift] + 1;
-	if (incrlev > levels) continue;
+        if (incrlev > levels) continue;
         vj      = ju[j];
         do {
           m = qm; qm = q[m];

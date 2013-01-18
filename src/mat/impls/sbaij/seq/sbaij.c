@@ -35,9 +35,9 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscBool  *missing,PetscInt *d
     diag = a->diag;
     for (i=0; i<a->mbs; i++) {
       if (jj[diag[i]] != i) {
-	*missing    = PETSC_TRUE;
-	if (dd) *dd = i;
-	break;
+        *missing    = PETSC_TRUE;
+        if (dd) *dd = i;
+        break;
       }
     }
   }
@@ -823,23 +823,23 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
     row = 0;
     for (i=0; i<node_count; i++) {
       cols          = aj + ai[row] + a->inode.size[i];
-	  CHKMEMQ;
+          CHKMEMQ;
       counts[2*cnt] = cols[0];
-	  CHKMEMQ;
+          CHKMEMQ;
       nz            = ai[row+1] - ai[row] - a->inode.size[i];
       cnt2          = 1;
       for (j=1; j<nz; j++) {
         if (cols[j] != cols[j-1]+1) {
-	  CHKMEMQ;
+          CHKMEMQ;
           counts[2*(cnt++)+1] = cnt2;
           counts[2*cnt]       = cols[j];
-	  CHKMEMQ;
+          CHKMEMQ;
           cnt2                = 1;
         } else cnt2++;
       }
-	  CHKMEMQ;
+          CHKMEMQ;
       counts[2*(cnt++)+1] = cnt2;
-	  CHKMEMQ;
+          CHKMEMQ;
       row += a->inode.size[i];
     }
     ierr = PetscIntView(2*cnt,counts,0);CHKERRQ(ierr);
@@ -1341,17 +1341,17 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
     for (i=0; i<A->rmap->N; i++) {
       row = i/bs;
       for (j=baij->i[row]; j<baij->i[row+1]; j++) {
-	for (k=0; k<bs; k++) {
-	  col = bs*baij->j[j] + k;
+        for (k=0; k<bs; k++) {
+          col = bs*baij->j[j] + k;
           if (col <= i) continue;
-	  aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
-	  if (!zeroed[i] && zeroed[col]) {
-	    bb[i] -= aa[0]*xx[col];
-	  }
-	  if (zeroed[i] && !zeroed[col]) {
-	    bb[col] -= aa[0]*xx[i];
-	  }
-	}
+          aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
+          if (!zeroed[i] && zeroed[col]) {
+            bb[i] -= aa[0]*xx[col];
+          }
+          if (zeroed[i] && !zeroed[col]) {
+            bb[col] -= aa[0]*xx[i];
+          }
+        }
       }
     }
     for (i=0; i<is_n; i++) {
@@ -1365,8 +1365,8 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
       for (j=baij->i[row]; j<baij->i[row+1]; j++) {
         for (k=0; k<bs; k++) {
           col = bs*baij->j[j] + k;
-	  if (zeroed[col]) {
-	    aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
+          if (zeroed[col]) {
+            aa = ((MatScalar*)(baij->a)) + j*bs2 + (i%bs) + bs*k;
             aa[0] = 0.0;
           }
         }
@@ -1921,8 +1921,8 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
 
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
-					   "MatGetFactor_seqsbaij_pastix",
-					   MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
+                                           "MatGetFactor_seqsbaij_pastix",
+                                           MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
@@ -2192,7 +2192,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       ierr = PetscMalloc(mbs*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(C,mbs*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<mbs; i++) {
-	c->diag[i] = a->diag[i];
+        c->diag[i] = a->diag[i];
       }
       c->free_diag = PETSC_TRUE;
     }

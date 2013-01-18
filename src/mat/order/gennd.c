@@ -22,10 +22,10 @@ PetscErrorCode SPARSEPACKrevrse(const PetscInt *n,PetscInt *perm)
     m = *n / 2;
     i__1 = m;
     for (i = 1; i <= i__1; ++i) {
-	swap = perm[i];
-	perm[i] = perm[in];
-	perm[in] = swap;
-	--in;
+        swap = perm[i];
+        perm[i] = perm[in];
+        perm[in] = swap;
+        --in;
     }
     PetscFunctionReturn(0);
 }
@@ -77,27 +77,27 @@ PetscErrorCode SPARSEPACKgennd(const PetscInt *neqns,const PetscInt *xadj,const 
 
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
-	mask[i] = 1;
+        mask[i] = 1;
     }
     num = 0;
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
 /*           FOR EACH MASKED COMPONENT ...*/
 L200:
-	if (!mask[i]) {
-	    goto L300;
-	}
-	root = i;
+        if (!mask[i]) {
+            goto L300;
+        }
+        root = i;
 /*              FIND A SEPARATOR AND NUMBER THE NODES NEXT.*/
-	SPARSEPACKfndsep(&root,&xadj[1],&adjncy[1],&mask[1],&nsep,&perm[num + 1],
-		&xls[1],&ls[1]);
-	num += nsep;
-	if (num >= *neqns) {
-	    goto L400;
-	}
-	goto L200;
+        SPARSEPACKfndsep(&root,&xadj[1],&adjncy[1],&mask[1],&nsep,&perm[num + 1],
+                &xls[1],&ls[1]);
+        num += nsep;
+        if (num >= *neqns) {
+            goto L400;
+        }
+        goto L200;
 L300:
-	;
+        ;
     }
 /*        SINCE SEPARATORS FOUND FIRST SHOULD BE ORDERED*/
 /*        LAST, ROUTINE REVRSE IS CALLED TO ADJUST THE*/

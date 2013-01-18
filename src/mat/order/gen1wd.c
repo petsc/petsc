@@ -31,7 +31,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKgen1wd"
 PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,
-	                        PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
+                                PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
     PetscInt i__1, i__2, i__3;
@@ -53,51 +53,49 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const
 
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
-	mask[i] = 1;
+        mask[i] = 1;
     }
     *nblks = 0;
     num = 0;
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
-	if (!mask[i]) {
-	    goto L400;
-	}
+        if (!mask[i]) {
+            goto L400;
+        }
 /*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
-	root = i;
-	SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &
-		nlvl, &xls[1], &ls[1]);
-	num += nsep;
-	++(*nblks);
-	xblk[*nblks] = *neqns - num + 1;
-	ccsize = xls[nlvl + 1] - 1;
+        root = i;
+        SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &nlvl, &xls[1], &ls[1]);
+        num += nsep;
+        ++(*nblks);
+        xblk[*nblks] = *neqns - num + 1;
+        ccsize = xls[nlvl + 1] - 1;
 /*             NUMBER THE REMAINING NODES IN THE COMPONENT.*/
 /*             EACH COMPONENT IN THE REMAINING SUBGRAPH FORMS*/
 /*             A NEW BLOCK IN THE PARTITIONING.*/
-	i__2 = ccsize;
-	for (j = 1; j <= i__2; ++j) {
-	    node = ls[j];
-	    if (!mask[node]) {
-		goto L300;
-	    }
-	    SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &
-		    perm[num + 1]);
-	    lnum = num + 1;
-	    num = num + xls[nlvl + 1] - 1;
-	    ++(*nblks);
-	    xblk[*nblks] = *neqns - num + 1;
-	    i__3 = num;
-	    for (k = lnum; k <= i__3; ++k) {
-		node = perm[k];
-		mask[node] = 0;
-	    }
-	    if (num > *neqns) {
-		goto L500;
-	    }
+        i__2 = ccsize;
+        for (j = 1; j <= i__2; ++j) {
+            node = ls[j];
+            if (!mask[node]) {
+                goto L300;
+            }
+            SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[num + 1]);
+            lnum = num + 1;
+            num = num + xls[nlvl + 1] - 1;
+            ++(*nblks);
+            xblk[*nblks] = *neqns - num + 1;
+            i__3 = num;
+            for (k = lnum; k <= i__3; ++k) {
+                node = perm[k];
+                mask[node] = 0;
+            }
+            if (num > *neqns) {
+                goto L500;
+            }
 L300:
-	    ;
-	}
+            ;
+        }
 L400:
-	;
+        ;
     }
 /*       SINCE DISSECTORS FOUND FIRST SHOULD BE ORDERED LAST,*/
 /*       ROUTINE REVRSE IS CALLED TO ADJUST THE ORDERING*/

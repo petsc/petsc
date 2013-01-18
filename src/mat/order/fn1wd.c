@@ -99,26 +99,26 @@ L400:
         node = ls[j];
         kstrt = xadj[node];
         kstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
-	i__2 = kstop;
-	for (k = kstrt; k <= i__2; ++k) {
-	    nbr = adjncy[k];
-	    if (xadj[nbr] > 0) {
-		goto L600;
-	    }
-	    ++(*nsep);
-	    sep[*nsep] = node;
-	    mask[node] = 0;
-	    goto L700;
+        i__2 = kstop;
+        for (k = kstrt; k <= i__2; ++k) {
+            nbr = adjncy[k];
+            if (xadj[nbr] > 0) {
+                goto L600;
+            }
+            ++(*nsep);
+            sep[*nsep] = node;
+            mask[node] = 0;
+            goto L700;
 L600:
-	    ;
-	}
+            ;
+        }
 L700:
-	;
+        ;
     }
     i__1 = lp1end;
     for (j = lp1beg; j <= i__1; ++j) {
-	node = ls[j];
-	xadj[node] = -xadj[node];
+        node = ls[j];
+        xadj[node] = -xadj[node];
     }
     goto L400;
 }

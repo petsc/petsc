@@ -152,13 +152,13 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       diag = aij->diag;
       ierr = VecGetArray(D,&v);CHKERRQ(ierr);
       if (is == INSERT_VALUES) {
-	for (i=0; i<m; i++) {
-	  aa[diag[i]] = v[i];
-	}
+        for (i=0; i<m; i++) {
+          aa[diag[i]] = v[i];
+        }
       } else {
-	for (i=0; i<m; i++) {
-	  aa[diag[i]] += v[i];
-	}
+        for (i=0; i<m; i++) {
+          aa[diag[i]] += v[i];
+        }
       }
       ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -320,11 +320,11 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
 #endif
       col = in[l];
       if (v) {
-	if (roworiented) {
-	  value = v[l + k*n];
-	} else {
-	  value = v[k + l*m];
-	}
+        if (roworiented) {
+          value = v[l + k*n];
+        } else {
+          value = v[k + l*m];
+        }
       } else {
         value = 0.;
       }
@@ -618,7 +618,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       for (i=0; i<m; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
         /* L part */
-	for (j=a->i[i]+shift; j<a->i[i+1]+shift; j++) {
+        for (j=a->i[i]+shift; j<a->i[i+1]+shift; j++) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j]+shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
@@ -631,8 +631,8 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j]+shift,(double)a->a[j]);CHKERRQ(ierr);
 #endif
         }
-	/* diagonal */
-	j = a->diag[i];
+        /* diagonal */
+        j = a->diag[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j]+shift,PetscRealPart(1.0/a->a[j]),PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
@@ -645,8 +645,8 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j]+shift,(double)1.0/a->a[j]);CHKERRQ(ierr);
 #endif
 
-	/* U part */
-	for (j=a->diag[i+1]+1+shift; j<a->diag[i]+shift; j++) {
+        /* U part */
+        for (j=a->diag[i+1]+1+shift; j<a->diag[i]+shift; j++) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j]+shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
@@ -659,7 +659,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j]+shift,(double)a->a[j]);CHKERRQ(ierr);
 #endif
 }
-	  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
     } else {
       for (i=0; i<m; i++) {
@@ -1405,10 +1405,10 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
     diag = a->diag;
     for (i=0; i<A->rmap->n; i++) {
       if (jj[diag[i]] != i) {
-	*missing = PETSC_TRUE;
-	if (d) *d = i;
-	PetscInfo1(A,"Matrix is missing diagonal number %D",i);
-	break;
+        *missing = PETSC_TRUE;
+        if (d) *d = i;
+        PetscInfo1(A,"Matrix is missing diagonal number %D",i);
+        break;
       }
     }
   }
@@ -2129,7 +2129,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
         if (aj[k] >= first) {
           starts[i] = k;
           break;
-	}
+        }
       }
       sum = 0;
       while (k < kend) {
@@ -2932,7 +2932,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,2,ij,2,ij,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_2(diag);CHKERRQ(ierr);
-	diag  += 4;
+        diag  += 4;
       }
       break;
     case 3:
@@ -2941,7 +2941,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
-	diag    += 9;
+        diag    += 9;
       }
       break;
     case 4:
@@ -2950,7 +2950,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,4,ij,4,ij,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_4(diag);CHKERRQ(ierr);
-	diag  += 16;
+        diag  += 16;
       }
       break;
     case 5:
@@ -2959,7 +2959,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,5,ij,5,ij,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_5(diag);CHKERRQ(ierr);
-	diag  += 25;
+        diag  += 25;
       }
       break;
     case 6:
@@ -2968,7 +2968,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,6,ij,6,ij,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_6(diag);CHKERRQ(ierr);
-	diag  += 36;
+        diag  += 36;
       }
       break;
     case 7:
@@ -2977,7 +2977,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,7,ij,7,ij,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_7(diag);CHKERRQ(ierr);
-	diag  += 49;
+        diag  += 49;
       }
       break;
     default:
@@ -2989,7 +2989,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
         ierr  = MatGetValues(A,bs,IJ,bs,IJ,diag);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
         ierr  = PetscKernel_A_gets_transpose_A_N(diag,bs);CHKERRQ(ierr);
-	diag  += bs2;
+        diag  += bs2;
       }
       ierr = PetscFree3(v_work,v_pivots,IJ);CHKERRQ(ierr);
   }

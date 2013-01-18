@@ -117,7 +117,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         } else {
 #if defined (PETSC_USE_CTABLE)
           ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
-	  colb --;
+          colb --;
 #else
           colb = aij->colmap[col] - 1;
 #endif
@@ -186,7 +186,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         fm    = M; /* fm points to first entry in linked list */
         for (k=0; k<m; k++) {
           currentcol = *rows++;
-	  /* is it already in the list? */
+          /* is it already in the list? */
           do {
             mfm  = fm;
             fm   = rowhit[fm];

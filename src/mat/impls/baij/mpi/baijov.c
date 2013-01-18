@@ -1144,10 +1144,10 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         max1    = sbuf1_i[2*j];
         lens_i  = lens[is_no];
         if (!allcolumns[is_no]) cmap_i = cmap[is_no];
-	rmap_i = rmap[is_no];
+        rmap_i = rmap[is_no];
         for (k=0; k<max1; k++,ct1++) {
 #if defined (PETSC_USE_CTABLE)
-	  ierr = PetscTableFind(rmap_i,sbuf1_i[ct1]+1,&row);CHKERRQ(ierr);
+          ierr = PetscTableFind(rmap_i,sbuf1_i[ct1]+1,&row);CHKERRQ(ierr);
           row--;
           if (row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else
@@ -1234,9 +1234,9 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
           row      = irow_i[j];
         }
 #if defined (PETSC_USE_CTABLE)
-	ierr = PetscGetProc(row,size,c->rangebs,&proc);CHKERRQ(ierr);
+        ierr = PetscGetProc(row,size,c->rangebs,&proc);CHKERRQ(ierr);
 #else
-	proc = rtable[row];
+        proc = rtable[row];
 #endif
         if (proc == rank) {
           row      = row - rstart;
@@ -1249,7 +1249,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
             vworkB = b_a + b_i[row]*bs2;
           }
 #if defined (PETSC_USE_CTABLE)
-	  ierr = PetscTableFind(rmap_i,row+rstart+1,&row);CHKERRQ(ierr);
+          ierr = PetscTableFind(rmap_i,row+rstart+1,&row);CHKERRQ(ierr);
           row--;
           if (row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else
@@ -1365,7 +1365,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       for (j=1; j<=jmax; j++) {
         is_no     = sbuf1_i[2*j-1];
         if (!allcolumns[is_no]) cmap_i = cmap[is_no];
-	rmap_i    = rmap[is_no];
+        rmap_i    = rmap[is_no];
         mat       = (Mat_SeqBAIJ*)submats[is_no]->data;
         imat_ilen = mat->ilen;
         imat_j    = mat->j;
@@ -1375,7 +1375,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
         for (k=0; k<max1; k++,ct1++) {
           row   = sbuf1_i[ct1];
 #if defined (PETSC_USE_CTABLE)
-	  ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
+          ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
           row--;
           if (row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else

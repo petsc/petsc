@@ -490,7 +490,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       v  = aa+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(v[j]);
+        rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     sctx.shift_top   *= 1.1;
@@ -539,8 +539,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
           multiplier = *pc * (*pv);
           *pc        = multiplier;
           pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
-	  pv = b->a + bdiag[row+1]+1;
-	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+          pv = b->a + bdiag[row+1]+1;
+          nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
           ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
         }
@@ -657,7 +657,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
       v  = aa+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(v[j]);
+        rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     sctx.shift_top   *= 1.1;
@@ -811,7 +811,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
       vtmp  = aa+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(vtmp[j]);
+        rs += PetscAbsScalar(vtmp[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     sctx.shift_top   *= 1.1;
@@ -842,7 +842,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
       v  = a->a+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(v[j]);
+        rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     if (sctx.shift_top < info->zeropivot) sctx.shift_top = info->zeropivot;
@@ -2104,7 +2104,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       v  = aa+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(v[j]);
+        rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     sctx.shift_top   *= 1.1;
@@ -2260,7 +2260,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFact
       v  = aa+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(v[j]);
+        rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     sctx.shift_top   *= 1.1;

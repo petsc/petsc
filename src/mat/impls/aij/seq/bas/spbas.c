@@ -27,7 +27,7 @@ M*/
 long int spbas_memory_requirement( spbas_matrix matrix)
 {
    long int memreq = 6 * sizeof(PetscInt)         + /* nrows, ncols, nnz, n_alloc_icol,
-						       n_alloc_val, col_idx_type */
+                                                       n_alloc_val, col_idx_type */
      sizeof(PetscBool)                 + /* block_data */
      sizeof(PetscScalar**)        + /* values */
      sizeof(PetscScalar*)         + /* alloc_val */
@@ -216,7 +216,7 @@ PetscErrorCode spbas_mergesort_icols( PetscInt nrows, PetscInt * irow_in, PetscI
      */
       for (istart=0; istart<nrows; istart+=2*istep) {
 
-	/* Set counters and bound array part endings */
+         /* Set counters and bound array part endings */
          i1=istart;        i1end = i1+istep;  if (i1end>nrows) {i1end=nrows;}
          i2=istart+istep;  i2end = i2+istep;  if (i2end>nrows) {i2end=nrows;}
 
@@ -595,7 +595,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
      */
       for (istart=0; istart<nnz; istart+=2*istep) {
 
-	/* Set counters and bound array part endings */
+         /* Set counters and bound array part endings */
          i1=istart;        i1end = i1+istep;  if (i1end>nnz) {i1end=nnz;}
          i2=istart+istep;  i2end = i2+istep;  if (i2end>nnz) {i2end=nnz;}
 
@@ -786,12 +786,12 @@ PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, 
 #undef __FUNCT__
 #define __FUNCT__ "spbas_mark_row_power"
 PetscErrorCode spbas_mark_row_power(
-				    PetscInt *iwork,             /* marker-vector */
-				    PetscInt row,                /* row for which the columns are marked */
-				    spbas_matrix * in_matrix, /* matrix for which the power is being  calculated */
-				    PetscInt marker,             /* marker-value: 2^power */
-				    PetscInt minmrk,            /* lower bound for marked points */
-				    PetscInt maxmrk)            /* upper bound for marked points */
+                                    PetscInt *iwork,             /* marker-vector */
+                                    PetscInt row,                /* row for which the columns are marked */
+                                    spbas_matrix * in_matrix, /* matrix for which the power is being  calculated */
+                                    PetscInt marker,             /* marker-value: 2^power */
+                                    PetscInt minmrk,            /* lower bound for marked points */
+                                    PetscInt maxmrk)            /* upper bound for marked points */
 {
    PetscErrorCode ierr;
    PetscInt       i,j, nnz;

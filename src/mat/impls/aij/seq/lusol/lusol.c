@@ -68,13 +68,13 @@ typedef struct  {
   double *mnsv;
 
   double elbowroom;
-  double luroom;		/* Extra space allocated when factor fails   */
-  double parmlu[30];		/* Input/output to LUSOL                     */
+  double luroom;                /* Extra space allocated when factor fails   */
+  double parmlu[30];            /* Input/output to LUSOL                     */
 
-  int n;			/* Number of rows/columns in matrix          */
-  int nz;			/* Number of nonzeros                        */
-  int nnz;			/* Number of nonzeros allocated for factors  */
-  int luparm[30];		/* Input/output to LUSOL                     */
+  int n;                        /* Number of rows/columns in matrix          */
+  int nz;                       /* Number of nonzeros                        */
+  int nnz;                      /* Number of nonzeros allocated for factors  */
+  int luparm[30];               /* Input/output to LUSOL                     */
 
   PetscBool  CleanUpLUSOL;
 
@@ -313,24 +313,24 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
              lusol->lenc, lusol->lenr, lusol->locc, lusol->locr,
              lusol->iploc, lusol->iqloc, lusol->ipinv,
              lusol->iqinv, lusol->mnsw, &status);
-	
+
       switch(status)
         {
-        case 0:		/* factored */
+        case 0:         /* factored */
           break;
 
-        case 7:		/* insufficient memory */
+        case 7:         /* insufficient memory */
           break;
 
         case 1:
-        case -1:		/* singular */
+        case -1:        /* singular */
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Singular matrix");
 
         case 3:
-        case 4:		/* error conditions */
+        case 4:         /* error conditions */
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix error");
 
-        default:		/* unknown condition */
+        default:        /* unknown condition */
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix unknown return code");
         }
 
@@ -360,7 +360,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   int            i, m, n, nz, nnz;
 
   PetscFunctionBegin;
-	
+
   /************************************************************************/
   /* Check the arguments.                                                 */
   /************************************************************************/

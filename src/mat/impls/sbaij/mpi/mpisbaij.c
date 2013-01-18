@@ -331,7 +331,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
 #endif
 #endif
 #if defined (PETSC_USE_CTABLE)
-	    ierr = PetscTableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
+            ierr = PetscTableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
             col  = (col - 1)/bs;
 #else
             col = (baij->colmap[in[j]] - 1)/bs;
@@ -1807,8 +1807,8 @@ PetscErrorCode  MatCreate_MPISBAIJ(Mat B)
 
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
-					   "MatGetFactor_mpisbaij_pastix",
-					   MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
+                                           "MatGetFactor_mpisbaij_pastix",
+                                           MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
@@ -2652,14 +2652,14 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xx,&n);CHKERRQ(ierr);
       if (omega == 1.0) {
-	for (i=0; i<n; i++) {
-	  sl[i] = b[i] - diag[i]*x[i];
-	}
+        for (i=0; i<n; i++) {
+          sl[i] = b[i] - diag[i]*x[i];
+        }
         ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
       } else {
-	for (i=0; i<n; i++) {
-	  sl[i] = b[i] + scale*diag[i]*x[i];
-	}
+        for (i=0; i<n; i++) {
+          sl[i] = b[i] + scale*diag[i]*x[i];
+        }
         ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(mat->slvec1a,&sl);CHKERRQ(ierr);

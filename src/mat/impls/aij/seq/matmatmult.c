@@ -1232,20 +1232,20 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       ii    = a->compressedrow.i;
       ridx  = a->compressedrow.rindex;
       for (i=0; i<arm; i++) {        /* over rows of C in those columns */
-	r1 = r2 = r3 = r4 = 0.0;
-	n   = ii[i+1] - ii[i];
-	aj  = a->j + ii[i];
-	aa  = a->a + ii[i];
-	for (j=0; j<n; j++) {
-	  r1 += (*aa)*b1[*aj];
-	  r2 += (*aa)*b2[*aj];
-	  r3 += (*aa)*b3[*aj];
-	  r4 += (*aa++)*b4[*aj++];
-	}
-	c[colam       + ridx[i]] += r1;
-	c[colam + am  + ridx[i]] += r2;
-	c[colam + am2 + ridx[i]] += r3;
-	c[colam + am3 + ridx[i]] += r4;
+        r1 = r2 = r3 = r4 = 0.0;
+        n   = ii[i+1] - ii[i];
+        aj  = a->j + ii[i];
+        aa  = a->a + ii[i];
+        for (j=0; j<n; j++) {
+          r1 += (*aa)*b1[*aj];
+          r2 += (*aa)*b2[*aj];
+          r3 += (*aa)*b3[*aj];
+          r4 += (*aa++)*b4[*aj++];
+        }
+        c[colam       + ridx[i]] += r1;
+        c[colam + am  + ridx[i]] += r2;
+        c[colam + am2 + ridx[i]] += r3;
+        c[colam + am3 + ridx[i]] += r4;
       }
       b1 += bm4;
       b2 += bm4;
@@ -1258,15 +1258,15 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       ii    = a->compressedrow.i;
       ridx  = a->compressedrow.rindex;
       for (i=0; i<arm; i++) {  /* over rows of C in those columns */
-	r1 = 0.0;
-	n   = ii[i+1] - ii[i];
-	aj  = a->j + ii[i];
-	aa  = a->a + ii[i];
+        r1 = 0.0;
+        n   = ii[i+1] - ii[i];
+        aj  = a->j + ii[i];
+        aa  = a->a + ii[i];
 
-	for (j=0; j<n; j++) {
-	  r1 += (*aa++)*b1[*aj++];
-	}
-	c[colam + ridx[i]] += r1;
+        for (j=0; j<n; j++) {
+          r1 += (*aa++)*b1[*aj++];
+        }
+        c[colam + ridx[i]] += r1;
       }
       b1 += bm;
     }
@@ -1274,20 +1274,20 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     for (col=0; col<cn-4; col += 4){  /* over columns of C */
       colam = col*am;
       for (i=0; i<am; i++) {        /* over rows of C in those columns */
-	r1 = r2 = r3 = r4 = 0.0;
-	n   = a->i[i+1] - a->i[i];
-	aj  = a->j + a->i[i];
-	aa  = a->a + a->i[i];
-	for (j=0; j<n; j++) {
-	  r1 += (*aa)*b1[*aj];
-	  r2 += (*aa)*b2[*aj];
-	  r3 += (*aa)*b3[*aj];
-	  r4 += (*aa++)*b4[*aj++];
-	}
-	c[colam + i]       += r1;
-	c[colam + am + i]  += r2;
-	c[colam + am2 + i] += r3;
-	c[colam + am3 + i] += r4;
+        r1 = r2 = r3 = r4 = 0.0;
+        n   = a->i[i+1] - a->i[i];
+        aj  = a->j + a->i[i];
+        aa  = a->a + a->i[i];
+        for (j=0; j<n; j++) {
+          r1 += (*aa)*b1[*aj];
+          r2 += (*aa)*b2[*aj];
+          r3 += (*aa)*b3[*aj];
+          r4 += (*aa++)*b4[*aj++];
+        }
+        c[colam + i]       += r1;
+        c[colam + am + i]  += r2;
+        c[colam + am2 + i] += r3;
+        c[colam + am3 + i] += r4;
       }
       b1 += bm4;
       b2 += bm4;
@@ -1297,15 +1297,15 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     for (;col<cn; col++){     /* over extra columns of C */
       colam = col*am;
       for (i=0; i<am; i++) {  /* over rows of C in those columns */
-	r1 = 0.0;
-	n   = a->i[i+1] - a->i[i];
-	aj  = a->j + a->i[i];
-	aa  = a->a + a->i[i];
+        r1 = 0.0;
+        n   = a->i[i+1] - a->i[i];
+        aj  = a->j + a->i[i];
+        aa  = a->a + a->i[i];
 
-	for (j=0; j<n; j++) {
-	  r1 += (*aa++)*b1[*aj++];
-	}
-	c[colam + i]     += r1;
+        for (j=0; j<n; j++) {
+          r1 += (*aa++)*b1[*aj++];
+        }
+        c[colam + i]     += r1;
       }
       b1 += bm;
     }

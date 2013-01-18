@@ -211,17 +211,17 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       int nz2;
       if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)){
 #if defined(PETSC_USE_BACKWARD_LOOP)
-	v  = aa + ai[m] - 1;
-	vj = aj + ai[m] - 1;
-	for (i=m-1; i>=0; i--){
+        v  = aa + ai[m] - 1;
+        vj = aj + ai[m] - 1;
+        for (i=m-1; i>=0; i--){
           sum = b[i];
-	  nz  = ai[i+1] - ai[i] - 1;
+          nz  = ai[i+1] - ai[i] - 1;
           {PetscInt __i;for (__i=0;__i<nz;__i++) sum -= v[-__i] * x[vj[-__i]];}
 #else
-	v  = aa + ai[m-1] + 1;
-	vj = aj + ai[m-1] + 1;
-	nz = 0;
-	for (i=m-1; i>=0; i--){
+        v  = aa + ai[m-1] + 1;
+        vj = aj + ai[m-1] + 1;
+        nz = 0;
+        for (i=m-1; i>=0; i--){
           sum = b[i];
           nz2 = ai[i] - ai[i-1] - 1;
           PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
@@ -230,26 +230,26 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           nz   = nz2;
 #endif
           x[i] = omega*sum*aidiag[i];
-	  v  -= nz + 1;
-	  vj -= nz + 1;
-	}
-	ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+          v  -= nz + 1;
+          vj -= nz + 1;
+        }
+        ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
       } else {
         v  = aa + ai[m-1] + 1;
-	vj = aj + ai[m-1] + 1;
-	nz = 0;
-	for (i=m-1; i>=0; i--){
+        vj = aj + ai[m-1] + 1;
+        nz = 0;
+        for (i=m-1; i>=0; i--){
           sum = t[i];
-	  nz2 = ai[i] - ai[i-1] - 1;
-	  PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
-	  PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
-	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);
+          nz2 = ai[i] - ai[i-1] - 1;
+          PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PetscSparseDenseMinusDot(sum,x,v,vj,nz);
           x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];
-	  nz  = nz2;
-	  v  -= nz + 1;
-	  vj -= nz + 1;
-	}
-	ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+          nz  = nz2;
+          v  -= nz + 1;
+          vj -= nz + 1;
+        }
+        ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
       }
     }
     its--;

@@ -73,7 +73,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
-	val[j] = a*vals[j];
+        val[j] = a*vals[j];
       }
       ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
-	val[j] = a*vals[j];
+        val[j] = a*vals[j];
       }
       ierr = MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);

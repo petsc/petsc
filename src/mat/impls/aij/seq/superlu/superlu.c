@@ -235,7 +235,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %D\n", Ustore->nnz);
     ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %D\n", Lstore->nnz + Ustore->nnz - lu->A.ncol);
     ierr = PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\n",
-	       lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6);
+    lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6);
   }
 
   lu->flg = SAME_NONZERO_PATTERN;

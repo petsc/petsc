@@ -29,7 +29,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
       rowlengths[k] += nz;   /* no. of upper triangular blocks */
       if (*aj == i) {aj++;diagcnt++;nz--;} /* skip diagonal */
       for (j=0; j<nz; j++) { /* no. of lower triangular blocks */
-	rowlengths[(*aj)*bs]++; aj++;
+        rowlengths[(*aj)*bs]++; aj++;
       }
     }
     rowlengths[k] *= bs;
@@ -71,12 +71,12 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
     if (nz && *aj == i) {
       nz--;
       for (j=0; j<bs; j++){   /* row i*bs+j */
-	itmp = i*bs+j;
-	for (k=0; k<bs; k++){ /* col i*bs+k */
-	  *(bj + rowstart[itmp]) = (*aj)*bs+k;
-	  *(bv + rowstart[itmp]) = *(av+k*bs+j);
-	  rowstart[itmp]++;
-	}
+        itmp = i*bs+j;
+        for (k=0; k<bs; k++){ /* col i*bs+k */
+          *(bj + rowstart[itmp]) = (*aj)*bs+k;
+          *(bv + rowstart[itmp]) = *(av+k*bs+j);
+          rowstart[itmp]++;
+        }
       }
       aj++; av += bs2;
     }

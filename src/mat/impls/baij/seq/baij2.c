@@ -650,22 +650,22 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
 
       for (k=0;k<15;k++){
         xv    =  xb[k];
-	sum1  += v[0]*xv;
+        sum1  += v[0]*xv;
         sum2  += v[1]*xv;
-	sum3  += v[2]*xv;
-	sum4  += v[3]*xv;	
-	sum5  += v[4]*xv;
+        sum3  += v[2]*xv;
+        sum4  += v[3]*xv;
+        sum5  += v[4]*xv;
         sum6  += v[5]*xv;
-	sum7  += v[6]*xv;
-	sum8  += v[7]*xv;	
+        sum7  += v[6]*xv;
+        sum8  += v[7]*xv;
         sum9  += v[8]*xv;
         sum10 += v[9]*xv;
-	sum11 += v[10]*xv;
-	sum12 += v[11]*xv;	
-	sum13 += v[12]*xv;
+        sum11 += v[10]*xv;
+        sum12 += v[11]*xv;
+        sum13 += v[12]*xv;
         sum14 += v[13]*xv;
-	sum15 += v[14]*xv;
-	v += 15;
+        sum15 += v[14]*xv;
+        v += 15;
       }
     }
     if (usecprow) z = zarray + 15*ridx[i];

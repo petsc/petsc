@@ -1593,12 +1593,12 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     }
     for (i=0; i<m; i++) {
       for (j=0; j<bs; j++) {
-	iidxm[i*bs+j] = bs*idxm[i] + j;
+        iidxm[i*bs+j] = bs*idxm[i] + j;
       }
     }
     for (i=0; i<n; i++) {
       for (j=0; j<bs; j++) {
-	iidxn[i*bs+j] = bs*idxn[i] + j;
+        iidxn[i*bs+j] = bs*idxn[i] + j;
       }
     }
     ierr = MatSetValues(mat,m*bs,iidxm,n*bs,iidxn,v,addv);CHKERRQ(ierr);
@@ -6349,13 +6349,13 @@ PetscErrorCode  MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ic
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
       if (eq) {
-	if (mat->symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->hermitian) {
-	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->structurally_symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	}
+        if (mat->symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->hermitian) {
+          ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->structurally_symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -6396,13 +6396,13 @@ PetscErrorCode  MatGetSubMatricesParallel(Mat mat,PetscInt n,const IS irow[],con
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
       if (eq) {
-	if (mat->symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->hermitian) {
-	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->structurally_symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	}
+        if (mat->symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->hermitian) {
+          ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->structurally_symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -7765,8 +7765,8 @@ PetscErrorCode  MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
       A->symmetric_set = PETSC_TRUE;
       A->symmetric = *flg;
       if (A->symmetric) {
-	A->structurally_symmetric_set = PETSC_TRUE;
-	A->structurally_symmetric     = PETSC_TRUE;
+        A->structurally_symmetric_set = PETSC_TRUE;
+        A->structurally_symmetric     = PETSC_TRUE;
       }
     }
   } else if (A->symmetric) {
@@ -7824,8 +7824,8 @@ PetscErrorCode  MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
       A->hermitian_set = PETSC_TRUE;
       A->hermitian = *flg;
       if (A->hermitian) {
-	A->structurally_symmetric_set = PETSC_TRUE;
-	A->structurally_symmetric     = PETSC_TRUE;
+        A->structurally_symmetric_set = PETSC_TRUE;
+        A->structurally_symmetric     = PETSC_TRUE;
       }
     }
   } else if (A->hermitian) {

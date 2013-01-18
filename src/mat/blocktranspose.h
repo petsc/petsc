@@ -4,7 +4,7 @@
 #include <petscsys.h>
 #include <petscblaslapack.h>
 
-#define PetscKernel_A_gets_transpose_A_BODY(a,N)                             \
+#define PetscKernel_A_gets_transpose_A_BODY(a,N)                        \
     int i,j;                                                            \
     for (i=0; i<N; i++) {                                               \
       for (j=i+1; j<N; j++) {                                           \

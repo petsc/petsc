@@ -118,7 +118,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
       rnz = ai[i+1] - ai[i];
       ajj = aj + ai[i];
       for (j=0; j<rnz; j++) {
-	row[nz] = i+shift; col[nz++] = ajj[j] + shift;
+        row[nz] = i+shift; col[nz++] = ajj[j] + shift;
       }
     }
     *r = row; *c = col;
@@ -149,12 +149,12 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
       ajj = aj + ai[i];
       rnz = ai[i+1] - ai[i];
       for (k=0; k<rnz; k++) {
-	for (j=0; j<bs; j++) {
-	  for (m=0; m<bs; m++) {
-	    row[idx]     = i*bs + m + shift;
-	    col[idx++]   = bs*(ajj[k]) + j + shift;
-	  }
-	}
+        for (j=0; j<bs; j++) {
+          for (m=0; m<bs; m++) {
+            row[idx]     = i*bs + m + shift;
+            col[idx++]   = bs*(ajj[k]) + j + shift;
+          }
+        }
       }
     }
     *r = row; *c = col;
@@ -185,7 +185,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
       rnz = ai[i+1] - ai[i];
       ajj = aj + ai[i];
       for (j=0; j<rnz; j++) {
-	row[nz] = i+shift; col[nz++] = ajj[j] + shift;
+        row[nz] = i+shift; col[nz++] = ajj[j] + shift;
       }
     }
     *r = row; *c = col;
@@ -221,7 +221,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
       ajj  = aj + adiag[i];
       v1   = av + adiag[i];
       for (j=0; j<rnz; j++) {
-	row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
+        row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
       }
     }
     *r = row; *c = col; *v = val;
@@ -232,7 +232,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
       ajj = aj + adiag[i];
       v1  = av + adiag[i];
       for (j=0; j<rnz; j++) {
-	val[nz++] = v1[j];
+        val[nz++] = v1[j];
       }
     }
   }
@@ -290,7 +290,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
     /* B-part */
     for (j=0; j < countB; j++){
       if (reuse == MAT_INITIAL_MATRIX) {
-	row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
+        row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
       }
       val[jj++] = v2[j];
     }
@@ -350,7 +350,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
     /* B-part */
     for (j=0; j < countB; j++){
       if (reuse == MAT_INITIAL_MATRIX){
-	row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
+        row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
       }
       val[jj++] = v2[j];
     }
@@ -402,13 +402,13 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
     /* A-part */
     for (k=0; k<countA; k++){
       for (j=0; j<bs; j++) {
-	for (n=0; n<bs; n++) {
-	  if (reuse == MAT_INITIAL_MATRIX){
-	    row[jj] = irow + n + shift;
-	    col[jj] = rstart + bs*ajj[k] + j + shift;
-	  }
-	  val[jj++] = v1[idx++];
-	}
+        for (n=0; n<bs; n++) {
+          if (reuse == MAT_INITIAL_MATRIX){
+            row[jj] = irow + n + shift;
+            col[jj] = rstart + bs*ajj[k] + j + shift;
+          }
+          val[jj++] = v1[idx++];
+        }
       }
     }
 
@@ -416,13 +416,13 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
     /* B-part */
     for (k=0; k<countB; k++){
       for (j=0; j<bs; j++) {
-	for (n=0; n<bs; n++) {
-	  if (reuse == MAT_INITIAL_MATRIX){
-	    row[jj] = irow + n + shift;
-	    col[jj] = bs*garray[bjj[k]] + j + shift;
-	  }
-	  val[jj++] = v2[idx++];
-	}
+        for (n=0; n<bs; n++) {
+          if (reuse == MAT_INITIAL_MATRIX){
+            row[jj] = irow + n + shift;
+            col[jj] = bs*garray[bjj[k]] + j + shift;
+          }
+          val[jj++] = v2[idx++];
+        }
       }
     }
     irow += bs;
@@ -493,10 +493,10 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
     /* B-part */
     for (j=0; j < countB; j++){
       if (garray[bjj[j]] > rstart) {
-	if (reuse == MAT_INITIAL_MATRIX) {
-	  row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
-	}
-	val[jj++] = v2[j];
+        if (reuse == MAT_INITIAL_MATRIX) {
+          row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
+        }
+        val[jj++] = v2[j];
       }
     }
     irow++;

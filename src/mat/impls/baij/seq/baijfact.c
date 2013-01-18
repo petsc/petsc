@@ -183,8 +183,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
         ierr = PetscKernel_A_gets_A_times_B_2(pc,pv,mwork);CHKERRQ(ierr);
 
         pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
-	pv = b->a + bs2*(bdiag[row+1]+1);
-	nz = bdiag[row]-bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
+        pv = b->a + bs2*(bdiag[row+1]+1);
+        nz = bdiag[row]-bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
         for (j=0; j<nz; j++) {
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
@@ -457,7 +457,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
       v  = aa+ai[i];
       nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++)
-	rs += PetscAbsScalar(v[j]);
+        rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     sctx.shift_top   *= 1.1;
@@ -506,8 +506,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
           multiplier = *pc * (*pv);
           *pc        = multiplier;
           pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
-	  pv = b->a + bdiag[row+1]+1;
-	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+          pv = b->a + bdiag[row+1]+1;
+          nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
           ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
         }

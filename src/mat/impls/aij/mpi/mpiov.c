@@ -1078,7 +1078,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           /* load the column indices for this row into cols*/
           cols  = sbuf_aj_i + ct2;
 
-	  lwrite = 0;
+          lwrite = 0;
           for (l=0; l<nzB; l++) {
             if ((ctmp = bmap[cworkB[l]]) < cstart)  cols[lwrite++] = ctmp;
           }
@@ -1128,7 +1128,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           /* load the column values for this row into vals*/
           vals  = sbuf_aa_i+ct2;
 
-	  lwrite = 0;
+          lwrite = 0;
           for (l=0; l<nzB; l++) {
             if ((bmap[cworkB[l]]) < cstart)  vals[lwrite++] = vworkB[l];
           }
@@ -1354,7 +1354,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       irow_i    = irow[i];
       jmax      = nrow[i];
       for (j=0; j<jmax; j++) {
-	l = 0;
+        l = 0;
         row      = irow_i[j];
         while (row >= C->rmap->range[l+1]) l++;
         proc = l;
@@ -1583,9 +1583,9 @@ PetscErrorCode MatMPIAIJExtractSeqMatrices_Private(Mat C, Mat *A, Mat *B)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatricesParallel_MPIXAIJ"
 PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[],
-						 PetscErrorCode(*getsubmats_seq)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat**),
-						 PetscErrorCode(*makefromseq)(MPI_Comm, Mat, Mat,Mat*),
-						 PetscErrorCode(*extractseq)(Mat, Mat*, Mat*))
+                                                 PetscErrorCode(*getsubmats_seq)(Mat, PetscInt, const IS[], const IS[], MatReuse, Mat**),
+                                                 PetscErrorCode(*makefromseq)(MPI_Comm, Mat, Mat,Mat*),
+                                                 PetscErrorCode(*extractseq)(Mat, Mat*, Mat*))
 {
   PetscErrorCode ierr;
   PetscMPIInt    size, flag;
@@ -1651,9 +1651,9 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
     for (i = 0, ii = 0; i < ismax; ++i) {
       ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size);CHKERRQ(ierr);
       if (size > 1) {
-	isrow_c[ii] = isrow[i];
-	ierr = ISGetNonlocalIS(iscol[i], &(iscol_c[ii]));CHKERRQ(ierr);
-	++ii;
+        isrow_c[ii] = isrow[i];
+        ierr = ISGetNonlocalIS(iscol[i], &(iscol_c[ii]));CHKERRQ(ierr);
+        ++ii;
       }
     }
     /* Now obtain the sequential A and B submatrices separately. */

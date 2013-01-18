@@ -153,7 +153,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi,Mat A,MatDuplicateOption c
     if (lda>A->rmap->n) {
       m = A->rmap->n;
       for (j=0; j<A->cmap->n; j++) {
-	ierr = PetscMemcpy(l->v+j*m,mat->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscMemcpy(l->v+j*m,mat->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
       }
     } else {
       ierr = PetscMemcpy(l->v,mat->v,A->rmap->n*A->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -920,7 +920,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     /* determine if matrix has all real values */
     v = a->v;
     for (i=0; i<A->rmap->n*A->cmap->n; i++) {
-	if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break ;}
+        if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break ;}
     }
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
@@ -944,7 +944,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 #else
         ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",(double)*v);CHKERRQ(ierr);
 #endif
-	v += a->lda;
+        v += a->lda;
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
@@ -1305,14 +1305,14 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
   if (type == NORM_FROBENIUS) {
     if (lda>m) {
       for (j=0; j<A->cmap->n; j++) {
-	v = mat->v+j*lda;
-	for (i=0; i<m; i++) {
-	  sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-	}
+        v = mat->v+j*lda;
+        for (i=0; i<m; i++) {
+          sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
+        }
       }
     } else {
       for (i=0; i<A->cmap->n*A->rmap->n; i++) {
-	sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
+        sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
       }
     }
     *nrm = PetscSqrtReal(sum);
@@ -1897,21 +1897,21 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
   if (type == NORM_2) {
     for (i=0; i<n; i++ ){
       for (j=0; j<m; j++) {
-	norms[i] += PetscAbsScalar(a[j]*a[j]);
+        norms[i] += PetscAbsScalar(a[j]*a[j]);
       }
       a += m;
     }
   } else if (type == NORM_1) {
     for (i=0; i<n; i++ ){
       for (j=0; j<m; j++) {
-	norms[i] += PetscAbsScalar(a[j]);
+        norms[i] += PetscAbsScalar(a[j]);
       }
       a += m;
     }
   } else if (type == NORM_INFINITY) {
     for (i=0; i<n; i++ ){
       for (j=0; j<m; j++) {
-	norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
+        norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
       }
       a += m;
     }

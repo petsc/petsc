@@ -31,13 +31,13 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
     /* Function Body */
     nm1 = n - 1;
     for (k = 1; k <= nm1; ++k) {
-	kp1  = k + 1;
+        kp1  = k + 1;
         kn   = k*n;
         knp1 = k*n + k;
 
 /*        find l = pivot index */
 
-	i__2 = n - k + 1;
+        i__2 = n - k + 1;
         aa = &a[knp1];
         max = PetscAbsScalar(aa[0]);
         l = 1;
@@ -46,22 +46,22 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
           if (tmp > max) { max = tmp; l = ll+1;}
         }
         l += k - 1;
-	ipvt[k] = l;
+        ipvt[k] = l;
 
-	if (a[l + kn] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+        if (a[l + kn] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 
 /*           interchange if necessary */
 
-	if (l != k) {
-	  t = a[l + kn];
-	  a[l + kn] = a[knp1];
-	  a[knp1] = t;
+        if (l != k) {
+          t = a[l + kn];
+          a[l + kn] = a[knp1];
+          a[knp1] = t;
         }
 
 /*           compute multipliers */
 
-	t = -1. / a[knp1];
-	i__2 = n - k;
+        t = -1. / a[knp1];
+        i__2 = n - k;
         aa = &a[1 + knp1];
         for (ll=0; ll<i__2; ll++) {
           aa[ll] *= t;
@@ -69,21 +69,21 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
 
 /*           row elimination with column indexing */
 
-	ax = aa;
+        ax = aa;
         for (j = kp1; j <= n; ++j) {
             jn1 = j*n;
-	    t = a[l + jn1];
-	    if (l != k) {
-	      a[l + jn1] = a[k + jn1];
-	      a[k + jn1] = t;
+            t = a[l + jn1];
+            if (l != k) {
+              a[l + jn1] = a[k + jn1];
+              a[k + jn1] = t;
             }
 
-	    i__3 = n - k;
+            i__3 = n - k;
             ay = &a[1+k+jn1];
             for (ll=0; ll<i__3; ll++) {
               ay[ll] += t*ax[ll];
             }
-	}
+        }
     }
     ipvt[n] = n;
     if (a[n + n * n] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",n-1);

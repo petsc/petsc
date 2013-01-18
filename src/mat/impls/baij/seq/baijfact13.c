@@ -189,9 +189,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
         ierr = PetscKernel_A_gets_A_times_B_3(pc,pv,mwork);CHKERRQ(ierr);
 
-   	pj = b->j + bdiag[row+1] + 1; /* beginning of U(row,:) */
-	pv = b->a + bs2*(bdiag[row+1]+1);
-	nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
+        pj = b->j + bdiag[row+1] + 1; /* beginning of U(row,:) */
+        pv = b->a + bs2*(bdiag[row+1]+1);
+        nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
         for (j=0; j<nz; j++) {
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
@@ -408,8 +408,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
         ierr = PetscKernel_A_gets_A_times_B_3(pc,pv,mwork);CHKERRQ(ierr);
 
         pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
-	pv = b->a + bs2*(bdiag[row+1]+1);
-	nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
+        pv = b->a + bs2*(bdiag[row+1]+1);
+        nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
         for (j=0; j<nz; j++) {
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */

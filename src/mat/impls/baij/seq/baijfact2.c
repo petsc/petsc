@@ -2475,23 +2475,23 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
     for (m=0;m<nz;m++){
       idx   = bs*vi[m];
       for (k=0;k<15;k++){
-	xv        = x[k + idx];
-	x[idt]    -= v[0]*xv;
-	x[1+idt]  -= v[1]*xv;
-	x[2+idt]  -= v[2]*xv;
+        xv        = x[k + idx];
+        x[idt]    -= v[0]*xv;
+        x[1+idt]  -= v[1]*xv;
+        x[2+idt]  -= v[2]*xv;
         x[3+idt]  -= v[3]*xv;
-	x[4+idt]  -= v[4]*xv;
-	x[5+idt]  -= v[5]*xv;
-	x[6+idt]  -= v[6]*xv;
+        x[4+idt]  -= v[4]*xv;
+        x[5+idt]  -= v[5]*xv;
+        x[6+idt]  -= v[6]*xv;
         x[7+idt]  -= v[7]*xv;
-	x[8+idt]  -= v[8]*xv;
-	x[9+idt]  -= v[9]*xv;
-	x[10+idt] -= v[10]*xv;
+        x[8+idt]  -= v[8]*xv;
+        x[9+idt]  -= v[9]*xv;
+        x[10+idt] -= v[10]*xv;
         x[11+idt] -= v[11]*xv;
-	x[12+idt] -= v[12]*xv;
-	x[13+idt] -= v[13]*xv;
-	x[14+idt] -= v[14]*xv;
-	v += 15;
+        x[12+idt] -= v[12]*xv;
+        x[13+idt] -= v[13]*xv;
+        x[14+idt] -= v[14]*xv;
+        v += 15;
       }
     }
   }
@@ -2508,23 +2508,23 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
     for (m=0;m<nz;m++){
       idx   = bs*vi[m];
       for (k=0;k<15;k++){
-	xv = x[k + idx];
-	s[0]  -= v[0]*xv;
-	s[1]  -= v[1]*xv;
-	s[2]  -= v[2]*xv;
+        xv = x[k + idx];
+        s[0]  -= v[0]*xv;
+        s[1]  -= v[1]*xv;
+        s[2]  -= v[2]*xv;
         s[3]  -= v[3]*xv;
-	s[4]  -= v[4]*xv;
-	s[5]  -= v[5]*xv;
-	s[6]  -= v[6]*xv;
+        s[4]  -= v[4]*xv;
+        s[5]  -= v[5]*xv;
+        s[6]  -= v[6]*xv;
         s[7]  -= v[7]*xv;
-	s[8]  -= v[8]*xv;
-	s[9]  -= v[9]*xv;
-	s[10] -= v[10]*xv;
+        s[8]  -= v[8]*xv;
+        s[9]  -= v[9]*xv;
+        s[10] -= v[10]*xv;
         s[11] -= v[11]*xv;
-	s[12] -= v[12]*xv;
-	s[13] -= v[13]*xv;
-	s[14] -= v[14]*xv;
-	v += 15;
+        s[12] -= v[12]*xv;
+        s[13] -= v[13]*xv;
+        s[14] -= v[14]*xv;
+        v += 15;
       }
     }
     ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
@@ -2887,14 +2887,14 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
        for (k=0;k<nz;k++) {
           jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
-	  x5    = x[4+jdx]; x6 = x[5+jdx];x7 = x[6+jdx];
+          x5    = x[4+jdx]; x6 = x[5+jdx];x7 = x[6+jdx];
           s1   -= v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4  + v[28]*x5 + v[35]*x6 + v[42]*x7;
           s2   -= v[1]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4  + v[29]*x5 + v[36]*x6 + v[43]*x7;
           s3   -= v[2]*x1 + v[9]*x2 + v[16]*x3 + v[23]*x4  + v[30]*x5 + v[37]*x6 + v[44]*x7;
-	  s4   -= v[3]*x1 + v[10]*x2 + v[17]*x3 + v[24]*x4  + v[31]*x5 + v[38]*x6 + v[45]*x7;
+          s4   -= v[3]*x1 + v[10]*x2 + v[17]*x3 + v[24]*x4  + v[31]*x5 + v[38]*x6 + v[45]*x7;
           s5   -= v[4]*x1 + v[11]*x2 + v[18]*x3 + v[25]*x4  + v[32]*x5 + v[39]*x6 + v[46]*x7;
-	  s6   -= v[5]*x1 + v[12]*x2 + v[19]*x3 + v[26]*x4  + v[33]*x5 + v[40]*x6 + v[47]*x7;
-	  s7   -= v[6]*x1 + v[13]*x2 + v[20]*x3 + v[27]*x4  + v[34]*x5 + v[41]*x6 + v[48]*x7;
+          s6   -= v[5]*x1 + v[12]*x2 + v[19]*x3 + v[26]*x4  + v[33]*x5 + v[40]*x6 + v[47]*x7;
+          s7   -= v[6]*x1 + v[13]*x2 + v[20]*x3 + v[27]*x4  + v[34]*x5 + v[41]*x6 + v[48]*x7;
           v   +=  bs2;
         }
 
@@ -2903,7 +2903,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
        x[2+idx] = s3;
        x[3+idx] = s4;
        x[4+idx] = s5;
-       x[5+idx] = s6;			
+       x[5+idx] = s6;
        x[6+idx] = s7;
     }
 
@@ -2914,7 +2914,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
      nz  = adiag[i] - adiag[i+1]-1;
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
-     s5 = x[4+idt];s6 = x[5+idt];s7 = x[6+idt];	
+     s5 = x[4+idt];s6 = x[5+idt];s7 = x[6+idt];
     for (k=0;k<nz;k++) {
       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
@@ -3249,13 +3249,13 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
        for (k=0;k<nz;k++){
           jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
-	  x5    = x[4+jdx]; x6 = x[5+jdx];
+          x5    = x[4+jdx]; x6 = x[5+jdx];
           s1   -= v[0]*x1 + v[6]*x2 + v[12]*x3 + v[18]*x4  + v[24]*x5 + v[30]*x6;
           s2   -= v[1]*x1 + v[7]*x2 + v[13]*x3 + v[19]*x4  + v[25]*x5 + v[31]*x6;;
           s3   -= v[2]*x1 + v[8]*x2 + v[14]*x3 + v[20]*x4  + v[26]*x5 + v[32]*x6;
-	  s4   -= v[3]*x1 + v[9]*x2 + v[15]*x3 + v[21]*x4  + v[27]*x5 + v[33]*x6;
+          s4   -= v[3]*x1 + v[9]*x2 + v[15]*x3 + v[21]*x4  + v[27]*x5 + v[33]*x6;
           s5   -= v[4]*x1 + v[10]*x2 + v[16]*x3 + v[22]*x4  + v[28]*x5 + v[34]*x6;
-	  s6   -= v[5]*x1 + v[11]*x2 + v[17]*x3 + v[23]*x4  + v[29]*x5 + v[35]*x6;
+          s6   -= v[5]*x1 + v[11]*x2 + v[17]*x3 + v[23]*x4  + v[29]*x5 + v[35]*x6;
           v   +=  bs2;
         }
 
@@ -3264,7 +3264,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
        x[2+idx] = s3;
        x[3+idx] = s4;
        x[4+idx] = s5;
-       x[5+idx] = s6;			
+       x[5+idx] = s6;
     }
 
    /* backward solve the upper triangular */
@@ -3274,7 +3274,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
      nz  = adiag[i] - adiag[i+1]-1;
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
-     s5 = x[4+idt];s6 = x[5+idt];	
+     s5 = x[4+idt];s6 = x[5+idt];
      for (k=0;k<nz;k++){
       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
@@ -3749,7 +3749,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
     t[2+idx] = s3;t[3+idx] = s4;
   }
   /* backward solve the upper triangular */
-  for (i=n-1; i>=0; i--){	
+  for (i=n-1; i>=0; i--){
     v    = aa + 16*(adiag[i+1]+1);
     vi   = aj + adiag[i+1]+1;
     nz   = adiag[i] - adiag[i+1] - 1;
@@ -4232,7 +4232,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
           s1   -= v[0]*x1 + v[4]*x2 + v[8]*x3 + v[12]*x4;
           s2   -= v[1]*x1 + v[5]*x2 + v[9]*x3 + v[13]*x4;
           s3   -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
-	  s4   -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+          s4   -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
 
           v   +=  bs2;
         }
@@ -4240,7 +4240,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
        x[idx]   = s1;
        x[1+idx] = s2;
        x[2+idx] = s3;
-       x[3+idx] = s4;	
+       x[3+idx] = s4;
     }
 
    /* backward solve the upper triangular */
@@ -4250,7 +4250,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
      nz  = adiag[i] - adiag[i+1]-1;
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
-	
+
     for (k=0;k<nz;k++){
       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
@@ -5027,7 +5027,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
      nz  = adiag[i] - adiag[i+1]-1;
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];
-	
+
      for (k=0;k<nz;k++){
        idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];
@@ -5295,7 +5295,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
      s1 = x[idt];  s2 = x[1+idt];
      PetscPrefetchBlock(vi+nz,nz,0,PETSC_PREFETCH_HINT_NTA);
      PetscPrefetchBlock(v+4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA);
-     for (k=0;k<nz;k++){	
+     for (k=0;k<nz;k++){
       idx   = 2*vi[k];
        x1    = x[idx];   x2 = x[1+idx];
        s1 -= v[0]*x1 + v[2]*x2;
@@ -5597,16 +5597,16 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
       }
       if (flg) {
         pv = b->a + bs2*bdiag[row];
-	PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork);
-	/*ierr = PetscKernel_A_gets_A_times_B_15(pc,pv,mwork);CHKERRQ(ierr);*/
-	pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
+        PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork);
+        /*ierr = PetscKernel_A_gets_A_times_B_15(pc,pv,mwork);CHKERRQ(ierr);*/
+        pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1);
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
           vv   = rtmp + bs2*pj[j];
           PetscKernel_A_gets_A_minus_B_times_C(bs,vv,pc,pv);
-	  /* ierr = PetscKernel_A_gets_A_minus_B_times_C_15(vv,pc,pv);CHKERRQ(ierr); */
-	  pv  += bs2;
+          /* ierr = PetscKernel_A_gets_A_minus_B_times_C_15(vv,pc,pv);CHKERRQ(ierr); */
+          pv  += bs2;
         }
         ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
@@ -6109,96 +6109,96 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
       fill[n]    = n;
       fill[prow] = -1; /* marker for diagonal entry */
       while (nz--) {
-	fm  = n;
-	idx = ic[*xi++];
-	do {
-	  m  = fm;
-	  fm = fill[m];
-	} while (fm < idx);
-	fill[m]   = idx;
-	fill[idx] = fm;
-	im[idx]   = 0;
+        fm  = n;
+        idx = ic[*xi++];
+        do {
+          m  = fm;
+          fm = fill[m];
+        } while (fm < idx);
+        fill[m]   = idx;
+        fill[idx] = fm;
+        im[idx]   = 0;
       }
 
       /* make sure diagonal entry is included */
       if (diagonal_fill && fill[prow] == -1) {
-	fm = n;
-	while (fill[fm] < prow) fm = fill[fm];
-	fill[prow] = fill[fm];  /* insert diagonal into linked list */
-	fill[fm]   = prow;
-	im[prow]   = 0;
-	nzf++;
-	dcount++;
+        fm = n;
+        while (fill[fm] < prow) fm = fill[fm];
+        fill[prow] = fill[fm];  /* insert diagonal into linked list */
+        fill[fm]   = prow;
+        im[prow]   = 0;
+        nzf++;
+        dcount++;
       }
 
       nzi = 0;
       row = fill[n];
       while (row < prow) {
-	incrlev = im[row] + 1;
-	nz      = dloc[row];
-	xi      = ajnew  + ainew[row] + nz + 1;
-	flev    = ajfill + ainew[row] + nz + 1;
-	nnz     = ainew[row+1] - ainew[row] - nz - 1;
-	fm      = row;
-	while (nnz-- > 0) {
-	  idx = *xi++;
-	  if (*flev + incrlev > levels) {
-	    flev++;
-	    continue;
-	  }
-	  do {
-	    m  = fm;
-	    fm = fill[m];
-	  } while (fm < idx);
-	  if (fm != idx) {
-	    im[idx]   = *flev + incrlev;
-	    fill[m]   = idx;
-	    fill[idx] = fm;
-	    fm        = idx;
-	    nzf++;
-	  } else {
-	    if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
-	  }
-	  flev++;
-	}
-	row = fill[row];
-	nzi++;
+        incrlev = im[row] + 1;
+        nz      = dloc[row];
+        xi      = ajnew  + ainew[row] + nz + 1;
+        flev    = ajfill + ainew[row] + nz + 1;
+        nnz     = ainew[row+1] - ainew[row] - nz - 1;
+        fm      = row;
+        while (nnz-- > 0) {
+          idx = *xi++;
+          if (*flev + incrlev > levels) {
+            flev++;
+            continue;
+          }
+          do {
+            m  = fm;
+            fm = fill[m];
+          } while (fm < idx);
+          if (fm != idx) {
+            im[idx]   = *flev + incrlev;
+            fill[m]   = idx;
+            fill[idx] = fm;
+            fm        = idx;
+            nzf++;
+          } else {
+            if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
+          }
+          flev++;
+        }
+        row = fill[row];
+        nzi++;
       }
       /* copy new filled row into permanent storage */
       ainew[prow+1] = ainew[prow] + nzf;
       if (ainew[prow+1] > jmax) {
 
-	/* estimate how much additional space we will need */
-	/* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
-	/* just double the memory each time */
-	PetscInt maxadd = jmax;
-	/* maxadd = (int)(((f*ai[n]+1)*(n-prow+5))/n); */
-	if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
-	jmax += maxadd;
+        /* estimate how much additional space we will need */
+        /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+        /* just double the memory each time */
+        PetscInt maxadd = jmax;
+        /* maxadd = (int)(((f*ai[n]+1)*(n-prow+5))/n); */
+        if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
+        jmax += maxadd;
 
-	/* allocate a longer ajnew and ajfill */
-	ierr = PetscMalloc(jmax*sizeof(PetscInt),&xitmp);CHKERRQ(ierr);
-	ierr = PetscMemcpy(xitmp,ajnew,ainew[prow]*sizeof(PetscInt));CHKERRQ(ierr);
-	ierr = PetscFree(ajnew);CHKERRQ(ierr);
-	ajnew = xitmp;
-	ierr = PetscMalloc(jmax*sizeof(PetscInt),&xitmp);CHKERRQ(ierr);
-	ierr = PetscMemcpy(xitmp,ajfill,ainew[prow]*sizeof(PetscInt));CHKERRQ(ierr);
-	ierr = PetscFree(ajfill);CHKERRQ(ierr);
-	ajfill = xitmp;
-	reallocate++; /* count how many reallocations are needed */
+        /* allocate a longer ajnew and ajfill */
+        ierr = PetscMalloc(jmax*sizeof(PetscInt),&xitmp);CHKERRQ(ierr);
+        ierr = PetscMemcpy(xitmp,ajnew,ainew[prow]*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscFree(ajnew);CHKERRQ(ierr);
+        ajnew = xitmp;
+        ierr = PetscMalloc(jmax*sizeof(PetscInt),&xitmp);CHKERRQ(ierr);
+        ierr = PetscMemcpy(xitmp,ajfill,ainew[prow]*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscFree(ajfill);CHKERRQ(ierr);
+        ajfill = xitmp;
+        reallocate++; /* count how many reallocations are needed */
       }
       xitmp       = ajnew + ainew[prow];
       flev        = ajfill + ainew[prow];
       dloc[prow]  = nzi;
       fm          = fill[n];
       while (nzf--) {
-	*xitmp++ = fm;
-	*flev++ = im[fm];
-	fm      = fill[fm];
+        *xitmp++ = fm;
+        *flev++ = im[fm];
+        fm      = fill[fm];
       }
       /* make sure row has diagonal entry */
       if (ajnew[ainew[prow]+dloc[prow]] != prow) {
-	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
     try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",prow);
       }
     }
@@ -6216,7 +6216,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
       ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G);\n",af);CHKERRQ(ierr);
       ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
       if (diagonal_fill) {
-	ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals\n",dcount);CHKERRQ(ierr);
+        ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals\n",dcount);CHKERRQ(ierr);
       }
     }
 #endif

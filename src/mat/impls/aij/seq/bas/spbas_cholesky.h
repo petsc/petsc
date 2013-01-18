@@ -37,12 +37,12 @@ PetscErrorCode spbas_cholesky_garbage_collect(
                                    Only the storage, not the contents of this matrix
                                    is changed in this function */
       PetscInt     i_row,             /* I  : Number of rows for which the final contents are
-				     known */
+                                     known */
       PetscInt     *n_row_alloc_ok,   /* I/O: Number of rows which are already in their final
-				     places in the arrays: they need not be moved any more */
+                                     places in the arrays: they need not be moved any more */
       PetscInt     *n_alloc_used,     /* I/O:  */
       PetscInt     *max_row_nnz       /* I  : Over-estimate of the number of nonzeros needed to
-				    store each row */
+                                    store each row */
      )
 {
 
@@ -178,7 +178,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
 
       /* PETSC knows no REALLOC, so we'll REALLOC ourselves.
 
-	 Allocate new icol-data, copy old contents */
+         Allocate new icol-data, copy old contents */
       ierr = PetscMalloc(  n_alloc * sizeof(int), &result->alloc_icol);CHKERRQ(ierr);
       ierr = PetscMemcpy(result->alloc_icol, alloc_icol_old, n_copy*sizeof(int));CHKERRQ(ierr);
 
@@ -354,7 +354,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
       val[i] += epsdiag;
 
       /* Calculate lvec   = diag(D(0:i-1)) * L(0:i-1,i);
-	 val(i) = A(i,i) - L(0:i-1,i)' * lvec */
+         val(i) = A(i,i) - L(0:i-1,i)' * lvec */
       for ( j=0; j<r_nnz; j++)  {
          k           = r_icol[j];
          lvec[k]     = diag[k] * r_val[j];
@@ -403,7 +403,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
          val[k] /= diag[i];
 
          if (PetscAbsScalar(val[k]) > droptol || PetscAbsScalar(val[k])< -droptol) {
-	   /* If necessary, allocate arrays */
+           /* If necessary, allocate arrays */
             if (retval.row_nnz[k]==0) {
                ierr = spbas_cholesky_row_alloc( retval, k, max_row_nnz[k], &n_alloc_used);
                if (ierr == PETSC_ERR_MEM) {

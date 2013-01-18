@@ -377,7 +377,7 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     currentcol = 1000000000;
     for (j=0; j<bs; j++) { /* loop over rows in block finding first nonzero block */
       if (ilens[j] > 0) {
-	currentcol = PetscMin(currentcol,ii[j][0]/bs);
+        currentcol = PetscMin(currentcol,ii[j][0]/bs);
       }
     }
 

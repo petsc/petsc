@@ -65,7 +65,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
 
   /*
      Phase 1: Find row index r in which to store each nonzero.
-	      Initialize count of nonzeros to be stored in each row (nzr).
+              Initialize count of nonzeros to be stored in each row (nzr).
               At the end of this phase, a nonzero a(*,*)=a(r(),aj())
               s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
   */

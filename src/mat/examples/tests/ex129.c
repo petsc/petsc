@@ -253,11 +253,11 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
-	ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
-	ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
-	v[k3] = r1;
-	v_neighbor[k3] = r2;
-      }	
+        ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
+        v[k3] = r1;
+        v_neighbor[k3] = r2;
+      }        
       k3++;
     }
   }
@@ -267,29 +267,29 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
-	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */	
-	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */        
+          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else { /* interior points */
           /* center */
           col.i = i; col.j = j; col.k = k;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);
 
           /* x neighbors */
-	  col.i = i-1; col.j = j; col.k = k;
+          col.i = i-1; col.j = j; col.k = k;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	  col.i = i+1; col.j = j; col.k = k;
-	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	
-	  /* y neighbors */
-	  col.i = i; col.j = j-1; col.k = k;
-	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	  col.i = i; col.j = j+1; col.k = k;
-	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	
+          col.i = i+1; col.j = j; col.k = k;
+          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+        
+          /* y neighbors */
+          col.i = i; col.j = j-1; col.k = k;
+          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          col.i = i; col.j = j+1; col.k = k;
+          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+        
           /* z neighbors */
-	  col.i = i; col.j = j; col.k = k-1;
-	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	  col.i = i; col.j = j; col.k = k+1;
+          col.i = i; col.j = j; col.k = k-1;
+          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          col.i = i; col.j = j; col.k = k+1;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
         }
       }

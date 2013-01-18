@@ -59,11 +59,11 @@ PetscErrorCode MINPACKsetr(PetscInt*m,PetscInt* n,PetscInt* indrow,PetscInt* jpn
     /* Function Body */
     i__1 = *m;
     for (ir = 1; ir <= i__1; ++ir) {
-	iwa[ir] = 0;
+        iwa[ir] = 0;
     }
     i__1 = jpntr[*n + 1] - 1;
     for (jp = 1; jp <= i__1; ++jp) {
-	++iwa[indrow[jp]];
+        ++iwa[indrow[jp]];
     }
 
     /*     Set pointers to the start of the rows in indcol. */
@@ -71,20 +71,20 @@ PetscErrorCode MINPACKsetr(PetscInt*m,PetscInt* n,PetscInt* indrow,PetscInt* jpn
     ipntr[1] = 1;
     i__1 = *m;
     for (ir = 1; ir <= i__1; ++ir) {
-	ipntr[ir + 1] = ipntr[ir] + iwa[ir];
-	iwa[ir] = ipntr[ir];
+        ipntr[ir + 1] = ipntr[ir] + iwa[ir];
+        iwa[ir] = ipntr[ir];
     }
 
     /*     Fill indcol. */
 
     i__1 = *n;
     for (jcol = 1; jcol <= i__1; ++jcol) {
-	i__2 = jpntr[jcol + 1] - 1;
-	for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
-	    ir = indrow[jp];
-	    indcol[iwa[ir]] = jcol;
-	    ++iwa[ir];
-	}
+        i__2 = jpntr[jcol + 1] - 1;
+        for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
+            ir = indrow[jp];
+            indcol[iwa[ir]] = jcol;
+            ++iwa[ir];
+        }
     }
     PetscFunctionReturn(0);
 }

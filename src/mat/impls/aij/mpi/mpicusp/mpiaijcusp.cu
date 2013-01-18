@@ -156,17 +156,17 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusp_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusp gpu matrices for SpMV",
-			    "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_DIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusp_mult_offdiag_storage_format","sets storage format of the off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
-			    "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_OFFDIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of the diagonal and off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
-			    "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                            "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
     }
@@ -225,7 +225,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   cuspStruct->offdiagGPUMatFormat = MAT_CUSP_CSR;
 
   A->ops->mult           = MatMult_MPIAIJCUSP;
-  A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;	
+  A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatCUSPSetFormat_C", "MatCUSPSetFormat_MPIAIJCUSP", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
 #endif
