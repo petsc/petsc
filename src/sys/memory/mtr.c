@@ -135,7 +135,7 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
       if (lasthead)
-	(*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s%s\n",lasthead->functionname,lasthead->lineno,lasthead->dirname,lasthead->filename);
+        (*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s%s\n",lasthead->functionname,lasthead->lineno,lasthead->dirname,lasthead->filename);
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
@@ -289,7 +289,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
       (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p was already freed\n",head->id,(PetscLogDouble)head->size,a + sizeof(TrSPACE));
       if (head->lineno > 0 && head->lineno < 50000 /* sanity check */) {
-	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
+        (*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
       } else {
         (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,-head->lineno,head->dirname,head->filename);
       }

@@ -198,39 +198,39 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 
           next->set = PETSC_TRUE;
           value = str;
-	  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
-	  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
-	  while (n < nmax) {
-	    if (!value) break;
+          ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+          ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+          while (n < nmax) {
+            if (!value) break;
 
-	    /* look for form  d-D where d and D are integers */
-	    foundrange = PETSC_FALSE;
-	    ierr      = PetscStrlen(value,&len);CHKERRQ(ierr);
-	    if (value[0] == '-') i=2;
-	    else i=1;
-	    for (;i<len; i++) {
-	      if (value[i] == '-') {
-		if (i == len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
-		value[i] = 0;
-		ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
-		ierr     = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);
-		if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
-		if (n + end - start - 1 >= nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,nmax-n,start,end);
-		for (;start<end; start++) {
-		  *dvalue = start; dvalue++;n++;
-		}
-		foundrange = PETSC_TRUE;
-		break;
-	      }
-	    }
-	    if (!foundrange) {
-	      ierr      = PetscOptionsStringToInt(value,dvalue);CHKERRQ(ierr);
-	      dvalue++;
-	      n++;
-	    }
-	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
-	  }
-	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+            /* look for form  d-D where d and D are integers */
+            foundrange = PETSC_FALSE;
+            ierr      = PetscStrlen(value,&len);CHKERRQ(ierr);
+            if (value[0] == '-') i=2;
+            else i=1;
+            for (;i<len; i++) {
+              if (value[i] == '-') {
+                if (i == len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+                value[i] = 0;
+                ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
+                ierr     = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);
+                if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+                if (n + end - start - 1 >= nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,nmax-n,start,end);
+                for (;start<end; start++) {
+                  *dvalue = start; dvalue++;n++;
+                }
+                foundrange = PETSC_TRUE;
+                break;
+              }
+            }
+            if (!foundrange) {
+              ierr      = PetscOptionsStringToInt(value,dvalue);CHKERRQ(ierr);
+              dvalue++;
+              n++;
+            }
+            ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+          }
+          ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_REAL_ARRAY:
@@ -252,16 +252,16 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 
           next->set = PETSC_TRUE;
           value = str;
-	  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
-	  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
-	  while (n < nmax) {
-	    if (!value) break;
+          ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+          ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+          while (n < nmax) {
+            if (!value) break;
             ierr      = PetscOptionsStringToReal(value,dvalue);CHKERRQ(ierr);
-	    dvalue++;
-	    n++;
-	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
-	  }
-	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+            dvalue++;
+            n++;
+            ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+          }
+          ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_INT:
@@ -307,7 +307,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscFunctionListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject.prefix,next->option,next->text,next->man,next->flist,(char*)next->data);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
-	  PetscOptionsObject.changedmethod = PETSC_TRUE;
+          PetscOptionsObject.changedmethod = PETSC_TRUE;
           next->set = PETSC_TRUE;
           ierr = PetscStrcpy((char*)next->data,str);CHKERRQ(ierr);
         }
@@ -404,41 +404,41 @@ PetscErrorCode PetscOptionsAMSInput()
         ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_INT:
-	ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_REAL:
-	ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_LOGICAL:
-	ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_LOGICAL_ARRAY:
-	ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_STRING:
-	ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_STRING_ARRAY:
-	ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;
       case OPTION_LIST:
         {PetscInt  ntext;
         char       ldefault[128];
-	ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
-	ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
-	ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
-	ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
-	ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
+        ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
+        ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
+        ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
+        ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;}
       case OPTION_ELIST:
         {PetscInt  ntext = next->nlist;
         char       ldefault[128];
-	ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
-	ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
-	ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
-	ierr = PetscMalloc((ntext+1)*sizeof(char**),&next->edata);CHKERRQ(ierr);
+        ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
+        ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
+        ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
+        ierr = PetscMalloc((ntext+1)*sizeof(char**),&next->edata);CHKERRQ(ierr);
         ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
-	ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+        ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;}
     default:
       break;

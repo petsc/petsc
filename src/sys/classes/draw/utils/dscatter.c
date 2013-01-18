@@ -326,7 +326,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   if (!rank) {
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
-	ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
+        ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
       }
     }
   }

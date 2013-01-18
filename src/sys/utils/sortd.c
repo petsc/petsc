@@ -63,10 +63,10 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
     for (k=0; k<n; k++) {
       vk = v[k];
       for (j=k+1; j<n; j++) {
-	if (vk > v[j]) {
-	  SWAP(v[k],v[j],tmp);
-	  vk = v[k];
-	}
+        if (vk > v[j]) {
+          SWAP(v[k],v[j],tmp);
+          vk = v[k];
+        }
       }
     }
   } else {

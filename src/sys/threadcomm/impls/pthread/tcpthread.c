@@ -217,9 +217,9 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
     for (i=0; i < tcomm->nworkThreads;i++) {
       for (j=0;j < gtcomm->nworkThreads; j++) {
-	if (tcomm->affinities[i] == gaffinities[j]) {
-	  ptcomm->granks[i] = granks[j];
-	}
+        if (tcomm->affinities[i] == gaffinities[j]) {
+          ptcomm->granks[i] = granks[j];
+        }
       }
     }
   }

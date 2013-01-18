@@ -1302,8 +1302,8 @@ PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
                                     "PetscViewerFileGetMode_Binary",
                                      PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileGetName_C",
-				    "PetscViewerFileGetName_Binary",
-				     PetscViewerFileGetName_Binary);CHKERRQ(ierr);
+                                    "PetscViewerFileGetName_Binary",
+                                     PetscViewerFileGetName_Binary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetMPIIO_C",
                                     "PetscViewerBinarySetMPIIO_Binary",

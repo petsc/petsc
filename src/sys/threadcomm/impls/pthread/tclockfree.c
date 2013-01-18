@@ -71,10 +71,10 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
       if (job->job_status[PetscPThreadRank] == THREAD_JOB_RECIEVED) {
-	/* Do own job */
-	PetscRunKernel(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
-	/* Post job completed status */
-	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
+        /* Do own job */
+        PetscRunKernel(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
+        /* Post job completed status */
+        job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
       }
       my_job_counter = (my_job_counter+1)%job->tcomm->nkernels;
       my_kernel_ctr++;
@@ -138,7 +138,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
     threads_initialized=0;
     for (i=0;i<tcomm->nworkThreads;i++) {
       if (!job_lockfree.my_job_status[ptcomm->granks[i]])
-	break;
+        break;
       threads_initialized++;
     }
   }

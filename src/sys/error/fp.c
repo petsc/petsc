@@ -1,6 +1,6 @@
 
 /*
-*	IEEE error handler for all machines. Since each machine has
+*   IEEE error handler for all machines. Since each machine has
 *   enough slight differences we have completely separate codes for each one.
 *
 */
@@ -91,13 +91,13 @@ PetscErrorCode ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sig
 EXTERN_C_END
 
 static struct { int code_no; char *name; } error_codes[] = {
-           { FPE_INTDIV_TRAP	,"integer divide" },
-	   { FPE_FLTOPERR_TRAP	,"IEEE operand error" },
-	   { FPE_FLTOVF_TRAP	,"floating point overflow" },
-	   { FPE_FLTUND_TRAP	,"floating point underflow" },
-	   { FPE_FLTDIV_TRAP	,"floating pointing divide" },
-	   { FPE_FLTINEX_TRAP	,"inexact floating point result" },
-	   { 0			,"unknown error" }
+           { FPE_INTDIV_TRAP    ,"integer divide" },
+           { FPE_FLTOPERR_TRAP  ,"IEEE operand error" },
+           { FPE_FLTOVF_TRAP    ,"floating point overflow" },
+           { FPE_FLTUND_TRAP    ,"floating point underflow" },
+           { FPE_FLTDIV_TRAP    ,"floating pointing divide" },
+           { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
+           { 0                  ,"unknown error" }
 } ;
 #define SIGPC(scp) (scp->sc_pc)
 
@@ -308,12 +308,12 @@ struct sigcontext;
 #define FPE_FLTINEX_TRAP  (fptrap_t)(0x02000000)
 
 static struct { int code_no; char *name; } error_codes[] = {
-           {FPE_FLTOPERR_TRAP	,"IEEE operand error" },
-	   { FPE_FLTOVF_TRAP	,"floating point overflow" },
-	   { FPE_FLTUND_TRAP	,"floating point underflow" },
-	   { FPE_FLTDIV_TRAP	,"floating point divide" },
-	   { FPE_FLTINEX_TRAP	,"inexact floating point result" },
-	   { 0			,"unknown error" }
+           {FPE_FLTOPERR_TRAP   ,"IEEE operand error" },
+           { FPE_FLTOVF_TRAP    ,"floating point overflow" },
+           { FPE_FLTUND_TRAP    ,"floating point underflow" },
+           { FPE_FLTDIV_TRAP    ,"floating point divide" },
+           { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
+           { 0                  ,"unknown error" }
 } ;
 #define SIGPC(scp) (0) /* Info MIGHT be in scp->sc_jmpbuf.jmp_context.iar */
 /*

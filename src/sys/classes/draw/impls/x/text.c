@@ -110,13 +110,13 @@ PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
         ierr = PetscStrlen(names[i],&len);CHKERRQ(ierr);
         if (len != 2) continue;
         names[i][1]         = '\0';
-	nfonts[j].w         = info[i].max_bounds.width ;
+        nfonts[j].w         = info[i].max_bounds.width ;
         /* nfonts[j].w         = info[i].max_bounds.lbearing + info[i].max_bounds.rbearing; */
         nfonts[j].h         = info[i].ascent + info[i].descent;
         nfonts[j].descent   = info[i].descent;
         if (nfonts[j].w <= 0 || nfonts[j].h <= 0) continue;
         j++;
-	if (j >= NFONTS) break;
+        if (j >= NFONTS) break;
     }
     act_nfonts    = j;
     XFreeFontInfo(names,info,cnt);

@@ -63,9 +63,9 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
 
       ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       if (!rank) {
-	str = getenv(name);
-	if (str) flg = PETSC_TRUE;
-	if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
+        str = getenv(name);
+        if (str) flg = PETSC_TRUE;
+        if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
       }
       ierr = MPI_Bcast(&flg,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
       ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);

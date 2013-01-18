@@ -564,7 +564,7 @@ static PetscErrorCode PetscDrawClear_Win32(PetscDraw draw)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawTriangle_Win32"
 static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,PetscReal x1,PetscReal yone,PetscReal x2,PetscReal y2,
-			      PetscReal x3,PetscReal y3,int c1,int c2,int c3)
+                                              PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HBRUSH          hbrush;

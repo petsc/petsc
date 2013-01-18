@@ -214,7 +214,7 @@ int main(int argc,char *argv[])
     printf(HLINE); */
   BytesPerWord = sizeof(double);
   printf("This system uses %d bytes per DOUBLE PRECISION word.\n",BytesPerWord);
-	
+
   printf(HLINE);
 #ifdef NO_LONG_LONG
   printf("Array size = %d, Offset = %d\n" , N, OFFSET);
@@ -225,7 +225,7 @@ int main(int argc,char *argv[])
   printf("Total memory required = %.1f MB.\n",(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
   printf("Each test is run %d times, but only\n", NTIMES);
   printf("the *best* time for each is used.\n");
-	
+
   printf(HLINE);
 
 #if !STATIC_ALLOC
@@ -295,7 +295,7 @@ int main(int argc,char *argv[])
       ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
-	c[j] = a[j];
+        c[j] = a[j];
 #endif
       times[0][k] = mysecond() - times[0][k];
 
@@ -305,7 +305,7 @@ int main(int argc,char *argv[])
       ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
-	b[j] = scalar*c[j];
+        b[j] = scalar*c[j];
 #endif
       times[1][k] = mysecond() - times[1][k];
 
@@ -315,7 +315,7 @@ int main(int argc,char *argv[])
       ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
-	c[j] = a[j]+b[j];
+        c[j] = a[j]+b[j];
 #endif
       times[2][k] = mysecond() - times[2][k];
 
@@ -325,7 +325,7 @@ int main(int argc,char *argv[])
       ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
-	a[j] = b[j]+scalar*c[j];
+        a[j] = b[j]+scalar*c[j];
 #endif
       times[3][k] = mysecond() - times[3][k];
     }
@@ -334,9 +334,9 @@ int main(int argc,char *argv[])
 
     for (k=1; k<NTIMES; k++) { /* note -- skip first iteration */
       for (j=0; j<4; j++) {
-	avgtime[j] = avgtime[j] + times[j][k];
-	mintime[j] = MIN(mintime[j], times[j][k]);
-	maxtime[j] = MAX(maxtime[j], times[j][k]);
+        avgtime[j] = avgtime[j] + times[j][k];
+        mintime[j] = MIN(mintime[j], times[j][k]);
+        maxtime[j] = MAX(maxtime[j], times[j][k]);
       }
     }
 
@@ -357,11 +357,11 @@ int main(int argc,char *argv[])
     return 0;
 }
 
-# define	M	20
+# define        M        20
 
 int checktick() {
-  int		i, minDelta, Delta;
-  double	t1, t2, timesfound[M];
+  int           i, minDelta, Delta;
+  double        t1, t2, timesfound[M];
 
   /*  Collect a sequence of M unique time values from the system. */
 
@@ -405,7 +405,7 @@ void checkSTREAMresults () {
   double aj,bj,cj,scalar;
   double asum,bsum,csum;
   double epsilon;
-  int	j,k;
+  int    j,k;
 
   /* reproduce initialization */
   aj = 1.0;
@@ -460,7 +460,7 @@ void checkSTREAMresults () {
     printf ("        Observed  : %f \n",csum);
   }
   else {
-    ;/*	printf ("Solution Validates\n"); */
+    ;/* printf ("Solution Validates\n"); */
   }
 }
 

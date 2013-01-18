@@ -68,10 +68,10 @@ PetscErrorCode  PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscI
     for (k=0; k<n; k++) {
       ik = i[idx[k]];
       for (j=k+1; j<n; j++) {
-	if (ik > i[idx[j]]) {
-	  SWAP(idx[k],idx[j],tmp);
-	  ik = i[idx[k]];
-	}
+        if (ik > i[idx[j]]) {
+          SWAP(idx[k],idx[j],tmp);
+          ik = i[idx[k]];
+        }
       }
     }
   } else {
@@ -142,10 +142,10 @@ PetscErrorCode  PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],Pets
     for (k=0; k<n; k++) {
       ik = i[idx[k]];
       for (j=k+1; j<n; j++) {
-	if (ik > i[idx[j]]) {
-	  SWAP(idx[k],idx[j],tmp);
-	  ik = i[idx[k]];
-	}
+        if (ik > i[idx[j]]) {
+          SWAP(idx[k],idx[j],tmp);
+          ik = i[idx[k]];
+        }
       }
     }
   } else {
@@ -219,10 +219,10 @@ PetscErrorCode  PetscSortStrWithPermutation(PetscInt n,const char* i[],PetscInt 
       ik = i[idx[k]];
       for (j=k+1; j<n; j++) {
         ierr = PetscStrgrt(ik,i[idx[j]],&gt);CHKERRQ(ierr);
-	if (gt) {
-	  SWAP(idx[k],idx[j],tmp);
-	  ik = i[idx[k]];
-	}
+        if (gt) {
+          SWAP(idx[k],idx[j],tmp);
+          ik = i[idx[k]];
+        }
       }
     }
   } else {

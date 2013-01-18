@@ -32,7 +32,7 @@ PetscLogDouble  nt_time(void)
     SecInTick = 1.0/((double)PerfFreq.HighPart*FACTOR+(double)PerfFreq.LowPart);
 #endif
     flag = PETSC_FALSE;
-  }		
+  }
 
   ierr        = QueryPerformanceCounter(&CurTime);CHKERRQ(!ierr);
 #if defined(PETSC_HAVE_LARGE_INTEGER_U)

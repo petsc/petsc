@@ -18,37 +18,37 @@ PetscShellPythonClearVTableFunction     PetscShellPythonClearVTable     = PETSC_
 PetscShellPythonCallFunction            PetscShellPythonCall            = PETSC_NULL;
 EXTERN_C_END
 
-#define PETSC_SHELL_CHECKINIT_PYTHON()					\
-  if (PetscShellPythonLoadVTable == PETSC_NULL) {		        	\
-    PetscErrorCode ierr;						\
-    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);	\
-    if (PetscShellPythonLoadVTable == PETSC_NULL) {			        \
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,				\
-	      "Couldn't initialize Python support for PetscShell");	\
-    }									\
-  }									
+#define PETSC_SHELL_CHECKINIT_PYTHON()                                    \
+  if (PetscShellPythonLoadVTable == PETSC_NULL) {                         \
+    PetscErrorCode ierr;                                                  \
+    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);    \
+    if (PetscShellPythonLoadVTable == PETSC_NULL) {                       \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,                              \
+              "Couldn't initialize Python support for PetscShell");       \
+    }                                                                     \
+  }
 
-#define PETSC_SHELL_LOAD_VTABLE_PYTHON(shell, path, name)                   \
-  PETSC_SHELL_CHECKINIT_PYTHON();						\
-  {									\
-    PetscErrorCode ierr;                                                \
+#define PETSC_SHELL_LOAD_VTABLE_PYTHON(shell, path, name)                 \
+  PETSC_SHELL_CHECKINIT_PYTHON();                                         \
+  {                                                                       \
+    PetscErrorCode ierr;                                                  \
     ierr = PetscShellPythonLoadVTable(shell, path, name, &(shell->vtable));   \
     if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
 
-#define PETSC_SHELL_CLEAR_VTABLE_PYTHON(shell)                              \
-  PETSC_SHELL_CHECKINIT_PYTHON();						\
-  {									\
-    PetscErrorCode ierr;                                                \
-    ierr = PetscShellPythonClearVTable(shell, &(shell->vtable));              \
+#define PETSC_SHELL_CLEAR_VTABLE_PYTHON(shell)                            \
+  PETSC_SHELL_CHECKINIT_PYTHON();                                         \
+  {                                                                       \
+    PetscErrorCode ierr;                                                  \
+    ierr = PetscShellPythonClearVTable(shell, &(shell->vtable));          \
     if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
 
-#define PETSC_SHELL_CALL_PYTHON(shell, message)                             \
+#define PETSC_SHELL_CALL_PYTHON(shell, message)                           \
   PETSC_SHELL_CHECKINIT_PYTHON();                                         \
-  {									\
-    PetscErrorCode ierr;                                                \
-    ierr = PetscShellPythonCall(shell, message, shell->vtable);                           \
+  {                                                                       \
+    PetscErrorCode ierr;                                                  \
+    ierr = PetscShellPythonCall(shell, message, shell->vtable);           \
     if (ierr) { PetscPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
 

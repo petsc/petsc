@@ -253,12 +253,12 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap col
 /*
     This routine gets the visual class (PseudoColor, etc) and returns
     it.  It finds the default visual.  Possible returns are
-	PseudoColor
-	StaticColor
-	DirectColor
-	TrueColor
-	GrayScale
-	StaticGray
+        PseudoColor
+        StaticColor
+        DirectColor
+        TrueColor
+        GrayScale
+        StaticGray
  */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiSetVisualClass"
