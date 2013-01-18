@@ -48,7 +48,7 @@ static const char help[] = "Steady-state 2D subduction flow, pressure and temper
     which is uniformly discretized on a staggered mesh:
                       -------$w_{ij}$------
                   $u_{i-1j}$    $P,T_{ij}$   $u_{ij}$
- 		      ------$w_{ij-1}$-----
+                      ------$w_{ij-1}$-----
 
   ------------------------------------------------------------------------F*/
 
@@ -265,24 +265,24 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
       if (param->stop_solve) goto done;
 
       if (reason<0) {
-	/* NOT converged */
-	cont_incr = -fabs(cont_incr)/2.0;
-	if (fabs(cont_incr)<0.01) goto done;
+        /* NOT converged */
+        cont_incr = -fabs(cont_incr)/2.0;
+        if (fabs(cont_incr)<0.01) goto done;
 
       } else {
-	/* converged */
-	ierr = VecCopy(user->x,user->Xguess);CHKERRQ(ierr);
-	if (param->continuation >= 1.0) goto done;
-	if (its<=3) {
-	  cont_incr = 0.30001;
-	} else if (its<=8) {
-	  cont_incr = 0.15001;
-	} else {
-	  cont_incr = 0.10001;
-	}
-	if (param->continuation+cont_incr > 1.0) {
-	  cont_incr = 1.0 - param->continuation;
-	}
+        /* converged */
+        ierr = VecCopy(user->x,user->Xguess);CHKERRQ(ierr);
+        if (param->continuation >= 1.0) goto done;
+        if (its<=3) {
+          cont_incr = 0.30001;
+        } else if (its<=8) {
+          cont_incr = 0.15001;
+        } else {
+          cont_incr = 0.10001;
+        }
+        if (param->continuation+cont_incr > 1.0) {
+          cont_incr = 1.0 - param->continuation;
+        }
       } /* endif reason<0 */
     }
   }
@@ -527,7 +527,7 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
   dudxW = etaW * ( x[j][i].u    - x[j][i-1].u )/dx;
 
   residual  = -dPdx                         /* X-MOMENTUM EQUATION*/
-	      +( dudxE - dudxW )/dx
+              +( dudxE - dudxW )/dx
               +( dudzN - dudzS )/dz;
 
   if ( param->ivisc!=VISC_CONST ) {
@@ -557,7 +557,7 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
 
   /* geometric and other parameters */
   z_scale = param->z_scale;
-	
+
   /* viscosity */
   if ( param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL ) { /* viscosity is T-dependent */
     TN = param->potentialT * x[j+1][i].T      * exp( (j+0.5)*dz*z_scale );
@@ -586,7 +586,7 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
 
   /* Z-MOMENTUM */
   residual  = -dPdz                /* constant viscosity terms */
-	      +( dwdzN - dwdzS )/dz
+              +( dwdzN - dwdzS )/dz
               +( dwdxE - dwdxW )/dx;
 
   if ( param->ivisc!=VISC_CONST ) {
@@ -634,9 +634,9 @@ PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j
   dTdzS = ( x[j][i].T   - x[j-1][i].T )/dz;
   dTdxE = ( x[j][i+1].T - x[j][i].T   )/dx;
   dTdxW = ( x[j][i].T   - x[j][i-1].T )/dx;
-	
+
   residual = ( ( dTdzN - dTdzS )/dz + /* diffusion term */
-	       ( dTdxE - dTdxW )/dx  )*dx*dz/param->peclet;
+               ( dTdxE - dTdxW )/dx  )*dx*dz/param->peclet;
 
   if (j<=jlid && i>=j) {
     /* don't advect in the lid */
@@ -665,13 +665,13 @@ PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j
   } else {
     /* Fromm advection scheme */
     fE =     ( uE *(-x[j][i+2].T + 5.0*(x[j][i+1].T+x[j][i].T)-x[j][i-1].T)/8.0
-	       - PetscAbsScalar(uE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dz;
+               - PetscAbsScalar(uE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dz;
     fW =     ( uW *(-x[j][i+1].T + 5.0*(x[j][i].T+x[j][i-1].T)-x[j][i-2].T)/8.0
-	       - PetscAbsScalar(uW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dz;
+               - PetscAbsScalar(uW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dz;
     fN =     ( wN *(-x[j+2][i].T + 5.0*(x[j+1][i].T+x[j][i].T)-x[j-1][i].T)/8.0
-	       - PetscAbsScalar(wN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dx;
+               - PetscAbsScalar(wN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dx;
     fS =     ( wS *(-x[j+1][i].T + 5.0*(x[j][i].T+x[j-1][i].T)-x[j-2][i].T)/8.0
-	       - PetscAbsScalar(wS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dx;
+               - PetscAbsScalar(wS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dx;
   }
 
   residual -= ( fE - fW + fN - fS );
@@ -956,7 +956,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     if (param->ivisc==VISC_CONST) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Isoviscous \n");CHKERRQ(ierr);
       if (param->pv_analytic)
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Pressure and Velocity prescribed! \n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Pressure and Velocity prescribed! \n");CHKERRQ(ierr);
     } else if (param->ivisc==VISC_DIFN) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Diffusion Creep (T-Dependent Newtonian) \n");CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
@@ -1026,23 +1026,23 @@ PetscErrorCode Initialize(DM da)
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
       if (i<j) {
-	x[j][i].u  = param->cb;
+        x[j][i].u  = param->cb;
       } else if (j<=grid->jlid) {
-	x[j][i].u  = 0.0;
+        x[j][i].u  = 0.0;
       } else {
-	x[j][i].u  = HorizVelocity(i,j,user);
+        x[j][i].u  = HorizVelocity(i,j,user);
       }
       if (i<=j) {
-	x[j][i].w = param->sb;
+        x[j][i].w = param->sb;
       } else if (j<=grid->jlid) {
-	x[j][i].w = 0.0;
+        x[j][i].w = 0.0;
       } else {
-	x[j][i].w = VertVelocity(i,j,user);
+        x[j][i].w = VertVelocity(i,j,user);
       }
       if (i<j || j<=grid->jlid) {
-	x[j][i].p = 0.0;
+        x[j][i].p = 0.0;
       } else {
-	x[j][i].p = Pressure(i,j,user);
+        x[j][i].p = Pressure(i,j,user);
       }
       x[j][i].T   = PetscMin(grid->dz*(j-0.5),1.0);
     }
@@ -1184,9 +1184,9 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
     for (i=is; i<is+im; i++) {
       T  = PetscRealPart(param->potentialT * x[j][i].T * exp( (j-0.5)*dz*param->z_scale ));
       if (i<ilim && j<jlim) {
-	TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * exp( j*dz*param->z_scale ));
+        TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * exp( j*dz*param->z_scale ));
       } else {
-	TC = T;
+        TC = T;
       }
       eps  = PetscRealPart((CalcSecInv(x,i,j,CELL_CENTER,user)));
       epsC = PetscRealPart(CalcSecInv(x,i,j,CELL_CORNER,user));
@@ -1231,10 +1231,10 @@ PetscErrorCode StressField(DM da)
   for (j=js; j<js+jm; j++) {
      for (i=is; i<is+im; i++) {
 
-	x[j][i].u = ShearStress(y,i,j,CELL_CENTER,user);
-	x[j][i].w = ShearStress(y,i,j,CELL_CORNER,user);
-	x[j][i].p = XNormalStress(y,i,j,CELL_CENTER,user);
-	x[j][i].T = ZNormalStress(y,i,j,CELL_CENTER,user);
+        x[j][i].u = ShearStress(y,i,j,CELL_CENTER,user);
+        x[j][i].w = ShearStress(y,i,j,CELL_CORNER,user);
+        x[j][i].p = XNormalStress(y,i,j,CELL_CENTER,user);
+        x[j][i].T = ZNormalStress(y,i,j,CELL_CENTER,user);
     }
   }
 
@@ -1404,102 +1404,102 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
       /************* X-MOMENTUM/VELOCITY *************/
       if (i<j) {
-	  f[j][i].u = x[j][i].u - SlabVel('U',i,j,user);
+        f[j][i].u = x[j][i].u - SlabVel('U',i,j,user);
 
       } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
-	/* in the lithospheric lid */
-	f[j][i].u = x[j][i].u - 0.0;
+        /* in the lithospheric lid */
+        f[j][i].u = x[j][i].u - 0.0;
 
       } else if (i==ilim) {
-	/* on the right side boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
-	} else {
-	  f[j][i].u = XNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO;
-	}
+        /* on the right side boundary */
+        if (ibound==BC_ANALYTIC) {
+          f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
+        } else {
+          f[j][i].u = XNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO;
+        }
 
       } else if (j==jlim) {
-	/* on the bottom boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
-	} else if (ibound==BC_NOSTRESS) {
-	  f[j][i].u = XMomentumResidual(x,i,j,user);
-	} else {
-	  /* experimental boundary condition */
-	}
+        /* on the bottom boundary */
+        if (ibound==BC_ANALYTIC) {
+          f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
+        } else if (ibound==BC_NOSTRESS) {
+          f[j][i].u = XMomentumResidual(x,i,j,user);
+        } else {
+          /* experimental boundary condition */
+        }
 
       } else {
-	/* in the mantle wedge */
-	f[j][i].u = XMomentumResidual(x,i,j,user);
+        /* in the mantle wedge */
+        f[j][i].u = XMomentumResidual(x,i,j,user);
       }
 
       /************* Z-MOMENTUM/VELOCITY *************/
       if (i<=j) {
-	f[j][i].w = x[j][i].w - SlabVel('W',i,j,user);
+        f[j][i].w = x[j][i].w - SlabVel('W',i,j,user);
 
       } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
-	/* in the lithospheric lid */
-	f[j][i].w = x[j][i].w - 0.0;
+        /* in the lithospheric lid */
+        f[j][i].w = x[j][i].w - 0.0;
 
       } else if (j==jlim) {
-	/* on the bottom boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
-	} else {
-	  f[j][i].w = ZNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO;
-	}
+        /* on the bottom boundary */
+        if (ibound==BC_ANALYTIC) {
+          f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
+        } else {
+          f[j][i].w = ZNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO;
+        }
 
       } else if (i==ilim) {
-	/* on the right side boundary */
-	if (ibound==BC_ANALYTIC) {
-	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
-	} else if (ibound==BC_NOSTRESS) {
-	  f[j][i].w = ZMomentumResidual(x,i,j,user);
-	} else {
-	  /* experimental boundary condition */
-	}
+        /* on the right side boundary */
+        if (ibound==BC_ANALYTIC) {
+          f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
+        } else if (ibound==BC_NOSTRESS) {
+          f[j][i].w = ZMomentumResidual(x,i,j,user);
+        } else {
+          /* experimental boundary condition */
+        }
 
       } else {
-	/* in the mantle wedge */
-	f[j][i].w =  ZMomentumResidual(x,i,j,user);
+        /* in the mantle wedge */
+        f[j][i].w =  ZMomentumResidual(x,i,j,user);
       }
 
       /************* CONTINUITY/PRESSURE *************/
       if (i<j || j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
-	/* in the lid or slab */
-	f[j][i].p = x[j][i].p;
-	
+        /* in the lid or slab */
+        f[j][i].p = x[j][i].p;
+        
       } else if ((i==ilim || j==jlim) && ibound==BC_ANALYTIC) {
-	/* on an analytic boundary */
-	f[j][i].p = x[j][i].p - Pressure(i,j,user);
+        /* on an analytic boundary */
+        f[j][i].p = x[j][i].p - Pressure(i,j,user);
 
       } else {
-	/* in the mantle wedge */
-	f[j][i].p = ContinuityResidual(x,i,j,user);
+        /* in the mantle wedge */
+        f[j][i].p = ContinuityResidual(x,i,j,user);
       }
 
       /************* TEMPERATURE *************/
       if (j==0) {
-	/* on the surface */
-	f[j][i].T = x[j][i].T + x[j+1][i].T + PetscMax(PetscRealPart(x[j][i].T),0.0);
+        /* on the surface */
+        f[j][i].T = x[j][i].T + x[j+1][i].T + PetscMax(PetscRealPart(x[j][i].T),0.0);
 
       } else if (i==0) {
-	/* slab inflow boundary */
-	f[j][i].T = x[j][i].T - PlateModel(j,PLATE_SLAB,user);
+        /* slab inflow boundary */
+        f[j][i].T = x[j][i].T - PlateModel(j,PLATE_SLAB,user);
 
       } else if (i==ilim) {
-	/* right side boundary */
-	mag_u = 1.0 - pow( (1.0-PetscMax(PetscMin(PetscRealPart(x[j][i-1].u)/param->cb,1.0),0.0)), 5.0 );
-	f[j][i].T = x[j][i].T - mag_u*x[j-1][i-1].T - (1.0-mag_u)*PlateModel(j,PLATE_LID,user);
+        /* right side boundary */
+        mag_u = 1.0 - pow( (1.0-PetscMax(PetscMin(PetscRealPart(x[j][i-1].u)/param->cb,1.0),0.0)), 5.0 );
+        f[j][i].T = x[j][i].T - mag_u*x[j-1][i-1].T - (1.0-mag_u)*PlateModel(j,PLATE_LID,user);
 
       } else if (j==jlim) {
-	/* bottom boundary */
-	mag_w = 1.0 - pow( (1.0-PetscMax(PetscMin(PetscRealPart(x[j-1][i].w)/param->sb,1.0),0.0)), 5.0 );
-	f[j][i].T = x[j][i].T - mag_w*x[j-1][i-1].T - (1.0-mag_w);
+        /* bottom boundary */
+        mag_w = 1.0 - pow( (1.0-PetscMax(PetscMin(PetscRealPart(x[j-1][i].w)/param->sb,1.0),0.0)), 5.0 );
+        f[j][i].T = x[j][i].T - mag_w*x[j-1][i-1].T - (1.0-mag_w);
 
       } else {
-	/* in the mantle wedge */
-	f[j][i].T = EnergyResidual(x,i,j,user);
+        /* in the mantle wedge */
+        f[j][i].T = EnergyResidual(x,i,j,user);
       }
     }
   }

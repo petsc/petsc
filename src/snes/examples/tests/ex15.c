@@ -233,25 +233,25 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
 
        k=0;
        if (j > 0){
-	 v[k]=vdown; row[k] = i; col[k] = j-1; k++;
+         v[k]=vdown; row[k] = i; col[k] = j-1; k++;
        }
 
        if (i > 0){
-	 v[k]= vleft; row[k] = i-1; col[k] = j; k++;
+         v[k]= vleft; row[k] = i-1; col[k] = j; k++;
        }
 
        v[k]= vmiddle; row[k] = i; col[k] = j; k++;
 
        if (i+1 < nx){
-	 v[k]= vright; row[k] = i+1; col[k] = j; k++;
+         v[k]= vright; row[k] = i+1; col[k] = j; k++;
        }
 
        if (j+1 < ny){
-	 v[k]= vup; row[k] = i; col[k] = j+1; k++;
+         v[k]= vup; row[k] = i; col[k] = j+1; k++;
        }
        tt=0;
        for (kk=0;kk<k;kk++){
-	 tt+=v[kk]*x[col[kk]][row[kk]];
+         tt+=v[kk]*x[col[kk]][row[kk]];
        }
        g[j][i] = tt;
 
@@ -341,21 +341,21 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
       k=0;
       row.i = i; row.j = j;
       if (j > 0){
-	v[k]=vdown; col[k].i=i;col[k].j = j-1; k++;
+        v[k]=vdown; col[k].i=i;col[k].j = j-1; k++;
       }
 
       if (i > 0){
-	v[k]= vleft; col[k].i= i-1; col[k].j = j;k++;
+        v[k]= vleft; col[k].i= i-1; col[k].j = j;k++;
       }
 
       v[k]= vmiddle; col[k].i=i; col[k].j = j;k++;
 
       if (i+1 < nx){
-	v[k]= vright; col[k].i = i+1; col[k].j = j; k++;
+        v[k]= vright; col[k].i = i+1; col[k].j = j; k++;
       }
 
       if (j+1 < ny){
-	v[k]= vup; col[k].i = i; col[k].j = j+1; k++;
+        v[k]= vup; col[k].i = i; col[k].j = j+1; k++;
       }
       info = MatSetValuesStencil(hes,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
     }

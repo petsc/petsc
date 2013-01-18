@@ -431,9 +431,9 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscErrorCode    ierr;
 
 
-  PetscInt         n,i,Mda;
-  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta_p;
-  PetscViewer      view_out;
+  PetscInt          n,i,Mda;
+  PetscScalar       *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta_p;
+  PetscViewer       view_out;
   /* needed for the void growth case */
   PetscScalar       xmid,cv_v=1.0,cv_m=0.122,ci_v=0.0,ci_m=.00069,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscInt          nele,nen,idx[2];

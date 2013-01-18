@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");
   PetscPrintf(PETSC_COMM_WORLD,"mx:%d, my:%d, bmx:%d, bmy:%d, height:%4.2f\n",
-	      user.mx,user.my,user.bmx,user.bmy,user.bheight);
+              user.mx,user.my,user.bmx,user.bmy,user.bheight);
 
   /* Extract global vectors from DMDA; */
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
@@ -393,21 +393,21 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-	(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
+        (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-	(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
+        (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
       ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-	(-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
+        (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
       hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-	(-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+        (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
 
       hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
       htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-	hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
-	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
+        hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
+        (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
+        (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
@@ -415,20 +415,20 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       row.i = i;row.j= j;
       /* Bottom */
       if (j>0){
-	v[k]=hb;
-	col[k].i = i; col[k].j=j-1; k++;
+        v[k]=hb;
+        col[k].i = i; col[k].j=j-1; k++;
       }
 
       /* Bottom right */
       if (j>0 && i < mx -1){
-	v[k]=hbr;
-	col[k].i = i+1; col[k].j = j-1; k++;
+        v[k]=hbr;
+        col[k].i = i+1; col[k].j = j-1; k++;
       }
 
       /* left */
       if (i>0){
-	v[k]= hl;
-	col[k].i = i-1; col[k].j = j; k++;
+        v[k]= hl;
+        col[k].i = i-1; col[k].j = j; k++;
       }
 
       /* Centre */
@@ -436,20 +436,20 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
       /* Right */
       if (i < mx-1 ){
-	v[k]= hr;
-	col[k].i= i+1; col[k].j = j;k++;
+        v[k]= hr;
+        col[k].i= i+1; col[k].j = j;k++;
       }
 
       /* Top left */
       if (i>0 && j < my-1 ){
-	v[k]= htl;
-	col[k].i = i-1;col[k].j = j+1; k++;
+        v[k]= htl;
+        col[k].i = i-1;col[k].j = j+1; k++;
       }
 
       /* Top */
       if (j < my-1 ){
-	v[k]= ht;
-	col[k].i = i; col[k].j = j+1; k++;
+        v[k]= ht;
+        col[k].i = i; col[k].j = j+1; k++;
       }
 
       info = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
@@ -545,24 +545,24 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       u1=xt;
       u2=-yt;
       for (k=0; k<maxits; k++){
-	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
-	if (fnorm <= tol) break;
-	njac11=one+u2*u2-u1*u1;
-	njac12=two*u1*u2;
-	njac21=-two*u1*u2;
-	njac22=-one - u1*u1 + u2*u2;
-	det = njac11*njac22-njac21*njac12;
-	u1 = u1-(njac22*nf1-njac12*nf2)/det;
-	u2 = u2-(njac11*nf2-njac21*nf1)/det;
+        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
+        if (fnorm <= tol) break;
+        njac11=one+u2*u2-u1*u1;
+        njac12=two*u1*u2;
+        njac21=-two*u1*u2;
+        njac22=-one - u1*u1 + u2*u2;
+        det = njac11*njac22-njac21*njac12;
+        u1 = u1-(njac22*nf1-njac12*nf2)/det;
+        u2 = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
-	xt=xt+hx;
+        xt=xt+hx;
       } else { // if (j==2 || j==3)
-	yt=yt+hy;
+        yt=yt+hy;
       }
     }
 
@@ -650,8 +650,8 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i< xs+xm; i++){
-	x[j][i] = ( (j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
-		   (i+1)*left[j-ys+1]/mx+(mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
+        x[j][i] = ( (j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
+                   (i+1)*left[j-ys+1]/mx+(mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
       }
     }
 
@@ -697,22 +697,22 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
   if (cylinder){
     for (i=xs; i< xs+xm; i++){
       for (j=ys; j<ys+ym; j++){
-	t1=(2.0*i-mx)*bmy;
-	t2=(2.0*j-my)*bmx;
-	t3=bmx*bmx*bmy*bmy;
-	if ( t1*t1 + t2*t2 <= t3 ){
-	  xl[j][i] = user->bheight;
-	}
+        t1=(2.0*i-mx)*bmy;
+        t2=(2.0*j-my)*bmx;
+        t3=bmx*bmx*bmy*bmy;
+        if ( t1*t1 + t2*t2 <= t3 ){
+          xl[j][i] = user->bheight;
+        }
       }
     }
   } else {
     /* Compute the optional lower box */
     for (i=xs; i< xs+xm; i++){
       for (j=ys; j<ys+ym; j++){
-	if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 &&
-	    j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
-	  xl[j][i] = user->bheight;
-	}
+        if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 &&
+            j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
+          xl[j][i] = user->bheight;
+        }
       }
     }
   }

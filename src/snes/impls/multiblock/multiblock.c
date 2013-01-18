@@ -476,18 +476,18 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
       if (blocks->fields) {
         PetscInt j;
 
-	ierr = PetscViewerASCIIPrintf(viewer, "Block %s Fields ", blocks->name);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
-	for (j = 0; j < blocks->nfields; ++j) {
-	  if (j > 0) {
-	    ierr = PetscViewerASCIIPrintf(viewer, ",");CHKERRQ(ierr);
-	  }
-	  ierr = PetscViewerASCIIPrintf(viewer, " %D", blocks->fields[j]);CHKERRQ(ierr);
-	}
-	ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "Block %s Fields ", blocks->name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
+        for (j = 0; j < blocks->nfields; ++j) {
+          if (j > 0) {
+            ierr = PetscViewerASCIIPrintf(viewer, ",");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, " %D", blocks->fields[j]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
       } else {
-	ierr = PetscViewerASCIIPrintf(viewer, "Block %s Defined by IS\n", blocks->name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "Block %s Defined by IS\n", blocks->name);CHKERRQ(ierr);
       }
       ierr = SNESView(blocks->snes, viewer);CHKERRQ(ierr);
       blocks = blocks->next;
@@ -521,8 +521,8 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   PetscFunctionBegin;
   snes->reason = SNES_CONVERGED_ITERATING;
 
-  maxits = snes->max_its;	 /* maximum number of iterations */
-  X      = snes->vec_sol;	 /* X^n */
+  maxits = snes->max_its;        /* maximum number of iterations */
+  X      = snes->vec_sol;        /* X^n */
   Y      = snes->vec_sol_update; /* \tilde X */
   F      = snes->vec_func;       /* residual vector */
 
@@ -978,11 +978,11 @@ PetscErrorCode  SNESCreate_Multiblock(SNES snes)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  snes->ops->destroy	    = SNESDestroy_Multiblock;
-  snes->ops->setup	    = SNESSetUp_Multiblock;
+  snes->ops->destroy        = SNESDestroy_Multiblock;
+  snes->ops->setup          = SNESSetUp_Multiblock;
   snes->ops->setfromoptions = SNESSetFromOptions_Multiblock;
   snes->ops->view           = SNESView_Multiblock;
-  snes->ops->solve	    = SNESSolve_Multiblock;
+  snes->ops->solve          = SNESSolve_Multiblock;
   snes->ops->reset          = SNESReset_Multiblock;
 
   snes->usesksp             = PETSC_FALSE;

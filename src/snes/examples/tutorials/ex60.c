@@ -407,7 +407,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
   PetscErrorCode    ierr;
   PetscInt          n,i;
-  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p;
+  PetscScalar       *xx,*cv_p,*ci_p,*wv_p,*wi_p;
   PetscViewer       view;
   PetscScalar       initv = .00069;
 

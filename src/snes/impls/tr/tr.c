@@ -98,11 +98,11 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscBool           domainerror;
 
   PetscFunctionBegin;
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->work[0];        /* work vectors */
+  G             = snes->work[1];
   Ytmp          = snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -354,9 +354,9 @@ PetscErrorCode  SNESCreate_NEWTONTR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->setup	     = SNESSetUp_NEWTONTR;
-  snes->ops->solve	     = SNESSolve_NEWTONTR;
-  snes->ops->destroy	     = SNESDestroy_NEWTONTR;
+  snes->ops->setup           = SNESSetUp_NEWTONTR;
+  snes->ops->solve           = SNESSolve_NEWTONTR;
+  snes->ops->destroy         = SNESDestroy_NEWTONTR;
   snes->ops->setfromoptions  = SNESSetFromOptions_NEWTONTR;
   snes->ops->view            = SNESView_NEWTONTR;
   snes->ops->reset           = SNESReset_NEWTONTR;
@@ -364,19 +364,19 @@ PetscErrorCode  SNESCreate_NEWTONTR(SNES snes)
   snes->usesksp             = PETSC_TRUE;
   snes->usespc              = PETSC_FALSE;
 
-  ierr			= PetscNewLog(snes,SNES_NEWTONTR,&neP);CHKERRQ(ierr);
-  snes->data	        = (void*)neP;
-  neP->mu		= 0.25;
-  neP->eta		= 0.75;
-  neP->delta		= 0.0;
-  neP->delta0		= 0.2;
-  neP->delta1		= 0.3;
-  neP->delta2		= 0.75;
-  neP->delta3		= 2.0;
-  neP->sigma		= 0.0001;
-  neP->itflag		= PETSC_FALSE;
-  neP->rnorm0		= 0.0;
-  neP->ttol		= 0.0;
+  ierr                 = PetscNewLog(snes,SNES_NEWTONTR,&neP);CHKERRQ(ierr);
+  snes->data           = (void*)neP;
+  neP->mu              = 0.25;
+  neP->eta             = 0.75;
+  neP->delta           = 0.0;
+  neP->delta0          = 0.2;
+  neP->delta1          = 0.3;
+  neP->delta2          = 0.75;
+  neP->delta3          = 2.0;
+  neP->sigma           = 0.0001;
+  neP->itflag          = PETSC_FALSE;
+  neP->rnorm0          = 0.0;
+  neP->ttol            = 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

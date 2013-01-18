@@ -59,16 +59,16 @@ T*/
   Application-defined context for problem specific data
 */
 typedef struct {
-      PetscInt    Nvglobal,Nvlocal;            /* global and local number of vertices */
-      PetscInt    Neglobal,Nelocal;            /* global and local number of vertices */
-      PetscInt 	  AdjM[MAX_VERT][50];           /* adjacency list of a vertex */
-      PetscInt 	  itot[MAX_VERT];               /* total number of neighbors for a vertex */
-      PetscInt 	  icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
-      PetscInt	  v2p[MAX_VERT];                /* processor number for a vertex */
-      PetscInt    *locInd,*gloInd;             /* local and global orderings for a node */
-      Vec 	  localX,localF;               /* local solution (u) and f(u) vectors */
-      PetscReal	  non_lin_param;                /* nonlinear parameter for the PDE */
-      PetscReal	  lin_param;                    /* linear parameter for the PDE */
+      PetscInt    Nvglobal,Nvlocal;             /* global and local number of vertices */
+      PetscInt    Neglobal,Nelocal;             /* global and local number of vertices */
+      PetscInt    AdjM[MAX_VERT][50];           /* adjacency list of a vertex */
+      PetscInt    itot[MAX_VERT];               /* total number of neighbors for a vertex */
+      PetscInt    icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
+      PetscInt    v2p[MAX_VERT];                /* processor number for a vertex */
+      PetscInt    *locInd,*gloInd;              /* local and global orderings for a node */
+      Vec         localX,localF;                /* local solution (u) and f(u) vectors */
+      PetscReal   non_lin_param;                /* nonlinear parameter for the PDE */
+      PetscReal   lin_param;                    /* linear parameter for the PDE */
       VecScatter  scatter;                      /* scatter context for the local and
                                                     distributed vectors */
 } AppCtx;
@@ -188,13 +188,13 @@ int main(int argc,char **argv)
          form[0]='\0';
          for (j=0; j < i+2; j++){
            ierr = PetscStrcat(form,"%*d ");CHKERRQ(ierr);
-	 }
+         }
            ierr = PetscStrcat(form,"%d");CHKERRQ(ierr);
            sscanf(str,form,&dtmp); user.AdjM[user.Nvlocal][i] = dtmp;
            ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[user.Nvlocal][i]);CHKERRQ(ierr);
         }
         ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
-	user.Nvlocal++;
+        user.Nvlocal++;
      }
    }
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Total # of Local Vertices is %D \n",user.Nvlocal);CHKERRQ(ierr);

@@ -358,54 +358,54 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-	(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
+        (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-	(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
+        (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
       ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-	(-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
+        (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
       hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-	(-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+        (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
 
       hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
       htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-	hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
-	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
+        hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
+        (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
+        (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
       if (j>0){
-	v[k]=hb; col[k]=row - mx; k++;
+        v[k]=hb; col[k]=row - mx; k++;
       }
 
       if (j>0 && i < mx -1){
-	v[k]=hbr; col[k]=row - mx+1; k++;
+        v[k]=hbr; col[k]=row - mx+1; k++;
       }
 
       if (i>0){
-	v[k]= hl; col[k]=row - 1; k++;
+        v[k]= hl; col[k]=row - 1; k++;
       }
 
       v[k]= hc; col[k]=row; k++;
 
       if (i < mx-1 ){
-	v[k]= hr; col[k]=row+1; k++;
+        v[k]= hr; col[k]=row+1; k++;
       }
 
       if (i>0 && j < my-1 ){
-	v[k]= htl; col[k] = row+mx-1; k++;
+        v[k]= htl; col[k] = row+mx-1; k++;
       }
 
       if (j < my-1 ){
-	v[k]= ht; col[k] = row+mx; k++;
+        v[k]= ht; col[k] = row+mx; k++;
       }
 
       /*
-	 Set matrix values using local numbering, which was defined
-	 earlier, in the main routine.
+         Set matrix values using local numbering, which was defined
+         earlier, in the main routine.
       */
       info = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
     }
@@ -482,24 +482,24 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       u1=xt;
       u2=-yt;
       for (k=0; k<maxits; k++){
-	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
-	if (fnorm <= tol) break;
-	njac11=one+u2*u2-u1*u1;
-	njac12=two*u1*u2;
-	njac21=-two*u1*u2;
-	njac22=-one - u1*u1 + u2*u2;
-	det = njac11*njac22-njac21*njac12;
-	u1 = u1-(njac22*nf1-njac12*nf2)/det;
-	u2 = u2-(njac11*nf2-njac21*nf1)/det;
+        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
+        if (fnorm <= tol) break;
+        njac11=one+u2*u2-u1*u1;
+        njac12=two*u1*u2;
+        njac21=-two*u1*u2;
+        njac22=-one - u1*u1 + u2*u2;
+        det = njac11*njac22-njac21*njac12;
+        u1 = u1-(njac22*nf1-njac12*nf2)/det;
+        u2 = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
-	xt=xt+hx;
+        xt=xt+hx;
       } else { // if (j==2 || j==3)
-	yt=yt+hy;
+        yt=yt+hy;
       }
     }
   }
@@ -547,9 +547,9 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
-	row=(j)*mx + (i);
-	x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+
-		   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+        row=(j)*mx + (i);
+        x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+
+                   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
 

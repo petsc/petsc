@@ -341,10 +341,10 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->work[0];        /* work vectors */
 
   ierr = SNESLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm);CHKERRQ(ierr);
   ierr = SNESLineSearchSetVecs(snes->linesearch, X, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
@@ -362,7 +362,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     PetscFunctionReturn(0);
   }
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
@@ -594,7 +594,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
-	PetscBool ismin;
+        PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,F,X,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;

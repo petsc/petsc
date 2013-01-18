@@ -12,7 +12,7 @@
     /* Initialized data */
 
     static double const__[15] = { .71,.41,.23,.12,.063,.033,.018,.0089,
-	    .0046,.0024,.0012,6.1e-4,3.1e-4,1.6e-4,8e-5 };
+            .0046,.0024,.0012,6.1e-4,3.1e-4,1.6e-4,8e-5 };
 
     /* System generated locals */
     PetscInt i__1;
@@ -119,10 +119,8 @@
 /*     determine a bound on the error. */
     mh = (*nf + 1) / 2;
     est1 = (fval[mh + 1] - fval[mh] * 2 + fval[mh - 1]) / *h__ / *h__;
-    est2 = (fval[mh + 2] - fval[mh] * 2 + fval[mh - 2]) / (*h__ * 2) / (*h__ *
-	     2);
-    est3 = (fval[mh + 3] - fval[mh] * 2 + fval[mh - 3]) / (*h__ * 3) / (*h__ *
-	     3);
+    est2 = (fval[mh + 2] - fval[mh] * 2 + fval[mh - 2]) / (*h__ * 2) / (*h__ * 2);
+    est3 = (fval[mh + 3] - fval[mh] * 2 + fval[mh - 3]) / (*h__ * 3) / (*h__ * 3);
     est4 = (est1 + est2 + est3) / 3;
 /* Computing MAX */
 /* Computing PETSCMAX */
@@ -134,11 +132,11 @@
 /*      write (2,123) est1, est2, est3 */
 /* 123  format ('Second derivative estimates', 3d12.2) */
     if (err2 <= PetscAbsScalar(est4) * .1) {
-	*fder2 = est4;
+        *fder2 = est4;
     } else if (err2 < PetscAbsScalar(est4)) {
-	*fder2 = est3;
+        *fder2 = est3;
     } else {
-	*fder2 = 0.;
+        *fder2 = 0.;
     }
 /*     Compute the range of function values. */
     f_min = fval[1];
@@ -146,69 +144,69 @@
     i__1 = *nf;
     for (i__ = 2; i__ <= i__1; ++i__) {
 /* Computing MIN */
-	d__1 = f_min, d__2 = fval[i__];
-	f_min = PetscMin(d__1,d__2);
+        d__1 = f_min, d__2 = fval[i__];
+        f_min = PetscMin(d__1,d__2);
 /* Computing MAX */
-	d__1 = f_max, d__2 = fval[i__];
-	f_max = PetscMax(d__1,d__2);
+        d__1 = f_max, d__2 = fval[i__];
+        f_max = PetscMax(d__1,d__2);
     }
 /*     Construct the difference table. */
     dnoise = FALSE_;
     for (j = 1; j <= 6; ++j) {
-	dsgn[j - 1] = FALSE_;
-	cancel[j - 1] = FALSE_;
-	scale = 0.;
-	i__1 = *nf - j;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    fval[i__] = fval[i__ + 1] - fval[i__];
-	    if (fval[i__] == 0.) {
-		cancel[j - 1] = TRUE_;
-	    }
+        dsgn[j - 1] = FALSE_;
+        cancel[j - 1] = FALSE_;
+        scale = 0.;
+        i__1 = *nf - j;
+        for (i__ = 1; i__ <= i__1; ++i__) {
+            fval[i__] = fval[i__ + 1] - fval[i__];
+            if (fval[i__] == 0.) {
+                cancel[j - 1] = TRUE_;
+            }
 /* Computing MAX */
-	    d__2 = scale, d__3 = (d__1 = fval[i__], PetscAbsScalar(d__1));
-	    scale = PetscMax(d__2,d__3);
-	}
+            d__2 = scale, d__3 = (d__1 = fval[i__], PetscAbsScalar(d__1));
+            scale = PetscMax(d__2,d__3);
+        }
 /*        Compute the estimates for the noise level. */
-	if (scale == 0.) {
-	    stdv = 0.;
-	} else {
-	    stdv = 0.;
-	    i__1 = *nf - j;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
+        if (scale == 0.) {
+            stdv = 0.;
+        } else {
+            stdv = 0.;
+            i__1 = *nf - j;
+            for (i__ = 1; i__ <= i__1; ++i__) {
 /* Computing 2nd power */
-		d__1 = fval[i__] / scale;
-		stdv += d__1 * d__1;
-	    }
-	    stdv = scale * PetscSqrtScalar(stdv / (*nf - j));
-	}
-	eps[j] = const__[j - 1] * stdv;
+                d__1 = fval[i__] / scale;
+                stdv += d__1 * d__1;
+            }
+            stdv = scale * PetscSqrtScalar(stdv / (*nf - j));
+        }
+        eps[j] = const__[j - 1] * stdv;
 /*        Determine differences in sign. */
-	i__1 = *nf - j - 1;
-	for (i__ = 1; i__ <= i__1; ++i__) {
+        i__1 = *nf - j - 1;
+        for (i__ = 1; i__ <= i__1; ++i__) {
 /* Computing MIN */
-	    d__1 = fval[i__], d__2 = fval[i__ + 1];
+            d__1 = fval[i__], d__2 = fval[i__ + 1];
 /* Computing MAX */
-	    d__3 = fval[i__], d__4 = fval[i__ + 1];
-	    if (PetscMin(d__1,d__2) < 0. && PetscMax(d__3,d__4) > 0.) {
-		dsgn[j - 1] = TRUE_;
-	    }
-	}
+            d__3 = fval[i__], d__4 = fval[i__ + 1];
+            if (PetscMin(d__1,d__2) < 0. && PetscMax(d__3,d__4) > 0.) {
+                dsgn[j - 1] = TRUE_;
+            }
+        }
     }
 /*     First requirement for detection of noise. */
     dnoise = dsgn[3];
 /*     Check for h too small or too large. */
     *info = 0;
     if (f_max == f_min) {
-	*info = 2;
+        *info = 2;
     } else /* if (complicated condition) */ {
 /* Computing MIN */
-	d__1 = PetscAbsScalar(f_max), d__2 = PetscAbsScalar(f_min);
-	if (f_max - f_min > PetscMin(d__1,d__2) * .1) {
-	    *info = 3;
-	}
+        d__1 = PetscAbsScalar(f_max), d__2 = PetscAbsScalar(f_min);
+        if (f_max - f_min > PetscMin(d__1,d__2) * .1) {
+            *info = 3;
+        }
     }
     if (*info != 0) {
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
     }
 /*     Determine the noise level. */
 /* Computing MIN */
@@ -218,15 +216,15 @@
     d__1 = PetscMax(eps[4],eps[5]);
     emax = PetscMax(d__1,eps[6]);
     if (emax <= emin * 4 && dnoise) {
-	*fnoise = (eps[4] + eps[5] + eps[6]) / 3;
-	if (*fder2 != 0.) {
-	    *info = 1;
-	    *hopt = PetscSqrtScalar(*fnoise / PetscAbsScalar(*fder2)) * 1.68;
-	} else {
-	    *info = 4;
-	    *hopt = *h__ * 10;
-	}
-	PetscFunctionReturn(0);
+        *fnoise = (eps[4] + eps[5] + eps[6]) / 3;
+        if (*fder2 != 0.) {
+            *info = 1;
+            *hopt = PetscSqrtScalar(*fnoise / PetscAbsScalar(*fder2)) * 1.68;
+        } else {
+            *info = 4;
+            *hopt = *h__ * 10;
+        }
+        PetscFunctionReturn(0);
     }
 /* Computing MIN */
     d__1 = PetscMin(eps[3],eps[4]);
@@ -235,32 +233,32 @@
     d__1 = PetscMax(eps[3],eps[4]);
     emax = PetscMax(d__1,eps[5]);
     if (emax <= emin * 4 && dnoise) {
-	*fnoise = (eps[3] + eps[4] + eps[5]) / 3;
-	if (*fder2 != 0.) {
-	    *info = 1;
-	    *hopt = PetscSqrtScalar(*fnoise / PetscAbsScalar(*fder2)) * 1.68;
-	} else {
-	    *info = 4;
-	    *hopt = *h__ * 10;
-	}
-	PetscFunctionReturn(0);
+        *fnoise = (eps[3] + eps[4] + eps[5]) / 3;
+        if (*fder2 != 0.) {
+            *info = 1;
+            *hopt = PetscSqrtScalar(*fnoise / PetscAbsScalar(*fder2)) * 1.68;
+        } else {
+            *info = 4;
+            *hopt = *h__ * 10;
+        }
+        PetscFunctionReturn(0);
     }
 /*     Noise not detected; decide if h is too small or too large. */
     if (! cancel[3]) {
-	if (dsgn[3]) {
-	    *info = 2;
-	} else {
-	    *info = 3;
-	}
-	PetscFunctionReturn(0);
+        if (dsgn[3]) {
+            *info = 2;
+        } else {
+            *info = 3;
+        }
+        PetscFunctionReturn(0);
     }
     if (! cancel[2]) {
-	if (dsgn[2]) {
-	    *info = 2;
-	} else {
-	    *info = 3;
-	}
-	PetscFunctionReturn(0);
+        if (dsgn[2]) {
+            *info = 2;
+        } else {
+            *info = 3;
+        }
+        PetscFunctionReturn(0);
     }
 /*     If there is cancelllation on the third and fourth column */
 /*     then h is too small */

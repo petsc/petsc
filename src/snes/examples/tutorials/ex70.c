@@ -55,7 +55,7 @@ typedef struct {
   PetscInt  nx, ny;  /* nb of cells in x- and y-direction */
   PetscReal hx, hy;  /* mesh size in x- and y-direction */
   Mat A;             /* block matrix */
-  Mat subA[4]; 	     /* the four blocks */
+  Mat subA[4];       /* the four blocks */
   Mat myS;           /* the approximation of the Schur complement */
   Vec x, b, y;       /* solution, rhs and temporary vector */
   IS isg[2];         /* index sets of split "0" and "1" */

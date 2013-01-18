@@ -146,12 +146,12 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->vec_sol_update; /* newton step */
-  G		= snes->work[0];
-  W		= snes->work[1];
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->vec_sol_update; /* newton step */
+  G             = snes->work[0];
+  W             = snes->work[1];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -169,7 +169,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     snes->vec_func_init_set = PETSC_FALSE;
   }
   if (!snes->norm_init_set) {
-    ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
+    ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
     ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   } else {

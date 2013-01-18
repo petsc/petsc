@@ -177,19 +177,19 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
         if (i > 0 && i < mx-1 && j > 0 && j < my-1 && k > 0 && k < mz-1) {
 
-  	  /* general interior volume */
+          /* general interior volume */
 
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-       	  te = x[k][j][i+1];
+          te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
-	  ts = x[k][j-1][i];
+          ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
@@ -211,52 +211,52 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
         } else if (i == 0) {
 
- 	  /* left-hand (west) boundary */
+          /* left-hand (west) boundary */
           tw = tleft;
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-	  te = x[k][j][i+1];
+          te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
-	  if (j > 0) {
-	    ts = x[k][j-1][i];
+          if (j > 0) {
+            ts = x[k][j-1][i];
             as = 0.5*(t0 + ts);
             ds = pow(as,beta);
             fs = ds*(t0 - ts);
-	  } else {
- 	    fs = zero;
-	  }
+          } else {
+            fs = zero;
+          }
 
-	  if (j < my-1) {
+          if (j < my-1) {
             tn = x[k][j+1][i];
             an = 0.5*(t0 + tn);
             dn = pow(an,beta);
-	    fn = dn*(tn - t0);
-	  } else {
-	    fn = zero;
-   	  }
+            fn = dn*(tn - t0);
+          } else {
+            fn = zero;
+          }
 
-	  if (k > 0) {
+          if (k > 0) {
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
+          } else {
+            fd = zero;
+          }
 
-	  if (k < mz-1) {
+          if (k < mz-1) {
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
+          } else {
+            fu = zero;
+          }
 
         } else if (i == mx-1) {
 
@@ -289,27 +289,27 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
             fn = zero;
           }
 
-	  if (k > 0) {
+          if (k > 0) {
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
+          } else {
+            fd = zero;
+          }
 
-	  if (k < mz-1) {
+          if (k < mz-1) {
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
+          } else {
+            fu = zero;
+          }
 
         } else if (j == 0) {
 
-	  /* bottom (south) boundary, and i <> 0 or mx-1 */
+          /* bottom (south) boundary, and i <> 0 or mx-1 */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
@@ -327,27 +327,27 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           dn = pow(an,beta);
           fn = dn*(tn - t0);
 
-	  if (k > 0) {
+          if (k > 0) {
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
+          } else {
+            fd = zero;
+          }
 
-	  if (k < mz-1) {
+          if (k < mz-1) {
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
+          } else {
+            fu = zero;
+          }
 
         } else if (j == my-1) {
 
-	  /* top (north) boundary, and i <> 0 or mx-1 */
+          /* top (north) boundary, and i <> 0 or mx-1 */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
@@ -365,27 +365,27 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
           fn = zero;
 
-	  if (k > 0) {
+          if (k > 0) {
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
+          } else {
+            fd = zero;
+          }
 
-	  if (k < mz-1) {
+          if (k < mz-1) {
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
+          } else {
+            fu = zero;
+          }
 
         } else if (k == 0) {
 
-	  /* down boundary (interior only) */
+          /* down boundary (interior only) */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
@@ -406,16 +406,16 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           dn = pow(an,beta);
           fn = dn*(tn - t0);
 
- 	  fd = zero;
+          fd = zero;
 
           tu = x[k+1][j][i];
           au = 0.5*(t0 + tu);
           du = pow(au,beta);
           fu = du*(tu - t0);
-	
+
         } else if (k == mz-1) {
 
-	  /* up boundary (interior only) */
+          /* up boundary (interior only) */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
@@ -442,7 +442,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           fd = dd*(t0 - td);
 
           fu = zero;
-	}
+        }
 
         f[k][j][i] = - hyhzdhx*(fe-fw) - hzhxdhy*(fn-fs) - hxhydhz*(fu-fd);
       }
@@ -479,7 +479,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
   tleft = user->tleft;         tright = user->tright;
-  beta  = user->beta;	       bm1    = user->bm1;		coef = user->coef;
+  beta  = user->beta;          bm1    = user->bm1;              coef = user->coef;
 
   /* Get ghost points */
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -500,57 +500,57 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           bw = pow(aw,bm1);
-	  /* dw = bw * aw */
-	  dw = pow(aw,beta);
-	  gw = coef*bw*(t0 - tw);
+          /* dw = bw * aw */
+          dw = pow(aw,beta);
+          gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           be = pow(ae,bm1);
-	  /* de = be * ae; */
-	  de = pow(ae,beta);
+          /* de = be * ae; */
+          de = pow(ae,beta);
           ge = coef*be*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           bs = pow(as,bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+          /* ds = bs * as; */
+          ds = pow(as,beta);
           gs = coef*bs*(t0 - ts);
 
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
           bn = pow(an,bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+          /* dn = bn * an; */
+          dn = pow(an,beta);
           gn = coef*bn*(tn - t0);
 
           td = x[k-1][j][i];
           ad = 0.5*(t0 + td);
           bd = pow(ad,bm1);
-	  /* dd = bd * ad; */
-	  dd = pow(ad,beta);
+          /* dd = bd * ad; */
+          dd = pow(ad,beta);
           gd = coef*bd*(t0 - td);
 
           tu = x[k+1][j][i];
           au = 0.5*(t0 + tu);
           bu = pow(au,bm1);
-	  /* du = bu * au; */
-	  du = pow(au,beta);
+          /* du = bu * au; */
+          du = pow(au,beta);
           gu = coef*bu*(tu - t0);
 
-	  c[0].k = k-1; c[0].j = j; c[0].i = i; v[0]   = - hxhydhz*(dd - gd);
-	  c[1].k = k; c[1].j = j-1; c[1].i = i;
+          c[0].k = k-1; c[0].j = j; c[0].i = i; v[0]   = - hxhydhz*(dd - gd);
+          c[1].k = k; c[1].j = j-1; c[1].i = i;
           v[1]   = - hzhxdhy*(ds - gs);
-	  c[2].k = k; c[2].j = j; c[2].i = i-1;
+          c[2].k = k; c[2].j = j; c[2].i = i-1;
           v[2]   = - hyhzdhx*(dw - gw);
-	  c[3].k = k; c[3].j = j; c[3].i = i;
+          c[3].k = k; c[3].j = j; c[3].i = i;
           v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	  c[4].k = k; c[4].j = j; c[4].i = i+1;
+          c[4].k = k; c[4].j = j; c[4].i = i+1;
           v[4]   = - hyhzdhx*(de + ge);
-	  c[5].k = k; c[5].j = j+1; c[5].i = i;
+          c[5].k = k; c[5].j = j+1; c[5].i = i;
           v[5]   = - hzhxdhy*(dn + gn);
-	  c[6].k = k+1; c[6].j = j; c[6].i = i;
+          c[6].k = k+1; c[6].j = j; c[6].i = i;
           v[6]   = - hxhydhz*(du + gu);
           ierr   =   MatSetValuesStencil(jac,1,&row,7,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -591,13 +591,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j; c[0].i = i;
+              c[0].k = k; c[0].j = j; c[0].i = i;
               v[0]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[1].k = k; c[1].j = j; c[1].i = i+1;
+              c[1].k = k; c[1].j = j; c[1].i = i+1;
               v[1]   = - hyhzdhx*(de + ge);
-	      c[2].k = k; c[2].j = j+1; c[2].i = i;
+              c[2].k = k; c[2].j = j+1; c[2].i = i;
               v[2]   = - hzhxdhy*(dn + gn);
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
               v[3]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -618,15 +618,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j; c[1].i = i;
+              c[1].k = k; c[1].j = j; c[1].i = i;
               v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
               v[2]   = - hyhzdhx*(de + ge);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
               v[3]   = - hzhxdhy*(dn + gn);
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
               v[4]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -640,13 +640,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j; c[1].i = i;
+              c[1].k = k; c[1].j = j; c[1].i = i;
               v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
               v[2]   = - hyhzdhx*(de + ge);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
               v[3]   = - hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -671,13 +671,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
               v[0]   = - hzhxdhy*(ds - gs);
-	      c[1].k = k; c[1].j = j; c[1].i = i;
+              c[1].k = k; c[1].j = j; c[1].i = i;
               v[1]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
               v[2]   = - hyhzdhx*(de + ge);
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
               v[3]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -698,15 +698,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
               v[3]   = - hyhzdhx*(de + ge);
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
               v[4]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -720,13 +720,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
               v[3]   = - hyhzdhx*(de + ge);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -757,15 +757,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
               v[0]   = - hzhxdhy*(ds - gs);
-	      c[1].k = k; c[1].j = j; c[1].i = i;
+              c[1].k = k; c[1].j = j; c[1].i = i;
               v[1]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
               v[2]   = - hyhzdhx*(de + ge);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
               v[3]   = - hzhxdhy*(dn + gn);
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
               v[4]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -780,15 +780,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(t0 - td);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
               v[3]   = - hyhzdhx*(de + ge);
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
               v[4]   = - hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -810,17 +810,17 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
               v[3]   = - hyhzdhx*(de + ge);
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
               v[4]   = - hzhxdhy*(dn + gn);
-	      c[5].k = k+1; c[5].j = j; c[5].i = i;
+              c[5].k = k+1; c[5].j = j; c[5].i = i;
               v[5]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -863,13 +863,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j; c[0].i = i-1;
+              c[0].k = k; c[0].j = j; c[0].i = i-1;
               v[0]   = - hyhzdhx*(dw - gw);
-	      c[1].k = k; c[1].j = j; c[1].i = i;
+              c[1].k = k; c[1].j = j; c[1].i = i;
               v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[2].k = k; c[2].j = j+1; c[2].i = i;
+              c[2].k = k; c[2].j = j+1; c[2].i = i;
               v[2]   = - hzhxdhy*(dn + gn);
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
               v[3]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -890,15 +890,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
               v[1]   = - hyhzdhx*(dw - gw);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
               v[3]   = - hzhxdhy*(dn + gn);
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
               v[4]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -912,13 +912,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
               v[1]   = - hyhzdhx*(dw - gw);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
               v[3]   = - hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -943,13 +943,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
               v[0]   = - hzhxdhy*(ds - gs);
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
               v[1]   = - hyhzdhx*(dw - gw);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
               v[3]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -970,15 +970,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
               v[2]   = - hyhzdhx*(dw - gw);
-	      c[3].k = k; c[3].j = j; c[3].i = i;
+              c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
               v[4]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -992,13 +992,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(td - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
               v[2]   = - hyhzdhx*(dw - gw);
-	      c[3].k = k; c[3].j = j; c[3].i = i;
+              c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -1029,15 +1029,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
               v[0]   = - hzhxdhy*(ds - gs);
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
               v[1]   = - hyhzdhx*(dw - gw);
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
               v[3]   = - hzhxdhy*(dn + gn);
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
               v[4]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -1052,15 +1052,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               dd = pow(ad,beta);
               gd = coef*bd*(t0 - td);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
               v[2]   = - hyhzdhx*(dw - gw);
-	      c[3].k = k; c[3].j = j; c[3].i = i;
+              c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
               v[4]   = - hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -1082,17 +1082,17 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               du = pow(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
               v[0]   = - hxhydhz*(dd - gd);
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
               v[1]   = - hzhxdhy*(ds - gs);
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
               v[2]   = - hyhzdhx*(dw - gw);
-	      c[3].k = k; c[3].j = j; c[3].i = i;
+              c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
               v[4]   = - hzhxdhy*(dn + gn);
-	      c[5].k = k+1; c[5].j = j; c[5].i = i;
+              c[5].k = k+1; c[5].j = j; c[5].i = i;
               v[5]   = - hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
@@ -1132,15 +1132,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             du = pow(au,beta);
             gu = coef*bu*(tu - t0);
 
-	    c[0].k = k; c[0].j = j; c[0].i = i-1;
+            c[0].k = k; c[0].j = j; c[0].i = i-1;
             v[0]   = - hyhzdhx*(dw - gw);
-	    c[1].k = k; c[1].j = j; c[1].i = i;
+            c[1].k = k; c[1].j = j; c[1].i = i;
             v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	    c[2].k = k; c[2].j = j; c[2].i = i+1;
+            c[2].k = k; c[2].j = j; c[2].i = i+1;
             v[2]   = - hyhzdhx*(de + ge);
-	    c[3].k = k; c[3].j = j+1; c[3].i = i;
+            c[3].k = k; c[3].j = j+1; c[3].i = i;
             v[3]   = - hzhxdhy*(dn + gn);
-	    c[4].k = k+1; c[4].j = j; c[4].i = i;
+            c[4].k = k+1; c[4].j = j; c[4].i = i;
             v[4]   = - hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -1155,15 +1155,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             dd = pow(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
             v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j; c[1].i = i-1;
+            c[1].k = k; c[1].j = j; c[1].i = i-1;
             v[1]   = - hyhzdhx*(dw - gw);
-	    c[2].k = k; c[2].j = j; c[2].i = i;
+            c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	    c[3].k = k; c[3].j = j; c[3].i = i+1;
+            c[3].k = k; c[3].j = j; c[3].i = i+1;
             v[3]   = - hyhzdhx*(de + ge);
-	    c[4].k = k; c[4].j = j+1; c[4].i = i;
+            c[4].k = k; c[4].j = j+1; c[4].i = i;
             v[4]   = - hzhxdhy*(dn + gn);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -1185,17 +1185,17 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             dd = pow(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
             v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j; c[1].i = i-1;
+            c[1].k = k; c[1].j = j; c[1].i = i-1;
             v[1]   = - hyhzdhx*(dw - gw);
-	    c[2].k = k; c[2].j = j; c[2].i = i;
+            c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	    c[3].k = k; c[3].j = j; c[3].i = i+1;
+            c[3].k = k; c[3].j = j; c[3].i = i+1;
             v[3]   = - hyhzdhx*(de + ge);
-	    c[4].k = k; c[4].j = j+1; c[4].i = i;
+            c[4].k = k; c[4].j = j+1; c[4].i = i;
             v[4]   = - hzhxdhy*(dn + gn);
-	    c[5].k = k+1; c[5].j = j; c[5].i = i;
+            c[5].k = k+1; c[5].j = j; c[5].i = i;
             v[5]   = - hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -1233,15 +1233,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             du = pow(au,beta);
             gu = coef*bu*(tu - t0);
 
-	    c[0].k = k; c[0].j = j-1; c[0].i = i;
+            c[0].k = k; c[0].j = j-1; c[0].i = i;
             v[0]   = - hzhxdhy*(ds - gs);
-	    c[1].k = k; c[1].j = j; c[1].i = i-1;
+            c[1].k = k; c[1].j = j; c[1].i = i-1;
             v[1]   = - hyhzdhx*(dw - gw);
-	    c[2].k = k; c[2].j = j; c[2].i = i;
+            c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	    c[3].k = k; c[3].j = j; c[3].i = i+1;
+            c[3].k = k; c[3].j = j; c[3].i = i+1;
             v[3]   = - hyhzdhx*(de + ge);
-	    c[4].k = k+1; c[4].j = j; c[4].i = i;
+            c[4].k = k+1; c[4].j = j; c[4].i = i;
             v[4]   = - hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -1256,15 +1256,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             dd = pow(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
             v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j-1; c[1].i = i;
+            c[1].k = k; c[1].j = j-1; c[1].i = i;
             v[1]   = - hzhxdhy*(ds - gs);
-	    c[2].k = k; c[2].j = j; c[2].i = i-1;
+            c[2].k = k; c[2].j = j; c[2].i = i-1;
             v[2]   = - hyhzdhx*(dw - gw);
-	    c[3].k = k; c[3].j = j; c[3].i = i;
+            c[3].k = k; c[3].j = j; c[3].i = i;
             v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	    c[4].k = k; c[4].j = j; c[4].i = i+1;
+            c[4].k = k; c[4].j = j; c[4].i = i+1;
             v[4]   = - hyhzdhx*(de + ge);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -1286,17 +1286,17 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             dd = pow(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
             v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j-1; c[1].i = i;
+            c[1].k = k; c[1].j = j-1; c[1].i = i;
             v[1]   = - hzhxdhy*(ds - gs);
-	    c[2].k = k; c[2].j = j; c[2].i = i-1;
+            c[2].k = k; c[2].j = j; c[2].i = i-1;
             v[2]   = - hyhzdhx*(dw - gw);
-	    c[3].k = k; c[3].j = j; c[3].i = i;
+            c[3].k = k; c[3].j = j; c[3].i = i;
             v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	    c[4].k = k; c[4].j = j; c[4].i = i+1;
+            c[4].k = k; c[4].j = j; c[4].i = i+1;
             v[4]   = - hyhzdhx*(de + ge);
-	    c[5].k = k+1; c[5].j = j; c[5].i = i;
+            c[5].k = k+1; c[5].j = j; c[5].i = i;
             v[5]   = - hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -1340,71 +1340,71 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           du = pow(au,beta);
           gu = coef*bu*(tu - t0);
 
-	  c[0].k = k; c[0].j = j-1; c[0].i = i;
+          c[0].k = k; c[0].j = j-1; c[0].i = i;
           v[0]   = - hzhxdhy*(ds - gs);
-	  c[1].k = k; c[1].j = j; c[1].i = i-1;
+          c[1].k = k; c[1].j = j; c[1].i = i-1;
           v[1]   = - hyhzdhx*(dw - gw);
-	  c[2].k = k; c[2].j = j; c[2].i = i;
-	  v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	  c[3].k = k; c[3].j = j; c[3].i = i+1;
+          c[2].k = k; c[2].j = j; c[2].i = i;
+          v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
+          c[3].k = k; c[3].j = j; c[3].i = i+1;
           v[3]   = - hyhzdhx*(de + ge);
-	  c[4].k = k; c[4].j = j+1; c[4].i = i;
+          c[4].k = k; c[4].j = j+1; c[4].i = i;
           v[4]   = - hzhxdhy*(dn + gn);
-	  c[5].k = k+1; c[5].j = j; c[5].i = i;
-	  v[5]   = - hxhydhz*(du + gu);
+          c[5].k = k+1; c[5].j = j; c[5].i = i;
+          v[5]   = - hxhydhz*(du + gu);
           ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
         }
-	
-	else if (k == mz-1) {
+        
+        else if (k == mz-1) {
 
           /* up interior plane */
 
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           bw = pow(aw,bm1);
-	  /* dw = bw * aw */
-	  dw = pow(aw,beta);
-	  gw = coef*bw*(t0 - tw);
+          /* dw = bw * aw */
+          dw = pow(aw,beta);
+          gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           be = pow(ae,bm1);
-	  /* de = be * ae; */
-	  de = pow(ae,beta);
+          /* de = be * ae; */
+          de = pow(ae,beta);
           ge = coef*be*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           bs = pow(as,bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+          /* ds = bs * as; */
+          ds = pow(as,beta);
           gs = coef*bs*(t0 - ts);
 
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
           bn = pow(an,bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+          /* dn = bn * an; */
+          dn = pow(an,beta);
           gn = coef*bn*(tn - t0);
 
           td = x[k-1][j][i];
           ad = 0.5*(t0 + td);
           bd = pow(ad,bm1);
-	  /* dd = bd * ad; */
-	  dd = pow(ad,beta);
+          /* dd = bd * ad; */
+          dd = pow(ad,beta);
           gd = coef*bd*(t0 - td);
 
-	  c[0].k = k-1; c[0].j = j; c[0].i = i;
+          c[0].k = k-1; c[0].j = j; c[0].i = i;
           v[0]   = - hxhydhz*(dd - gd);
-	  c[1].k = k; c[1].j = j-1; c[1].i = i;
+          c[1].k = k; c[1].j = j-1; c[1].i = i;
           v[1]   = - hzhxdhy*(ds - gs);
-	  c[2].k = k; c[2].j = j; c[2].i = i-1;
+          c[2].k = k; c[2].j = j; c[2].i = i-1;
           v[2]   = - hyhzdhx*(dw - gw);
-	  c[3].k = k; c[3].j = j; c[3].i = i;
-	  v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	  c[4].k = k; c[4].j = j; c[4].i = i+1;
+          c[3].k = k; c[3].j = j; c[3].i = i;
+          v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
+          c[4].k = k; c[4].j = j; c[4].i = i+1;
           v[4]   = - hyhzdhx*(de + ge);
-	  c[5].k = k; c[5].j = j+1; c[5].i = i;
+          c[5].k = k; c[5].j = j+1; c[5].i = i;
           v[5]   = - hzhxdhy*(dn + gn);
           ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
         }

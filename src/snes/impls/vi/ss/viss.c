@@ -167,7 +167,7 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
    jac = Da + Db*jacfun
    where Db is the row scaling matrix stored as a vector,
          Da is the diagonal perturbation matrix stored as a vector
-   and   jacfun is the jacobian of the original nonlinear function.	
+   and   jacfun is the jacobian of the original nonlinear function.        
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeJacobian"
@@ -257,10 +257,10 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->work[0];        /* work vectors */
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -277,7 +277,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
    /* Compute Merit function */
   ierr = SNESVIComputeMeritFunction(vi->phi,&vi->merit,&vi->phinorm);CHKERRQ(ierr);
 
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
@@ -359,7 +359,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
-	PetscBool ismin;
+        PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,vi->phi,X,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
