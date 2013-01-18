@@ -100,16 +100,16 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
     if (size > 1) {
       if (!rank) {
-	lsize = m/size + size;
-	ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
+        lsize = m/size + size;
+        ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       }
       else if (rank == size-1) {
-	lsize = m/size - size;
-	ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
+        lsize = m/size - size;
+        ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       }
       else {
-	lsize = m/size;
-	ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
+        lsize = m/size;
+        ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       }
     } else {
       ierr = VecSetSizes(u,m,m);CHKERRQ(ierr);

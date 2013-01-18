@@ -552,7 +552,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 .  indices - indices with rank 0 indices first, and so on,  omitting
              the current rank.  Total number of indices is the difference
              total and local, obtained with ISGetSize() and ISGetLocalSize(),
-	     respectively.
+             respectively.
 
    Level: intermediate
 
@@ -638,7 +638,7 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 
    Notes: complement represents the result of ISGetNonlocalIndices as an IS.
           Therefore scalability issues similar to ISGetNonlocalIndices apply.
-	  The resulting IS must be restored using ISRestoreNonlocalIS().
+          The resulting IS must be restored using ISRestoreNonlocalIS().
 
    Concepts: index sets^getting nonlocal indices
 .seealso: ISGetNonlocalIndices(), ISRestoreNonlocalIndices(),  ISAllGather(), ISGetSize()

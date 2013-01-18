@@ -2,11 +2,11 @@
        Formatted test for TS routines.
 
           Solves U_t=F(t,u)
-	  Where:
+          Where:
 
-	          [2*u1+u2
-	  F(t,u)= [u1+2*u2+u3
-	          [   u2+2*u3
+                  [2*u1+u2
+          F(t,u)= [u1+2*u2+u3
+                  [   u2+2*u3
        We can compare the solutions from euler, beuler and SUNDIALS to
        see what is the difference.
 

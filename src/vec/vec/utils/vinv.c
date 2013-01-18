@@ -470,7 +470,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     for (j=0; j<bs; j++) sum[j] = 0.0;
     for (i=0; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-	sum[j] += x[i+j]*(PetscConj(x[i+j]));
+        sum[j] += x[i+j]*(PetscConj(x[i+j]));
       }
     }
     for (j=0; j<bs; j++) {
@@ -486,7 +486,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     }
     for (i=0; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-	tnorm[j] += PetscAbsScalar(x[i+j]);
+        tnorm[j] += PetscAbsScalar(x[i+j]);
       }
     }
     ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
@@ -498,9 +498,9 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 
     for (i=0; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-	if ((tmp = PetscAbsScalar(x[i+j])) > tnorm[j]) tnorm[j] = tmp;
-	/* check special case of tmp == NaN */
-	if (tmp != tmp) {tnorm[j] = tmp; break;}
+        if ((tmp = PetscAbsScalar(x[i+j])) > tnorm[j]) tnorm[j] = tmp;
+        /* check special case of tmp == NaN */
+        if (tmp != tmp) {tnorm[j] = tmp; break;}
       }
     }
     ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
@@ -569,7 +569,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
     }
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-	if ((tmp = PetscRealPart(x[i+j])) > max[j]) { max[j] = tmp;}
+        if ((tmp = PetscRealPart(x[i+j])) > max[j]) { max[j] = tmp;}
       }
     }
   }
@@ -639,7 +639,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
     }
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-	if ((tmp = PetscRealPart(x[i+j])) < min[j]) { min[j] = tmp;}
+        if ((tmp = PetscRealPart(x[i+j])) < min[j]) { min[j] = tmp;}
       }
     }
   }
@@ -720,8 +720,8 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   if (addv == INSERT_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  y[j][i*bss[j] + k] = x[bs*i+jj+k];
+        for (i=0; i<n; i++) {
+          y[j][i*bss[j] + k] = x[bs*i+jj+k];
         }
       }
       jj += bss[j];
@@ -729,8 +729,8 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   } else if (addv == ADD_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  y[j][i*bss[j] + k] += x[bs*i+jj+k];
+        for (i=0; i<n; i++) {
+          y[j][i*bss[j] + k] += x[bs*i+jj+k];
         }
       }
       jj += bss[j];
@@ -739,8 +739,8 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   } else if (addv == MAX_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
+        for (i=0; i<n; i++) {
+          y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
         }
       }
       jj += bss[j];
@@ -823,8 +823,8 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   if (addv == INSERT_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  x[bs*i+jj+k] = y[j][i*bss[j] + k];
+        for (i=0; i<n; i++) {
+          x[bs*i+jj+k] = y[j][i*bss[j] + k];
         }
       }
       jj += bss[j];
@@ -832,8 +832,8 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   } else if (addv == ADD_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  x[bs*i+jj+k] += y[j][i*bss[j] + k];
+        for (i=0; i<n; i++) {
+          x[bs*i+jj+k] += y[j][i*bss[j] + k];
         }
       }
       jj += bss[j];
@@ -842,8 +842,8 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   } else if (addv == MAX_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
+        for (i=0; i<n; i++) {
+          x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
         }
       }
       jj += bss[j];

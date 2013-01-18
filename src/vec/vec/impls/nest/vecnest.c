@@ -980,9 +980,9 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
 
   PetscFunctionBegin;
 
-  ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);	/* destroy the existing vector */
-  ierr = VecDuplicate(x,&bx->v[idxm]);CHKERRQ(ierr);	/* duplicate the layout of given vector */
-  ierr = VecCopy(x,bx->v[idxm]);CHKERRQ(ierr);	/* copy the contents of the given vector */
+  ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);       /* destroy the existing vector */
+  ierr = VecDuplicate(x,&bx->v[idxm]);CHKERRQ(ierr);   /* duplicate the layout of given vector */
+  ierr = VecCopy(x,bx->v[idxm]);CHKERRQ(ierr);         /* copy the contents of the given vector */
 
   /* check if we need to update the IS for the block */
   offset = X->map->rstart;

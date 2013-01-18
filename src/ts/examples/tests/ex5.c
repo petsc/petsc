@@ -16,50 +16,50 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
 
    Governing equations:
 
-	R      = s*(Ea*Ta^4 - Es*Ts^4)
-	SH     = p*Cp*Ch*wind*(Ta - Ts)
-	LH     = p*L*Ch*wind*B(q(Ta) - q(Ts))
-	G      = k*(Tgnd - Ts)/dz
+        R      = s*(Ea*Ta^4 - Es*Ts^4)
+        SH     = p*Cp*Ch*wind*(Ta - Ts)
+        LH     = p*L*Ch*wind*B(q(Ta) - q(Ts))
+        G      = k*(Tgnd - Ts)/dz
 
         Fnet   = R + SH + LH + G
 
-	du/dt  = -u*(du/dx) - v*(du/dy) - 2*omeg*sin(lat)*v - (1/p)*(dP/dx)
-	dv/dt  = -u*(dv/dx) - v*(dv/dy) + 2*omeg*sin(lat)*u - (1/p)*(dP/dy)
-	dTs/dt = Fnet/(Cp*dz) - Div([u*Ts, v*Ts]) + D*Lap(Ts)
+        du/dt  = -u*(du/dx) - v*(du/dy) - 2*omeg*sin(lat)*v - (1/p)*(dP/dx)
+        dv/dt  = -u*(dv/dx) - v*(dv/dy) + 2*omeg*sin(lat)*u - (1/p)*(dP/dy)
+        dTs/dt = Fnet/(Cp*dz) - Div([u*Ts, v*Ts]) + D*Lap(Ts)
                = Fnet/(Cs*dz) - u*(dTs/dx) - v*(dTs/dy) + D*(Ts_xx + Ts_yy)
-	dp/dt  = -Div([u*p,v*p])
+        dp/dt  = -Div([u*p,v*p])
                = - u*dp/dx - v*dp/dy
-	dTa/dt = Fnet/Cp
+        dTa/dt = Fnet/Cp
 
    Equation of State:
 
-	P = p*R*Ts
+        P = p*R*Ts
 
    -----------------------------------------------------------------------
 
    Program considers the evolution of a two dimensional atmosphere from
    sunset to sunrise. There are two components:
-		1. Surface energy balance model to compute diabatic dT (Fnet)
-		2. Dynamical model using simplified primitive equations
+                1. Surface energy balance model to compute diabatic dT (Fnet)
+                2. Dynamical model using simplified primitive equations
 
    Program is to be initiated at sunset and run to sunrise.
 
    Inputs are:
-		Surface temperature
-		Dew point temperature
-		Air temperature
-		Temperature at cloud base (if clouds are present)
-		Fraction of sky covered by clouds
-		Wind speed
-		Precipitable water in centimeters
-		Wind direction
+                Surface temperature
+                Dew point temperature
+                Air temperature
+                Temperature at cloud base (if clouds are present)
+                Fraction of sky covered by clouds
+                Wind speed
+                Precipitable water in centimeters
+                Wind direction
 
    Inputs are are read in from the text file ex5_control.txt. To change an
    input value use ex5_control.txt.
 
    Solvers:
-	    Backward Euler = default solver
-	    Sundials = fastest and most accurate, requires Sundials libraries
+            Backward Euler = default solver
+            Sundials = fastest and most accurate, requires Sundials libraries
 
    This model is under development and should be used only as an example
    and not as a predictive weather model.
@@ -86,14 +86,14 @@ typedef struct {
   PetscScalar dzlay;     //thickness of top soil layer
   PetscScalar emma;      //emission parameter
   PetscScalar wind;      //wind speed
-  PetscScalar dewtemp;	 //dew point temperature (moisture in air)
+  PetscScalar dewtemp;   //dew point temperature (moisture in air)
   PetscScalar pressure1; //sea level pressure
-  PetscScalar airtemp;	 //temperature of air near boundary layer inversion
-  PetscScalar Ts;	 //temperature at the surface
-  PetscScalar fract;	 //fraction of sky covered by clouds
+  PetscScalar airtemp;   //temperature of air near boundary layer inversion
+  PetscScalar Ts;        //temperature at the surface
+  PetscScalar fract;     //fraction of sky covered by clouds
   PetscScalar Tc;        //temperature at base of lowest cloud layer
-  PetscScalar lat;	 //Latitude in degrees
-  PetscScalar init;	 //initialization scenario
+  PetscScalar lat;       //Latitude in degrees
+  PetscScalar init;      //initialization scenario
   PetscScalar deep_grnd_temp;//temperature of ground under top soil surface layer
 } AppCtx;
 
@@ -106,16 +106,16 @@ typedef struct {
 
 /* Inputs read in from text file */
 struct in {
-    PetscScalar Ts;	//surface temperature
-    PetscScalar Td;	//dewpoint temperature
-    PetscScalar Tc;	//temperature of cloud base
-    PetscScalar fr;	//fraction of sky covered by clouds
-    PetscScalar wnd;	//wind speed
-    PetscScalar Ta;	//air temperature
-    PetscScalar pwt;	//precipitable water
+    PetscScalar Ts;     //surface temperature
+    PetscScalar Td;     //dewpoint temperature
+    PetscScalar Tc;     //temperature of cloud base
+    PetscScalar fr;     //fraction of sky covered by clouds
+    PetscScalar wnd;    //wind speed
+    PetscScalar Ta;     //air temperature
+    PetscScalar pwt;    //precipitable water
     PetscScalar wndDir; //wind direction
-    PetscScalar lat;	//latitude
-    PetscReal   time;	//time in hours
+    PetscScalar lat;    //latitude
+    PetscReal   time;   //time in hours
     PetscScalar init;
 };
 
@@ -128,10 +128,10 @@ extern PetscScalar fahr_to_cel(PetscScalar);                        //converts F
 extern PetscScalar cel_to_fahr(PetscScalar);                        //converts Celsius to Fahrenheit
 extern PetscScalar calcmixingr(PetscScalar, PetscScalar);           //calculates mixing ratio
 extern PetscScalar cloud(PetscScalar);                              //cloud radiative parameterization
-extern PetscErrorCode FormInitialSolution(DM,Vec,void*);	    //Specifies initial conditions for the system of equations (PETSc defined function)
-extern PetscErrorCode RhsFunc(TS,PetscReal,Vec,Vec,void*);	    //Specifies the user defined functions		       (PETSc defined function)
-extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);	    //Specifies output and visualization tools		       (PETSc defined function)
-extern void readinput(struct in *put);				    //reads input from text file
+extern PetscErrorCode FormInitialSolution(DM,Vec,void*);            //Specifies initial conditions for the system of equations (PETSc defined function)
+extern PetscErrorCode RhsFunc(TS,PetscReal,Vec,Vec,void*);          //Specifies the user defined functions                     (PETSc defined function)
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);     //Specifies output and visualization tools                 (PETSc defined function)
+extern void readinput(struct in *put);                              //reads input from text file
 extern PetscErrorCode calcfluxs(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);//calculates upward IR from surface
 extern PetscErrorCode calcfluxa(PetscScalar, PetscScalar, PetscScalar, PetscScalar*);                          //calculates downward IR from atmosphere
 extern PetscErrorCode sensibleflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar*);                       //calculates sensible heat flux
@@ -149,14 +149,14 @@ int main(int argc,char **argv)
   PetscScalar rh;             //relative humidity
   PetscScalar x;              //memory varialbe for relative humidity calculation
   PetscScalar deep_grnd_temp; //temperature of ground under top soil surface layer
-  PetscScalar emma;		//absorption-emission constant for air
+  PetscScalar emma;           //absorption-emission constant for air
   PetscScalar pressure1 = 101300; //surface pressure
-  PetscScalar mixratio;         //mixing ratio
-  PetscScalar airtemp;          //temperature of air near boundary layer inversion
-  PetscScalar dewtemp;          //dew point temperature
-  PetscScalar sfctemp;          //temperature at surface
-  PetscScalar pwat;		//total column precipitable water
-  PetscScalar cloudTemp;	//temperature at base of cloud
+  PetscScalar mixratio;          //mixing ratio
+  PetscScalar airtemp;           //temperature of air near boundary layer inversion
+  PetscScalar dewtemp;           //dew point temperature
+  PetscScalar sfctemp;           //temperature at surface
+  PetscScalar pwat;              //total column precipitable water
+  PetscScalar cloudTemp;         //temperature at base of cloud
   AppCtx      user;             /* user-defined work context */
   MonitorCtx  usermonitor;      /* user-defined monitor context */
   PetscMPIInt rank,size;
@@ -226,18 +226,18 @@ int main(int argc,char **argv)
 
   /*set values for appctx*/
   user.da        = da;
-  user.Ts	 = sfctemp;
-  user.fract     = put.fr;            //fraction of sky covered by clouds
-  user.dewtemp   = dewtemp;           //dew point temperature (mositure in air)
-  user.csoil     = 2000000;   	      //heat constant for layer
-  user.dzlay     = 0.08;              //thickness of top soil layer
-  user.emma      = emma;              //emission parameter
-  user.wind      = put.wnd;           //wind spped
-  user.pressure1 = pressure1;         //sea level pressure
-  user.airtemp   = airtemp;           //temperature of air near boundar layer inversion
-  user.Tc	 = cloudTemp; 	      //temperature at base of lowest cloud layer
-  user.init	 = put.init;	      //user chosen initiation scenario
-  user.lat	 = 70*0.0174532; //converts latitude degrees to latitude in radians
+  user.Ts        = sfctemp;
+  user.fract     = put.fr;               //fraction of sky covered by clouds
+  user.dewtemp   = dewtemp;              //dew point temperature (mositure in air)
+  user.csoil     = 2000000;              //heat constant for layer
+  user.dzlay     = 0.08;                 //thickness of top soil layer
+  user.emma      = emma;                 //emission parameter
+  user.wind      = put.wnd;              //wind spped
+  user.pressure1 = pressure1;            //sea level pressure
+  user.airtemp   = airtemp;              //temperature of air near boundar layer inversion
+  user.Tc        = cloudTemp;            //temperature at base of lowest cloud layer
+  user.init      = put.init;             //user chosen initiation scenario
+  user.lat       = 70*0.0174532;         //converts latitude degrees to latitude in radians
   user.deep_grnd_temp = deep_grnd_temp;  //temp in lowest ground layer
 
   /*set values for MonitorCtx*/
@@ -430,7 +430,7 @@ extern PetscScalar calc_q(PetscScalar rv)
 PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar* Gflux)
 {
       PetscScalar k;                       //thermal conductivity parameter
-      PetscScalar n = 0.38;		   //value of soil porosity
+      PetscScalar n = 0.38;                //value of soil porosity
       PetscScalar dz = 1;                  //depth of layer between soil surface and deep soil layer
       PetscScalar unit_soil_weight = 2700; //unit soil weight in kg/m^3
 
@@ -529,7 +529,7 @@ void readinput(struct in *put)
 
         for (i=0;i<43;i++)
                 fscanf(ifp, "%c", &x);
-	fscanf(ifp, "%lf", &put->wndDir);
+        fscanf(ifp, "%lf", &put->wndDir);
 
         for (i=0;i<43;i++)
                 fscanf(ifp, "%c", &x);
@@ -627,7 +627,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      dhx,dhy;
   Vec            localT;
-  Field          **X,**Frhs;		      //structures that contain variables of interest and left hand side of governing equations respectively
+  Field          **X,**Frhs;                  //structures that contain variables of interest and left hand side of governing equations respectively
   PetscScalar    csoil     = user->csoil;     //heat constant for layer
   PetscScalar    dzlay     = user->dzlay;     //thickness of top soil layer
   PetscScalar    emma      = user->emma;      //emission parameter
@@ -636,12 +636,12 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscScalar    pressure1 = user->pressure1; //sea level pressure
   PetscScalar    airtemp   = user->airtemp;   //temperature of air near boundary layer inversion
   PetscScalar    fract     = user->fract;     //fraction of the sky covered by clouds
-  PetscScalar    Tc	   = user->Tc;	      //temperature at base of lowest cloud layer
-  PetscScalar    lat	   = user->lat;	      //latitude
-  PetscScalar    Cp	   = 1005.7;	      //specific heat of air at constant pressure
-  PetscScalar    Rd	   = 287.058;	      //gas constant for dry air
-  PetscScalar    diffconst = 1000;	      //diffusion coefficient
-  PetscScalar    f	   = 2*0.0000727*sin(lat);      //coriolis force
+  PetscScalar    Tc        = user->Tc;        //temperature at base of lowest cloud layer
+  PetscScalar    lat       = user->lat;       //latitude
+  PetscScalar    Cp        = 1005.7;          //specific heat of air at constant pressure
+  PetscScalar    Rd        = 287.058;         //gas constant for dry air
+  PetscScalar    diffconst = 1000;            //diffusion coefficient
+  PetscScalar    f         = 2*0.0000727*sin(lat);      //coriolis force
   PetscScalar    deep_grnd_temp = user->deep_grnd_temp; //temp in lowest ground layer
   PetscScalar    Ts,u,v,p,P;
   PetscScalar    u_abs,u_plus,u_minus,v_abs,v_plus,v_minus;
@@ -690,8 +690,8 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       ierr = sensibleflux(sfctemp1,airtemp,wind,&sheat);CHKERRQ(ierr);             //calculate sensible heat flux
       ierr = latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat);CHKERRQ(ierr);//calculates latent heat flux
       ierr = calc_gflux(sfctemp1,deep_grnd_temp,&groundflux);CHKERRQ(ierr);        //calculates flux from earth below surface soil layer by conduction
-      ierr = calcfluxa(sfctemp1,airtemp,emma,&Ra);	      			   //Calculates the change in downward radiative flux
-      fsfc1 = fsfc1 + latentheat + sheat + groundflux;	      			   //adds radiative, sensible heat, latent heat, and ground heat flux yielding net flux
+      ierr = calcfluxa(sfctemp1,airtemp,emma,&Ra);                                 //Calculates the change in downward radiative flux
+      fsfc1 = fsfc1 + latentheat + sheat + groundflux;                             //adds radiative, sensible heat, latent heat, and ground heat flux yielding net flux
 
       /* convective coefficients for upwinding */
       u_abs = PetscAbsScalar(u);
@@ -707,17 +707,17 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 
       /* du/dt -> time change of east-west component of the wind */
       Frhs[j][i].u = - u_plus*(u - X[j][i-1].u)*dhx - u_minus*(X[j][i+1].u - u)*dhx       // - u(du/dx)
-			- v_plus*(u - X[j-1][i].u)*dhy - v_minus*(X[j+1][i].u - u)*dhy	// - v(du/dy)
-      			-(Rd/p)*(Ts*(X[j][i+1].p - X[j][i-1].p)*0.5*dhx  + p*0*(X[j][i+1].Ts - X[j][i-1].Ts)*0.5*dhx) // -(R/p)[Ts(dp/dx)+ p(dTs/dx)]
-//			-(1/p)*(X[j][i+1].P - X[j][i-1].P)*dhx
-			+ f*v;
+                     - v_plus*(u - X[j-1][i].u)*dhy - v_minus*(X[j+1][i].u - u)*dhy       // - v(du/dy)
+                     -(Rd/p)*(Ts*(X[j][i+1].p - X[j][i-1].p)*0.5*dhx  + p*0*(X[j][i+1].Ts - X[j][i-1].Ts)*0.5*dhx) // -(R/p)[Ts(dp/dx)+ p(dTs/dx)]
+//                     -(1/p)*(X[j][i+1].P - X[j][i-1].P)*dhx
+                     + f*v;
 
       /* dv/dt -> time change of north-south component of the wind */
       Frhs[j][i].v = - u_plus*(v - X[j][i-1].v)*dhx - u_minus*(X[j][i+1].v - v)*dhx       // - u(dv/dx)
-			- v_plus*(v - X[j-1][i].v)*dhy - v_minus*(X[j+1][i].v - v)*dhy	// - v(dv/dy)
-      			-(Rd/p)*(Ts*(X[j+1][i].p - X[j-1][i].p)*0.5*dhy + p*0*(X[j+1][i].Ts - X[j-1][i].Ts)*0.5*dhy) // -(R/p)[Ts(dp/dy)+ p(dTs/dy)]
-//			-(1/p)*(X[j+1][i].P - X[j-1][i].P)*dhy
-			-f*u;
+                     - v_plus*(v - X[j-1][i].v)*dhy - v_minus*(X[j+1][i].v - v)*dhy       // - v(dv/dy)
+                     -(Rd/p)*(Ts*(X[j+1][i].p - X[j-1][i].p)*0.5*dhy + p*0*(X[j+1][i].Ts - X[j-1][i].Ts)*0.5*dhy) // -(R/p)[Ts(dp/dy)+ p(dTs/dy)]
+//                     -(1/p)*(X[j+1][i].P - X[j-1][i].P)*dhy
+                     -f*u;
 
       /* dT/dt -> time change of temperature */
       Frhs[j][i].Ts = (fsfc1/(csoil*dzlay))                                            // Fnet/(Cp*dz)  diabatic change in T
@@ -730,7 +730,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       Frhs[j][i].p = -u_plus*(p - X[j][i-1].p)*dhx - u_minus*(X[j][i+1].p - p)*dhx     // - u*(dp/dx)
                      -v_plus*(p - X[j-1][i].p)*dhy - v_minus*(X[j+1][i].p - p)*dhy;     // - v*(dp/dy)
 
-      Frhs[j][i].Ta = Ra/Cp;	//dTa/dt time change of air temperature
+      Frhs[j][i].Ta = Ra/Cp;  //dTa/dt time change of air temperature
     }
   }
 

@@ -58,14 +58,14 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number receives = %D; Number from self = %D\n",rank,from->n,from->local.n);CHKERRQ(ierr);
       if (from->n) {
-	for (i=0; i<from->n; i++){
-	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D length %D from whom %D\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
-	}
+        for (i=0; i<from->n; i++){
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D length %D from whom %D\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
+        }
 
-	ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote receives (in order by process received from)\n");CHKERRQ(ierr);
-	for (i=0; i<from->starts[from->n]; i++){
-	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D \n",rank,from->indices[i]);CHKERRQ(ierr);
-	}
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote receives (in order by process received from)\n");CHKERRQ(ierr);
+        for (i=0; i<from->starts[from->n]; i++){
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D \n",rank,from->indices[i]);CHKERRQ(ierr);
+        }
       }
       if (to->local.n) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Indices for local part of scatter\n",rank);CHKERRQ(ierr);
@@ -188,12 +188,12 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   if (!to->use_alltoallv && !to->use_window) {   /* currently the to->requests etc are ALWAYS allocated even if not used */
     if (to->requests) {
       for (i=0; i<to->n; i++) {
-	ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
+        ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
       }
     }
     if (to->rev_requests) {
       for (i=0; i<to->n; i++) {
-	ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
+        ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
       }
     }
   }
@@ -205,13 +205,13 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   if (!to->use_alltoallv && !to->use_window) {    /* currently the from->requests etc are ALWAYS allocated even if not used */
     if (from->requests) {
       for (i=0; i<from->n; i++) {
-	ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
+        ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
       }
     }
 
     if (from->rev_requests) {
       for (i=0; i<from->n; i++) {
-	ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
+        ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
       }
     }
   }
@@ -2024,19 +2024,19 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       }
       if (from->contiq) {
         PetscInfo(ctx,"Scattered vector entries are stored contiquously, taking advantage of this with -vecscatter_alltoall\n");
-	for (i=0; i<from->n; i++) {
-	  from->wcounts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
+        for (i=0; i<from->n; i++) {
+          from->wcounts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
         }
         if (from->n) from->wdispls[from->procs[0]] = sizeof(PetscScalar)*from->indices[0];
-	for (i=1; i<from->n; i++) {
+        for (i=1; i<from->n; i++) {
           from->wdispls[from->procs[i]] = from->wdispls[from->procs[i-1]] + sizeof(PetscScalar)*from->wcounts[from->procs[i-1]];
         }
       } else {
-	for (i=0; i<from->n; i++) {
-	  from->wcounts[from->procs[i]] = 1;
+        for (i=0; i<from->n; i++) {
+          from->wcounts[from->procs[i]] = 1;
           mpilen = PetscMPIIntCast(from->starts[i+1]-from->starts[i]);
-	  ierr = MPI_Type_create_indexed_block(mpilen,mpibs,from->indices+from->starts[i],MPIU_SCALAR,from->types+from->procs[i]);CHKERRQ(ierr);
-	  ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
+          ierr = MPI_Type_create_indexed_block(mpilen,mpibs,from->indices+from->starts[i],MPIU_SCALAR,from->types+from->procs[i]);CHKERRQ(ierr);
+          ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -2121,11 +2121,11 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 
     for (i=0; i<to->n; i++) {
       if (use_rsend) {
-	ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+        ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       } else if (use_ssend) {
-	ierr = MPI_Ssend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+        ierr = MPI_Ssend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       } else {
-	ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+        ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       }
     }
     /* Register receives for scatter and reverse */
@@ -2389,7 +2389,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
         i++;
       } else { /* found a duplicate */
         duplicate = PETSC_TRUE;
-	for (j=i; j<slen-1; j++) {
+        for (j=i; j<slen-1; j++) {
           local_inidx[j] = local_inidx[j+1];
           local_inidy[j] = local_inidy[j+1];
         }

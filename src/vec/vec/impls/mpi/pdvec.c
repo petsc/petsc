@@ -390,11 +390,11 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       mesgsize = PetscMPIIntCast(len);
       /* receive and save messages */
       for (j=1; j<size; j++) {
-	ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
-	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
-	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);
+        ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);
         n = (PetscInt)mesglen;
-	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
       ierr = PetscFree(values);CHKERRQ(ierr);
@@ -430,9 +430,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file) {
       if (((PetscObject)xin)->prefix) {
-	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
       } else {
-	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map->bs);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map->bs);CHKERRQ(ierr);
       }
     }
   }
@@ -637,7 +637,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   /* TODO: It looks like we can remove the H5Sclose(filespace) and H5Dget_space(dset_id). Why do we do this? */
   hid_t             filespace; /* file dataspace identifier */
   hid_t             chunkspace; /* chunk dataset property identifier */
-  hid_t	            plist_id;  /* property list identifier */
+  hid_t             plist_id;  /* property list identifier */
   hid_t             dset_id;   /* dataset identifier */
   hid_t             memspace;  /* memory dataspace identifier */
   hid_t             file_id;

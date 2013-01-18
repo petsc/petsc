@@ -128,14 +128,14 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
       range = vec->map->range;
       n = 1;
       for (i=1; i<size; i++) {
-	n = PetscMax(n,range[i+1] - range[i]);
+        n = PetscMax(n,range[i+1] - range[i]);
       }
       ierr = PetscMalloc(n*sizeof(PetscScalar),&avecwork);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
-	n    = range[i+1] - range[i];
-	ierr = PetscBinaryRead(fd,avecwork,n,PETSC_SCALAR);CHKERRQ(ierr);
-	ierr = MPI_Isend(avecwork,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
-	ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
+        n    = range[i+1] - range[i];
+        ierr = PetscBinaryRead(fd,avecwork,n,PETSC_SCALAR);CHKERRQ(ierr);
+        ierr = MPI_Isend(avecwork,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
+        ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
       }
       ierr = PetscFree(avecwork);CHKERRQ(ierr);
     }

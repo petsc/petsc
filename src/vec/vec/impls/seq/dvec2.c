@@ -1002,7 +1002,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     {
       PetscInt i;
       for (i=0; i<n; i++) {
-	yy[i] = xx[i] + alpha*yy[i];
+        yy[i] = xx[i] + alpha*yy[i];
       }
     }
 #endif

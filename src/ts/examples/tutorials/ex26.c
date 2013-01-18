@@ -27,10 +27,10 @@ T*/
 
     This problem is modeled by the partial differential equation system
 
-	- Lap(U) - Grad_y(Omega) = 0
-	- Lap(V) + Grad_x(Omega) = 0
-	Omega_t - Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T) = 0
-	T_t - Lap(T) + PR*Div([U*T,V*T]) = 0
+        - Lap(U) - Grad_y(Omega) = 0
+        - Lap(V) + Grad_x(Omega) = 0
+        Omega_t - Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T) = 0
+        T_t - Lap(T) + PR*Div([U*T,V*T]) = 0
 
     in the unit square, which is uniformly discretized in each of x and
     y in this simple encoding.
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,(DM)da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -288,7 +288,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
         f[j][i].u     = x[j][i].u - lid;
         f[j][i].v     = x[j][i].v;
         f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy;
-	f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
+        f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
     }
   }
 
@@ -322,33 +322,33 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
 
-	/*
-	  convective coefficients for upwinding
+        /*
+          convective coefficients for upwinding
         */
-	vx = x[j][i].u; avx = PetscAbsScalar(vx);
+        vx = x[j][i].u; avx = PetscAbsScalar(vx);
         vxp = .5*(vx+avx); vxm = .5*(vx-avx);
-	vy = x[j][i].v; avy = PetscAbsScalar(vy);
+        vy = x[j][i].v; avy = PetscAbsScalar(vy);
         vyp = .5*(vy+avy); vym = .5*(vy-avy);
 
-	/* U velocity */
+        /* U velocity */
         u          = x[j][i].u;
         udot       = user->parabolic ? xdot[j][i].u : 0.;
         uxx        = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
         uyy        = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
         f[j][i].u  = udot + uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
 
-	/* V velocity */
+        /* V velocity */
         u          = x[j][i].v;
         udot       = user->parabolic ? xdot[j][i].v : 0.;
         uxx        = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
         uyy        = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
         f[j][i].v  = udot + uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
 
-	/* Omega */
+        /* Omega */
         u          = x[j][i].omega;
         uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
         uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-	f[j][i].omega = (xdot[j][i].omega + uxx + uyy
+        f[j][i].omega = (xdot[j][i].omega + uxx + uyy
                          + (vxp*(u - x[j][i-1].omega)
                             + vxm*(x[j][i+1].omega - u)) * hy
                          + (vyp*(u - x[j-1][i].omega)
@@ -359,7 +359,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
         u             = x[j][i].temp;
         uxx           = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
         uyy           = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-	f[j][i].temp =  (xdot[j][i].temp + uxx + uyy
+        f[j][i].temp =  (xdot[j][i].temp + uxx + uyy
                          + prandtl * ((vxp*(u - x[j][i-1].temp)
                                        + vxm*(x[j][i+1].temp - u)) * hy
                                       + (vyp*(u - x[j-1][i].temp)

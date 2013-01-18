@@ -1221,11 +1221,11 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecNorm_Seq,
             VecMDot_Seq,
             VecMTDot_Seq, /* 40 */
-	    VecLoad_Default,		
+            VecLoad_Default,
             VecReciprocal_Default,
             VecConjugate_Seq,
-	    0,
-	    0,
+            0,
+            0,
             VecResetArray_Seq,
             0,
             VecMaxPointwiseDivide_Seq,
@@ -1233,14 +1233,14 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
             VecGetValues_Seq,
-    	    0,
-    	    0,
-    	    0,
-    	    0,
-    	    0,
-    	    0,
-   	    VecStrideGather_Default,
-   	    VecStrideScatter_Default
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            VecStrideGather_Default,
+            VecStrideScatter_Default
           };
 
 

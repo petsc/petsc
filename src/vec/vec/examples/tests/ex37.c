@@ -162,8 +162,8 @@ PetscErrorCode test_vec_ops( void )
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  //	PetscPrintf( PETSC_COMM_WORLD, "X \n");
-  //	VecView( X, PETSC_VIEWER_STDOUT_WORLD );
+  //PetscPrintf( PETSC_COMM_WORLD, "X \n");
+  //VecView( X, PETSC_VIEWER_STDOUT_WORLD );
 
   ierr = VecDot( X,X, &val );CHKERRQ(ierr);
   PetscPrintf( PETSC_COMM_WORLD, "X.X = %f \n", val );
@@ -253,8 +253,10 @@ PetscErrorCode test_axpy_dot_max( void )
   ierr = VecAXPY( Y, 1.0, X ); /* Y <- a X + Y */
   ierr = VecNestGetSubVec( Y, 0, &y1 );CHKERRQ(ierr);
   ierr = VecNestGetSubVec( Y, 1, &y2 );CHKERRQ(ierr);
-  PetscPrintf( PETSC_COMM_WORLD, "(1) y1 = \n" );		ierr = VecView( y1, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
-  PetscPrintf( PETSC_COMM_WORLD, "(1) y2 = \n" );		ierr = VecView( y2, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "(1) y1 = \n" ); 
+  ierr = VecView( y1, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "(1) y2 = \n" ); 
+  ierr = VecView( y2, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
   ierr = VecDot( X,Y, &scalar );CHKERRQ(ierr);
 
   PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", PetscRealPart(scalar), PetscImaginaryPart(scalar) );
@@ -266,8 +268,10 @@ PetscErrorCode test_axpy_dot_max( void )
   ierr = VecAXPY( Y, 1.0, X ); /* Y <- a X + Y */
   ierr = VecNestGetSubVec( Y, 0, &y1 );CHKERRQ(ierr);
   ierr = VecNestGetSubVec( Y, 1, &y2 );CHKERRQ(ierr);
-  PetscPrintf( PETSC_COMM_WORLD, "(2) y1 = \n" );		ierr = VecView( y1, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
-  PetscPrintf( PETSC_COMM_WORLD, "(2) y2 = \n" );		ierr = VecView( y2, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "(2) y1 = \n" );
+  ierr = VecView( y1, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "(2) y2 = \n" );
+  ierr = VecView( y2, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
   ierr = VecDot( X,Y, &scalar );CHKERRQ(ierr);
 
   PetscPrintf( PETSC_COMM_WORLD, "X.Y = %lf + %lfi \n", PetscRealPart(scalar), PetscImaginaryPart(scalar) );

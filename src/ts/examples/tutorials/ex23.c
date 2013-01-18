@@ -377,10 +377,10 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
       PetscInt j,k;
       for (j=0;j<3;j++) {
-	for (k=0;k<3;k++) {
-	  eM_0[k][j] += phi[j]*phi[k]*w;
-	  eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
-	}
+        for (k=0;k<3;k++) {
+          eM_0[k][j] += phi[j]*phi[k]*w;
+          eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
+        }
       }
     }
     PetscInt    row,cols[6],r;

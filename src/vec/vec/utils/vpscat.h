@@ -204,10 +204,10 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     count = nrecvs;
     while (count) {
       if (ctx->reproduce) {
-	imdex = count - 1;
-	ierr = MPI_Wait(rwaits+imdex,&xrstatus);CHKERRQ(ierr);
+        imdex = count - 1;
+        ierr = MPI_Wait(rwaits+imdex,&xrstatus);CHKERRQ(ierr);
       } else {
-	ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+        ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }
       /* unpack receives into our local space */
       ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv);CHKERRQ(ierr);

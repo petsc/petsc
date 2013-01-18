@@ -153,7 +153,7 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
       while (p2<n2 && i2[p2]<i1[p1]) {n3++; p2++;}
       if (p2==n2) { /* cleanup for is1 */ n3 += n1-p1; break;
       } else {
-	if (i2[p2]==i1[p1]) {n3++; p1++; p2++;}
+        if (i2[p2]==i1[p1]) {n3++; p1++; p2++;}
       }
     }
     if (p2==n2) { /* cleanup for is1 */ n3 += n1-p1; break;
@@ -161,7 +161,7 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
       while (p1<n1 && i1[p1]<i2[p2]) {n3++; p1++;}
       if (p1==n1) { /* clean up for is2 */ n3 += n2-p2; break;
       } else {
-	if (i1[p1]==i2[p2]) {n3++; p1++; p2++;}
+        if (i1[p1]==i2[p2]) {n3++; p1++; p2++;}
       }
     }
   } while (p1<n1 || p2<n2);
@@ -182,10 +182,10 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
     } else {
       while (p2<n2 && i2[p2]<i1[p1]) iout[n3++] = i2[p2++];
       if (p2==n2) { /* cleanup for is1 */
-	while (p1<n1) iout[n3++] = i1[p1++];
-	break;
+        while (p1<n1) iout[n3++] = i1[p1++];
+        break;
       } else {
-	if (i2[p2]==i1[p1]) {iout[n3++] = i1[p1++]; p2++;}
+        if (i2[p2]==i1[p1]) {iout[n3++] = i1[p1++]; p2++;}
       }
     }
     if (p2==n2) { /* cleanup for is1 */
@@ -194,10 +194,10 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
     } else {
       while (p1<n1 && i1[p1]<i2[p2]) iout[n3++] = i1[p1++];
       if (p1==n1) { /* clean up for is2 */
-	while (p2<n2) iout[n3++] = i2[p2++];
-	break;
+        while (p2<n2) iout[n3++] = i2[p2++];
+        break;
       } else {
-	if (i1[p1]==i2[p2]) {iout[n3++] = i1[p1++]; p2++;}
+        if (i1[p1]==i2[p2]) {iout[n3++] = i1[p1++]; p2++;}
       }
     }
   } while (p1<n1 || p2<n2);

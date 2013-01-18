@@ -81,7 +81,7 @@ int main(int argc,char **argv)
      Evaluates the integral.  First the sum of all the points is taken.
      That result is multiplied by the step size for the trapezoid rule.
      Then half the value at each endpoint is subtracted,
-	this is part of the composite trapezoid rule.
+     this is part of the composite trapezoid rule.
   */
   ierr = VecSum(x,&result);CHKERRQ(ierr);
   result = result*h;

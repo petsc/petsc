@@ -150,13 +150,13 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
       ierr = PetscMalloc(nc*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-	mcolors[colors[i]]++;
+        mcolors[colors[i]]++;
       }
 
       ierr = PetscMalloc(nc*sizeof(PetscInt*),&ii);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&ii[0]);CHKERRQ(ierr);
       for (i=1; i<nc; i++) {
-	ii[i] = ii[i-1] + mcolors[i-1];
+        ii[i] = ii[i-1] + mcolors[i-1];
       }
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -176,7 +176,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
-	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
       }
 
       iscoloring->is   = is;
