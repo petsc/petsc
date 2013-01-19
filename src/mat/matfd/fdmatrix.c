@@ -574,7 +574,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GHOSTED){
     col_start = 0; col_end = N;
-  } else if (ctype == IS_COLORING_GLOBAL){
+  } else if (ctype == IS_COLORING_GLOBAL) {
     xx = xx - start;
     vscale_array = vscale_array - start;
     col_start = start; col_end = N + start;

@@ -90,7 +90,7 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  } else if (isbinary){
+  } else if (isbinary) {
     ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {

@@ -18,16 +18,16 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE,btheap = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_scalable_fast","Use a scalable but slower C=A*B","",scalable_fast,&scalable_fast,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_heap","Use heap implementation of symbolic factorization C=A*B","",heap,&heap,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_btheap","Use btheap implementation of symbolic factorization C=A*B","",btheap,&btheap,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (scalable_fast){
+    if (scalable_fast) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
-    } else if (scalable){
+    } else if (scalable) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
     } else if (heap) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   for (i=0; i<am; i++) {
     anzi = ai[i+1] - ai[i];
     aj   = a->j + ai[i];
-    for (j=0; j<anzi; j++){
+    for (j=0; j<anzi; j++) {
       brow = aj[j];
       bnzj = bi[brow+1] - bi[brow];
       bj   = b->j + bi[brow];
@@ -157,7 +157,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   /* printf("MatMatMultNumeric_SeqAIJ_SeqAIJ...ca %p\n",c->a); */
-  if (!c->a){ /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
+  if (!c->a) { /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
     ierr = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
     c->a      = ca;
     c->free_a = PETSC_TRUE;
@@ -238,7 +238,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
       valtmp = aa[j];
       nextb  = 0;
       for (k=0; nextb<bnzi; k++) {
-        if (cj[k] == bjj[nextb]){ /* ccol == bcol */
+        if (cj[k] == bjj[nextb]) { /* ccol == bcol */
           ca[k] += valtmp*baj[nextb++];
         }
       }
@@ -287,7 +287,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
   for (i=0; i<am; i++) {
     anzi = ai[i+1] - ai[i];
     aj   = a->j + ai[i];
-    for (j=0; j<anzi; j++){
+    for (j=0; j<anzi; j++) {
       brow = aj[j];
       bnzj = bi[brow+1] - bi[brow];
       bj   = b->j + bi[brow];
@@ -389,7 +389,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   for (i=0; i<am; i++) {
     anzi = ai[i+1] - ai[i];
     aj   = a->j + ai[i];
-    for (j=0; j<anzi; j++){
+    for (j=0; j<anzi; j++) {
       brow = aj[j];
       bnzj = bi[brow+1] - bi[brow];
       bj   = b->j + bi[brow];
@@ -695,7 +695,7 @@ PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
   ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
@@ -772,7 +772,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   (*C)->ops->destroy = MatDestroy_SeqAIJ_MatMatMultTrans;
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-matmattransmult_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
-  if (multtrans->usecoloring){
+  if (multtrans->usecoloring) {
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring matcoloring;
     ISColoring           iscoloring;
@@ -839,17 +839,17 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     anzi = ai[i+1] - ai[i];
     cnzi = 0;
     acol = aj + ai[i];
-    for (j=0; j<bm; j++){
+    for (j=0; j<bm; j++) {
       bnzj = bi[j+1] - bi[j];
       bcol= bj + bi[j];
       /* sparse inner-product c(i,j)=A[i,:]*B[j,:]^T */
       ka = 0; kb = 0;
-      while (ka < anzi && kb < bnzj){
+      while (ka < anzi && kb < bnzj) {
         while (acol[ka] < bcol[kb] && ka < anzi) ka++;
         if (ka == anzi) break;
         while (acol[ka] > bcol[kb] && kb < bnzj) kb++;
         if (kb == bnzj) break;
-        if (acol[ka] == bcol[kb]){ /* add nonzero c(i,j) to lnk */
+        if (acol[ka] == bcol[kb]) { /* add nonzero c(i,j) to lnk */
           index[0] = j;
           ierr = PetscLLAdd(1,index,bm,nlnk,lnk,lnkbt);CHKERRQ(ierr);
           cnzi++;
@@ -937,7 +937,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   /* clear old values in C */
-  if (!c->a){
+  if (!c->a) {
     ierr = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
     c->a      = ca;
     c->free_a = PETSC_TRUE;
@@ -949,7 +949,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatTransMult",(PetscObject *)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr  = PetscContainerGetPointer(container,(void **)&multtrans);CHKERRQ(ierr);
-  if (multtrans->usecoloring){
+  if (multtrans->usecoloring) {
     MatTransposeColoring  matcoloring = multtrans->matcoloring;
     Mat                   Bt_dense;
     PetscInt              m,n;
@@ -982,7 +982,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     cnzi = ci[i+1] - ci[i];
     ccol = cj + ci[i];
     cval = ca + ci[i];
-    for (j=0; j<cnzi; j++){
+    for (j=0; j<cnzi; j++) {
       brow = ccol[j];
       bnzj = bi[brow+1] - bi[brow];
       bcol = bj + bi[brow];
@@ -993,19 +993,19 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
       /* put ba to spdot array */
       for (nextb=0; nextb<bnzj; nextb++) spdot[bcol[nextb]] = bval[nextb];
       /* c(i,j)=A[i,:]*B[j,:]^T */
-      for (nexta=0; nexta<anzi; nexta++){
+      for (nexta=0; nexta<anzi; nexta++) {
         cval[j] += spdot[acol[nexta]]*aval[nexta];
       }
       /* zero spdot array */
       for (nextb=0; nextb<bnzj; nextb++) spdot[bcol[nextb]] = 0.0;
 #else
       nexta = 0; nextb = 0;
-      while (nexta<anzi && nextb<bnzj){
+      while (nexta<anzi && nextb<bnzj) {
         while (acol[nexta] < bcol[nextb] && nexta < anzi) nexta++;
         if (nexta == anzi) break;
         while (acol[nexta] > bcol[nextb] && nextb < bnzj) nextb++;
         if (nextb == bnzj) break;
-        if (acol[nexta] == bcol[nextb]){
+        if (acol[nexta] == bcol[nextb]) {
           cval[j] += aval[nexta]*bval[nextb];
           nexta++; nextb++;
           flops += 2;
@@ -1030,7 +1030,7 @@ PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
   ierr = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
@@ -1073,7 +1073,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   MatScalar      *aa=a->a,*ba,*ca,*caj;
 
   PetscFunctionBegin;
-  if (!c->a){
+  if (!c->a) {
     ierr = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
     c->a      = ca;
     c->free_a = PETSC_TRUE;
@@ -1121,7 +1121,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal f
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatMatMultSymbolic_SeqAIJ_SeqDense(A,B,fill,C);CHKERRQ(ierr);
   }
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
@@ -1160,7 +1160,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
-  for (col=0; col<cn-4; col += 4){  /* over columns of C */
+  for (col=0; col<cn-4; col += 4) {  /* over columns of C */
     colam = col*am;
     for (i=0; i<am; i++) {        /* over rows of C in those columns */
       r1 = r2 = r3 = r4 = 0.0;
@@ -1183,7 +1183,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     b3 += bm4;
     b4 += bm4;
   }
-  for (;col<cn; col++){     /* over extra columns of C */
+  for (;col<cn; col++) {     /* over extra columns of C */
     for (i=0; i<am; i++) {  /* over rows of C in those columns */
       r1 = 0.0;
       n   = a->i[i+1] - a->i[i];
@@ -1225,8 +1225,8 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
 
-  if (a->compressedrow.use){ /* use compressed row format */
-    for (col=0; col<cn-4; col += 4){  /* over columns of C */
+  if (a->compressedrow.use) { /* use compressed row format */
+    for (col=0; col<cn-4; col += 4) {  /* over columns of C */
       colam = col*am;
       arm   = a->compressedrow.nrows;
       ii    = a->compressedrow.i;
@@ -1252,7 +1252,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       b3 += bm4;
       b4 += bm4;
     }
-    for (;col<cn; col++){     /* over extra columns of C */
+    for (;col<cn; col++) {     /* over extra columns of C */
       colam = col*am;
       arm   = a->compressedrow.nrows;
       ii    = a->compressedrow.i;
@@ -1271,7 +1271,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       b1 += bm;
     }
   } else {
-    for (col=0; col<cn-4; col += 4){  /* over columns of C */
+    for (col=0; col<cn-4; col += 4) {  /* over columns of C */
       colam = col*am;
       for (i=0; i<am; i++) {        /* over rows of C in those columns */
         r1 = r2 = r3 = r4 = 0.0;
@@ -1294,7 +1294,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       b3 += bm4;
       b4 += bm4;
     }
-    for (;col<cn; col++){     /* over extra columns of C */
+    for (;col<cn; col++) {     /* over extra columns of C */
       colam = col*am;
       for (i=0; i<am; i++) {  /* over rows of C in those columns */
         r1 = 0.0;
@@ -1338,7 +1338,7 @@ PetscErrorCode  MatTransColoringApplySpToDen_SeqAIJ(MatTransposeColoring colorin
       btcol = bj + bi[col];
       btval = ba + bi[col];
       anz   = bi[col+1] - bi[col];
-      for (j=0; j<anz; j++){
+      for (j=0; j<anz; j++) {
         brow            = btcol[j];
         btval_den[brow] = btval[j];
       }
@@ -1366,7 +1366,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
     nrows = matcoloring->nrows[k];
     row   = rows  + colorforrow[k];
     idx   = spidx + colorforrow[k];
-    for (l=0; l<nrows; l++){
+    for (l=0; l<nrows; l++) {
       ca[idx[l]] = cp_den[row[l]];    
     }
     cp_den += m;

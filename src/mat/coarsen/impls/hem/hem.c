@@ -93,7 +93,7 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
       ail->new_node = ail->pool_list.array;
       ail->new_left = ail->chk_sz;
       ail->new_node->next = PETSC_NULL;
-    } else if (!ail->new_left){
+    } else if (!ail->new_left) {
       PetscCDArrNd *node;
       ierr = PetscMalloc(ail->chk_sz*sizeof(PetscCDIntNd) + sizeof(PetscCDArrNd), &node);CHKERRQ(ierr);
       node->array = (PetscCDIntNd*)(node + 1);
@@ -166,14 +166,14 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
   if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
   if (!(n2=ail->array[a_idx]))  ail->array[a_idx] = n;
   else {
-    do{
+    do {
       if (!n2->next) {
         n2->next = n;
         assert(n->next == PETSC_NULL);
         break;
       }
       n2 = n2->next;
-    }while(n2);
+    } while(n2);
     assert(n2);
   }
   PetscFunctionReturn(0);
@@ -189,15 +189,15 @@ PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx,  PetscCD
   PetscFunctionBegin;
   if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
   if (!(n2=ail->array[a_idx]))  ail->array[a_idx] = a_n;
-  else{
-    do{
+  else {
+    do {
       if (!n2->next) {
         n2->next = a_n;
         a_n->next = PETSC_NULL;
         break;
       }
       n2 = n2->next;
-    }while(n2);
+    } while(n2);
     assert(n2);
   }
   PetscFunctionReturn(0);
@@ -260,13 +260,13 @@ PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, Pe
   n = ail->array[a_destidx];
   if (!n ) ail->array[a_destidx] = ail->array[a_srcidx];
   else {
-    do{
+    do {
       if (!n->next){
         n->next = ail->array[a_srcidx];
         break;
       }
       n = n->next;
-    }while(1);
+    } while(1);
   }
   ail->array[a_srcidx] = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -677,7 +677,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
         }
       }
       if (nn > 1) n_nz_row++;
-      else if (iter == 1){
+      else if (iter == 1) {
         /* should select this because it is technically in the MIS but lets not */
         ierr = PetscCDRemoveAll(agg_llists, lid);CHKERRQ(ierr);
       }

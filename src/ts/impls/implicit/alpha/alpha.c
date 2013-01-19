@@ -449,10 +449,8 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
     *nextdt *= scale;
   }
   /* accept or reject step */
-  if (normE <= Emax)
-    *ok = PETSC_TRUE;
-  else
-    *ok = PETSC_FALSE;
+  if (normE <= Emax) *ok = PETSC_TRUE;
+  else               *ok = PETSC_FALSE;
 
   finally:
   *nextdt = PetscMax(*nextdt,th->dt_min);

@@ -268,12 +268,12 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   PetscFunctionBegin;
   code = exception[0];
   err_ind = -1 ;
-  for (j = 0 ; error_codes[j].code_no ; j++){
+  for (j = 0 ; error_codes[j].code_no ; j++) {
     if (error_codes[j].code_no == code) err_ind = j;
   }
-  if (err_ind >= 0){
+  if (err_ind >= 0) {
     (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
-  } else{
+  } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);
   }
   PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
@@ -338,9 +338,9 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
     if (error_codes[j].code_no == flt_context.trap) err_ind = j;
   }
 
-  if (err_ind >= 0){
+  if (err_ind >= 0) {
     (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
-  } else{
+  } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
   }
   ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");

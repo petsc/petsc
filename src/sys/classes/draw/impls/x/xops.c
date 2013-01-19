@@ -406,22 +406,16 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   XMaskEvent(win->disp,ButtonReleaseMask,&report);
   switch (report.xbutton.button) {
     case Button1:
-      if (report.xbutton.state & ShiftMask)
-        *button = PETSC_BUTTON_LEFT_SHIFT;
-      else
-        *button = PETSC_BUTTON_LEFT;
+      if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_LEFT_SHIFT;
+      else                                  *button = PETSC_BUTTON_LEFT;
       break;
     case Button2:
-      if (report.xbutton.state & ShiftMask)
-        *button = PETSC_BUTTON_CENTER_SHIFT;
-      else
-        *button = PETSC_BUTTON_CENTER;
+      if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_CENTER_SHIFT;
+      else                                  *button = PETSC_BUTTON_CENTER;
       break;
     case Button3:
-      if (report.xbutton.state & ShiftMask)
-        *button = PETSC_BUTTON_RIGHT_SHIFT;
-      else
-        *button = PETSC_BUTTON_RIGHT;
+      if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_RIGHT_SHIFT;
+      else                                  *button = PETSC_BUTTON_RIGHT;
       break;
   }
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);

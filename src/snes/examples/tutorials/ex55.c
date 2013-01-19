@@ -521,8 +521,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         cols[2] = 4*idx[2]+2;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_odd[r][2];
         /* Insert values in matrix M for 3nd dof */
         ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-      }
-      else{
+      } else {
         row = 4*idx[r];
         cols[0] = 4*idx[0];     vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
         cols[1] = 4*idx[1];     vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];

@@ -522,10 +522,8 @@ int Update(SNES snes,void *ctx)
     ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
   }
-  if (user->PreLoading)
-   max_steps = 1;
-  else
-   max_steps = tsCtx->max_steps;
+  if (user->PreLoading) max_steps = 1;
+  else                  max_steps = tsCtx->max_steps;
   fratio = 1.0;
   /*tsCtx->ptime = 0.0;*/
   ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
@@ -552,7 +550,7 @@ int Update(SNES snes,void *ctx)
   ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
   if (nfailsCum >= 2) SETERRQ(PETSC_COMM_SELF,1,"Unable to find a Newton Step");
-  if (print_flag){
+  if (print_flag) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
                        tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   }
@@ -760,8 +758,7 @@ int GetLocalOrdering(GRID *grid)
   if (!rank) {
     if (size == 1) {
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
-    }
-    else {
+    } else {
       char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool  exists;
 
@@ -1191,7 +1188,7 @@ int GetLocalOrdering(GRID *grid)
     grid->xyzn_thr[ie2+2] = grid->xyzn[ie3+2];
     grid->xyzn_thr[ie2+3] = grid->xyzn[ie3+3];
     tmp[thr1]+=1;
-    if (thr1 != thr2){
+    if (thr1 != thr2) {
      ie1 = 2*tmp[thr2];
      ie2 = 4*tmp[thr2];
      grid->edge_thr[ie1] = node1;
@@ -1672,7 +1669,7 @@ int GetLocalOrdering(GRID *grid)
    FCALLOC(7*nnodesLoc,   &grid->rxy);
 
 /* Map the 'ja' array in petsc ordering */
-  for (i = 0; i < nnz; i++){
+  for (i = 0; i < nnz; i++) {
     grid->ja[i] = l2a[grid->ja[i] - 1];
   }
   ierr = AOApplicationToPetsc(ao,nnz,grid->ja);CHKERRQ(ierr);
@@ -2522,10 +2519,11 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     val_diag[i] = nbrs_diag;
     val_offd[i] = nbrs_offd;
@@ -2542,10 +2540,11 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     for (j = 0; j < 4; j++) {
       row = 4*i + j;
@@ -2857,7 +2856,7 @@ int write_fine_grid(GRID *grid)
 /* open file for output      */
 /* call the output frame.out */
 
-   if (!(output = fopen("frame.out","a"))){
+   if (!(output = fopen("frame.out","a"))) {
       SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n");

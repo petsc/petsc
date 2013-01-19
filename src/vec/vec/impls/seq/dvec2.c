@@ -921,16 +921,14 @@ PetscErrorCode VecAYPX_kernel(PetscInt thread_id,Vec yin,PetscScalar *alpha_p,Ve
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       yy[i] = xx[i] - yy[i];
     }
-  } else
+  } else {
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
-  {
       PetscInt start=trstarts[thread_id],end=trstarts[thread_id+1],n;
       PetscScalar oalpha = alpha;
       n = end - start;
       fortranaypx_(&n,&oalpha,xx+start,yy+start);
   }
 #else
-  {
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
       yy[i] = xx[i] + alpha*yy[i];
     }

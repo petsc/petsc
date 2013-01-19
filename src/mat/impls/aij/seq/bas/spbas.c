@@ -379,7 +379,7 @@ PetscErrorCode spbas_delete(spbas_matrix matrix)
    PetscFunctionBegin;
    if (matrix.block_data) {
       ierr=PetscFree(matrix.alloc_icol);CHKERRQ(ierr);
-      if (matrix.values){ierr=PetscFree(matrix.alloc_val);CHKERRQ(ierr);}
+      if (matrix.values) {ierr=PetscFree(matrix.alloc_val);CHKERRQ(ierr);}
    } else  {
      for (i=0; i<matrix.nrows; i++) { ierr=PetscFree(matrix.icols[i]);CHKERRQ(ierr);}
      ierr = PetscFree(matrix.icols);CHKERRQ(ierr);
@@ -606,7 +606,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
                    ihlp1[i] = ihlp2[i1];
                    vhlp1[i] = vhlp2[i1];
                    i1++;
-               } else if (i2<i2end ){
+               } else if (i2<i2end ) {
                    ihlp1[i] = ihlp2[i2];
                    vhlp1[i] = vhlp2[i2];
                    i2++;
@@ -646,7 +646,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
    }
 
    ierr = PetscFree(ialloc);CHKERRQ(ierr);
-   if (val){ierr = PetscFree(valloc);CHKERRQ(ierr);}
+   if (val) {ierr = PetscFree(valloc);CHKERRQ(ierr);}
    PetscFunctionReturn(0);
 }
 
@@ -683,7 +683,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
       for (j=0; j<row_nnz[i]; j++) { icols[i][j] += ip-i; }
    }
 
-   if (do_values){ ierr = PetscFree(matrix_A->values);CHKERRQ(ierr);}
+   if (do_values) { ierr = PetscFree(matrix_A->values);CHKERRQ(ierr);}
    ierr = PetscFree(matrix_A->icols);CHKERRQ(ierr);
    ierr = PetscFree(matrix_A->row_nnz);CHKERRQ(ierr);
 
@@ -913,7 +913,7 @@ PetscErrorCode spbas_keep_upper( spbas_matrix * inout_matrix)
    PetscFunctionBegin;
    if (inout_matrix->block_data) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Not yet for block data matrices\n");
    for (i=0; i<inout_matrix->nrows; i++)  {
-       for (jstart=0; (jstart<inout_matrix->row_nnz[i]) && (inout_matrix->icols[i][jstart]<0); jstart++){}
+       for (jstart=0; (jstart<inout_matrix->row_nnz[i]) && (inout_matrix->icols[i][jstart]<0); jstart++) {}
        if (jstart>0) {
           for (j=0; j<inout_matrix->row_nnz[i]-jstart; j++) {
              inout_matrix->icols[i][j] =  inout_matrix->icols[i][j+jstart];

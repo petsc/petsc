@@ -391,8 +391,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   for (i=0;i<n;i++) {
     if (x[i] < 1.0e-12) {
       y[i] = log(1.0e-12);
-    }
-    else {
+    } else {
       y[i] = log(x[i]);
     }
   }
@@ -476,9 +475,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
     if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
       Pv_p[i]=0;
 
-    }
-    else
-    {
+    } else {
       Pv_p[i]=w2[i]*user->VG;
       count=count+1;
     }
@@ -763,9 +760,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
 
 
-      }
-
-      else {
+      } else {
 
 
         row = 5*idx[r];
@@ -973,9 +968,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
                 ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
-            }
-
-            else {
+            } else {
                 row = 5*idx[r];
                 cols[0] = 5*idx[0];     vals[0] = dt*eM_2_even[r][0]*cv_sum;
                 cols[1] = 5*idx[1];     vals[1] = dt*eM_2_even[r][1]*cv_sum;

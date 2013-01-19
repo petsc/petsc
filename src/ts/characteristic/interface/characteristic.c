@@ -215,7 +215,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
 
-  if (!((PetscObject)c)->type_name){
+  if (!((PetscObject)c)->type_name) {
     ierr = CharacteristicSetType(c, CHARACTERISTICDA);CHKERRQ(ierr);
   }
 
@@ -768,8 +768,7 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
       queue[root] = queue[maxChild];
       queue[maxChild] = temp;
       root = maxChild;
-    } else
-      done = PETSC_TRUE;
+    } else done = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }

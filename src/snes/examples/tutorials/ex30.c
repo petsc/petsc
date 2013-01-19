@@ -1265,16 +1265,14 @@ PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx
       return param->cb;
     } else if (j<=grid->jfault) {
       return 0.0;
-    } else
-      return param->cb;
+    } else return param->cb;
 
   } else {
     if (i<j) {
       return param->sb;
     } else if (j<=grid->jfault) {
       return 0.0;
-    } else
-      return param->sb;
+    } else return param->sb;
   }
 }
 
@@ -1287,10 +1285,8 @@ PETSC_STATIC_INLINE PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx 
 {
   Parameter     *param = user->param;
   PassiveScalar z;
-  if (plate==PLATE_LID)
-    z = (j-0.5)*user->grid->dz;
-  else /* PLATE_SLAB */
-    z = (j-0.5)*user->grid->dz*param->cb;
+  if (plate==PLATE_LID) z = (j-0.5)*user->grid->dz;
+  else  z = (j-0.5)*user->grid->dz*param->cb; /* PLATE_SLAB */
 #if defined (PETSC_HAVE_ERF)
   return (erf(PetscRealPart(z*param->L/2.0/param->skt)));
 #else

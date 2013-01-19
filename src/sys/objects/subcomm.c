@@ -68,9 +68,9 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
   if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
   if (psubcomm->n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %D is incorrect. Call PetscSubcommSetNumber()",psubcomm->n);
 
-  if (subcommtype == PETSC_SUBCOMM_CONTIGUOUS){
+  if (subcommtype == PETSC_SUBCOMM_CONTIGUOUS) {
     ierr = PetscSubcommCreate_contiguous(psubcomm);CHKERRQ(ierr);
-  } else if (subcommtype == PETSC_SUBCOMM_INTERLACED){
+  } else if (subcommtype == PETSC_SUBCOMM_INTERLACED) {
     ierr = PetscSubcommCreate_interlaced(psubcomm);CHKERRQ(ierr);
   } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",subcommtype);
   PetscFunctionReturn(0);
@@ -111,7 +111,7 @@ PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt col
      if duprank is not a valid number, then dupcomm is not created - not all applications require dupcomm! */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (duprank == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"duprank==PETSC_DECIDE is not supported yet");
-  else if (duprank >= 0 && duprank < size){
+  else if (duprank >= 0 && duprank < size) {
     ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   }
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
@@ -182,14 +182,14 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   ierr = PetscMalloc((1+nsubcomm)*sizeof(PetscMPIInt),&subsize);CHKERRQ(ierr);
   np_subcomm = size/nsubcomm;
   nleftover  = size - nsubcomm*np_subcomm;
-  for (i=0; i<nsubcomm; i++){
+  for (i=0; i<nsubcomm; i++) {
     subsize[i] = np_subcomm;
     if (i<nleftover) subsize[i]++;
   }
 
   /* get color and subrank of this proc */
   rankstart = 0;
-  for (i=0; i<nsubcomm; i++){
+  for (i=0; i<nsubcomm; i++) {
     if ( rank >= rankstart && rank < rankstart+subsize[i]) {
       color   = i;
       subrank = rank - rankstart;
@@ -264,7 +264,7 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   ierr = PetscMalloc((1+nsubcomm)*sizeof(PetscMPIInt),&subsize);CHKERRQ(ierr);
   np_subcomm = size/nsubcomm;
   nleftover  = size - nsubcomm*np_subcomm;
-  for (i=0; i<nsubcomm; i++){
+  for (i=0; i<nsubcomm; i++) {
     subsize[i] = np_subcomm;
     if (i<nleftover) subsize[i]++;
   }
@@ -276,8 +276,8 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
 
   j = 0; duprank = 0;
-  for (i=0; i<nsubcomm; i++){
-    if (j == color){
+  for (i=0; i<nsubcomm; i++) {
+    if (j == color) {
       duprank += subrank;
       break;
     }

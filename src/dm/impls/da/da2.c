@@ -102,7 +102,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     }
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  } else if (isbinary){
+  } else if (isbinary) {
     ierr = DMView_DA_Binary(da,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
@@ -648,7 +648,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = ly[(n7/m)]; */
       s_t = bases[n7] + (i-1)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
-    } else if (by == DMDA_BOUNDARY_MIRROR){
+    } else if (by == DMDA_BOUNDARY_MIRROR) {
       for (j=0; j<x; j++) { idx[nn++] = bases[rank] + x*(y - i - 1)  + j;}
     }
 

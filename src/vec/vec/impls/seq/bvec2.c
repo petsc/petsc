@@ -196,18 +196,16 @@ PetscErrorCode VecPointwiseMult_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yi
   ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
   if(ww == xx) {
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) ww[i] *= yy[i];
-  } else if(ww == yy) {
+  } else if (ww == yy) {
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) ww[i] *= xx[i];
-  } else
+  } else {
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
-  {
     PetscInt start,n;
     start = trstarts[thread_id];
     n = trstarts[thread_id+1] - trstarts[thread_id];
     fortranxtimesy_(xx+start,yy+start,ww+start,&n);
   }
 #else
-  {
     for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) ww[i] = xx[i] * yy[i];
   }
 #endif
@@ -1013,9 +1011,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
 
-  if (isdraw){
+  if (isdraw) {
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  } else if (iascii){
+  } else if (iascii) {
     ierr = VecView_Seq_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);

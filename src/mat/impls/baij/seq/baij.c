@@ -33,7 +33,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
   mdiag   = a->idiag+bs2*mbs;
   if (values) *values = a->idiag;
   /* factor and invert each block */
-  switch (bs){
+  switch (bs) {
     case 1:
       for (i=0; i<mbs; i++) {
         odiag = v + 1*diag_offset[i];
@@ -145,7 +145,7 @@ PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -153,7 +153,7 @@ PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0];
       i2     = 1;
       idiag += 1;
@@ -186,7 +186,7 @@ PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+a->mbs - 1;
       i2      = m - 1;
       x1      = x[i2];
@@ -236,7 +236,7 @@ PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -244,7 +244,7 @@ PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0] + b[1]*idiag[2];
       x[1] = b[0]*idiag[1] + b[1]*idiag[3];
       i2     = 2;
@@ -284,7 +284,7 @@ PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+4*a->mbs - 4;
       i2      = 2*m - 2;
       x1      = x[i2]; x2 = x[i2+1];
@@ -340,7 +340,7 @@ PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -348,7 +348,7 @@ PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0] + b[1]*idiag[3] + b[2]*idiag[6];
       x[1] = b[0]*idiag[1] + b[1]*idiag[4] + b[2]*idiag[7];
       x[2] = b[0]*idiag[2] + b[1]*idiag[5] + b[2]*idiag[8];
@@ -392,7 +392,7 @@ PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+9*a->mbs - 9;
       i2      = 3*m - 3;
       x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2];
@@ -451,7 +451,7 @@ PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -459,7 +459,7 @@ PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0] + b[1]*idiag[4] + b[2]*idiag[8]  + b[3]*idiag[12];
       x[1] = b[0]*idiag[1] + b[1]*idiag[5] + b[2]*idiag[9]  + b[3]*idiag[13];
       x[2] = b[0]*idiag[2] + b[1]*idiag[6] + b[2]*idiag[10] + b[3]*idiag[14];
@@ -507,7 +507,7 @@ PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+16*a->mbs - 16;
       i2      = 4*m - 4;
       x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2]; x4 = x[i2+3];
@@ -569,7 +569,7 @@ PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -577,7 +577,7 @@ PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0] + b[1]*idiag[5] + b[2]*idiag[10] + b[3]*idiag[15] + b[4]*idiag[20];
       x[1] = b[0]*idiag[1] + b[1]*idiag[6] + b[2]*idiag[11] + b[3]*idiag[16] + b[4]*idiag[21];
       x[2] = b[0]*idiag[2] + b[1]*idiag[7] + b[2]*idiag[12] + b[3]*idiag[17] + b[4]*idiag[22];
@@ -629,7 +629,7 @@ PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+25*a->mbs - 25;
       i2      = 5*m - 5;
       x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2]; x4 = x[i2+3]; x5 = x[i2+4];
@@ -694,7 +694,7 @@ PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -702,7 +702,7 @@ PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0] + b[1]*idiag[6]  + b[2]*idiag[12] + b[3]*idiag[18] + b[4]*idiag[24] + b[5]*idiag[30];
       x[1] = b[0]*idiag[1] + b[1]*idiag[7]  + b[2]*idiag[13] + b[3]*idiag[19] + b[4]*idiag[25] + b[5]*idiag[31];
       x[2] = b[0]*idiag[2] + b[1]*idiag[8]  + b[2]*idiag[14] + b[3]*idiag[20] + b[4]*idiag[26] + b[5]*idiag[32];
@@ -758,7 +758,7 @@ PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+36*a->mbs - 36;
       i2      = 6*m - 6;
       x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2]; x4 = x[i2+3]; x5 = x[i2+4]; x6 = x[i2+5];
@@ -826,7 +826,7 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -834,7 +834,7 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       x[0] = b[0]*idiag[0] + b[1]*idiag[7]  + b[2]*idiag[14] + b[3]*idiag[21] + b[4]*idiag[28] + b[5]*idiag[35] + b[6]*idiag[42];
       x[1] = b[0]*idiag[1] + b[1]*idiag[8]  + b[2]*idiag[15] + b[3]*idiag[22] + b[4]*idiag[29] + b[5]*idiag[36] + b[6]*idiag[43];
       x[2] = b[0]*idiag[2] + b[1]*idiag[9]  + b[2]*idiag[16] + b[3]*idiag[23] + b[4]*idiag[30] + b[5]*idiag[37] + b[6]*idiag[44];
@@ -894,7 +894,7 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+49*a->mbs - 49;
       i2      = 7*m - 7;
       x1      = x[i2]; x2 = x[i2+1]; x3 = x[i2+2]; x4 = x[i2+3]; x5 = x[i2+4]; x6 = x[i2+5]; x7 = x[i2+6];
@@ -965,7 +965,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -983,7 +983,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       PetscKernel_w_gets_Ar_times_v(bs,bs,b,idiag,x);
       /*x[0] = b[0]*idiag[0] + b[1]*idiag[3] + b[2]*idiag[6];
       x[1] = b[0]*idiag[1] + b[1]*idiag[4] + b[2]*idiag[7];
@@ -1043,7 +1043,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->rmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       idiag   = a->idiag+bs2*a->mbs - bs2;
       i2      = bs*m - bs;
       ierr = PetscMemcpy(w,x+i2,bs*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1128,7 +1128,8 @@ void  matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *n
     high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       col = in[l];
-      if (col <= lastcol) low = 0; else high = nrow;
+      if (col <= lastcol)  low = 0;
+      else                high = nrow;
       lastcol = col;
       value = v + k*(stepval+4 + l)*4;
       while (high-low > 7) {
@@ -1205,7 +1206,8 @@ void  matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in
       col = in[l]; bcol = col/4;
       ridx = row % 4; cidx = col % 4;
       value = v[l + k*n];
-      if (col <= lastcol) low = 0; else high = nrow;
+      if (col <= lastcol)  low = 0;
+      else                high = nrow;
       lastcol = col;
       while (high-low > 7) {
         t = (low+high)/2;
@@ -1900,7 +1902,7 @@ PetscErrorCode MatView_SeqBAIJ(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-  if (iascii){
+  if (iascii) {
     ierr = MatView_SeqBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_SeqBAIJ_Binary(A,viewer);CHKERRQ(ierr);
@@ -2541,9 +2543,9 @@ PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A,Vec v,PetscInt idx[])
   for (i=0; i<mbs; i++) {
     ncols = ai[1] - ai[0]; ai++;
     brow  = bs*i;
-    for (j=0; j<ncols; j++){
-      for (kcol=0; kcol<bs; kcol++){
-        for (krow=0; krow<bs; krow++){
+    for (j=0; j<ncols; j++) {
+      for (kcol=0; kcol<bs; kcol++) {
+        for (krow=0; krow<bs; krow++) {
           atmp = PetscAbsScalar(*aa);aa++;
           row = brow + krow;    /* row index */
           /* printf("val[%d,%d]: %G\n",row,bcol+kcol,atmp); */
@@ -2634,7 +2636,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     }
     for (i=0; i<x->nz; i++) {
       j = 0;
-      while (j < bs2){
+      while (j < bs2) {
         y->a[bs2*y->xtoy[i]+j] += a*(x->a[bs2*i+j]);
         j++;
       }
@@ -2767,7 +2769,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   }
 
   x1_tmp = x1;
-  if (!coloring->vscale){
+  if (!coloring->vscale) {
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
 
@@ -2796,14 +2798,14 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   ierr = VecGetLocalSize(x1_tmp,&N);CHKERRQ(ierr);
   ierr = VecGetArray(x1_tmp,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_GHOSTED){
+  if (ctype == IS_COLORING_GHOSTED) {
     col_start = 0; col_end = N;
-  } else if (ctype == IS_COLORING_GLOBAL){
+  } else if (ctype == IS_COLORING_GLOBAL) {
     xx = xx - start;
     vscale_array = vscale_array - start;
     col_start = start; col_end = N + start;
   }    CHKMEMQ;
-  for (col=col_start; col<col_end; col++){
+  for (col=col_start; col<col_end; col++) {
     /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
     if (coloring->htype[0] == 'w') {
       dx = 1.0 + unorm;
@@ -2818,7 +2820,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   }     CHKMEMQ;
   if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_GLOBAL){
+  if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -3397,7 +3399,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   }
 
   /* allocate the matrix space */
-  if (mallocmatspace){
+  if (mallocmatspace) {
     if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
       ierr = PetscMalloc(bs2*nz*sizeof(PetscScalar),&c->a);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory(C,a->i[mbs]*bs2*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -3462,7 +3464,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   c->compressedrow.use     = a->compressedrow.use;
   c->compressedrow.nrows   = a->compressedrow.nrows;
   c->compressedrow.check   = a->compressedrow.check;
-  if (a->compressedrow.use){
+  if (a->compressedrow.use) {
     i = a->compressedrow.nrows;
     ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i+1,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(C,(2*i+1)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -3541,7 +3543,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
     ierr = MatSetSizes(newmat,PETSC_DECIDE,PETSC_DECIDE,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   } else { /* Check if the matrix global sizes are correct */
     ierr = MatGetSize(newmat,&rows,&cols);CHKERRQ(ierr);
-    if (rows < 0 && cols < 0){ /* user might provide local size instead of global size */
+    if (rows < 0 && cols < 0) { /* user might provide local size instead of global size */
       ierr = MatGetLocalSize(newmat,&rows,&cols);CHKERRQ(ierr);
     }
     if (M != rows ||  N != cols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,rows,cols);

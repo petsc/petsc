@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
-  if (pc->setupcalled != 0){
+  if (pc->setupcalled != 0) {
     try {
       delete sa->SACUSP;
     } catch(char* ex) {
@@ -119,10 +119,10 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
 #else
   sac->SACUSP->solve(*barray,*yarray,monitor);
   *outits = monitor.iteration_count();
-  if (monitor.converged()){
+  if (monitor.converged()) {
     /* how to discern between converging from RTOL or ATOL?*/
     *reason = PCRICHARDSON_CONVERGED_RTOL;
-  } else{
+  } else {
     *reason = PCRICHARDSON_CONVERGED_ITS;
   }
 #endif

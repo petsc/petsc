@@ -476,7 +476,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (i && mglevels[i]->smoothd == mglevels[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
-      } else if (i){
+      } else if (i) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
@@ -703,7 +703,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (pc->dm) {
     /* need to tell all the coarser levels to rebuild the matrix using the DM for that level */
-    for (i=0; i<n-1; i++){
+    for (i=0; i<n-1; i++) {
       if (mglevels[i]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[i]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
     }
   }

@@ -199,11 +199,11 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
-  if (iascii){
+  if (iascii) {
     ierr = DMMeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DMMeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
-  } else if (isdraw){
+  } else if (isdraw) {
     SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for DMMesh");
   } else {
     SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);

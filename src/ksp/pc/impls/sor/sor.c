@@ -99,18 +99,16 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = PetscViewerASCIIPrintf(viewer,"  SOR:  zero initial guess\n");CHKERRQ(ierr);}
-    if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
-    else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
-    else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
-    else if ((sym & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP)
-                                             sortype = "symmetric";
-    else if (sym & SOR_BACKWARD_SWEEP)       sortype = "backward";
-    else if (sym & SOR_FORWARD_SWEEP)        sortype = "forward";
-    else if ((sym & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP)
-                                             sortype = "local_symmetric";
-    else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
-    else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward";
-    else                                     sortype = "unknown";
+    if (sym == SOR_APPLY_UPPER)                                              sortype = "apply_upper";
+    else if (sym == SOR_APPLY_LOWER)                                         sortype = "apply_lower";
+    else if (sym & SOR_EISENSTAT)                                            sortype = "Eisenstat";
+    else if ((sym & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP)             sortype = "symmetric";
+    else if (sym & SOR_BACKWARD_SWEEP)                                       sortype = "backward";
+    else if (sym & SOR_FORWARD_SWEEP)                                        sortype = "forward";
+    else if ((sym & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP) sortype = "local_symmetric";
+    else if (sym & SOR_LOCAL_FORWARD_SWEEP)                                  sortype = "local_forward";
+    else if (sym & SOR_LOCAL_BACKWARD_SWEEP)                                 sortype = "local_backward";
+    else                                                                     sortype = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, local iterations = %D, omega = %G\n",sortype,jac->its,jac->lits,jac->omega);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

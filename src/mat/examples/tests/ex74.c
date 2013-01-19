@@ -72,7 +72,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-    } else if (prob ==2){ /* matrix for the five point stencil */
+    } else if (prob ==2) { /* matrix for the five point stencil */
       n1 = (int) (PetscSqrtReal((PetscReal)n) + 0.001);
       if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!");
       for (i=0; i<n1; i++) {
@@ -292,7 +292,7 @@ int main(int argc,char **args)
       factinfo.fill = 5.0;
       ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
-    } else if (!doIcc){
+    } else if (!doIcc) {
       break;
     } else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;

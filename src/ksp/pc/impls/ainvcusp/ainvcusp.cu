@@ -62,11 +62,11 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
-  if (pc->setupcalled != 0){
+  if (pc->setupcalled != 0) {
     try {
       if (ainv->scaled) {
         delete (cuspainvprecondscaled*)ainv->AINVCUSP;
-      } else{
+      } else {
         delete (cuspainvprecond*)ainv->AINVCUSP;
       }
     } catch(char* ex) {

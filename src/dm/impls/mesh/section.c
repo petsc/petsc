@@ -21,7 +21,7 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
-  if (iascii){
+  if (iascii) {
     ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
     ALE::Obj<PETSC_MESH_TYPE>                    b;
     const char                                   *name;
@@ -32,7 +32,7 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
-  } else if (isdraw){
+  } else if (isdraw) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
@@ -1220,7 +1220,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
-  if (iascii){
+  if (iascii) {
     ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
     ALE::Obj<PETSC_MESH_TYPE>                   b;
     const char                                  *name;
@@ -1231,7 +1231,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
-  } else if (isdraw){
+  } else if (isdraw) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);

@@ -266,15 +266,15 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
       nnz = PetscMax(lusol->nnz, (int)(lusol->elbowroom*nz));
       nnz = PetscMax(nnz, 5*n);
 
-      if (nnz < lusol->luparm[12]){
+      if (nnz < lusol->luparm[12]) {
         nnz = (int)(lusol->luroom * lusol->luparm[12]);
-      } else if ((factorizations > 0) && (lusol->luroom < 6)){
+      } else if ((factorizations > 0) && (lusol->luroom < 6)) {
         lusol->luroom += 0.1;
       }
 
       nnz = PetscMax(nnz, (int)(lusol->luroom*(lusol->luparm[22] + lusol->luparm[23])));
 
-      if (nnz > lusol->nnz){
+      if (nnz > lusol->nnz) {
         ierr = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
         ierr = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
         lusol->nnz  = nnz;

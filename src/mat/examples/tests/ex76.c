@@ -58,7 +58,7 @@ int main(int argc,char **args)
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    } else if (prob ==2){ /* matrix for the five point stencil */
+    } else if (prob ==2) { /* matrix for the five point stencil */
       n1 = (int) (PetscSqrtReal((PetscReal)n) + 0.001);
       if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!");
       for (i=0; i<n1; i++) {
@@ -155,7 +155,7 @@ int main(int argc,char **args)
   if (TestShift == 1){
     factinfo.shifttype   = (PetscReal)MAT_SHIFT_NONZERO;
     factinfo.shiftamount = 0.1;
-  } else if (TestShift == 2){
+  } else if (TestShift == 2) {
     factinfo.shifttype = (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE;
   }
 

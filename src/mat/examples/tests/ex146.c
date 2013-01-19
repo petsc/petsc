@@ -98,10 +98,8 @@ PetscInt main(PetscInt argc,char **args)
     VecSetFromOptions(ini);
     VecSetFromOptions(final);
 
-    if (N2%2==0)
-      NM=N2+2;
-    else
-      NM=N2+1;
+    if (N2%2==0) NM=N2+2;
+    else NM=N2+1;
 
     ierr = VecGetOwnershipRange(fin,&low,PETSC_NULL);
     printf("The local index is %d from %d\n",low,rank);

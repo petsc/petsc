@@ -10,18 +10,14 @@
 # - exclude src/docs/ holding the documentation only, and ftn-auto directories
 # - get all lines with 'else' followed by a space or a curly brace
 # - remove all good uses of '} else {'
+# - remove all good uses of 'else {' preceeded by blanks only
 # - remove all good uses of '} else if (...) {'
 # - remove else with single command on same line
 # - remove preprocessor stuff
 
 
-
-find src/ -name *.[ch] -or -name *.cu \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | xargs grep "else[{\s]*" \
- | grep -v "} else {" \
- | grep -v "else if (.*) {" \
- | grep -v " else [^{]*;" \
- | grep -v "#else" 
-
+for f in `find src/ -name *.[ch] -or -name *.cu`
+do
+ output=`gcc -fpreprocessed -dD -E -w -x c++ $f | grep "else[{\s]*" | grep -v "} else {" | grep -v "^\s*else {" | grep -v "}* else if (.*) {" | grep -v " else [^{]*;" | grep -v "#\s*else"`
+ if [ -n "$output" ]; then echo "$f: $output"; fi
+done

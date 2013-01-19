@@ -415,8 +415,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   for (i=0;i<n;i++) {
     if (x[i] < 1.0e-12) {
       y[i] = log(1.0e-12);
-    }
-    else {
+    } else {
       y[i] = log(x[i]);
     }
   }
@@ -513,13 +512,11 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
      ierr = VecSet(user->ci,6.9e-8);CHKERRQ(ierr); */
 
 
-    for (i=0;i<n/5;i++)
-    {
+    for (i=0;i<n/5;i++) {
       if (i%5 <4 ) {
         cv_p[i] = 0.0;
         ci_p[i] = 1.0e-2;
-      }
-      else {
+      } else {
         cv_p[i] = 1.0e-2;
         ci_p[i] = 0.0;
       }
@@ -598,9 +595,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   for (i=0;i<n;i++) {
     if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
       Pv_p[i]=0;
-    }
-    else
-    {
+    } else {
       Pv_p[i]=w2[i]*user->VG;
       count = count + 1;
     }

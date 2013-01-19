@@ -52,8 +52,7 @@ int main(int argc,char **args)
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    else if (prob ==2){ /* matrix for the five point stencil */
+    } else if (prob ==2) { /* matrix for the five point stencil */
       n1 =  (int) PetscSqrtReal((PetscReal)n);
       if (n1*n1 != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
 
@@ -68,31 +67,31 @@ int main(int argc,char **args)
         }
       }
     }
-  } /* end of if (bs == 1) */
-  else {  /* bs > 1 */
-  for (block=0; block<n/bs; block++){
-    /* diagonal blocks */
-    value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
-    for (i=1+block*bs; i<bs-1+block*bs; i++) {
-      col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
-    value[0]=-1.0; value[1]=4.0;
-    ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    /* end of if (bs == 1) */ 
+  } else {  /* bs > 1 */
+    for (block=0; block<n/bs; block++){
+      /* diagonal blocks */
+      value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
+      for (i=1+block*bs; i<bs-1+block*bs; i++) {
+        col[0] = i-1; col[1] = i; col[2] = i+1;
+        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
+      value[0]=-1.0; value[1]=4.0;
+      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-    i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
-    value[0]=4.0; value[1] = -1.0;
-    ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  /* off-diagonal blocks */
-  value[0]=-1.0;
-  for (i=0; i<(n/bs-1)*bs; i++){
-    col[0]=i+bs;
-    ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    col[0]=i; row=i+bs;
-    ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  }
+      i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
+      value[0]=4.0; value[1] = -1.0;
+      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    /* off-diagonal blocks */
+    value[0]=-1.0;
+    for (i=0; i<(n/bs-1)*bs; i++){
+      col[0]=i+bs;
+      ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      col[0]=i; row=i+bs;
+      ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -120,8 +119,7 @@ int main(int argc,char **args)
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    else if (prob ==2){ /* matrix for the five point stencil */
+    } else if (prob ==2) { /* matrix for the five point stencil */
       n1 = (int) PetscSqrtReal((PetscReal)n);
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
@@ -134,31 +132,31 @@ int main(int argc,char **args)
         }
       }
     }
-  } /* end of if (bs == 1) */
-  else {  /* bs > 1 */
-  for (block=0; block<n/bs; block++){
-    /* diagonal blocks */
-    value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
-    for (i=1+block*bs; i<bs-1+block*bs; i++) {
-      col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
-    value[0]=-1.0; value[1]=4.0;
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    /* end of if (bs == 1) */
+  } else {  /* bs > 1 */
+    for (block=0; block<n/bs; block++){
+      /* diagonal blocks */
+      value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
+      for (i=1+block*bs; i<bs-1+block*bs; i++) {
+        col[0] = i-1; col[1] = i; col[2] = i+1;
+        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
+      value[0]=-1.0; value[1]=4.0;
+      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-    i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
-    value[0]=4.0; value[1] = -1.0;
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  /* off-diagonal blocks */
-  value[0]=-1.0;
-  for (i=0; i<(n/bs-1)*bs; i++){
-    col[0]=i+bs;
-    ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    col[0]=i; row=i+bs;
-    ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  }
+      i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
+      value[0]=4.0; value[1] = -1.0;
+      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    /* off-diagonal blocks */
+    value[0]=-1.0;
+    for (i=0; i<(n/bs-1)*bs; i++){
+      col[0]=i+bs;
+      ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      col[0]=i; row=i+bs;
+      ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

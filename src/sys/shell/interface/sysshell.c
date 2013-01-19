@@ -327,7 +327,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
   msgfunclen = namelen + messagelen;
   ierr = PetscMalloc(sizeof(char)*(msgfunclen+1), &msgfunc);CHKERRQ(ierr);
   msgfunc[0] = '\0';
-  if (namelen){
+  if (namelen) {
     ierr = PetscStrcat(msgfunc, name);CHKERRQ(ierr);
   }
   ierr = PetscStrcat(msgfunc, message);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
   if (namelen) {
     ierr = PetscStrcpy(callfunc, name);CHKERRQ(ierr);
   }
-  if (namelen){
+  if (namelen) {
     ierr = PetscStrcat(callfunc, "Call");CHKERRQ(ierr);
   }
   else {
@@ -483,10 +483,10 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
     ierr = PetscStrrchr(path,'.',&s);CHKERRQ(ierr);
     /* FIX: we should really be using PETSc's internally defined suffices */
     if (s != path && s[-1] == '.') {
-      if ((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')){
+      if ((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')) {
         type = PETSC_SHELL_VTABLE_SO;
       }
-      else if (s[0] == 'p' && s[1] == 'y' && s[2] == '\0'){
+      else if (s[0] == 'p' && s[1] == 'y' && s[2] == '\0') {
         type = PETSC_SHELL_VTABLE_PY;
       }
       else {
@@ -743,7 +743,8 @@ PetscErrorCode PetscShellGetVisitor(PetscShell shell, PetscShell *visitor)
 
 .seealso: PetscShellCall(), PetscShellRegisterComponentShell(), PetscShellRegisterComponentURL(), PetscShellRegisterDependence()
 @*/
-PetscErrorCode PetscShellVisit(PetscShell shell, const char* message){
+PetscErrorCode PetscShellVisit(PetscShell shell, const char* message)
+{
   PetscInt i, id, N, *vertices;
   PetscShell component;
   PetscErrorCode ierr;
@@ -767,7 +768,8 @@ PetscErrorCode PetscShellVisit(PetscShell shell, const char* message){
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellGetKeyID_Private"
-PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], PetscInt *_id, PetscBool  *_found){
+PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], PetscInt *_id, PetscBool  *_found)
+{
   PetscInt i;
   PetscBool  eq;
   PetscErrorCode ierr;
@@ -866,7 +868,8 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
 
 .seealso: PetscShellGetComponent(), PetscShellRegisterComponentURL(), PetscShellRegisterDependence(), PetscShellVisit()
 @*/
-PetscErrorCode  PetscShellRegisterComponentShell(PetscShell shell, const char key[], PetscShell component){
+PetscErrorCode  PetscShellRegisterComponentShell(PetscShell shell, const char key[], PetscShell component)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
@@ -898,7 +901,8 @@ PetscErrorCode  PetscShellRegisterComponentShell(PetscShell shell, const char ke
 
 .seealso: PetscShellRegisterComponentShell(), PetscShellGetComponent(), PetscShellSetURL()
 @*/
-PetscErrorCode  PetscShellRegisterComponentURL(PetscShell shell, const char key[], const char url[]){
+PetscErrorCode  PetscShellRegisterComponentURL(PetscShell shell, const char key[], const char url[])
+{
   PetscErrorCode ierr;
   PetscInt id;
   PetscFunctionBegin;
@@ -975,7 +979,7 @@ PetscErrorCode  PetscShellDestroy(PetscShell *shell)
   if (!*shell) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*shell,PETSC_SHELL_CLASSID,1);
   if (--((PetscObject)(*shell))->refct > 0) PetscFunctionReturn(0);
-  for (i = 0; i < (*shell)->N; ++i){
+  for (i = 0; i < (*shell)->N; ++i) {
     ierr = PetscObjectDestroy((PetscObject*)&(*shell)->component[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*shell)->component);CHKERRQ(ierr);
@@ -1004,7 +1008,8 @@ PetscErrorCode  PetscShellDestroy(PetscShell *shell)
 
 .seealso: PetscShellDestroy(), PetscShellSetURL(), PetscShellCall()
 @*/
-PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell){
+PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
+{
   PetscShell shell_;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1081,7 +1086,8 @@ PetscErrorCode PetscShellFinalizePackage(void)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellInitializePackage"
-PetscErrorCode PetscShellInitializePackage(const char path[]){
+PetscErrorCode PetscShellInitializePackage(const char path[])
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (PetscShellPackageInitialized) PetscFunctionReturn(0);

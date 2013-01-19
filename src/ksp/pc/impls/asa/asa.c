@@ -1962,7 +1962,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (asa_lev->next && asa_lev->smoothd == asa_lev->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
-      } else if (asa_lev->next){
+      } else if (asa_lev->next) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level ? -------------------------------\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(asa_lev->smoothu,viewer);CHKERRQ(ierr);

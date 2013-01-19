@@ -160,13 +160,13 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
       }
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
-      if (iscoloring->ctype == IS_COLORING_GLOBAL){
+      if (iscoloring->ctype == IS_COLORING_GLOBAL) {
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) {
           ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
         }
-      } else if (iscoloring->ctype == IS_COLORING_GHOSTED){
+      } else if (iscoloring->ctype == IS_COLORING_GHOSTED) {
         for (i=0; i<n; i++) {
           ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
         }

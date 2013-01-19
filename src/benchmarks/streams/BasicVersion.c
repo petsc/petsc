@@ -131,10 +131,8 @@ int main(int argc,char **args)
         }
 
    if (!rank) {
-     if  ( (quantum = checktick()) >= 1)
-       ;/* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
-     else
-       ;/* printf("Your clock granularity appears to be less than one microsecond.\n");*/
+     if  ( (quantum = checktick()) >= 1) ;/* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
+     else ;/* printf("Your clock granularity appears to be less than one microsecond.\n");*/
    }
 
    t = second();
@@ -189,7 +187,7 @@ int main(int argc,char **args)
 
    /*   --- SUMMARY --- */
 
-   for (k=0; k<NTIMES; k++){
+   for (k=0; k<NTIMES; k++) {
         for (j=0; j<4; j++) {
            mintime[j] = MIN(mintime[j], times[j][k]);
         }

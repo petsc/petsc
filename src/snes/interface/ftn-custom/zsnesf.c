@@ -233,9 +233,9 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_STDCALL *func)
   CHKFORTRANNULLOBJECT(cctx);
   CHKFORTRANNULLFUNCTION(destroy);
 
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_){
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESDefaultConverged,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_){
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESSkipConverged,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)func,cctx);

@@ -87,8 +87,8 @@ int main(int argc,char **argv)
   /* set options, then solve system */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
 
-  for (i=0; i<3; i++){
-    if (i<2){ /* test DIFFERENT_NONZERO_PATTERN */
+  for (i=0; i<3; i++) {
+    if (i<2) { /* test DIFFERENT_NONZERO_PATTERN */
       /* set values for rhs vector */
       ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
       /* modify A */
@@ -147,7 +147,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
         ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {

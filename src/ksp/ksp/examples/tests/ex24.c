@@ -63,13 +63,13 @@ int main(int argc,char **args)
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
-  for (k=0; k<3; k++){
-    if (k == 0){                              /* CG  */
+  for (k=0; k<3; k++) {
+    if (k == 0) {                              /* CG  */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-    } else if (k == 1){                       /* MINRES */
+    } else if (k == 1) {                       /* MINRES */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
@@ -108,10 +108,10 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    if (res_norm > res_tol){
+    if (res_norm > res_tol) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G;",res_norm);CHKERRQ(ierr);
     }
-    if (err_norm > err_tol){
+    if (err_norm > err_tol) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G.\n",err_norm);CHKERRQ(ierr);
     }
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

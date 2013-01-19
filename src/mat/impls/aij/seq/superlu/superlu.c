@@ -99,7 +99,7 @@ PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES": "NO");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES": "NO");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  lwork: %D\n",lu->lwork);CHKERRQ(ierr);
-  if (A->factortype == MAT_FACTOR_ILU){
+  if (A->factortype == MAT_FACTOR_ILU) {
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU_DropTol: %g\n",options.ILU_DropTol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU_FillTol: %g\n",options.ILU_FillTol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU_FillFactor: %g\n",options.ILU_FillFactor);CHKERRQ(ierr);
@@ -127,11 +127,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   SCformat       *Lstore;
 
   PetscFunctionBegin;
-  if (lu->flg == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
+  if (lu->flg == SAME_NONZERO_PATTERN) { /* successing numerical factorization */
     lu->options.Fact = SamePattern;
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A);
-    if (lu->options.Equil){
+    if (lu->options.Equil) {
       ierr = MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     if ( lu->lwork >= 0 ) {
@@ -144,7 +144,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   /* Create the SuperMatrix for lu->A=A^T:
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
-  if (lu->options.Equil){
+  if (lu->options.Equil) {
     aa = (Mat_SeqAIJ*)(lu->A_dup)->data;
   } else {
     aa = (Mat_SeqAIJ*)(A)->data;
@@ -165,7 +165,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 
   /* Numerical factorization */
   lu->B.ncol = 0;  /* Indicate not to solve the system */
-  if (F->factortype == MAT_FACTOR_LU){
+  if (F->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
     cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -187,7 +187,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
            &lu->mem_usage, &lu->stat, &sinfo);
 #endif
 #endif
-  } else if (F->factortype == MAT_FACTOR_ILU){
+  } else if (F->factortype == MAT_FACTOR_ILU) {
     /* Compute the incomplete factorization, condition number and pivot growth */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -218,7 +218,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
     if ( lu->options.ConditionNumber )
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
-  } else if ( sinfo > 0 ){
+  } else if ( sinfo > 0 ) {
     if ( lu->lwork == -1 ) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
@@ -318,11 +318,11 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   }
 
   lu->B.ncol = 1;   /* Set the number of right-hand side */
-  if (lu->options.Equil && !lu->rhs_dup){
+  if (lu->options.Equil && !lu->rhs_dup) {
     /* superlu overwrites b when Equil is used, thus create rhs_dup to keep user's b unchanged */
     ierr = PetscMalloc(n*sizeof(PetscScalar),&lu->rhs_dup);CHKERRQ(ierr);
   }
-  if (lu->options.Equil){
+  if (lu->options.Equil) {
     /* Copy b into rsh_dup */
     ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
     ierr = PetscMemcpy(lu->rhs_dup,barray,n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -347,7 +347,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #endif
 
   lu->options.Fact = FACTORED; /* Indicate the factored form of A is supplied. */
-  if (A->factortype == MAT_FACTOR_LU){
+  if (A->factortype == MAT_FACTOR_LU) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
     cgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -369,7 +369,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
            &lu->mem_usage, &lu->stat, &info);
 #endif
 #endif
-  } else if (A->factortype == MAT_FACTOR_ILU){
+  } else if (A->factortype == MAT_FACTOR_ILU) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
     cgsisx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
@@ -394,7 +394,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   }
-  if (!lu->options.Equil){
+  if (!lu->options.Equil) {
     ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
@@ -406,13 +406,13 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
       for (i = 0; i < 1; ++i)
         ierr = PetscPrintf(PETSC_COMM_SELF,"  %8d%8d%16e%16e\n", i+1, lu->stat.RefineSteps, ferr, berr);
     }
-  } else if ( info > 0 ){
+  } else if ( info > 0 ) {
     if ( lu->lwork == -1 ) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", info - lu->A.ncol);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
     }
-  } else if (info < 0){
+  } else if (info < 0) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
   }
 
@@ -590,7 +590,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
-  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU){
+  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
@@ -603,7 +603,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
 
-  if (ftype == MAT_FACTOR_LU){
+  if (ftype == MAT_FACTOR_LU) {
     set_default_options(&lu->options);
     /* Comments from SuperLU_4.0/SRC/dgssvx.c:
       "Whether or not the system will be equilibrated depends on the
@@ -613,7 +613,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
      We set 'options.Equil = NO' as default because additional space is needed for it.
     */
     lu->options.Equil = NO;
-  } else if (ftype == MAT_FACTOR_ILU){
+  } else if (ftype == MAT_FACTOR_ILU) {
     /* Set the default input options of ilu: */
     ilu_set_default_options(&lu->options);
   }
@@ -644,9 +644,9 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     ierr = PetscOptionsBool("-mat_superlu_printstat","PrintStat","None",(PetscBool)lu->options.PrintStat,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.PrintStat = YES;
     ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr);
-    if (lu->lwork > 0 ){
+    if (lu->lwork > 0 ) {
       ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr);
-    } else if (lu->lwork != 0 && lu->lwork != -1){
+    } else if (lu->lwork != 0 && lu->lwork != -1) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %D is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);
       lu->lwork = 0;
     }
@@ -659,11 +659,11 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     if (flg) lu->options.ILU_FillFactor = (double) real_input;
     ierr = PetscOptionsInt("-mat_superlu_ilu_droprull","ILU_DropRule","None",lu->options.ILU_DropRule,&lu->options.ILU_DropRule,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_ilu_norm","ILU_Norm","None",lu->options.ILU_Norm,&indx,&flg);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       lu->options.ILU_Norm = (norm_t)indx;
     }
     ierr = PetscOptionsInt("-mat_superlu_ilu_milu","ILU_MILU","None",lu->options.ILU_MILU,&indx,&flg);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       lu->options.ILU_MILU = (milu_t)indx;
     }
   PetscOptionsEnd();

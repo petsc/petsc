@@ -302,7 +302,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         uxx = (two*u - x[row-1] - x[row+1])*hydhx;
         uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
         f[row] = uxx + uyy - sc*exp(u);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         f[row] = .5*two*(hydhx + hxdhy)*x[row];
       } else {
         f[row] = .25*two*(hydhx + hxdhy)*x[row];
@@ -357,7 +357,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
         ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
@@ -409,7 +409,7 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat 
         v[3] = -hydhx; col[3] = row + 1;
         v[4] = -hxdhy; col[4] = row + mx;
         ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
         ierr = MatSetValues(jac,1,&row,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {

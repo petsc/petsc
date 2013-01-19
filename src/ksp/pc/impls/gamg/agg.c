@@ -495,7 +495,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
               if (hav==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
-          } else{            /* I'm stealing this local, owned by a ghost */
+          } else {            /* I'm stealing this local, owned by a ghost */
             if (sgid != -1) {
               SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold 0.0' if the matrix is structurally symmetric.");
             }

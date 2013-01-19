@@ -175,44 +175,44 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute function over the locally owned part of the mesh */
-  for (j=ys; j < ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
+  for (j=ys; j < ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
 
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
-      if (i==0){ /* left side */
+      if (i==0) { /* left side */
         xl= left[j-ys+1];
         xlt = left[j-ys+2];
       } else {
         xl = x[j][i-1];
       }
 
-      if (j==0){ /* bottom side */
+      if (j==0) { /* bottom side */
         xb=bottom[i-xs+1];
         xrb = bottom[i-xs+2];
       } else {
         xb = x[j-1][i];
       }
 
-      if (i+1 == mx){ /* right side */
+      if (i+1 == mx) { /* right side */
         xr=right[j-ys+1];
         xrb = right[j-ys];
       } else {
         xr = x[j][i+1];
       }
 
-      if (j+1==0+my){ /* top side */
+      if (j+1==0+my) { /* top side */
         xt=top[i-xs+1];
         xlt = top[i-xs];
-      }else {
+      } else {
         xt = x[j+1][i];
       }
 
-      if (i>0 && j+1<my){ /* left top side */
+      if (i>0 && j+1<my) { /* left top side */
         xlt = x[j+1][i-1];
       }
-      if (j>0 && i+1<mx){ /* right bottom */
+      if (j>0 && i+1<mx) { /* right bottom */
         xrb = x[j-1][i+1];
       }
 
@@ -309,7 +309,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscFunctionBeginUser;
   /* Set various matrix options */
   info = MatAssembled(H,&assembled);CHKERRQ(info);
-  if (assembled){info = MatZeroEntries(H);CHKERRQ(info);}
+  if (assembled) {info = MatZeroEntries(H);CHKERRQ(info);}
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vectors */
@@ -328,13 +328,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute Jacobian over the locally owned part of the mesh */
-  for (j=ys; j< ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
+  for (j=ys; j< ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left */
-      if (i==0){
+      if (i==0) {
         xl= left[j+1];
         xlt = left[j+2];
       } else {
@@ -342,7 +342,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Bottom */
-      if (j==0){
+      if (j==0) {
         xb=bottom[i+1];
         xrb = bottom[i+2];
       } else {
@@ -350,7 +350,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Right */
-      if (i+1 == mx){
+      if (i+1 == mx) {
         xr=right[j+1];
         xrb = right[j];
       } else {
@@ -358,20 +358,20 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Top */
-      if (j+1==my){
+      if (j+1==my) {
         xt=top[i+1];
         xlt = top[i];
-      }else {
+      } else {
         xt = x[j+1][i];
       }
 
       /* Top left */
-      if (i>0 && j+1<my){
+      if (i>0 && j+1<my) {
         xlt = x[j+1][i-1];
       }
 
       /* Bottom right */
-      if (j>0 && i+1<mx){
+      if (j>0 && i+1<mx) {
         xrb = x[j-1][i+1];
       }
 
@@ -414,19 +414,19 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       k=0;
       row.i = i;row.j= j;
       /* Bottom */
-      if (j>0){
+      if (j>0) {
         v[k]=hb;
         col[k].i = i; col[k].j=j-1; k++;
       }
 
       /* Bottom right */
-      if (j>0 && i < mx -1){
+      if (j>0 && i < mx -1) {
         v[k]=hbr;
         col[k].i = i+1; col[k].j = j-1; k++;
       }
 
       /* left */
-      if (i>0){
+      if (i>0) {
         v[k]= hl;
         col[k].i = i-1; col[k].j = j; k++;
       }
@@ -435,19 +435,19 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       v[k]= hc; col[k].i= row.i; col[k].j = row.j; k++;
 
       /* Right */
-      if (i < mx-1 ){
+      if (i < mx-1) {
         v[k]= hr;
         col[k].i= i+1; col[k].j = j;k++;
       }
 
       /* Top left */
-      if (i>0 && j < my-1 ){
+      if (i>0 && j < my-1) {
         v[k]= htl;
         col[k].i = i-1;col[k].j = j+1; k++;
       }
 
       /* Top */
-      if (j < my-1 ){
+      if (j < my-1) {
         v[k]= ht;
         col[k].i = i; col[k].j = j+1; k++;
       }
@@ -518,18 +518,18 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
-  for (j=0; j<4; j++){
-    if (j==0){
+  for (j=0; j<4; j++) {
+    if (j==0) {
       yt=b;
       xt=l+hx*xs;
       limit=bsize;
       info = VecGetArray(Bottom,&boundary);CHKERRQ(info);
-    } else if (j==1){
+    } else if (j==1) {
       yt=t;
       xt=l+hx*xs;
       limit=tsize;
       info = VecGetArray(Top,&boundary);CHKERRQ(info);
-    } else if (j==2){
+    } else if (j==2) {
       yt=b+hy*ys;
       xt=l;
       limit=lsize;
@@ -541,10 +541,10 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       info = VecGetArray(Right,&boundary);CHKERRQ(info);
     }
 
-    for (i=0; i<limit; i++){
+    for (i=0; i<limit; i++) {
       u1=xt;
       u2=-yt;
-      for (k=0; k<maxits; k++){
+      for (k=0; k<maxits; k++) {
         nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
         nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
         fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
@@ -566,13 +566,13 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       }
     }
 
-    if (j==0){
+    if (j==0) {
       info = VecRestoreArray(Bottom,&boundary);CHKERRQ(info);
-    } else if (j==1){
+    } else if (j==1) {
       info = VecRestoreArray(Top,&boundary);CHKERRQ(info);
-    } else if (j==2){
+    } else if (j==2) {
       info = VecRestoreArray(Left,&boundary);CHKERRQ(info);
-    } else if (j==3){
+    } else if (j==3) {
       info = VecRestoreArray(Right,&boundary);CHKERRQ(info);
     }
 
@@ -581,22 +581,22 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   /* Scale the boundary if desired */
 
   info = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg);CHKERRQ(info);
-  if (flg){
+  if (flg) {
     info = VecScale(Bottom, scl);CHKERRQ(info);
   }
 
   info = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg);CHKERRQ(info);
-  if (flg){
+  if (flg) {
     info = VecScale(Top, scl);CHKERRQ(info);
   }
 
   info = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg);CHKERRQ(info);
-  if (flg){
+  if (flg) {
     info = VecScale(Right, scl);CHKERRQ(info);
   }
 
   info = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg);CHKERRQ(info);
-  if (flg){
+  if (flg) {
     info = VecScale(Left, scl);CHKERRQ(info);
   }
 
@@ -627,7 +627,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscFunctionBeginUser;
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
 
-  if (flg && start==0){ /* The zero vector is reasonable */
+  if (flg && start==0) { /* The zero vector is reasonable */
 
     info = VecSet(X, zero);CHKERRQ(info);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
@@ -648,8 +648,8 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
     /* Perform local computations */
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i< xs+xm; i++){
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i< xs+xm; i++) {
         x[j][i] = ( (j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
                    (i+1)*left[j-ys+1]/mx+(mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
       }
@@ -694,23 +694,23 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
 
   info = PetscOptionsHasName(PETSC_NULL,"-cylinder",&cylinder);CHKERRQ(info);
   /* Compute the optional lower box */
-  if (cylinder){
-    for (i=xs; i< xs+xm; i++){
-      for (j=ys; j<ys+ym; j++){
+  if (cylinder) {
+    for (i=xs; i< xs+xm; i++) {
+      for (j=ys; j<ys+ym; j++) {
         t1=(2.0*i-mx)*bmy;
         t2=(2.0*j-my)*bmx;
         t3=bmx*bmx*bmy*bmy;
-        if ( t1*t1 + t2*t2 <= t3 ){
+        if ( t1*t1 + t2*t2 <= t3) {
           xl[j][i] = user->bheight;
         }
       }
     }
   } else {
     /* Compute the optional lower box */
-    for (i=xs; i< xs+xm; i++){
-      for (j=ys; j<ys+ym; j++){
+    for (i=xs; i< xs+xm; i++) {
+      for (j=ys; j<ys+ym; j++) {
         if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 &&
-            j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
+            j>=(my-bmy)/2 && j<my-(my-bmy)/2) {
           xl[j][i] = user->bheight;
         }
       }

@@ -458,18 +458,12 @@ extern PetscScalar cloud(PetscScalar fract)
     PetscScalar emma = 0;
 
     /* modifies radiative balance depending on cloud cover */
-    if (fract >= 0.9)
-       emma = 1;
-    else if (0.9 > fract && fract >= 0.8)
-         emma = 0.9;
-    else if (0.8 > fract && fract >= 0.7)
-         emma = 0.85;
-    else if (0.7 > fract && fract >= 0.6)
-         emma = 0.75;
-    else if (0.6 > fract && fract >= 0.5)
-         emma = 0.65;
-    else if (0.4 > fract && fract >= 0.3)
-         emma = emma*1.086956;
+    if (fract >= 0.9)                     emma = 1;
+    else if (0.9 > fract && fract >= 0.8) emma = 0.9;
+    else if (0.8 > fract && fract >= 0.7) emma = 0.85;
+    else if (0.7 > fract && fract >= 0.6) emma = 0.75;
+    else if (0.6 > fract && fract >= 0.5) emma = 0.65;
+    else if (0.4 > fract && fract >= 0.3) emma = emma*1.086956;
     return emma;
 }
 extern PetscScalar Lconst(PetscScalar sfctemp)

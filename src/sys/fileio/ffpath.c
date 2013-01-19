@@ -78,8 +78,7 @@ PetscErrorCode  PetscGetFileFromPath(char *path,char *defname,char *name,char *f
       if (p) {
         *p  = 0;
         env = p + 1;
-      } else
-        env = 0;
+      } else env = 0;
 
       /* Form trial file name */
       ierr = PetscStrcpy(trial,cdir);CHKERRQ(ierr);

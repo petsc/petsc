@@ -2318,10 +2318,8 @@ PetscErrorCode  TSStep(TS ts)
       } else SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->max_steps)
-      ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time)
-      ts->reason = TS_CONVERGED_TIME;
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
 
   PetscFunctionReturn(0);
@@ -2426,10 +2424,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else {
     /* steps the requested number of timesteps. */
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    if (ts->steps >= ts->max_steps)
-      ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time)
-      ts->reason = TS_CONVERGED_TIME;
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
       ierr = TSStep(ts);CHKERRQ(ierr);
       ierr = TSPostStep(ts);CHKERRQ(ierr);

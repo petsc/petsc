@@ -69,9 +69,7 @@ int main(int argc, char **argv)
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);        
-  }
-  else
-  {
+  } else {
     /* Create a 1D DA with dof = 3; the whole thing */
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
@@ -370,8 +368,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   for (i=0;i<n;i++) {
     if (x[i] < 1.0e-12) {
       y[i] = log(1.0e-12);
-    }
-    else {
+    } else {
       y[i] = log(x[i]);
     }
   }
@@ -408,9 +405,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   if (user->periodic)
   {
     h = (user->xmax-user->xmin)/Xda;
-  }
-  else
-  {
+  } else {
     h = (user->xmax-user->xmin)/(Xda-1.0);
   }    
     
@@ -439,18 +434,14 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
         vals_cv[k] = cv_v;
         vals_eta[k] = eta_v;
         vals_DDcv[k] = 0.0;
-      }
-      else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) )
-      {
+      } else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
         r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
         /* r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0); */
         hhr = 0.25*(-r*r*r + 3*r + 2);
         vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
         vals_eta[k] = eta_m + (1.0 - hhr)*(eta_v - eta_m);
         vals_DDcv[k] = (cv_v - cv_m)*r*6.0/(lambda*lambda);
-      }
-      else
-      {
+      } else {
         vals_cv[k] = cv_m;
         vals_eta[k] = eta_m;
         vals_DDcv[k] = 0.0;
@@ -635,9 +626,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     hx = (user->xmax-user->xmin)/Xda;
     hy = (user->ymax-user->ymin)/Yda;
     hz = (user->zmax-user->zmin)/Zda;
-  }
-  else
-  {
+  } else {
     hx = (user->xmax-user->xmin)/(Xda-1.0);
     hy = (user->ymax-user->ymin)/(Yda-1.0);
     hz = (user->zmax-user->zmin)/(Zda-1.0);

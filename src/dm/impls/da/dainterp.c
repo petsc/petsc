@@ -64,7 +64,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC){
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -139,7 +139,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
       /* remainders */
       li = i - ratio * (i/ratio);
-      if (i==mx-1){ li = nxi-1; }
+      if (i==mx-1) { li = nxi-1; }
 
       /* corners */
       col     = dof*(i_c-i_start_ghost_c);
@@ -152,7 +152,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
       /* edges + interior */
       /* remainders */
-      if (i==mx-1){ i_c--; }
+      if (i==mx-1) { i_c--; }
 
       col     = dof*(i_c-i_start_ghost_c);
       cols[0] = idx_c[col]/dof; /* one left and below; or we are right on it */
@@ -190,7 +190,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC){
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -263,14 +263,14 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC){
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (by == DMDA_BOUNDARY_PERIODIC){
+  if (by == DMDA_BOUNDARY_PERIODIC) {
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -419,9 +419,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
         /* remainders */
         li = i - ratioi * (i/ratioi);
-        if (i==mx-1){ li = nxi-1; }
+        if (i==mx-1) { li = nxi-1; }
         lj = j - ratioj * (j/ratioj);
-        if (j==my-1){ lj = neta-1; }
+        if (j==my-1) { lj = neta-1; }
 
         /* corners */
         col     = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
@@ -436,8 +436,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
         /* edges + interior */
         /* remainders */
-        if (i==mx-1){ i_c--; }
-        if (j==my-1){ j_c--; }
+        if (i==mx-1) { i_c--; }
+        if (j==my-1) { j_c--; }
 
         col     = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
         cols[0] = col_shift + idx_c[col]/dof; /* left, below */
@@ -916,11 +916,11 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 
           /* remainders */
           li = i - ratioi * (i/ratioi);
-          if (i==mx-1){ li = nxi-1; }
+          if (i==mx-1) { li = nxi-1; }
           lj = j - ratioj * (j/ratioj);
-          if (j==my-1){ lj = neta-1; }
+          if (j==my-1) { lj = neta-1; }
           lk = l - ratiok * (l/ratiok);
-          if (l==mz-1){ lk = nzeta-1; }
+          if (l==mz-1) { lk = nzeta-1; }
 
           /* corners */
           col     = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c)+m_ghost_c*(j_c-j_start_ghost_c)+(i_c-i_start_ghost_c));
@@ -937,9 +937,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 
           /* edges + interior */
           /* remainders */
-          if (i==mx-1){ i_c--; }
-          if (j==my-1){ j_c--; }
-          if (l==mz-1){ l_c--; }
+          if (i==mx-1) { i_c--; }
+          if (j==my-1) { j_c--; }
+          if (l==mz-1) { l_c--; }
 
           col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
           cols[0] = idx_c[col]/dof; /* one left and below; or we are right on it */
@@ -1010,20 +1010,20 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
   if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
-  if (ddc->interptype == DMDA_Q1){
-    if (dimc == 1){
+  if (ddc->interptype == DMDA_Q1) {
+    if (dimc == 1) {
       ierr = DMCreateInterpolation_DA_1D_Q1(dac,daf,A);CHKERRQ(ierr);
-    } else if (dimc == 2){
+    } else if (dimc == 2) {
       ierr = DMCreateInterpolation_DA_2D_Q1(dac,daf,A);CHKERRQ(ierr);
-    } else if (dimc == 3){
+    } else if (dimc == 3) {
       ierr = DMCreateInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
-  } else if (ddc->interptype == DMDA_Q0){
-    if (dimc == 1){
+  } else if (ddc->interptype == DMDA_Q0) {
+    if (dimc == 1) {
       ierr = DMCreateInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } else if (dimc == 2){
+    } else if (dimc == 2) {
        ierr = DMCreateInterpolation_DA_2D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } else if (dimc == 3){
+    } else if (dimc == 3) {
        ierr = DMCreateInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   }
@@ -1181,21 +1181,21 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
 
-  if (bx == DMDA_BOUNDARY_PERIODIC){
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (by == DMDA_BOUNDARY_PERIODIC){
+  if (by == DMDA_BOUNDARY_PERIODIC) {
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
     ratioj = (my-1)/(My-1);
     if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
-  if (bz == DMDA_BOUNDARY_PERIODIC){
+  if (bz == DMDA_BOUNDARY_PERIODIC) {
     ratiok = mz/Mz;
     if (ratiok*Mz != mz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D My %D",mz,Mz);
   } else {
@@ -1266,7 +1266,7 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
   if (dimc > 1 && Nc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
-  if (dimc == 1){
+  if (dimc == 1) {
     ierr = DMCreateInjection_DA_1D(dac,daf,inject);CHKERRQ(ierr);
   } else if (dimc == 2) {
     ierr = DMCreateInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);

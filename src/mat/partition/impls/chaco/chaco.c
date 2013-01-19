@@ -246,15 +246,17 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part,MPChacoG
 
   PetscFunctionBegin;
   if (method==PETSC_DEFAULT) chaco->global_method = MP_CHACO_MULTILEVEL;
-  else switch (method) {
-    case MP_CHACO_MULTILEVEL:
-    case MP_CHACO_SPECTRAL:
-    case MP_CHACO_LINEAR:
-    case MP_CHACO_RANDOM:
-    case MP_CHACO_SCATTERED:
-      chaco->global_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+  else {
+    switch (method) {
+      case MP_CHACO_MULTILEVEL:
+      case MP_CHACO_SPECTRAL:
+      case MP_CHACO_LINEAR:
+      case MP_CHACO_RANDOM:
+      case MP_CHACO_SCATTERED:
+        chaco->global_method = method; break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -343,12 +345,14 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
 
   PetscFunctionBegin;
   if (method==PETSC_DEFAULT) chaco->local_method = MP_CHACO_KERNIGHAN;
-  else switch (method) {
-    case MP_CHACO_KERNIGHAN:
-    case MP_CHACO_NONE:
-      chaco->local_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+  else {
+    switch (method) {
+      case MP_CHACO_KERNIGHAN:
+      case MP_CHACO_NONE:
+        chaco->local_method = method; break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -480,12 +484,14 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part,MPC
 
   PetscFunctionBegin;
   if (method==PETSC_DEFAULT) chaco->eigen_method = MP_CHACO_LANCZOS;
-  else switch (method) {
-    case MP_CHACO_LANCZOS:
-    case MP_CHACO_RQI:
-      chaco->eigen_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+  else {
+    switch (method) {
+      case MP_CHACO_LANCZOS:
+      case MP_CHACO_RQI:
+        chaco->eigen_method = method; break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    }
   }
   PetscFunctionReturn(0);
 }

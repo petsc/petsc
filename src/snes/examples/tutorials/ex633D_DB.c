@@ -438,8 +438,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   for (i=0;i<n;i++) {
     if (x[i] < 1.0e-12) {
       y[i] = log(1.0e-12);
-    }
-    else {
+    } else {
       y[i] = log(x[i]);
     }
   }
@@ -509,17 +508,14 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
           vals_cv[k] = cv_v;
           vals_ci[k] = ci_v;
           vals_eta[k] = eta_v;
-        }
-        else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) )
-        {
+        } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
           /*r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);*/
           r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
           hhr = 0.25*(-r*r*r + 3*r + 2);
           vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
           vals_ci[k] = ci_m + (1.0 - hhr)*(ci_v - ci_m);
           vals_eta[k] = eta_m + (1.0 - hhr)*(eta_v - eta_m);
-        } else
-        {
+        } else {
           vals_cv[k] = cv_m;
           vals_ci[k] = ci_m;
           vals_eta[k] = eta_m;
@@ -540,7 +536,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
 
-  }else {
+  } else {
   
   ierr = VecSet(user->cv,6.9e-4);CHKERRQ(ierr);
   ierr = VecSet(user->ci,6.9e-4);CHKERRQ(ierr);
@@ -611,9 +607,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   for (i=0;i<n;i++) {
     if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
       Pv_p[i]=0;
-    }
-    else
-    {
+    } else {
       Pv_p[i]=w2[i]*user->VG;
       count = count + 1;
     }

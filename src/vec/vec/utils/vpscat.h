@@ -89,7 +89,8 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #endif
 
-  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
+  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
+  else {yv = xv;}
 
   if (!(mode & SCATTER_LOCAL)) {
     if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {

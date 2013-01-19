@@ -864,10 +864,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   for (i=0; i<B->mnls[rank]; i++) {
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
-      if ((global_col >= first_diag_col) && (global_col < last_diag_col))
-        d_nnz[i]++;
-      else
-        o_nnz[i]++;
+      if ((global_col >= first_diag_col) && (global_col < last_diag_col)) d_nnz[i]++;
+      else o_nnz[i]++;
     }
   }
 

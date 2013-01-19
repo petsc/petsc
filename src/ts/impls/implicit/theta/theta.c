@@ -140,7 +140,7 @@ static PetscErrorCode TSEvaluateStep_Theta(TS ts,PetscInt order,Vec U,PetscBool 
       ierr = VecAXPBYPCZ(th->Xdot,-shift,shift,0,U,th->X);CHKERRQ(ierr);
       ierr = VecAXPY(U,ts->time_step,th->Xdot);CHKERRQ(ierr);
     }
-  } else if(order == th->order-1 && order) {
+  } else if (order == th->order-1 && order) {
     ierr = VecWAXPY(U,ts->time_step,th->Xdot,th->X0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

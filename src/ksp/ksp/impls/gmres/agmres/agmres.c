@@ -146,7 +146,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   ierr = KSPSetOperators(kspgmres, Amat, Pmat, flag);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_view", &flg);CHKERRQ(ierr);
-  if (flag){ ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }
+  if (flag) { ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }
   ierr = KSPSetType(kspgmres, KSPGMRES);CHKERRQ(ierr);
   ierr = KSPGMRESSetRestart(kspgmres, max_k);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   ksp->guess_zero = PETSC_FALSE;
   ksp->rnorm = kspgmres->rnorm;
   ksp->its = kspgmres->its;
-  if (kspgmres->reason == KSP_CONVERGED_RTOL){
+  if (kspgmres->reason == KSP_CONVERGED_RTOL) {
     ksp->reason = KSP_CONVERGED_RTOL;
     PetscFunctionReturn(0);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
@@ -214,7 +214,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   }
   else ksp->reason = KSP_CONVERGED_ITERATING;
 
-  if ((agmres->r == 0) && (agmres->neig > 0) ){  /* Compute the eigenvalues for the shifts and the eigenvectors (to augment the Newton basis) */
+  if ((agmres->r == 0) && (agmres->neig > 0) ) {  /* Compute the eigenvalues for the shifts and the eigenvectors (to augment the Newton basis) */
     agmres->HasSchur = PETSC_FALSE;
     ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp, &Neig);CHKERRQ (ierr);
     Neig = max_k;
@@ -231,7 +231,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
     PetscInt i;
     PetscScalar *wr, *wi,*Rshift, *Ishift;
     ierr = PetscMalloc4(2*max_k, PetscScalar, &wr, 2*max_k, PetscScalar, &wi, 2*max_k, PetscScalar, &Rshift, 2*max_k, PetscScalar, &Ishift);CHKERRQ(ierr);
-    for (i = 0; i < max_k; i++){
+    for (i = 0; i < max_k; i++) {
       wr[i] = agmres->wr[i];
       wi[i] = agmres->wi[i];
     }
@@ -239,19 +239,19 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE;
     if (ksp->reason == KSP_CONVERGED_RTOL) PetscFunctionReturn(0);
     else ksp->reason = KSP_CONVERGED_ITERATING;
-    if (agmres->neig > 0 ){ /* Compute the eigenvalues for the shifts) and the eigenvectors (to augment the Newton basis */
+    if (agmres->neig > 0 ) { /* Compute the eigenvalues for the shifts) and the eigenvectors (to augment the Newton basis */
       agmres->HasSchur = PETSC_FALSE;
       ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp, &Neig);CHKERRQ (ierr);
       Neig = max_k;
     } else { /* From DGMRES, compute only the eigenvalues needed as Shifts for the Newton Basis */
       ierr =  KSPDGMRESComputeSchurForm_DGMRES(ksp, &Neig);CHKERRQ(ierr);
     }
-    for (i = 0; i < max_k; i++){
+    for (i = 0; i < max_k; i++) {
       wr[max_k+i] = agmres->wr[i];
       wi[max_k+i] = agmres->wi[i];
     }
     ierr = KSPAGMRESLejaOrdering(wr, wi, Rshift, Ishift, 2*max_k);CHKERRQ(ierr);
-    for (i = 0; i< max_k; i++){
+    for (i = 0; i< max_k; i++) {
       agmres->Rshift[i] = Rshift[i];
       agmres->Ishift[i] = Ishift[i];
     }
@@ -292,8 +292,8 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
   PetscFunctionBegin;
   ierr               = PetscLogEventBegin(KSP_AGMRESBuildBasis, ksp, 0,0,0);CHKERRQ(ierr);
   Scale[0]           = 1.0;
-  while (j <= max_k){
-    if (Ishift[j-1] == 0){
+  while (j <= max_k) {
+    if (Ishift[j-1] == 0) {
       if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
         /* Apply the precond-matrix operators */
         ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
@@ -362,7 +362,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
     }
   }
   /* Augment the subspace with the eigenvectors*/
-  while (j <= KspSize){
+  while (j <= KspSize) {
     ierr = KSP_PCApplyBAorAB(ksp, agmres->U[j - max_k - 1], VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
 #if defined(KSP_AGMRES_NONORM)
     Scale[j] = 1.0;
@@ -404,21 +404,21 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscMemzero(agmres->hh_origin, (N+1)*N*sizeof(PetscScalar));CHKERRQ(ierr);
-  while (j < max_k){
+  while (j < max_k) {
     /* Real shifts */
-    if (Ishift[j] == 0){
-      for (i = 0; i <= j; i++){
+    if (Ishift[j] == 0) {
+      for (i = 0; i <= j; i++) {
         *H(i,j) = *RLOC(i,j+1)/Scale[j]  + (Rshift[j] * *RLOC(i,j));
       }
       *H(j+1,j) = *RLOC(j+1,j+1)/Scale[j];
       j++;
-    } else if (Ishift[j] > 0){
-      for (i = 0; i <= j; i++){
+    } else if (Ishift[j] > 0) {
+      for (i = 0; i <= j; i++) {
         *H(i,j) = *RLOC(i,j+1)/Scale[j] +  Rshift[j] * *RLOC(i, j);
       }
       *H(j+1,j) = *RLOC(j+1, j+1)/Scale[j];
       j++;
-      for (i = 0; i <= j; i++){
+      for (i = 0; i <= j; i++) {
         *H(i,j) = (*RLOC(i,j+1) + Rshift[j-1] * *RLOC(i,j) - Scale[j-1] * Ishift[j-1]*Ishift[j-1]* *RLOC(i,j-1));
       }
       *H(j,j) = (*RLOC(j,j+1) + Rshift[j-1] * *RLOC(j,j));
@@ -461,8 +461,8 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
   N = PetscBLASIntCast(MAXKSPSIZE + 1);
   ldH = PetscBLASIntCast(N + 1);
   /* Save a copy of the Hessenberg matrix */
-  for (j = 0; j < N-1; j++){
-    for (i = 0; i < N; i++){
+  for (j = 0; j < N-1; j++) {
+    for (i = 0; i < N; i++) {
       *HS(i,j) = *H(i,j);
     }
   }
@@ -578,14 +578,14 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   ksp->reason = KSP_CONVERGED_ITERATING;
-  if (!agmres->HasShifts){ /* Compute Shifts for the Newton basis */
+  if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */
     ierr = KSPComputeShifts_DGMRES(ksp);CHKERRQ(ierr);
   }
   /* NOTE: At this step, the initial guess is not equal to zero since one cycle of the classical GMRES is performed to compute the shifts */
   ierr = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason) {
     ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TMP,VEC_TMP_MATOP,VEC_V(0),ksp->vec_rhs);CHKERRQ(ierr);
-    if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond){
+    if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
       ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(0), VEC_TMP);CHKERRQ(ierr);
       ierr = VecCopy(VEC_TMP, VEC_V(0));CHKERRQ(ierr);
       agmres->matvecs += 1;
@@ -603,7 +603,7 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     if (!ksp->reason && agmres->neig > 0) {
       test = agmres->max_k * log(ksp->rtol/res) / log(res/res_old); /* estimate the remaining number of steps */
       if ((test > agmres->smv*(ksp->max_it-ksp->its)) || agmres->force) {
-        if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))){
+        if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) {
           agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */
         }
         ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp,&agmres->neig);CHKERRQ(ierr);
@@ -680,7 +680,7 @@ PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
     CHKERRQ (ierr);
     if (agmres->force) PetscViewerASCIIPrintf (viewer, " AGMRES: Adaptive strategy is used: FALSE\n");
     else PetscViewerASCIIPrintf (viewer, " AGMRES: Adaptive strategy is used: TRUE\n");
-    if (agmres->DeflPrecond){
+    if (agmres->DeflPrecond) {
       ierr=PetscViewerASCIIPrintf (viewer, " AGMRES: STRATEGY OF DEFLATION: PRECONDITIONER \n");CHKERRQ(ierr);
       ierr=PetscViewerASCIIPrintf (viewer, "  AGMRES: Frequency of extracted eigenvalues = %D\n", agmres->neig);
       CHKERRQ (ierr);

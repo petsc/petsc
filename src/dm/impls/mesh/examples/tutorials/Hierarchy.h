@@ -606,8 +606,7 @@ namespace Hierarchy {
                   }
                   if(topology->getPatch(curLevel+1)->support(*parts_iter)->size() == 1) {
                     if (PointInEdgeRegion(part_coords, p_coords, factor*p_space/2) && topology->getValue(boundary, *p_iter) == 0) p_is_ok = false;
-                  }
-                  else if(topology->getValue(traversal, *parts_iter) != 1 && PointMidpointCollide(part_coords, p_coords, factor*p_space)) {
+                  } else if (topology->getValue(traversal, *parts_iter) != 1 && PointMidpointCollide(part_coords, p_coords, factor*p_space)) {
                      compare_list.push_back(*parts_iter);
                      topology->setValue(traversal, *parts_iter, 1);
                   }

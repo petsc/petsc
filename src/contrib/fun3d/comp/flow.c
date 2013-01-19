@@ -516,10 +516,8 @@ int Update(SNES snes, void *ctx)
     fptr = fopen("history.out", "w");
     fprintf(fptr, "VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");
  }
- if (PreLoadFlag)
-  max_steps = 1;
- else
-  max_steps = tsCtx->max_steps;
+ if (PreLoadFlag) max_steps = 1;
+ else max_steps = tsCtx->max_steps;
  max_time = tsCtx->max_time;
  fratio = 1.0;
  tsCtx->ptime = 0.0;
@@ -719,16 +717,14 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
     /* first time through so compute initial function norm */
     tsCtx->fnorm_ini = fnorm;
     tsCtx->cfl = tsCtx->cfl_ini;
-  }
-  else {
+  } else {
      newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/fnorm;
      tsCtx->cfl = PetscMin(newcfl, tsCtx->cfl_max);
   }
 
   /*if (iramp < 0) {
    newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/fnorm;
-  }
-  else {
+  } else {
    if (tsCtx->dt < 0 && iramp > 0)
     if (iter > iramp) newcfl = tsCtx->cfl_max;
     else newcfl = tsCtx->cfl_ini + (tsCtx->cfl_max - tsCtx->cfl_ini)*
@@ -828,8 +824,7 @@ int GetLocalOrdering(GRID *grid)
   if (!rank) {
     if (CommSize == 1) {
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
-    }
-    else {
+    } else {
       char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool  exists;
 
@@ -1869,10 +1864,11 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     val_diag[i] = nbrs_diag;
     val_offd[i] = nbrs_offd;
@@ -1889,10 +1885,11 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     for (j = 0; j < bs; j++) {
       row = bs*i + j;
@@ -2015,8 +2012,7 @@ int FieldOutput(GRID *grid, int timeStep)
     for (i = 0; i < nsnode; i++ )
        svertices[i] = isnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nsnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
@@ -2049,8 +2045,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nsnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(isnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
@@ -2126,8 +2121,7 @@ int FieldOutput(GRID *grid, int timeStep)
     for (i = 0; i < nvnode; i++ )
        svertices[i] = ivnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
@@ -2150,8 +2144,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nvnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ivnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
@@ -2230,8 +2223,7 @@ int FieldOutput(GRID *grid, int timeStep)
        svertices[i] = ifnodePet[i];
     }
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
@@ -2254,8 +2246,7 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ifnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
@@ -2375,14 +2366,10 @@ int WriteRestartFile(GRID *grid, int timeStep)
   ierr = PetscOptionsHasName(PETSC_NULL,"-par_io",&flgIO);CHKERRQ(ierr);
   if (flgIO) {
    /* All processors write the output to the same file at appropriate positions */
-   if (timeStep < 10 )
-     sprintf(fileName,"flow000%d.bin",timeStep);
-   else if (timeStep < 100 )
-     sprintf(fileName,"flow00%d.bin",timeStep);
-   else if (timeStep < 1000 )
-     sprintf(fileName,"flow0%d.bin",timeStep);
-   else
-     sprintf(fileName,"flow%d.bin",timeStep);
+   if (timeStep < 10 )        sprintf(fileName,"flow000%d.bin",timeStep);
+   else if (timeStep < 100 )  sprintf(fileName,"flow00%d.bin",timeStep);
+   else if (timeStep < 1000 ) sprintf(fileName,"flow0%d.bin",timeStep);
+   else                       sprintf(fileName,"flow%d.bin",timeStep);
    /*printf("Restart file name is %s\n", fileName);*/
    ierr = VecGetArray(qnodeLoc, &qnode);CHKERRQ(ierr);
    printf("On Processor %d, qnode[%d] = %g\n",rank,rstart,qnode[0]);
@@ -2395,34 +2382,25 @@ int WriteRestartFile(GRID *grid, int timeStep)
    PetscPrintf(MPI_COMM_WORLD,"Restart file written to %s\n", fileName);
    ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);
    ierr = VecRestoreArray(qnodeLoc, &qnode);CHKERRQ(ierr);
-  }
-  else {
+  } else {
   /* Processor 0 writes the output to a file; others just send their
      pieces to it */
   if (rank == 0) {
    ierr = VecGetArray(qnodeLoc, &qnode);
-   if (timeStep < 10 )
-     sprintf(fileName,"flow000%d.bin",timeStep);
-   else if (timeStep < 100 )
-     sprintf(fileName,"flow00%d.bin",timeStep);
-   else if (timeStep < 1000 )
-     sprintf(fileName,"flow0%d.bin",timeStep);
-   else
-     sprintf(fileName,"flow%d.bin",timeStep);
+   if (timeStep < 10)        sprintf(fileName,"flow000%d.bin",timeStep);
+   else if (timeStep < 100)  sprintf(fileName,"flow00%d.bin",timeStep);
+   else if (timeStep < 1000) sprintf(fileName,"flow0%d.bin",timeStep);
+   else                      sprintf(fileName,"flow%d.bin",timeStep);
    printf("Restart file name is %s\n", fileName);
    ierr = PetscBinaryOpen(fileName,FILE_MODE_WRITE,&fdes);CHKERRQ(ierr);
    ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
    /* Write the solution vector in vtk (Visualization Toolkit) format*/
    ierr = PetscOptionsHasName(PETSC_NULL,"-vtk",&flg_vtk);CHKERRQ(ierr);
    if (flg_vtk) {
-    if (timeStep < 10 )
-      sprintf(fileName,"flow000%d.vtk",timeStep);
-    else if (timeStep < 100 )
-      sprintf(fileName,"flow00%d.vtk",timeStep);
-    else if (timeStep < 1000 )
-      sprintf(fileName,"flow0%d.vtk",timeStep);
-    else
-      sprintf(fileName,"flow%d.vtk",timeStep);
+    if (timeStep < 10)        sprintf(fileName,"flow000%d.vtk",timeStep);
+    else if (timeStep < 100)  sprintf(fileName,"flow00%d.vtk",timeStep);
+    else if (timeStep < 1000) sprintf(fileName,"flow0%d.vtk",timeStep);
+    else                      sprintf(fileName,"flow%d.vtk",timeStep);
     sprintf(command, "cp mesh.vtk %s", fileName);
     if ((status = system(command)) < 0)
       printf("Error in opening the file mesh.dat\n");
@@ -2802,7 +2780,7 @@ int write_fine_grid(GRID *grid)
 /* open file for output      */
 /* call the output frame.out */
 
-   if (!(output = fopen("frame.out","a"))){
+   if (!(output = fopen("frame.out","a"))) {
       SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n");

@@ -593,10 +593,9 @@ typedef khiter_t   PetscHashIIter;
 {                                          \
   khiter_t _9_hi;                          \
   _9_hi = kh_get(HASHI,(ht),(i));          \
-  if (_9_hi != kh_end((ht)))               \
+  if (_9_hi != kh_end((ht))) {             \
     (ii) = kh_val((ht),_9_hi);             \
-  else                                     \
-    (ii) = -1;                             \
+  } else (ii) = -1;                        \
 }                                          \
 
 /*

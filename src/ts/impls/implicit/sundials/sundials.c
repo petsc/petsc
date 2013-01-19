@@ -145,8 +145,8 @@ PetscErrorCode TSStep_Sundials(TS ts)
     flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
   }
 
-  if (flag){ /* display error message */
-    switch (flag){
+  if (flag) { /* display error message */
+    switch (flag) {
       case CV_ILL_INPUT:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_ILL_INPUT");
         break;
@@ -340,10 +340,10 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
-    if (flag){
-      if (flag == CV_MEM_NULL){
+    if (flag) {
+      if (flag == CV_MEM_NULL) {
         SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed, cvode_mem pointer is NULL");
-      } else if (flag == CV_ILL_INPUT){
+      } else if (flag == CV_ILL_INPUT) {
         SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed, hmin is nonpositive or it exceeds the maximum allowable step size");
       } else {
         SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed");
@@ -359,13 +359,13 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
    * user's right hand side function in u'=f(t,u), the inital time T0, and
    * the initial dependent variable vector cvode->y */
   flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
-  if (flag){
+  if (flag) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
   }
 
   /* specifies scalar relative and absolute tolerances */
   flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
-  if (flag){
+  if (flag) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
   }
 
@@ -377,7 +377,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&pcnone);CHKERRQ(ierr);
-  if (pcnone){
+  if (pcnone) {
     flag  = CVSpgmr(mem,PREC_NONE,0);
     if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
   } else {
