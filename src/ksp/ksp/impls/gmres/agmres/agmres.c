@@ -84,7 +84,7 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   ierr = PetscMalloc(N*sizeof(PetscScalar), &agmres->select);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(VEC_V(0), N, &agmres->TmpU);CHKERRQ(ierr);
   ierr = PetscMalloc2(N*N, PetscScalar, &agmres->MatEigL, N*N, PetscScalar, &agmres->MatEigR);CHKERRQ(ierr);
-  //  ierr = PetscMalloc6(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->wr, N, PetscScalar, &agmres->wi, N, PetscScalar, &agmres->beta, N, PetscScalar, &agmres->modul);CHKERRQ(ierr);
+  /*  ierr = PetscMalloc6(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->wr, N, PetscScalar, &agmres->wi, N, PetscScalar, &agmres->beta, N, PetscScalar, &agmres->modul);CHKERRQ(ierr); */
  ierr = PetscMalloc3(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->beta);CHKERRQ(ierr);
   ierr = PetscMalloc2((N+1),PetscInt,&agmres->perm,(2*neig*N),PetscInt,&agmres->iwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -624,7 +624,7 @@ PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscFree (agmres->hh_origin);CHKERRQ(ierr);
-  //  ierr = PetscFree (agmres->hes_origin);CHKERRQ(ierr);
+  /*  ierr = PetscFree (agmres->hes_origin);CHKERRQ(ierr); */
   ierr = PetscFree (agmres->nrs);CHKERRQ(ierr);
   ierr = PetscFree (agmres->Qloc);CHKERRQ(ierr);
   ierr = PetscFree (agmres->Rloc);CHKERRQ(ierr);

@@ -64,8 +64,8 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
-  //ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);
-  //ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);
+  /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
+  /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack){

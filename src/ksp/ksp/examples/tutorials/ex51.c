@@ -83,7 +83,7 @@ int main(int argc,char **args)
   /* Allocate quadrature and create stiffness matrices */
   ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllNode);CHKERRQ(ierr);
   ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllWgts);CHKERRQ(ierr);
-  leggaulob(0.0,1.0,gllNode,gllWgts,p); // Get GLL nodes and weights
+  leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
   ierr = Form1DElementMass(h,p,gllNode,gllWgts,Me1D);CHKERRQ(ierr);
   ierr = Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D);CHKERRQ(ierr);
   ierr = Form2DElementMass(p,Me1D,Me2D);CHKERRQ(ierr);

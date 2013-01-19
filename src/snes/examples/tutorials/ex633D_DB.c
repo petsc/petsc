@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc,&argv, (char*)0, help);
 
 
-  // Get physics and time parameters
+  /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
@@ -76,22 +76,22 @@ int main(int argc, char **argv)
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);  
 
   } else {
-    // Create a 1D DA with dof = 5; the whole thing
+    /* Create a 1D DA with dof = 5; the whole thing */
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
-    // Create a 1D DA with dof = 1; for individual componentes
+    /* Create a 1D DA with dof = 1; for individual componentes */
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
   }
 
-  // Set Element type (rectangular)
+  /* Set Element type (rectangular) */
   ierr = DMDASetElementType(user.da1,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
   ierr = DMDASetElementType(user.da2,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
 
-  // Set x and y coordinates
+  /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax, user.zmin,user.zmax);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax, user.zmin,user.zmax);CHKERRQ(ierr);
 
-  // Get global vector x from DM (da1) and duplicate vectors r,xl,xu
+  /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
   ierr = DMCreateGlobalVector(user.da1,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
 
 
-  // Get global vector user->wv from da2 and duplicate other vectors
+  /* Get global vector user->wv from da2 and duplicate other vectors */
   ierr = DMCreateGlobalVector(user.da2,&user.wv);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.cv);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.wi);CHKERRQ(ierr);
@@ -121,14 +121,14 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(user.wv,&user.work3);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.work4);CHKERRQ(ierr);
 
-  // Get Jacobian matrix structure from the da for the entire thing, da1
+  /* Get Jacobian matrix structure from the da for the entire thing, da1 */
   ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
-  // Get the (usual) mass matrix structure from da2
+  /* Get the (usual) mass matrix structure from da2 */
   ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
 
-  // Form the jacobian matrix and M_0
+  /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
 
 
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
+  /* ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr); */
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
@@ -310,16 +310,16 @@ PetscErrorCode Update_q(AppCtx *user)
 
   PetscFunctionBeginUser;
 
-  ierr = VecPointwiseMult(user->Riv,user->eta,user->eta);CHKERRQ(ierr); //Riv = eta.^2
-  ierr = VecScale(user->Riv,user->Rsurf);CHKERRQ(ierr); // Riv = Rsurf * eta.^2
-  ierr = VecShift(user->Riv,user->Rbulk);CHKERRQ(ierr); // Riv = Rbulk + Rsurf * eta.^2
-  ierr = VecPointwiseMult(user->Riv,user->ci,user->Riv);CHKERRQ(ierr); // Riv = (Rbulk + Rsurf * eta.^2) * ci
-  ierr = VecPointwiseMult(user->Riv,user->cv,user->Riv);CHKERRQ(ierr);// Riv = (Rbulk + Rsurf * eta.^2) * ci * cv
+  ierr = VecPointwiseMult(user->Riv,user->eta,user->eta);CHKERRQ(ierr); /* Riv = eta.^2                             */
+  ierr = VecScale(user->Riv,user->Rsurf);CHKERRQ(ierr);                 /* Riv = Rsurf * eta.^2                     */
+  ierr = VecShift(user->Riv,user->Rbulk);CHKERRQ(ierr);                 /* Riv = Rbulk + Rsurf * eta.^2             */
+  ierr = VecPointwiseMult(user->Riv,user->ci,user->Riv);CHKERRQ(ierr);  /* Riv = (Rbulk + Rsurf * eta.^2) * ci      */
+  ierr = VecPointwiseMult(user->Riv,user->cv,user->Riv);CHKERRQ(ierr);  /* Riv = (Rbulk + Rsurf * eta.^2) * ci * cv */
 
   ierr = VecCopy(user->Riv,user->work1);CHKERRQ(ierr);
-  ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr); // work1 = dt * Riv
-  ierr = VecAXPY(user->work1,-1.0,user->cv);CHKERRQ(ierr);// work1 = dt * Riv - cv
-  ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr); // work2 = M_0 * (dt * Riv - cv)
+  ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);             /* work1 = dt * Riv              */
+  ierr = VecAXPY(user->work1,-1.0,user->cv);CHKERRQ(ierr);         /* work1 = dt * Riv - cv         */
+  ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr); /* work2 = M_0 * (dt * Riv - cv) */
 
   ierr = VecGetArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
@@ -451,12 +451,12 @@ PetscErrorCode Llog(Vec X, Vec Y)
 #define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
-  /////////////////////////// 3D //////////////////////////////
+  /******************** 3D ********************/
   PetscErrorCode    ierr;
   PetscInt          n,i,j,Xda,Yda,Zda;
   PetscScalar       *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta_p;
   PetscViewer       view_out;
-  // needed for the void growth case
+  /* needed for the void growth case */
   PetscScalar       cv_v=1.0,cv_m=0.122,ci_v=0.0,ci_m=.00069,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscScalar       xmid,ymid,zmid;
   PetscInt          nele,nen,idx[8];
@@ -488,7 +488,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     zmid = (user->zmax + user->zmin)/2.0;
     lambda = 4.0*h;
     
-    ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr); // number of local elements, number of element nodes, the local indices of the elements' vertices
+    ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr); /* number of local elements, number of element nodes, the local indices of the elements' vertices */
     for (i=0;i < nele; i++)
     {
       for (j = 0; j<8; j++)
@@ -512,7 +512,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
         }
         else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) )
         {
-          //r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
+          /*r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);*/
           r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
           hhr = 0.25*(-r*r*r + 3*r + 2);
           vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
@@ -905,7 +905,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         vals[j + 8] = eM_0[r][j];
       }
     
-      // Insert values in matrix M for 1st dof
+      /* Insert values in matrix M for 1st dof */
     
       ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     
@@ -919,7 +919,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         vals[j + 8] = user->kav*eM_2[r][j];
       }
     
-      // Insert values in matrix M for 2nd dof
+      /* Insert values in matrix M for 2nd dof */
       ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     
       row = 5*idx[r]+2;
@@ -931,7 +931,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         vals[j + 8] = eM_0[r][j];
       }
     
-      // Insert values in matrix M for 3rd dof
+      /* Insert values in matrix M for 3rd dof */
       ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     
     
@@ -944,7 +944,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         vals[j + 8] = user->kai*eM_2[r][j];
       }
     
-      // Insert values in matrix M for 4th dof
+      /* Insert values in matrix M for 4th dof */
       ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);   
     
       row = 5*idx[r]+4;
@@ -954,10 +954,10 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         vals3[j] = eM_0[r][j]/dt + user->L*user->kaeta*eM_2[r][j];
       }
     
-      // Insert values in matrix M for 5th dof
+      /* Insert values in matrix M for 5th dof */
       ierr = MatSetValuesLocal(M,1,&row,8,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
     }
-  }  //
+  }
 
 
   ierr = VecRestoreArray(cvlocal,&cv_p);CHKERRQ(ierr);

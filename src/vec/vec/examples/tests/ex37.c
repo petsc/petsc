@@ -162,8 +162,8 @@ PetscErrorCode test_vec_ops( void )
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  //PetscPrintf( PETSC_COMM_WORLD, "X \n");
-  //VecView( X, PETSC_VIEWER_STDOUT_WORLD );
+  /*PetscPrintf( PETSC_COMM_WORLD, "X \n");*/
+  /*VecView( X, PETSC_VIEWER_STDOUT_WORLD );*/
 
   ierr = VecDot( X,X, &val );CHKERRQ(ierr);
   PetscPrintf( PETSC_COMM_WORLD, "X.X = %f \n", val );

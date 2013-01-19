@@ -175,18 +175,18 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
   PetscErrorCode ierr;
   PetscScalar    *q_arr,*w_arr;
   PetscInt       i,n;
-  //PetscViewer    view_q;
+  /*PetscViewer    view_q;*/
 
   PetscFunctionBeginUser;
   ierr = VecSet(user->work1,user->dt/3);CHKERRQ(ierr);
-  //    ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*    ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = MatMult(M_0,user->work1,user->work2);CHKERRQ(ierr);
-  //    ierr = VecView(user->work2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*    ierr = VecView(user->work2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   ierr = MatMult(M_0,u1,user->work1);CHKERRQ(ierr);
   ierr = MatMult(M_0,u1,user->work4);CHKERRQ(ierr);
-  //    ierr = VecView(u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //    ierr = VecView(user->work4,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*    ierr = VecView(u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  /*    ierr = VecView(user->work4,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = VecScale(user->work1,-1.0-(user->dt));CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,1.0,user->work2);CHKERRQ(ierr);
 

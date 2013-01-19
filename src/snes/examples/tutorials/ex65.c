@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
   PetscScalar    t=0.0;
-  //PetscViewer    view_out, view_p, view_q, view_psi, view_mat;
+  /* PetscViewer    view_out, view_p, view_q, view_psi, view_mat; */
   PetscReal      bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0};
 
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
+  /* ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr); */
   /*
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
 
   if (user.graphics) {
-    //ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),5,bounds);CHKERRQ(ierr);
+    /*ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),5,bounds);CHKERRQ(ierr);*/
 
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   }
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
     char         filename[PETSC_MAX_PATH_LEN];
     PetscScalar  a = 1.0;
     PetscInt     i;
-    //PetscViewer  view;
+    /*PetscViewer  view;*/
 
 
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -185,15 +185,15 @@ int main(int argc, char **argv)
       ierr = SetRandomVectors(&user,t);CHKERRQ(ierr);
     }
     ierr = DPsi(&user);CHKERRQ(ierr);
-    //ierr = VecView(user.DPsiv,view_psi);CHKERRQ(ierr);
-    //ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr);
+    /*ierr = VecView(user.DPsiv,view_psi);CHKERRQ(ierr);*/
+    /*ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr);*/
 
     ierr = Update_q(&user);CHKERRQ(ierr);
-    //ierr = VecView(user.q,view_q);CHKERRQ(ierr);
-    //ierr = MatView(user.M,view_mat);CHKERRQ(ierr);
+    /*ierr = VecView(user.q,view_q);CHKERRQ(ierr);*/
+    /*ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
 
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
-    //ierr = VecView(x,view_out);CHKERRQ(ierr);
+    /*ierr = VecView(x,view_out);CHKERRQ(ierr);*/
 
 
     if (user.graphics) {
@@ -322,9 +322,9 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecShift(user->work4,1.0);CHKERRQ(ierr);
     ierr = VecPointwiseMult(user->work4,user->work4,user->work3);CHKERRQ(ierr);
     ierr = VecScale(user->work4,user->Svr);CHKERRQ(ierr);
-    // Parameter tuning: user->grain
-    // 5000.0 worked for refinement 2 and 5
-    //10000.0 worked for refinement 2, 3, 4, 5
+    /* Parameter tuning: user->grain */
+    /* 5000.0 worked for refinement 2 and 5 */
+    /*10000.0 worked for refinement 2, 3, 4, 5 */
     ierr = VecAXPY(user->work1,user->grain,user->work4);CHKERRQ(ierr);
   }
   ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);
@@ -436,7 +436,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscErrorCode    ierr;
   PetscInt          n,i,Mda,Nda;
   PetscScalar       *xx,*cv_p,*wv_p,*eta_p;
-  //PetscViewer      view_out;
+  /*PetscViewer      view_out;*/
   /* needed for the void growth case */
   PetscScalar       xmid,ymid,cv_v=1.0,cv_m=user->Sv_scalar*user->cv0,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscInt          nele,nen,idx[3];
@@ -476,14 +476,14 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
       PetscInt k;
       PetscScalar vals_DDcv[3],vals_cv[3],vals_eta[3],s,hhr,r;
       for (k=0; k < 3 ; k++) {
-        //s = PetscAbs(x[k] - xmid);
+        /*s = PetscAbs(x[k] - xmid);*/
         s = sqrt((x[k] - xmid)*(x[k] - xmid) + (y[k] - ymid)*(y[k] - ymid));
         if (s <= xwidth*(5.0/64.0)) {
           vals_cv[k] = cv_v;
           vals_eta[k] = eta_v;
           vals_DDcv[k] = 0.0;
         } else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
-          //r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
+          /*r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);*/
           r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
           hhr = 0.25*(-r*r*r + 3*r + 2);
           vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
@@ -511,8 +511,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
   } else {
-    //ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);
-    //ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);
+    /*ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);*/
+    /*ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);*/
     ierr = VecSet(user->cv,.05);CHKERRQ(ierr);
     ierr = VecSet(user->eta,user->initeta);CHKERRQ(ierr);
 
@@ -911,7 +911,7 @@ PetscErrorCode Phi(AppCtx* user)
   const PetscScalar  *_coords;
   PetscInt           nele,nen,i,idx[3],Mda,Nda;
   const PetscInt     *ele;
-  //PetscViewer        view;
+  /*PetscViewer        view;*/
 
   PetscFunctionBeginUser;
 
@@ -928,14 +928,14 @@ PetscErrorCode Phi(AppCtx* user)
   ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
   for (i=0;i < nele; i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-    //printf("idx[0]=%d,idx[1]=%d,idx[2]=%d\n",idx[0],idx[1],idx[2]);
+    /*printf("idx[0]=%d,idx[1]=%d,idx[2]=%d\n",idx[0],idx[1],idx[2]);*/
 
     x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
     x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
     x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
 
-    //printf("x[0]=%f,x[1]=%f,x[2]=%f\n",x[0],x[1],x[2]);
-    //printf("y[0]=%f,y[1]=%f,y[2]=%f\n",y[0],y[1],y[2]);
+    /*printf("x[0]=%f,x[1]=%f,x[2]=%f\n",x[0],x[1],x[2]);*/
+    /*printf("y[0]=%f,y[1]=%f,y[2]=%f\n",y[0],y[1],y[2]);*/
 
     PetscScalar vals1[3],vals2[3],dist1,dist2,s1,r,hhr,xc1,xc2;
     PetscInt    k;
@@ -943,7 +943,7 @@ PetscErrorCode Phi(AppCtx* user)
     xc1 = user->xmin;
     xc2 = xmid;
 
-    //ierr = VecSet(user->phi1,0.0);CHKERRQ(ierr);
+    /*ierr = VecSet(user->phi1,0.0);CHKERRQ(ierr);*/
     for (k=0;k < 3; k++) {
       if (x[k]-xqu > 0) {
         s1 = (x[k] - xqu);
@@ -974,7 +974,7 @@ PetscErrorCode Phi(AppCtx* user)
         vals1[k] = 1.0;
       }
 
-      //else if ( abs(x[k]-(user->xmax-h)) < 0.1*h ) {
+      /*else if ( abs(x[k]-(user->xmax-h)) < 0.1*h ) {*/
       else if ( (user->xmax-h)-x[k] < 0.1*h ) {
         vals1[k] = .15625;
        }
@@ -988,7 +988,7 @@ PetscErrorCode Phi(AppCtx* user)
     xc1 = xmid;
     xc2 = user->xmax;
 
-    //ierr = VecSet(user->phi2,0.0);CHKERRQ(ierr);
+    /*ierr = VecSet(user->phi2,0.0);CHKERRQ(ierr);*/
     for (k=0;k < 3; k++) {
       /*
       s1 = abs(x[k] - (xqu+xmid));
@@ -1046,7 +1046,7 @@ PetscErrorCode Phi(AppCtx* user)
       vals_sum[k] = vals1[k]*vals1[k] + vals2[k]*vals2[k];
     }
      */
-    //ierr = VecSetValuesLocal(user->Phi2D_V,3,idx,vals_sum,INSERT_VALUES);CHKERRQ(ierr);
+    /*ierr = VecSetValuesLocal(user->Phi2D_V,3,idx,vals_sum,INSERT_VALUES);CHKERRQ(ierr);*/
 
   }
 
@@ -1061,8 +1061,8 @@ PetscErrorCode Phi(AppCtx* user)
   ierr = VecView(user->phi2,view);CHKERRQ(ierr);
    */
 
-  //ierr = VecView(user->phi1,0);CHKERRQ(ierr);
-  //ierr = VecView(user->phi2,0);CHKERRQ(ierr);
+  /*ierr = VecView(user->phi1,0);CHKERRQ(ierr);*/
+  /*ierr = VecView(user->phi2,0);CHKERRQ(ierr);*/
 
   ierr = VecPointwiseMult(user->phi1,user->phi1,user->phi1);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->phi2,user->phi2,user->phi2);CHKERRQ(ierr);
@@ -1073,10 +1073,10 @@ PetscErrorCode Phi(AppCtx* user)
 
   ierr = VecCopy(user->phi1,user->Phi2D_V);CHKERRQ(ierr);
   ierr = VecAXPY(user->Phi2D_V,1.0,user->phi2);CHKERRQ(ierr);
-  //ierr = VecView(user->Phi2D_V,0);CHKERRQ(ierr);
+  /*ierr = VecView(user->Phi2D_V,0);CHKERRQ(ierr);*/
 
-  //ierr = VecView(user->Phi2D_V,view);CHKERRQ(ierr);
-  //ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  /*ierr = VecView(user->Phi2D_V,view);CHKERRQ(ierr);*/
+  /*ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);*/
 
   PetscFunctionReturn(0);
 

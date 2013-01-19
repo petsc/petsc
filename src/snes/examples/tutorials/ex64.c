@@ -115,7 +115,7 @@ int main(int argc, char **argv)
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
+  /*ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
@@ -403,7 +403,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
         vals_eta[k] = eta_v;
         vals_DDcv[k] = 0.0;
       } else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
-        //r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
+        /*r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);*/
         r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
         hhr = 0.25*(-r*r*r + 3*r + 2);
         vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);

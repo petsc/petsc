@@ -470,9 +470,9 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt
   /* this function copied and modified from PCSetCoordinates_GEO -TGI */
   PetscFunctionBegin;
   PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
-  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+  ierr  = MatGetBlockSize( Amat, &bs );CHKERRQ( ierr );
 
-  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend );CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
   if(nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
@@ -485,8 +485,8 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt
 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_ml->coords==0 || (oldarrsz != arrsz)) {
-    ierr = PetscFree( pc_ml->coords );  CHKERRQ(ierr);
-    ierr = PetscMalloc((arrsz)*sizeof(PetscReal), &pc_ml->coords ); CHKERRQ(ierr);
+    ierr = PetscFree( pc_ml->coords );CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz)*sizeof(PetscReal), &pc_ml->coords );CHKERRQ(ierr);
   }
   for(kk=0;kk<arrsz;kk++)pc_ml->coords[kk] = -999.;
   /* copy data in - column oriented */

@@ -283,7 +283,7 @@ PetscErrorCode PetscShellGraphCreate(PetscShellGraph *graph_p)
 
 /* ------------------------------------------------------------------------------------------------------- */
 
-typedef enum{PETSC_SHELL_VTABLE_NONE, PETSC_SHELL_VTABLE_SO, PETSC_SHELL_VTABLE_PY} PetscShellVTableType;
+typedef enum {PETSC_SHELL_VTABLE_NONE, PETSC_SHELL_VTABLE_SO, PETSC_SHELL_VTABLE_PY} PetscShellVTableType;
 
 struct _n_PetscShellVTable_SO {
   char           *path, *name;
@@ -773,12 +773,12 @@ PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], P
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
-  if (_found){*_found = PETSC_FALSE;}
+  if (_found) {*_found = PETSC_FALSE;}
   for (i = 0; i < shell->N; ++i) {
     ierr = PetscStrcmp(key, shell->key[i], &eq);CHKERRQ(ierr);
     if (eq) {
       if (_id) {*_id = i;}
-      if (_found){*_found = PETSC_TRUE;}
+      if (_found) {*_found = PETSC_TRUE;}
     }
   }
   PetscFunctionReturn(0);
@@ -1105,7 +1105,7 @@ static PetscMPIInt Petsc_Shell_default_keyval = MPI_KEYVAL_INVALID;
 PetscShell  PETSC_SHELL_DEFAULT_(MPI_Comm comm) {
   PetscErrorCode ierr;
   PetscBool      flg;
-  PetscShell       shell;
+  PetscShell     shell;
 
   PetscFunctionBegin;
   if (Petsc_Shell_default_keyval == MPI_KEYVAL_INVALID) {

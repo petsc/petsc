@@ -325,11 +325,11 @@ PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt
   /*** Determine nodal values at the endpoints of the interval intrvl ***/
   x1=x[i1];
   x2=x[i2];
-  //printf("x1=%g\tx2=%g\txx=%g\n",x1,x2,xx);
+  /* printf("x1=%g\tx2=%g\txx=%g\n",x1,x2,xx); */
   /*** Evaluate basis function ***/
   if (id == 2) bfcn=(1.0)/(x1-x2);
   else bfcn=(xx-x2)/(x1-x2);
-  //printf("bfcn=%g\n",bfcn);
+  /* printf("bfcn=%g\n",bfcn); */
   return bfcn;
 }
 
@@ -406,10 +406,10 @@ void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, Pets
               btri[i][jj] += bij*dd;
             } else {
               f[i] += bij*dd*exact(z[ipp], t);
-              // f[i] += 0.0;
-              // if (il==0 && j==-1){
-              // f[i] += bij*dd*exact(zz,t);
-              // }/*end if*/
+              /* f[i] += 0.0; */
+              /* if (il==0 && j==-1){ */
+              /* f[i] += bij*dd*exact(zz,t); */
+              /* }*/ /*end if*/
             } /*end else*/
           }/*end for (iqq)*/
         }/*end if (i>0)*/

@@ -64,11 +64,11 @@ int main(int argc,char **args)
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
-      //if (norm > tol){
+      /*if (norm > tol){ */
         if (!rank){
           ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
         }
-        //}
+      /*} */
     }
   }
 

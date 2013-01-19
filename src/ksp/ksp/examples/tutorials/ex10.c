@@ -255,7 +255,7 @@ int main(int argc,char **args)
       ierr = VecDestroy(&min);CHKERRQ(ierr);
     }
 
-    //  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /*  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

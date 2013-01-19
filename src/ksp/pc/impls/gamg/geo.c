@@ -330,8 +330,8 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       ierr = PetscCDEmptyAt(agg_lists_1,mm,&ise);CHKERRQ(ierr);
       if (!ise) {
         const PetscInt lid = mm;
-        //for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++){
-        //PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1);
+        /* for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++){ */
+        /* PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1); */
         PetscScalar AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos         pos;

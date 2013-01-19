@@ -26,7 +26,7 @@ struct Mat_SeqAIJCUSP {
   MatCUSPStorageFormat     format;   /* the storage format for the matrix on the device */
 };
 
-#else // PETSC_HAVE_TXPETSCGPU not defined!
+#else /* PETSC_HAVE_TXPETSCGPU not defined! */
 
 struct Mat_SeqAIJCUSP {
   CUSPMATRIX*       mat; /* pointer to the matrix on the GPU */

@@ -156,7 +156,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
     BLAScopy_(&nloc, col, &pas, &Qloc[j*nloc], &pas);
     ierr = VecRestoreArray(VEC_V(j), &col);CHKERRQ(ierr);
   }
-  // Each process performs a local QR on its own block
+  /* Each process performs a local QR on its own block */
   for (j = 0;j < nvec;j++) {
     len = nloc - j;
     Ajj = Qloc[j*nloc+j];

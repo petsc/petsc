@@ -242,7 +242,7 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
  */
 PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
 {
-  //PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc;
+  /*PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc; */
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
   const PetscInt   numQuadPoints = user->q.numQuadPoints;
@@ -300,7 +300,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
           PetscPrintf(PETSC_COMM_SELF, "    fieldGrad[%d] %g\n", d, fieldGrad[d]);
         }
       }
-      const PetscScalar funcVal = 0.0; //(*rhsFunc)(coords);
+      const PetscScalar funcVal = 0.0; /* (*rhsFunc)(coords); */
       for (f = 0; f < numBasisFuncs; ++f) {
         /* Constant term: -f(x) */
         elemVec[f] -= basis[q*numBasisFuncs+f]*funcVal*quadWeights[q]*detJ;
@@ -343,7 +343,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
  */
 PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 {
-  //PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc;
+  /*PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc;*/
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
   const PetscInt   numQuadPoints = user->q.numQuadPoints;
@@ -410,7 +410,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
           }
         }
       }
-      const PetscScalar funcVal[3] = {0.0, 0.0, 0.0}; //(*rhsFunc)(coords);
+      const PetscScalar funcVal[3] = {0.0, 0.0, 0.0}; /* (*rhsFunc)(coords); */
       for (f = 0; f < numBasisFuncs; ++f) {
         for (comp = 0; comp < numBasisComps; ++comp) {
           const PetscInt cidx = f*numBasisComps+comp;
@@ -475,7 +475,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
   for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar      f1[SPATIAL_DIM_0/*1*/]; // Nq = 1
+    PetscScalar      f1[SPATIAL_DIM_0/*1*/]; /* Nq = 1 */
     PetscInt         q, b, d, f;
 
     if (debug > 1) {
@@ -554,7 +554,7 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
   for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar      f1[SPATIAL_DIM_0*SPATIAL_DIM_0/*1*/]; // Nq = 1
+    PetscScalar      f1[SPATIAL_DIM_0*SPATIAL_DIM_0/*1*/]; /* Nq = 1 */
     PetscInt         q, b, comp, i;
 
     if (debug > 1) {
@@ -635,7 +635,7 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
  */
 PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
 {
-  //PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc;
+  /* PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc; */
   const PetscInt   debug         = user->debug;
   const PetscInt   dim           = user->dim;
   const PetscInt   numQuadPoints = user->q.numQuadPoints;
@@ -653,7 +653,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualBatchEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-  //ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
+  /* ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr); */
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   const PetscInt numCells = cEnd - cStart;
@@ -671,7 +671,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
       u[c*numBasisFuncs*numBasisComps+f] = x[f];
     }
   }
-  // Conforming batches
+  /* Conforming batches */
   PetscInt blockSize  = numBasisFuncs*numQuadPoints;
   PetscInt numBlocks  = user->numBlocks;
   PetscInt batchSize  = numBlocks * blockSize;
@@ -692,7 +692,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
     }
   }
-  // Remainder
+  /* Remainder */
   PetscInt numRemainder = numCells % (numBatches * batchSize);
   PetscInt offset       = numCells - numRemainder;
   switch(user->op) {

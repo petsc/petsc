@@ -1,7 +1,7 @@
 static char help[]="This program illustrates the use of PETSc-fftw interface for parallel real DFT\n";
 #include <petscmat.h>
 #include <fftw3-mpi.h>
-//extern PetscErrorCode MatGetVecsFFT(Mat,Vec *,Vec *,Vec *);
+/*extern PetscErrorCode MatGetVecsFFT(Mat,Vec *,Vec *,Vec *);*/
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
@@ -20,8 +20,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
-//  if (size!=1)
-//    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uni-processor example only");
+/*  if (size!=1) */
+/*    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uni-processor example only"); */
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Real DFT. Your current data type is complex!");
 #endif
@@ -45,11 +45,11 @@ PetscInt main(PetscInt argc,char **args)
   printf("The vector size of output from the main routine is %d\n",vsize);
 
   ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
-  //ierr = VecDestroy(&input);CHKERRQ(ierr);
+  /*ierr = VecDestroy(&input);CHKERRQ(ierr);*/
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
   ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
-  //ierr = VecDestroy(&z);CHKERRQ(ierr);
+  /*ierr = VecDestroy(&z);CHKERRQ(ierr);*/
   fac = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
 
@@ -58,8 +58,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
 
-//  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-//  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+/*  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+/*  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);

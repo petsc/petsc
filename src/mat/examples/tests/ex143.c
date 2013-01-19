@@ -126,13 +126,13 @@ PetscInt main(PetscInt argc,char **args)
 
       if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-      // Apply FFTW_FORWARD and FFTW_BACKWARD
+      /* Apply FFTW_FORWARD and FFTW_BACKWARD */
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
-      // Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x
+      /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       a = 1.0/(PetscReal)N;
       ierr = VecScale(z,a);CHKERRQ(ierr);
       if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}

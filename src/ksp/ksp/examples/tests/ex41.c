@@ -112,8 +112,8 @@ int main(int argc,char **argv)
     for (i=0; i<b->i[m]; i++) b->a[i] = one;
 
   }
-  //if (!rank) printf("A:\n");
-  //ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* if (!rank) printf("A:\n"); */
+  /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D){
@@ -127,13 +127,13 @@ int main(int argc,char **argv)
 
   /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
-  //if (!rank) printf("P:\n");
-  //ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* if (!rank) printf("P:\n"); */
+  /* ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Get R = P^T */
   ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-  //if (!rank) printf("R:\n");
-  //ierr = MatView(R, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* if (!rank) printf("R:\n"); */
+  /* ierr = MatView(R, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* C = R*A*P */
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);

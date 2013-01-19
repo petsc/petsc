@@ -52,7 +52,7 @@ PetscErrorCode CheckRedundancy(SNES,IS,IS*,DM);
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
-  Vec            x,r;  /* olution and residual vectors */
+  Vec            x,r;  /* Solution and residual vectors */
   SNES           snes; /* Nonlinear solver context */
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
+  /* ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
@@ -474,7 +474,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
           vals_ci[k] = ci_v;
           vals_eta[k] = eta_v;
         } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
-          //r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
+          /* r = (s - xwidth*(6.0/64.0) )/(0.5*lambda); */
           r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
           hhr = 0.25*(-r*r*r + 3*r + 2);
           vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
@@ -772,7 +772,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
-  //for (i=0;i < nele + 1;i++) {
+  /* for (i=0;i < nele + 1;i++) { */
   for (i=0;i < nele;i++) {
 
       idx[0] = ele[2*i]; idx[1] = ele[2*i+1];
@@ -787,7 +787,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
 
     PetscInt    row,cols[4],r,row_M_0,cols2[2];
-    //PetscScalar vals[4],vals_M_0[1],vals2[2];
+    /* PetscScalar vals[4],vals_M_0[1],vals2[2]; */
     PetscScalar vals[4],vals_M_0[2],vals2[2];
 
     for (r=0;r<2;r++) {
@@ -796,9 +796,9 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       vals_M_0[0]=eM_0[r][0];
       vals_M_0[1]=eM_0[r][1];
 
-      //vals_M_0[0] = h;
+      /* vals_M_0[0] = h; */
       ierr = MatSetValuesLocal(M_0,1,&row_M_0,2,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
-      //ierr = MatSetValuesLocal(M_0,1,&row_M_0,1,&row_M_0,vals_M_0,INSERT_VALUES);CHKERRQ(ierr);
+      /* ierr = MatSetValuesLocal(M_0,1,&row_M_0,1,&row_M_0,vals_M_0,INSERT_VALUES);CHKERRQ(ierr); */
 
       row = 5*idx[r];
       cols[0] = 5*idx[0];     vals[0] = dt*eM_2[r][0]*cv_sum;

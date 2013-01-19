@@ -471,7 +471,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       xt=l;
       limit=lsize;
       boundary=user->left;
-    } else { // if  (j==3)
+    } else { /* if  (j==3) */
       yt=b;
       xt=r;
       limit=rsize;
@@ -498,7 +498,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
         xt=xt+hx;
-      } else { // if (j==2 || j==3)
+      } else { /* if (j==2 || j==3) */
         yt=yt+hy;
       }
     }

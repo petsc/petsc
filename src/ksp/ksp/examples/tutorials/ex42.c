@@ -199,18 +199,18 @@ static void ShapeFunctionQ13D_Evaluate_dx(PetscScalar GNi[][NODES_PER_EL],PetscS
     PetscScalar cy = coords[ NSD*n + 1 ];
     PetscScalar cz = coords[ NSD*n + 2 ];
 
-    /* J_ij = d(x_j) / d(xi_i) *//* J_ij = \sum _I GNi[j][I} * x_i */
-    J00 = J00 + GNi[0][n] * cx;  /* J_xx */
-    J01 = J01 + GNi[0][n] * cy;  /* J_xy = dx/deta */
-    J02 = J02 + GNi[0][n] * cz;  /* J_xz = dx/dzeta */
+    /* J_ij = d(x_j) / d(xi_i) */ /* J_ij = \sum _I GNi[j][I} * x_i */
+    J00 = J00 + GNi[0][n] * cx;   /* J_xx */
+    J01 = J01 + GNi[0][n] * cy;   /* J_xy = dx/deta */
+    J02 = J02 + GNi[0][n] * cz;   /* J_xz = dx/dzeta */
 
-    J10 = J10 + GNi[1][n] * cx;  /* J_yx = dy/dxi */
-    J11 = J11 + GNi[1][n] * cy;  /* J_yy */
-    J12 = J12 + GNi[1][n] * cz;  /* J_yz */
+    J10 = J10 + GNi[1][n] * cx;   /* J_yx = dy/dxi */
+    J11 = J11 + GNi[1][n] * cy;   /* J_yy */
+    J12 = J12 + GNi[1][n] * cz;   /* J_yz */
 
-    J20 = J20 + GNi[2][n] * cx;  /* J_zx */
-    J21 = J21 + GNi[2][n] * cy;  /* J_zy */
-    J22 = J22 + GNi[2][n] * cz;  /* J_zz */
+    J20 = J20 + GNi[2][n] * cx;   /* J_zx */
+    J21 = J21 + GNi[2][n] * cy;   /* J_zy */
+    J22 = J22 + GNi[2][n] * cz;   /* J_zz */
   }
 
   JJ[0][0] = J00;      JJ[0][1] = J01;      JJ[0][2] = J02;
@@ -2051,7 +2051,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     ierr = PetscOptionsGetString(PETSC_NULL,"-write_binary",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
-      //ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+      /* ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr); */
       ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,"ex42.vts",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
       ierr = VecView(X,viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

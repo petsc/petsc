@@ -193,7 +193,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
     fclose(fd);
   }
   ierr = MPI_Bcast(v,2*num,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]);
+  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]); */
   PetscFunctionReturn(0);
 }
 

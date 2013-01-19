@@ -79,7 +79,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
     ierr = VecGetArray(z,&z_array);CHKERRQ(ierr);
 
-    unsigned int flags = FFTW_ESTIMATE; //or FFTW_MEASURE
+    unsigned int flags = FFTW_ESTIMATE; /*or FFTW_MEASURE */
     /* The data in the in/out arrays is overwritten during FFTW_MEASURE planning, so such planning
      should be done before the input is initialized by the user. */
     printf("DIM: %d, N %d, Ny %d\n",DIM,N,Ny);
@@ -134,9 +134,9 @@ PetscInt main(PetscInt argc,char **args)
     for (i=0; i<3; i++){
       /* FFTW_FORWARD */
       fftw_execute(fplan);
-      //printf("\n fout:\n");
-      //fftw_complex* fout = (fftw_complex*)y_array;
-      //for (i=0; i<N/2+1; i++) printf("%d (%g %g)\n",i,fout[i][0],fout[i][1]);
+      /*printf("\n fout:\n");*/
+      /*fftw_complex* fout = (fftw_complex*)y_array;*/
+      /*for (i=0; i<N/2+1; i++) printf("%d (%g %g)\n",i,fout[i][0],fout[i][1]);*/
 
       /* FFTW_BACKWARD: destroys its input array 'y_array' even for out-of-place transforms! */
       fftw_execute(bplan);

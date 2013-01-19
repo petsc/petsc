@@ -133,7 +133,7 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::point_type               urp;
   PetscReal hx = user->hxk;
 
-  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);
+  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);*/
   for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
     PetscScalar    values[1];
     PetscScalar   *u, *ur, *k;
@@ -148,12 +148,12 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
     const PetscScalar w     = 1.0/(1.0 + ubar) + 1.0/g;
 
     values[0] = hx*(PetscExpScalar(k[0]-1.0) + k[0] - 1.0/w);
-    //ierr = PetscPrintf(PETSC_COMM_WORLD, "  vk %d vu %d vur %d: ubar %g gradu %g g %g w %g f %g\n", *vk_iter, up, urp, ubar, gradu, g, w, values[0]);CHKERRQ(ierr);
+    /*ierr = PetscPrintf(PETSC_COMM_WORLD, "  vk %d vu %d vur %d: ubar %g gradu %g g %g w %g f %g\n", *vk_iter, up, urp, ubar, gradu, g, w, values[0]);CHKERRQ(ierr); */
     ierr = SectionRealUpdate(sectionF, *vk_iter, values, INSERT_VALUES);CHKERRQ(ierr);
 
     up = urp;
   }
-  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Ending K residual\n");CHKERRQ(ierr);
+  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "Ending K residual\n");CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -520,7 +520,7 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  //ierr = MatView(*B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*ierr = MatView(*B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

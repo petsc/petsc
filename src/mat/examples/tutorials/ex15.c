@@ -26,7 +26,7 @@ int main(int argc, char **args)
   ierr = MatSeqAIJSetPreallocation(A, 3, PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 3, PETSC_NULL, 2, PETSC_NULL);CHKERRQ(ierr);
 
-  // Create a linear mesh
+  /* Create a linear mesh */
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
   for (r = start; r < end; ++r) {
     if (r == 0) {
@@ -58,8 +58,8 @@ int main(int argc, char **args)
   ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part, A);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
-  //ierr = MatPartitioningSetVertexWeights(part, const PetscInt weights[]);CHKERRQ(ierr);
-  //ierr = MatPartitioningSetPartitionWeights(part,const PetscReal weights[]);CHKERRQ(ierr);
+  /*ierr = MatPartitioningSetVertexWeights(part, const PetscInt weights[]);CHKERRQ(ierr);*/
+  /*ierr = MatPartitioningSetPartitionWeights(part,const PetscReal weights[]);CHKERRQ(ierr);*/
   ierr = MatPartitioningApply(part, &is);CHKERRQ(ierr);
   ierr = ISView(is, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);

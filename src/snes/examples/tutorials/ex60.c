@@ -699,8 +699,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
       ierr = MatSetValues(M_0,1,&row_M_0,3,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
 
-      //cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-      //ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+      /* cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT); */
+      /* ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT); */
       cv_sum = .0000069*user->Dv/user->kBT;
       ci_sum = .0000069*user->Di/user->kBT;
 
@@ -950,8 +950,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
       for (r=0;r<3;r++) {
 
-        // cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-        //ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+        /* cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT); */
+        /* ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT); */
         cv_sum = .0000069*user->Dv/(user->kBT);
         ci_sum = .0000069*user->Di/user->kBT;
 

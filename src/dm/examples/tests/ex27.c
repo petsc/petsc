@@ -53,7 +53,7 @@ PetscInt main(PetscInt argc,char **args)
                     dof, stencil,
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da);CHKERRQ(ierr);
-  // Coordinates
+  /* Coordinates */
   ierr = DMGetCoordinateDM(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);
@@ -65,7 +65,7 @@ PetscInt main(PetscInt argc,char **args)
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < dim[i]; ++j){
         for (k = 0; k < 3; ++k) {
-          a[n] = j*h[i]; // coordinate along the j-th point in the i-th dimension
+          a[n] = j*h[i]; /* coordinate along the j-th point in the i-th dimension */
           ++n;
         }
       }
@@ -75,7 +75,7 @@ PetscInt main(PetscInt argc,char **args)
   }
   ierr = DMSetCoordinates(da, coords);CHKERRQ(ierr);
 
-  // Work vectors
+  /* Work vectors */
   ierr = DMGetGlobalVector(da, &x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &xx);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ PetscInt main(PetscInt argc,char **args)
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
   ierr = MatMult(A,x,z);CHKERRQ(ierr);
   ierr = MatMult(AA,xx,zz);CHKERRQ(ierr);
-  // Now apply USFFT and FFTW forward several (3) times
+  /* Now apply USFFT and FFTW forward several (3) times */
   for (i=0; i<3; ++i){
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
     ierr = MatMult(AA,xx,yy);CHKERRQ(ierr);

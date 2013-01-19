@@ -550,7 +550,7 @@ static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,Petsc
   PetscFunctionBeginUser;
   ru2 = DotDIM(x->ru,x->ru);
   ru2 /= x->r;
-  // kinematic dof = params[0]
+  /* kinematic dof = params[0] */
   (*p)=2.0*(x->e-0.5*ru2)/pars[0];
   PetscFunctionReturn(0);
 }
@@ -562,10 +562,10 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,P
   PetscScalar     p;
 
   PetscFunctionBeginUser;
-  //TODO remove direct usage of Pressure_PG
+  /* TODO remove direct usage of Pressure_PG */
   Pressure_PG(pars,x,&p);
-  //TODO check the sign of p
-  //pars[1] = heat capacity ratio
+  /* TODO check the sign of p */
+  /* pars[1] = heat capacity ratio */
   (*c)=PetscSqrtScalar(pars[1]*p/x->r);
   PetscFunctionReturn(0);
 }
@@ -589,7 +589,7 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   u = DotDIM(x->ru,x->ru);
   u /= (x->r * x->r);
   nu = DotDIM(x->ru,n);
-  //TODO check the sign of p
+  /* TODO check the sign of p */
   eu->pressure(eu->pars,x,&p);
   f->r = nu * x->r;
   for(i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;
@@ -597,7 +597,7 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   PetscFunctionReturn(0);
 }
 
-//PetscReal* => EulerNode* conversion
+/* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Euler_Wall"
 static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
@@ -613,7 +613,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, cons
   PetscFunctionReturn(0);
 }
 
-//PetscReal* => EulerNode* conversion
+/* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
 static PetscErrorCode PhysicsRiemann_Euler_Rusanov(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)

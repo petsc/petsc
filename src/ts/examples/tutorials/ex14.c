@@ -350,12 +350,12 @@ static void THIInitialize_HOM_F(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
   PetscReal s = -x*sin(thi->alpha);
-  p->b = s - 1000*units->meter + 100*units->meter * sin(x*2*PETSC_PI/thi->Lx);// * sin(y*2*PETSC_PI/thi->Ly);
+  p->b = s - 1000*units->meter + 100*units->meter * sin(x*2*PETSC_PI/thi->Lx);/* * sin(y*2*PETSC_PI/thi->Ly); */
   p->h = s - p->b;
   p->h = (1-(atan((x-thi->Lx/2)/1.)+PETSC_PI/2.)/PETSC_PI)*500*units->meter+1*units->meter;
   s = PetscRealPart(p->b + p->h);
   p->beta2 = -1e-10;
-  //  p->beta2 = 1000 * units->Pascal * units->year / units->meter;
+  /*  p->beta2 = 1000 * units->Pascal * units->year / units->meter; */
 }
 
 /* Same bed as test A, free slip everywhere except for a discontinuous jump to a circular sticky region in the middle. */
@@ -658,7 +658,7 @@ static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetLocalInfo(da3,&info);CHKERRQ(ierr);
-  //ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
   for (i=info.gzs; i<info.gzs+info.gzm; i++) {
     if (i > -1 && i < info.mz) continue;
@@ -667,7 +667,7 @@ static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
     }
   }
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
-  //ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 

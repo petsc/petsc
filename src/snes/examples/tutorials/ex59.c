@@ -76,9 +76,9 @@ int main(int argc,char **argv)
      and preconditioner matrix.  Both of these are computed in the
      routine FormJacobian()
   */
-  //  ierr = SNESSetJacobian(snes,NULL,JPrec,FormJacobian,0);CHKERRQ(ierr);
+  /*  ierr = SNESSetJacobian(snes,NULL,JPrec,FormJacobian,0);CHKERRQ(ierr); */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0);CHKERRQ(ierr);
-  ///  ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0);CHKERRQ(ierr);
+  /*  ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0);CHKERRQ(ierr); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options

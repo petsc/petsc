@@ -245,7 +245,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   nev = iu - il;
   if (nev <= 0) PetscFunctionReturn(0);
 
-  //ierr = VecView(evec[0],PETSC_VIEWER_STDOUT_SELF);
+  /*ierr = VecView(evec[0],PETSC_VIEWER_STDOUT_SELF); */
   ierr = VecDuplicate(evec[0],&vt1);
   ierr = VecDuplicate(evec[0],&vt2);
 
@@ -253,7 +253,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   case 2:
     dot_max = 0.0;
     for (i = il; i<iu; i++){
-      //printf("ck %d-th\n",i);
+      /*printf("ck %d-th\n",i); */
       ierr = VecCopy(evec[i], vt1);
       for (j=il; j<iu; j++){
         ierr = VecDot(evec[j],vt1,&dot);

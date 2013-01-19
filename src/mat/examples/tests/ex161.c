@@ -80,8 +80,8 @@ int main(int argc,char **argv) {
   /* C_dense = A*Rt_dense */
   ierr = MatMatMult(A,Rt_dense,MAT_INITIAL_MATRIX,2.0,&C_dense);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(C_dense,"ARt_dense_");CHKERRQ(ierr);
-  //ierr = MatView(C_dense,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
+  /*ierr = MatView(C_dense,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /*ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr); */
 
   /* Recover C from C_dense */
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&C_sparse);CHKERRQ(ierr);

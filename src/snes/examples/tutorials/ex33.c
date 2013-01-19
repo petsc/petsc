@@ -105,7 +105,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
 
       f[i].v = u[i].v + K*lambda*(u[i].p - u[i-1].p)/dx;
 
-      //pxx     = (2.0*u[i].p - u[i-1].p - u[i+1].p)/dx;
+      /*pxx     = (2.0*u[i].p - u[i-1].p - u[i+1].p)/dx;*/
       f[i].p = u[i].v - u[i-1].v;
     }
   }

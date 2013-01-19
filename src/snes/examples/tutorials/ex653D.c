@@ -12,8 +12,8 @@ Runtime options include:\n\
  ./ex653D -ksp_type fgmres -snes_vi_monitor -snes_atol 1.e-11 -snes_converged_reason -ksp_converged_reason -snes_linesearch_monitor -pc_type mg -pc_mg_galerkin -log_summary  -da_refine 2
 */
 
-// Void grow case only
-// cv, eta two variables, i.e. one Cahn-Hillard and one Allen-Cahn with constant mobility
+/* Void grow case only */
+/* cv, eta two variables, i.e. one Cahn-Hillard and one Allen-Cahn with constant mobility */
 
 #include "petscsnes.h"
 #include "petscdmda.h"
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc,&argv, (char*)0, help);
 
 
-  // Get physics and time parameters
+  /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic)
@@ -72,23 +72,23 @@ int main(int argc, char **argv)
   }
   else
   {
-    // Create a 1D DA with dof = 3; the whole thing
+    /* Create a 1D DA with dof = 3; the whole thing */
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
-    // Create a 1D DA with dof = 1; for individual componentes
+    /* Create a 1D DA with dof = 1; for individual componentes */
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
   }
 
   
-  // Set Element type (rectangular)
+  /* Set Element type (rectangular) */
   ierr = DMDASetElementType(user.da1,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
   ierr = DMDASetElementType(user.da2,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
   
-  // Set x and y coordinates
+  /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax, user.zmin,user.zmax);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax, user.zmin,user.zmax);CHKERRQ(ierr);
   
-  // Get global vector x from DM (da1) and duplicate vectors r,xl,xu
+  /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
   ierr = DMCreateGlobalVector(user.da1,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
   
 
-  // Get global vector user->wv from da2 and duplicate other vectors
+  /* Get global vector user->wv from da2 and duplicate other vectors */
   ierr = DMCreateGlobalVector(user.da2,&user.wv);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.cv);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.eta);CHKERRQ(ierr);
@@ -107,11 +107,11 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(user.wv,&user.work1);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.work2);CHKERRQ(ierr);
 
-  // Get Jacobian matrix structure from the da for the entire thing, da1
+  /* Get Jacobian matrix structure from the da for the entire thing, da1 */
   ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
-  // Get the (usual) mass matrix structure from da2
+  /* Get the (usual) mass matrix structure from da2 */
   ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
-  // Form the jacobian matrix and M_0
+  /* Form the jacobian matrix and M_0 */
   
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);  
    
@@ -157,15 +157,15 @@ int main(int argc, char **argv)
 
     ierr = DPsi(&user);CHKERRQ(ierr);
   
-   // ierr = VecView(user.DPsiv,view_psi);CHKERRQ(ierr);
-    //ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr);
+    /* ierr = VecView(user.DPsiv,view_psi);CHKERRQ(ierr); */
+    /* ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr); */
 
     ierr = Update_q(&user);CHKERRQ(ierr);
-   // ierr = VecView(user.q,view_q);CHKERRQ(ierr);
-    //ierr = MatView(user.M,view_mat);CHKERRQ(ierr);
+    /* ierr = VecView(user.q,view_q);CHKERRQ(ierr); */
+    /* ierr = MatView(user.M,view_mat);CHKERRQ(ierr); */
 
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
-    //ierr = VecView(x,view_out);CHKERRQ(ierr);
+    /* ierr = VecView(x,view_out);CHKERRQ(ierr); */
 
     /*
     PetscInt its;
@@ -443,7 +443,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
       else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) )
       {
         r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
-        //r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
+        /* r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0); */
         hhr = 0.25*(-r*r*r + 3*r + 2);
         vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
         vals_eta[k] = eta_m + (1.0 - hhr)*(eta_v - eta_m);
@@ -461,7 +461,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = VecSetValuesLocal(user->eta,8,idx,vals_eta,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValuesLocal(user->work2,8,idx,vals_DDcv,INSERT_VALUES);CHKERRQ(ierr);
 
-} // for each element
+} /* for each element */
   
   ierr = VecAssemblyBegin(user->cv);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(user->cv);CHKERRQ(ierr);
@@ -749,7 +749,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       }
     
 
-      // Insert values in matrix M for 1st dof
+      /* Insert values in matrix M for 1st dof */
       ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     
       row = 3*idx[r]+1;
@@ -762,7 +762,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       }
     
 
-      // Insert values in matrix M for 2nd dof
+      /* Insert values in matrix M for 2nd dof */
       ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     
       row = 3*idx[r]+2;

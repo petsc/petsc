@@ -36,9 +36,9 @@ PetscInt main(PetscInt argc,char **args)
     printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);
     printf("The value local_n0 is %ld from process %d\n",local_n0,rank);
     printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);
-//    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);
-//    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);
-//    printf("The value local_n0 is  %ld from process %d\n",local_n0,rank);
+/*    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank); */
+/*    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank); */
+/*    printf("The value local_n0 is  %ld from process %d\n",local_n0,rank); */
 #endif
 
     /* Allocate space for input and output arrays  */
@@ -49,9 +49,9 @@ PetscInt main(PetscInt argc,char **args)
     N=2*N0*(N1/2+1);N_factor=N0*N1;
     n=2*local_n0*(N1/2+1);n1=local_n1*N0*2;
 
-//    printf("The value N is  %d from process %d\n",N,rank);
-//    printf("The value n is  %d from process %d\n",n,rank);
-//    printf("The value n1 is  %d from process %d\n",n1,rank);
+/*    printf("The value N is  %d from process %d\n",N,rank);  */
+/*    printf("The value n is  %d from process %d\n",n,rank);  */
+/*    printf("The value n1 is  %d from process %d\n",n1,rank);*/
     /* Creating data vector and accompanying array with VeccreateMPIWithArray */
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,( PetscScalar*)in1,&fin);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
@@ -59,12 +59,12 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Set the vector with random data */
     ierr = VecSet(fin,zero);CHKERRQ(ierr);
-//    for (i=0;i<N0*N1;i++)
-//       {
-//       VecSetValues(fin,1,&i,&one,INSERT_VALUES);
-//     }
+/*    for (i=0;i<N0*N1;i++) */
+/*       { */
+/*       VecSetValues(fin,1,&i,&one,INSERT_VALUES); */
+/*     } */
 
-//    VecSet(fin,one);
+/*    VecSet(fin,one); */
     i=0;
     ierr = VecSetValues(fin,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     i=1;
@@ -79,7 +79,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecSet(fout,zero);CHKERRQ(ierr);
     ierr = VecSet(fout1,zero);CHKERRQ(ierr);
 
-    // Get the meaningful portion of array
+    /* Get the meaningful portion of array */
     ierr = VecGetArray(fin,&x_arr);CHKERRQ(ierr);
     ierr = VecGetArray(fout1,&z_arr);CHKERRQ(ierr);
     ierr = VecGetArray(fout,&y_arr);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecRestoreArray(fout1,&z_arr);
     ierr = VecRestoreArray(fout,&y_arr);
 
-//    VecView(fin,PETSC_VIEWER_STDOUT_WORLD);
+/*    VecView(fin,PETSC_VIEWER_STDOUT_WORLD); */
     ierr = VecCreate(PETSC_COMM_WORLD,&ini);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&final);CHKERRQ(ierr);
     ierr = VecSetSizes(ini,local_n0*N1,N0*N1);CHKERRQ(ierr);
@@ -107,9 +107,9 @@ PetscInt main(PetscInt argc,char **args)
     } else {
       NM = N1+1;
     }
-    //printf("The Value of NM is %d",NM);
+    /*printf("The Value of NM is %d",NM); */
     ierr = VecGetOwnershipRange(fin,&low,PETSC_NULL);
-    //printf("The local index is %d from %d\n",low,rank);
+    /*printf("The local index is %d from %d\n",low,rank); */
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx3);
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx4);
     for (i=0;i<local_n0;i++){
@@ -118,8 +118,8 @@ PetscInt main(PetscInt argc,char **args)
         tempindx1 = i*NM + j;
         indx3[tempindx]=local_0_start*N1+tempindx;
         indx4[tempindx]=low+tempindx1;
-        //          printf("index3 %d from proc %d is \n",indx3[tempindx],rank);
-        //          printf("index4 %d from proc %d is \n",indx4[tempindx],rank);
+        /*          printf("index3 %d from proc %d is \n",indx3[tempindx],rank); */
+        /*          printf("index4 %d from proc %d is \n",indx4[tempindx],rank); */
       }
     }
 
@@ -154,8 +154,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecScale(final,a);CHKERRQ(ierr);
 
 
-//    VecView(ini,PETSC_VIEWER_STDOUT_WORLD);
-//    VecView(final,PETSC_VIEWER_STDOUT_WORLD);
+/*    VecView(ini,PETSC_VIEWER_STDOUT_WORLD);   */
+/*    VecView(final,PETSC_VIEWER_STDOUT_WORLD); */
     ierr = VecAXPY(final,-1.0,ini);CHKERRQ(ierr);
 
     ierr = VecNorm(final,NORM_1,&enorm);CHKERRQ(ierr);
@@ -163,7 +163,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm);CHKERRQ(ierr);
     }
 
-    // Execute fftw with function fftw_execute and destory it after execution
+    /* Execute fftw with function fftw_execute and destory it after execution */
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);
     fftw_free(in1);  ierr = VecDestroy(&fin);CHKERRQ(ierr);

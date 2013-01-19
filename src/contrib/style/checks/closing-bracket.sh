@@ -15,6 +15,9 @@
 # - exclude 'while' keyword from do { ... } while  (discuss this!)
 # - exclude typedef and enum lines
 # - exclude arrays of arrays instantiation
+# - exclude lines using __LINE__ (this is certainly intentional at that spot)
+# - exclude preprocessor definitions
+# - exclude lines containing ${PETSC_DIR}
 
 find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
@@ -27,6 +30,10 @@ find src/ -name *.[ch] -or -name *.cu \
  | grep -v '};' \
  | grep -v '.*:\s*}\s*[a-zA-Z_]*;' \
  | grep -v '}\s*while' \
- | grep -v 'typedef|enum' \
- | grep -v '{{' \
- | grep -v '},'
+ | grep -v 'typedef\|enum' \
+ | grep -v '{{\|}}' \
+ | grep -v '},' \
+ | grep -v -F "__LINE__" \
+ | grep -v -F "#define" \
+ | grep -v -F '${PETSC_DIR}' 
+

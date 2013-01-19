@@ -104,7 +104,7 @@ int main(int argc,char **args)
     }
     ierr = MatDestroy(&Ctrans);CHKERRQ(ierr);
   }
-  //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
