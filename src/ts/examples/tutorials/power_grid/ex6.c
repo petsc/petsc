@@ -121,9 +121,9 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
     for(j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
       if(i == 0 || j == 0 || i == M-1 || j == N-1) {
-	p[j][i] = 0.0;
+        p[j][i] = 0.0;
       } else {
-	p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
+        p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
       }
     }
   }
@@ -225,15 +225,15 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void* ctx)
   for(i=xs; i < xs+xm; i++) {
     for(j=ys; j < ys+ym; j++) {
       if(i == 0 || j == 0 || i == M-1 || j == N-1) {
-	f[j][i] = p[j][i];
-      } else {	
-	ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
-	ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
-	ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);
-	if(p_adv1!=0 || p_adv2!=0 || p_diff!=0.0) {
-	  p_diff = p_diff;
-	}
-	f[j][i] = -p_adv1 - p_adv2 + p_diff;
+        f[j][i] = p[j][i];
+      } else {
+        ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
+        ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
+        ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);
+        if(p_adv1!=0 || p_adv2!=0 || p_diff!=0.0) {
+          p_diff = p_diff;
+        }
+        f[j][i] = -p_adv1 - p_adv2 + p_diff;
       }
     }
   }
@@ -274,16 +274,16 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *Jpre,MatStructure
       PetscInt nc = 0;
       row.i = i; row.j = j;
       if(i == 0 || j == 0 || i == M-1 || j == N-1) {
-	col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
+        col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
       } else {
-	c1 = user->ws*(yi-1.0)/(2*user->dx);
-	c2 = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
-	c3 = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
-	col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
+        c1 = user->ws*(yi-1.0)/(2*user->dx);
+        c2 = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
+        c3 = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
+        col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
         col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1;
-	col[nc].i = i;   col[nc].j = j-1; val[nc++] = c2 + c3;
-	col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c2 + c3;
-	col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c3;
+        col[nc].i = i;   col[nc].j = j-1; val[nc++] = c2 + c3;
+        col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c2 + c3;
+        col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c3;
       }
       ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
