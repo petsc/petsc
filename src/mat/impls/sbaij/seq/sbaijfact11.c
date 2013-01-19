@@ -31,7 +31,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
   /* check permutation */
-  if (!a->permute){
+  if (!a->permute) {
     ai = a->i; aj = a->j; aa = a->a;
   } else {
     ai = a->inew; aj = a->jnew;
@@ -40,23 +40,23 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
     ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&a2anew);CHKERRQ(ierr);
     ierr = PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
 
-    for (i=0; i<mbs; i++){
+    for (i=0; i<mbs; i++) {
       jmin = ai[i]; jmax = ai[i+1];
-      for (j=jmin; j<jmax; j++){
-        while (a2anew[j] != j){
+      for (j=jmin; j<jmax; j++) {
+        while (a2anew[j] != j) {
           k = a2anew[j]; a2anew[j] = a2anew[k]; a2anew[k] = k;
-          for (k1=0; k1<49; k1++){
+          for (k1=0; k1<49; k1++) {
             dk[k1]       = aa[k*49+k1];
             aa[k*49+k1] = aa[j*49+k1];
             aa[j*49+k1] = dk[k1];
           }
         }
         /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
-        if (i > aj[j]){
+        if (i > aj[j]) {
           /* printf("change orientation, row: %d, col: %d\n",i,aj[j]); */
           ap = aa + j*49;                     /* ptr to the beginning of j-th block of aa */
           for (k=0; k<49; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
-          for (k=0; k<7; k++){               /* j-th block of aa <- dk^T */
+          for (k=0; k<7; k++) {               /* j-th block of aa <- dk^T */
             for (k1=0; k1<7; k1++) *ap++ = dk[k + 7*k1];
           }
         }
@@ -66,13 +66,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
   }
 
   /* for each row k */
-  for (k = 0; k<mbs; k++){
+  for (k = 0; k<mbs; k++) {
 
     /*initialize k-th row with elements nonzero in row perm(k) of A */
     jmin = ai[perm_ptr[k]]; jmax = ai[perm_ptr[k]+1];
     if (jmin < jmax) {
       ap = aa + jmin*49;
-      for (j = jmin; j < jmax; j++){
+      for (j = jmin; j < jmax; j++) {
         vj = perm_ptr[aj[j]];         /* block col. index */
         wp = w + vj*49;
         for (i=0; i<49; i++) *wp++ = *ap++;
@@ -83,7 +83,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
     ierr = PetscMemcpy(dk,w+k*49,49*sizeof(MatScalar));CHKERRQ(ierr);
     i = jl[k]; /* first row to be added to k_th row  */
 
-    while (i < mbs){
+    while (i < mbs) {
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -221,7 +221,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
 
       /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
-      if (jmin < jmax){
+      if (jmin < jmax) {
         for (j=jmin; j<jmax; j++) {
           /* w += -U(i,k)^T * U_bar(i,j) */
           wp = w + bj[j]*49;
@@ -310,11 +310,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
-      for (j=jmin; j<jmax; j++){
+      for (j=jmin; j<jmax; j++) {
          vj = bj[j];           /* block col. index of U */
          u   = ba + j*49;
          wp = w + vj*49;
-         for (k1=0; k1<49; k1++){
+         for (k1=0; k1<49; k1++) {
            *u++        = *wp;
            *wp++ = 0.0;
          }
@@ -330,7 +330,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
   ierr = PetscFree(w);CHKERRQ(ierr);
   ierr = PetscFree2(il,jl);CHKERRQ(ierr);
   ierr = PetscFree2(dk,uik);CHKERRQ(ierr);
-  if (a->permute){
+  if (a->permute) {
     ierr = PetscFree(aa);CHKERRQ(ierr);
   }
 

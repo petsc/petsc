@@ -132,7 +132,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = ISGetIndices(dmsnesvi1->inactive,&index);CHKERRQ(ierr);
   ierr = ISGetLocalSize(dmsnesvi1->inactive,&n);CHKERRQ(ierr);
   ierr = VecSet(finemarked,0.0);CHKERRQ(ierr);
-  for (k=0;k<n;k++){
+  for (k=0;k<n;k++) {
       ierr = VecSetValue(finemarked,index[k],1.0,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(finemarked);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
     if (vi->checkredundancy) {
       (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);CHKERRQ(ierr);
-      if (IS_redact){
+      if (IS_redact) {
         ierr = ISSort(IS_redact);CHKERRQ(ierr);
         ierr = ISComplement(IS_redact,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
@@ -571,7 +571,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */

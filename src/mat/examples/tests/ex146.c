@@ -105,9 +105,9 @@ PetscInt main(PetscInt argc,char **args)
     printf("The local index is %d from %d\n",low,rank);
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx3);
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx4);
-    for (i=0;i<local_n0;i++){
-       for (j=0;j<N1;j++){
-          for (k=0;k<N2;k++){
+    for (i=0;i<local_n0;i++) {
+       for (j=0;j<N1;j++) {
+          for (k=0;k<N2;k++) {
             tempindx = i*N1*N2 + j*N2 + k;
             tempindx1 = i*N1*NM + j*NM + k;
             indx3[tempindx]=local_0_start*N1*N2+tempindx;
@@ -129,8 +129,8 @@ PetscInt main(PetscInt argc,char **args)
 
     printf("The local index value is %ld from %d",local_n0*N1*N2,rank);
 /*
-    for (i=0;i<N0;i++){
-       for (j=0;j<N1;j++){
+    for (i=0;i<N0;i++) {
+       for (j=0;j<N1;j++) {
           indx=i*N1*NM+j*NM;
           ISCreateStride(PETSC_COMM_WORLD,N2,indx,1,&indx1);
           indx=i*N1*N2+j*N2;

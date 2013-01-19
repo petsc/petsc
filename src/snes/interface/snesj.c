@@ -110,7 +110,7 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
     /* Communicate scale=1/dx_i to all processors */
     ierr = VecGetOwnershipRanges(x1,&ranges);CHKERRQ(ierr);
     root = size;
-    for (j=size-1; j>-1; j--){
+    for (j=size-1; j>-1; j--) {
       root--;
       if (i>=ranges[j]) break;
     }

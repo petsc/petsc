@@ -318,7 +318,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-v",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-version",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg3);CHKERRQ(ierr);
-  if (flg1 || flg2 || flg3){
+  if (flg1 || flg2 || flg3) {
 
     /*
        Print "higher-level" package version message
@@ -343,7 +343,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   /*
        Print "higher-level" package help message
   */
-  if (flg3){
+  if (flg3) {
     if (PetscExternalHelpFunction) {
       ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
     }
@@ -443,7 +443,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
 #if defined(PETSC_USE_SERVER)
   ierr = PetscOptionsHasName(PETSC_NULL,"-server", &flgz);CHKERRQ(ierr);
-  if (flgz){
+  if (flgz) {
     PetscInt port = PETSC_DECIDE;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-server",&port,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscWebServe(PETSC_COMM_WORLD,(int)port);CHKERRQ(ierr);

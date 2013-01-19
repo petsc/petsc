@@ -54,8 +54,8 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
 
   /* set b->i */
   bi[0] = 0; rowstart[0] = 0;
-  for (i=0; i<mbs; i++){
-    for (j=0; j<bs; j++){
+  for (i=0; i<mbs; i++) {
+    for (j=0; j<bs; j++) {
       b->ilen[i*bs+j]    = rowlengths[i*bs];
       rowstart[i*bs+j+1] = rowstart[i*bs+j] + rowlengths[i*bs];
     }
@@ -70,9 +70,9 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
     /* diagonal block */
     if (nz && *aj == i) {
       nz--;
-      for (j=0; j<bs; j++){   /* row i*bs+j */
+      for (j=0; j<bs; j++) {   /* row i*bs+j */
         itmp = i*bs+j;
-        for (k=0; k<bs; k++){ /* col i*bs+k */
+        for (k=0; k<bs; k++) { /* col i*bs+k */
           *(bj + rowstart[itmp]) = (*aj)*bs+k;
           *(bv + rowstart[itmp]) = *(av+k*bs+j);
           rowstart[itmp]++;
@@ -81,20 +81,20 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
       aj++; av += bs2;
     }
 
-    while (nz--){
+    while (nz--) {
       /* lower triangular blocks */
-      for (j=0; j<bs; j++){   /* row (*aj)*bs+j */
+      for (j=0; j<bs; j++) {   /* row (*aj)*bs+j */
         itmp = (*aj)*bs+j;
-        for (k=0; k<bs; k++){ /* col i*bs+k */
+        for (k=0; k<bs; k++) { /* col i*bs+k */
           *(bj + rowstart[itmp]) = i*bs+k;
           *(bv + rowstart[itmp]) = *(av+j*bs+k);
           rowstart[itmp]++;
         }
       }
       /* upper triangular blocks */
-      for (j=0; j<bs; j++){   /* row i*bs+j */
+      for (j=0; j<bs; j++) {   /* row i*bs+j */
         itmp = i*bs+j;
-        for (k=0; k<bs; k++){ /* col (*aj)*bs+k */
+        for (k=0; k<bs; k++) { /* col (*aj)*bs+k */
           *(bj + rowstart[itmp]) = (*aj)*bs+k;
           *(bv + rowstart[itmp]) = *(av+k*bs+j);
           rowstart[itmp]++;
@@ -152,7 +152,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,MatReuse reuse,
   for (i=0; i<m; i++) {
     aj = a->j + a->diag[i];
     av = a->a + a->diag[i];
-    for (j=0; j<rowlengths[i]; j++){
+    for (j=0; j<rowlengths[i]; j++) {
       *bj = *aj; bj++; aj++;
       *bv = *av; bv++; av++;
     }
@@ -213,7 +213,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
 
   /* set b->i */
   bi[0] = 0;
-  for (i=0; i<mbs; i++){
+  for (i=0; i<mbs; i++) {
     b->ilen[i]   = browlengths[i];
     bi[i+1]      = bi[i] + browlengths[i];
     browstart[i] = bi[i];
@@ -226,19 +226,19 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
     /* diagonal block */
     *(bj + browstart[i]) = *aj; aj++;
     itmp = bs2*browstart[i];
-    for (k=0; k<bs2; k++){
+    for (k=0; k<bs2; k++) {
       *(bv + itmp + k) = *av; av++;
     }
     browstart[i]++;
 
     nz = ai[i+1] - ai[i] -1;
-    while (nz--){
+    while (nz--) {
       /* lower triangular blocks - transpose blocks of A */
       *(bj + browstart[*aj]) = i; /* block col index */
       itmp = bs2*browstart[*aj];  /* row index */
-      for (col=0; col<bs; col++){
+      for (col=0; col<bs; col++) {
         k = col;
-        for (row=0; row<bs; row++){
+        for (row=0; row<bs; row++) {
           bv[itmp + col*bs+row] = av[k]; k+=bs;
         }
       }
@@ -247,7 +247,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
       /* upper triangular blocks */
       *(bj + browstart[i]) = *aj; aj++;
       itmp = bs2*browstart[i];
-      for (k=0; k<bs2; k++){
+      for (k=0; k<bs2; k++) {
         bv[itmp + k] = av[k];
       }
       av += bs2;
@@ -307,9 +307,9 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   for (i=0; i<mbs; i++) {
     aj = a->j + a->diag[i];
     av = a->a + (a->diag[i])*bs2;
-    for (j=0; j<browlengths[i]; j++){
+    for (j=0; j<browlengths[i]; j++) {
       *bj = *aj; bj++; aj++;
-      for (k=0; k<bs2; k++){
+      for (k=0; k<bs2; k++) {
         *bv = *av; bv++; av++;
       }
     }

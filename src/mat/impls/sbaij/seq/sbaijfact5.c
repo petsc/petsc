@@ -31,13 +31,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
   ai = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */
-  for (k = 0; k<mbs; k++){
+  for (k = 0; k<mbs; k++) {
 
     /*initialize k-th row with elements nonzero in row k of A */
     jmin = ai[k]; jmax = ai[k+1];
     if (jmin < jmax) {
       ap = aa + jmin*16;
-      for (j = jmin; j < jmax; j++){
+      for (j = jmin; j < jmax; j++) {
         vj = aj[j];         /* block col. index */
         rtmp_ptr = rtmp + vj*16;
         for (i=0; i<16; i++) *rtmp_ptr++ = *ap++;
@@ -48,7 +48,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
     ierr = PetscMemcpy(dk,rtmp+k*16,16*sizeof(MatScalar));CHKERRQ(ierr);
     i = jl[k]; /* first row to be added to k_th row  */
 
-    while (i < mbs){
+    while (i < mbs) {
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -106,7 +106,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
 
       /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
-      if (jmin < jmax){
+      if (jmin < jmax) {
         for (j=jmin; j<jmax; j++) {
           /* rtmp += -U(i,k)^T * U_bar(i,j) */
           rtmp_ptr = rtmp + bj[j]*16;
@@ -154,11 +154,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
-      for (j=jmin; j<jmax; j++){
+      for (j=jmin; j<jmax; j++) {
          vj = bj[j];           /* block col. index of U */
          u   = ba + j*16;
          rtmp_ptr = rtmp + vj*16;
-         for (k1=0; k1<16; k1++){
+         for (k1=0; k1<16; k1++) {
            *u++        = *rtmp_ptr;
            *rtmp_ptr++ = 0.0;
          }

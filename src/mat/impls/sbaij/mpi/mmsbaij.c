@@ -41,8 +41,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = PetscMalloc2(2*ec,PetscInt,&sgarray,ec,PetscInt,&ec_owner);CHKERRQ(ierr);
 
   ec = 0;
-  for (j=0; j<size; j++){
-    for (i=owners[j]; i<owners[j+1]; i++){
+  for (j=0; j<size; j++) {
+    for (i=owners[j]; i<owners[j+1]; i++) {
       if (indices[i]) {
         garray[ec]   = i;
         ec_owner[ec] = j;

@@ -341,7 +341,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   snes->iter = 0;
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  if (!snes->vec_func_init_set){
+  if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;

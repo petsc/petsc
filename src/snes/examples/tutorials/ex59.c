@@ -141,7 +141,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d2 = d*d;
 
-  if (second_order){
+  if (second_order) {
     ff[0] = d*(0.5*d*(-xx[2] + 4.*xx[1] - 3.*xx[0]) - X0DOT);
   } else {
     ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT);

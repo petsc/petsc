@@ -30,7 +30,7 @@ int main(int argc,char **argv) {
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 
   for (i=5*rank; i<5*rank+5; i++) {
-    for (j=0; j<5*size; j++){
+    for (j=0; j<5*size; j++) {
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
       column = (PetscInt) (5*size*PetscRealPart(value));
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);

@@ -363,11 +363,11 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
   PetscFunctionBegin;
   ierr = PetscMalloc(xi[m]*sizeof(PetscInt),&x2y);CHKERRQ(ierr);
   i = 0;
-  for (row=0; row<m; row++){
+  for (row=0; row<m; row++) {
     nz = xi[1] - xi[0];
     jy = 0;
-    for (jx=0; jx<nz; jx++,jy++){
-      if (xgarray && ygarray){
+    for (jx=0; jx<nz; jx++,jy++) {
+      if (xgarray && ygarray) {
         xcol = xgarray[xj[*xi + jx]];
         ycol = ygarray[yj[*yi + jy]];
       } else {
@@ -376,7 +376,7 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
       }
       while ( ycol < xcol ) {
         jy++;
-        if (ygarray){
+        if (ygarray) {
           ycol = ygarray[yj[*yi + jy]];
         } else {
           ycol = yj[*yi + jy];

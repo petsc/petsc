@@ -61,14 +61,14 @@ int main(int argc,char **args)
   /* Check zero rows */
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   nrows = 0;
-  for (row=rstart; row<rend; row++){
+  for (row=rstart; row<rend; row++) {
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
     nnzA += ncols;
     norm = 0.0;
-    for (j=0; j<ncols; j++){
+    for (j=0; j<ncols; j++) {
       val = PetscAbsScalar(vals[j]);
       if (norm < val) norm = norm;
-      if (val > dtol){
+      if (val > dtol) {
         ierr = MatSetValues(Asp,1,&row,1,&cols[j],&vals[j],INSERT_VALUES);CHKERRQ(ierr);
         nnzAsp++;
       }
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   /* investigate matcoloring for Asp */
   PetscBool     Asp_coloring = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-Asp_color",&Asp_coloring);CHKERRQ(ierr);
-  if (Asp_coloring){
+  if (Asp_coloring) {
     ISColoring    iscoloring;
     MatFDColoring matfdcoloring;
     ierr = PetscPrintf(PETSC_COMM_WORLD," Create coloring of Asp...\n");
@@ -102,7 +102,7 @@ int main(int argc,char **args)
   /* Write Asp in binary for study - see ~petsc/src/mat/examples/tests/ex124.c */
   PetscBool Asp_write = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-Asp_write",&Asp_write);CHKERRQ(ierr);
-  if (Asp_write){
+  if (Asp_write) {
     PetscViewer    viewer;
     ierr = PetscPrintf(PETSC_COMM_SELF,"Write Asp into file Asp.dat ...\n");
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"Asp.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);

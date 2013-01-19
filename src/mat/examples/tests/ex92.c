@@ -53,7 +53,7 @@ int main(int argc,char **args)
 
   /* Now set blocks of values */
   for (j=0; j<bs*bs; j++) vals[j] = 0.0;
-  for (i=0; i<Mbs; i++){
+  for (i=0; i<Mbs; i++) {
     cols[0] = i*bs; rows[0] = i*bs;
     for (j=1; j<bs; j++) {
       rows[j] = rows[j-1]+1;
@@ -97,7 +97,7 @@ int main(int argc,char **args)
 
   /* create a SeqSBAIJ matrix sA (= A) */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
-  if (vid >= 0 && vid < size){
+  if (vid >= 0 && vid < size) {
     if (!rank) printf("A: \n");
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     if (!rank) printf("sA: \n");
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
 
   for (i=0; i<nd; i++) {
-    if (!TestAllcols){
+    if (!TestAllcols) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       sz = (PetscInt)((0.5+0.2*PetscRealPart(rval))*mbs); /* 0.5*mbs < sz < 0.7*mbs */
 
@@ -124,7 +124,7 @@ int main(int argc,char **args)
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
-      if (rank == vid){
+      if (rank == vid) {
         ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%d]: %d\n",rank,i,sz);CHKERRQ(ierr);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
@@ -133,7 +133,7 @@ int main(int argc,char **args)
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is1+i);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is2+i);CHKERRQ(ierr);
 
-      if (rank == vid){
+      if (rank == vid) {
         PetscBool      colflag;
         ierr = ISIdentity(is2[i],&colflag);CHKERRQ(ierr);
         printf("[%d] is2[%d], colflag %d\n",rank,i,colflag);
@@ -146,7 +146,7 @@ int main(int argc,char **args)
   ierr = PetscLogStageRegister("MatOv_BAIJ",&stages[1]);
 
   /* Test MatIncreaseOverlap */
-  if (TestOverlap){
+  if (TestOverlap) {
     ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
     ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -155,7 +155,7 @@ int main(int argc,char **args)
     ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-    if (rank == vid){
+    if (rank == vid) {
       printf("\n[%d] IS from BAIJ:\n",rank);
       ierr = ISView(is1[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       printf("\n[%d] IS from SBAIJ:\n",rank);
@@ -164,8 +164,8 @@ int main(int argc,char **args)
 
     for (i=0; i<nd; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-      if (!flg ){
-        if (rank == 0){
+      if (!flg ) {
+        if (rank == 0) {
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
           /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
           ierr = ISSort(is2[i]);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ int main(int argc,char **args)
   }
 
   /* Test MatGetSubmatrices */
-  if (TestSubMat){
+  if (TestSubMat) {
     for (i = 0; i < nd; ++i) {
       ierr = ISSort(is1[i]);CHKERRQ(ierr);
       ierr = ISSort(is2[i]);CHKERRQ(ierr);

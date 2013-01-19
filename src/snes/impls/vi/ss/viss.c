@@ -336,7 +336,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */

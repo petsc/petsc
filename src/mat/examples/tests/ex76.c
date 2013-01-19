@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-displ",&displ,PETSC_NULL);CHKERRQ(ierr);
 
   n = mbs*bs;
-  if (TestAIJ){ /* A is in aij format */
+  if (TestAIJ) { /* A is in aij format */
     ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,nz,PETSC_NULL,&A);CHKERRQ(ierr);
     TestBAIJ = PETSC_FALSE;
   } else { /* A is in baij format */
@@ -43,9 +43,9 @@ int main(int argc,char **args)
   }
 
   /* Assemble matrix */
-  if (bs == 1){
+  if (bs == 1) {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRQ(ierr);
-    if (prob == 1){ /* tridiagonal matrix */
+    if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -85,7 +85,7 @@ int main(int argc,char **args)
       }
     }
   } else { /* bs > 1 */
-    for (block=0; block<n/bs; block++){
+    for (block=0; block<n/bs; block++) {
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
@@ -102,7 +102,7 @@ int main(int argc,char **args)
     }
     /* off-diagonal blocks */
     value[0]=-1.0;
-    for (i=0; i<(n/bs-1)*bs; i++){
+    for (i=0; i<(n/bs-1)*bs; i++) {
       col[0]=i+bs;
       ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       col[0]=i; row=i+bs;
@@ -110,9 +110,9 @@ int main(int argc,char **args)
     }
   }
 
-  if (TestShift){
+  if (TestShift) {
      /* set diagonals in the 0-th block as 0 for testing shift numerical factor */
-     for (i=0; i<bs; i++){
+     for (i=0; i<bs; i++) {
        row = i; col[0] = i; value[0] = 0.0;
        ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
      }
@@ -130,7 +130,7 @@ int main(int argc,char **args)
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J){
+  if (i-Ii || j-J) {
     PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");
   }
 
@@ -143,7 +143,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
   /* Test MatReordering() - not work on sbaij matrix */
-  if (reorder){
+  if (reorder) {
     ierr = MatGetOrdering(A,MATORDERINGRCM,&perm,&cperm);CHKERRQ(ierr);
   } else {
     ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&cperm);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int main(int argc,char **args)
 
   /* initialize factinfo */
   ierr = MatFactorInfoInitialize(&factinfo);CHKERRQ(ierr);
-  if (TestShift == 1){
+  if (TestShift == 1) {
     factinfo.shifttype   = (PetscReal)MAT_SHIFT_NONZERO;
     factinfo.shiftamount = 0.1;
   } else if (TestShift == 2) {
@@ -162,10 +162,10 @@ int main(int argc,char **args)
   /* Test MatCholeskyFactor(), MatICCFactor() */
   /*------------------------------------------*/
   /* Test aij matrix A */
-  if (TestAIJ){
-    if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"AIJ: \n");}
+  if (TestAIJ) {
+    if (displ>0) {ierr = PetscPrintf(PETSC_COMM_SELF,"AIJ: \n");}
     i = 0;
-    for (lvl=-1; lvl<10; lvl++){
+    for (lvl=-1; lvl<10; lvl++) {
       if (lvl==-1) {  /* Cholesky factor */
         factinfo.fill = 5.0;
         ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
@@ -185,16 +185,16 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2);}
+      if (displ>0) {ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2);}
       err[i++] = norm2;
     }
   }
 
   /* Test baij matrix A */
-  if (TestBAIJ){
-    if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"BAIJ: \n");}
+  if (TestBAIJ) {
+    if (displ>0) {ierr = PetscPrintf(PETSC_COMM_SELF,"BAIJ: \n");}
     i = 0;
-    for (lvl=-1; lvl<10; lvl++){
+    for (lvl=-1; lvl<10; lvl++) {
       if (lvl==-1) {  /* Cholesky factor */
         factinfo.fill = 5.0;
         ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
@@ -214,15 +214,15 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2);}
+      if (displ>0) {ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2);}
       err[i++] = norm2;
     }
   }
 
   /* Test sbaij matrix sA */
-  if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"SBAIJ: \n");}
+  if (displ>0) {ierr = PetscPrintf(PETSC_COMM_SELF,"SBAIJ: \n");}
   i = 0;
-  for (lvl=-1; lvl<10; lvl++){
+  for (lvl=-1; lvl<10; lvl++) {
     if (lvl==-1) {  /* Cholesky factor */
       factinfo.fill = 5.0;
       ierr = MatGetFactor(sA,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
@@ -235,13 +235,13 @@ int main(int argc,char **args)
     }
     ierr = MatCholeskyFactorNumeric(sC,sA,&factinfo);CHKERRQ(ierr);
 
-    if (lvl==0 && bs==1){ /* Test inplace ICC(0) for sbaij sA - does not work for new datastructure */
+    if (lvl==0 && bs==1) { /* Test inplace ICC(0) for sbaij sA - does not work for new datastructure */
       /*
         Mat B;
         ierr = MatDuplicate(sA,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
         ierr = MatICCFactor(B,perm,&factinfo);CHKERRQ(ierr);
         ierr = MatEqual(sC,B,&equal);CHKERRQ(ierr);
-        if (!equal){
+        if (!equal) {
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
         }
         ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ int main(int argc,char **args)
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-    if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2); }
+    if (displ>0) {ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2); }
     err[i] -= norm2;
     if (err[i] > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER," level: %d, err: %G\n", lvl,err[i]);
   }

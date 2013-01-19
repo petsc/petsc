@@ -975,7 +975,7 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
   ierr = PetscOptionsGetEList(PetscOptionsObject.prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s> (choose one of)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv);CHKERRQ(ierr);
-    for (i=0; i<ntext; i++){
+    for (i=0; i<ntext; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm," %s",list[i]);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm," (%s)\n",ManSection(man));CHKERRQ(ierr);

@@ -665,7 +665,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMDAVecGetArrayDOF(da,UIN,&uin);CHKERRQ(ierr);
   ierr = ISGetIndices(act,&index);CHKERRQ(ierr);
   ierr = ISGetLocalSize(act,&n);CHKERRQ(ierr);
-  for (k=0;k<n;k++){
+  for (k=0;k<n;k++) {
     l = index[k]%5;
     i = index[k]/5;
     uin[i][l]=1.0;

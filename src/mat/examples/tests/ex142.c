@@ -45,13 +45,13 @@ PetscInt main(PetscInt argc,char **args)
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  for (DIM = 0; DIM < ndim; DIM++){
+  for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM]  = n; /* size of real space vector in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  for (DIM = 1; DIM < 5; DIM++){
+  for (DIM = 1; DIM < 5; DIM++) {
     /* create vectors of length N=dim[0]*dim[1]* ...*dim[DIM-1] */
     /*----------------------------------------------------------*/
     N = Ny = 1;
@@ -84,7 +84,7 @@ PetscInt main(PetscInt argc,char **args)
      should be done before the input is initialized by the user. */
     printf("DIM: %d, N %d, Ny %d\n",DIM,N,Ny);
 
-    switch (DIM){
+    switch (DIM) {
     case 1:
       fplan = fftw_plan_dft_r2c_1d(dim[0], (double *)x_array, (fftw_complex*)y_array, flags);
       bplan = fftw_plan_dft_c2r_1d(dim[0], (fftw_complex*)y_array, (double *)z_array, flags);
@@ -131,7 +131,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
     ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
     ierr = VecGetArray(z,&z_array);CHKERRQ(ierr);
-    for (i=0; i<3; i++){
+    for (i=0; i<3; i++) {
       /* FFTW_FORWARD */
       fftw_execute(fplan);
       /*printf("\n fout:\n");*/
@@ -153,7 +153,7 @@ PetscInt main(PetscInt argc,char **args)
     if (view) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-    if (enorm > 1.e-11){
+    if (enorm > 1.e-11) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %G\n",enorm);CHKERRQ(ierr);
     }
 

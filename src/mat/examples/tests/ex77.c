@@ -34,14 +34,14 @@ int main(int argc,char **args)
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J){
+  if (i-Ii || j-J) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
   /* Assemble matrix */
-  if (bs == 1){
+  if (bs == 1) {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRQ(ierr);
-    if (prob == 1){ /* tridiagonal matrix */
+    if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -92,7 +92,7 @@ int main(int argc,char **args)
     }
   } else { /* bs > 1 */
 #ifdef DIAGB
-    for (block=0; block<n/bs; block++){
+    for (block=0; block<n/bs; block++) {
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
@@ -113,7 +113,7 @@ int main(int argc,char **args)
 #endif
     /* off-diagonal blocks */
     value[0]=-1.0;
-    for (i=0; i<(n/bs-1)*bs; i++){
+    for (i=0; i<(n/bs-1)*bs; i++) {
       col[0]=i+bs;
       ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
@@ -139,13 +139,13 @@ int main(int argc,char **args)
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
-  if (norm1<-tol || norm1>tol){
+  if (norm1<-tol || norm1>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(sA,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
-  if (norm1<-tol || norm1>tol){
+  if (norm1<-tol || norm1>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);CHKERRQ(ierr);
   }
 
@@ -170,7 +170,7 @@ int main(int argc,char **args)
 
   ierr = MatGetBlockSize(A, &Ii);CHKERRQ(ierr);
   ierr = MatGetBlockSize(sA, &i);CHKERRQ(ierr);
-  if (i-Ii){
+  if (i-Ii) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
 
@@ -230,7 +230,7 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&isrow,&iscol);CHKERRQ(ierr);
   ip = isrow;
 
-  if (reorder){
+  if (reorder) {
     IS       nip;
     PetscInt *nip_ptr;
     ierr = PetscMalloc(mbs*sizeof(PetscInt),&nip_ptr);CHKERRQ(ierr);

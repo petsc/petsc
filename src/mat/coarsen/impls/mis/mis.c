@@ -127,7 +127,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
       ierr = VecGetArray(ghostState, &cpcol_state);CHKERRQ(ierr);
     }
     /* check all vertices */
-    for (kk=0;kk<nloc;kk++){
+    for (kk=0;kk<nloc;kk++) {
       PetscInt lid = perm_ix[kk];
       NState state = (NState)PetscRealPart(lid_state[lid]);
       if (lid_removed[lid]) continue;
@@ -147,14 +147,14 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
             } else assert(!IS_SELECTED(statej)); /* lid is now deleted, do it */
           }
         } /* parallel test */
-        if (isOK){ /* select or remove this vertex */
+        if (isOK) { /* select or remove this vertex */
           nDone++;
           /* check for singleton */
           ii = matA->i; n = ii[lid+1] - ii[lid];
           if (n < 2) {
             /* if I have any ghost adj then not a sing */
             ix = lid_cprowID[lid];
-            if (ix==-1 || (matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])==0){
+            if (ix==-1 || (matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])==0) {
               nremoved++;
               lid_removed[lid] = PETSC_TRUE;
               /* should select this because it is technically in the MIS but lets not */
@@ -175,7 +175,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
           for (j=0; j<n; j++) {
             PetscInt lidj = idx[j];
             NState statej = (NState)PetscRealPart(lid_state[lidj]);
-            if (statej == NOT_DONE){
+            if (statej == NOT_DONE) {
               nDone++;
               /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
               if (strict_aggs) {
@@ -317,7 +317,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   }
   ierr = PetscFree(lid_state);CHKERRQ(ierr);
 
-  if (mpimat){
+  if (mpimat) {
     ierr = VecDestroy(&ghostState);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&locState);CHKERRQ(ierr);

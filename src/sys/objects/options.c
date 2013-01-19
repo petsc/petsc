@@ -402,7 +402,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
-        for (i=0; i<1; i++){
+        for (i=0; i<1; i++) {
           ierr = PetscStrchr(string,cmt[i],&cmatch);CHKERRQ(ierr);
           if (cmatch) *cmatch = 0;
         }

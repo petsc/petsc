@@ -60,7 +60,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN,&flg_A);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-noshift",&flg);CHKERRQ(ierr);
   if (flg) shift = 0;
-  if (flg_A){
+  if (flg_A) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr);
     nsizes = 3;
@@ -92,7 +92,7 @@ int main(int argc,char **args)
   }
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",rhs,PETSC_MAX_PATH_LEN,&flg_b);CHKERRQ(ierr);
-  if (flg_b){
+  if (flg_b) {
     ierr = VecCreate(PETSC_COMM_SELF,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **args)
   }
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-solu",solu,PETSC_MAX_PATH_LEN,&flg_u);CHKERRQ(ierr);
-  if (flg_u){
+  if (flg_u) {
     ierr = VecCreate(PETSC_COMM_SELF,&u);CHKERRQ(ierr);
     ierr = VecSetSizes(u,PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr = VecSetFromOptions(u);CHKERRQ(ierr);
@@ -130,17 +130,17 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
 
-  if (flg_b){ /* Write rhs in Petsc binary file */
+  if (flg_b) { /* Write rhs in Petsc binary file */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
     ierr = VecView(b,view);CHKERRQ(ierr);
   }
-  if (flg_u){
+  if (flg_u) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write exact solution in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
     ierr = VecView(u,view);CHKERRQ(ierr);
   }
 
   /* Check accuracy of the data */
-  if (flg_A & flg_b & flg_u){
+  if (flg_A & flg_b & flg_u) {
     ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr);
     ierr = MatMult(A,u,u_tmp);CHKERRQ(ierr);
     ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);

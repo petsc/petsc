@@ -25,7 +25,7 @@ int main(int argc,char **argv) {
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  if (!rank){
+  if (!rank) {
     ierr = MatSetValues(A,3,ij,3,ij,a,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -41,18 +41,18 @@ int main(int argc,char **argv) {
   ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);   /* recompute C=B*A */
   ierr = MatSetOptionsPrefix(C,"C_");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
   ierr = MatMatMultSymbolic(C,A,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);  /* D = C*A = (A^T*A)*A */
   ierr = MatSetOptionsPrefix(D,"D_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
   /* Repeat the numeric product to test reuse of the previous symbolic product */
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **argv) {
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(D,NORM_FROBENIUS,&norm);
-  if (norm > 1.e-15 && !rank){
+  if (norm > 1.e-15 && !rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -84,14 +84,14 @@ int main(int argc,char **argv) {
   ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-15){
+  if (norm > 1.e-15) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  if (size == 1){
+  if (size == 1) {
     /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
     ierr = testPTAPRectangular();CHKERRQ(ierr);
 

@@ -269,19 +269,19 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
                 PetscInt r;
                 for (r=0;r<3;r++) {
                         valsrand[r]=5*x[r]*(1-x[r])*y[r]*(1-y[r]);
-                        if (x[r]>=0.5 && y[r]>=0.5){
+                        if (x[r]>=0.5 && y[r]>=0.5) {
                                 vals1[r]=0.75;
                                 vals2[r]=0.0;
                         }
-                        if (x[r]>=0.5 && y[r]<0.5){
+                        if (x[r]>=0.5 && y[r]<0.5) {
                                 vals1[r]=0.0;
                                 vals2[r]=0.0;
                         }
-                        if (x[r]<0.5 && y[r]>=0.5){
+                        if (x[r]<0.5 && y[r]>=0.5) {
                                 vals1[r]=0.0;
                                 vals2[r]=0.75;
                         }
-                        if (x[r]<0.5 && y[r]<0.5){
+                        if (x[r]<0.5 && y[r]<0.5) {
                                 vals1[r]=0.75;
                                 vals2[r]=0.0;
                         }
@@ -311,7 +311,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
                 if (xx[4*i+1]>1) {
                         xx[4*i+1]=1;
                 }
-                if (xx[4*i]+xx[4*i+1]>1){
+                if (xx[4*i]+xx[4*i+1]>1) {
                         xx[4*i+1] = 1.0 - xx[4*i];
                 }
                 xx[4*i+2] = 1.0 - xx[4*i] - xx[4*i+1];

@@ -63,7 +63,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const*li
   if (printhelp) {
     while (list[i++]);
     ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: (%s) %s (choose one of) ",bag->bagprefix?bag->bagprefix:"",name,list[mdefault],list[i-3],help);CHKERRQ(ierr);
-    for (i=0; list[i+2]; i++){
+    for (i=0; list[i+2]; i++) {
       ierr = (*PetscHelpPrintf)(bag->bagcomm," %s",list[i]);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(bag->bagcomm,"\n");CHKERRQ(ierr);

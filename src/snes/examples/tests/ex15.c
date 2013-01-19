@@ -158,9 +158,9 @@ PetscErrorCode ComputeB(AppCtx* user)
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
   /* Compute the linear term in the objective function */
-  for (i=xs; i<xs+xm; i++){
+  for (i=xs; i<xs+xm; i++) {
     temp=sin((i+1)*hx);
-    for (j=ys; j<ys+ym; j++){
+    for (j=ys; j<ys+ym; j++) {
       b[j][i] =  - ehxhy*temp;
     }
   }
@@ -212,7 +212,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
-  for (i=xs; i< xs+xm; i++){
+  for (i=xs; i< xs+xm; i++) {
     xi=(i+1)*hx;
     trule1=hxhy*( p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc) ) / six; /* L(i,j) */
     trule2=hxhy*( p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc) ) / six; /* U(i,j) */
@@ -227,30 +227,30 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
     vup=-hyhy*(trule1+trule6);
     vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
 
-    for (j=ys; j<ys+ym; j++){
+    for (j=ys; j<ys+ym; j++) {
 
        v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
 
        k=0;
-       if (j > 0){
+       if (j > 0) {
          v[k]=vdown; row[k] = i; col[k] = j-1; k++;
        }
 
-       if (i > 0){
+       if (i > 0) {
          v[k]= vleft; row[k] = i-1; col[k] = j; k++;
        }
 
        v[k]= vmiddle; row[k] = i; col[k] = j; k++;
 
-       if (i+1 < nx){
+       if (i+1 < nx) {
          v[k]= vright; row[k] = i+1; col[k] = j; k++;
        }
 
-       if (j+1 < ny){
+       if (j+1 < ny) {
          v[k]= vup; row[k] = i; col[k] = j+1; k++;
        }
        tt=0;
-       for (kk=0;kk<k;kk++){
+       for (kk=0;kk<k;kk++) {
          tt+=v[kk]*x[col[kk]][row[kk]];
        }
        g[j][i] = tt;
@@ -307,7 +307,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   hyhy=one/(hy*hy);
 
   info = MatAssembled(hes,&assembled);CHKERRQ(info);
-  if (assembled){info = MatZeroEntries(hes);CHKERRQ(info);}
+  if (assembled) {info = MatZeroEntries(hes);CHKERRQ(info);}
   *flg=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
@@ -321,7 +321,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
-  for (i=xs; i< xs+xm; i++){
+  for (i=xs; i< xs+xm; i++) {
     xi=(i+1)*hx;
     trule1=hxhy*( p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc) ) / six; /* L(i,j) */
     trule2=hxhy*( p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc) ) / six; /* U(i,j) */
@@ -337,24 +337,24 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
     vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
     v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
 
-    for (j=ys; j<ys+ym; j++){
+    for (j=ys; j<ys+ym; j++) {
       k=0;
       row.i = i; row.j = j;
-      if (j > 0){
+      if (j > 0) {
         v[k]=vdown; col[k].i=i;col[k].j = j-1; k++;
       }
 
-      if (i > 0){
+      if (i > 0) {
         v[k]= vleft; col[k].i= i-1; col[k].j = j;k++;
       }
 
       v[k]= vmiddle; col[k].i=i; col[k].j = j;k++;
 
-      if (i+1 < nx){
+      if (i+1 < nx) {
         v[k]= vright; col[k].i = i+1; col[k].j = j; k++;
       }
 
-      if (j+1 < ny){
+      if (j+1 < ny) {
         v[k]= vup; col[k].i = i; col[k].j = j+1; k++;
       }
       info = MatSetValuesStencil(hes,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);

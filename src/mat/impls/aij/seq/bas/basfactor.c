@@ -159,7 +159,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
 
   /* Set the appropriate solution functions */
   ierr = ISIdentity(ip,&perm_identity);CHKERRQ(ierr);
-  if (perm_identity){
+  if (perm_identity) {
     (B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
     (B)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
     (B)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;

@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecSetFromOptions(ini);CHKERRQ(ierr);
     ierr = VecSetFromOptions(final);CHKERRQ(ierr);
 
-    if (N1%2==0){
+    if (N1%2==0) {
       NM = N1+2;
     } else {
       NM = N1+1;
@@ -112,8 +112,8 @@ PetscInt main(PetscInt argc,char **args)
     /*printf("The local index is %d from %d\n",low,rank); */
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx3);
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx4);
-    for (i=0;i<local_n0;i++){
-      for (j=0;j<N1;j++){
+    for (i=0;i<local_n0;i++) {
+      for (j=0;j<N1;j++) {
         tempindx = i*N1 + j;
         tempindx1 = i*NM + j;
         indx3[tempindx]=local_0_start*N1+tempindx;
@@ -136,7 +136,7 @@ PetscInt main(PetscInt argc,char **args)
 /*
     VecScatter      vecscat;
     IS              indx1,indx2;
-    for (i=0;i<N0;i++){
+    for (i=0;i<N0;i++) {
        indx = i*NM;
        ISCreateStride(PETSC_COMM_WORLD,N1,indx,1,&indx1);
        indx = i*N1;
@@ -159,7 +159,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecAXPY(final,-1.0,ini);CHKERRQ(ierr);
 
     ierr = VecNorm(final,NORM_1,&enorm);CHKERRQ(ierr);
-    if (enorm > 1.e-10){
+    if (enorm > 1.e-10) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm);CHKERRQ(ierr);
     }
 

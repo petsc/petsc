@@ -26,7 +26,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
 
   ierr = MatGetType(C,&type);CHKERRQ(ierr);
-  if (size == 1){
+  if (size == 1) {
     ierr = PetscObjectTypeCompare((PetscObject)C,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = MatMPIBAIJSetPreallocation(C,bs,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
-  for (i=1; i<n-1; i++){
+  for (i=1; i<n-1; i++) {
     midx[2] = i-1; midx[1] = i; midx[0] = i+1;
     ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* test MatStore/RetrieveValues() */
-  if (isAIJ){
+  if (isAIJ) {
     ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatStoreValues(A);CHKERRQ(ierr);
     ierr = MatZeroEntries(A);CHKERRQ(ierr);

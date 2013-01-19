@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   v = 1.0;
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++){
+  for (i=rstart; i<rend; i++) {
     ierr = MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

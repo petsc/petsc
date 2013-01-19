@@ -146,7 +146,7 @@ int main(int argc,char **args)
 
    /*   --- SUMMARY --- */
 
-   for (k=0; k<NTIMES; k++){
+   for (k=0; k<NTIMES; k++) {
         for (j=0; j<4; j++) {
            mintime[j] = MIN(mintime[j], times[j][k]);
         }

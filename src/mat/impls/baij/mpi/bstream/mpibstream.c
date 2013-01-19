@@ -50,7 +50,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
     for (i=0; i<rbs; i++)
         asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
   }
-  switch (bs){
+  switch (bs) {
     case 4:
       a->A->ops->mult  = MatMult_SeqBSTRM_4;
       a->A->ops->sor   = MatSOR_SeqBSTRM_4;
@@ -82,7 +82,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
     for (i=0; i<rbs; i++)
         bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
   }
-  switch (bs){
+  switch (bs) {
     case 4:
       a->B->ops->multadd = MatMultAdd_SeqBSTRM_4;
       break;

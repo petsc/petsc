@@ -17,11 +17,12 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr )
+void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateIncrease(*obj);
 }
-void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr ){
+void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr)
+{
   *ierr = PetscObjectStateDecrease(*obj);
 }
 

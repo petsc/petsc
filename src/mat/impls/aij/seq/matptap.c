@@ -15,7 +15,7 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
   }
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
@@ -269,7 +269,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
        1: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
   ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but slower MatPtAPNumeric()","",sparse_axpy,&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (sparse_axpy){
+  if (sparse_axpy) {
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -389,7 +389,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       caj   = ca + ci[crow];
       pvalj = pval[j];
       cnz   = ci[crow+1] - ci[crow];
-      for (k=0; k<cnz; k++){
+      for (k=0; k<cnz; k++) {
         caj[k] += pvalj*apa[cjj[k]];
       }
       ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);

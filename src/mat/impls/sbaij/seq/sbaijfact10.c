@@ -37,13 +37,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
   ai = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */
-  for (k = 0; k<mbs; k++){
+  for (k = 0; k<mbs; k++) {
 
     /*initialize k-th row with elements nonzero in row k of A */
     jmin = ai[k]; jmax = ai[k+1];
     if (jmin < jmax) {
       ap = aa + jmin*36;
-      for (j = jmin; j < jmax; j++){
+      for (j = jmin; j < jmax; j++) {
         vj = aj[j];         /* block col. index */
         wp = w + vj*36;
         for (i=0; i<36; i++) *wp++ = *ap++;
@@ -54,7 +54,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
     ierr = PetscMemcpy(dk,w+k*36,36*sizeof(MatScalar));CHKERRQ(ierr);
     i = jl[k]; /* first row to be added to k_th row  */
 
-    while (i < mbs){
+    while (i < mbs) {
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -173,7 +173,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
 
       /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
-      if (jmin < jmax){
+      if (jmin < jmax) {
         for (j=jmin; j<jmax; j++) {
           /* w += -U(i,k)^T * U_bar(i,j) */
           wp = w + bj[j]*36;
@@ -247,11 +247,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
-      for (j=jmin; j<jmax; j++){
+      for (j=jmin; j<jmax; j++) {
          vj = bj[j];           /* block col. index of U */
          u  = ba + j*36;
          wp = w + vj*36;
-         for (k1=0; k1<36; k1++){
+         for (k1=0; k1<36; k1++) {
            *u++  = *wp;
            *wp++ = 0.0;
          }

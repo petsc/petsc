@@ -61,7 +61,7 @@ PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
 
   PetscFunctionBegin;
   ierr = MatGetFactor_seqaij_petsc(A,ftype,B);CHKERRQ(ierr);
-  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT){
+  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
     ierr = MatSetType(*B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = MatSetFromOptions_SeqAIJCUSPARSE(*B);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*B),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_cusparse",MatFactorGetSolverPackage_seqaij_cusparse);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildLowerTriMatrix(Mat A)
   PetscInt i,nz, nzLower, offset, rowOffset;
 
   PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){
+  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
     try {
       /* first figure out the number of nonzeros in the lower triangular matrix including 1's on the diagonal. */
       nzLower=n+ai[n]-ai[1];
@@ -273,7 +273,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildUpperTriMatrix(Mat A)
 
   PetscFunctionBegin;
 
-  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){
+  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
     try {
       /* next, figure out the number of nonzeros in the upper triangular matrix. */
       nzUpper = adiag[0]-adiag[n];
@@ -287,7 +287,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildUpperTriMatrix(Mat A)
       AiUp[0]=(PetscInt) 0;
       AiUp[n]=nzUpper;
       offset = nzUpper;
-      for (i=n-1; i>=0; i--){
+      for (i=n-1; i>=0; i--) {
         v   = aa + adiag[i+1] + 1;
         vi  = aj + adiag[i+1] + 1;
 
@@ -454,14 +454,14 @@ PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 
 
   PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){
+  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
     /*
       It may be possible to reuse nonzero structure with new matrix values but
       for simplicity and insured correctness we delete and build a new matrix on
       the GPU. Likely a very small performance hit.
     */
-    if (cusparseMat->mat){
+    if (cusparseMat->mat) {
       try {
         delete cusparseMat->mat;
         if (cusparseMat->tempvec)
@@ -769,7 +769,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
   PetscFunctionBegin;
   if (A->factortype==MAT_FACTOR_NONE) {
     try {
-      if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED){
+      if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
         delete (GPU_Matrix_Ifc *)(cusparseMat->mat);
       }
       if (cusparseMat->tempvec!=0)

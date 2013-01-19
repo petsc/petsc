@@ -69,14 +69,14 @@ int main(int argc,char **args)
   ierr = MatMult(C,x,b);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
-  if (matordering){
+  if (matordering) {
     ierr = MatGetOrdering(C,MATORDERINGRCM,&row,&col);CHKERRQ(ierr);
   } else {
     ierr = MatGetOrdering(C,MATORDERINGNATURAL,&row,&col);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
-  if (MATDSPL){
+  if (MATDSPL) {
     printf("original matrix:\n");
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
   ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&LU);CHKERRQ(ierr);
-  if (LU){
+  if (LU) {
     printf("Test LU...\n");
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(A,C,row,col,&info);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   }
   ierr = MatLUFactorNumeric(A,C,&info);CHKERRQ(ierr);
 
-  if (MATDSPL){
+  if (MATDSPL) {
     printf("factored matrix:\n");
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /* Test in-place ILU(0) and compare it with the out-place ILU(0) */
-  if (!LU && lf==0){
+  if (!LU && lf==0) {
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatILUFactor(A,row,col,&info);CHKERRQ(ierr);
     /*
@@ -135,7 +135,7 @@ int main(int argc,char **args)
 
   /* Test Cholesky and ICC on seqaij matrix with matrix reordering on aij matrix C */
   CHOLESKY = LU;
-  if (CHOLESKY){
+  if (CHOLESKY) {
     printf("Test Cholesky...\n");
     lf = -1;
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
@@ -152,16 +152,16 @@ int main(int argc,char **args)
   ierr = MatCholeskyFactorNumeric(A,C,&info);CHKERRQ(ierr);
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
-  if (lf == -1){
+  if (lf == -1) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
-    if (TRIANGULAR){
+    if (TRIANGULAR) {
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
       printf("Test MatBackwardSolve...\n");
       ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (norm2 > 1.e-14){
+      if (norm2 > 1.e-14) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr);
       }
     }
@@ -171,12 +171,12 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  if (lf == -1 && norm2 > 1.e-14){
+  if (lf == -1 && norm2 > 1.e-14) {
     PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
   }
 
   /* Test in-place ICC(0) and compare it with the out-place ICC(0) */
-  if (!CHOLESKY && lf==0 && !matordering){
+  if (!CHOLESKY && lf==0 && !matordering) {
     ierr = MatConvert(C,MATSBAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatICCFactor(A,row,&info);CHKERRQ(ierr);
     /*

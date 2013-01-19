@@ -544,7 +544,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   }
 
   x1_tmp = x1;
-  if (!coloring->vscale){
+  if (!coloring->vscale) {
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
 
@@ -572,14 +572,14 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = VecGetLocalSize(x1_tmp,&N);CHKERRQ(ierr);
   ierr = VecGetArray(x1_tmp,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_GHOSTED){
+  if (ctype == IS_COLORING_GHOSTED) {
     col_start = 0; col_end = N;
   } else if (ctype == IS_COLORING_GLOBAL) {
     xx = xx - start;
     vscale_array = vscale_array - start;
     col_start = start; col_end = N + start;
   }
-  for (col=col_start; col<col_end; col++){
+  for (col=col_start; col<col_end; col++) {
     /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
     if (coloring->htype[0] == 'w') {
       dx = 1.0 + unorm;
@@ -594,7 +594,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   }
   if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_GLOBAL){
+  if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }

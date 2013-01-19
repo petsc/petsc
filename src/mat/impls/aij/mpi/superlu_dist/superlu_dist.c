@@ -131,7 +131,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecScatterEnd(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(x_seq,&bptr);CHKERRQ(ierr);
   } else { /* size==1 || distributed mat input */
-    if (lu->options.SolveInitialized && !lu->matsolve_iscalled){
+    if (lu->options.SolveInitialized && !lu->matsolve_iscalled) {
       /* see comments in MatMatSolve() */
 #if defined(PETSC_USE_COMPLEX)
       zSolveFinalize(&lu->options, &lu->SOLVEstruct);
@@ -206,7 +206,7 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size > 1 && lu->MatInputMode == GLOBAL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatInputMode=GLOBAL for nproc %d>1 is not supported",size);
   /* size==1 or distributed mat input */
-  if (lu->options.SolveInitialized && !lu->matmatsolve_iscalled){
+  if (lu->options.SolveInitialized && !lu->matmatsolve_iscalled) {
     /* communication pattern of SOLVEstruct is unlikely created for matmatsolve,
        thus destroy it and create a new SOLVEstruct.
        Otherwise it may result in memory corruption or incorrect solution
@@ -305,7 +305,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
        Note: memories of lu->val, col and row are allocated by CompRow_to_CompCol_dist()! */
     if (lu->options.Fact != DOFACT) {/* successive numeric factorization, sparsity pattern is reused. */
       Destroy_CompCol_Matrix_dist(&lu->A_sup);
-      if (lu->FactPattern == SamePattern_SameRowPerm){
+      if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
       } else { /* lu->FactPattern == SamePattern */
         Destroy_LU(N, &lu->grid, &lu->LUstruct);
@@ -349,7 +349,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
       /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup); */ /* this leads to crash! However, see SuperLU_DIST_2.5/EXAMPLE/pzdrive2.c */
-      if (lu->FactPattern == SamePattern_SameRowPerm){
+      if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
       } else {
         Destroy_LU(N, &lu->grid, &lu->LUstruct); /* Deallocate storage associated with the L and U matrices. */
@@ -367,7 +367,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       /* B part, smaller col index */
       colA_start = rstart + ajj[0]; /* the smallest global col index of A */
       jB = 0;
-      for (j=0; j<countB; j++){
+      for (j=0; j<countB; j++) {
         jcol = garray[bjj[j]];
         if (jcol > colA_start) {
           jB = j;
@@ -379,13 +379,13 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       }
 
       /* A part */
-      for (j=0; j<countA; j++){
+      for (j=0; j<countA; j++) {
         lu->col[nz] = rstart + ajj[j];
         lu->val[nz++] = *av++;
       }
 
       /* B part, larger col index */
-      for (j=jB; j<countB; j++){
+      for (j=jB; j<countB; j++) {
         lu->col[nz] = garray[bjj[j]];
         lu->val[nz++] = *bv++;
       }
@@ -420,7 +420,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #endif
   }
 
-  if (lu->MatInputMode == GLOBAL && size > 1){
+  if (lu->MatInputMode == GLOBAL && size > 1) {
     ierr = MatDestroy(&A_seq);CHKERRQ(ierr);
   }
 
@@ -433,7 +433,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PStatFree(&stat);
-  if (size > 1){
+  if (size > 1) {
     F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     F_diag->assembled = PETSC_TRUE;
   }
@@ -590,7 +590,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 
     options.ParSymbFact = NO;
     ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
 #ifdef PETSC_HAVE_PARMETIS
       options.ParSymbFact = YES;
       options.ColPerm     = PARMETIS; /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
@@ -683,7 +683,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
 
-  switch(options.ColPerm){
+  switch(options.ColPerm) {
   case NATURAL:
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation NATURAL\n");CHKERRQ(ierr);
     break;
@@ -705,7 +705,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 
   ierr = PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscBools[options.ParSymbFact != NO]);CHKERRQ(ierr);
 
-  if (lu->FactPattern == SamePattern){
+  if (lu->FactPattern == SamePattern) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern\n");CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern_SameRowPerm\n");CHKERRQ(ierr);

@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
 
   ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr);
-  for (i=0; i<2; i++){
+  for (i=0; i<2; i++) {
     ierr = MatMatMultNumeric(B,A,D);CHKERRQ(ierr);
   }
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);

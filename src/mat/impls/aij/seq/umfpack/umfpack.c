@@ -142,7 +142,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   status = umfpack_UMF_wsolve(uflag,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #endif
   umfpack_UMF_report_info(lu->Control, lu->Info);
-  if (status < 0){
+  if (status < 0) {
     umfpack_UMF_report_status(lu->Control, status);
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
@@ -190,7 +190,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
   /* numeric factorization of A' */
   /* ----------------------------*/
 
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric){
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric) {
     umfpack_UMF_free_numeric(&lu->Numeric);
   }
 #if defined(PETSC_USE_COMPLEX)
@@ -257,7 +257,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
     status = umfpack_UMF_symbolic(n,m,ai,aj,NULL,NULL,&lu->Symbolic,lu->Control,lu->Info);
 #endif
   }
-  if (status < 0){
+  if (status < 0) {
     umfpack_UMF_report_info(lu->Control, lu->Info);
     umfpack_UMF_report_status(lu->Control, status);
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_symbolic failed");
@@ -420,7 +420,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   /* Control parameters for symbolic factorization */
   ierr = PetscOptionsEList("-mat_umfpack_strategy","ordering and pivoting strategy","None",strategy,3,strategy[0],&idx,&flg);CHKERRQ(ierr);
   if (flg) {
-    switch (idx){
+    switch (idx) {
     case 0: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_AUTO; break;
     case 1: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC; break;
     case 2: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC; break;
@@ -440,7 +440,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscOptionsReal("-mat_umfpack_sym_pivot_tolerance","Control[UMFPACK_SYM_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],&lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE],PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_umfpack_scale","Control[UMFPACK_SCALE]","None",scale,3,scale[0],&idx,&flg);CHKERRQ(ierr);
   if (flg) {
-    switch (idx){
+    switch (idx) {
     case 0: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE; break;
     case 1: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_SUM; break;
     case 2: lu->Control[UMFPACK_SCALE] = UMFPACK_SCALE_MAX; break;

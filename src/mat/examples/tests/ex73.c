@@ -62,11 +62,11 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,&xin);CHKERRQ(ierr);
   ierr = VecLoad(xin,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  if (viewMats){
+  if (viewMats) {
     if (!rank) printf("Original matrix:\n");
     ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
-  if (viewVecs){
+  if (viewVecs) {
     if (!rank) printf("Original vector:\n");
     ierr = VecView(xin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -78,14 +78,14 @@ int main(int argc,char **args)
 
   /* get new processor owner number of each vertex */
   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
-  if (viewIS){
+  if (viewIS) {
     if (!rank) printf("IS1 - new processor ownership:\n");
     ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
-  if (viewIS){
+  if (viewIS) {
     if (!rank) printf("IS2 - new global numbering:\n");
     ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -100,7 +100,7 @@ int main(int argc,char **args)
   ierr = PetscFree(nlocal);CHKERRQ(ierr);
   ierr = ISDestroy(&isn);CHKERRQ(ierr);
   ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
-  if (viewIS){
+  if (viewIS) {
     if (!rank) printf("IS3=inv(IS2) - old global number of each new global number:\n");
     ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -118,11 +118,11 @@ int main(int argc,char **args)
   ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  if (viewMats){
+  if (viewMats) {
     if (!rank) printf("Partitioned matrix:\n");
     ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
-  if (viewVecs){
+  if (viewVecs) {
     if (!rank) printf("Mapped vector:\n");
     ierr = VecView(xout,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -168,7 +168,7 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (viewMats){
+    if (viewMats) {
       if (!rank) printf("Jacobian matrix structure:\n");
       ierr = MatView(J,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }

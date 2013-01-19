@@ -70,7 +70,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-inplacelu",&InplaceLU,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  if (!InplaceLU){
+  if (!InplaceLU) {
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     info.fill = 5.0;
     ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -114,7 +114,7 @@ int main(int argc,char **args)
   ierr = MatMultTranspose(A,x,b1);CHKERRQ(ierr);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -125,7 +125,7 @@ int main(int argc,char **args)
   ierr = MatMultAdd(A,x,b1,b1);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -136,7 +136,7 @@ int main(int argc,char **args)
   ierr = MatMultTransposeAdd(A,x,b1,b1);
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -145,7 +145,7 @@ int main(int argc,char **args)
   ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,2.0,&C1);CHKERRQ(ierr);
   ierr = MatAXPY(C1,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -199,13 +199,13 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatDenseGetArray(RHS,&array);CHKERRQ(ierr);
-  for (i=0; i<m; i++){
+  for (i=0; i<m; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
     array[i] = rval;
   }
-  if (nrhs > 1){
-    for (k=1; k<nrhs; k++){
-      for (i=0; i<m; i++){
+  if (nrhs > 1) {
+    for (k=1; k<nrhs; k++) {
+      for (i=0; i<m; i++) {
         array[m*k+i] = array[i];
       }
     }
@@ -247,9 +247,9 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   v_neighbor = v + dof*dof;
   ierr = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3 = 0;
-  for (k1=0; k1<dof; k1++){
-    for (k2=0; k2<dof; k2++){
-      if (k1 == k2){
+  for (k1=0; k1<dof; k1++) {
+    for (k2=0; k2<dof; k2++) {
+      if (k1 == k2) {
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
@@ -263,11 +263,11 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i<xs+xm; i++){
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
         row.i = i; row.j = j; row.k = k;
-        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */        
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) { /* boudary points */        
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else { /* interior points */
           /* center */

@@ -43,7 +43,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  if (!use_interface){
+  if (!use_interface) {
     /* Use mpi FFTW without PETSc-FFTW interface, 2D case only */
     /*---------------------------------------------------------*/
     fftw_plan       fplan,bplan;
@@ -69,20 +69,20 @@ PetscInt main(PetscInt argc,char **args)
     bplan = fftw_mpi_plan_dft_2d(N0,N1,data_out,data_out2,PETSC_COMM_WORLD,FFTW_BACKWARD,FFTW_ESTIMATE);
 
     ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
-    if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    if (view) {ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
     fftw_execute(fplan);
-    if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
     fftw_execute(bplan);
 
     /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
     a = 1.0/(PetscReal)N;
     ierr = VecScale(z,a);CHKERRQ(ierr);
-    if (view){ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    if (view) {ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-    if (enorm > 1.e-11){
+    if (enorm > 1.e-11) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %G\n",enorm);CHKERRQ(ierr);
     }
 
@@ -100,10 +100,10 @@ PetscInt main(PetscInt argc,char **args)
     Mat      A;
 
     N=1;
-    for (i=1; i<5; i++){
+    for (i=1; i<5; i++) {
       DIM = i;
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
-      for (k=0;k<i;k++){
+      for (k=0;k<i;k++) {
         dim[k]=30;
       }
       N *= dim[i-1];
@@ -124,21 +124,21 @@ PetscInt main(PetscInt argc,char **args)
       /* Set values of space vector x */
       ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
-      if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      if (view) {ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
-      if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
       /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       a = 1.0/(PetscReal)N;
       ierr = VecScale(z,a);CHKERRQ(ierr);
-      if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      if (view) {ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-9 && !rank){
+      if (enorm > 1.e-9 && !rank) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
       }
 

@@ -114,7 +114,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
                     thrust::constant_iterator<PetscScalar>(hx))),
            ApplyStencil());
     }
-    catch(char* all){
+    catch(char* all) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
     }
     ierr = VecCUSPRestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);

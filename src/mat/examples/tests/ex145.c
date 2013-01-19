@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "A: nrows %d, m %d; ncols %d, n %d\n",nrows,m,ncols,n);CHKERRQ(ierr);
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "B: nrows %d, m %d; ncols %d, p %d\n",nrows,m,ncols,p);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] b: m %d\n",rank,m);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -137,14 +137,14 @@ int main(int argc,char **argv)
   if (rank == 0) { /* add 100.0 to diagonals of Aher to make it spd */
     PetscInt M,N;
     ierr = MatGetSize(Aher,&M,&N);CHKERRQ(ierr);
-    for (i=0; i<M; i++){
+    for (i=0; i<M; i++) {
       rval = 100.0;
       ierr = MatSetValues(Aher,1,&i,1,&i,&rval,ADD_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(Aher,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Aher,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Aher:\n");CHKERRQ(ierr);
     ierr = MatView(Aher,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -165,7 +165,7 @@ int main(int argc,char **argv)
 
   /* Only G = U^T * U is implemented for now */
   ierr = MatCholeskyFactor(G,0,0);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Cholesky Factor G:\n");CHKERRQ(ierr);
     ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -179,7 +179,7 @@ int main(int argc,char **argv)
   ierr = MatGetFactor(Aher,MATSOLVERELEMENTAL,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(G,Aher,0,&finfo);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(G,Aher,&finfo);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatSolve(G,b,x);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ int main(int argc,char **argv)
   ierr = MatMult(Aher,x,c);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*x - b| for Cholesky %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -201,7 +201,7 @@ int main(int argc,char **argv)
   ierr = MatMatMult(Aher,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*X - B| for Cholesky %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -241,13 +241,13 @@ int main(int argc,char **argv)
   ierr = VecAXPY(c,-1.0,e);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*x - b| for LU %G\n",norm);CHKERRQ(ierr);
   }
   ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*X - B| for LU %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -255,7 +255,7 @@ int main(int argc,char **argv)
   ierr = MatGetFactor(A,MATSOLVERELEMENTAL,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(F,A,0,0,&finfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&finfo);CHKERRQ(ierr);
-  if (mats_view){
+  if (mats_view) {
     ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatSolve(F,b,x);CHKERRQ(ierr);

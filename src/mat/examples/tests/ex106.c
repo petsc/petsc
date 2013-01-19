@@ -129,11 +129,11 @@ int main(int argc,char **args)
 
   ierr = MatGetOrdering(C,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
   its_max = 2000;
-  for (i=0; i<its_max; i++){
+  for (i=0; i<its_max; i++) {
     /* printf(" it %d\n",i); */
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(F,C,perm,iperm,&factinfo);CHKERRQ(ierr);
-    for (j=0; j<1; j++){
+    for (j=0; j<1; j++) {
       ierr = MatLUFactorNumeric(F,C,&factinfo);CHKERRQ(ierr);
     }
     ierr = MatSolve(F,b,x);CHKERRQ(ierr);

@@ -38,13 +38,13 @@ PetscInt main(PetscInt argc,char **args)
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  for (DIM = 0; DIM < ndim; DIM++){
+  for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of transformation in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  for (DIM = 1; DIM < 5; DIM++){
+  for (DIM = 1; DIM < 5; DIM++) {
     for (i = 0, N = 1; i < DIM; i++) N *= dim[i];
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
 
@@ -74,7 +74,7 @@ PetscInt main(PetscInt argc,char **args)
     if (view) {ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
 
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on same x, y, and z */
-    for (i=0; i<3; i++){
+    for (i=0; i<3; i++) {
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view && i == 0) {ierr = VecView(y, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
@@ -85,13 +85,13 @@ PetscInt main(PetscInt argc,char **args)
       if (view && i == 0) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-11){
+      if (enorm > 1.e-11) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %G\n",enorm);CHKERRQ(ierr);
       }
     }
 
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on different x */
-    for (i=0; i<3; i++){
+    for (i=0; i<3; i++) {
       ierr = VecDestroy(&x);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
       ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ PetscInt main(PetscInt argc,char **args)
       if (view && i == 0) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-11){
+      if (enorm > 1.e-11) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of new |x - z| %G\n",enorm);CHKERRQ(ierr);
       }
     }

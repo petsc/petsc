@@ -472,7 +472,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
 
-    if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
+    if (eta_p[i]>=0.8 || w1[i]>user->P_casc) {
       Pv_p[i]=0;
 
     } else {
@@ -629,7 +629,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     nodes[j*(Mda+1)+Mda] = j*Mda;
   }
 
-  for (i=0;i < Mda;i++){
+  for (i=0;i < Mda;i++) {
     nodes[Nda*(Mda+1)+i] = i;
   }
 
@@ -871,7 +871,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     }
     nodes[j*(Mda+1)+Mda] = j*Mda;
   }
-  for (i=0;i < Mda;i++){
+  for (i=0;i < Mda;i++) {
     nodes[Nda*(Mda+1)+i]=i;
   }
   nodes[Nda*(Mda+1)+Mda]=0;

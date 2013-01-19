@@ -182,7 +182,7 @@ PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
     } else {
       /* Convert to local. */
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-      if ((indi < 0 || indi >= pg->m)){
+      if ((indi < 0 || indi >= pg->m)) {
         /* drop */
         if (outsizes_) outsizes_[i] = 0;
         continue;
@@ -256,7 +256,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
   if ((outidxi && !*outidxi) || (outidxj && !*outidxj) || (outval && !*outval)) {
     ierr = MatIJBin(A,intype,insize,inidxi,PETSC_NULL,PETSC_NULL,&outsize_,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
-  if (insize == PETSC_DETERMINE){
+  if (insize == PETSC_DETERMINE) {
     insize = pg->m;
     inidxi = PETSC_NULL;
   } else if (insize < 0) {
@@ -301,7 +301,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
       indi = i;
     } else {
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-      if ((indi < 0 || indi >=pg->m)){
+      if ((indi < 0 || indi >=pg->m)) {
         /* drop */
         continue;
       }
@@ -334,7 +334,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
         /* Convert to local. */
         MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
       }
-      if ((indi < 0 || indi >= pg->m)){
+      if ((indi < 0 || indi >= pg->m)) {
         /* drop */
         continue;
       }
@@ -430,7 +430,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
   if ((outidxi && !*outidxi) || (outidxj && !*outidxj) || (outval && !*outval)) {
     ierr = MatIJBinMap(A,B,intype,insize,inidxi,inidxj,inval,outtype,&outsize_,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
-  if (insize == PETSC_DETERMINE){
+  if (insize == PETSC_DETERMINE) {
     insize = pga->m;
     inidxi = PETSC_NULL;
   } else if (insize < 0) {
@@ -483,7 +483,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
     } else {
       /* Convert to local. */
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-      if ((indi < 0 || indi >= pga->m)){
+      if ((indi < 0 || indi >= pga->m)) {
         /* drop */
         continue;
       }
@@ -510,7 +510,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
       } else {
         /* Convert to local. */
         MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-        if ((indi < 0 || indi >= pga->m)){
+        if ((indi < 0 || indi >= pga->m)) {
           /* drop */
           continue;
         }
@@ -543,7 +543,7 @@ PetscErrorCode MatGetRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *co
 
   /* Convert to local. */
   MatIJGetSuppIndex_Private(A,MATIJ_GLOBAL,row,r);
-  if ((r >= 0 && r < pg->m)){
+  if ((r >= 0 && r < pg->m)) {
     off = pg->ijlen[r];
     len = pg->ijlen[r+1]-pg->ijlen[r];
     if (cols) *cols = pg->ij+off;
@@ -570,7 +570,7 @@ PetscErrorCode MatRestoreRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt
 
   /* Convert to local. */
   MatIJGetSuppIndex_Private(A,MATIJ_GLOBAL,row,r);
-  if ((r >= 0 && r < pg->m)){
+  if ((r >= 0 && r < pg->m)) {
     if (vals) {
       ierr = PetscFree(*vals);CHKERRQ(ierr);
     }
@@ -778,7 +778,7 @@ PetscErrorCode MatIJSetEdges(Mat A, PetscInt len, const PetscInt *ixidx, const P
 
   if (len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Negative edge array length: %D", len);
 
-  if (!ixidx){
+  if (!ixidx) {
     if (len != A->rmap->n)
       SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty source array %D must equal the local row size %D", len, A->rmap->n);
     ierr = PetscMalloc(len*sizeof(PetscInt), &iixidx);CHKERRQ(ierr);
@@ -841,7 +841,7 @@ static PetscErrorCode MatIJGetAssembledEdges_Private(Mat A, PetscInt *len, Petsc
   }
   if (pg->hsupp) {
     PetscHashIIterBegin(pg->hsupp,hi);
-    while(!PetscHashIIterAtEnd(pg->hsupp,hi)){
+    while(!PetscHashIIterAtEnd(pg->hsupp,hi)) {
       PetscHashIIterGetKeyVal(pg->hsupp,hi,ii,i);
       for (k = pg->ijlen[i]; k < pg->ijlen[i+1]; ++k) {
         if (ixidx_) ixidx_[k] = ii;
@@ -969,7 +969,7 @@ PetscErrorCode MatIJGetEdgesIS(Mat A, IS *ix, IS *iy)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATIJ,&isij);CHKERRQ(ierr);
   if (!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
-  if (ix){
+  if (ix) {
     _ixidx = &ixidx;
   }
   if (iy) {
@@ -1082,7 +1082,7 @@ static PetscErrorCode MatIJSetEdgesLocal_Private(Mat A, const PetscInt len, Pets
         nij = end-start;
       } else {
         /* count unique elements in iyidx[start,end-1] */
-        for (j=start+1; j < end; ++j){
+        for (j=start+1; j < end; ++j) {
           if (iyidx[j] > iyidx[j-1]) ++nij;
         }
       }
@@ -1602,7 +1602,7 @@ PetscErrorCode MatIJBinRenumberLocal_Private(Mat A, MatIJIndexType intype, Petsc
   if ((_outidxi && !*_outidxi)) {
     ierr = MatIJBinRenumberLocal_Private(A,intype,insize,inidxi,&outsize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
-  if (insize == PETSC_DETERMINE){
+  if (insize == PETSC_DETERMINE) {
     insize = pg->m;
     inidxi = PETSC_NULL;
   } else if (insize < 0) {
@@ -1636,7 +1636,7 @@ PetscErrorCode MatIJBinRenumberLocal_Private(Mat A, MatIJIndexType intype, Petsc
     /* Convert to local. */
       MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
     }
-    if ((indi < 0 || indi > pg->m)){
+    if ((indi < 0 || indi > pg->m)) {
       /* drop */
       continue;
     }
@@ -1667,7 +1667,7 @@ PetscErrorCode MatIJBinRenumberLocal_Private(Mat A, MatIJIndexType intype, Petsc
       } else {
         /* Convert to local. */
         MatIJGetSuppIndex_Private(A,intype,inidxi[i],indi);
-        if ((indi < 0 || indi > pg->m)){
+        if ((indi < 0 || indi > pg->m)) {
           /* drop */
           continue;
         }

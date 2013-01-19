@@ -4926,7 +4926,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
       ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
     }
 
-    if (mat->checksymmetryonassembly){
+    if (mat->checksymmetryonassembly) {
       ierr = MatIsSymmetric(mat,mat->checksymmetrytol,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscPrintf(((PetscObject)mat)->comm,"Matrix is symmetric (tolerance %G)\n",mat->checksymmetrytol);CHKERRQ(ierr);
@@ -8125,10 +8125,10 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
-    if (viatranspose || viamatmatmatmult){
+    if (viatranspose || viamatmatmatmult) {
       Mat Pt;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-      if (viamatmatmatmult){
+      if (viamatmatmatmult) {
         ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
       } else {
         Mat AP;
@@ -8168,7 +8168,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (viatranspose || viamatmatmatmult) {
     Mat Pt;
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    if (viamatmatmatmult){
+    if (viamatmatmatmult) {
       ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
       ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
     } else {

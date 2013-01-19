@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatView() */
-  if (mats_view){
+  if (mats_view) {
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -76,7 +76,7 @@ int main(int argc,char **args)
   if (rank == 0) {
     PetscInt M,N,cols[2];
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
-    for (i=0; i<M; i++){
+    for (i=0; i<M; i++) {
       cols[0] = i;   v[0] = i + 0.5;
       cols[1] = i-1; v[1] = 0.5;
       if (i) {
@@ -104,7 +104,7 @@ int main(int argc,char **args)
 
   /* Test MatMatMult() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_matmatmult",&Test_MatMatMult);CHKERRQ(ierr);
-  if (Test_MatMatMult){
+  if (Test_MatMatMult) {
     Mat CCelem,CCaij;
     ierr = MatMatMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCelem);CHKERRQ(ierr);
     ierr = MatMatMult(Caij,Caij,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCaij);CHKERRQ(ierr);

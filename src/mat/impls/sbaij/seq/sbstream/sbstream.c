@@ -68,15 +68,15 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
   for (i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen;
 
   for (j=0;j<blen;j++) {
-     for (jb=0; jb<cbs; jb++){
-     for (ib=0; ib<rbs; ib++){
+     for (jb=0; jb<cbs; jb++) {
+     for (ib=0; ib<rbs; ib++) {
          asp[ib][j*cbs+jb] = aa[j*bs2+jb*rbs+ib];
      }}
   }
 
   ierr = PetscFree(asp);CHKERRQ(ierr);
 /*
-  switch (bs){
+  switch (bs) {
     case 4:
        A->ops->solve   = MatSolve_SeqSBSTRM_4;
        break;
@@ -212,7 +212,7 @@ PetscErrorCode MatMult_SeqSBSTRM_4(Mat A,Vec xx,Vec zz)
     nonzerorow += (n>0);
     jmin = 0;
     ib = aj + ai[i];
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       sum1 += v1[0]*x1 + v1[1]*x2 + v1[2]*x3 + v1[3]*x4;
       sum2 += v1[1]*x1 + v2[1]*x2 + v2[2]*x3 + v2[3]*x4;
       sum3 += v1[2]*x1 + v2[2]*x2 + v3[2]*x3 + v3[3]*x4;
@@ -294,7 +294,7 @@ PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
     sum5 = z[5*i+4];
     jmin = 0;
     ib = aj + ai[i];
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       sum1 += v1[0]*x1 + v1[1]*x2 + v1[2]*x3 + v1[3]*x4 + v1[4]*x5;
       sum2 += v1[1]*x1 + v2[1]*x2 + v2[2]*x3 + v2[3]*x4 + v2[4]*x5;
       sum3 += v1[2]*x1 + v2[2]*x2 + v3[2]*x3 + v3[3]*x4 + v3[4]*x5;
@@ -374,7 +374,7 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
     nonzerorow += (n>0);
     jmin = 0;
     ib = aj + ai[i];
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       sum1 += v1[0]*x1 + v1[1]*x2 + v1[2]*x3 + v1[3]*x4;
       sum2 += v1[1]*x1 + v2[1]*x2 + v2[2]*x3 + v2[3]*x4;
       sum3 += v1[2]*x1 + v2[2]*x2 + v3[2]*x3 + v3[3]*x4;
@@ -452,7 +452,7 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
     nonzerorow += (n>0);
     jmin = 0;
     ib = aj + ai[i];
-    if (*ib == i){     /* (diag of A)*x, only upper triangular part is used */
+    if (*ib == i) {     /* (diag of A)*x, only upper triangular part is used */
       sum1 += v1[0]*x1 + v1[1]*x2 + v1[2]*x3 + v1[3]*x4 + v1[4]*x5;
       sum2 += v1[1]*x1 + v2[1]*x2 + v2[2]*x3 + v2[3]*x4 + v2[4]*x5;
       sum3 += v1[2]*x1 + v2[2]*x2 + v3[2]*x3 + v3[3]*x4 + v3[4]*x5;
@@ -527,7 +527,7 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
 
   /* ierr = PetscFree(a->a);CHKERRQ(ierr);  */
 
-  switch (bs){
+  switch (bs) {
     case 4:
        A->ops->mult          = MatMult_SeqSBSTRM_4;
        A->ops->multadd       = MatMultAdd_SeqSBSTRM_4;

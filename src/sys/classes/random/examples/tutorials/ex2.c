@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_generators", &flg);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       ierr = PetscRandomGetValue(ran,(PetscScalar *)&r);
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     ierr = readData(PETSC_COMM_WORLD,&hinfo);CHKERRQ(ierr);
 
     numdim = n*(n+1)/2;
-    if (numdim%2 == 1){
+    if (numdim%2 == 1) {
       numdim++;
     }
     eps = (double *)malloc(sizeof(double)*numdim);
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     myNumSim = divWork(myid,totalNumSim,np);
 
     x = 0;
-    for (i=0;i<myNumSim;i++){
+    for (i=0;i<myNumSim;i++) {
         stdNormalArray(eps,numdim,ran);
         x += basketPayoff(vol,St0,n,r,dt,eps);
     }
@@ -128,7 +128,7 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
   double         u1,u2,t;
   PetscErrorCode ierr;
 
-  for (i=0;i<size;i+=2){
+  for (i=0;i<size;i+=2) {
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
@@ -150,11 +150,11 @@ double basketPayoff(double vol[], double St0[], int n, double r,double dt, doubl
     Stk[i] = St0[i];
   }
 
-  for (i=0;i<n;i++){
+  for (i=0;i<n;i++) {
     maxk = 0;
-    for (j=0;j<(n-i);j++){
+    for (j=0;j<(n-i);j++) {
       Stk[j] = mcVal(Stk[j],r,vol[j],dt,eps[pointcount++]);
-      if ((Stk[j]/St0[j]) > (Stk[maxk]/St0[maxk])){
+      if ((Stk[j]/St0[j]) > (Stk[maxk]/St0[maxk])) {
         maxk = j;
       }
     }
@@ -164,7 +164,7 @@ double basketPayoff(double vol[], double St0[], int n, double r,double dt, doubl
   }
 
   payoff = 0;
-  for (i=0;i<n;i++){
+  for (i=0;i<n;i++) {
     temp = (Stk[i]/St0[i]) - 1 ;
     if (temp > 0) payoff += temp;
   }
@@ -185,9 +185,9 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank){
+  if (!rank) {
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
-    for (i=0;i<num;i++){
+    for (i=0;i<num;i++) {
       fscanf(fd,"%s%lf%lf",temp,v+i,t+i);
     }
     fclose(fd);

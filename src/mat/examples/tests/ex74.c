@@ -47,14 +47,14 @@ int main(int argc,char **args)
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J){
+  if (i-Ii || j-J) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
   /* Assemble matrix */
-  if (bs == 1){
+  if (bs == 1) {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRQ(ierr);
-    if (prob == 1){ /* tridiagonal matrix */
+    if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -105,7 +105,7 @@ int main(int argc,char **args)
     }
 
   } else { /* bs > 1 */
-    for (block=0; block<n/bs; block++){
+    for (block=0; block<n/bs; block++) {
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
@@ -125,7 +125,7 @@ int main(int argc,char **args)
     }
     /* off-diagonal blocks */
     value[0]=-1.0;
-    for (i=0; i<(n/bs-1)*bs; i++){
+    for (i=0; i<(n/bs-1)*bs; i++) {
       col[0]=i+bs;
       ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
@@ -165,19 +165,19 @@ int main(int argc,char **args)
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(norm1-norm2)/norm2;
-  if (rnorm > tol){
+  if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(norm1-norm2)/norm2;
-  if (rnorm > tol){
+  if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(norm1-norm2)/norm2;
-  if (rnorm > tol){
+  if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
 
@@ -204,7 +204,7 @@ int main(int argc,char **args)
 
   ierr = MatGetBlockSize(A, &Ii);CHKERRQ(ierr);
   ierr = MatGetBlockSize(sB, &i);CHKERRQ(ierr);
-  if (i-Ii){
+  if (i-Ii) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
 
@@ -287,7 +287,7 @@ int main(int argc,char **args)
   /* initialize factinfo */
   ierr = PetscMemzero(&factinfo,sizeof(MatFactorInfo));CHKERRQ(ierr);
 
-  for (lf=-1; lf<10; lf += inc){
+  for (lf=-1; lf<10; lf += inc) {
     if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;
       ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
@@ -315,12 +315,12 @@ int main(int argc,char **args)
     ierr = MatMult(sB,x,b);CHKERRQ(ierr);
 
     /* test MatForwardSolve() and MatBackwardSolve() */
-    if (lf == -1){
+    if (lf == -1) {
       ierr = MatForwardSolve(sC,b,s1);CHKERRQ(ierr);
       ierr = MatBackwardSolve(sC,s1,s2);CHKERRQ(ierr);
       ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
-      if (10*norm1 < norm2){
+      if (10*norm1 < norm2) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G, bs=%d\n",norm2,bs);CHKERRQ(ierr);
       }
     }
@@ -332,7 +332,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     /* printf("lf: %d, error: %G\n", lf,norm2); */
-    if (10*norm1 < norm2 && lf-inc != -1){
+    if (10*norm1 < norm2 && lf-inc != -1) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%D, %D, Norm of error=%G, %G\n",lf-inc,lf,norm1,norm2);CHKERRQ(ierr);
     }
     norm1 = norm2;

@@ -1078,7 +1078,7 @@ PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[
   /* only first processor opens file if writeable */
   if (!rank || type == FILE_MODE_READ) {
 
-    if (type == FILE_MODE_READ){
+    if (type == FILE_MODE_READ) {
       /* possibly get the file from remote site or compressed file */
       ierr  = PetscFileRetrieve(((PetscObject)viewer)->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;

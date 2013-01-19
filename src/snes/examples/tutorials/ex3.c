@@ -661,7 +661,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);         /* outer KSP iteration number */
   ierr = KSPGetIterationNumber(sub_ksp,&sub_its);CHKERRQ(ierr); /* inner KSP iteration number */
 
-  if (iter){
+  if (iter) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %d %d, subksp_it %d\n",iter,check->its0,its,sub_its);CHKERRQ(ierr);
     ksp_ratio = ((PetscReal)(its))/check->its0;
     maxit = (PetscInt)(ksp_ratio*sub_its + 0.5);

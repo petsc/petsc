@@ -605,7 +605,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-    if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
+    if (eta_p[i]>=0.8 || w1[i]>user->P_casc) {
       Pv_p[i]=0;
     } else {
       Pv_p[i]=w2[i]*user->VG;

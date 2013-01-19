@@ -37,13 +37,13 @@ PetscInt main(PetscInt argc,char **args)
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  for (DIM = 0; DIM < ndim; DIM++){
+  for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of transformation in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  for (DIM = 1; DIM < 5; DIM++){
+  for (DIM = 1; DIM < 5; DIM++) {
     /* create vectors of length N=n^DIM */
     for (i = 0, N = 1; i < DIM; i++) N *= dim[i];
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscInt main(PetscInt argc,char **args)
     if (view) {ierr = VecView(z2, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     ierr = VecAXPY(z1,-1.0,z2);CHKERRQ(ierr);
     ierr = VecNorm(z1,NORM_1,&enorm);CHKERRQ(ierr);
-    if (enorm > 1.e-11){
+    if (enorm > 1.e-11) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |z1 - z2| %G\n",enorm);CHKERRQ(ierr);
     }
 

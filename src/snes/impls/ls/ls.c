@@ -226,7 +226,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
 

@@ -47,7 +47,7 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
-  switch (ipack){
+  switch (ipack) {
   case 1:
 #ifdef PETSC_HAVE_SUPERLU
     if (!rank) printf(" SUPERLU LU:\n");
@@ -73,20 +73,20 @@ int main(int argc,char **args)
   info.fill = 5.0;
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
-  for (nfact = 0; nfact < 1; nfact++){
+  for (nfact = 0; nfact < 1; nfact++) {
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatSolve() */
-    if (testMatSolve){
+    if (testMatSolve) {
       ierr = MatSolve(F,b,x);CHKERRQ(ierr);
 
       /* Check the residual */
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
-      if (norm > tol){
-        if (!rank){
+      if (norm > tol) {
+        if (!rank) {
           ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
         }
       }

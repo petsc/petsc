@@ -685,7 +685,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
       fprintf(fd, "<canvas width=800 height=600 id=\"tree\"></canvas>\r\n");
       fprintf(fd, "<script type=\"text/javascript\">\r\n");
-      fprintf(fd, "  function draw(){\r\n");
+      fprintf(fd, "  function draw() {\r\n");
       fprintf(fd, "  var example = document.getElementById('tree');\r\n");
       fprintf(fd, "  var context = example.getContext('2d');\r\n");
       /* adjust font size based on how big a tree is printed */
@@ -798,7 +798,7 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
   else if (!list) {ierr = PetscInfo(PETSC_NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);}
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-  if (list){
+  if (list) {
     ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
   } else {
     ierr = PetscStrallocpy("No AMS publisher running",&(*argso)[0]);CHKERRQ(ierr);

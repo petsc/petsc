@@ -55,7 +55,7 @@ int main(int argc,char **args)
 
   /* create Cperm = rperm*C*icperm */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testmyordering",&TestMyorder,PETSC_NULL);CHKERRQ(ierr);
-  if (TestMyorder){
+  if (TestMyorder) {
     ierr = MatGetOrdering_myordering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
     printf("myordering's rperm:\n");
     ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&Cperm);CHKERRQ(ierr);
     for (i=0; i<m*n; i++) {
       ierr = MatGetRow(C,rperm_ptr[i],&ncols,&cols,&vals);CHKERRQ(ierr);
-      for (j=0; j<ncols; j++){
+      for (j=0; j<ncols; j++) {
         /* printf(" (%d %d %g)\n",i,cperm_ptr[cols[j]],vals[j]); */
         ierr = MatSetValues(Cperm,1,&i,1,&cperm_ptr[cols[j]],&vals[j],INSERT_VALUES);CHKERRQ(ierr);
       }

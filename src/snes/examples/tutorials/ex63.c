@@ -593,7 +593,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-    if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
+    if (eta_p[i]>=0.8 || w1[i]>user->P_casc) {
       Pv_p[i]=0;
     } else {
       Pv_p[i]=w2[i]*user->VG;
@@ -1002,7 +1002,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMDAVecGetArrayDOF(da,UIN,&uin);CHKERRQ(ierr);
   ierr = ISGetIndices(act,&index);CHKERRQ(ierr);
   ierr = ISGetLocalSize(act,&n);CHKERRQ(ierr);
-  for (k=0;k<n;k++){
+  for (k=0;k<n;k++) {
     l = index[k]%5;
     i = index[k]/5;
     uin[i][l]=1.0;

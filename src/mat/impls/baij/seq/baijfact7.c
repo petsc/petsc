@@ -255,19 +255,19 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
     /* zero rtmp */
     /* L part */
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
-    for  (j=0; j<nz; j++){
+    for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
 
     /* U part */
     nz = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
-    for  (j=0; j<nz; j++){
+    for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
 
@@ -330,7 +330,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
     pv = b->a + bs2*(bdiag[i+1]+1);
     pj = b->j + bdiag[i+1]+1;
     nz = bdiag[i] - bdiag[i+1] - 1;
-    for (j=0; j<nz; j++){
+    for (j=0; j<nz; j++) {
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
   }
@@ -581,19 +581,19 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
     /* zero rtmp */
     /* L part */
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
-    for  (j=0; j<nz; j++){
+    for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
 
     /* U part */
     nz = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
-    for  (j=0; j<nz; j++){
+    for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
 
@@ -656,7 +656,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
     pv = b->a + bs2*(bdiag[i+1]+1);
     pj = b->j + bdiag[i+1]+1;
     nz = bdiag[i] - bdiag[i+1] - 1;
-    for (j=0; j<nz; j++){
+    for (j=0; j<nz; j++) {
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
   }

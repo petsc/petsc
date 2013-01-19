@@ -60,8 +60,8 @@ int main(int argc,char **args)
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;
     /* row oriented - defalt */
-    for (i=0; i<bs; i++){
-      for (j=0; j<bs; j++){
+    for (i=0; i<bs; i++) {
+      for (j=0; j<bs; j++) {
         bval[i*bs+j] = (PetscScalar)k; k++;
       }
     }

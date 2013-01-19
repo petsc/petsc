@@ -131,25 +131,25 @@ int main(int argc,char **args)
 
   /* Test MatMult() */
   ierr = MatMultEqual(A,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult()\n");CHKERRQ(ierr);
   }
 
   /* Test MatMultAdd() */
   ierr = MatMultAddEqual(A,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMultAdd()\n");CHKERRQ(ierr);
   }
 
   /* Test MatMultTranspose() */
   ierr = MatMultTransposeEqual(A,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMultTranspose()\n");CHKERRQ(ierr);
   }
 
   /* Test MatMultTransposeAdd() */
   ierr = MatMultTransposeAddEqual(A,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMultTransposeAdd()\n");CHKERRQ(ierr);
   }
 

@@ -338,7 +338,7 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitor,(PetscVoidFunction)func,mctx);
     if (*ierr) return;
-    if (FORTRANNULLFUNCTION(mondestroy)){
+    if (FORTRANNULLFUNCTION(mondestroy)) {
       *ierr = SNESMonitorSet(*snes,oursnesmonitor,*snes,PETSC_NULL);
     } else {
       CHKFORTRANNULLFUNCTION(mondestroy);
@@ -348,7 +348,7 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
   }
 }
 
-void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr ){
+void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr) {
 *__ierr = SNESGetSNESLineSearch(*snes, linesearch);
 }
 

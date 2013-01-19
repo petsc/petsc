@@ -703,7 +703,7 @@ PetscErrorCode  PetscFormatStrip(char *format)
   size_t   loc1 = 0, loc2 = 0;
 
   PetscFunctionBegin;
-  while (format[loc2]){
+  while (format[loc2]) {
     if (format[loc2] == '%') {
       format[loc1++] = format[loc2++];
       while (format[loc2] && ((format[loc2] >= '0' && format[loc2] <= '9') || format[loc2] == '.')) loc2++;

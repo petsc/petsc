@@ -133,14 +133,14 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 
 
   PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){
+  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(MAT_CUSPCopyToGPU,A,0,0,0);CHKERRQ(ierr);
     /*
       It may be possible to reuse nonzero structure with new matrix values but
       for simplicity and insured correctness we delete and build a new matrix on
       the GPU. Likely a very small performance hit.
     */
-    if (cuspstruct->mat){
+    if (cuspstruct->mat) {
       try {
         delete cuspstruct->mat;
         if (cuspstruct->tempvec)
@@ -365,7 +365,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
 #ifdef PETSC_HAVE_TXPETSCGPU
     ierr = cuspstruct->mat->multiply(xarray, yarray);CHKERRCUSP(ierr);
 #else
-    if (usecprow){ /* use compressed row format */
+    if (usecprow) { /* use compressed row format */
       cusp::multiply(*cuspstruct->mat,*xarray,*cuspstruct->tempvec);
       ierr = VecSet_SeqCUSP(yy,0.0);CHKERRQ(ierr);
       thrust::copy(cuspstruct->tempvec->begin(),cuspstruct->tempvec->end(),thrust::make_permutation_iterator(yarray->begin(),cuspstruct->indices->begin()));
@@ -543,7 +543,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
   PetscFunctionBegin;
   if (A->factortype==MAT_FACTOR_NONE) {
     try {
-      if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED){
+      if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
         delete (GPU_Matrix_Ifc *)(cuspstruct->mat);
       }
       if (cuspstruct->tempvec!=0)
@@ -573,7 +573,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 
   PetscFunctionBegin;
   try {
-    if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED){
+    if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
       delete (CUSPMATRIX *)(cuspcontainer->mat);
     }
     delete cuspcontainer;
@@ -598,7 +598,7 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (idx){
+  if (idx) {
   }
   PetscFunctionReturn(0);
 }*/

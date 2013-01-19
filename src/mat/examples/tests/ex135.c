@@ -26,7 +26,7 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
   ierr = MatGetOwnershipRange(A,&first,&last);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   last--;
-  for (i=first; i<=last; i++){
+  for (i=first; i<=last; i++) {
     ierr = MatSetValue(A,i,i,2.,INSERT_VALUES);CHKERRQ(ierr);
     if (i != n-1) {ierr = MatSetValue(A,i,n-1,-1.,INSERT_VALUES);CHKERRQ(ierr);}
   }

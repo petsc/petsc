@@ -559,7 +559,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
   ierr = VecGetSize(X, &N);CHKERRQ(ierr);
   ierr = VecGetSize(localX, &n);CHKERRQ(ierr);
 
-  if (n != N){ /* X != localX */
+  if (n != N) { /* X != localX */
     ierr = VecSet(localX, 0.0);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
@@ -568,7 +568,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
     localX = X;
   }
   ierr = DMPlexComputeJacobianActionFEM(dm, J, localX, localY, ctx->user);CHKERRQ(ierr);
-  if (n != N){
+  if (n != N) {
     ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   }
   ierr = VecSet(Y, 0.0);CHKERRQ(ierr);

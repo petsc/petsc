@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Npz",&Npz,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
-  if (!Test_3D){
+  if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                     user.fine.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   if (size == 1) {
     const PetscInt *ia,*ja;
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
-    if (flg){
+    if (flg) {
       ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
       for (i=0; i<ia[nrows]; i++) array[i] = one;
       ierr = MatSeqAIJRestoreArray(A,&array);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
   /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Set up distributed array for coarse grid */
-  if (!Test_3D){
+  if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                     user.coarse.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
@@ -150,13 +150,13 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult(): C = A*P */
   /*----------------------------*/
-  if (Test_MatMatMult){
+  if (Test_MatMatMult) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A_tmp);CHKERRQ(ierr);
     ierr = MatMatMult(A_tmp,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
-    for (i=0; i<2; i++){
+    for (i=0; i<2; i++) {
       alpha -=0.1;
       ierr = MatScale(A_tmp,alpha);CHKERRQ(ierr);
       ierr = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -198,13 +198,13 @@ int main(int argc,char **argv)
 
   /* Test P^T * A * P - MatPtAP() */
   /*------------------------------*/
-  if (Test_MatPtAP){
+  if (Test_MatPtAP) {
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
-    for (i=0; i<1; i++){
+    for (i=0; i<1; i++) {
       alpha -=0.1;
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);

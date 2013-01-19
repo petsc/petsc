@@ -28,8 +28,8 @@ PetscErrorCode SNESReset_NASM(SNES snes)
   PetscInt       i;
   PetscFunctionBegin;
   for (i=0;i<nasm->n;i++) {
+    if (nasm->xl) { ierr = VecDestroy(&nasm->xl[i]);CHKERRQ(ierr); }
     if (nasm->x) { ierr = VecDestroy(&nasm->x[i]);CHKERRQ(ierr); }
-    if (nasm->xl){ ierr = VecDestroy(&nasm->xl[i]);CHKERRQ(ierr); }
     if (nasm->y) { ierr = VecDestroy(&nasm->y[i]);CHKERRQ(ierr); }
     if (nasm->b) { ierr = VecDestroy(&nasm->b[i]);CHKERRQ(ierr); }
 

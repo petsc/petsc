@@ -63,7 +63,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
 
   /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
 
       for (i=0; i<mbs; i++) {
         n    = a->i[i+1] - a->i[i] - 1;
@@ -94,7 +94,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
 
       }
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
 
       for (i=mbs-1; i>=0; i--) {
         n    = a->i[i+1] - a->i[i] - 1;
@@ -165,7 +165,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
   /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
 
       for (i=0; i<mbs; i++) {
         n    = a->i[i+1] - a->i[i];
@@ -189,7 +189,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         ierr = VecResetArray(right);CHKERRQ(ierr);
       }
     }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
 
       for (i=mbs-1; i>=0; i--) {
         n    = a->i[i+1] - a->i[i];

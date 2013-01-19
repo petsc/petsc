@@ -607,7 +607,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
     ierr = PetscMalloc(n_*sizeof(PetscInt), L);CHKERRQ(ierr);
     L_ = *L;
   }
-  if (!J_){
+  if (!J_) {
     ierr = PetscMalloc(n_*sizeof(PetscInt), &J_);CHKERRQ(ierr);
     J_ = *J;
   }
