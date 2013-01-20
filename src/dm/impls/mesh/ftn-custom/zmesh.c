@@ -1,7 +1,7 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscdmmesh.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmmeshcreatepcice_          DMMESHCREATEPCICE
 #define dmmeshcreateexodus_         DMMESHCREATEEXODUS
 #define dmmeshdistribute_           DMMESHDISTRIBUTE

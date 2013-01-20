@@ -1,7 +1,7 @@
 #include <petscdmmesh.hh>
 
 extern "C" {
-#ifdef PETSC_HAVE_ZOLTAN
+#if defined(PETSC_HAVE_ZOLTAN)
   // Inputs
   int  nvtxs_Zoltan;   // The number of vertices
   int  nhedges_Zoltan; // The number of hyperedges

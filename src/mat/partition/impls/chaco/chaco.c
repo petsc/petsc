@@ -1,11 +1,11 @@
 
 #include <../src/mat/impls/adj/mpi/mpiadj.h>       /*I "petscmat.h" I*/
 
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 
-#ifdef PETSC_HAVE_STDLIB_H
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
@@ -74,7 +74,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   double                eigtol;
   long                  seed;
   char                  *mesg_log;
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   int                   fd_stdout,fd_pipe[2],count,err;
 #endif
 
@@ -129,7 +129,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
     adjacency[i] = (adj->j)[i] + 1;   /* 1-based indexing */
 
   /* redirect output to buffer */
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
   if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
@@ -142,7 +142,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
             PETSC_NULL,PETSC_NULL,assignment,architecture,ndims_tot,mesh_dims,
             PETSC_NULL,global_method,local_method,rqi_flag,vmax,ndims,eigtol,seed);
 
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));

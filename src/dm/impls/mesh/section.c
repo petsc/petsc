@@ -330,7 +330,7 @@ PetscErrorCode SectionRealDistribute(SectionReal serialSection, DM parallelMesh,
   ierr = SectionRealGetSection(serialSection, oldSection);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+#if defined(PETSC_OPT_SIEVE)
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> newSection;
 
   // We assume all integer sections are complete sections
@@ -399,7 +399,7 @@ PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidScalarPointer(values,3);
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex updates");
 #else
   try {
@@ -446,7 +446,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex restriction");
 #else
   try {
@@ -489,7 +489,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex restriction");
 #else
   try {
@@ -532,7 +532,7 @@ PetscErrorCode SectionRealUpdateClosure(SectionReal section, DM dm, PetscInt poi
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   try {
@@ -756,7 +756,7 @@ PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex Vec");
 #else
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -1493,7 +1493,7 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, DM parallelMesh, S
   ierr = SectionIntGetSection(serialSection, oldSection);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+#if defined(PETSC_OPT_SIEVE)
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> newSection;
 
   // We assume all integer sections are complete sections
@@ -1967,7 +1967,7 @@ PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fibe
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*section, s);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+#if defined(PETSC_OPT_SIEVE)
   s->setChart(m->getSieve()->getChart());
 #endif
   s->setName(name);
@@ -2007,7 +2007,7 @@ PetscErrorCode DMMeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberD
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*section, s);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+#if defined(PETSC_OPT_SIEVE)
   s->setChart(m->getSieve()->getChart());
 #endif
   s->setName(name);

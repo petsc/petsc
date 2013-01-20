@@ -578,7 +578,7 @@ static void FormStressOperatorQ13D(PetscScalar Ke[],PetscScalar coords[],PetscSc
 
   }
   /* fill lower triangular part */
-#ifdef ASSEMBLE_LOWER_TRIANGULAR
+#if defined(ASSEMBLE_LOWER_TRIANGULAR)
   for (i = 0; i < nvdof; i++) {
     for (j = i; j < nvdof; j++) {
       Ke[j*nvdof+i] = Ke[i*nvdof+j];
@@ -685,7 +685,7 @@ static void FormStabilisationOperatorQ13D(PetscScalar Ke[],PetscScalar coords[],
    for (i = 0; i < NODES_PER_EL; i++) {
    for (j = i; j < NODES_PER_EL; j++) {
    Ke[NODES_PER_EL*i+j] = fac*Ke[NODES_PER_EL*i+j];
-   #ifdef ASSEMBLE_LOWER_TRIANGULAR
+   #if defined(ASSEMBLE_LOWER_TRIANGULAR)
    Ke[NODES_PER_EL*j+i] = Ke[NODES_PER_EL*i+j];
    #endif
    }
@@ -745,7 +745,7 @@ static void FormScaledMassMatrixOperatorQ13D(PetscScalar Ke[],PetscScalar coords
    for (i = 0; i < NODES_PER_EL; i++) {
    for (j = i; j < NODES_PER_EL; j++) {
    Ke[NODES_PER_EL*i+j] = fac*Ke[NODES_PER_EL*i+j];
-   #ifdef ASSEMBLE_LOWER_TRIANGULAR
+   #if defined(ASSEMBLE_LOWER_TRIANGULAR)
    Ke[NODES_PER_EL*j+i] = Ke[NODES_PER_EL*i+j];
    #endif
    }
@@ -879,7 +879,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
         /* form element stiffness matrix */
         FormStressOperatorQ13D(Ae,el_coords,prop_eta);
         FormGradientOperatorQ13D(Ge,el_coords);
-        /*#ifdef ASSEMBLE_LOWER_TRIANGULAR*/
+        /*#if defined(ASSEMBLE_LOWER_TRIANGULAR)*/
         FormDivergenceOperatorQ13D(De,el_coords);
         /*#endif*/
         FormStabilisationOperatorQ13D(Ce,el_coords,prop_eta);
@@ -1443,7 +1443,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
   N = nx * ny * nz;
 
-#ifdef PETSC_WORDS_BIGENDIAN
+#if defined(PETSC_WORDS_BIGENDIAN)
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
@@ -1656,7 +1656,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   /* (VTK) generate pvts header */
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<?xml version=\"1.0\"?>\n");
 
-#ifdef PETSC_WORDS_BIGENDIAN
+#if defined(PETSC_WORDS_BIGENDIAN)
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");

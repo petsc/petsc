@@ -145,7 +145,7 @@ int main(int argc,char **args)
           '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -mat_mumps_icntl_7 2'
           are equivalent to these procedual calls
   */
-#ifdef PETSC_HAVE_MUMPS
+#if defined(PETSC_HAVE_MUMPS)
   flg    = PETSC_FALSE;
   flg_ch = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ int main(int argc,char **args)
           '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_package superlu -mat_superlu_ilu_droptol 1.e-8'
           are equivalent to these procedual calls
   */
-#ifdef PETSC_HAVE_SUPERLU
+#if defined(PETSC_HAVE_SUPERLU)
   flg_ilu = PETSC_FALSE;
   flg     = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_lu",&flg,PETSC_NULL);CHKERRQ(ierr);

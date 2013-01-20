@@ -1,7 +1,7 @@
 
 #include <petsc-private/fortranimpl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define chkmemfortran_             CHKMEMFORTRAN
 #define petscoffsetfortran_        PETSCOFFSETFORTRAN
 #define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE

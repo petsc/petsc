@@ -36,7 +36,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 
   PetscFunctionBegin;
   PetscValidPointer(is,2);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

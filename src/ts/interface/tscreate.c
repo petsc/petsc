@@ -47,7 +47,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   PetscFunctionBegin;
   PetscValidPointer(ts,1);
   *ts = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

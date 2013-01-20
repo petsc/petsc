@@ -42,7 +42,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   PetscBool      flag;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscDrawInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   *indraw = 0;

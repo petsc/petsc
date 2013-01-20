@@ -9,7 +9,7 @@ PETSC_CUDA_EXTERN_C_END
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   Mat_MPIAIJCUSP * cuspStruct = (Mat_MPIAIJCUSP*)b->spptr;
 #endif
   PetscErrorCode ierr;
@@ -46,7 +46,7 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
   }
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   ierr=MatCUSPSetFormat(b->A,MAT_CUSP_MULT,cuspStruct->diagGPUMatFormat);CHKERRQ(ierr);
   ierr=MatCUSPSetFormat(b->B,MAT_CUSP_MULT,cuspStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
 #endif
@@ -79,7 +79,7 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 }
 
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIAIJCUSP"
 PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
@@ -114,7 +114,7 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -181,12 +181,12 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   Mat_MPIAIJ *a  = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
 #endif
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   try {
     delete cuspStruct;
   } catch(char* ex) {
@@ -204,7 +204,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   Mat_MPIAIJ *a;
   Mat_MPIAIJCUSP * cuspStruct;
 #endif
@@ -216,7 +216,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   A->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
   A->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   a               = (Mat_MPIAIJ*)A->data;
   a->spptr        = new Mat_MPIAIJCUSP;
   cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;

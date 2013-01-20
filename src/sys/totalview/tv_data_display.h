@@ -29,10 +29,10 @@
  *
  */
 
-#ifndef TV_DATA_DISPLAY_H_INCLUDED
+#if !defined(TV_DATA_DISPLAY_H_INCLUDED)
 #define TV_DATA_DISPLAY_H_INCLUDED 1
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -58,7 +58,7 @@ extern int TV_add_row(const char *field_name,
   ENOMEM: No more room left for display data
 */
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 }
 #endif
 

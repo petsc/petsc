@@ -1386,7 +1386,7 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool  inv)
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);
   ierr = PetscMalloc(x->map->n*sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
-#ifdef PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
   for (i = 0; i < x->map->n; i++) {
     if ((idx[i] < rstart) || (idx[i] >= rend)) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);

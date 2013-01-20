@@ -81,7 +81,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscFunctionBegin;
   PetscValidPointer(c, 2);
   *c = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = CharacteristicInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

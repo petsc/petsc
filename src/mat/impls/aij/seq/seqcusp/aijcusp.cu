@@ -15,7 +15,7 @@ PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 const char * const MatCUSPStorageFormats[] = {"CSR","DIA","ELL","MatCUSPStorageFormat","MAT_CUSP_",0};
 
 /* this is such a hack ... but I haven't written another way to pass this variable
@@ -155,7 +155,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       for (int j = 0; j<m; j++)
         cuspstruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
       if (a->compressedrow.use) {
         m    = a->compressedrow.nrows;
         ii   = a->compressedrow.i;
@@ -261,7 +261,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
   PetscInt        m          = A->rmap->n;
   PetscErrorCode  ierr;
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   CUSPMATRIX* mat;
   ierr = cuspstruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
 #else
@@ -351,7 +351,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *)A->spptr;
-#ifndef PETSC_HAVE_TXPETSCGPU
+#if !defined(PETSC_HAVE_TXPETSCGPU)
   PetscBool      usecprow    = a->compressedrow.use;
 #endif
   CUSPARRAY      *xarray,*yarray;
@@ -362,7 +362,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   ierr = VecCUSPGetArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
   try {
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = cuspstruct->mat->multiply(xarray, yarray);CHKERRCUSP(ierr);
 #else
     if (usecprow) { /* use compressed row format */
@@ -379,7 +379,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   }
   ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   if (!cuspstruct->mat->hasNonZeroStream())
     ierr = WaitForGPU();CHKERRCUSP(ierr);
 #else
@@ -416,7 +416,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
     ierr = VecCUSPGetArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayRead(yy,&yarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = cuspstruct->mat->multiplyAdd(xarray, zarray);CHKERRCUSP(ierr);
 #else
     if (a->compressedrow.use) {
@@ -531,7 +531,7 @@ PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJCUSP"
@@ -605,14 +605,14 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
 
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt *,const PetscScalar*);
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 EXTERN_C_BEGIN
 extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
 extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *);
 EXTERN_C_END
 #endif
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

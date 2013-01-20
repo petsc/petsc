@@ -1,4 +1,4 @@
-#ifndef __MPICUSPARSEMATIMPL
+#if !defined(__MPICUSPARSEMATIMPL)
 #define __MPICUSPARSEMATIMPL
 
 typedef struct {

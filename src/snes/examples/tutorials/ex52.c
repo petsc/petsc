@@ -991,7 +991,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
-#ifndef PETSC_HAVE_CUDA
+#if !defined(PETSC_HAVE_CUDA)
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires CUDA support.");
 #endif
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);

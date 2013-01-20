@@ -92,7 +92,7 @@ PetscErrorCode  KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 #define __FUNCT__ "KSPSolve_STCG"
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
   KSP_STCG       *cg = (KSP_STCG *)ksp->data;

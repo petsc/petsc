@@ -107,7 +107,7 @@ PetscErrorCode MyDMMeshCreateExodus(MPI_Comm comm,const char filename[],DM *dmBo
   ierr = DMMeshCreate(comm,dmFS);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> meshFS = new PETSC_MESH_TYPE(comm,-1,debug);
   ierr = DMMeshSetMesh(*dmFS,meshFS);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_EXODUSII
+#if defined(PETSC_HAVE_EXODUSII)
   try {
     ierr = MyPetscReadExodusII(comm,filename,*dmBody,*dmFS);CHKERRQ(ierr);
   } catch(ALE::Exception e) {

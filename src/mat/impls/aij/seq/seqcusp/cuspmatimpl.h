@@ -1,4 +1,4 @@
-#ifndef __CUSPMATIMPL
+#if !defined(__CUSPMATIMPL)
 #define __CUSPMATIMPL
 
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
@@ -16,7 +16,7 @@
 #define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 
 /* New Way */
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 #include "tx_sparse_interface.h"
 
 struct Mat_SeqAIJCUSP {

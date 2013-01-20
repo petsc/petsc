@@ -1,4 +1,4 @@
-#ifndef CHOLMODIMPL_H_
+#if !defined(CHOLMODIMPL_H_)
 #define CHOLMODIMPL_H_
 
 #include <petscsys.h>

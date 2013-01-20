@@ -1,4 +1,4 @@
-#ifndef _matelemimpl_h
+#if !defined(_matelemimpl_h)
 #define _matelemimpl_h
 
 #include <elemental.hpp>

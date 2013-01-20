@@ -384,7 +384,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
@@ -445,7 +445,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
@@ -2143,7 +2143,7 @@ PetscErrorCode DMMeshAssembleVector(Vec b, DM dm, SectionReal section, PetscInt 
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   if (mode == INSERT_VALUES) {
@@ -2653,8 +2653,8 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_CHACO
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_CHACO)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 /* Chaco does not have an include file */
@@ -2721,7 +2721,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   ierr = PetscMalloc(nvtxs * sizeof(short int), &assignment);CHKERRQ(ierr);
   /* Chaco outputs to stdout. We redirect this to a buffer. */
   /* TODO: check error codes for UNIX calls */
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   {
     fd_stdout = dup(1);
     pipe(fd_pipe);
@@ -2732,7 +2732,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   ierr = interface(nvtxs, (int *) start, (int *) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
                    assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag,
                    vmax, ndims, eigtol, seed);
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   {
     char msgLog[10000];
     int  count;
@@ -2775,7 +2775,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
 }
 #endif
 
-#ifdef PETSC_HAVE_PARMETIS
+#if defined(PETSC_HAVE_PARMETIS)
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshPartition_ParMetis"
 PetscErrorCode DMMeshPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
@@ -2817,12 +2817,12 @@ PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *parti
 
     if (1) {
       ierr = DMMeshCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_CHACO
+#if defined(PETSC_HAVE_CHACO)
       ierr = DMMeshPartition_Chaco(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     } else {
       ierr = DMMeshCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_PARMETIS
+#if defined(PETSC_HAVE_PARMETIS)
       ierr = DMMeshPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     }
@@ -3301,7 +3301,7 @@ PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], D
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
 /* Already included since C++ is turned on #include <triangle.h> */
 
 #undef __FUNCT__
@@ -3539,7 +3539,7 @@ PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
   /* PetscValidLogicalCollectiveLogical(dm, interpolate, 2); */
   if (bd->useNewImpl) {
     if (interpolate) SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
     ierr = DMMeshGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
 #endif
   } else {
@@ -4139,7 +4139,7 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMMesh does not support complex closure");
 #else
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
@@ -4193,7 +4193,7 @@ PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMMesh does not support complex closure");
 #else
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
@@ -4234,7 +4234,7 @@ PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar val
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMMesh does not support complex closure");
 #else
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);

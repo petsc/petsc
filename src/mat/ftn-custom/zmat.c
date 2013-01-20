@@ -3,7 +3,7 @@
 #include <petscmat.h>
 
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalue_                     MATSETVALUE
 #define matsetvaluelocal_                MATSETVALUELOCAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

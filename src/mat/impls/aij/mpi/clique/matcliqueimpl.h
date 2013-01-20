@@ -1,4 +1,4 @@
-#ifndef _matcliqueimpl_h
+#if !defined(_matcliqueimpl_h)
 #define _matcliqueimpl_h
 
 #include <clique.hpp>

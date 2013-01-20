@@ -70,19 +70,19 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack) {
   case 0:
-#ifdef PETSC_HAVE_SUPERLU
+#if defined(PETSC_HAVE_SUPERLU)
     if (!rank) printf(" SUPERLU LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   case 1:
-#ifdef PETSC_HAVE_SUPERLU_DIST
+#if defined(PETSC_HAVE_SUPERLU_DIST)
     if (!rank) printf(" SUPERLU_DIST LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   case 2:
-#ifdef PETSC_HAVE_MUMPS
+#if defined(PETSC_HAVE_MUMPS)
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {

@@ -93,7 +93,7 @@ PetscErrorCode  KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 PetscErrorCode KSPSolve_NASH(KSP ksp)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "NASH is not available for complex systems");
 #else
   KSP_NASH       *cg = (KSP_NASH *)ksp->data;

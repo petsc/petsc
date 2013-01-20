@@ -2413,7 +2413,7 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_PBGL
+#if defined(PETSC_HAVE_PBGL)
 
 #include <boost/parallel/mpi/bsp_process_group.hpp>
 #include <boost/graph/distributed/ilu_default_graph.hpp>
@@ -3115,7 +3115,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /* 4*/ MatMultAdd_MPIAIJ,
        MatMultTranspose_MPIAIJ,
        MatMultTransposeAdd_MPIAIJ,
-#ifdef PETSC_HAVE_PBGL
+#if defined(PETSC_HAVE_PBGL)
        MatSolve_MPIAIJ,
 #else
        0,
@@ -3138,7 +3138,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatZeroEntries_MPIAIJ,
 /*24*/ MatZeroRows_MPIAIJ,
        0,
-#ifdef PETSC_HAVE_PBGL
+#if defined(PETSC_HAVE_PBGL)
        0,
 #else
        0,
@@ -3146,7 +3146,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
 /*29*/ MatSetUp_MPIAIJ,
-#ifdef PETSC_HAVE_PBGL
+#if defined(PETSC_HAVE_PBGL)
        0,
 #else
        0,

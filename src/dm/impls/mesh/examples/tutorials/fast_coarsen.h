@@ -403,7 +403,7 @@ namespace ALE { namespace Coarsener {
       } //end while over leaf spaces; after this point we have a complete MIS in globalNodes
       //Mesh building phase
       //if (curLevel != 0) {
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
 

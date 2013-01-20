@@ -1,6 +1,6 @@
 #include <petscdmmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
-#ifdef PETSC_HAVE_LIBXML2
+#if defined(PETSC_HAVE_LIBXML2)
 
 namespace ALE {
   namespace Dolfin {

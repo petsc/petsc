@@ -73,7 +73,7 @@ Possible new examples:
 #include <petscdmmesh.h>
 #include <petscsnes.h>
 
-#ifndef PETSC_HAVE_SIEVE
+#if !defined(PETSC_HAVE_SIEVE)
 #error This example requires Sieve. Reconfigure using --with-sieve
 #endif
 

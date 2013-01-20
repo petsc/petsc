@@ -4,7 +4,7 @@
    of nonlinear equations
  */
 
-#ifndef __SNES_TR_H
+#if !defined(__SNES_TR_H)
 #define __SNES_TR_H
 #include <petsc-private/snesimpl.h>
 

@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc-private/pleximpl.h>    /*I   "petscdmplex.h"   I*/
 
-#ifdef PETSC_HAVE_EXODUSII
+#if defined(PETSC_HAVE_EXODUSII)
 #include<netcdf.h>
 #include<exodusII.h>
 #endif

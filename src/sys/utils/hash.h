@@ -1,4 +1,4 @@
-#ifndef _HASH_H
+#if !defined(_HASH_H)
 #define _HASH_H
 
 /*

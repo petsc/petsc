@@ -1,4 +1,4 @@
-#ifndef _SNES_FASIMPLS
+#if !defined(_SNES_FASIMPLS)
 #define _SNES_FASIMPLS
 
 #include <petsc-private/snesimpl.h>

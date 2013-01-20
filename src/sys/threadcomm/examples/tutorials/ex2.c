@@ -58,13 +58,13 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
  *          that should be good to about 5% precision.
  */
 
-#ifndef N
+#if !defined(N)
 #   define N  2000000
 #endif
-#ifndef NTIMES
+#if !defined(NTIMES)
 #   define NTIMES       50
 #endif
-#ifndef OFFSET
+#if !defined(OFFSET)
 #   define OFFSET       0
 #endif
 
@@ -91,14 +91,14 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
 
 # define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
+# if !defined(MIN)
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
-# ifndef MAX
+# if !defined(MAX)
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 
-#ifndef STATIC_ALLOC
+#if !defined(STATIC_ALLOC)
 #  define STATIC_ALLOC 1
 #endif
 
@@ -123,7 +123,7 @@ static double   bytes[4] = {
 double mysecond();
 void checkSTREAMresults();
 
-#ifndef WITH_PTHREADS
+#if !defined(WITH_PTHREADS)
 #  define WITH_PTHREADS 1
 #endif
 
@@ -216,7 +216,7 @@ int main(int argc,char *argv[])
   printf("This system uses %d bytes per DOUBLE PRECISION word.\n",BytesPerWord);
 
   printf(HLINE);
-#ifdef NO_LONG_LONG
+#if defined(NO_LONG_LONG)
   printf("Array size = %d, Offset = %d\n" , N, OFFSET);
 #else
   printf("Array size = %llu, Offset = %d\n", (unsigned long long) N, OFFSET);
@@ -436,13 +436,13 @@ void checkSTREAMresults()
     bsum += b[j];
     csum += c[j];
   }
-#ifdef VERBOSE
+#if defined(VERBOSE)
   printf ("Results Comparison: \n");
   printf ("        Expected  : %f %f %f \n",aj,bj,cj);
   printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
 #endif
 
-#ifndef abs
+#if !defined(abs)
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
   epsilon = 1.e-8;

@@ -1023,7 +1023,7 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
   PetscShell shell_;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscShellInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   PetscValidPointer(shell,2);

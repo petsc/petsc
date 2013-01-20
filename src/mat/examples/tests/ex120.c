@@ -263,7 +263,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
           rdot = PetscAbsScalar(dot);
         }
         if (rdot > dot_max) dot_max = rdot;
-#ifdef DEBUG_CkEigenSolutions
+#if defined(DEBUG_CkEigenSolutions)
         if (rdot > tols[1] ) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
           ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);
@@ -283,7 +283,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       ierr = VecNorm(vt1, NORM_INFINITY, &norm);
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
-#ifdef DEBUG_CkEigenSolutions
+#if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
         printf( "  residual violation: %d, resi: %g\n",i, norm);

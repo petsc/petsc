@@ -104,7 +104,7 @@ PetscErrorCode PetscViewerDestroyMathematica_Private(void)
 PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
-#ifdef MATHEMATICA_3_0
+#if defined(MATHEMATICA_3_0)
   int                     argc = 6;
   char                    *argv[6];
 #else
@@ -134,7 +134,7 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
   }
 
   /* Link mode */
-#ifdef MATHEMATICA_3_0
+#if defined(MATHEMATICA_3_0)
   argv[4] = "-linkmode";
   switch(vmath->linkmode) {
   case MATHEMATICA_LINK_CREATE:
@@ -174,7 +174,7 @@ PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

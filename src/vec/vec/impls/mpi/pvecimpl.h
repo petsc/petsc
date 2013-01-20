@@ -1,5 +1,5 @@
 
-#ifndef __PVECIMPL
+#if !defined(__PVECIMPL)
 #define __PVECIMPL
 
 #include <petsc-private/vecimpl.h>

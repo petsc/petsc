@@ -681,7 +681,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
            }
            new_loc_agg_dofs[a]++;
          }
-         /* #ifdef PCASA_VERBOSE */
+         /* #if defined(PCASA_VERBOSE) */
          else {
            ierr = PetscPrintf(asa_lev->comm, "Cutoff criteria invoked\n");CHKERRQ(ierr);
          }

@@ -1,7 +1,7 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscdmplex.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmplexdistribute_          DMPLEXDISTRIBUTE
 #define dmplexhaslabel_            DMPLEXHASLABEL
 #define dmplexgetlabelvalue_       DMPLEXGETLABELVALUE

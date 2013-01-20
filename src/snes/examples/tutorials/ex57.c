@@ -20,7 +20,7 @@ This is an extension of ex56. Please refer to that example for further documenta
 #include <petscdmda.h>
 #include <petscsnes.h>
 
-#ifndef PETSC_HAVE_SIEVE
+#if !defined(PETSC_HAVE_SIEVE)
 #error This example requires Sieve. Reconfigure using --with-sieve
 #endif
 

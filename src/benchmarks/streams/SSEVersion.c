@@ -10,22 +10,22 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
 #include <limits.h>
 #include <float.h>
 
-#ifndef SSE2
+#if !defined(SSE2)
 #  define SSE2 1
 #endif
-#ifndef __SSE2__
+#if !defined(__SSE2__)
 #  error SSE2 instruction set is not enabled, try adding -march=native to CFLAGS or disable by adding -DSSE2=0
 #endif
-#ifndef PREFETCH_NTA /* Use software prefetch and set non-temporal policy so that lines evicted from L1D will not subsequently reside in L2 or L3. */
+#if !defined(PREFETCH_NTA) /* Use software prefetch and set non-temporal policy so that lines evicted from L1D will not subsequently reside in L2 or L3. */
 #  define PREFETCH_NTA 1
 #endif
-#ifndef STATIC_ALLOC /* Statically allocate the vectors. Most platforms do not find physical pages when memory is allocated, therefore the faulting strategy still affects performance. */
+#if !defined(STATIC_ALLOC) /* Statically allocate the vectors. Most platforms do not find physical pages when memory is allocated, therefore the faulting strategy still affects performance. */
 #  define STATIC_ALLOC 0
 #endif
-#ifndef FAULT_TOGETHER /* Faults all three vectors together which usually interleaves DRAM pages in physical memory. */
+#if !defined(FAULT_TOGETHER) /* Faults all three vectors together which usually interleaves DRAM pages in physical memory. */
 #  define FAULT_TOGETHER 0
 #endif
-#ifndef USE_MEMCPY /* Literally call memcpy(3) for the COPY benchmark. Some compilers detect the unoptimized loop as memcpy and call this anyway. */
+#if !defined(USE_MEMCPY) /* Literally call memcpy(3) for the COPY benchmark. Some compilers detect the unoptimized loop as memcpy and call this anyway. */
 #  define USE_MEMCPY 0
 #endif
 
@@ -54,10 +54,10 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
 
 # define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
+# if !defined(MIN)
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
-# ifndef MAX
+# if !defined(MAX)
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 

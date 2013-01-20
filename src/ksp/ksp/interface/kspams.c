@@ -5,7 +5,7 @@ typedef struct {
   PetscInt    neigs;
   PetscReal   *eigi;
   PetscReal   *eigr;
-#ifdef PETSC_HAVE_AMS
+#if defined(PETSC_HAVE_AMS)
   AMS_Memory  amem;
 #endif
 } KSPMonitor_AMS;
@@ -35,7 +35,7 @@ PetscErrorCode KSPMonitorAMSCreate(KSP ksp,const char *amscommname,void **ctx)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSPMonitor_AMS,&mon);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_AMS
+#if defined(PETSC_HAVE_AMS)
   ierr = PetscViewerAMSOpen(((PetscObject)ksp)->comm,amscommname,&mon->viewer);CHKERRQ(ierr);
   mon->amem = -1;
 #endif
@@ -63,7 +63,7 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_AMS
+#if defined(PETSC_HAVE_AMS)
   if (mon->amem != -1) {
     ierr = AMS_Memory_destroy(mon->amem);CHKERRQ(ierr);
     mon->amem = -1;

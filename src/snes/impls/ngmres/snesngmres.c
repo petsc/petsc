@@ -306,7 +306,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         beta[0] = 0.;
       }
     } else {
-#ifdef PETSC_MISSING_LAPACK_GELSS
+#if defined(PETSC_MISSING_LAPACK_GELSS)
       SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine.");
 #else
     ngmres->m = PetscBLASIntCast(l);
@@ -314,7 +314,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ngmres->info = PetscBLASIntCast(0);
     ngmres->rcond = -1.;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
     LAPACKgelss_(&ngmres->m,
                  &ngmres->n,
                  &ngmres->nrhs,

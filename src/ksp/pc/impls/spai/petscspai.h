@@ -3,7 +3,7 @@
      Include file for the SPAI interface to PETSc. You should include
   this file if you wish to set SPAI options directly from your program.
 */
-#ifndef __SPAI_PACKAGE
+#if !defined(__SPAI_PACKAGE)
 #define __SPAI_PACKAGE
 #include <petscpc.h>
 

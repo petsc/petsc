@@ -91,7 +91,7 @@ int main(int argc,char **args)
       }
     }
   } else { /* bs > 1 */
-#ifdef DIAGB
+#if defined(DIAGB)
     for (block=0; block<n/bs; block++) {
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;

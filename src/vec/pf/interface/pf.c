@@ -112,7 +112,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
   *pf = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

@@ -1,7 +1,7 @@
 
 #include <petscsys.h> /*I "petscsys.h" I*/
 
-#ifdef PETSC_HAVE_SSE
+#if defined(PETSC_HAVE_SSE)
 
 #include PETSC_HAVE_SSE
 #define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */

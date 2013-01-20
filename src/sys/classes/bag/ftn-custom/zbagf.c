@@ -3,7 +3,7 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscbag.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscbagregisterenumprivate_        PETSCBAGREGISTERENUMPRIVATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscbagregisterenumprivate_        petscbagregisterenumprivate

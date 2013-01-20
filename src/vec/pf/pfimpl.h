@@ -1,5 +1,5 @@
 
-#ifndef _PFIMPL
+#if !defined(_PFIMPL)
 #define _PFIMPL
 
 #include <petscpf.h>

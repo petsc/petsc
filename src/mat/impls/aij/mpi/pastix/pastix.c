@@ -21,8 +21,8 @@ EXTERN_C_BEGIN
 #include <pastix.h>
 EXTERN_C_END
 
-#ifdef PETSC_USE_COMPLEX
-#ifdef PETSC_USE_REAL_SINGLE
+#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL c_pastix
 #define PASTIX_CHECKMATRIX c_pastix_checkMatrix
 #define PastixScalar COMPLEX
@@ -34,7 +34,7 @@ EXTERN_C_END
 
 #else /* PETSC_USE_COMPLEX */
 
-#ifdef PETSC_USE_REAL_SINGLE
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL s_pastix
 #define PASTIX_CHECKMATRIX s_pastix_checkMatrix
 #define PastixScalar float

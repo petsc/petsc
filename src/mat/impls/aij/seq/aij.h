@@ -313,7 +313,7 @@ extern PetscErrorCode  MatDestroy_SeqAIJ(Mat);
 .seealso: PetscSparseDensePlusDot()
 
 */
-#ifdef PETSC_KERNEL_USE_UNROLL_4
+#if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
 if (nnz > 0) {\
 switch (nnz & 0x3) {\
@@ -360,7 +360,7 @@ for (__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 .seealso: PetscSparseDenseMinusDot()
 
 */
-#ifdef PETSC_KERNEL_USE_UNROLL_4
+#if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
 if (nnz > 0) {\
 switch (nnz & 0x3) {\

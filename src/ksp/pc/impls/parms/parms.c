@@ -7,7 +7,7 @@
 
 #include "petsc-private/pcimpl.h"          /*I "petscpc.h" I*/
 
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
 #define DBL_CMPLX
 #else
 #define DBL

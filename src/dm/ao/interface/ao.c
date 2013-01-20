@@ -534,7 +534,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
   *ao = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

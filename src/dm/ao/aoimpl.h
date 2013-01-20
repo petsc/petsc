@@ -2,7 +2,7 @@
    This private file should not be included in users' code.
 */
 
-#ifndef __AOIMPL
+#if !defined(__AOIMPL)
 #define __AOIMPL
 
 #include <petscao.h>

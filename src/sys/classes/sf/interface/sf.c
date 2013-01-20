@@ -36,7 +36,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
 
   PetscFunctionBegin;
   PetscValidPointer(sf,2);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscSFInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

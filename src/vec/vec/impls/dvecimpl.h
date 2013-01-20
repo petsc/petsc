@@ -6,7 +6,7 @@
   These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c
 */
 
-#ifndef __DVECIMPL
+#if !defined(__DVECIMPL)
 #define __DVECIMPL
 
 #include <petsc-private/vecimpl.h>

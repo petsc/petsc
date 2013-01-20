@@ -27,7 +27,7 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   s = (Vec_Seq*)v->data;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
-    //#ifdef PETSC_HAVE_TXPETSCGPU
+    //#if defined(PETSC_HAVE_TXPETSCGPU)
     //if (n>0)
     // ierr = cudaMallocHost((void **) &array, n*sizeof(PetscScalar));CHKERRCUSP(ierr);
     //#else
@@ -62,7 +62,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
       ((Vec_CUSP*)v->spptr)->GPUarray = new CUSPARRAY;
       ((Vec_CUSP*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
       PetscErrorCode ierr;
       ((Vec_CUSP*)v->spptr)->GPUvector = new GPU_Vector<PetscInt, PetscScalar>(((Vec_CUSP*)v->spptr)->GPUarray, rank);
       ierr = ((Vec_CUSP*)v->spptr)->GPUvector->buildStreamsAndEvents();CHKERRCUSP(ierr);
@@ -114,7 +114,7 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyToGPU,v,0,0,0);CHKERRQ(ierr);
     try{
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
       ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyToGPUAll();CHKERRCUSP(ierr);
 #else
       CUSPARRAY      *varray;
@@ -144,7 +144,7 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
     varray  = ((Vec_CUSP*)v->spptr)->GPUarray;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyToGPUSome(varray, ci->recvIndices);CHKERRCUSP(ierr);
 #else
     Vec_Seq        *s;
@@ -178,7 +178,7 @@ PetscErrorCode VecCUSPCopyFromGPU(Vec v)
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr       = PetscLogEventBegin(VEC_CUSPCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     try{
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
       ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyFromGPUAll();CHKERRCUSP(ierr);
 #else
       CUSPARRAY      *varray;
@@ -213,7 +213,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
     varray  = ((Vec_CUSP*)v->spptr)->GPUarray;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyFromGPUSome(varray, ci->sendIndices);CHKERRCUSP(ierr);
 #else
   Vec_Seq        *s;
@@ -340,7 +340,7 @@ PetscErrorCode PetscCUSPIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt
 
   PetscFunctionBegin;
   cci = new struct _p_PetscCUSPIndices;
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   cci->sendIndices = new GPU_Indices<PetscInt, PetscScalar>();
   cci->sendIndices->buildIndices(sendIndices, ns);
   cci->recvIndices = new GPU_Indices<PetscInt, PetscScalar>();
@@ -371,7 +371,7 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
   PetscFunctionBegin;
   if (!(*ci)) PetscFunctionReturn(0);
   try {
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     if ((*ci)->sendIndices) delete (*ci)->sendIndices;
     if ((*ci)->recvIndices) delete (*ci)->recvIndices;
 #endif
@@ -383,7 +383,7 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPResetIndexBuffersFlagsGPU_Public"
 /*
@@ -438,7 +438,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec v, PetscCUSPIndices ci)
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPCopySomeToContiguousBufferGPU"
 /* Note that this function only moves *some* of the data from a GPU vector to a contiguous buffer on the GPU.
@@ -1881,7 +1881,7 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
       if (((Vec_CUSP *)v->spptr)->GPUvector)
         delete ((Vec_CUSP *)v->spptr)->GPUvector;
       Vec_Seq        *s;

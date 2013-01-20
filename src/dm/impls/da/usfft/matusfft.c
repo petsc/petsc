@@ -41,7 +41,7 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!*plan) { /* create a plan then execute it*/
     if (usfft->dof == 1) {
-#ifdef PETSC_DEBUG_USFFT
+#if defined(PETSC_DEBUG_USFFT)
       ierr = PetscPrintf(((PetscObject)A)->comm, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
       for (int ii = 0; ii < usfft->ndim; ++ii) {
         ierr = PetscPrintf(((PetscObject)A)->comm, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);

@@ -277,7 +277,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
 
   /*search column A(0:row-1,row) (=A(row,0:row-1)). Could be expensive! */
   /* this segment is currently removed, so only entries in the upper triangle are obtained */
-#ifdef column_search
+#if defined(column_search)
   v_i    = *v    + M*bs;
   cols_i = *cols + M*bs;
   for (i=0; i<bn; i++) { /* for each block row */

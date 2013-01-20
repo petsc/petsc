@@ -591,7 +591,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
     options.ParSymbFact = NO;
     ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
     if (flg) {
-#ifdef PETSC_HAVE_PARMETIS
+#if defined(PETSC_HAVE_PARMETIS)
       options.ParSymbFact = YES;
       options.ColPerm     = PARMETIS; /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
 #else

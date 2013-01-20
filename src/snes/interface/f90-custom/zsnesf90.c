@@ -2,7 +2,7 @@
 #include <petscsnes.h>
 #include <../src/sys/f90-src/f90impl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define snesgetconvergencehistoryf90_     SNESGETCONVERGENCEHISTORYF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define snesgetconvergencehistoryf90_     snesgetconvergencehistoryf90

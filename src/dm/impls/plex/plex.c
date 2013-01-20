@@ -953,7 +953,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
@@ -2679,8 +2679,8 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_CHACO
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_CHACO)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 /* Chaco does not have an include file */
@@ -2745,7 +2745,7 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   ierr = PetscMalloc(nvtxs * sizeof(short int), &assignment);CHKERRQ(ierr);
   /* Chaco outputs to stdout. We redirect this to a buffer. */
   /* TODO: check error codes for UNIX calls */
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   {
     int piperet;
     piperet = pipe(fd_pipe);
@@ -2758,7 +2758,7 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   ierr = interface(nvtxs, (int *) start, (int *) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
                    assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag,
                    vmax, ndims, eigtol, seed);
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   {
     char msgLog[10000];
     int  count;
@@ -2801,7 +2801,7 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
 }
 #endif
 
-#ifdef PETSC_HAVE_PARMETIS
+#if defined(PETSC_HAVE_PARMETIS)
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexPartition_ParMetis"
 PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
@@ -2931,11 +2931,11 @@ PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, 
 
     ierr = DMPlexCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
     if (1) {
-#ifdef PETSC_HAVE_CHACO
+#if defined(PETSC_HAVE_CHACO)
       ierr = DMPlexPartition_Chaco(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     } else {
-#ifdef PETSC_HAVE_PARMETIS
+#if defined(PETSC_HAVE_PARMETIS)
       ierr = DMPlexPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     }
@@ -4335,7 +4335,7 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
 #include <triangle.h>
 
 #undef __FUNCT__
@@ -4651,7 +4651,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 }
 #endif
 
-#ifdef PETSC_HAVE_TETGEN
+#if defined(PETSC_HAVE_TETGEN)
 #include <tetgen.h>
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGenerate_Tetgen"
@@ -4897,7 +4897,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 }
 #endif
 
-#ifdef PETSC_HAVE_CTETGEN
+#if defined(PETSC_HAVE_CTETGEN)
 #include "ctetgen.h"
 
 #undef __FUNCT__
@@ -5209,7 +5209,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   switch(dim) {
   case 1:
     if (!name || isTriangle) {
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
       ierr = DMPlexGenerate_Triangle(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
       SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Mesh generation needs external package support.\nPlease reconfigure with --download-triangle.");
@@ -5218,13 +5218,13 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     break;
   case 2:
     if (!name || isCTetgen) {
-#ifdef PETSC_HAVE_CTETGEN
+#if defined(PETSC_HAVE_CTETGEN)
       ierr = DMPlexGenerate_CTetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
       SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
 #endif
     } else if (isTetgen) {
-#ifdef PETSC_HAVE_TETGEN
+#if defined(PETSC_HAVE_TETGEN)
       ierr = DMPlexGenerate_Tetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
       SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --with-c-language=cxx --download-tetgen.");
@@ -7232,7 +7232,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   switch(dim) {
   case 2:
     if (!name || isTriangle) {
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
       double  *maxVolumes;
       PetscInt c;
 
@@ -7248,7 +7248,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
     break;
   case 3:
     if (!name || isCTetgen) {
-#ifdef PETSC_HAVE_CTETGEN
+#if defined(PETSC_HAVE_CTETGEN)
       PetscReal *maxVolumes;
       PetscInt   c;
 
@@ -7261,7 +7261,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
 #endif
     } else if (isTetgen) {
-#ifdef PETSC_HAVE_TETGEN
+#if defined(PETSC_HAVE_TETGEN)
       double  *maxVolumes;
       PetscInt c;
 
@@ -8416,7 +8416,7 @@ PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point
   for (i = 0; i < numIndices; i++) {
     ierr = PetscViewerASCIIPrintf(viewer, "[%D]", rank);CHKERRQ(ierr);
     for (j = 0; j < numIndices; j++) {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
       ierr = PetscViewerASCIIPrintf(viewer, " (%G,%G)", PetscRealPart(values[i*numIndices+j]), PetscImaginaryPart(values[i*numIndices+j]));CHKERRQ(ierr);
 #else
       ierr = PetscViewerASCIIPrintf(viewer, " %G", values[i*numIndices+j]);CHKERRQ(ierr);

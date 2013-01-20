@@ -745,7 +745,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
   GAMGHashTable  fgid_flid;
 
 /* #define OUT_AGGS */
-#ifdef OUT_AGGS
+#if defined(OUT_AGGS)
   static PetscInt llev = 0; char fname[32]; FILE *file = PETSC_NULL; PetscInt pM;
 #endif
 
@@ -762,7 +762,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
     ierr = GAMGTableAdd(&fgid_flid, flid_fgid[nloc+kk], nloc+kk);CHKERRQ(ierr);
   }
 
-#ifdef OUT_AGGS
+#if defined(OUT_AGGS)
   sprintf(fname,"aggs_%d_%d.m",llev++,mype);
   if (llev==1) {
     file = fopen(fname,"w");
@@ -830,7 +830,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
             qqc[jj*Mdata + aggID*bs + ii] = d;
           }
         }
-#ifdef OUT_AGGS
+#if defined(OUT_AGGS)
         if (llev==1) {
           char str[] = "plot(%e,%e,'r*'), hold on,\n", col[] = "rgbkmc", sim[] = "*os+h>d<vx^";
           PetscInt MM,pi,pj;
@@ -904,7 +904,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 /* ierr = MPI_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, wcomm); */
 /* PetscPrintf(wcomm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",mype,__FUNCT__,ii,kk/bs,ndone,jj); */
 
-#ifdef OUT_AGGS
+#if defined(OUT_AGGS)
   if (llev==1) fclose(file);
 #endif
   ierr = GAMGTableDestroy(&fgid_flid);CHKERRQ(ierr);

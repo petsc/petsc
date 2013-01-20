@@ -54,13 +54,13 @@
  *          that should be good to about 5% precision.
  */
 
-#ifndef N
+#if !defined(N)
 #   define N    2000000
 #endif
-#ifndef NTIMES
+#if !defined(NTIMES)
 #   define NTIMES       50
 #endif
-#ifndef OFFSET
+#if !defined(OFFSET)
 #   define OFFSET       0
 #endif
 
@@ -87,10 +87,10 @@
 
 # define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
+# if !defined(MIN)
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
-# ifndef MAX
+# if !defined(MAX)
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 
@@ -112,7 +112,7 @@ static double   bytes[4] = {
 
 extern double mysecond();
 extern void checkSTREAMresults();
-#ifdef TUNED
+#if defined(TUNED)
 extern void tuned_STREAM_Copy();
 extern void tuned_STREAM_Scale(double scalar);
 extern void tuned_STREAM_Add();
@@ -136,7 +136,7 @@ int main()
      BytesPerWord);
 
      printf(HLINE);
-#ifdef NO_LONG_LONG
+#if defined(NO_LONG_LONG)
     printf("Array size = %d, Offset = %d\n" , N, OFFSET);
 #else
     printf("Array size = %llu, Offset = %d\n", (unsigned long long) N, OFFSET);
@@ -199,7 +199,7 @@ int main()
     for (k=0; k<NTIMES; k++)
         {
         times[0][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Copy();
 #else
 #pragma omp parallel for
@@ -209,7 +209,7 @@ int main()
         times[0][k] = mysecond() - times[0][k];
 
         times[1][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Scale(scalar);
 #else
 #pragma omp parallel for
@@ -219,7 +219,7 @@ int main()
         times[1][k] = mysecond() - times[1][k];
 
         times[2][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Add();
 #else
 #pragma omp parallel for
@@ -229,7 +229,7 @@ int main()
         times[2][k] = mysecond() - times[2][k];
 
         times[3][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Triad(scalar);
 #else
 #pragma omp parallel for
@@ -349,13 +349,13 @@ void checkSTREAMresults ()
                 bsum += b[j];
                 csum += c[j];
         }
-#ifdef VERBOSE
+#if defined(VERBOSE)
         printf ("Results Comparison: \n");
         printf ("        Expected  : %f %f %f \n",aj,bj,cj);
         printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
 #endif
 
-#ifndef abs
+#if !defined(abs)
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
         epsilon = 1.e-8;

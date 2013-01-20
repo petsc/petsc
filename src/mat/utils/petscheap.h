@@ -1,4 +1,4 @@
-#ifndef _petscheap_h
+#if !defined(_petscheap_h)
 #define _petscheap_h
 
 #include <petscsys.h>

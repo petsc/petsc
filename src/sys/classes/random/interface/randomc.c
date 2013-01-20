@@ -362,7 +362,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscFunctionBegin;
   PetscValidPointer(r,3);
   *r = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscRandomInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

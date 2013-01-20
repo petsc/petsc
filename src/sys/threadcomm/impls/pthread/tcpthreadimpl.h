@@ -1,5 +1,5 @@
 
-#ifndef __TCPTHREADIMPLH
+#if !defined(__TCPTHREADIMPLH)
 #define __TCPTHREADIMPLH
 
 #include <petsc-private/threadcommimpl.h>

@@ -216,7 +216,7 @@ PetscErrorCode DMMeshInterpolationRestoreVector(DM dm, Vec *v, DMMeshInterpolati
 #define __FUNCT__ "DMMeshInterpolate_Simplex_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Simplex_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx)
 {
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscInt       p;
@@ -339,7 +339,7 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
 #define __FUNCT__ "DMMeshInterpolate_Quad_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx)
 {
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   SNES        snes;
   KSP         ksp;
   PC          pc;
@@ -559,7 +559,7 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
 #define __FUNCT__ "DMMeshInterpolate_Hex_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx)
 {
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   SNES        snes;
   KSP         ksp;
   PC          pc;

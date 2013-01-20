@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A,SAME_PRECONDITIONER);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MUMPS
+#if defined(PETSC_HAVE_MUMPS)
   ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
 #endif
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

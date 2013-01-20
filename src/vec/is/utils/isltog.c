@@ -194,7 +194,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   PetscValidPointer(mapping,4);
 
   *mapping = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

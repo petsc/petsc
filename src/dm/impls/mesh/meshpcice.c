@@ -385,7 +385,7 @@ namespace ALE {
     {
       return readMesh(comm, dim, basename+".nodes", basename+".lcon", useZeroBase, interpolate, debug);
     };
-#ifdef PETSC_OPT_SIEVE
+#if defined(PETSC_OPT_SIEVE)
     Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0)
     {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;

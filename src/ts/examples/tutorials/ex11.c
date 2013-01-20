@@ -5,7 +5,7 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 #include <petscts.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
-#ifdef PETSC_HAVE_EXODUSII
+#if defined(PETSC_HAVE_EXODUSII)
 #include <exodusII.h>
 #else
 #error This example requires ExodusII support. Reconfigure using --download-exodusii
