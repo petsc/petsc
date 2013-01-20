@@ -500,7 +500,7 @@ class Configure(config.package.Package):
 
   def checkPESSL(self):
     '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
-    if self.libraries.check(self.lapackLibrary, 'pdgemm'):
+    if self.libraries.check(self.lapackLibrary, 'ipessl'):
       raise RuntimeError('Cannot use PESSL instead of ESSL!')
     return
 
