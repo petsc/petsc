@@ -4,7 +4,8 @@ static char help[] = "Testing MatCreateSeqBAIJWithArrays() and MatCreateSeqSBAIJ
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B,As;
   const PetscInt *ai,*aj;
   PetscInt       i,j,k,nz,n,asi[]={0,2,3,4,6,7};

@@ -1315,7 +1315,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,
         ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
         for (Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++) {
           ierr = MatGetRow(Amat,Ii,&ncols,0,0);CHKERRQ(ierr);
-          if(ncols <= 1) {
+          if (ncols <= 1) {
             ierr = VecSetValues(bb, 1, &Ii, &zero, INSERT_VALUES);CHKERRQ(ierr);
           }
           ierr = MatRestoreRow(Amat,Ii,&ncols,0,0);CHKERRQ(ierr);
@@ -1521,7 +1521,7 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
 
   PetscFunctionBegin;
 
-  if(pc_gamg->subctx) {
+  if (pc_gamg->subctx) {
     /* call base class */
     ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
   }

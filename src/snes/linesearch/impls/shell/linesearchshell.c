@@ -25,7 +25,8 @@ typedef struct {
 
    Usage:
 
-$  PetscErrorCode shellfunc(SNESLineSearch linesearch, void * ctx) {
+$  PetscErrorCode shellfunc(SNESLineSearch linesearch, void * ctx)
+$  {
 $     Vec  X, Y, F, W, G;
 $     SNES snes;
 $     PetscFunctionBegin;

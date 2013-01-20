@@ -1,6 +1,7 @@
 #include "yamlimpls.h"
 
-void options_list_delete(options_list_t *options_list) {
+void options_list_delete(options_list_t *options_list)
+{
   int i, j;
 
   for (i=0; i<(*options_list).count; i++)
@@ -25,7 +26,8 @@ void options_list_delete(options_list_t *options_list) {
   }
 }
 
-int options_list_populate_yaml(char *str, options_list_t *options_list) {
+int options_list_populate_yaml(char *str, options_list_t *options_list)
+{
   yaml_parser_t parser;
   yaml_event_t event, *events=0;
   int i, j, k, ii; /* generic counters */
@@ -393,7 +395,8 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
   return 1;
 }
 
-int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in) {
+int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in)
+{
   switch((*in).type) {
     case YAML_STREAM_START_EVENT:
       if (!yaml_stream_start_event_initialize(&(*out), (*in).data.stream_start.encoding)) {
@@ -473,7 +476,8 @@ int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in) {
   return 1;
 }
 
-int alias_list_populate_yaml(char *str, alias_list_t *list) {
+int alias_list_populate_yaml(char *str, alias_list_t *list)
+{
   yaml_parser_t parser;
   yaml_event_t event, *events=0;
   int i, j, k, stacknumber, events_length;
@@ -671,7 +675,8 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
   return 1;
 }
 
-void alias_list_delete(alias_list_t *list) {
+void alias_list_delete(alias_list_t *list)
+{
   int i;
 
   for (i=0; i<(*list).count; i++) {

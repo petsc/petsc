@@ -26,7 +26,8 @@ namespace Coarsener {
 
   ////////////////////////////////////////////////////////////////
 
-  PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> & mesh, int dim) {
+  PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> & mesh, int dim)
+  {
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     ALE::Mesh::real_section_type::patch_type patch = 0;
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
@@ -138,7 +139,8 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMeshes, float beta = 1.41) {
+PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMeshes, float beta = 1.41)
+{
    //in this function we will assume that the original mesh is given to us in patch 0, and that its boundary has been identified with IdentifyBoundary.  We will put nMesh - 1 coarsenings in patches 1 through nMeshes.
 
   for (int curLevel = nMeshes; curLevel > 0; curLevel--) {
@@ -157,7 +159,8 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_section_type::patch_type newPatch, bool includePrevious, float beta) {
+PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_section_type::patch_type newPatch, bool includePrevious, float beta)
+{
   PetscFunctionBegin;
   ALE::Mesh::real_section_type::patch_type originalPatch = 0;
   std::list<ALE::Mesh::point_type> incPoints;
@@ -167,7 +170,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   Obj<ALE::Mesh::real_section_type> spacing = mesh->getRealSection("spacing");
 
   //const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->getLabel(originalPatch, "boundary");
-  if(includePrevious) {
+  if (includePrevious) {
 
     ALE::Mesh::real_section_type::patch_type coarserPatch = newPatch+1;
     const Obj<ALE::Mesh::topology_type::label_sequence>& previousVertices = topology->depthStratum(coarserPatch, 0);
@@ -306,7 +309,8 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   PetscFunctionReturn(0);
 }
 
-int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
+int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
+{
 
   ALE::Mesh::real_section_type::patch_type patch = 0;
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
@@ -338,7 +342,7 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
             double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
             double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
             if (parArea > .00001*len) isEssential = 2;
-           if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
+           if (mesh->debug()) printf("Parallelogram area: %f\n", parArea);
           }
         }
         n_iter++;
@@ -349,7 +353,8 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   return isEssential;
 }
 
-int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
+int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
+{
 //determines if two triangles are coplanar
   //given the point,get the support of every element of the point's support and see if it is a "crease".  Count the creases
 //if there are two crease support elements, it is a rank 2, if there are more it's 3, if there are 0 (there cannot be 1) it is rank 1
@@ -358,14 +363,16 @@ int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   return 1; // stub
 }
 
-bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::point_type tri2) {
+bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::point_type tri2)
+{
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
 
   return false; // stub
 }
 
 #ifdef PETSC_HAVE_TRIANGLE
-PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::real_section_type::patch_type patch) {
+PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::real_section_type::patch_type patch)
+{
   PetscFunctionBegin;
   // We store the global vertex numbers as markers to preserve them in the coarse mesh
   //   Here we convert from the new Triangle numbering to the original fine mesh numbering (same sieve points we started from)

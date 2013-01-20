@@ -287,7 +287,8 @@ namespace ALE {
     //
     // Builder methods
     //
-    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[]) {
+    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[])
+    {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       numCells, cellCount = 0;
@@ -339,7 +340,8 @@ namespace ALE {
       numElements = numCells;
       *vertices = verts;
     };
-    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, PetscReal *coordinates[]) {
+    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, PetscReal *coordinates[])
+    {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       numVerts, vertexCount = 0;
@@ -379,11 +381,13 @@ namespace ALE {
       numVertices = numVerts;
       *coordinates = coords;
     };
-    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0)
+    {
       return readMesh(comm, dim, basename+".nodes", basename+".lcon", useZeroBase, interpolate, debug);
     };
 #ifdef PETSC_OPT_SIEVE
-    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0)
+    {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       Obj<Mesh>          mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve = new sieve_type(comm, debug);
@@ -409,10 +413,12 @@ namespace ALE {
       if (coordinates) {ierr = PetscFree(coordinates);CHKERRXX(ierr);}
       return mesh;
     };
-    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
+    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, PetscReal *coordinates[], const bool columnMajor) {
+    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, PetscReal *coordinates[], const bool columnMajor)
+    {
       const Obj<Mesh::real_section_type>& coordSec = mesh->getRealSection("coordinates");
       if (!coordSec->size()) {
         *numVertices = 0;
@@ -446,7 +452,8 @@ namespace ALE {
       *dim         = embedDim;
       *coordinates = coords;
     };
-    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
+    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor)
+    {
       if (!mesh->heightStratum(0)->size()) {
         *numElements = 0;
         *numCorners  = 0;
@@ -485,23 +492,29 @@ namespace ALE {
       *numCorners  = corners;
       *vertices    = v;
     };
-    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh) {
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
 #else
-    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0)
+    {
       Obj<Mesh>          mesh     = new DMMesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
       int    *cells = NULL;
@@ -526,7 +539,8 @@ namespace ALE {
     //   BCFUNC[NBCF,NV]: ALL
     //   IBNDFS[NBN,2]:   STILL NEED 4-5
     //     BNNV[NBN,2]
-    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
+    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename)
+    {
       PetscViewer    viewer;
       FILE          *f;
       char           buf[2048];
@@ -679,7 +693,8 @@ namespace ALE {
       mesh->allocate(bnnv);
       delete [] tmpIBNDFS;
     };
-    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
+    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor)
+    {
       const Obj<Mesh::real_section_type>& coordSec = mesh->getRealSection("coordinates");
       if (!coordSec->size()) {
         *numVertices = 0;
@@ -713,7 +728,8 @@ namespace ALE {
       *dim         = embedDim;
       *coordinates = coords;
     };
-    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
+    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor)
+    {
       if (!mesh->heightStratum(0)->size()) {
         *numElements = 0;
         *numCorners  = 0;
@@ -754,7 +770,8 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteVertices"
-    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       ALE::Obj<Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
 #if 0
       DMMesh::field_type::patch_type patch;
@@ -836,7 +853,8 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteElements"
-    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer)
+    {
 #if 0
       ALE::Obj<Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
       ALE::Obj<Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
@@ -920,7 +938,8 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteVerticesLocal"
-    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       Obj<Mesh::real_section_type>     coordinates = mesh->getRealSection("coordinates");
       const Obj<Mesh::label_sequence>& vertices    = mesh->depthStratum(0);
       const Obj<Mesh::numbering_type>& vNumbering  = mesh->getFactory()->getLocalNumbering(mesh, 0);
@@ -945,7 +964,8 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "PCICEWriteRestart"
-    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer)
+    {
       const Obj<Mesh::real_section_type>&   velocity    = mesh->getRealSection("VELN");
       const Obj<Mesh::real_section_type>&   pressure    = mesh->getRealSection("PN");
       const Obj<Mesh::real_section_type>&   temperature = mesh->getRealSection("TN");
@@ -1029,7 +1049,8 @@ namespace ALE {
     //
     // Note: Any vertex or element number from PCICE is 1-based, but in Sieve we are 0-based. Thus
     //       we add and subtract 1 during conversion. Also, Sieve vertices are numbered after cells.
-    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh) {
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh)
+    {
       // Extract PCICE boundary sections
       ALE::Obj<PETSC_MESH_TYPE::int_section_type> IBCsec    = mesh->getIntSection("IBC");
       ALE::Obj<PETSC_MESH_TYPE::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");

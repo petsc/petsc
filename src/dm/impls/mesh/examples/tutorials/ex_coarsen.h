@@ -123,7 +123,8 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
 #undef __FUNCT__
 #define __FUNCT__ "TriangleToMesh"
 
-PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::section_type::patch_type patch) {
+PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::section_type::patch_type patch)
+{
    //try to keep in the same labeled order we're given
    //First create arrows from the faces to the edges, then edges to vertices (easy part given triangle)
   //ALE::Mesh::section_type::value_type rank = mesh->commRank();
@@ -198,7 +199,8 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
  \     \
  0-(7)-3
 */
-PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim) {
+PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim)
+{
 
 
    PetscFunctionBegin;
@@ -271,55 +273,57 @@ PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim
 
 //identify the boundary points and edges on an interpolated mesh by looking for the number of elements covered by edges (or faces in 3D).
 
-PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim) {
+PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
+{
 
-   PetscFunctionBegin;
+  PetscFunctionBegin;
 
-if (dim == 2) {
-     ALE::Mesh::section_type::patch_type patch = 0;
-     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-     const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
-     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
+  if (dim == 2)
+  {
+    ALE::Mesh::section_type::patch_type patch = 0;
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
+    const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
+    const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
 
 
-     ALE::Mesh::topology_type::label_sequence::iterator e_iter = edges->begin();
-     ALE::Mesh::topology_type::label_sequence::iterator e_iter_end = edges->end();
+    ALE::Mesh::topology_type::label_sequence::iterator e_iter = edges->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator e_iter_end = edges->end();
 
-     ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
-     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
+    ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
 
-     const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+    const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
 
 //initialize all the vertices
 
-     while (v_iter != v_iter_end) {
-        topology->setValue(markers, *v_iter, 0);
-        v_iter++;
-     }
+    while (v_iter != v_iter_end) {
+      topology->setValue(markers, *v_iter, 0);
+      v_iter++;
+    }
 
 //trace through the edges, initializing them to be non-boundary, then setting them as boundary.
 
-int boundEdges = 0, boundVerts = 0;
+    int boundEdges = 0, boundVerts = 0;
 
     // int nBoundaryVertices = 0;
-     while (e_iter != e_iter_end) {
-       topology->setValue(markers, *e_iter, 0);
+    while (e_iter != e_iter_end) {
+      topology->setValue(markers, *e_iter, 0);
 //find out if the edge is not supported on both sides, if so, this is a boundary node
        //printf("Edge %d supported by %d faces", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());
-       if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
+      if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
         topology->setValue(markers, *e_iter, 1);
         boundEdges++;
         ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
         ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter = endpoints->begin();
         ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter_end = endpoints->end();
         while (p_iter != p_iter_end) {
-           topology->setValue(markers, *p_iter, 1);
-           boundVerts++;
-           p_iter++;
+          topology->setValue(markers, *p_iter, 1);
+          boundVerts++;
+          p_iter++;
         }
-       }
+      }
       e_iter++;
-   }
+    }
   printf("Boundary Edges: %d, Boundary Vertices: %d\n", boundEdges, boundVerts);
   }
   PetscFunctionReturn(0);

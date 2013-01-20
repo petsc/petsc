@@ -2480,7 +2480,8 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetNumFaceVertices"
-static PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt numCorners, PetscInt *numFaceVertices) {
+static PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt numCorners, PetscInt *numFaceVertices)
+{
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscInt       cellDim;
   PetscErrorCode ierr;
@@ -2814,7 +2815,8 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexEnlargePartition"
 /* Expand the partition by BFS on the adjacency graph */
-PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection origPartSection, IS origPartition, PetscSection *partSection, IS *partition) {
+PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection origPartSection, IS origPartition, PetscSection *partSection, IS *partition)
+{
   PetscHashI      h;
   const PetscInt *points;
   PetscInt      **tmpPoints, *newPoints, totPoints = 0;
@@ -7437,7 +7439,8 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSectionInitial"
 /* Set the number of dof on each point and separate by fields */
-PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section) {
+PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
+{
   PetscInt      *numDofTot;
   PetscInt       pStart = 0, pEnd = 0;
   PetscInt       p, d, f;
@@ -7480,7 +7483,8 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
 /* Set the number of dof on each point and separate by fields
    If constDof is PETSC_DETERMINE, constrain every dof on the point
 */
-PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscInt constDof, PetscSection section) {
+PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscInt constDof, PetscSection section)
+{
   PetscInt       numFields;
   PetscInt       bc;
   PetscErrorCode ierr;
@@ -7704,7 +7708,8 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 .keywords: mesh, elements
 .seealso: DMPlexCreate(), PetscSectionCreate()
 @*/
-PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscSection *section) {
+PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscSection *section)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -7808,7 +7813,8 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetCones"
-PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[]) {
+PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
+{
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
@@ -7819,7 +7825,8 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetConeOrientations"
-PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[]) {
+PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
+{
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
@@ -8055,7 +8062,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 
 .seealso DMPlexVecRestoreClosure(), DMPlexVecSetClosure(), DMPlexMatSetClosure()
 @*/
-PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[]) {
+PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[])
+{
   PetscScalar    *array, *vArray;
   PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
@@ -8163,7 +8171,8 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 
 .seealso DMPlexVecGetClosure(), DMPlexVecSetClosure(), DMPlexMatSetClosure()
 @*/
-PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[]) {
+PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[])
+{
   PetscInt        size = 0;
   PetscErrorCode  ierr;
 
@@ -8219,7 +8228,8 @@ PetscErrorCode updatePoint_private(PetscSection section, PetscInt point, PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "updatePointFields_private"
-PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, PetscInt foffs[], void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, PetscInt orientation, const PetscScalar values[], PetscScalar array[]) {
+PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, PetscInt foffs[], void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, PetscInt orientation, const PetscScalar values[], PetscScalar array[])
+{
   PetscScalar   *a;
   PetscInt       numFields, off, foff, f;
   PetscErrorCode ierr;
@@ -8289,7 +8299,8 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 
 .seealso DMPlexVecGetClosure(), DMPlexMatSetClosure()
 @*/
-PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   PetscScalar    *array;
   PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
@@ -8419,7 +8430,8 @@ PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point
 #undef __FUNCT__
 #define __FUNCT__ "indicesPoint_private"
 /* . off - The global offset of this point */
-PetscErrorCode indicesPoint_private(PetscSection section, PetscInt point, PetscInt dof, PetscInt off, PetscBool setBC, PetscInt orientation, PetscInt indices[]) {
+PetscErrorCode indicesPoint_private(PetscSection section, PetscInt point, PetscInt dof, PetscInt off, PetscBool setBC, PetscInt orientation, PetscInt indices[])
+{
   PetscInt        cdof;  /* The number of constraints on this point */
   const PetscInt *cdofs; /* The indices of the constrained dofs on this point */
   PetscInt        cind = 0, k;
@@ -8468,7 +8480,8 @@ PetscErrorCode indicesPoint_private(PetscSection section, PetscInt point, PetscI
 #undef __FUNCT__
 #define __FUNCT__ "indicesPointFields_private"
 /* . off - The global offset of this point */
-PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, PetscInt off, PetscInt foffs[], PetscBool setBC, PetscInt orientation, PetscInt indices[]) {
+PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, PetscInt off, PetscInt foffs[], PetscBool setBC, PetscInt orientation, PetscInt indices[])
+{
   PetscInt       numFields, foff, f;
   PetscErrorCode ierr;
 
@@ -8877,7 +8890,8 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetFaceOrientation"
-PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented) {
+PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
+{
   MPI_Comm       comm      = ((PetscObject) dm)->comm;
   PetscBool      posOrient = PETSC_FALSE;
   const PetscInt debug     = 0;
@@ -10052,7 +10066,8 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**fun
 
 .seealso: DMPlexProjectFunction()
 */
-PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (**funcs)(const PetscReal []), Vec X, PetscReal *diff) {
+PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (**funcs)(const PetscReal []), Vec X, PetscReal *diff)
+{
   const PetscInt   debug = 0;
   PetscSection     section;
   Vec              localX;

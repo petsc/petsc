@@ -15,11 +15,13 @@
     }                                                                   \
     return 0
 
-PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_N (MatScalar *a,PetscInt N) {
+PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_N (MatScalar *a,PetscInt N)
+{
   PetscKernel_A_gets_transpose_A_BODY(a,N);
 }
 #define PetscKernel_A_gets_transpose_A_DECLARE(N)                            \
-  PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_ ## N (MatScalar *a) { \
+  PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_ ## N (MatScalar *a) \
+  {                                                                          \
     PetscKernel_A_gets_transpose_A_BODY(a,N);                                \
   }
 

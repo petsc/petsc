@@ -227,7 +227,8 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Simplex_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
   PetscReal     *v0, *J, *invJ, detJ;
   PetscScalar   *a, *coords;
   PetscInt       p;
@@ -341,7 +342,8 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Quad_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
   DM             dmCoord;
   SNES           snes;
   KSP            ksp;
@@ -557,7 +559,8 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Hex_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
   DM             dmCoord;
   SNES           snes;
   KSP            ksp;

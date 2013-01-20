@@ -5,30 +5,36 @@
 
 # Steps:
 # - exclude src/docs/ holding the documentation only, and ftn-auto directories
-# - get all lines with '{'
+# - get all lines with '{' following a closing parenthesis.
 # - exclude all open brackets on their own line
 # - exclude all lines with 'if (', 'else {', 'for (), etc.'
+# - exclude all lines where some code follows after '{'
+# - exclude lines with closing curly braces (e.g. simple one-liner functions)
+# - exclude if-conditions that span over multiple lines. Identified by ')) {'
 
 find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
  | grep -v 'ftn-auto' \
- | xargs grep "{" \
+ | xargs grep ")\s*{" \
  | grep -v ".*:\s*{\s*$" \
- | grep -v "if\s*(" \
- | grep -v "else\s*{" \
- | grep -v "do\s*{" \
- | grep -v "for\s*(" \
- | grep -v "switch\s*(" \
- | grep -v "while\s*(" \
+ | grep -v " if\s\s*(" \
+ | grep -v " else\s*{" \
+ | grep -v " do\s*{" \
+ | grep -v " for\s*(" \
+ | grep -v " switch\s*(" \
+ | grep -v " while\s*(" \
  | grep -v "extern\s" \
  | grep -v "struct\s" \
  | grep -v "union\s" \
  | grep -v "typedef\s" \
  | grep -v "define\s" \
  | grep -v "[=+\\]" \
- | grep -v "try\s" \
- | grep -v "catch\s*(" \
+ | grep -v " try\s" \
+ | grep -v " catch\s*(" \
  | grep -v "||" \
- | grep -v "{[0-9a-zA-Z{\.(\\-]"
+ | grep -v "{[0-9a-zA-Z{\.(\\-]" \
+ | grep -v ") {;}" \
+ | grep -v "}" \
+ | grep -v ")) {" \
 
 

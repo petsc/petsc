@@ -190,7 +190,8 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSetSubdomains"
-PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[]) {
+PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[])
+{
   PetscErrorCode ierr;
   PetscErrorCode (*f)(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
   PetscFunctionBegin;
@@ -202,7 +203,8 @@ PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScat
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSetSubdomains_NASM"
-PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[]) {
+PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[])
+{
   PetscInt       i;
   PetscErrorCode ierr;
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;

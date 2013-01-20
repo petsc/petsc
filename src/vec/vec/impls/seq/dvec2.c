@@ -571,7 +571,7 @@ PetscErrorCode VecMax_Seq(Vec xin,PetscInt* idx,PetscReal *z)
   PetscReal                out[2];
 
   PetscFunctionBegin;
-  if(!n) {
+  if (!n) {
     *z = PETSC_MIN_REAL;
     *idx = -1;
   } else {
@@ -579,7 +579,7 @@ PetscErrorCode VecMax_Seq(Vec xin,PetscInt* idx,PetscReal *z)
     ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecMax_kernel,xin,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,out);CHKERRQ(ierr);
     *z = out[0];
-    if(idx) *idx = (PetscInt)out[1];
+    if (idx) *idx = (PetscInt)out[1];
   }
   PetscFunctionReturn(0);
 }
@@ -625,7 +625,7 @@ PetscErrorCode VecMin_kernel(PetscInt thread_id,Vec xin,PetscThreadCommReduction
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   lred[0] = xx[start]; lred[1] = start;
   for(i=start+1;i<end;i++) {
-    if((tmp = PetscRealPart(xx[i])) < lred[0]) { lred[0] = tmp; lred[1] = i;}
+    if ((tmp = PetscRealPart(xx[i])) < lred[0]) { lred[0] = tmp; lred[1] = i;}
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = PetscThreadReductionKernelPost(thread_id,red,lred);CHKERRQ(ierr);
@@ -642,7 +642,7 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal *z)
   PetscReal                out[2];
 
   PetscFunctionBegin;
-  if(!n) {
+  if (!n) {
     *z = PETSC_MAX_REAL;
     *idx = -1;
   } else {
@@ -650,7 +650,7 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal *z)
     ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecMin_kernel,xin,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,out);CHKERRQ(ierr);
     *z = out[0];
-    if(idx) *idx = (PetscInt)out[1];
+    if (idx) *idx = (PetscInt)out[1];
   }
   PetscFunctionReturn(0);
 }

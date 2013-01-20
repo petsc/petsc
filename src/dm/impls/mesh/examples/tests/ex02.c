@@ -64,7 +64,8 @@ int main(int argc, char *argv[])
 
 #undef  __FUNCT__
 #define __FUNCT__ "createDoubletSieveBottomUp"
-PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p) {
+PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p)
+{
   PetscFunctionBegin;
   ALE::Sieve *doublet = new ALE::Sieve(comm);
   *doublet_p = doublet;
@@ -85,7 +86,8 @@ PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p)
 
 #undef  __FUNCT__
 #define __FUNCT__ "createDoubletSieveTopDown"
-PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p) {
+PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p)
+{
   PetscFunctionBegin;
   ALE::Sieve *doublet = new ALE::Sieve(comm);
   *doublet_p = doublet;
@@ -107,7 +109,8 @@ PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p) 
 
 #undef  __FUNCT__
 #define __FUNCT__ "viewStrata"
-PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name) {
+PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ostringstream txt;

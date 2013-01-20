@@ -93,7 +93,8 @@ typedef struct {
   BCType bcType;
 } AppCtx;
 
-PetscScalar zero(const PetscReal coords[]) {
+PetscScalar zero(const PetscReal coords[])
+{
   return 0.0;
 }
 
@@ -110,19 +111,23 @@ PetscScalar zero(const PetscReal coords[]) {
     -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
     \nabla \cdot u           = 2x - 2x                    = 0
 */
-PetscScalar quadratic_u_2d(const PetscReal x[]) {
+PetscScalar quadratic_u_2d(const PetscReal x[])
+{
   return x[0]*x[0] + x[1]*x[1];
 }
 
-PetscScalar quadratic_v_2d(const PetscReal x[]) {
+PetscScalar quadratic_v_2d(const PetscReal x[])
+{
   return 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
 }
 
-PetscScalar linear_p_2d(const PetscReal x[]) {
+PetscScalar linear_p_2d(const PetscReal x[])
+{
   return x[0] + x[1] - 1.0;
 }
 
-void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
+void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
+{
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
 
@@ -133,7 +138,8 @@ void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
    u[Ncomp]          = {p} */
-void f1_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]) {
+void f1_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[])
+{
   const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp, d;
@@ -148,7 +154,8 @@ void f1_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z} */
-void f0_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
+void f0_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -158,7 +165,8 @@ void f0_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   }
 }
 
-void f1_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]) {
+void f1_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -169,7 +177,8 @@ void f1_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
 
 /* < q, \nabla\cdot v >
    NcompI = 1, NcompJ = dim */
-void g1_pu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]) {
+void g1_pu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -180,7 +189,8 @@ void g1_pu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
 
 /* -< \nabla\cdot v, p >
     NcompI = dim, NcompJ = 1 */
-void g2_up(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]) {
+void g2_up(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -191,7 +201,8 @@ void g2_up(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
    This just gives \nabla u, give the perdiagonal for the transpose */
-void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]) {
+void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[])
+{
   const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       compI, d;
@@ -217,19 +228,23 @@ void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
     -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
     \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
 */
-PetscScalar quadratic_u_3d(const PetscReal x[]) {
+PetscScalar quadratic_u_3d(const PetscReal x[])
+{
   return x[0]*x[0] + x[1]*x[1];
 }
 
-PetscScalar quadratic_v_3d(const PetscReal x[]) {
+PetscScalar quadratic_v_3d(const PetscReal x[])
+{
   return x[1]*x[1] + x[2]*x[2];
 }
 
-PetscScalar quadratic_w_3d(const PetscReal x[]) {
+PetscScalar quadratic_w_3d(const PetscReal x[])
+{
   return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 }
 
-PetscScalar linear_p_3d(const PetscReal x[]) {
+PetscScalar linear_p_3d(const PetscReal x[])
+{
   return x[0] + x[1] + x[2] - 1.5;
 }
 

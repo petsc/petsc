@@ -37,7 +37,8 @@
 
 #include "khash.h"
 KHASH_MAP_INIT_INT(32, char)
-int main() {
+int main()
+{
         int ret, is_missing;
         khiter_t k;
         khash_t(32) *h = kh_init(32);

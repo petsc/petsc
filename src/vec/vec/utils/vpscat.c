@@ -200,7 +200,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   /*
       MPICH could not properly cancel requests thus with ready receiver mode we
     cannot free the requests. It may be fixed now, if not then put the following
-    code inside a if !to->use_readyreceiver) {
+    code inside a if (!to->use_readyreceiver) {
   */
   if (!to->use_alltoallv && !to->use_window) {    /* currently the from->requests etc are ALWAYS allocated even if not used */
     if (from->requests) {

@@ -97,10 +97,10 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
         NUMR_NODE *curr = &nodes[xx];
         if (curr->GetState() == UNKNOWN) {
           /* check for selectable */
-          for( jj = 0, doit = TRUE; jj < curr->NumAdjac() && doit ; jj++ ) {
+          for (jj = 0, doit = TRUE; jj < curr->NumAdjac() && doit ; jj++) {
             ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
             NUMR_NODE *curr2 = &nodes[ii];
-            if( curr2->GetState() == SELECTED && curr2->color() == color ) {
+            if (curr2->GetState() == SELECTED && curr2->color() == color) {
               doit = FALSE; /* selected on this round */
               curr->SetState(DELETED);  assert(curr2->IsGhost());
               todo2--;
@@ -108,7 +108,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
               if (curr2->GetProc() > myproc) doit = FALSE;
             }
           }
-          if( doit ) { /* select */
+          if (doit) { /* select */
             curr->SetState(SELECTED);
             curr->setColor(color); todo--; assert( todo >= 0 );
             todo2--;                       assert( todo2 >= 0 );
@@ -121,11 +121,11 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
                 *pb++ = curr->index.global(); *pb++ = color;
                 /* send(tag+color) < SELECTED, gid_DEL_gh, gid_SEL_loc, color > */
                 MPI_Send(sbuf,pb-sbuf,MPI_INT, proc, tag+color,Comm);
-                if( curr2->GetState() == UNKNOWN ) curr2->SetState(DELETED);
+                if (curr2->GetState() == UNKNOWN) curr2->SetState(DELETED);
               }
-              if( curr2->GetState() == UNKNOWN ) {
+              if (curr2->GetState() == UNKNOWN) {
                 curr2->SetState(DELETED);
-                if( !curr2->IsGhost() ) todo2--; assert( todo2 >= 0 );
+                if (!curr2->IsGhost()) todo2--; assert( todo2 >= 0 );
               }        
             }
           }
@@ -151,7 +151,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
       /* send DELETED bound */
       for(  xx = 0 ; xx < nLocalNd ; xx++ ) {
         NUMR_NODE *curr = &nodes[xx];
-        if( curr->GetState() == DELETED && !curr->IsMarked() ) {
+        if (curr->GetState() == DELETED && !curr->IsMarked()) {
           curr->Mark();
           for( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
             ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
@@ -171,7 +171,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
     ipos = procTable.GetHeadPosition();
     while( ipos ) {
       proc = procTable.GetNext(ipos) - 1; assert(proc>=0);
-      if( todo != 0 || sentdoneProcs.Add(proc+1) ) {
+      if (todo != 0 || sentdoneProcs.Add(proc+1)) {
         MPI_Send( &todo, 1, MPI_INT, proc, tag+color, Comm );
       }
     }
@@ -179,7 +179,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
     ipos = procTable.GetHeadPosition();
     while( ipos ) {
       proc = procTable.GetNext( ipos ) - 1;
-      if( doneProcs.Find(proc+1) ) continue;
+      if (doneProcs.Find(proc+1)) continue;
       while (1) {
         MPI_Probe(proc, tag+color, Comm, &status);
         MPI_Get_count(&status, MPI_INT, &ii);
@@ -189,7 +189,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
           CHKERRQ(ierr);
         } else if (ii == 1) {
           MPI_Recv( &jj, 1, MPI_INT, proc, tag+color, Comm, &status );
-          if( jj == 0 ) {
+          if (jj == 0) {
             int add = doneProcs.Add(proc+1); assert(add); proctodo--;
           }
           break; /* done with this proc */
@@ -202,7 +202,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
   for( xx = 0, color = 0 ; xx < nLocalNd ; xx++ ) {
     NUMR_NODE *curr = &nodes[xx]; curr->Mark(FALSE);
     assert(curr->color() > 0);
-    if( curr->color() > color ) color = curr->color();
+    if (curr->color() > color) color = curr->color();
     /* debug */
     for( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
       ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
@@ -240,13 +240,13 @@ int NUMR_GRID::receiveState( TABLE &gid_ghost, int &ndone, int &todo2,
   /* recv(tag) <SEL,gid_DEL_loc,gid2_SEL_gh,color> or <DELETED,gid_gh> */
   MPI_Recv( rbuf, 6, MPI_INT, proc, tag, comm, &status );
   pb = rbuf; state = *pb++;  gid = *pb++;
-  if( state == (int)SELECTED ) {
+  if (state == (int)SELECTED) {
     /* recv(tag) < SELECTED, gid_DEL_loc, gid2_SEL_gh, color > */
     gid2 = *pb++; cclr = *pb++;
     MPI_Get_count( &status, MPI_INT, &ii ); assert(pb-rbuf == ii);
     /* gid2_SELECTED_gh */
     NUMR_NODE *curr2 = (NUMR_NODE*)gid_ghost.Find( gid2+1 ); assert(curr2);
-    if( curr2->GetState() == UNKNOWN ) {
+    if (curr2->GetState() == UNKNOWN) {
       curr2->SetState(SELECTED);     assert(curr2->color() == 0);
       curr2->setColor( cclr );
       ndone++;
@@ -254,7 +254,7 @@ int NUMR_GRID::receiveState( TABLE &gid_ghost, int &ndone, int &todo2,
     /* gid_DELETED_loc */
     ii = gid - proc_gnode[myproc]; assert(ii>=0 && ii < nLocalNd);
     NUMR_NODE *curr = &nodes[ii];
-    if( curr->GetState() == UNKNOWN ) {
+    if (curr->GetState() == UNKNOWN) {
       curr->SetState(DELETED); assert( curr->color() == 0 );
       todo2--;                       assert( todo2 >= 0 );
     }

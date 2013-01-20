@@ -2,7 +2,8 @@
 
 #if 0
 
-void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
+void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim)
+{
   if (3 == meshDim && 4 == numCorners) {
     for(int iCell = 0; iCell < numCells; ++iCell) {
       const int i1 = iCell*numCorners+1;
@@ -50,7 +51,8 @@ void FlipCellOrientation(pylith::int_array * const cells, const int numCells, co
 
 namespace ALE {
   namespace LaGriT {
-    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[]) {
+    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[])
+    {
       PetscViewer    viewer;
       FILE          *f;
       PetscReal     *coords;
@@ -110,7 +112,8 @@ namespace ALE {
       *vertices = verts;
       ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
     };
-    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
+    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0)
+    {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type> sieve = new sieve_type(comm, debug);
@@ -133,11 +136,13 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, false);
       return mesh;
     };
-    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
+    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename)
+    {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
 #if 0
-    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
+    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename)
+    {
       const int      numCells = mesh->heightStratum(0)->size();
       PetscViewer    viewer;
       FILE          *f;

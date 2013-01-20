@@ -5,7 +5,8 @@ static char help[] = "Testing MatCreateMPIAIJWithSplitArrays().\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B;
   PetscInt       i,j,column;
   PetscInt       *di,*dj,*oi,*oj;

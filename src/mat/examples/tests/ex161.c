@@ -5,7 +5,8 @@ static char help[] = "Test MatTransposeColoring for SeqAIJ matrices. Used for '-
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat                   A,R,C,C_dense,C_sparse,Rt_dense,P,PtAP;
   PetscInt              row,col,m,n;
   PetscErrorCode        ierr;

@@ -3,13 +3,15 @@
 
 #include "ex52_gpu.h"
 
-__device__ vecType f1_laplacian(realType u[], vecType gradU[], int comp) {
+__device__ vecType f1_laplacian(realType u[], vecType gradU[], int comp)
+{
   return gradU[comp];
 }
 
 #if (SPATIAL_DIM_0 == 2)
 
-__device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp) {
+__device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp)
+{
   vecType f1;
 
   switch(comp) {
@@ -26,7 +28,8 @@ __device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp) {
 
 #elif (SPATIAL_DIM_0 == 3)
 
-__device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp) {
+__device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp)
+{
   vecType f1;
 
   switch(comp) {
@@ -69,7 +72,8 @@ __device__ vecType f1_elasticity(realType u[], vecType gradU[], int comp) {
 // N_{cb}  Number of serial cell batches:         input
 // N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}
 
-__global__ void integrateElementQuadrature(int N_cb, realType *coefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec) {
+__global__ void integrateElementQuadrature(int N_cb, realType *coefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec)
+{
   #include "ex52_gpu_inline.h"
   const int        dim     = SPATIAL_DIM_0;
   const int        N_b     = numBasisFunctions_0;   // The number of basis functions
@@ -240,7 +244,8 @@ __global__ void integrateElementQuadrature(int N_cb, realType *coefficients, rea
   return;
 }
 
-__global__ void integrateLaplacianJacobianQuadrature() {
+__global__ void integrateLaplacianJacobianQuadrature()
+{
   /* Map coefficients to values at quadrature points */
   /* Process values at quadrature points */
   /* Map values at quadrature points to coefficients */
@@ -286,7 +291,8 @@ EXTERN_C_BEGIN
 */
 PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                        PetscLogEvent event, PetscInt debug) {
+                                        PetscLogEvent event, PetscInt debug)
+{
   #include "ex52_gpu_inline.h"
   const int dim    = SPATIAL_DIM_0;
   const int N_b    = numBasisFunctions_0;   // The number of basis functions
@@ -351,11 +357,11 @@ PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc,
 
   ierr = cudaEventCreate(&start);CHKERRQ(ierr);
   ierr = cudaEventCreate(&stop);CHKERRQ(ierr);
-  //if (debug) {
+  // if (debug) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n",
                        grid.x, grid.y, grid.z, block.x, block.y, block.z, Ncb);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF, " N_t: %d, N_cb: %d\n", N_t, Ncb);
-  //}
+  // }
   ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
   integrateElementQuadrature<<<grid, block>>>(Ncb, d_coefficients, d_jacobianInverses, d_jacobianDeterminants, d_elemVec);
   ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);

@@ -359,7 +359,8 @@ int main(int argc,char *argv[])
 
 # define        M        20
 
-int checktick() {
+int checktick()
+{
   int           i, minDelta, Delta;
   double        t1, t2, timesfound[M];
 
@@ -392,7 +393,8 @@ int checktick() {
 
 #include <sys/time.h>
 
-double mysecond() {
+double mysecond()
+{
   struct timeval tp;
   struct timezone tzp;
   int i=0;
@@ -401,7 +403,8 @@ double mysecond() {
   return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
 
-void checkSTREAMresults () {
+void checkSTREAMresults()
+{
   double aj,bj,cj,scalar;
   double asum,bsum,csum;
   double epsilon;

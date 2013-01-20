@@ -427,7 +427,8 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateHexBoxMesh"
-PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm) {
+PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

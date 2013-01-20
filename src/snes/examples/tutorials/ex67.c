@@ -44,7 +44,8 @@ typedef struct {
   void        (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]); /* The g_3 functions g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
 } AppCtx;
 
-void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
+void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[])
+{
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
 
@@ -55,7 +56,8 @@ void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
    u[Ncomp]          = {p} */
-void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
+void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
+{
   const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp, d;
@@ -70,7 +72,8 @@ void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z} */
-void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
+void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -80,7 +83,8 @@ void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   }
 }
 
-void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
+void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -91,7 +95,8 @@ void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
 
 /* < q, \nabla\cdot v >
    NcompI = 1, NcompJ = dim */
-void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) {
+void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -102,7 +107,8 @@ void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) {
 
 /* -< \nabla\cdot v, p >
     NcompI = dim, NcompJ = 1 */
-void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) {
+void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -113,7 +119,8 @@ void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) {
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
    This just gives \nabla u, give the perdiagonal for the transpose */
-void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
+void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[])
+{
   const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       compI, d;
@@ -280,7 +287,8 @@ PetscErrorCode SetupExactSolution(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateResidualBatchCPU"
-PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscInt field, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscQuadrature quad[], void (*f0_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]), void (*f1_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]), PetscScalar elemVec[], AppCtx *user) {
+PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscInt field, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscQuadrature quad[], void (*f0_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]), void (*f1_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]), PetscScalar elemVec[], AppCtx *user)
+{
   const PetscInt debug   = user->debug;
   const PetscInt dim     = SPATIAL_DIM_0;
   PetscInt       cOffset = 0;

@@ -2,7 +2,8 @@
 
 namespace ALE {
   namespace Bardhan {
-    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[], PetscReal *faceNormals[]) {
+    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[], PetscReal *faceNormals[])
+    {
       PetscViewer    viewer;
       FILE          *f;
       PetscReal     *coords;

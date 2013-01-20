@@ -885,7 +885,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   }
 
   /* Pass null space information to BDDC (don't pass it via MatSetNullSpace!) */
-  if(dd.pure_neumann) {
+  if (dd.pure_neumann) {
     MatNullSpace nsp;
     ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,PETSC_NULL,&nsp);CHKERRQ(ierr);
     ierr = PCBDDCSetNullSpace(pc,nsp);CHKERRQ(ierr);

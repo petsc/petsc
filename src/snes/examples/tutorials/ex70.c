@@ -83,12 +83,14 @@ PetscErrorCode StokesExactSolution(Stokes *s); /* exact solution vector */
 PetscErrorCode StokesWriteSolution(Stokes *s); /* write solution to file */
 
 /* exact solution for the velocity (x-component, y-component is zero) */
-PetscScalar StokesExactVelocityX(const PetscScalar y) {
+PetscScalar StokesExactVelocityX(const PetscScalar y)
+{
   return 4.0*y*(1.0-y);
 }
 
 /* exact solution for the pressure */
-PetscScalar StokesExactPressure(const PetscScalar x) {
+PetscScalar StokesExactPressure(const PetscScalar x)
+{
   return 8.0*(2.0-x);
 }
 
@@ -680,7 +682,8 @@ PetscErrorCode StokesCalcError(Stokes *s)
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Stokes         s;
   KSP            ksp;
   PetscErrorCode ierr;

@@ -20,30 +20,38 @@ typedef struct {
   PetscInt      order;             /* Order of polynomials to test */
 } AppCtx;
 
-PetscScalar constant(const PetscReal coords[]) {
+PetscScalar constant(const PetscReal coords[])
+{
   return 1.0;
 }
 
-PetscScalar linear_x(const PetscReal coords[]) {
+PetscScalar linear_x(const PetscReal coords[])
+{
   return coords[0];
 }
-PetscScalar linear_y(const PetscReal coords[]) {
+PetscScalar linear_y(const PetscReal coords[])
+{
   return coords[1];
 }
-PetscScalar linear_z(const PetscReal coords[]) {
+PetscScalar linear_z(const PetscReal coords[])
+{
   return coords[2];
 }
 
-PetscScalar quadratic_xx(const PetscReal coords[]) {
+PetscScalar quadratic_xx(const PetscReal coords[])
+{
   return coords[0]*coords[0];
 }
-PetscScalar quadratic_xy(const PetscReal coords[]) {
+PetscScalar quadratic_xy(const PetscReal coords[])
+{
   return coords[0]*coords[1];
 }
-PetscScalar quadratic_yz(const PetscReal coords[]) {
+PetscScalar quadratic_yz(const PetscReal coords[])
+{
   return coords[1]*coords[2];
 }
-PetscScalar quadratic_zx(const PetscReal coords[]) {
+PetscScalar quadratic_zx(const PetscReal coords[])
+{
   return coords[2]*coords[0];
 }
 

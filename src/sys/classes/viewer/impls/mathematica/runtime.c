@@ -6,7 +6,8 @@ typedef enum {MATHEMATICA_LINK_CREATE, MATHEMATICA_LINK_CONNECT, MATHEMATICA_LIN
 
 #undef __FUNCT__
 #define __FUNCT__ "setupConnection"
-static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode) {
+static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode)
+{
   int   argc = 5;
   char *argv[5];
   char  hostname[256];
@@ -49,7 +50,8 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
 
 #undef __FUNCT__
 #define __FUNCT__ "printIndent"
-static int printIndent(int indent) {
+static int printIndent(int indent)
+{
   int i;
 
   PetscFunctionBegin;
@@ -59,7 +61,8 @@ static int printIndent(int indent) {
 
 #undef __FUNCT__
 #define __FUNCT__ "processPacket"
-static int processPacket(MLINK link, int indent) {
+static int processPacket(MLINK link, int indent)
+{
   static int isHead    = 0;
   int        tokenType = MLGetNext(link);
   int        ierr;
@@ -136,7 +139,8 @@ static int processPacket(MLINK link, int indent) {
 
 #undef __FUNCT__
 #define __FUNCT__ "processPackets"
-static int processPackets(MLINK link) {
+static int processPackets(MLINK link)
+{
   int packetType;
   int loop   = 1;
   int errors = 0;
@@ -230,7 +234,8 @@ static int processPackets(MLINK link) {
 
 #undef __FUNCT__
 #define __FUNCT__ "cleanupConnection"
-static int cleanupConnection(MLENV env, MLINK link) {
+static int cleanupConnection(MLENV env, MLINK link)
+{
   PetscFunctionBegin;
   MLClose(link);
   MLDeinitialize(env);
@@ -239,7 +244,8 @@ static int cleanupConnection(MLENV env, MLINK link) {
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MLENV env;
   MLINK link;
   int   ierr;

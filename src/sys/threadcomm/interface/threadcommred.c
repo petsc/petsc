@@ -36,8 +36,8 @@ PetscErrorCode PetscThreadReductionBegin(MPI_Comm comm,PetscThreadCommReductionO
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   red = tcomm->red;
-  if(red->ctr+nreds > PETSC_REDUCTIONS_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reductions in operation: %D Max. allowed: %D",red->ctr+nreds,PETSC_REDUCTIONS_MAX);
-  for(i=red->ctr;i<red->ctr+nreds;i++) {
+  if (red->ctr+nreds > PETSC_REDUCTIONS_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reductions in operation: %D Max. allowed: %D",red->ctr+nreds,PETSC_REDUCTIONS_MAX);
+  for (i=red->ctr;i<red->ctr+nreds;i++) {
     redctx = &red->redctx[i];
     redctx->op = op;
     redctx->type = type;
@@ -383,7 +383,7 @@ PetscErrorCode PetscThreadReductionEnd(PetscThreadCommReduction red,void *outdat
   ierr = PetscThreadReductionEnd_Private(redctx,outdata);CHKERRQ(ierr);
   redctx->red_status = THREADCOMM_REDUCTION_COMPLETE;
   red->nreds--;
-  if(!red->nreds) {
+  if (!red->nreds) {
     /* Reset the counters */
     red->ctr=0;
     for(i=0;i<redctx->tcomm->nworkThreads;i++) red->thread_ctr[i] = 0;

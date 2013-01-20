@@ -30,7 +30,8 @@ T*/
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **args) {
+int main(int argc,char **args)
+{
   PetscShell         field, viz;
   PetscInt           numIter = 10, i;
   PetscObject        mesh, rho;

@@ -5,12 +5,14 @@
 
 #if (SPATIAL_DIM_0 == 2)
 
-__device__ vecType f1_laplacian_coef(realType u[], vecType gradU[], realType kappa, int comp) {
+__device__ vecType f1_laplacian_coef(realType u[], vecType gradU[], realType kappa, int comp)
+{
   vecType l = {kappa*gradU[comp].x, kappa*gradU[comp].y};
   return l;
 }
 
-__device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], realType kappa, int comp) {
+__device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], realType kappa, int comp)
+{
   vecType f1;
 
   switch(comp) {
@@ -27,12 +29,14 @@ __device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], realType ka
 
 #elif (SPATIAL_DIM_0 == 3)
 
-__device__ vecType f1_laplacian_coef(realType u[], vecType gradU[], realType kappa, int comp) {
+__device__ vecType f1_laplacian_coef(realType u[], vecType gradU[], realType kappa, int comp)
+{
   vecType l = {kappa*gradU[comp].x, kappa*gradU[comp].y, kappa*gradU[comp].z};
   return l;
 }
 
-__device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], int comp) {
+__device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], int comp)
+{
   vecType f1;
 
   switch(comp) {
@@ -75,7 +79,8 @@ __device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], int comp) {
 // N_{cb}  Number of serial cell batches:         input
 // N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}
 
-__global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients, realType *physCoefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec) {
+__global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients, realType *physCoefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec)
+{
   #include "ex52_gpu_inline.h"
   const int        dim     = SPATIAL_DIM_0;
   const int        N_b     = numBasisFunctions_0;   // The number of basis functions
@@ -291,7 +296,8 @@ EXTERN_C_BEGIN
 */
 PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscScalar physCoefficients[],
                                             const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                            PetscLogEvent event, PetscInt debug) {
+                                            PetscLogEvent event, PetscInt debug)
+{
   #include "ex52_gpu_inline.h"
   const int dim    = SPATIAL_DIM_0;
   const int N_b    = numBasisFunctions_0;   // The number of basis functions
@@ -361,11 +367,11 @@ PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt 
 
   ierr = cudaEventCreate(&start);CHKERRQ(ierr);
   ierr = cudaEventCreate(&stop);CHKERRQ(ierr);
-  //if (debug) {
+  // if (debug) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n",
                        grid.x, grid.y, grid.z, block.x, block.y, block.z, Ncb);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF, " N_t: %d, N_cb: %d\n", N_t, Ncb);
-  //}
+  // }
   ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
   integrateElementCoefQuadrature<<<grid, block>>>(Ncb, d_coefficients, d_physCoefficients, d_jacobianInverses, d_jacobianDeterminants, d_elemVec);
   ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);

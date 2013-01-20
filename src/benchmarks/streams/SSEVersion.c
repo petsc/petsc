@@ -274,7 +274,8 @@ int main(int argc,char *argv[])
   return 0;
 }
 
-static double Second() {
+static double Second()
+{
   double t;
   PetscTime(t);
   return t;

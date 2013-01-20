@@ -49,7 +49,8 @@ extern "C" {
 /*
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
-int MPIUNI_Memcpy(void *a,const void* b,int n) {
+int MPIUNI_Memcpy(void *a,const void* b,int n)
+{
   int  i;
   char *aa= (char*)a;
   char *bb= (char*)b;

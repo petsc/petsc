@@ -529,7 +529,7 @@ int Update(SNES snes,void *ctx)
   ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
- /*if (!user->PreLoading) {
+ /* if (!user->PreLoading) {
   PetscBool  flg = PETSC_FALSE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
@@ -598,7 +598,7 @@ int Update(SNES snes,void *ctx)
   int eve0,eve1;
   FILE *cfp0,*cfp1;
   char str[256];
-  /*if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
+  /* if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
    SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter\n");
   ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
   if (gen_read != gen_start) {
@@ -655,7 +655,7 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
      tsCtx->cfl = PetscMin(newcfl,tsCtx->cfl_max);
   }
 
-  /*if (iramp < 0) {
+  /* if (iramp < 0) {
    newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/tsCtx->fnorm;
   } else {
    if (tsCtx->dt < 0 && iramp > 0)
@@ -916,7 +916,7 @@ int GetLocalOrdering(GRID *grid)
     grid->eptr[i] = node1;
     grid->eptr[nedgeLoc+i] = node2;
 #endif
-    /*if (node1 > node2)
+    /* if (node1 > node2)
      printf("On processor %d, for edge %d node1 = %d, node2 = %d\n",
             rank,i,node1,node2);CHKERRQ(ierr);*/
     if ((node1 <= cross_node) && (node2 > cross_node)) {
@@ -1503,10 +1503,10 @@ int GetLocalOrdering(GRID *grid)
    grid->f2ntv[nvfacetLoc+i] = tmp[j++] + 1;
    grid->f2ntv[2*nvfacetLoc+i] = tmp[j++] + 1;
   }
- ierr = PetscFree(tmp);CHKERRQ(ierr);
- ierr = PetscFree(tmp1);CHKERRQ(ierr);
- ierr = PetscFree(tmp2);CHKERRQ(ierr);
- ierr = PetscFree(ftmp);CHKERRQ(ierr);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  ierr = PetscFree(tmp1);CHKERRQ(ierr);
+  ierr = PetscFree(tmp2);CHKERRQ(ierr);
+  ierr = PetscFree(ftmp);CHKERRQ(ierr);
 
 /* Now identify the triangles on which the current proceesor
    would perform force calculation */
@@ -1935,7 +1935,8 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscFunctionReturn(0);
 }
 
-static void SortInt2(PetscInt *a,PetscInt *b) {
+static void SortInt2(PetscInt *a,PetscInt *b)
+{
   if (*b < *a) {
     PetscInt c = *b;
     *b = *a;
@@ -1946,7 +1947,8 @@ static void SortInt2(PetscInt *a,PetscInt *b) {
 #undef __FUNCT__
 #define __FUNCT__ "IntersectInt"
 /* b = intersection(a,b) */
-static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,PetscInt *b) {
+static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,PetscInt *b)
+{
   PetscInt i,n,j;
 
   PetscFunctionBegin;
@@ -2678,7 +2680,7 @@ int set_up_grid(GRID *grid)
    jalloc = 0;
    kvisc  = grid->jvisc;*/
 
-   /*if (ilu0 >=1 && ifcn == 1) jalloc=0;*/
+   /* if (ilu0 >=1 && ifcn == 1) jalloc=0;*/
 
 /*
  * stuff to read in dave's grids
@@ -2693,7 +2695,7 @@ int set_up_grid(GRID *grid)
 /* end of stuff */
 
 
-   /*if (ileast == 0) lnodes = 1;
+   /* if (ileast == 0) lnodes = 1;
      printf("In set_up_grid->jvisc = %d\n",grid->jvisc);
 
    if (grid->jvisc != 2 && grid->jvisc != 4 && grid->jvisc != 6)vface = 1;

@@ -1855,7 +1855,8 @@ PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, Pe
 .keywords: mesh
 .seealso: DMMeshGetStratumSize()
 @*/
-PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *is) {
+PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *is)
+{
   DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
@@ -3625,7 +3626,8 @@ PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpola
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshMarkBoundaryCells"
-PetscErrorCode DMMeshMarkBoundaryCells(DM dm, const char labelName[], PetscInt marker, PetscInt newMarker) {
+PetscErrorCode DMMeshMarkBoundaryCells(DM dm, const char labelName[], PetscInt marker, PetscInt newMarker)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 
@@ -3746,7 +3748,8 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateSection"
-PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
+PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section)
+{
   PetscInt      *numDofTot, *maxConstraints;
   PetscInt       pStart = 0, pEnd = 0;
   PetscErrorCode ierr;
@@ -3899,7 +3902,8 @@ PetscErrorCode DMMeshConvertSection(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetSection"
-PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section) {
+PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 
@@ -3911,7 +3915,8 @@ PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshSetSection"
-PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) {
+PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 
@@ -4058,7 +4063,8 @@ PetscErrorCode DMMeshGetConeSection(DM dm, PetscSection *section)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetCones"
-PetscErrorCode DMMeshGetCones(DM dm, PetscInt *cones[]) {
+PetscErrorCode DMMeshGetCones(DM dm, PetscInt *cones[])
+{
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
 
   PetscFunctionBegin;
@@ -4127,7 +4133,8 @@ PetscErrorCode DMMeshComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshVecGetClosure"
-PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[]) {
+PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[])
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 
@@ -4169,7 +4176,8 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshVecRestoreClosure"
-PetscErrorCode DMMeshVecRestoreClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[]) {
+PetscErrorCode DMMeshVecRestoreClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[])
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4179,7 +4187,8 @@ PetscErrorCode DMMeshVecRestoreClosure(DM dm, Vec v, PetscInt point, const Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshVecSetClosure"
-PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 
@@ -4219,7 +4228,8 @@ PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshMatSetClosure"
-PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar values[], InsertMode mode) {
+PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar values[], InsertMode mode)
+{
   ALE::Obj<PETSC_MESH_TYPE> mesh;
   PetscErrorCode ierr;
 

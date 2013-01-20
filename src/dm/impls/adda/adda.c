@@ -187,7 +187,8 @@ PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 
   Level: developer
 @*/
-PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
+PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx)
+{
   PetscErrorCode ierr;
   PetscInt i;
 
@@ -228,11 +229,12 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
 
   Level: developer
 @*/
-PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
+PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx)
+{
   PetscInt i;
   for (i=dim-1; i>=0; i--) {
     idx[i] += 1;
-    if( uc[i] > idx[i] ) {
+    if (uc[i] > idx[i]) {
       return PETSC_TRUE;
     } else {
       idx[i] -= uc[i] - lc[i];

@@ -888,19 +888,19 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
         ierr = DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek);CHKERRQ(ierr);
 
         for (n=0; n<NODES_PER_EL; n++) {
-          if ( (u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1) ) {
+          if ( (u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1)) {
             _ZERO_ROWCOL_i(Ae,3*n);
             _ZERO_ROW_i   (Ge,3*n);
             _ZERO_COL_i   (De,3*n);
           }
 
-          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1) ) {
+          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+1);
             _ZERO_ROW_i   (Ge,3*n+1);
             _ZERO_COL_i   (De,3*n+1);
           }
 
-          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1) ) {
+          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+2);
             _ZERO_ROW_i   (Ge,3*n+2);
             _ZERO_COL_i   (De,3*n+2);
@@ -978,19 +978,19 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
         ierr = DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek);CHKERRQ(ierr);
 
         for (n=0; n<NODES_PER_EL; n++) {
-          if ( (u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1) ) {
+          if ( (u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1)) {
             _ZERO_ROWCOL_i(Ae,3*n);
             _ZERO_ROW_i   (Ge,3*n);
             _ZERO_COL_i   (De,3*n);
           }
 
-          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1) ) {
+          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+1);
             _ZERO_ROW_i   (Ge,3*n+1);
             _ZERO_COL_i   (De,3*n+1);
           }
 
-          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1) ) {
+          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+2);
             _ZERO_ROW_i   (Ge,3*n+2);
             _ZERO_COL_i   (De,3*n+2);
@@ -1070,15 +1070,15 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
         ierr = DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek);CHKERRQ(ierr);
 
         for (n=0; n<NODES_PER_EL; n++) {
-          if ( (u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1) ) {
+          if ( (u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1)) {
             Fe[3*n  ] = 0.0;
           }
 
-          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1) ) {
+          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
             Fe[3*n+1] = 0.0;
           }
 
-          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1) ) {
+          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
             Fe[3*n+2] = 0.0;
           }
         }
@@ -1975,7 +1975,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 
             if ( (fabs(xp-0.5) < 0.2) &&
                  (fabs(yp-0.5) < 0.2) &&
-                 (fabs(zp-0.5) < 0.2) ) {
+                 (fabs(zp-0.5) < 0.2)) {
               cell->eta[p] = 1.0;
               cell->fz[p]  = 1.0;
             }

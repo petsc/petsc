@@ -6,7 +6,8 @@ extern PetscErrorCode testPTAPRectangular(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B,C,D;
   PetscScalar    a[]={1.,1.,0.,0.,1.,1.,0.,0.,1.};
   PetscInt       ij[]={0,1,2};

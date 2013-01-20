@@ -163,7 +163,8 @@ PetscErrorCode testBiGraphDiv2()
 
 #undef  __FUNCT__
 #define __FUNCT__ "viewConesAndSupports"
-void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name) {
+void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name)
+{
 
   // View the cones for all base points
   std::cout << name << " cones:" << std::endl;

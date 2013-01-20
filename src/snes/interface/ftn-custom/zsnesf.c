@@ -348,8 +348,9 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
   }
 }
 
-void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr) {
-*__ierr = SNESGetSNESLineSearch(*snes, linesearch);
+void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr)
+{
+  *__ierr = SNESGetSNESLineSearch(*snes, linesearch);
 }
 
 EXTERN_C_END

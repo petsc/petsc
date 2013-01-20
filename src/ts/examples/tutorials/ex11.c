@@ -188,7 +188,8 @@ static PetscReal Limit_None(PetscReal f) { return 1; }
 static PetscReal Limit_Minmod(PetscReal f) { return PetscMax(0,PetscMin(f,(1-f))*2); }
 static PetscReal Limit_VanLeer(PetscReal f) { return PetscMax(0,4*f*(1-f)); }
 static PetscReal Limit_VanAlbada(PetscReal f) { return PetscMax(0,2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f))); }
-static PetscReal Limit_Sin(PetscReal f) {
+static PetscReal Limit_Sin(PetscReal f)
+{
   PetscReal fclip = PetscMax(0,PetscMin(f,1));
   return PetscSinReal(PETSC_PI*fclip);
 }

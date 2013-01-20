@@ -533,7 +533,8 @@ PetscErrorCode DMPlexGetStratumSize(DM dm, const char name[], PetscInt value, Pe
 .keywords: mesh
 .seealso: DMLabelGetStratumIS(), DMPlexGetStratumSize()
 @*/
-PetscErrorCode DMPlexGetStratumIS(DM dm, const char name[], PetscInt value, IS *points) {
+PetscErrorCode DMPlexGetStratumIS(DM dm, const char name[], PetscInt value, IS *points)
+{
   DMLabel        label;
   PetscErrorCode ierr;
 

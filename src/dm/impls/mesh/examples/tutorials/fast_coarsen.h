@@ -23,12 +23,14 @@ namespace ALE { namespace Coarsener {
     int edgePoints;
   } coarsen_stats;
 
-  void coarsen_CollectStats(bool stats, bool display) {
+  void coarsen_CollectStats(bool stats, bool display)
+  {
     coarsen_stats.computeStats = stats;
     coarsen_stats.displayStats = display;
   }
 
-  void coarsen_DisplayStats() {
+  void coarsen_DisplayStats()
+  {
       printf("Data for: %d levels at %f coarsening factor\n", coarsen_stats.nMeshes, coarsen_stats.beta);
       printf("|Level          |Nodes          |Faces          |Regions        |Point Comp     |Reg Comp       |Max Ang. (rad) |Min Ang. (rad) |\n");
     for (int i = 0; i <= coarsen_stats.nMeshes; i++) {
@@ -50,7 +52,8 @@ namespace ALE { namespace Coarsener {
   double * ComputeAngles(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type);
   bool isOverlap(mis_node *, mis_node *, int, double);
   bool CompatibleWithEdge(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type, ALE::Mesh::point_type, ALE::Mesh::point_type, double);
-  PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41) {
+  PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41)
+  {
     coarsen_CollectStats(1, 1);
     PetscFunctionBegin;
     if (coarsen_stats.computeStats) {
@@ -248,8 +251,8 @@ namespace ALE { namespace Coarsener {
           } else { //for non-leafs we compare the children using the same heuristic, namely if there could be any possible collision between the two.
             std::list<mis_node *>::iterator child_iter = trav_node->subspaces.begin();
             std::list<mis_node *>::iterator child_iter_end = trav_node->subspaces.end();
-            while(child_iter != child_iter_end) {
-              if(isOverlap(*child_iter, *leaf_iter, dim, pBeta)) mis_travQueue.push_front(*child_iter);
+            while (child_iter != child_iter_end) {
+              if (isOverlap(*child_iter, *leaf_iter, dim, pBeta)) mis_travQueue.push_front(*child_iter);
               child_iter++;
             }
           } //end what to do for non-leafs
@@ -530,7 +533,8 @@ namespace ALE { namespace Coarsener {
   }  //end of CreateCoarsenedHierarchy
 
 
-/*  bool isOverlap(mis_node * a, mis_node * b, int dim) { //see if any two balls in the two sections could overlap at all.
+/*  bool isOverlap(mis_node * a, mis_node * b, int dim) //see if any two balls in the two sections could overlap at all.
+    {
     int sharedDim = 0;
     for (int i = 0; i < dim; i++) {
       if((a->boundaries[2*i] - a->maxSpacing <= b->boundaries[2*i+1] + b->maxSpacing) && (b->boundaries[2*i] - b->maxSpacing <= a->boundaries[2*i+1] + a->maxSpacing)) sharedDim++;
@@ -538,7 +542,8 @@ namespace ALE { namespace Coarsener {
     if (sharedDim == dim) {return true;
     } else return false;
 }*/
-  bool IsPointInElement (Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::real_section_type::patch_type cPatch, ALE::Mesh::point_type triangle, ALE::Mesh::point_type node) {
+  bool IsPointInElement (Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::real_section_type::patch_type cPatch, ALE::Mesh::point_type triangle, ALE::Mesh::point_type node)
+  {
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
     double v_coords[dim];
@@ -578,7 +583,8 @@ namespace ALE { namespace Coarsener {
     if (t_area - area  > 0.00001*area) return false;
     return true;
   }
-  bool CompatibleWithEdge(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type ePatch, ALE::Mesh::point_type edge, ALE::Mesh::point_type point, double region) {
+  bool CompatibleWithEdge(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type ePatch, ALE::Mesh::point_type edge, ALE::Mesh::point_type point, double region)
+  {
     //If the point is within the region-sized area around the edge, then return false.
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
@@ -615,7 +621,8 @@ namespace ALE { namespace Coarsener {
     if (res_len < region*region) return false; //it's in the region surrounding the edge.
     return true;
   }
-  double * ComputeAngles(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type patch) {
+  double * ComputeAngles(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type patch)
+  {
     //return the minimum and maximum angles for the given patch.
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");

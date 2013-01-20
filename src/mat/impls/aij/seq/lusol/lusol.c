@@ -23,14 +23,17 @@ EXTERN_C_BEGIN
 /*
     Dummy symbols that the MINOS files mi25bfac.f and mi15blas.f may require
 */
-void PETSC_STDCALL M1PAGE() {
+void PETSC_STDCALL M1PAGE()
+{
   ;
 }
-void PETSC_STDCALL M5SETX() {
+void PETSC_STDCALL M5SETX()
+{
   ;
 }
 
-void PETSC_STDCALL M6RDEL() {
+void PETSC_STDCALL M6RDEL()
+{
   ;
 }
 

@@ -23,8 +23,8 @@ typedef struct{
   PetscScalar muy;    /* Average speed */
   PetscScalar sigmay; /* standard deviation of initial speed */
   PetscScalar rho;    /* Cross-correlation coefficient */
-  PetscScalar   t0;     /* Initial time */
-  PetscScalar   tmax;   /* Final time */
+  PetscScalar t0;     /* Initial time */
+  PetscScalar tmax;   /* Final time */
   PetscScalar xmin;   /* left boundary of angle */
   PetscScalar xmax;   /* right boundary of angle */
   PetscScalar ymin;   /* bottom boundary of speed */
@@ -120,7 +120,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   for(i=xs; i < xs+xm; i++) {
     for(j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
-      if(i == 0 || j == 0 || i == M-1 || j == N-1) {
+      if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         p[j][i] = 0.0;
       } else {
         p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
@@ -139,7 +139,7 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
 {
   /*  PetscScalar v1,v2,v3,v4,v5,s1,s2,s3; */
   PetscFunctionBegin;
-  /*  if(i > 2 && i < M-2) {
+  /*  if (i > 2 && i < M-2) {
     v1 = user->ws*(y-1.0)*(p[j][i-2] - p[j][i-3])/user->dx;
     v2 = user->ws*(y-1.0)*(p[j][i-1] - p[j][i-2])/user->dx;
     v3 = user->ws*(y-1.0)*(p[j][i] - p[j][i-1])/user->dx;
@@ -163,7 +163,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 {
   /*  PetscScalar v1,v2,v3,v4,v5,s1,s2,s3; */
   PetscFunctionBegin;
-  /*  if(j > 2 && j < N-2) {
+  /*  if (j > 2 && j < N-2) {
     v1 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j-2][i] - p[j-3][i])/user->dy;
     v2 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j-1][i] - p[j-2][i])/user->dy;
     v3 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j][i] - p[j-1][i])/user->dy;
@@ -224,13 +224,13 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void* ctx)
 
   for(i=xs; i < xs+xm; i++) {
     for(j=ys; j < ys+ym; j++) {
-      if(i == 0 || j == 0 || i == M-1 || j == N-1) {
+      if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         f[j][i] = p[j][i];
       } else {
         ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
         ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
         ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);
-        if(p_adv1!=0 || p_adv2!=0 || p_diff!=0.0) {
+        if (p_adv1!=0 || p_adv2!=0 || p_diff!=0.0) {
           p_diff = p_diff;
         }
         f[j][i] = -p_adv1 - p_adv2 + p_diff;
@@ -273,7 +273,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *Jpre,MatStructure
       xi = coors[j][i].x; yi = coors[j][i].y;
       PetscInt nc = 0;
       row.i = i; row.j = j;
-      if(i == 0 || j == 0 || i == M-1 || j == N-1) {
+      if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
       } else {
         c1 = user->ws*(yi-1.0)/(2*user->dx);

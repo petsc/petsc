@@ -3,7 +3,8 @@ static const char help[] = "Tests PetscShell usage\n";
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestACall"
-PetscErrorCode  TestACall(PetscShell component, const char* message) {
+PetscErrorCode  TestACall(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -13,7 +14,8 @@ PetscErrorCode  TestACall(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestBInitialize"
-PetscErrorCode  TestBInitialize(PetscShell component, const char* message) {
+PetscErrorCode  TestBInitialize(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -23,7 +25,8 @@ PetscErrorCode  TestBInitialize(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestBCall"
-PetscErrorCode  TestBCall(PetscShell component, const char* message) {
+PetscErrorCode  TestBCall(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -33,7 +36,8 @@ PetscErrorCode  TestBCall(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestCInitialize"
-PetscErrorCode  TestCInitialize(PetscShell component, const char* message) {
+PetscErrorCode  TestCInitialize(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -43,7 +47,8 @@ PetscErrorCode  TestCInitialize(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestCCall"
-PetscErrorCode  TestCCall(PetscShell component, const char* message) {
+PetscErrorCode  TestCCall(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -53,7 +58,8 @@ PetscErrorCode  TestCCall(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "main"
-PetscErrorCode main(int argc, char *argv[]) {
+PetscErrorCode main(int argc, char *argv[])
+{
   PetscShell       shell, a = PETSC_NULL, b = PETSC_NULL;
   const char    *conf;
   PetscErrorCode ierr;

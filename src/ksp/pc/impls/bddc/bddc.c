@@ -3944,7 +3944,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       for (i=0;i<pcis->n;i++) {
-        if( array[i] > 0.0) {
+        if (array[i] > 0.0) {
           array[i] = 1.0/array[i];
         }
       }
@@ -4308,7 +4308,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
 
           IS coarse_IS;
 
-          if(pcbddc->coarsening_ratio == 1) {
+          if (pcbddc->coarsening_ratio == 1) {
             ins_local_primal_size = pcbddc->local_primal_size;
             ins_local_primal_indices = pcbddc->local_primal_indices;
             if (coarse_color == 0) { ierr = PetscFree(ranks_recv);CHKERRQ(ierr); }
@@ -4386,7 +4386,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
             j = 0;
             for(i=0;i<pcbddc->coarse_size;i++) {
-              if(aux_ins_indices[i]) {
+              if (aux_ins_indices[i]) {
                 ins_local_primal_indices[j] = i;
                 j++;
               }
@@ -4406,7 +4406,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             /* use aux_ins_indices to realize a global to local mapping */
             j=0;
             for(i=0;i<pcbddc->coarse_size;i++) {
-              if(aux_ins_indices[i]==0) {
+              if (aux_ins_indices[i]==0) {
                 aux_ins_indices[i]=-1;
               } else {
                 aux_ins_indices[i]=j;

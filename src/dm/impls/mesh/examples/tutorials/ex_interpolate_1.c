@@ -14,7 +14,8 @@ using namespace ALE;
 
 #undef __FUNCT__
 #define __FUNCT__ "getPointInterpolation"
-void getPointInterpolation(Mat A, ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double * point) {
+void getPointInterpolation(Mat A, ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double * point)
+{
   const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
   int dim = coordinates->getFiberDimension(0, *mesh->getTopology()->depthStratum(0, 0)->begin());
   double v0[dim], J[dim*dim], invJ[dim*dim], detJ;
@@ -36,7 +37,8 @@ void getPointInterpolation(Mat A, ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_typ
 #undef __FUNCT__
 #define __FUNCT__ "getInterpolation"
 
-PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_coarse, Mat A) {
+PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_coarse, Mat A)
+{
 /*
  2) For each fine vertex:
     a) Find the coarse triangle it is in (traversal)
@@ -107,7 +109,8 @@ PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_co
   }
 }
 
-void forcedP1_phi(double * w, int dim, double * v) { //assume that v is within the reference element and we want to get the coefficients for it.
+void forcedP1_phi(double * w, int dim, double * v) //assume that v is within the reference element and we want to get the coefficients for it.
+{
   if (dim == 2) {
     w[1] = 0.5*(v[0] + 1);
     w[2] = 0.5*(v[1] + 1);
@@ -123,7 +126,8 @@ void forcedP1_phi(double * w, int dim, double * v) { //assume that v is within t
 
 static char help[] = "tests getInterpolation\n\n";
 
-int main(int argc, char * argv[]) {
+int main(int argc, char * argv[])
+{
   int dim = 2;
   double c[4][2];
   c[0][0] = -2.0; c[0][1] = 0.0;

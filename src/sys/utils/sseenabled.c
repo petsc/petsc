@@ -47,7 +47,8 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
 
-static void PetscSSEDisabledHandler(int sig) {
+static void PetscSSEDisabledHandler(int sig)
+{
   signal(SIGILL,SIG_IGN);
   exit(-1);
 }

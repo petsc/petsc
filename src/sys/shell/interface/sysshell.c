@@ -154,7 +154,8 @@ PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellGraphAddEdge"
-PetscErrorCode PetscShellGraphAddEdge(PetscShellGraph graph, PetscInt row, PetscInt col) {
+PetscErrorCode PetscShellGraphAddEdge(PetscShellGraph graph, PetscInt row, PetscInt col)
+{
   PetscErrorCode        ierr;
   PetscInt              *rp,low,high,t,ii,i;
   PetscFunctionBegin;
@@ -201,7 +202,8 @@ PetscErrorCode PetscShellGraphAddEdge(PetscShellGraph graph, PetscInt row, Petsc
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellGraphTopologicalSort"
-PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n, PetscInt **queue) {
+PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n, PetscInt **queue)
+{
   PetscBool  *queued;
   PetscInt   *indegree;
   PetscInt ii, k, jj, Nqueued = 0;
@@ -315,7 +317,8 @@ static PetscDLLibrary PetscShellDLLibrariesLoaded = 0;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellCall_SO"
-PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char* name, const char* message) {
+PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char* name, const char* message)
+{
   size_t    namelen, messagelen, msgfunclen, callfunclen;
   char *msgfunc  = PETSC_NULL, *callfunc = PETSC_NULL;
   PetscShellCallFunction call = PETSC_NULL;
@@ -405,7 +408,8 @@ PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message)
 
 .seealso: PetscShellSetURL(), PetscShellGetURL(), PetscObjectCompose(), PetscObjectQuery()
 @*/
-PetscErrorCode PetscShellCall(PetscShell shell, const char* message) {
+PetscErrorCode PetscShellCall(PetscShell shell, const char* message)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
@@ -508,7 +512,8 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellClearURL_Private"
-PetscErrorCode  PetscShellClearURL_Private(PetscShell shell) {
+PetscErrorCode  PetscShellClearURL_Private(PetscShell shell)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   switch(shell->vtable_type) {
@@ -565,7 +570,8 @@ PetscErrorCode  PetscShellClearURL_Private(PetscShell shell) {
 
 .seealso: PetscShellGetURL(), PetscObjectCompose(), PetscObjectQuery(), PetscObjectComposeFunction(), PetscShellCall()
 @*/
-PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[]) {
+PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[])
+{
   PetscErrorCode ierr;
   char *path, *name;
   PetscFunctionBegin;
@@ -614,7 +620,8 @@ PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[]) {
 
 .seealso: PetscShellSetURL(), PetscShellCall()
 @*/
-PetscErrorCode  PetscShellGetURL(PetscShell shell, const char **url) {
+PetscErrorCode  PetscShellGetURL(PetscShell shell, const char **url)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidPointer(url,2);
@@ -626,7 +633,8 @@ PetscErrorCode  PetscShellGetURL(PetscShell shell, const char **url) {
 /* ------------------------------------------------------------------------------------------------------- */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellView_Private"
-PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscInt rank, PetscViewer viewer) {
+PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscInt rank, PetscViewer viewer)
+{
   PetscInt *vertices, N;
   PetscInt i, id;
   PetscBool         iascii;
@@ -682,7 +690,8 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
 
 .seealso: PetscShellSetURL(), PetscShellRegisterComponet(), PetscShellRegisterComponentURL(), PetscShellRegisterDependence()
 @*/
-PetscErrorCode PetscShellView(PetscShell shell,  PetscViewer viewer) {
+PetscErrorCode PetscShellView(PetscShell shell,  PetscViewer viewer)
+{
   PetscErrorCode    ierr;
   PetscFunctionBegin;
   ierr = PetscShellView_Private(shell, 0,-1, viewer);CHKERRQ(ierr);
@@ -788,7 +797,8 @@ PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], P
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellRegisterKey_Private"
-PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[], PetscShell component, PetscInt *_id) {
+PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[], PetscShell component, PetscInt *_id)
+{
   PetscInt v, id = 0;
   PetscBool  found;
   PetscErrorCode ierr;
@@ -1057,7 +1067,8 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
 
 .seealso: PetscShellRegisterComponentShell(), PetscShellRegisterComponentURL(), PetscShellRegisterDependence()
 @*/
-PetscErrorCode  PetscShellGetComponent(PetscShell shell, const char key[], PetscShell *component, PetscBool  *found) {
+PetscErrorCode  PetscShellGetComponent(PetscShell shell, const char key[], PetscShell *component, PetscBool  *found)
+{
   PetscInt id = 0;
   PetscErrorCode ierr;
   PetscBool found_;
@@ -1108,7 +1119,8 @@ static PetscMPIInt Petsc_Shell_default_keyval = MPI_KEYVAL_INVALID;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PETSC_SHELL_DEFAULT_"
-PetscShell  PETSC_SHELL_DEFAULT_(MPI_Comm comm) {
+PetscShell  PETSC_SHELL_DEFAULT_(MPI_Comm comm)
+{
   PetscErrorCode ierr;
   PetscBool      flg;
   PetscShell     shell;

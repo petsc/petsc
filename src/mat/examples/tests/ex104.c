@@ -8,7 +8,8 @@ static char help[] = "Test MatMatMult(), MatTranspose(), MatTransposeMatMult() f
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B,C,D;
   PetscInt       i,M=10,N=5,j,nrows,ncols;
   PetscErrorCode ierr;

@@ -527,13 +527,13 @@ int Update(SNES snes, void *ctx)
  ierr = VecCopy(grid->qnode, tsCtx->qold);CHKERRQ(ierr);
  ierr = PetscGetTime(&time1);
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
- /*if (!PreLoadFlag) {
+ /* if (!PreLoadFlag) {
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
   if ((gen_start = start_counters(event0,event1)) < 0)
    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Error in start_counters\n");
- }*/
+ } */
 #endif
  /*cpu_ini = PetscGetCPUTime();*/
  for (i = 0; ((i < max_steps) && ((!Converged) || (!SecondOrder)));
@@ -555,10 +555,10 @@ int Update(SNES snes, void *ctx)
    tsCtx->cfl = tsCtx->cfl_ini;
    fratio = 1.0;
    /* Write Tecplot solution file */
-   /*if (print_flag) {
+   /* if (print_flag) {
     FieldOutput(grid, i);
     WriteRestartFile(grid,i);
-   }*/
+   } */
   }
   ierr = ComputeTimeStep(snes,i,user);CHKERRQ(ierr);
   if (cfl_damp_flag) {
@@ -646,7 +646,7 @@ int Update(SNES snes, void *ctx)
   int eve0, eve1;
   FILE *cfp0, *cfp1;
   char str[256];
-  /*if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
+  /* if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
    SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter\n");
   ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
   if (gen_read != gen_start) {
@@ -667,7 +667,7 @@ int Update(SNES snes, void *ctx)
  PetscPrintf(MPI_COMM_WORLD, "clift = %g cdrag = %g cmom = %g\n",
              clift, cdrag, cmom);
  /*PetscPrintf(MPI_COMM_WORLD, "Total cpu time needed %g seconds\n", cpu_time);*/
- /*if (!PreLoadFlag) {
+ /* if (!PreLoadFlag) {
      FieldOutput(grid, i);
      WriteRestartFile(grid,i);
  }*/
@@ -712,7 +712,7 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
   fnorm = tsCtx->fnorm;
   if (!SecondOrder)
    inc = 2.0;
-  /*if (iter == 0) {*/
+  /* if (iter == 0) {*/
   if (tsCtx->fnorm_ini == 0.0) {
     /* first time through so compute initial function norm */
     tsCtx->fnorm_ini = fnorm;
@@ -722,7 +722,7 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
      tsCtx->cfl = PetscMin(newcfl, tsCtx->cfl_max);
   }
 
-  /*if (iramp < 0) {
+  /* if (iramp < 0) {
    newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/fnorm;
   } else {
    if (tsCtx->dt < 0 && iramp > 0)
@@ -975,7 +975,7 @@ int GetLocalOrdering(GRID *grid)
    grid->eptr[i] = tmp[eperm[i]] + 1;
    grid->eptr[nedgeLoc+i] = tmp[nedgeLoc+eperm[i]] + 1;
 #endif
-    /*if (node1 > node2)
+    /* if (node1 > node2)
      printf("On processor %d, for edge %d node1 = %d, node2 = %d\n",
             rank,i,node1,node2);CHKERRQ(ierr);*/
     if ((node1 <= cross_node) && (node2 > cross_node)) {

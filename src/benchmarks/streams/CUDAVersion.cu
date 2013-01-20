@@ -219,7 +219,8 @@ __global__ void STREAM_Triad_Optimized_double( double *a, double *b, double *c, 
 }
 
 /* Host side verification routines */
-bool STREAM_Copy_verify(float *a, float *b, size_t len) {
+bool STREAM_Copy_verify(float *a, float *b, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -234,7 +235,8 @@ bool STREAM_Copy_verify(float *a, float *b, size_t len) {
   return bDifferent;
 }
 
-bool STREAM_Copy_verify_double(double *a, double *b, size_t len) {
+bool STREAM_Copy_verify_double(double *a, double *b, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -249,7 +251,8 @@ bool STREAM_Copy_verify_double(double *a, double *b, size_t len) {
   return bDifferent;
 }
 
-bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len) {
+bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -264,7 +267,8 @@ bool STREAM_Scale_verify(float *a, float *b, float scale, size_t len) {
   return bDifferent;
 }
 
-bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len) {
+bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -279,7 +283,8 @@ bool STREAM_Scale_verify_double(double *a, double *b, double scale, size_t len) 
   return bDifferent;
 }
 
-bool STREAM_Add_verify(float *a, float *b, float *c, size_t len) {
+bool STREAM_Add_verify(float *a, float *b, float *c, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -294,7 +299,8 @@ bool STREAM_Add_verify(float *a, float *b, float *c, size_t len) {
   return bDifferent;
 }
 
-bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len) {
+bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -309,7 +315,8 @@ bool STREAM_Add_verify_double(double *a, double *b, double *c, size_t len) {
   return bDifferent;
 }
 
-bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len) {
+bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -324,7 +331,8 @@ bool STREAM_Triad_verify(float *a, float *b, float *c, float scalar, size_t len)
   return bDifferent;
 }
 
-bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, size_t len) {
+bool STREAM_Triad_verify_double(double *a, double *b, double *c, double scalar, size_t len)
+{
   size_t idx;
   bool bDifferent = false;
 
@@ -971,7 +979,8 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
 ///////////////////////////////////////////////////////////////////////////
 //Print Results to Screen and File
 ///////////////////////////////////////////////////////////////////////////
-PetscErrorCode printResultsReadable(float times[][NTIMES]) {
+PetscErrorCode printResultsReadable(float times[][NTIMES])
+{
   PetscErrorCode ierr;
   PetscInt       j, k;
   float          avgtime[8] = {0., 0., 0., 0., 0., 0., 0., 0.};

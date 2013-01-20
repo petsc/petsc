@@ -530,7 +530,8 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRow_IJ"
-PetscErrorCode MatGetRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *cols[], PetscScalar *vals[]) {
+PetscErrorCode MatGetRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *cols[], PetscScalar *vals[])
+{
   PetscInt off,len,i,r;
   PetscErrorCode ierr;
   Mat_IJ *pg = (Mat_IJ*)A->data;
@@ -560,7 +561,8 @@ PetscErrorCode MatGetRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *co
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRestoreRow_IJ"
-PetscErrorCode MatRestoreRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *cols[], PetscScalar *vals[]) {
+PetscErrorCode MatRestoreRow_IJ(Mat A, PetscInt row, PetscInt *rowsize, PetscInt *cols[], PetscScalar *vals[])
+{
 
   PetscInt r;
   PetscErrorCode ierr;

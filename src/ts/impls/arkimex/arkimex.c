@@ -615,7 +615,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) { 
-      if(!ark->imex && tab->stiffly_accurate) {/* Only the stiffly accurate implicit formula is used */ 
+      if (!ark->imex && tab->stiffly_accurate) {/* Only the stiffly accurate implicit formula is used */ 
         ierr = VecCopy(ark->Y[s-1],X);CHKERRQ(ierr);
       } else { /* Use the standard completion formula (bt,b) */
         ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);

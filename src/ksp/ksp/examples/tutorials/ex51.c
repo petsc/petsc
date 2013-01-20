@@ -368,7 +368,8 @@ static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "polyBasisFunc"
-static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval) {
+static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval)
+{
   PetscReal denominator = 1.;
   PetscReal numerator = 1.;
   PetscInt i=0;
@@ -386,7 +387,8 @@ static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVa
 
 #undef __FUNCT__
 #define __FUNCT__ "derivPolyBasisFunc"
-static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval) {
+static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval)
+{
   PetscReal denominator;
   PetscReal numerator;
   PetscReal numtmp;

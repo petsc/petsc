@@ -162,7 +162,8 @@ struct is_diag
 
   template <typename Tuple>
   __host__ __device__
-  bool operator()(Tuple t) {
+  bool operator()(Tuple t)
+  {
     // Check column
     IndexType row = thrust::get<0>(t);
     IndexType col = thrust::get<1>(t);
@@ -178,7 +179,8 @@ struct is_nonlocal
 
   template <typename Tuple>
   __host__ __device__
-  bool operator()(Tuple t) {
+  bool operator()(Tuple t)
+  {
     // Check column
     IndexType row = thrust::get<0>(t);
     return (row < first) || (row >= last);

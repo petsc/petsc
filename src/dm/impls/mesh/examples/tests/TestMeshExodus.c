@@ -28,7 +28,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main (int argc,char ** argv) {
+int main (int argc,char ** argv)
+{
   DM             dmBody,dmFS;
   DM             dmBodyDist,dmFSDist;
   ALE::Obj<PETSC_MESH_TYPE> meshBody,meshBodyDist,meshFS,meshFSDist;

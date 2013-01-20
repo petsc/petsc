@@ -131,8 +131,8 @@ static PetscErrorCode TSEvaluateStep_Theta(TS ts,PetscInt order,Vec U,PetscBool 
   TS_Theta       *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  if(order == 0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"No time-step adaptivity implemented for 1st order theta method; Run with -ts_adapt_type none");
-  if(order == th->order) {
+  if (order == 0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"No time-step adaptivity implemented for 1st order theta method; Run with -ts_adapt_type none");
+  if (order == th->order) {
     if (th->endpoint) {
       ierr = VecCopy(th->X,U);CHKERRQ(ierr);
     } else {
@@ -328,10 +328,10 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts);CHKERRQ(ierr);
   }
-  if(th->Theta == 0.5 && th->endpoint) th->order = 2;
+  if (th->Theta == 0.5 && th->endpoint) th->order = 2;
   else th->order = 1;
 
-  if(!th->adapt) {
+  if (!th->adapt) {
     TSAdapt adapt;
     ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
     ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);

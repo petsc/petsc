@@ -51,11 +51,13 @@ typedef struct {
  -----------------------------------------------------------------------------*/
 #include "ex52.h"
 
-void quadratic_2d(const PetscReal x[], PetscScalar u[]) {
+void quadratic_2d(const PetscReal x[], PetscScalar u[])
+{
   u[0] = x[0]*x[0] + x[1]*x[1];
 };
 
-void quadratic_2d_elas(const PetscReal x[], PetscScalar u[]) {
+void quadratic_2d_elas(const PetscReal x[], PetscScalar u[])
+{
   u[0] = x[0]*x[0] + x[1]*x[1];
   u[1] = x[0]*x[0] + x[1]*x[1];
 };
@@ -452,7 +454,8 @@ EXTERN_C_BEGIN
 PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
 EXTERN_C_END
 
-void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
+void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[])
+{
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
@@ -464,7 +467,8 @@ void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateLaplacianBatchCPU"
-PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
+PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
+{
   const PetscInt debug = user->debug;
   const PetscInt dim   = SPATIAL_DIM_0;
   PetscInt       e;
@@ -528,7 +532,8 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
   PetscFunctionReturn(0);
 };
 
-void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
+void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
+{
   const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = dim;
   PetscInt       comp, d;
@@ -543,7 +548,8 @@ void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateElasticityBatchCPU"
-PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
+PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
+{
   const PetscInt debug = user->debug;
   const PetscInt dim   = SPATIAL_DIM_0;
   PetscInt       e;

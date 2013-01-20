@@ -1,7 +1,8 @@
 static char help[] = "Tests DMDAVecGetArrayDOF()\n";
 #include <petscdmda.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   DM              da, daX, daY;
   DMDALocalInfo     info;
   MPI_Comm        commX, commY;

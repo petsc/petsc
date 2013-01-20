@@ -17,14 +17,17 @@ PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
 {
   return isinfq(PetscAbsScalar(a)) || isnanq(PetscAbsScalar(a));
 }
- PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
+{
   return isinfq(a) || isnanq(a);
 }
 #elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
- PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
+{
   return isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a));
 }
- PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
+{
   return isinf(a) || isnan(a);
 }
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
@@ -34,17 +37,21 @@ PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
 #if defined(PETSC_HAVE_IEEEFP_H)
 #include "ieeefp.h"  /* Solaris prototypes these here */
 #endif
- PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
+{
   return !_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a));
 }
- PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
+{
   return !_finite(a) || _isnan(a);
 }
 #else
- PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
+{
   return  ((a - a) != (PetscScalar)0);
 }
- PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+ PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
+ {
   return ((a - a) != 0);
 }
 #endif

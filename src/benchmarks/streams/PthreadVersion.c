@@ -292,7 +292,8 @@ int main(int argc,char *argv[])
 
 # define        M        20
 
-int checktick() {
+int checktick()
+{
   int           i, minDelta, Delta;
   double        t1, t2, timesfound[M];
 
@@ -325,7 +326,8 @@ int checktick() {
 
 #include <sys/time.h>
 
-double mysecond() {
+double mysecond()
+{
   struct timeval tp;
   struct timezone tzp;
   int i=0;
@@ -334,7 +336,8 @@ double mysecond() {
   return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
 
-void checkSTREAMresults () {
+void checkSTREAMresults()
+{
   double aj,bj,cj,scalar;
   double asum,bsum,csum;
   double epsilon;
@@ -415,7 +418,8 @@ void tuned_STREAM_2A()
   PetscThreadsRunKernel(tuned_STREAM_2A_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai = data->a,*bi = data->b, *ci = data->c;
   int         nloc = data->nloc,i=0;
@@ -428,7 +432,8 @@ PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Initialize(double scalar) {
+void tuned_STREAM_Initialize(double scalar)
+{
   PetscInt       Q,R,istart=0,i=0;
   PetscBool      S;
   nWorkThreads = PetscMaxThreads + PetscMainThreadShareWork;
@@ -454,7 +459,8 @@ void tuned_STREAM_Initialize(double scalar) {
   PetscThreadsRunKernel(tuned_STREAM_Initialize_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*ci=data->c;
   int         j=0,nloc=data->nloc;
@@ -464,11 +470,13 @@ PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Copy() {
+void tuned_STREAM_Copy()
+{
   PetscThreadsRunKernel(tuned_STREAM_Copy_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      scalar = data->scalar;
   double      *bi=data->b,*ci=data->c;
@@ -479,11 +487,13 @@ PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Scale(double scalar) {
+void tuned_STREAM_Scale(double scalar)
+{
   PetscThreadsRunKernel(tuned_STREAM_Scale_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Add_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Add_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*bi=data->b,*ci=data->c;
   int         j=0,nloc=data->nloc;
@@ -494,11 +504,13 @@ PetscErrorCode tuned_STREAM_Add_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Add() {
+void tuned_STREAM_Add()
+{
   PetscThreadsRunKernel(tuned_STREAM_Add_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*bi=data->b,*ci=data->c,scalar=data->scalar;
   int         j=0,nloc=data->nloc;
@@ -509,7 +521,8 @@ PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Triad(double scalar) {
+void tuned_STREAM_Triad(double scalar)
+{
   PetscThreadsRunKernel(tuned_STREAM_Triad_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 #endif

@@ -459,48 +459,59 @@ extern PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user);
 extern PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat J, AppCtx *user);
 
 PetscReal lambda = 0.0;
-PetscScalar guess(const PetscReal coords[]) {
+PetscScalar guess(const PetscReal coords[])
+{
   PetscScalar scale = lambda/(lambda+1.0);
   return scale*(0.5 - fabs(coords[0]-0.5))*(0.5 - fabs(coords[1]-0.5));
 }
 
-PetscScalar zero(const PetscReal coords[]) {
+PetscScalar zero(const PetscReal coords[])
+{
   return 0.0;
 }
 
-PetscScalar constant(const PetscReal x[]) {
+PetscScalar constant(const PetscReal x[])
+{
   return -4.0;
 };
 
-PetscScalar nonlinear_2d(const PetscReal x[]) {
+PetscScalar nonlinear_2d(const PetscReal x[])
+{
   return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
 };
 
-PetscScalar linear_2d(const PetscReal x[]) {
+PetscScalar linear_2d(const PetscReal x[])
+{
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
 };
 
-PetscScalar quadratic_2d(const PetscReal x[]) {
+PetscScalar quadratic_2d(const PetscReal x[])
+{
   return x[0]*x[0] + x[1]*x[1];
 };
 
-PetscScalar cubic_2d(const PetscReal x[]) {
+PetscScalar cubic_2d(const PetscReal x[])
+{
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
 };
 
-PetscScalar nonlinear_3d(const PetscReal x[]) {
+PetscScalar nonlinear_3d(const PetscReal x[])
+{
   return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
 };
 
-PetscScalar linear_3d(const PetscReal x[]) {
+PetscScalar linear_3d(const PetscReal x[])
+{
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
 };
 
-PetscScalar quadratic_3d(const PetscReal x[]) {
+PetscScalar quadratic_3d(const PetscReal x[])
+{
   return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 };
 
-PetscScalar cubic_3d(const PetscReal x[]) {
+PetscScalar cubic_3d(const PetscReal x[])
+{
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
 };
 
