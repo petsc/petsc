@@ -762,7 +762,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
          } else {
            yup += len;
          }
-         if (ctx->truncation==2){ /* quadratic */
+         if (ctx->truncation==2) { /* quadratic */
            if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
              len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
            } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {

@@ -52,7 +52,7 @@ void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_loca
   *ierr = PCASMGetSubKSP(*pc,&nloc,first_local,&tksp);
   if (n_local) *n_local = nloc;
   if (ksp) {
-    for (i=0; i<nloc; i++){
+    for (i=0; i<nloc; i++) {
       ksp[i] = tksp[i];
     }
   }
@@ -81,7 +81,7 @@ void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,PetscInt *n,Mat *mat, PetscE
   *ierr = PCASMGetLocalSubmatrices(*pc,&nloc,&tmat);
   if (n) *n = nloc;
   if (mat) {
-    for (i=0; i<nloc; i++){
+    for (i=0; i<nloc; i++) {
       mat[i] = tmat[i];
     }
   }
@@ -96,12 +96,12 @@ void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *is,IS *is_loc
   *ierr = PCASMGetLocalSubdomains(*pc,&nloc,&tis,&tis_local);
   if (n) *n = nloc;
   if (is) {
-    for (i=0; i<nloc; i++){
+    for (i=0; i<nloc; i++) {
       is[i] = tis[i];
     }
   }
   if (is_local && tis_local) {
-    for (i=0; i<nloc; i++){
+    for (i=0; i<nloc; i++) {
       is[i] = tis_local[i];
     }
   }

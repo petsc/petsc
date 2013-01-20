@@ -158,15 +158,15 @@ int main(int argc,char **args)
     ierr = PCASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
     flg = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
       printf("IS:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<Nsub; i++) {
         printf("  IS[%d]\n",i);
         ierr = ISView(is[i],PETSC_VIEWER_STDOUT_SELF);
       }
       printf("IS_local:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<Nsub; i++) {
         printf("  IS_local[%d]\n",i);
         ierr = ISView(is_local[i],PETSC_VIEWER_STDOUT_SELF);
       }

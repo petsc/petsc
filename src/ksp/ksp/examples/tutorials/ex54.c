@@ -101,13 +101,13 @@ int main(int argc,char **args)
         /* radius */
         PetscReal radius = PetscSqrtScalar( (x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2) );
         PetscReal alpha = 1.0;
-        if ( radius < 0.25 ){
+        if (radius < 0.25) {
           alpha = soft_alpha;
         }
 
         for (ii=0;ii<4;ii++)for (jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-        if ( j>0 ) {
+        if (j>0) {
           ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
         else {

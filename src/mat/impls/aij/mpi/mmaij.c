@@ -258,7 +258,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   if (nt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D n %D",nt,n);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&auglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
-    if (r_rmapd[i]){
+    if (r_rmapd[i]) {
       auglyrmapd[(r_rmapd[i]-1)-cstart] = i;
     }
   }
@@ -284,7 +284,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   ierr = PetscFree(lindices);CHKERRQ(ierr);
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),&auglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
-    if (r_rmapo[i]){
+    if (r_rmapo[i]) {
       auglyrmapo[(r_rmapo[i]-1)] = i;
     }
   }

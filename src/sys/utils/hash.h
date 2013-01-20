@@ -756,7 +756,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHash
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))){ierr = PetscHashIJIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
+  (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))) {ierr = PetscHashIJIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -901,7 +901,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHash
   PetscFunctionBegin;
   ierr = PetscHashIJCreate((hd));CHKERRQ(ierr);
   ierr = PetscHashIJIterBegin((h),&_14_hi);CHKERRQ(ierr);
-  while(!PetscHashIJIterAtEnd((h),_14_hi)){
+  while(!PetscHashIJIterAtEnd((h),_14_hi)) {
     ierr = PetscHashIJIterGetKey((h),_14_hi,&_14_key);CHKERRQ(ierr);
     ierr = PetscHashIJIterGetValIter((h),_14_hi,&_14_vi);CHKERRQ(ierr);
     while(!PetscHashIJValIterAtEnd((h),_14_vi)) {
@@ -928,7 +928,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h)
     ierr = PetscHashIJIterBegin((h),&_15_hi);CHKERRQ(ierr);
     while(!PetscHashIJIterAtEnd((h),_15_hi)) {
       ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi);CHKERRQ(ierr);
-      while(!PetscHashIJValIterAtEnd((h),_15_vi)){
+      while(!PetscHashIJValIterAtEnd((h),_15_vi)) {
         _15_vid = _15_vi;
         ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
         _15_vid->next = 0;

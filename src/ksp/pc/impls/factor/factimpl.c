@@ -13,7 +13,7 @@ PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pc->setupcalled && !((PC_Factor*)icc)->fact){
+  if (!pc->setupcalled && !((PC_Factor*)icc)->fact) {
     ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -41,11 +41,11 @@ PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
   PC_Factor *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (shifttype == (MatFactorShiftType)PETSC_DECIDE){
+  if (shifttype == (MatFactorShiftType)PETSC_DECIDE) {
     dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE;
   } else {
     dir->info.shifttype = (PetscReal) shifttype;
-    if (shifttype == MAT_SHIFT_NONZERO && dir->info.shiftamount == 0.0){
+    if (shifttype == MAT_SHIFT_NONZERO && dir->info.shiftamount == 0.0) {
       dir->info.shiftamount = 1.e-12; /* set default amount if user has not called PCFactorSetShiftAmount() yet */
     }
   }
@@ -59,7 +59,7 @@ PetscErrorCode  PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
   PC_Factor *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (shiftamount == (PetscReal) PETSC_DECIDE){
+  if (shiftamount == (PetscReal) PETSC_DECIDE) {
     dir->info.shiftamount = 1.e-12;
   } else {
     dir->info.shiftamount = shiftamount;
@@ -308,7 +308,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC){
+    if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC) {
       if (factor->info.dt > 0) {
         ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %G\n",factor->info.dt);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount);CHKERRQ(ierr);
@@ -352,7 +352,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   } else if (isstring) {
     MatFactorType t;
     ierr = MatGetFactorType(factor->fact,&t);CHKERRQ(ierr);
-    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC){
+    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) {
       ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
     }
   }

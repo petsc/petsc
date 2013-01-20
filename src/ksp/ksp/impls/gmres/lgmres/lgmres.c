@@ -616,7 +616,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (lgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated){
+  if (it + VEC_OFFSET + nalloc >= lgmres->vecs_allocated) {
     nalloc = lgmres->vecs_allocated - it - VEC_OFFSET;
   }
   if (!nalloc) PetscFunctionReturn(0);

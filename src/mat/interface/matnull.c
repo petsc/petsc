@@ -368,7 +368,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
     ierr = VecMAXPY(vec,sp->n,sp->alpha,sp->vecs);CHKERRQ(ierr);
   }
 
-  if (sp->remove){
+  if (sp->remove) {
     ierr = (*sp->remove)(sp,vec,sp->rmctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

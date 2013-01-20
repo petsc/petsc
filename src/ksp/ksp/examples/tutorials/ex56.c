@@ -95,14 +95,14 @@ int main(int argc,char **args)
     /* count nnz */
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz );CHKERRQ(ierr);
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &o_nnz );CHKERRQ(ierr);
-    for (i=Ni0,ic=0;i<Ni1;i++){
-      for (j=Nj0;j<Nj1;j++){
-        for (k=Nk0;k<Nk1;k++){
+    for (i=Ni0,ic=0;i<Ni1;i++) {
+      for (j=Nj0;j<Nj1;j++) {
+        for (k=Nk0;k<Nk1;k++) {
           nbc = 0;
           if (i==Ni0 || i==Ni1-1)nbc++;
           if (j==Nj0 || j==Nj1-1)nbc++;
           if (k==Nk0 || k==Nk1-1)nbc++;
-          for (jj=0;jj<3;jj++,ic++){
+          for (jj=0;jj<3;jj++,ic++) {
             d_nnz[ic] = 3*(27-osz[nbc]);
             o_nnz[ic] = 3*osz[nbc];
           }
@@ -139,15 +139,15 @@ int main(int argc,char **args)
       file = fopen(fname, "r");
       if (file == 0) {
         PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);
-        for (i=0;i<24;i++){
-          for (j=0;j<24;j++){
+        for (i=0;i<24;i++) {
+          for (j=0;j<24;j++) {
             if (i==j)DD1[i][j] = 1.0;
             else DD1[i][j] = -.25;
           }
         }
       } else {
-        for (i=0;i<24;i++){
-          for (j=0;j<24;j++){
+        for (i=0;i<24;i++) {
+          for (j=0;j<24;j++) {
             ierr = fscanf(file, "%le", &DD1[i][j]);
           }
         }
@@ -161,12 +161,12 @@ int main(int argc,char **args)
             else DD2[i][j] = 0.0;
           } else DD2[i][j] = DD1[i][j];
       /* element residual/load vector */
-      for (i=0;i<24;i++){
+      for (i=0;i<24;i++) {
         if (i%3==0) vv[i] = h*h;
         else if (i%3==1) vv[i] = 2.0*h*h;
         else vv[i] = .0;
       }
-      for (i=0;i<24;i++){
+      for (i=0;i<24;i++) {
         if (i%3==0 && i>=12) v2[i] = h*h;
         else if (i%3==1 && i>=12) v2[i] = 2.0*h*h;
         else v2[i] = .0;
@@ -177,9 +177,9 @@ int main(int argc,char **args)
     coords[m] = -99.0;
 
     /* forms the element stiffness and coordinates */
-    for (i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++){
-      for (j=Nj0,jj=0;j<Nj1;j++,jj++){
-        for (k=Nk0,kk=0;k<Nk1;k++,kk++,ic++){
+    for (i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++) {
+      for (j=Nj0,jj=0;j<Nj1;j++,jj++) {
+        for (k=Nk0,kk=0;k<Nk1;k++,kk++,ic++) {
 
           /* coords */
           x = coords[3*ic] = h*(PetscReal)i;
@@ -198,7 +198,7 @@ int main(int argc,char **args)
                                       id+NN+1 + NN*NN, id+NN + NN*NN };
 
             /* correct indices */
-            if (i==Ni1-1 && Ni1!=nn){
+            if (i==Ni1-1 && Ni1!=nn) {
               idx[1] += NN*(NN*NN-1);
               idx[2] += NN*(NN*NN-1);
               idx[5] += NN*(NN*NN-1);
@@ -217,7 +217,7 @@ int main(int argc,char **args)
               idx[7] += NN*(nn*nn-NN*NN);
             }
         
-            if ( radius < 0.25 ){
+            if ( radius < 0.25 ) {
               alpha = soft_alpha;
             }
             for (ix=0;ix<24;ix++)for (jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
@@ -264,7 +264,7 @@ int main(int argc,char **args)
   /* test BCs */
   if (test_nonzero_cols) {
     VecZeroEntries(xx);
-    if (mype==0){
+    if (mype==0) {
       VecSetValue(xx,0,1.0,INSERT_VALUES);
     }
     VecAssemblyBegin(xx);

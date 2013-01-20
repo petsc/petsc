@@ -18,7 +18,7 @@ void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_
   if (n_local) *n_local = nloc;
   CHKFORTRANNULLOBJECT(ksp);
   if (ksp) {
-    for (i=0; i<nloc; i++){
+    for (i=0; i<nloc; i++) {
       ksp[i] = tksp[i];
     }
   }

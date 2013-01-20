@@ -21,10 +21,10 @@ PetscErrorCode KSPMonitorLSQR(KSP solksp, PetscInt iter, PetscReal rnorm, void *
   ierr = KSPGetSolution( solksp, &x_sol );CHKERRQ(ierr);
   ierr = VecNorm( x_sol, NORM_2, &xnorm );CHKERRQ(ierr);
 
-  if (iter % 100 == 0){
+  if (iter % 100 == 0) {
     ierr = PetscPrintf(comm, "Iteration  Res norm      Grad norm     Upd norm\n");CHKERRQ(ierr);
   }
-  if (iter <= 10 || iter >= mxiter - 10 || iter % 10 == 0){
+  if (iter <= 10 || iter >= mxiter - 10 || iter % 10 == 0) {
     ierr = PetscPrintf(comm, "%10d %10.7e %10.7e %10.7e\n", iter, rnorm , arnorm, xnorm );CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

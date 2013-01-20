@@ -406,7 +406,7 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscReal tol,PetscLogE
   ierr = VecCopy(x,b);CHKERRQ(ierr);
   ierr = VecAXPY(b,none,u);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);

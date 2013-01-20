@@ -84,7 +84,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(B,M,N,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
-  for (i=0; i<M; i++){
+  for (i=0; i<M; i++) {
     ierr = MatSetValues(B,1,&i,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

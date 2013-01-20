@@ -2564,7 +2564,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4375,7 +4375,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
 #endif
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))){
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4445,7 +4445,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 #endif
   ierr = VecRestoreArrayRead(y,&yy);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))){
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4471,7 +4471,7 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,
   ierr = TSGetSNESIterations(ts,&its);CHKERRQ(ierr);
   y    = its - ctx->snes_its;
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   ctx->snes_its = its;
@@ -4498,7 +4498,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
   ierr = TSGetKSPIterations(ts,&its);CHKERRQ(ierr);
   y    = its - ctx->ksp_its;
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   ctx->ksp_its = its;

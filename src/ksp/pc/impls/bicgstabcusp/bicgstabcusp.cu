@@ -163,7 +163,7 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
     cusp::default_monitor<PetscReal> monitor(*xarray,bicg->maxits,bicg->rtol);
-    if (bicg->monitorverbose){
+    if (bicg->monitorverbose) {
       cusp::verbose_monitor<PetscReal> verbosemonitor(*xarray,bicg->maxits,bicg->rtol);
       cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,verbosemonitor);
     } else {

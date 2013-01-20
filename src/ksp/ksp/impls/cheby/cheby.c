@@ -363,7 +363,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     PetscReal max,min;
     Vec       X,B;
 
-    if (hybrid && purification){
+    if (hybrid && purification) {
       X = ksp->vec_sol;
     } else {
       X = ksp->work[0];
@@ -376,7 +376,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     }
 
     ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
-    if (hybrid){
+    if (hybrid) {
       cheb->its = 0; /* initialize Chebyshev iteration associated to kspest */
       ierr = KSPSetInitialGuessNonzero(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
     } else {
@@ -428,12 +428,12 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
   for (i=0; i<maxit; i++) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-    if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)){
+    if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)) {
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
       Vec       X = ksp->vec_sol; /* = previous p[k] */
 
-      if (purification <= 1){ /* no purification here */
+      if (purification <= 1) { /* no purification here */
         X = p[km1]; /* a tmp vector, != ksp->vec_sol */
       }
 
@@ -443,7 +443,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
       cheb->estimate_current = PETSC_TRUE;
-      if (purification <= 1){ /* no purification here */
+      if (purification <= 1) { /* no purification here */
         X    = ksp->vec_sol;
         ierr = VecCopy(p[k],X);CHKERRQ(ierr);
       }
@@ -547,7 +547,7 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalue estimates:  min = %G, max = %G\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
     if (cheb->kspest) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimated using:  [%G %G; %G %G]\n",cheb->tform[0],cheb->tform[1],cheb->tform[2],cheb->tform[3]);CHKERRQ(ierr);
-      if (cheb->hybrid){ /* display info about hybrid options being used */
+      if (cheb->hybrid) { /* display info about hybrid options being used */
         ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: hybrid is used, chebysteps %D, purification %D\n",cheb->chebysteps,cheb->purification);CHKERRQ(ierr);
       }
       if (cheb->random) {

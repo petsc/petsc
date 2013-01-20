@@ -13,19 +13,21 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){
+void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
   char *t;
 
-    FIXCHAR(ordering,len,t);
-    *ierr = PCFactorSetMatOrderingType(*pc,t);
-    FREECHAR(ordering,t);
+  FIXCHAR(ordering,len,t);
+  *ierr = PCFactorSetMatOrderingType(*pc,t);
+  FREECHAR(ordering,t);
 }
-void PETSC_STDCALL pcfactorsetmatsolverpackage_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){
+void PETSC_STDCALL pcfactorsetmatsolverpackage_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
   char *t;
 
-    FIXCHAR(ordering,len,t);
-    *ierr = PCFactorSetMatSolverPackage(*pc,t);
-    FREECHAR(ordering,t);
+  FIXCHAR(ordering,len,t);
+  *ierr = PCFactorSetMatSolverPackage(*pc,t);
+  FREECHAR(ordering,t);
 }
 void PETSC_STDCALL pcfactorgetmatsolverpackage_(PC *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {

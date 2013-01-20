@@ -36,7 +36,7 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&loadB);CHKERRQ(ierr);
-    if (loadB){
+    if (loadB) {
       /* load B to get A = A + sigma*B */
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **args)
 
   /* Set a shift: A = A - sigma*B */
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-sigma",&sigma,&flag);CHKERRQ(ierr);
-  if (flag){
+  if (flag) {
     sigma = -1.0 * sigma;
     ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */
     /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
   ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!rank){
+  if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
   }
 

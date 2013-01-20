@@ -68,8 +68,8 @@ int main(int argc,char **argv)
   user.fine.my = user.ratio*(user.coarse.my-1)+1;
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
 
-  if (!rank){
-    if (!Test_3D){
+  if (!rank) {
+    if (!Test_3D) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %d %d; fine grids: %d %d\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %d %d %d; fine grids: %d %d %d\n",user.coarse.mx,user.coarse.my,user.coarse.mz,user.fine.mx,user.fine.my,user.fine.mz);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   }
 
   /* Set up distributed array for fine grid */
-  if (!Test_3D){
+  if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                     user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   if (size == 1) {
     const PetscInt *ia,*ja;
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
-    if (flg){
+    if (flg) {
       ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
       for (i=0; i<ia[nrows]; i++) array[i] = one;
       ierr = MatSeqAIJRestoreArray(A,&array);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Set up distributed array for coarse grid */
-  if (!Test_3D){
+  if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                     user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {

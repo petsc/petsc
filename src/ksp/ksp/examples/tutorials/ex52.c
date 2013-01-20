@@ -150,13 +150,13 @@ int main(int argc,char **args)
   flg_ch = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
-  if (flg || flg_ch){
+  if (flg || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
     Mat      F;
     PetscInt ival,icntl;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ch) {
       ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr); /* set MUMPS id%SYM=1 */
@@ -181,12 +181,12 @@ int main(int argc,char **args)
   flg     = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
-  if (flg || flg_ilu){
+  if (flg || flg_ilu) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
     Mat      F;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ilu) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
@@ -208,12 +208,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
-  if (flg || flg_ilu || flg_ch){
+  if (flg || flg_ilu || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
     Mat      F;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ilu) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);

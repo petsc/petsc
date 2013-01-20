@@ -59,7 +59,8 @@ void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4,da5);
 }
 
-void PETSC_STDCALL  dmcompositecreate_(MPI_Fint * comm,DM *A, int *ierr ){
+void PETSC_STDCALL  dmcompositecreate_(MPI_Fint * comm,DM *A, int *ierr )
+{
   *ierr = DMCompositeCreate(MPI_Comm_f2c( *(comm) ),A);
 }
 

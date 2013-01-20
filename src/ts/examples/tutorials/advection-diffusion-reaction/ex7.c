@@ -218,8 +218,8 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   ierr = DMDAVecGetArrayDOF(da,U,&u);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
-  for (i=xs; i<xs+xm; i++){
-    for (c=0; c<N; c++){
+  for (i=xs; i<xs+xm; i++) {
+    for (c=0; c<N; c++) {
       nc = 0;
       row.c     = c; row.i = i;
       col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;

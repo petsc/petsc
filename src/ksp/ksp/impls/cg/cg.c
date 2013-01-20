@@ -164,10 +164,10 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)){
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) {
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
   }
-  if (ksp->normtype != KSP_NORM_NATURAL){
+  if (ksp->normtype != KSP_NORM_NATURAL) {
     if (cg->singlereduction) {
       ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
@@ -256,13 +256,13 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
 
-     if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i+2)){
+     if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i+2)) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
        if (cg->singlereduction) {
          ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
        }
      }
-     if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)){
+     if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)) {
        if (cg->singlereduction) {
          PetscScalar tmp[2];
          Vec         vecs[2];

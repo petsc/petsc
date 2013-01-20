@@ -170,15 +170,15 @@ int main(int argc,char **args)
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
     flg = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
       printf("Outer IS:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<Nsub; i++) {
         printf("  outer IS[%d]\n",i);
         ierr = ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF);
       }
       printf("Inner IS:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<Nsub; i++) {
         printf("  inner IS[%d]\n",i);
         ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);
       }

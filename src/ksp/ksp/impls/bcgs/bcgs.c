@@ -22,7 +22,7 @@ PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii){
+  if (!iascii) {
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);

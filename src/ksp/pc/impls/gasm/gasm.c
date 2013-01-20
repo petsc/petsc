@@ -124,7 +124,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   l = 0;
   for (count = 0; count < gcount; ++count) {
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */
-    if (l<osm->n){
+    if (l<osm->n) {
       d = permutation[l]; /* d is the local number of the l-th smallest (in the global ordering) among the locally supported subdomains */
       if (numbering[d] == count) {
         ierr = PetscViewerGetSubcomm(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   if (osm->N > 0) {
     ierr = PetscSNPrintf(lsubdomains, sizeof(gsubdomains), "number of local subdomains = %D",osm->N);CHKERRQ(ierr);
   }
-  if (osm->nmax > 0){
+  if (osm->nmax > 0) {
     ierr = PetscSNPrintf(msubdomains,sizeof(msubdomains),"max number of local subdomains = %D",osm->nmax);CHKERRQ(ierr);
   }
 
@@ -209,7 +209,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     l = 0;
     for (count = 0; count < gcount; ++count) {
       PetscMPIInt srank, ssize;
-      if (l<osm->n){
+      if (l<osm->n) {
         PetscInt d = permutation[l]; /* d is the local number of the l-th smallest (in the global ordering) among the locally supported subdomains */
         if (numbering[d] == count) {
           ierr = MPI_Comm_size(((PetscObject)osm->ois[d])->comm, &ssize);CHKERRQ(ierr);
@@ -328,7 +328,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         osm->N = size;
       }
     }
-    if (!osm->iis){
+    if (!osm->iis) {
       /*
        The local number of subdomains was set just above, or in PCGASMSetTotalSubdomains(), or in PCGASMSetSubdomains(),
        but the actual subdomains have not been supplied (in PCGASMSetSubdomains()).

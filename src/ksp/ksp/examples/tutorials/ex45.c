@@ -83,10 +83,10 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   ierr = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,b,&barray);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i<xs+xm; i++){
-        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) {
           barray[k][j][i] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         } else {
           barray[k][j][i] = Hx*Hy*Hz;
@@ -126,11 +126,11 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i<xs+xm; i++){
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
         row.i = i; row.j = j; row.k = k;
-        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) {
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
           ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else {

@@ -52,8 +52,8 @@ int main(int argc,char **argv)
 
   /* Build the gaussian profile (exp(-x^2-y^2)) */
   ierr = DMDAVecGetArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
-  for (j=iys; j<iys+iym; j++){
-    for (i=ixs; i<ixs+ixm; i++){
+  for (j=iys; j<iys+iym; j++) {
+    for (i=ixs; i<ixs+ixm; i++) {
       gauss_ptr[j][i]=exp(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
     }
   }

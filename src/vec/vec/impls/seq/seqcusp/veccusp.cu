@@ -111,7 +111,7 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_CUSP_CPU){
+  if (v->valid_GPU_array == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyToGPU,v,0,0,0);CHKERRQ(ierr);
     try{
 #ifdef PETSC_HAVE_TXPETSCGPU
@@ -175,7 +175,7 @@ PetscErrorCode VecCUSPCopyFromGPU(Vec v)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_CUSP_GPU){
+  if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr       = PetscLogEventBegin(VEC_CUSPCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     try{
 #ifdef PETSC_HAVE_TXPETSCGPU

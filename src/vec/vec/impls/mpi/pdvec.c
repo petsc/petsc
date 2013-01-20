@@ -830,7 +830,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
-  if (iascii){
+  if (iascii) {
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
@@ -1027,7 +1027,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
   if (!xin->bstash.bowners && xin->map->bs != -1) {
     ierr = PetscMalloc((size+1)*sizeof(PetscInt),&bowners);CHKERRQ(ierr);
-    for (i=0; i<size+1; i++){ bowners[i] = owners[i]/bs;}
+    for (i=0; i<size+1; i++) { bowners[i] = owners[i]/bs;}
     xin->bstash.bowners = bowners;
   } else {
     bowners = xin->bstash.bowners;

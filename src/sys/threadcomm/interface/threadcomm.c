@@ -251,7 +251,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting number of threads",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       if (nthr == PETSC_DECIDE) {
       tcomm->nworkThreads = N_CORES;
       } else tcomm->nworkThreads = nthr;

@@ -102,10 +102,10 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
-    if (!preload){
+    if (!preload) {
       flg = PETSC_FALSE;
       ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-      if (flg){ /* rhs is stored in a separate file */
+      if (flg) { /* rhs is stored in a separate file */
         ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
       } else {
@@ -122,10 +122,10 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
     /* Test MatDuplicate() */
-    if (Test_MatDuplicate){
+    if (Test_MatDuplicate) {
       ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
       ierr = MatEqual(A,B,&flg);CHKERRQ(ierr);
-      if (!flg){
+      if (!flg) {
         PetscPrintf(PETSC_COMM_WORLD,"  A != B \n");CHKERRQ(ierr);
       }
       ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
-      if (flgB){
+      if (flgB) {
         /* load B to get A = A + sigma*B */
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
         ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ int main(int argc,char **args)
       ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
       flg1 = PETSC_FALSE;
       ierr = PetscOptionsGetBool(PETSC_NULL, "-set_row_zero", &flg1,PETSC_NULL);CHKERRQ(ierr);
-      if (flg1){ /* set entire row as zero */
+      if (flg1) { /* set entire row as zero */
         ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
       } else { /* only set (row,row) entry as zero */
         ierr = MatSetValues(A,1,&row,1,&row,zeros,INSERT_VALUES);CHKERRQ(ierr);
@@ -225,7 +225,7 @@ int main(int argc,char **args)
     ierr = PetscObjectSetName((PetscObject)u, "True Solution vector");CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
-    if (ckerror){ /* Set true solution */
+    if (ckerror) { /* Set true solution */
       ierr = VecSet(u,1.0);CHKERRQ(ierr);
       ierr = MatMult(A,u,b);CHKERRQ(ierr);
     }
@@ -276,7 +276,7 @@ int main(int argc,char **args)
     ierr = KSPSetInitialGuessNonzero(ksp,initialguess);CHKERRQ(ierr);
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
-    while ( num_numfac-- ){
+    while ( num_numfac-- ) {
 
 
       ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -336,7 +336,7 @@ int main(int argc,char **args)
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-        if (ckrnorm){   /* Check residual for each rhs */
+        if (ckrnorm) {   /* Check residual for each rhs */
           if (trans) {
             ierr = MatMultTranspose(A,x,b2);CHKERRQ(ierr);
           } else {
@@ -347,7 +347,7 @@ int main(int argc,char **args)
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",rnorm);CHKERRQ(ierr);
         }
-        if (ckerror && !trans){  /* Check error for each rhs */
+        if (ckerror && !trans) {  /* Check error for each rhs */
           /* ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
           ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);
           ierr = VecNorm(u,NORM_2,&enorm);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ int main(int argc,char **args)
 
       flg  = PETSC_FALSE;
       ierr = PetscOptionsGetBool(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
-      if (flg){
+      if (flg) {
         KSPConvergedReason reason;
         ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
         PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);

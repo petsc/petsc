@@ -110,9 +110,9 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   h    = 1.0/(mx-1);
 
-  for (i=xs; i<xs+xm; i++){
+  for (i=xs; i<xs+xm; i++) {
     row.i = i;
-    if (i==0 || i==mx-1){
+    if (i==0 || i==mx-1) {
       v[0] = 2.0;
       ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {

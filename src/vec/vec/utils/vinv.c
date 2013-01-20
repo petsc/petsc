@@ -1457,8 +1457,8 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
         {
           PetscInt k;
           flg1 = PETSC_TRUE;
-          for (k=0; k<n1; k++){
-            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])){
+          for (k=0; k<n1; k++) {
+            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])) {
               flg1 = PETSC_FALSE;
               break;
             }

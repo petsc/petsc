@@ -816,17 +816,17 @@ static void FormContinuityRhsQ13D(PetscScalar Fe[],PetscScalar coords[],PetscSca
 #define _ZERO_ROWCOL_i(A,i) {                   \
     PetscInt KK;                                \
     PetscScalar tmp = A[24*(i)+(i)];            \
-    for (KK=0;KK<24;KK++){A[24*(i)+KK]=0.0;}     \
-    for (KK=0;KK<24;KK++){A[24*KK+(i)]=0.0;}     \
+    for (KK=0;KK<24;KK++) {A[24*(i)+KK]=0.0;}   \
+    for (KK=0;KK<24;KK++) {A[24*KK+(i)]=0.0;}   \
     A[24*(i)+(i)] = tmp;}                       \
 
 #define _ZERO_ROW_i(A,i) {                      \
     PetscInt KK;                                \
-    for (KK=0;KK<8;KK++){A[8*(i)+KK]=0.0;}}
+    for (KK=0;KK<8;KK++) {A[8*(i)+KK]=0.0;}}
 
 #define _ZERO_COL_i(A,i) {                      \
     PetscInt KK;                                \
-    for (KK=0;KK<8;KK++){A[24*KK+(i)]=0.0;}}
+    for (KK=0;KK<8;KK++) {A[24*KK+(i)]=0.0;}}
 
 #undef __FUNCT__
 #define __FUNCT__ "AssembleA_Stokes"
@@ -1690,7 +1690,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  </PStructuredGrid>\n");
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"</VTKFile>\n");
 
-  if (vtk_fp){
+  if (vtk_fp) {
     fclose(vtk_fp);
     vtk_fp = NULL;
   }
@@ -1773,7 +1773,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
   ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
 
-  for (k=1; k<nlevels; k++){
+  for (k=1; k<nlevels; k++) {
     ierr = DMCreateInterpolation(da_list[k-1],da_list[k],&R,PETSC_NULL);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pc,k,R);CHKERRQ(ierr);
     ierr = MatDestroy(&R);CHKERRQ(ierr);

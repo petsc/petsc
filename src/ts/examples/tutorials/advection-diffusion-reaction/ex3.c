@@ -293,7 +293,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
     mstart++;
   }
 
-  if (mend == M){
+  if (mend == M) {
     mend--;
     idx[0] = M-2; idx[1] = M-1; idx[2] = 0;
     ierr = MatSetValues(A,1,&mend,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -322,7 +322,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
       mstart++;
     }
 
-    if (mend == M){
+    if (mend == M) {
       mend--;
       idx[0] = M-2; idx[1] = 0;
       ierr = MatSetValues(A,1,&mend,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
       mstart++;
     }
 
-    if (mend == M){
+    if (mend == M) {
       mend--;
       idx[0] = M-1; idx[1] = 0;
       ierr = MatSetValues(A,1,&mend,2,idx,v,ADD_VALUES);CHKERRQ(ierr);

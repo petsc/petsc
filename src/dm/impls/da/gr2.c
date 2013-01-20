@@ -207,7 +207,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_ports",&useports,PETSC_NULL);CHKERRQ(ierr);
-  if (useports || format == PETSC_VIEWER_DRAW_PORTS){
+  if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
     zctx.name0 = 0;

@@ -20,7 +20,7 @@ PetscErrorCode VecDestroy_MPICUSP(Vec v)
       delete ((Vec_CUSP*)v->spptr)->GPUarray;
       delete (Vec_CUSP *)v->spptr;
     }
-  } catch(char* ex){
+  } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);

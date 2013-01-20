@@ -1733,7 +1733,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   ierr = PetscMalloc(dual_size*sizeof(*aux_local_numbering_2),&aux_local_numbering_2);CHKERRQ(ierr);
 
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-  for (i=0;i<pcis->n;i++){
+  for (i=0;i<pcis->n;i++) {
     j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
     k = 0;
     if (j > 0) {
@@ -2383,7 +2383,7 @@ static PetscErrorCode  PCBDDCScatterCoarseDataBegin(PC pc,Vec vec_from, Vec vec_
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
 
   PetscFunctionBegin;
-  switch(pcbddc->coarse_communications_type){
+  switch(pcbddc->coarse_communications_type) {
     case SCATTERS_BDDC:
       ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
       break;
@@ -2406,14 +2406,14 @@ static PetscErrorCode  PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to
 
   PetscFunctionBegin;
 
-  switch(pcbddc->coarse_communications_type){
+  switch(pcbddc->coarse_communications_type) {
     case SCATTERS_BDDC:
       ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
       break;
     case GATHERS_BDDC:
       if (vec_from) VecGetArray(vec_from,&array_from);
       if (vec_to)   VecGetArray(vec_to,&array_to);
-      switch(pcbddc->coarse_problem_type){
+      switch(pcbddc->coarse_problem_type) {
         case SEQUENTIAL_BDDC:
           if (smode == SCATTER_FORWARD) {
             ierr = MPI_Gatherv(&array_from[0],pcbddc->local_primal_size,MPIU_SCALAR,&pcbddc->replicated_local_primal_values[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
@@ -2554,8 +2554,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   ierr = PetscMalloc((total_counts+1)*sizeof(PetscBool),&change_basis);CHKERRQ(ierr);
   total_counts = 0;
   max_size_of_constraint = 0;
-  for (i=0;i<pcbddc->n_ISForEdges+pcbddc->n_ISForFaces;i++){
-    if (i<pcbddc->n_ISForEdges){
+  for (i=0;i<pcbddc->n_ISForEdges+pcbddc->n_ISForFaces;i++) {
+    if (i<pcbddc->n_ISForEdges) {
       used_IS = &pcbddc->ISForEdges[i];
     } else {
       used_IS = &pcbddc->ISForFaces[i-pcbddc->n_ISForEdges];
@@ -2693,8 +2693,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   ierr = ISRestoreIndices(pcbddc->ISForVertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   n_vertices=total_counts;
   /* edges and faces */
-  for (i=0;i<pcbddc->n_ISForEdges+pcbddc->n_ISForFaces;i++){
-    if (i<pcbddc->n_ISForEdges){
+  for (i=0;i<pcbddc->n_ISForEdges+pcbddc->n_ISForFaces;i++) {
+    if (i<pcbddc->n_ISForEdges) {
       used_IS = &pcbddc->ISForEdges[i];
       boolforface = pcbddc->usechangeofbasis;
     } else {
@@ -3463,7 +3463,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     }
 
     /* Get submatrices from subdomain matrix */
-    if (n_vertices){
+    if (n_vertices) {
       ierr = MatGetSubMatrix(pcbddc->local_mat,is_R_local,is_V_local,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->local_mat,is_V_local,is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->local_mat,is_V_local,is_V_local,MAT_INITIAL_MATRIX,&A_VV);CHKERRQ(ierr);
@@ -3489,7 +3489,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = PetscMalloc ((pcbddc->local_primal_size)*(pcbddc->local_primal_size)*sizeof(PetscScalar),&coarse_submat_vals);CHKERRQ(ierr);
 
     /* We are now ready to evaluate coarse basis functions and subdomain contribution to coarse problem */
-    for (i=0;i<n_vertices;i++){
+    for (i=0;i<n_vertices;i++) {
       ierr = VecSet(vec1_V,zero);CHKERRQ(ierr);
       ierr = VecSetValue(vec1_V,i,one,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(vec1_V);CHKERRQ(ierr);
@@ -3566,7 +3566,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       }
     }
 
-    for (i=0;i<n_constraints;i++){
+    for (i=0;i<n_constraints;i++) {
       ierr = VecSet(vec2_C,zero);CHKERRQ(ierr);
       ierr = VecSetValue(vec2_C,i,m_one,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(vec2_C);CHKERRQ(ierr);
@@ -3607,7 +3607,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
         ierr = VecSet(pcis->vec1_N,zero);CHKERRQ(ierr);
         ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
         ierr = VecGetArray(pcbddc->vec1_R,&array2);CHKERRQ(ierr);
-        for (j=0;j<n_R;j++){ array[ idx_R_local[j] ] = array2[j]; }
+        for (j=0;j<n_R;j++) { array[ idx_R_local[j] ] = array2[j]; }
         ierr = VecRestoreArray(pcbddc->vec1_R,&array2);CHKERRQ(ierr);
         ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
         /* assemble subdomain vector of lagrange multipliers */
@@ -3987,7 +3987,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     }
   }
 
-  switch(pcbddc->coarse_problem_type){
+  switch(pcbddc->coarse_problem_type) {
 
     case(MULTILEVEL_BDDC):   /* we define a coarse mesh where subdomains are elements */
     {
@@ -4086,14 +4086,14 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       /* build CSR graph of subdomains' connectivity */
       ierr = PetscMalloc (pcis->n*sizeof(PetscInt),&array_int);CHKERRQ(ierr);
       ierr = PetscMemzero(array_int,pcis->n*sizeof(PetscInt));CHKERRQ(ierr);
-      for (i=1;i<pcis->n_neigh;i++){/* i=1 so I don't count myself -> faces nodes counts to 1 */
-        for (j=0;j<pcis->n_shared[i];j++){
+      for (i=1;i<pcis->n_neigh;i++) {/* i=1 so I don't count myself -> faces nodes counts to 1 */
+        for (j=0;j<pcis->n_shared[i];j++) {
           array_int[ pcis->shared[i][j] ]+=1;
         }
       }
-      for (i=1;i<pcis->n_neigh;i++){
-        for (j=0;j<pcis->n_shared[i];j++){
-          if (array_int[ pcis->shared[i][j] ] > 0 ){
+      for (i=1;i<pcis->n_neigh;i++) {
+        for (j=0;j<pcis->n_shared[i];j++) {
+          if (array_int[ pcis->shared[i][j] ] > 0 ) {
             my_faces++;
             break;
           }
@@ -4103,9 +4103,9 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = MPI_Reduce(&my_faces,&total_faces,1,MPIU_INT,MPI_SUM,master_proc,prec_comm);CHKERRQ(ierr);
       ierr = PetscMalloc (my_faces*sizeof(PetscInt),&my_faces_connectivity);CHKERRQ(ierr);
       my_faces=0;
-      for (i=1;i<pcis->n_neigh;i++){
-        for (j=0;j<pcis->n_shared[i];j++){
-          if (array_int[ pcis->shared[i][j] ] > 0 ){
+      for (i=1;i<pcis->n_neigh;i++) {
+        for (j=0;j<pcis->n_shared[i];j++) {
+          if (array_int[ pcis->shared[i][j] ] > 0 ) {
             my_faces_connectivity[my_faces]=pcis->neigh[i];
             my_faces++;
             break;
@@ -4179,7 +4179,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       }
 
       /* Create new communicator for coarse problem splitting the old one */
-      if ( !(rank_prec_comm%procs_jumps_coarse_comm) && rank_prec_comm < procs_jumps_coarse_comm*n_parts ){
+      if ( !(rank_prec_comm%procs_jumps_coarse_comm) && rank_prec_comm < procs_jumps_coarse_comm*n_parts ) {
         coarse_color=0;              /* for communicator splitting */
         active_rank=rank_prec_comm;  /* for insertion of matrix values */
       }
@@ -4300,7 +4300,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       break;
   }
 
-  switch(pcbddc->coarse_communications_type){
+  switch(pcbddc->coarse_communications_type) {
 
     case(SCATTERS_BDDC):
       {
@@ -4405,8 +4405,8 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             ierr = PetscMemzero(dnz,ins_local_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
             /* use aux_ins_indices to realize a global to local mapping */
             j=0;
-            for(i=0;i<pcbddc->coarse_size;i++){
-              if(aux_ins_indices[i]==0){
+            for(i=0;i<pcbddc->coarse_size;i++) {
+              if(aux_ins_indices[i]==0) {
                 aux_ins_indices[i]=-1;
               } else {
                 aux_ins_indices[i]=j;
@@ -4441,7 +4441,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
           ins_local_primal_size = pcbddc->local_primal_size;
           ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
           ierr = PetscMalloc(ins_local_primal_size*ins_local_primal_size*sizeof(PetscScalar),&ins_coarse_mat_vals);CHKERRQ(ierr);
-          for (j=0;j<ins_local_primal_size;j++){
+          for (j=0;j<ins_local_primal_size;j++) {
             ins_local_primal_indices[j]=pcbddc->local_primal_indices[j];
             for (i=0;i<ins_local_primal_size;i++) {
               ins_coarse_mat_vals[j*ins_local_primal_size+i]=coarse_submat_vals[j*ins_local_primal_size+i];
@@ -4478,7 +4478,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         for (i=0;i<mysize;i++) {
           send_buffer[i]=(PetscMPIInt)pcbddc->local_primal_indices[i];
         }
-        if (pcbddc->coarse_problem_type == SEQUENTIAL_BDDC){
+        if (pcbddc->coarse_problem_type == SEQUENTIAL_BDDC) {
           ierr = MPI_Gatherv(send_buffer,mysize,MPIU_INT,&pcbddc->replicated_local_primal_indices[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,master_proc,prec_comm);CHKERRQ(ierr);
           ierr = MPI_Gatherv(&coarse_submat_vals[0],mysize2,MPIU_SCALAR,&temp_coarse_mat_vals[0],localsizes2,localdispl2,MPIU_SCALAR,master_proc,prec_comm);CHKERRQ(ierr);
         } else {
@@ -4591,12 +4591,12 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         ierr = VecDestroy(&vec_dnz);CHKERRQ(ierr);
         ierr = VecDestroy(&vec_onz);CHKERRQ(ierr);
       } else {
-        for (k=0;k<size_prec_comm;k++){
+        for (k=0;k<size_prec_comm;k++) {
           offset=pcbddc->local_primal_displacements[k];
           offset2=localdispl2[k];
           ins_local_primal_size = pcbddc->local_primal_sizes[k];
           ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
-          for (j=0;j<ins_local_primal_size;j++){
+          for (j=0;j<ins_local_primal_size;j++) {
             ins_local_primal_indices[j]=(PetscInt)pcbddc->replicated_local_primal_indices[offset+j];
           }
           for (j=0;j<ins_local_primal_size;j++) {
@@ -4635,7 +4635,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
           offset2 = localdispl2[k];
           ins_local_primal_size = pcbddc->local_primal_displacements[k+1]-pcbddc->local_primal_displacements[k];
           ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
-          for (j=0;j<ins_local_primal_size;j++){
+          for (j=0;j<ins_local_primal_size;j++) {
             ins_local_primal_indices[j]=(PetscInt)pcbddc->replicated_local_primal_indices[offset+j];
           }
           ins_coarse_mat_vals = &temp_coarse_mat_vals[offset2];
@@ -4646,12 +4646,12 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ins_local_primal_indices = 0;
       ins_coarse_mat_vals = 0;
     } else {
-      for (k=0;k<size_prec_comm;k++){
+      for (k=0;k<size_prec_comm;k++) {
         offset=pcbddc->local_primal_displacements[k];
         offset2=localdispl2[k];
         ins_local_primal_size = pcbddc->local_primal_sizes[k];
         ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
-        for (j=0;j<ins_local_primal_size;j++){
+        for (j=0;j<ins_local_primal_size;j++) {
           ins_local_primal_indices[j]=(PetscInt)pcbddc->replicated_local_primal_indices[offset+j];
         }
         ins_coarse_mat_vals = &temp_coarse_mat_vals[offset2];
@@ -4913,10 +4913,10 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
 
   /* count number of neigh per node */
   total_counts=0;
-  for (i=1;i<pcis->n_neigh;i++){
+  for (i=1;i<pcis->n_neigh;i++) {
     s=pcis->n_shared[i];
     total_counts+=s;
-    for (j=0;j<s;j++){
+    for (j=0;j<s;j++) {
       mat_graph->count[pcis->shared[i][j]] += 1;
     }
   }
@@ -4927,9 +4927,9 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   if (used_IS) {
     ierr = ISGetSize(used_IS,&neumann_bsize);CHKERRQ(ierr);
     ierr = ISGetIndices(used_IS,&neumann_nodes);CHKERRQ(ierr);
-    for (i=0;i<neumann_bsize;i++){
+    for (i=0;i<neumann_bsize;i++) {
       iindex = neumann_nodes[i];
-      if (mat_graph->count[iindex] > NEUMANNCNT && array[iindex]==0.0){
+      if (mat_graph->count[iindex] > NEUMANNCNT && array[iindex]==0.0) {
         mat_graph->count[iindex]+=1;
         total_counts++;
         array[iindex]=array[iindex]+1.0;
@@ -4944,7 +4944,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   if (mat_graph->nvtxs) { ierr = PetscMalloc(total_counts*sizeof(PetscInt),&mat_graph->neighbours_set[0]);CHKERRQ(ierr); }
   for (i=1;i<mat_graph->nvtxs;i++) mat_graph->neighbours_set[i]=mat_graph->neighbours_set[i-1]+mat_graph->count[i-1];
   ierr = PetscMemzero(mat_graph->count,mat_graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=1;i<pcis->n_neigh;i++){
+  for (i=1;i<pcis->n_neigh;i++) {
     s=pcis->n_shared[i];
     for (j=0;j<s;j++) {
       k=pcis->shared[i][j];
@@ -4961,9 +4961,9 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   /* set -1 fake neighbour to mimic Neumann boundary */
   if (used_IS) {
-    for (i=0;i<neumann_bsize;i++){
+    for (i=0;i<neumann_bsize;i++) {
       iindex = neumann_nodes[i];
-      if (mat_graph->count[iindex] > NEUMANNCNT){
+      if (mat_graph->count[iindex] > NEUMANNCNT) {
         if (mat_graph->count[iindex]+1 != (PetscInt)array[iindex]) {
           SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Neumann nodes provided to BDDC must be consistent among neighbours!\nNode %d: number of sharing subdomains %d != number of subdomains for which it is a neumann node %d\n",iindex,mat_graph->count[iindex]+1,(PetscInt)array[iindex]);
         }
@@ -4977,7 +4977,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   /* sort set of sharing subdomains */
   for (i=0;i<mat_graph->nvtxs;i++) { ierr = PetscSortInt(mat_graph->count[i],mat_graph->neighbours_set[i]);CHKERRQ(ierr); }
   /* remove interior nodes and dirichlet boundary nodes from the next search into the graph */
-  for (i=0;i<mat_graph->nvtxs;i++){mat_graph->touched[i]=PETSC_FALSE;}
+  for (i=0;i<mat_graph->nvtxs;i++) {mat_graph->touched[i]=PETSC_FALSE;}
   nodes_touched=0;
   ierr = PCBDDCGetDirichletBoundaries(pc,&used_IS);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec2_N,0.0);CHKERRQ(ierr);
@@ -4989,7 +4989,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Dirichlet boundaries are intended to be used with matrices with zeroed rows!\n");
     }
     ierr = ISGetIndices(used_IS,&dirichlet_nodes);CHKERRQ(ierr);
-    for (i=0;i<dirichlet_bsize;i++){
+    for (i=0;i<dirichlet_bsize;i++) {
       iindex=dirichlet_nodes[i];
       if (mat_graph->count[iindex] && !mat_graph->touched[iindex]) {
         if (array[iindex]>0.0) {
@@ -5022,7 +5022,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   if (used_IS) {
     ierr = ISGetSize(used_IS,&dirichlet_bsize);CHKERRQ(ierr);
     ierr = ISGetIndices(used_IS,&dirichlet_nodes);CHKERRQ(ierr);
-    for (i=0;i<dirichlet_bsize;i++){
+    for (i=0;i<dirichlet_bsize;i++) {
       iindex=dirichlet_nodes[i];
       if (array[iindex]>1.0 && array[iindex]!=array2[iindex] ) {
          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Dirichlet nodes provided to BDDC must be consistent among neighbours!\nNode %d: number of sharing subdomains %d != number of subdomains for which it is a neumann node %d\n",iindex,(PetscInt)array[iindex],(PetscInt)array2[iindex]);
@@ -5033,8 +5033,8 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray(pcis->vec2_N,&array2);CHKERRQ(ierr);
 
-  for (i=0;i<mat_graph->nvtxs;i++){
-    if (!mat_graph->count[i]){  /* interior nodes */
+  for (i=0;i<mat_graph->nvtxs;i++) {
+    if (!mat_graph->count[i]) {  /* interior nodes */
       mat_graph->touched[i]=PETSC_TRUE;
       mat_graph->where[i]=0;
       nodes_touched++;
@@ -5049,12 +5049,12 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     mat_graph->where[i]=where_values;
     nodes_touched++;
     /* now find all other nodes having the same set of sharing subdomains */
-    for (j=i+1;j<mat_graph->nvtxs;j++){
+    for (j=i+1;j<mat_graph->nvtxs;j++) {
       /* check for same number of sharing subdomains and dof number */
-      if (!mat_graph->touched[j] && mat_graph->count[i]==mat_graph->count[j] && mat_graph->which_dof[i] == mat_graph->which_dof[j] ){
+      if (!mat_graph->touched[j] && mat_graph->count[i]==mat_graph->count[j] && mat_graph->which_dof[i] == mat_graph->which_dof[j] ) {
         /* check for same set of sharing subdomains */
         same_set=PETSC_TRUE;
-        for (k=0;k<mat_graph->count[j];k++){
+        for (k=0;k<mat_graph->count[j];k++) {
           if (mat_graph->neighbours_set[i][k]!=mat_graph->neighbours_set[j][k]) {
             same_set=PETSC_FALSE;
           }
@@ -5156,7 +5156,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     ierr = PetscMalloc(where_values*sizeof(PetscInt),&where_to_nodes_indices);CHKERRQ(ierr);
     /* first count how many neighbours per connected component I will receive from */
     cum_recv_counts[0]=0;
-    for (i=1;i<where_values+1;i++){
+    for (i=1;i<where_values+1;i++) {
       j=0;
       while(mat_graph->where[j] != i) { j++; }
       where_to_nodes_indices[i-1]=j;
@@ -5171,10 +5171,10 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
       recv_requests[i]=MPI_REQUEST_NULL;
     }
     /* exchange with my neighbours the number of my connected components on the shared interface */
-    for (i=0;i<where_values;i++){
+    for (i=0;i<where_values;i++) {
       j=where_to_nodes_indices[i];
       k = (mat_graph->neighbours_set[j][0] == -1 ?  1 : 0);
-      for (;k<mat_graph->count[j];k++){
+      for (;k<mat_graph->count[j];k++) {
         ierr = MPI_Isend(&mat_graph->where_ncmps[i],1,MPIU_INT,mat_graph->neighbours_set[j][k],(my_rank+1)*mat_graph->count[j],interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
         ierr = MPI_Irecv(&recv_buffer_where[sum_requests],1,MPIU_INT,mat_graph->neighbours_set[j][k],(mat_graph->neighbours_set[j][k]+1)*mat_graph->count[j],interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
         sum_requests++;
@@ -5185,8 +5185,8 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     /* determine the connected component I need to adapt */
     ierr = PetscMalloc(where_values*sizeof(PetscInt),&where_cc_adapt);CHKERRQ(ierr);
     ierr = PetscMemzero(where_cc_adapt,where_values*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0;i<where_values;i++){
-      for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
+    for (i=0;i<where_values;i++) {
+      for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++) {
         /* The first condition is natural (i.e someone has a different number of cc than me), the second one is just to be safe */
         if ( mat_graph->where_ncmps[i]!=recv_buffer_where[j] || mat_graph->where_ncmps[i] > 1 ) {
           where_cc_adapt[i]=PETSC_TRUE;
@@ -5228,7 +5228,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         j = where_to_nodes_indices[i];
         k = (mat_graph->neighbours_set[j][0] == -1 ?  1 : 0);
         sizes_of_sends[i]=size_of_send;
-        for (;k<mat_graph->count[j];k++){
+        for (;k<mat_graph->count[j];k++) {
           ierr = MPI_Isend(&sizes_of_sends[i],1,MPIU_INT,mat_graph->neighbours_set[j][k],(my_rank+1)*mat_graph->count[j],interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
           ierr = MPI_Irecv(&recv_buffer_where[sum_requests+start_of_recv],1,MPIU_INT,mat_graph->neighbours_set[j][k],(mat_graph->neighbours_set[j][k]+1)*mat_graph->count[j],interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
           sum_requests++;
@@ -5250,7 +5250,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         size_of_send = sizes_of_sends[i];
         j = where_to_nodes_indices[i];
         k = (mat_graph->neighbours_set[j][0] == -1 ?  1 : 0);
-        for (;k<mat_graph->count[j];k++){
+        for (;k<mat_graph->count[j];k++) {
           ierr = MPI_Isend(&send_buffer[start_of_send],size_of_send,MPIU_INT,mat_graph->neighbours_set[j][k],(my_rank+1)*mat_graph->count[j],interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
           size_of_recv=recv_buffer_where[cum_recv_counts[where_values]+sum_requests];
           ierr = MPI_Irecv(&recv_buffer[start_of_recv],size_of_recv,MPIU_INT,mat_graph->neighbours_set[j][k],(mat_graph->neighbours_set[j][k]+1)*mat_graph->count[j],interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
@@ -5273,11 +5273,11 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     start_of_recv=0;
     ierr = PetscMalloc(mat_graph->nvtxs*sizeof(PetscInt),&nodes_to_temp_buffer_indices);CHKERRQ(ierr);
     global_where_counter=0;
-    for (i=0;i<where_values;i++){
-      if (where_cc_adapt[i]){
+    for (i=0;i<where_values;i++) {
+      if (where_cc_adapt[i]) {
         temp_buffer_size=0;
         /* find nodes on the shared interface we need to adapt */
-        for (j=0;j<mat_graph->nvtxs;j++){
+        for (j=0;j<mat_graph->nvtxs;j++) {
           if (mat_graph->where[j]==i+1) {
             nodes_to_temp_buffer_indices[j]=temp_buffer_size;
             temp_buffer_size++;
@@ -5289,7 +5289,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         ierr = PetscMalloc(temp_buffer_size*sizeof(PetscInt*),&temp_buffer);CHKERRQ(ierr);
         ierr = PetscMalloc(temp_buffer_size*(cum_recv_counts[i+1]-cum_recv_counts[i])*sizeof(PetscInt),&temp_buffer[0]);CHKERRQ(ierr);
         ierr = PetscMemzero(temp_buffer[0],temp_buffer_size*(cum_recv_counts[i+1]-cum_recv_counts[i])*sizeof(PetscInt));CHKERRQ(ierr);
-        for (j=1;j<temp_buffer_size;j++){
+        for (j=1;j<temp_buffer_size;j++) {
           temp_buffer[j]=temp_buffer[j-1]+cum_recv_counts[i+1]-cum_recv_counts[i];
         }
         /* analyze contributions from neighbouring subdomains for i-th conn comp
@@ -5323,13 +5323,13 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         }
         ierr = PetscMalloc(temp_buffer_size*sizeof(PetscInt),&add_to_where);CHKERRQ(ierr);
         ierr = PetscMemzero(add_to_where,temp_buffer_size*sizeof(PetscInt));CHKERRQ(ierr);
-        for (j=0;j<temp_buffer_size;j++){
-          if (!add_to_where[j]){ /* found a new cc  */
+        for (j=0;j<temp_buffer_size;j++) {
+          if (!add_to_where[j]) { /* found a new cc  */
             global_where_counter++;
             add_to_where[j]=global_where_counter;
-            for (k=j+1;k<temp_buffer_size;k++){ /* check for other nodes in new cc */
+            for (k=j+1;k<temp_buffer_size;k++) { /* check for other nodes in new cc */
               same_set=PETSC_TRUE;
-              for (s=0;s<cum_recv_counts[i+1]-cum_recv_counts[i];s++){
+              for (s=0;s<cum_recv_counts[i+1]-cum_recv_counts[i];s++) {
                 if (temp_buffer[j][s]!=temp_buffer[k][s]) {
                   same_set=PETSC_FALSE;
                   break;
@@ -5341,7 +5341,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         }
         /* insert new data in where array */
         temp_buffer_size=0;
-        for (j=0;j<mat_graph->nvtxs;j++){
+        for (j=0;j<mat_graph->nvtxs;j++) {
           if (mat_graph->where[j]==i+1) {
             mat_graph->where[j]=where_values+add_to_where[temp_buffer_size];
             temp_buffer_size++;
@@ -5365,12 +5365,12 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     ierr = PetscFree(where_cc_adapt);CHKERRQ(ierr);
     /* We are ready to evaluate consistent connected components on each part of the shared interface */
     if (global_where_counter) {
-      for (i=0;i<mat_graph->nvtxs;i++){ mat_graph->touched[i]=PETSC_FALSE; }
+      for (i=0;i<mat_graph->nvtxs;i++) { mat_graph->touched[i]=PETSC_FALSE; }
       global_where_counter=0;
-      for (i=0;i<mat_graph->nvtxs;i++){
+      for (i=0;i<mat_graph->nvtxs;i++) {
         if (mat_graph->where[i] && !mat_graph->touched[i]) {
           global_where_counter++;
-          for (j=i+1;j<mat_graph->nvtxs;j++){
+          for (j=i+1;j<mat_graph->nvtxs;j++) {
             if (!mat_graph->touched[j] && mat_graph->where[j]==mat_graph->where[i]) {
               mat_graph->where[j]=global_where_counter;
               mat_graph->touched[j]=PETSC_TRUE;
@@ -5402,8 +5402,8 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   PetscInt nvc=0;
   PetscBool twodim_flag=PETSC_FALSE;
   for (i=0; i<mat_graph->ncmps; i++) {
-    if ( mat_graph->cptr[i+1]-mat_graph->cptr[i] > vertex_size ){
-      if (mat_graph->count[mat_graph->queue[mat_graph->cptr[i]]]==1){ /* 1 neigh Neumann fake included */
+    if ( mat_graph->cptr[i+1]-mat_graph->cptr[i] > vertex_size ) {
+      if (mat_graph->count[mat_graph->queue[mat_graph->cptr[i]]]==1) { /* 1 neigh Neumann fake included */
         nfc++;
       } else { /* note that nec will be zero in 2d */
         nec++;
@@ -5440,11 +5440,11 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   nfc=0;
   nec=0;
   for (i=0; i<mat_graph->ncmps; i++) {
-    if ( mat_graph->cptr[i+1]-mat_graph->cptr[i] > vertex_size ){
+    if ( mat_graph->cptr[i+1]-mat_graph->cptr[i] > vertex_size ) {
       for (j=0;j<mat_graph->cptr[i+1]-mat_graph->cptr[i];j++) {
         auxis[j]=mat_graph->queue[mat_graph->cptr[i]+j];
       }
-      if (mat_graph->count[mat_graph->queue[mat_graph->cptr[i]]]==1){
+      if (mat_graph->count[mat_graph->queue[mat_graph->cptr[i]]]==1) {
         if (twodim_flag) {
           if (use_edges) {
             ierr = ISCreateGeneral(PETSC_COMM_SELF,j,auxis,PETSC_COPY_VALUES,&pcbddc->ISForEdges[nec]);CHKERRQ(ierr);
@@ -5469,7 +5469,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   nvc=0;
   if ( !pcbddc->constraints_flag ) {
     for (i=0; i<mat_graph->ncmps; i++) {
-      if ( mat_graph->cptr[i+1]-mat_graph->cptr[i] <= vertex_size ){
+      if ( mat_graph->cptr[i+1]-mat_graph->cptr[i] <= vertex_size ) {
         for ( j=mat_graph->cptr[i];j<mat_graph->cptr[i+1];j++) {
           auxis[nvc]=mat_graph->queue[j];
           nvc++;
@@ -5492,7 +5492,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d ",mat_graph->neighbours_set[mat_graph->queue[mat_graph->cptr[i]]][j]);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");
-      for (j=mat_graph->cptr[i]; j<mat_graph->cptr[i+1]; j++){
+      for (j=mat_graph->cptr[i]; j<mat_graph->cptr[i+1]; j++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d (%d), ",mat_graph->queue[j],queue_in_global_numbering[j]);CHKERRQ(ierr);
       }
     }

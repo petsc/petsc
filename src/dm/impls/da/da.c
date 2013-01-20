@@ -724,12 +724,12 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
-  if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+  if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     M = dd->refine_x*dd->M;
   } else {
     M = 1 + dd->refine_x*(dd->M - 1);
   }
-  if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+  if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     if (dd->dim > 1) {
       N = dd->refine_y*dd->N;
     } else {
@@ -738,7 +738,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   } else {
     N = 1 + dd->refine_y*(dd->N - 1);
   }
-  if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+  if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     if (dd->dim > 2) {
       P = dd->refine_z*dd->P;
     } else {
@@ -854,12 +854,12 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
-  if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+  if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     M = dd->M / dd->coarsen_x;
   } else {
     M = 1 + (dd->M - 1) / dd->coarsen_x;
   }
-  if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+  if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     if (dd->dim > 1) {
       N = dd->N / dd->coarsen_y;
     } else {
@@ -868,7 +868,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   } else {
     N = 1 + (dd->N - 1) / dd->coarsen_y;
   }
-  if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+  if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
     if (dd->dim > 2) {
       P = dd->P / dd->coarsen_z;
     } else {

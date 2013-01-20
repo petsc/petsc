@@ -59,7 +59,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
     for (i=0; i<rbs; i++)
         asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
   }
-  switch (bs){
+  switch (bs) {
     case 4:
       a->A->ops->mult          = MatMult_SeqSBSTRM_4;
       a->A->ops->multtranspose = MatMult_SeqSBSTRM_4;
@@ -94,7 +94,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
     for (i=0; i<rbs; i++)
         bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
   }
-  switch (bs){
+  switch (bs) {
     case 4:
       /* a->B->ops->mult             = MatMult_SeqSBSTRM_4; */
       a->B->ops->multtranspose    = MatMultTranspose_SeqBSTRM_4;

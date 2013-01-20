@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   /* Test sbaij matrix */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-test_sbaij1", &flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     Mat sA;
     PetscBool issymm;
     ierr = MatIsTranspose(A,A,0.0,&issymm);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   /* check final residual */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     Vec            b1;
     PetscReal      norm;
     ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
@@ -149,9 +149,9 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   v_neighbor = v + dof*dof;
   ierr = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3 = 0;
-  for (k1=0; k1<dof; k1++){
-    for (k2=0; k2<dof; k2++){
-      if (k1 == k2){
+  for (k1=0; k1<dof; k1++) {
+    for (k2=0; k2<dof; k2++) {
+      if (k1 == k2) {
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
@@ -163,11 +163,11 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i<xs+xm; i++){
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
         row.i = i; row.j = j; row.k = k;
-        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) { /* boudary points */
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else { /* interior points */
           /* center */

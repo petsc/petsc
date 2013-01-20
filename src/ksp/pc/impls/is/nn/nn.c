@@ -260,7 +260,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Set the values of DZ_OUT, in order to send this info to the neighbours */
   /* First, set the auxiliary array pcis->work_N. */
   ierr = PCISScatterArrayNToVecB(pcis->work_N,pcis->D,INSERT_VALUES,SCATTER_REVERSE,pc);CHKERRQ(ierr);
-  for (i=1; i<n_neigh; i++){
+  for (i=1; i<n_neigh; i++) {
     for (j=0; j<n_shared[i]; j++) {
       DZ_OUT[i][j] = pcis->work_N[shared[i][j]];
     }

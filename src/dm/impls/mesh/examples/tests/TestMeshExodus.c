@@ -561,19 +561,19 @@ PetscErrorCode EXOGetElemType(const char *name,EXO_ELEM_TYPE *elem_type)
   PetscErrorCode ierr;
   char     *elem_sig;
   ierr = PetscStrstr("tri,tri3,triangle,triangle3",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig){
+  if (elem_sig) {
     *elem_type = EXO_TRI;
   }
   ierr = PetscStrstr("tet,tet4,tetra,tetra4",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig){
+  if (elem_sig) {
     *elem_type = EXO_TET;
   }
   ierr = PetscStrstr("quad,quad4",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig){
+  if (elem_sig) {
     *elem_type = EXO_QUAD;
   }
   ierr = PetscStrstr("hex,hex8",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig){
+  if (elem_sig) {
     *elem_type = EXO_HEX;
   }
 

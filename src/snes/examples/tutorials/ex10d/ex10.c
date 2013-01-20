@@ -184,9 +184,9 @@ int main(int argc,char **argv)
        ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Number of neighbors for the vertex %D is %D\n",inode,nbrs);CHKERRQ(ierr);
        user.itot[user.Nvlocal] = nbrs;
        Nvneighborstotal += nbrs;
-       for (i = 0; i < user.itot[user.Nvlocal]; i++){
+       for (i = 0; i < user.itot[user.Nvlocal]; i++) {
          form[0]='\0';
-         for (j=0; j < i+2; j++){
+         for (j=0; j < i+2; j++) {
            ierr = PetscStrcat(form,"%*d ");CHKERRQ(ierr);
          }
            ierr = PetscStrcat(form,"%d");CHKERRQ(ierr);
@@ -397,7 +397,7 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
    ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
-   if (!fd_jacobian_coloring){
+   if (!fd_jacobian_coloring) {
      ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
    } else { /* Use matfdcoloring */
      ISColoring    iscoloring;
@@ -436,7 +436,7 @@ int main(int argc,char **argv)
      Print the initial guess
    */
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  for (inode = 0; inode < user.Nvlocal; inode++){
+  for (inode = 0; inode < user.Nvlocal; inode++) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Initial Solution at node %D is %f \n",inode,xx[inode]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
@@ -480,7 +480,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.localF);CHKERRQ(ierr);
   ierr = MatDestroy(&Jac);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   /*ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);*/
-  if (fd_jacobian_coloring){
+  if (fd_jacobian_coloring) {
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();

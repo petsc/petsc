@@ -401,7 +401,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  if (norm_2 > 1.e-2){
+  if (norm_2 > 1.e-2) {
     printf("Timestep %d: step size = %G, time = %G, 2-norm error = %G, max norm error = %G\n",
          (int)step,dt,crtime,norm_2,norm_max);
   }

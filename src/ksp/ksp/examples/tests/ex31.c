@@ -63,13 +63,13 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - -
                       Test partition
   - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (partition){
+  if (partition) {
     MatPartitioning mpart;
     IS              mis,nis,is;
     PetscInt        *count;
     Mat             BB;
 
-    if (displayMat){
+    if (displayMat) {
       if (!rank) printf("Before partitioning/reordering, A:\n");CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
@@ -81,13 +81,13 @@ int main(int argc,char **args)
     ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
     ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
     ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
-    if (displayIS){
+    if (displayIS) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"mis, new processor assignment:\n");CHKERRQ(ierr);
       ierr = ISView(mis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
     ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
-    if (displayIS){
+    if (displayIS) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"nis:\n");CHKERRQ(ierr);
       ierr = ISView(nis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
@@ -97,7 +97,7 @@ int main(int argc,char **args)
     if (displayIS && !rank ) {
       PetscInt i;
       printf("[ %d ] count:\n",rank);
-      for (i=0; i<size; i++){
+      for (i=0; i<size; i++) {
         printf(" %d",count[i]);
       }
       printf("\n");
@@ -107,13 +107,13 @@ int main(int argc,char **args)
     ierr = PetscFree(count);CHKERRQ(ierr);
     ierr = ISDestroy(&nis);CHKERRQ(ierr);
     ierr = ISSort(is);CHKERRQ(ierr);
-    if (displayIS){
+    if (displayIS) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"inverse of nis - maps new local rows to old global rows:\n");CHKERRQ(ierr);
       ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
     ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
-    if (displayMat){
+    if (displayMat) {
       if (!rank) printf("After partitioning/reordering, A:\n");CHKERRQ(ierr);
       ierr = MatView(BB,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
@@ -143,7 +143,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     KSPConvergedReason reason;
     ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);

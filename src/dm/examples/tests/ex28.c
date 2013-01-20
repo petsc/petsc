@@ -73,7 +73,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(coords, &a);CHKERRQ(ierr);
     PetscInt j,k,n = 0;
     for (i = 0; i < 3; ++i) {
-      for (j = 0; j < dim[i]; ++j){
+      for (j = 0; j < dim[i]; ++j) {
         for (k = 0; k < 3; ++k) {
           a[n] = j*h[i]; /* coordinate along the j-th point in the i-th dimension */
           ++n;
@@ -158,7 +158,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatMult(AA,xxsplit[ii],zzsplit[ii]);CHKERRQ(ierr);
   }
   /* Now apply USFFT and FFTW forward several (3) times */
-  for (i=0; i<3; ++i){
+  for (i=0; i<3; ++i) {
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
     for (ii = 0; ii < 3; ++ii) {
       ierr = MatMult(AA,xxsplit[ii],yysplit[ii]);CHKERRQ(ierr);

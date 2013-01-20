@@ -143,7 +143,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   }
   if (!ksp->reason) {
     if (ksp->normtype != KSP_NORM_NONE) {
-      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED){
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
         ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);   /*   z <- B r          */

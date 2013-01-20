@@ -156,7 +156,7 @@ PetscErrorCode DMAKKTSetFieldDecomposition(DM dm, PetscInt n, const char* const 
     if (kkt->names[i]) {
       ierr = PetscFree(kkt->names[i]);CHKERRQ(ierr);
     }
-    if (names[i]){
+    if (names[i]) {
       ierr = PetscStrallocpy(names[i], &(kkt->names[i]));CHKERRQ(ierr);
     }
     if (iss[i]) {
@@ -219,7 +219,7 @@ PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char*** names, IS
     }
   }
   for (i = 0; i < 2; ++i) {
-    if (names && kkt->names){
+    if (names && kkt->names) {
       ierr = PetscStrallocpy(kkt->names[i],(*names)+i);CHKERRQ(ierr);
     }
     if (iss && kkt->isf) {
@@ -275,7 +275,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
 
   PetscFunctionBegin;
   if (dm->setupcalled) PetscFunctionReturn(0);
-  if (!kkt->Aff){
+  if (!kkt->Aff) {
     if (kkt->dm) {
       ierr = DMCreateMatrix(kkt->dm, MATAIJ, &kkt->Aff);CHKERRQ(ierr);
     } else SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Neither matrix nor DM set");
@@ -618,13 +618,13 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v)
     if (kkt->names[i]) {
       ierr = PetscViewerASCIIPrintf(v, "%s, name %s:\n", label, kkt->names[i]);CHKERRQ(ierr);
     }
-    if (kkt->isf[i]){
+    if (kkt->isf[i]) {
       ierr = PetscViewerASCIIPrintf(v, "%s, IS:\n",label);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
       ierr = ISView(kkt->isf[i],v);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
     }
-    if (kkt->dmf[i]){
+    if (kkt->dmf[i]) {
       ierr = PetscViewerASCIIPrintf(v, "%s, DM:\n", label);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
       ierr = DMView(kkt->dmf[i],v);CHKERRQ(ierr);

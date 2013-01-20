@@ -87,7 +87,7 @@ PetscInt main(PetscInt argc,char **args)
 
   /* make A complex Hermitian */
   Ii = 0; J = dim-1;
-  if (Ii >= rstart && Ii < rend){
+  if (Ii >= rstart && Ii < rend) {
     v = sigma2*h2; /* RealPart(v) = 0.0 */
     ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
     v = -sigma2*h2;
@@ -95,7 +95,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   Ii = dim-2; J = dim-1;
-  if (Ii >= rstart && Ii < rend){
+  if (Ii >= rstart && Ii < rend) {
   v = sigma2*h2; /* RealPart(v) = 0.0 */
   ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
   v = -sigma2*h2;
@@ -109,12 +109,12 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Hermit;
-    if (disp_mat){
+    if (disp_mat) {
       if (!rank) printf(" A:\n");
       ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX, &Hermit);
-    if (disp_mat){
+    if (disp_mat) {
       if (!rank) printf(" A_Hermitian:\n");
       ierr = MatView(Hermit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
@@ -126,7 +126,7 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
-  if (disp_mat){
+  if (disp_mat) {
     if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," As:\n");CHKERRQ(ierr);}
     ierr = MatView(As,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -144,7 +144,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
   ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!rank){
+  if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
   }
 

@@ -102,7 +102,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(pc->pmat,&range);CHKERRQ(ierr);
     rstart_sub = range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */
-    if (subrank+1 < subsize){
+    if (subrank+1 < subsize) {
       rend_sub = range[red->psubcomm->n*(subrank+1)];
     } else {
       rend_sub = m;
@@ -118,14 +118,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->ydup);CHKERRQ(ierr);
 
     /* create vec scatters */
-    if (!red->scatterin){
+    if (!red->scatterin) {
       IS       is1,is2;
       PetscInt *idx1,*idx2,i,j,k;
 
       ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
       j = 0;
-      for (k=0; k<red->psubcomm->n; k++){
-        for (i=mstart; i<mend; i++){
+      for (k=0; k<red->psubcomm->n; k++) {
+        for (i=mstart; i<mend; i++) {
           idx1[j]   = i;
           idx2[j++] = i + m*k;
         }
@@ -170,7 +170,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   } else {
     ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
-  if (pc->setfromoptionscalled){
+  if (pc->setfromoptionscalled) {
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   }
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);

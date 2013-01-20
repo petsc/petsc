@@ -201,7 +201,7 @@ PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,Pet
   for (i=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    for (j=0; j<len ; ++j){
+    for (j=0; j<len ; ++j) {
       for (k=0; k<bs; k++) nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);

@@ -348,16 +348,16 @@ PetscErrorCode KSPDestroy_DGMRES (KSP ksp)
     ierr = PetscFree (X2);CHKERRQ(ierr);
     ierr = PetscFree (dgmres->work);CHKERRQ(ierr);
     ierr = PetscFree (dgmres->iwork);CHKERRQ(ierr);
-    if(dgmres->wr){
+    if(dgmres->wr) {
       ierr = PetscFree (dgmres->wr);CHKERRQ(ierr);
     }
-    if(dgmres->wi){
+    if(dgmres->wi) {
       ierr = PetscFree (dgmres->wi);CHKERRQ(ierr);
     }
-    if(dgmres->modul){
+    if(dgmres->modul) {
       ierr = PetscFree (dgmres->modul);CHKERRQ(ierr);
     }
-    if(dgmres->Q){
+    if(dgmres->Q) {
       ierr = PetscFree (dgmres->Q);CHKERRQ(ierr);
     }
     ierr=PetscFree (ORTH);CHKERRQ(ierr);
@@ -559,7 +559,7 @@ PetscErrorCode KSPView_DGMRES (KSP ksp,PetscViewer viewer)
     if (dgmres->force) PetscViewerASCIIPrintf (viewer, "   DGMRES: Adaptive strategy is used: FALSE\n");
     else PetscViewerASCIIPrintf (viewer, "   DGMRES: Adaptive strategy is used: TRUE\n");
     ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_dgmres_harmonic_ritz", &isharmonic);CHKERRQ(ierr);
-    if(isharmonic){
+    if(isharmonic) {
       ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig);CHKERRQ(ierr);
     } else {
       ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Frequency of extracted eigenvalues = %D using Ritz values \n", dgmres->neig);CHKERRQ(ierr);
@@ -872,12 +872,12 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig)
   /* copy the Hessenberg matrix to work space */
   ierr = PetscMemcpy(A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscOptionsHasName (PETSC_NULL, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
-  if (flag){
+  if (flag) {
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     /* Transpose the Hessenberg matrix */
     ierr = PetscMalloc (bn*bn*sizeof(PetscScalar), &Ht);CHKERRQ(ierr);
     for (i = 0; i < bn; i++)
-      for (j = 0; j < bn; j++){
+      for (j = 0; j < bn; j++) {
         Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i];
       }
 

@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  if (!rank){
+  if (!rank) {
     value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
     for (i=1; i<n-1; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
   }
@@ -90,13 +90,13 @@ int main(int argc,char **args)
   ierr = VecAXPY(x2,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x2,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"2. Norm of error for A^T x=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
   }
 
   /* 3. Change A and solve A x = b with an iterative solver using A=LU as a preconditioner*/
-  if (!rank){
+  if (!rank) {
     i = 0; col[0] = n-1; value[0] = 1.e-2;
     ierr = MatSetValues(A,1,&i,1,col,value,ADD_VALUES);CHKERRQ(ierr);
   }
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
   }

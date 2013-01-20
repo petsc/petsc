@@ -230,7 +230,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
-  for (i=0; i<26*mp*np*pp; i++){
+  for (i=0; i<26*mp*np*pp; i++) {
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
@@ -501,7 +501,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
-  for (i=0; i<6*mp*np*pp; i++){
+  for (i=0; i<6*mp*np*pp; i++) {
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);

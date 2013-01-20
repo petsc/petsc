@@ -881,7 +881,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
       }
     }
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
-      if (!dd->arrayghostedin[i]){
+      if (!dd->arrayghostedin[i]) {
         dd->arrayghostedin[i] = *iptr;
         dd->startghostedin[i] = iarray_start;
         break;
@@ -897,7 +897,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
       }
     }
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
-      if (!dd->arrayin[i]){
+      if (!dd->arrayin[i]) {
         dd->arrayin[i]  = *iptr;
         dd->startin[i]  = iarray_start;
         break;

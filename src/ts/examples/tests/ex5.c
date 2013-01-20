@@ -208,7 +208,7 @@ int main(int argc,char **argv)
     mixratio = calcmixingr(sfctemp,pressure1);
     rh = (x/mixratio)*100;
 
-    if (!rank){printf("Initial RH = %.1f percent\n\n",rh);}   /* prints initial relative humidity */
+    if (!rank) {printf("Initial RH = %.1f percent\n\n",rh);}   /* prints initial relative humidity */
 
     time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
@@ -246,7 +246,7 @@ int main(int argc,char **argv)
   /* set values for MonitorCtx */
   usermonitor.drawcontours = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
-  if (usermonitor.drawcontours){
+  if (usermonitor.drawcontours) {
     PetscReal bounds[] = {1000.0,-1000.,  -1000.,-1000.,  1000.,-1000.,  1000.,-1000.,  1000,-1000, 100700,100800};
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetBounds(usermonitor.drawviewer,dof,bounds);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ int main(int argc,char **argv)
   MatFDColoring  matfdcoloring=0;
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (use_coloring){
+  if (use_coloring) {
     ISColoring     iscoloring;
     ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
@@ -283,13 +283,13 @@ int main(int argc,char **argv)
   /* Define what to print for ts_monitor option */
   PetscBool  monitor_off = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
-  if (!monitor_off){
+  if (!monitor_off) {
     ierr = TSMonitorSet(ts,Monitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  if (!rank){printf("time %d, ftime %g hour, TIMESTEP %g\n",time,ftime/3600,dt);}
+  if (!rank) {printf("time %d, ftime %g hour, TIMESTEP %g\n",time,ftime/3600,dt);}
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,T);CHKERRQ(ierr);
@@ -306,11 +306,11 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,T);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  if (!rank){PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);}
+  if (!rank) {PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);}
 
 
-  if (matfdcoloring){ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
-  if (usermonitor.drawcontours){
+  if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
+  if (usermonitor.drawcontours) {
     ierr = PetscViewerDestroy(&usermonitor.drawviewer);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&J);CHKERRQ(ierr);
@@ -754,10 +754,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
   ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-  if (!rank){printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);}
+  if (!rank) {printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);}
   ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
 
-  if (user->drawcontours){
+  if (user->drawcontours) {
     ierr = VecView(T,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -309,7 +309,7 @@ PetscErrorCode  PCISSetUp(PC pc)
           ierr = PCFactorSetShiftType(pc_ctx,MAT_SHIFT_NONZERO);CHKERRQ(ierr);
           ierr = PCFactorSetShiftAmount(pc_ctx,floating_factor);CHKERRQ(ierr);
         }
-        if (!(not_remove_nullspace_floating)){
+        if (!(not_remove_nullspace_floating)) {
           MatNullSpace nullsp;
           ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
           ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
