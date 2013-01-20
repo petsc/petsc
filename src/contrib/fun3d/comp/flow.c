@@ -2732,8 +2732,8 @@ int set_up_grid(GRID *grid)
    * If using GMRES (nsrch>0) allocate memory
    */
   /* NoEq = 0;
-   *  if(nsrch > 0)NoEq = 4*nnodes;
-   *  if(nsrch < 0)NoEq = nnodes;
+   *  if (nsrch > 0)NoEq = 4*nnodes;
+   *  if (nsrch < 0)NoEq = nnodes;
    *  FCALLOC(NoEq,           &grid->AP);
    *  FCALLOC(NoEq,           &grid->Xgm);
    *  FCALLOC(NoEq,           &grid->temr);

@@ -916,7 +916,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
             ierr = MatGetOwnershipRange(Lmat, &Istart, &Iend);CHKERRQ(ierr);
             for (Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++) {
               ierr = MatGetRow(Lmat,Ii,&ncols,0,0);CHKERRQ(ierr);
-              if(ncols <= 1) {
+              if (ncols <= 1) {
                 ierr = VecSetValues(bb, 1, &Ii, &zero, INSERT_VALUES);CHKERRQ(ierr);
               }
               ierr = MatRestoreRow(Lmat,Ii,&ncols,0,0);CHKERRQ(ierr);

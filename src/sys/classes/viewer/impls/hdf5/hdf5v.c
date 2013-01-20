@@ -39,7 +39,7 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
  PetscFunctionBegin;
  ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
  if (hdf5->groups) {
-   while(hdf5->groups) {
+   while (hdf5->groups) {
      GroupList *tmp = hdf5->groups->next;
 
      ierr = PetscFree(hdf5->groups->name);CHKERRQ(ierr);

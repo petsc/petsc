@@ -114,7 +114,7 @@ PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscBool  flg)
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  switch(op) {
+  switch (op) {
     case MAT_USE_INODES:
       a->inode.use         = flg;
       break;

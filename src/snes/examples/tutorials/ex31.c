@@ -586,7 +586,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints);CHKERRQ(ierr);
   ierr = ISGetLocalSize(bcPoints, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(bcPoints, &points);CHKERRQ(ierr);
-  for(p = 0; p < numPoints; ++p) {
+  for (p = 0; p < numPoints; ++p) {
     PetscBool onBd[5];
     PetscInt  off, bd;
 
@@ -599,14 +599,14 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* Compress out non-vertices */
-      for(q = 0, r = 0; q < closureSize*2; q += 2) {
+      for (q = 0, r = 0; q < closureSize*2; q += 2) {
         if ((closure[q] >= vStart) && (closure[q] < vEnd)) {
           closure[r] = closure[q];
           ++r;
         }
       }
       closureSize = r;
-      for(q = 0; q < closureSize; ++q) {
+      for (q = 0; q < closureSize; ++q) {
         ierr = PetscSectionGetOffset(coordSection, closure[q], &off);CHKERRQ(ierr);
         ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
         if (!onBd[corner]) break;
@@ -615,7 +615,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
       if (q == closureSize) SETERRQ1(comm, PETSC_ERR_PLIB, "Cannot handle face %d which has every vertex on a corner", points[p]);
     }
 
-    for(bd = 0; bd < 5; ++bd) {
+    for (bd = 0; bd < 5; ++bd) {
       if (onBd[bd]) {
         ++numBoundaryPoints[bd];
         break;
@@ -623,11 +623,11 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
     }
   }
   /* Set points on each boundary */
-  for(bd = 0; bd < 5; ++bd) {
+  for (bd = 0; bd < 5; ++bd) {
     ierr = PetscMalloc(numBoundaryPoints[bd] * sizeof(PetscInt), &bdPoints[bd]);CHKERRQ(ierr);
     numBoundaryPoints[bd] = 0;
   }
-  for(p = 0; p < numPoints; ++p) {
+  for (p = 0; p < numPoints; ++p) {
     PetscBool onBd[5];
     PetscInt  off, bd;
 
@@ -640,14 +640,14 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* Compress out non-vertices */
-      for(q = 0, r = 0; q < closureSize*2; q += 2) {
+      for (q = 0, r = 0; q < closureSize*2; q += 2) {
         if ((closure[q] >= vStart) && (closure[q] < vEnd)) {
           closure[r] = closure[q];
           ++r;
         }
       }
       closureSize = r;
-      for(q = 0; q < closureSize; ++q) {
+      for (q = 0; q < closureSize; ++q) {
         ierr = PetscSectionGetOffset(coordSection, closure[q], &off);CHKERRQ(ierr);
         ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
         if (!onBd[corner]) break;
@@ -656,7 +656,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
       if (q == closureSize) SETERRQ1(comm, PETSC_ERR_PLIB, "Cannot handle face %d which has every vertex on a corner", points[p]);
     }
 
-    for(bd = 0; bd < 5; ++bd) {
+    for (bd = 0; bd < 5; ++bd) {
       if (onBd[bd]) {
         bdPoints[bd][numBoundaryPoints[bd]++] = points[p];
         break;
@@ -666,7 +666,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = ISRestoreIndices(bcPoints, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPoints);CHKERRQ(ierr);
-  for(bd = 0; bd < 5; ++bd) {
+  for (bd = 0; bd < 5; ++bd) {
     ierr = ISCreateGeneral(comm, numBoundaryPoints[bd], bdPoints[bd], PETSC_OWN_POINTER, &(*boundaryPoints)[bd]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -691,7 +691,7 @@ PetscErrorCode CreateBoundaryPointIS(DM dm, PetscInt *numBoundaries, PetscInt **
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  switch(dim) {
+  switch (dim) {
   case 2:
     CreateBoundaryPointIS_Square(dm, numBoundaries, numBoundaryConstraints, boundaryPoints, constraintIndices);CHKERRQ(ierr);
     break;
@@ -774,14 +774,14 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = DMPlexCreateSectionInitial(dm, dim, numFields, numComp, numDof, &section);CHKERRQ(ierr);
     /* Velocity conditions */
     ierr = CreateBoundaryPointIS(dm, &numBoundaries, &numBoundaryConstraints, &boundaryPoints, &constraintIndices);CHKERRQ(ierr);
-    for(b = 0; b < numBoundaries; ++b) {
+    for (b = 0; b < numBoundaries; ++b) {
       ierr = DMPlexCreateSectionBCDof(dm, 1, &bcFields[0], &boundaryPoints[b], numBoundaryConstraints[b], section);CHKERRQ(ierr);
     }
     /* Temperature conditions */
     ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
     ierr = DMPlexCreateSectionBCDof(dm, 1, &bcFields[1], &bcPoints[0], PETSC_DETERMINE, section);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
-    for(b = 0; b < numBoundaries; ++b) {
+    for (b = 0; b < numBoundaries; ++b) {
       ierr = DMPlexCreateSectionBCIndicesField(dm, bcFields[0], boundaryPoints[b], constraintIndices[b], section);CHKERRQ(ierr);
     }
     ierr = DMPlexCreateSectionBCIndicesField(dm, bcFields[1], bcPoints[0], PETSC_NULL, section);CHKERRQ(ierr);
@@ -821,16 +821,16 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  switch(user->forcingType) {
+  switch (user->forcingType) {
   case FORCING_CONSTANT:
     if (user->bcType == FREE_SLIP) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Constant forcing is incompatible with freeslip boundary conditions");
     fem->f0Funcs[0] = f0_u_constant;
     break;
   case FORCING_LINEAR:
-    switch(user->bcType) {
+    switch (user->bcType) {
     case DIRICHLET:
     case FREE_SLIP:
-      switch(user->dim) {
+      switch (user->dim) {
       case 2:
         fem->f0Funcs[0] = f0_u_linear_2d;
         break;
@@ -843,10 +843,10 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
     }
     break;
   case FORCING_CUBIC:
-    switch(user->bcType) {
+    switch (user->bcType) {
     case DIRICHLET:
     case FREE_SLIP:
-      switch(user->dim) {
+      switch (user->dim) {
       case 2:
         fem->f0Funcs[0] = f0_u_cubic_2d;
         break;
@@ -900,11 +900,11 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   fem->g3Funcs[6] = PETSC_NULL;
   fem->g3Funcs[7] = PETSC_NULL;
   fem->g3Funcs[8] = g3_TT;      /* < \nabla t, \nabla T + {\nabla T}^T > */
-  switch(user->forcingType) {
+  switch (user->forcingType) {
   case FORCING_CONSTANT:
-    switch(user->bcType) {
+    switch (user->bcType) {
     case DIRICHLET:
-      switch(user->dim) {
+      switch (user->dim) {
       case 2:
         user->exactFuncs[0] = quadratic_u_2d;
         user->exactFuncs[1] = quadratic_v_2d;
@@ -927,9 +927,9 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
     }
     break;
   case FORCING_LINEAR:
-    switch(user->bcType) {
+    switch (user->bcType) {
     case DIRICHLET:
-      switch(user->dim) {
+      switch (user->dim) {
       case 2:
         user->exactFuncs[0] = cubic_u_2d;
         user->exactFuncs[1] = cubic_v_2d;
@@ -945,10 +945,10 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
     }
     break;
   case FORCING_CUBIC:
-    switch(user->bcType) {
+    switch (user->bcType) {
     case DIRICHLET:
     case FREE_SLIP:
-      switch(user->dim) {
+      switch (user->dim) {
       case 2:
         user->exactFuncs[0] = quintic_u_2d;
         user->exactFuncs[1] = quintic_v_2d;

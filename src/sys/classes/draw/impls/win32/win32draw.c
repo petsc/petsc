@@ -110,7 +110,7 @@ static PetscErrorCode deletemouselist_Win32(WindowNode deletelist)
   /* Called upon window close. Frees memory of linked list of stored mouse commands */
   MouseNode node;
 
-  while(deletelist->MouseListHead != NULL) {
+  while (deletelist->MouseListHead != NULL) {
     node = deletelist->MouseListHead;
     if (deletelist->MouseListHead->mnext != NULL) {
       deletelist->MouseListHead = deletelist->MouseListHead->mnext;
@@ -985,7 +985,7 @@ static void OnPaint_Win32(HWND hWnd)
   current = WindowListHead;
   hdc     = BeginPaint(hWnd, &ps);
 
-  while(current != NULL) {
+  while (current != NULL) {
     if (current->hWnd == hWnd) {
       /* flushes primary buffer to window */
       BitBlt(hdc,

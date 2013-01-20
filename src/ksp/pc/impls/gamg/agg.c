@@ -417,7 +417,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
     if (IS_SELECTED(state)) {
       PetscCDPos pos;
       ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
-      while(pos) {
+      while (pos) {
         PetscInt gid1;
         ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(aggs_2,lid,&pos);CHKERRQ(ierr);
@@ -478,7 +478,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
             PetscCDPos pos,last=PETSC_NULL;
             /* looking for local from local so id_llist_2 works */
             ierr = PetscCDGetHeadPos(aggs_2,slid,&pos);CHKERRQ(ierr);
-            while(pos) {
+            while (pos) {
               PetscInt gid;
               ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
               if (gid == gidj) {
@@ -519,7 +519,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
               PetscCDPos pos,last=PETSC_NULL;
               /* remove from 'oldslidj' list */
               ierr = PetscCDGetHeadPos(aggs_2,oldslidj,&pos);CHKERRQ(ierr);
-              while(pos) {
+              while (pos) {
                 PetscInt gid;
                 ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
                 if (lid+my0 == gid) {
@@ -601,7 +601,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
         PetscCDPos pos,last=PETSC_NULL;
         /* look for deleted ghosts and see if they moved */
         ierr = PetscCDGetHeadPos(aggs_2,lid,&pos);CHKERRQ(ierr);
-        while(pos) {
+        while (pos) {
           PetscInt gid;
           ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
 
@@ -629,7 +629,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
         PetscCDPos pos;
         /* search for this gid to see if I have it */
         ierr = PetscCDGetHeadPos(aggs_2,slid_new,&pos);CHKERRQ(ierr);
-        while(pos) {
+        while (pos) {
           PetscInt gidj;
           ierr = PetscLLNGetID(pos, &gidj);CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(aggs_2,slid_new,&pos);CHKERRQ(ierr);
@@ -812,7 +812,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 
       aggID = 0;
       ierr = PetscCDGetHeadPos(agg_llists,lid,&pos);CHKERRQ(ierr);
-      while(pos) {
+      while (pos) {
         PetscInt gid1;
         ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(agg_llists,lid,&pos);CHKERRQ(ierr);
@@ -1474,7 +1474,7 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,
         if (asz>1000)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Very large aggregate: %d",asz);
         ii = 0;
         ierr = PetscCDGetHeadPos(agg_lists,mm,&pos);CHKERRQ(ierr);
-        while(pos) {
+        while (pos) {
           PetscInt gid1;
           ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(agg_lists,mm,&pos);CHKERRQ(ierr);

@@ -612,7 +612,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
     J_ = *J;
   }
   k = ak = bk = 0;
-  while(ak < an && bk < bn) {
+  while (ak < an && bk < bn) {
     if (aI[ak] <= bI[bk]) {
       L_[k] = aI[ak];
       J_[k] = aJ[ak];

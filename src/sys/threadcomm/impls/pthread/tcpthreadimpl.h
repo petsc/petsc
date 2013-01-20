@@ -69,9 +69,9 @@ extern pthread_key_t  PetscPThreadRankkey;
 #endif
 
 #if defined(PETSC_CPU_RELAX)
-#define PetscCPURelax() do {PETSC_CPU_RELAX();} while(0)
+#define PetscCPURelax() do {PETSC_CPU_RELAX();} while (0)
 #else
-#define PetscCPURelax() do { } while(0)
+#define PetscCPURelax() do { } while (0)
 #endif
 
 EXTERN_C_BEGIN

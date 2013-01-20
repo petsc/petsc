@@ -317,7 +317,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
              lusol->iploc, lusol->iqloc, lusol->ipinv,
              lusol->iqinv, lusol->mnsw, &status);
 
-      switch(status)
+      switch (status)
         {
         case 0:         /* factored */
           break;

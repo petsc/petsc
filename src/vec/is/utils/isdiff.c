@@ -492,9 +492,9 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   /* Determine the global extent of colors. */
   llow = 0; lhigh = -1;
   lstart = 0; lcount = 0;
-  while(lstart < llen) {
+  while (lstart < llen) {
     lend = lstart+1;
-    while(lend < llen && colors[lend] == colors[lstart]) ++lend;
+    while (lend < llen && colors[lend] == colors[lstart]) ++lend;
     llow = PetscMin(llow,colors[lstart]);
     lhigh = PetscMax(lhigh,colors[lstart]);
     ++lcount;
@@ -525,7 +525,7 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
         /* The start of the next locally-owned color is identified.  Now look for the end. */
         if (lstart == lend) {
           lend = lstart+1;
-          while(lend < llen && colors[lend] == colors[lstart]) ++lend;
+          while (lend < llen && colors[lend] == colors[lstart]) ++lend;
         }
         /* Now check whether the identified color segment matches l. */
         if (colors[lstart] < l) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Locally owned color %D at location %D is < than the next global color %D", colors[lstart], lcount, l);

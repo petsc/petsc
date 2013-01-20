@@ -151,7 +151,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   link->next = PETSC_NULL;
   /* Append to list */
   if (tail) {
-    while(tail->next) tail = tail->next;
+    while (tail->next) tail = tail->next;
     tail->next = link;
   } else {
     vtk->link = link;

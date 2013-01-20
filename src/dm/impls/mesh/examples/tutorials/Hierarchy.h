@@ -212,7 +212,7 @@ namespace Hierarchy {
     c_iter = points->begin();
     c_iter_end = points->end();
     index = 0;
-    while(c_iter != c_iter_end) {
+    while (c_iter != c_iter_end) {
       input->pointmarkerlist[index] = *c_iter;
       c_iter++;
       index++;
@@ -310,12 +310,12 @@ namespace Hierarchy {
     Obj<supportSequence> support = topology->getPatch(patch)->support(vertex);
     label_sequence::iterator s_iter = support->begin();
     label_sequence::iterator s_iter_end = support->end();
-    while(s_iter != s_iter_end) {
+    while (s_iter != s_iter_end) {
       if (topology->getPatch(patch)->support(*s_iter)->size() < 2) {
         Obj<coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
         coneSequence::iterator n_iter = neighbors->begin();
         coneSequence::iterator n_iter_end = neighbors->end();
-        while(n_iter != n_iter_end) {
+        while (n_iter != n_iter_end) {
           if (vertex != *n_iter) {
             if (!foundNeighbor) {
               const double *nCoords = coordinates->restrict(patch, *n_iter);
@@ -500,7 +500,7 @@ namespace Hierarchy {
         Obj<coneSet> neighbors = topology->getPatch(patch)->cone(support);
         coneSet::iterator n_iter = neighbors->begin();
         coneSet::iterator n_iter_end = neighbors->end();
-        while(n_iter != n_iter_end) {
+        while (n_iter != n_iter_end) {
           if (*v_iter != *n_iter) {
             rBuf = coordinates->restrict(patch, *n_iter);
             PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
@@ -553,7 +553,7 @@ namespace Hierarchy {
     }
     const double * tmpCoords;
     const Obj<topology_type::patch_label_type>& traversal = topology->getLabel(C_levels, "traversal");
-    for(int curLevel = C_levels - 1; curLevel > 0; curLevel--) {
+    for (int curLevel = C_levels - 1; curLevel > 0; curLevel--) {
       double factor = pow(C_factor, curLevel);
       Obj<label_sequence> triangles = topology->heightStratum(curLevel+1, 0); //triangles in next level up
       printf("%d triangles\n", triangles->size());

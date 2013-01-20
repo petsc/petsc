@@ -441,7 +441,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user)
   user->g3Funcs[1] = PETSC_NULL;
   user->g3Funcs[2] = PETSC_NULL;
   user->g3Funcs[3] = PETSC_NULL;
-  switch(user->dim) {
+  switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
     user->exactFuncs[1] = quadratic_v_2d;

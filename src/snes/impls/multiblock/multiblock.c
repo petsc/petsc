@@ -403,7 +403,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 
     blocks = mb->blocks;
     ierr = MatGetVecs(snes->jacobian_pre, &xtmp, PETSC_NULL);CHKERRQ(ierr);
-    while(blocks) {
+    while (blocks) {
       ierr = VecScatterCreate(xtmp, blocks->is, blocks->x, PETSC_NULL, &blocks->sctx);CHKERRQ(ierr);
       blocks = blocks->next;
     }

@@ -77,7 +77,7 @@ static PetscErrorCode FormFunctionLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   PetscReal hx = user->hxu;
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Starting U residual\n");CHKERRQ(ierr);
-  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
     PETSC_MESH_TYPE::point_type up = *vu_iter;
     PETSC_MESH_TYPE::point_type kp = *vk_iter;
     const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *vu_iter, 0);
@@ -134,7 +134,7 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   PetscReal hx = user->hxk;
 
   /*ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);*/
-  for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
     PetscScalar    values[1];
     PetscScalar   *u, *ur, *k;
 
@@ -268,7 +268,7 @@ static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
   PetscReal hx = user->hxu;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
     PETSC_MESH_TYPE::point_type up = *vu_iter;
     PETSC_MESH_TYPE::point_type kp = *vk_iter;
     const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *vu_iter, 0);
@@ -316,7 +316,7 @@ static PetscErrorCode FormJacobianLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
   PetscReal hx = user->hxk;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
     PETSC_MESH_TYPE::point_type kp = *vk_iter;
     PetscScalar                 values[1];
     PetscScalar                *k;
@@ -348,7 +348,7 @@ static PetscErrorCode FormJacobianLocal_UK(DM dmu, DM dmk, SectionReal sectionU,
   PETSC_MESH_TYPE::point_type klp = -1;
   PetscReal hx = user->hxu;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter, ++vk_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter, ++vk_iter) {
     PETSC_MESH_TYPE::point_type up = *vu_iter;
     PETSC_MESH_TYPE::point_type kp = *vk_iter;
     const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *vu_iter, 0);
@@ -396,7 +396,7 @@ static PetscErrorCode FormJacobianLocal_KU(DM dmu, DM dmk, SectionReal sectionU,
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
   PetscReal hx = user->hxk;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(), vu_iter = verticesU->begin(); vk_iter != verticesK->end(); ++vk_iter,  ++vu_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(), vu_iter = verticesU->begin(); vk_iter != verticesK->end(); ++vk_iter,  ++vu_iter) {
     PETSC_MESH_TYPE::point_type up      = *vu_iter;
     PETSC_MESH_TYPE::point_type kp      = *vk_iter;
     PetscInt                    cols[2] = {up, urp};
@@ -548,7 +548,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = verticesU->begin(); v_iter != verticesU->end(); ++v_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator v_iter = verticesU->begin(); v_iter != verticesU->end(); ++v_iter) {
     PetscScalar  values[1];
     PetscScalar *coords;
 
@@ -556,7 +556,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
     values[0] = coords[0]*(1.0 - coords[0]);
     ierr = SectionRealUpdate(sectionU, *v_iter, values, INSERT_VALUES);CHKERRQ(ierr);
   }
-  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = verticesK->begin(); v_iter != verticesK->end(); ++v_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator v_iter = verticesK->begin(); v_iter != verticesK->end(); ++v_iter) {
     PetscScalar  values[1];
     PetscScalar *coords;
 

@@ -21,7 +21,7 @@ extern "C" {
       return;
     }
     *ierr = 0;
-    for(int v = 0; v < nvtxs_Zoltan; ++v) {
+    for (int v = 0; v < nvtxs_Zoltan; ++v) {
       global_ids[v]= v;
       local_ids[v] = v;
     }
@@ -43,13 +43,13 @@ extern "C" {
       return;
     }
     *ierr = 0;
-    for(int e = 0; e < num_row_or_col; ++e) {
+    for (int e = 0; e < num_row_or_col; ++e) {
       vtxedge_GID[e] = e;
     }
-    for(int e = 0; e < num_row_or_col; ++e) {
+    for (int e = 0; e < num_row_or_col; ++e) {
       vtxedge_ptr[e] = eptr_Zoltan[e];
     }
-    for(int p = 0; p < num_pins; ++p) {
+    for (int p = 0; p < num_pins; ++p) {
       pin_GID[p] = eind_Zoltan[p];
     }
   };

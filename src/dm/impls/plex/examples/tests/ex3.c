@@ -171,9 +171,9 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   q[0].basisDer      = BasisDerivatives_0;
   user->fem.quad     = (PetscQuadrature *) &q;
   /* Setup functions to approximate */
-  switch(dim) {
+  switch (dim) {
   case 2:
-    switch(order) {
+    switch (order) {
     case 0:
       exactFuncs[0] = constant;
       exactFuncs[1] = constant;
@@ -191,7 +191,7 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
     }
     break;
   case 3:
-    switch(order) {
+    switch (order) {
     case 0:
       exactFuncs[0] = constant;
       exactFuncs[1] = constant;

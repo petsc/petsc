@@ -153,12 +153,12 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_PCCreate(&parms->pc,parms->A);
 
   /* Transfer options from PC to pARMS */
-  switch(parms->global) {
+  switch (parms->global) {
     case 0: parms_PCSetType(parms->pc, PCRAS); break;
     case 1: parms_PCSetType(parms->pc, PCSCHUR); break;
     case 2: parms_PCSetType(parms->pc, PCBJ); break;
   }
-  switch(parms->local) {
+  switch (parms->local) {
     case 0: parms_PCSetILUType(parms->pc, PCILU0); break;
     case 1: parms_PCSetILUType(parms->pc, PCILUK); break;
     case 2: parms_PCSetILUType(parms->pc, PCILUT); break;

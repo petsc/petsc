@@ -141,7 +141,7 @@ int main(int argc, char **argv)
   
   PetscInt  j = 0;  
 
-  while(t<user.T)
+  while (t<user.T)
   {
 
     char         filename[PETSC_MAX_PATH_LEN];

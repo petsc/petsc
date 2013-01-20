@@ -120,11 +120,11 @@ namespace ALE { namespace Coarsener {
         }
       }
       //initialize the maximum spacing ball.
-      if(tmpPoint->maxSpacing < cur_space) tmpPoint->maxSpacing = cur_space;
+      if (tmpPoint->maxSpacing < cur_space) tmpPoint->maxSpacing = cur_space;
 
       //if it's essential, push it to the ColPoints stack, which will be the pool that is compared with during the traversal-MIS algorithm.
       int boundRank = topology->getValue(boundary, *v_iter);
-        if(boundRank == dim) {
+        if (boundRank == dim) {
           tmpPoint->childColPoints.push_front(*v_iter);
           globalNodes.push_front(*v_iter);
         } else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
@@ -153,7 +153,7 @@ namespace ALE { namespace Coarsener {
           bool canRefine = true;
             //define the criterion under which we cannot refine this particular section
           for (int i = 0; i < dim; i++) {
-            if((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) {
+            if ((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) {
               canRefine = false;
               //PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]),2*pBeta*tmpPoint->maxSpacing);
             }
@@ -198,7 +198,7 @@ namespace ALE { namespace Coarsener {
                 change = change * 2;
               }
               newBlocks[index]->childPoints.push_back(*p_iter);
-              if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
+              if (ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
               p_iter++;
             }
             p_iter = tmpPoint->childColPoints.begin();
@@ -212,7 +212,7 @@ namespace ALE { namespace Coarsener {
                 if ((tmpPoint->boundaries[2*d] + tmpPoint->boundaries[2*d+1])/2 > cur_coords[d]) index += change;
                 change = change * 2;
               }
-              if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
+              if (ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
               newBlocks[index]->childColPoints.push_back(*p_iter);
               p_iter++;
             }
@@ -229,7 +229,7 @@ namespace ALE { namespace Coarsener {
       } //ending refinement while.
       //MIS picking phase
       PetscPrintf(mesh->comm(), "%d Refinement Regions created for this level.\n", leaf_list.size());
-      if(coarsen_stats.computeStats) coarsen_stats.regions[curLevel] = leaf_list.size();
+      if (coarsen_stats.computeStats) coarsen_stats.regions[curLevel] = leaf_list.size();
       std::list<mis_node *>::iterator leaf_iter = leaf_list.begin();
       std::list<mis_node *>::iterator leaf_iter_end = leaf_list.end();
       //PetscPrintf(mesh->comm(), "- created %d comparison spaces\n", leaf_list.size());
@@ -243,7 +243,7 @@ namespace ALE { namespace Coarsener {
         // go top-down with the comparisons.
         mis_node * cur_leaf = *leaf_iter;
         mis_travQueue.push_front(root);
-        while(!mis_travQueue.empty()) {
+        while (!mis_travQueue.empty()) {
           mis_node * trav_node = *mis_travQueue.begin();
           mis_travQueue.pop_front();
           if (trav_node->isLeaf && trav_node != cur_leaf) { //add this leaf to the comparison list.
@@ -318,7 +318,7 @@ namespace ALE { namespace Coarsener {
               }
               double mdist = l_space + a_space;
               /*if (curLevel != nMeshes && topology->getPatch(curLevel+1)->capContains(*adj_iter)) {
-                if(nearPoint == -1 || dist < nearPointDist) {
+                if (nearPoint == -1 || dist < nearPointDist) {
                   whyset = 1;
                   nearPoint = *adj_iter;
                   nearPointDist = dist;
@@ -330,7 +330,7 @@ namespace ALE { namespace Coarsener {
             comp_iter++;
           }
           if (l_is_ok) {  //this point has run the gambit... cool.
-            if(curLevel != 0) {
+            if (curLevel != 0) {
               cur_leaf->childColPoints.push_front(*l_points_iter);
                globalNodes.push_front(*l_points_iter); //so we only need to run this once and can keep a tally! (node nested enforced by default)
             };
@@ -349,7 +349,7 @@ namespace ALE { namespace Coarsener {
                 }
                 ps_iter++;
               }
-              if(contTri == -1) {
+              if (contTri == -1) {
                 const double * badNear = coords->restrict(0, nearPoint);
                //printf("ERROR: Couldn't find triangle for point %d: (%f, %f) - nearest is %d: (%f, %f) set for %d\n", *l_points_iter, l_coords[0], l_coords[1], nearPoint, badNear[0], badNear[1], whyset);
                //brute force find the actual nearest.
@@ -432,7 +432,7 @@ namespace ALE { namespace Coarsener {
       c_iter = globalNodes.begin();
       c_iter_end = globalNodes.end();
       index = 0;
-      while(c_iter != c_iter_end) {
+      while (c_iter != c_iter_end) {
         input->pointmarkerlist[index] = *c_iter;
         c_iter++;
         index++;
@@ -454,7 +454,7 @@ namespace ALE { namespace Coarsener {
         ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
         while (n_iter != n_iter_end) {
           for (int i = 0; i < input->numberofpoints; i++) {
-            if(input->pointmarkerlist[i] == *n_iter) {
+            if (input->pointmarkerlist[i] == *n_iter) {
               if (input->segmentlist[2*index] == -1) {
                 input->segmentlist[2*index] = i;
               } else {
@@ -537,7 +537,7 @@ namespace ALE { namespace Coarsener {
     {
     int sharedDim = 0;
     for (int i = 0; i < dim; i++) {
-      if((a->boundaries[2*i] - a->maxSpacing <= b->boundaries[2*i+1] + b->maxSpacing) && (b->boundaries[2*i] - b->maxSpacing <= a->boundaries[2*i+1] + a->maxSpacing)) sharedDim++;
+      if ((a->boundaries[2*i] - a->maxSpacing <= b->boundaries[2*i+1] + b->maxSpacing) && (b->boundaries[2*i] - b->maxSpacing <= a->boundaries[2*i+1] + a->maxSpacing)) sharedDim++;
     }
     if (sharedDim == dim) {return true;
     } else return false;
@@ -642,7 +642,7 @@ namespace ALE { namespace Coarsener {
       int index = 0;
       while (p_iter != p_iter_end) {
         const double * tmpCoords;
-        if(topology->getPatch(patch)->depth(*p_iter) == 0) {
+        if (topology->getPatch(patch)->depth(*p_iter) == 0) {
           tmpCoords = coords->restrict(0, *p_iter);
           for (int i = 0; i < dim; i++) {
             point_coords[i + index*dim] = tmpCoords[i];

@@ -216,7 +216,7 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
   if ( ADDAHCiterStartup(dim, lc, uc, idx) ) {
     do {
       ...
-    } while( ADDAHCiter(dim, lc, uc, idx) );
+    } while (ADDAHCiter(dim, lc, uc, idx));
   }
 
   Input Parameters:
@@ -338,12 +338,12 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
               fine_nodes[fn_idx].d = iter_f.d;
               fn_idx++;
             }
-          } while( ADDAHCiter(dim, fgs, fge, iter_f.x) );
+          } while (ADDAHCiter(dim, fgs, fge, iter_f.x));
         }
         /* add all these points to one aggregate */
         ierr = DMADDAMatSetValues(*rest, dmc, 1, &iter_c, dmf, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
       }
-    } while( ADDAHCiter(dim, lcs_c, lce_c, iter_c.x) );
+    } while (ADDAHCiter(dim, lcs_c, lce_c, iter_c.x));
   }
 
   /* free memory */

@@ -72,7 +72,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
     ierr = DMPlexSetConeSize(dm, 1, 3);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(dm, 2, 4);CHKERRQ(ierr);
   }
-  for(e = firstEdge; e < firstEdge+numEdges; ++e) {
+  for (e = firstEdge; e < firstEdge+numEdges; ++e) {
     ierr = DMPlexSetConeSize(dm, e, 2);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
@@ -160,7 +160,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
   /* Build coordinates */
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
-  for(v = firstVertex; v < firstVertex+numVertices; ++v) {
+  for (v = firstVertex; v < firstVertex+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
-  switch(dim) {
+  switch (dim) {
   case 2:
     if (cellSimplex) {
       ierr = CreateSimplexHybrid_2D(comm, *dm);CHKERRQ(ierr);

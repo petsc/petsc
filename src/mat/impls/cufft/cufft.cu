@@ -35,7 +35,7 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
   if (!cufft->p_forward) {
     cufftResult result;
     /* create a plan, then execute it */
-    switch(ndim) {
+    switch (ndim) {
     case 1:
       result = cufftPlan1d(&cufft->p_forward, dim[0], CUFFT_C2C, 1);CHKERRQ(result != CUFFT_SUCCESS);
       break;
@@ -76,7 +76,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
   ierr = VecGetArray(y, &y_array);CHKERRQ(ierr);
   if (!cufft->p_backward) {
     /* create a plan, then execute it */
-    switch(ndim) {
+    switch (ndim) {
     case 1:
       result = cufftPlan1d(&cufft->p_backward, dim[0], CUFFT_C2C, 1);CHKERRQ(result != CUFFT_SUCCESS);
       break;

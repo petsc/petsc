@@ -165,7 +165,7 @@ int main(int argc, char **argv)
   ierr = MatSeqAIJSetPreallocation(A, 5, PETSC_NULL);CHKERRQ(ierr);
   J    = A;
 
-  switch(problem) {
+  switch (problem) {
   case 1:
     ierr = ConstructProblem1(A, b);CHKERRQ(ierr);
     break;
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
   ierr = SNESSolve(snes, b, u);CHKERRQ(ierr);
   ierr = VecView(u, PETSC_NULL);CHKERRQ(ierr);
 
-  switch(problem) {
+  switch (problem) {
   case 1:
     ierr = CheckProblem1(A, b, u);CHKERRQ(ierr);
     break;

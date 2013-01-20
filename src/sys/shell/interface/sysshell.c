@@ -221,7 +221,7 @@ PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n
     queued[ii]   = PETSC_FALSE;
     indegree[ii] = graph->indegree[ii];
   }
-  while(Nqueued < graph->vcount) {
+  while (Nqueued < graph->vcount) {
     progress = PETSC_FALSE;
     for (ii = 0; ii < graph->vcount; ++ii) {
       /* If ii is not queued yet, and the indegree is 0, queue it. */
@@ -246,7 +246,7 @@ PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n
     if (!progress) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Cycle detected in the dependency graph");
     }
-  }/* while(Nqueued) */
+  }/* while (Nqueued) */
   ierr = PetscFree(queued);CHKERRQ(ierr);
   ierr = PetscFree(indegree);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -417,7 +417,7 @@ PetscErrorCode PetscShellCall(PetscShell shell, const char* message)
   if (!message || !message[0]) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Null or empty message string");
   }
-  switch(shell->vtable_type) {
+  switch (shell->vtable_type) {
   case PETSC_SHELL_VTABLE_NONE:
     ierr = PetscShellCall_NONE(shell, message);CHKERRQ(ierr);
     break;
@@ -516,7 +516,7 @@ PetscErrorCode  PetscShellClearURL_Private(PetscShell shell)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  switch(shell->vtable_type) {
+  switch (shell->vtable_type) {
   case PETSC_SHELL_VTABLE_SO:
     {
       struct _n_PetscShellVTable_SO *vt = (struct _n_PetscShellVTable_SO*)(shell->vtable);
@@ -582,7 +582,7 @@ PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[])
   }
   ierr = PetscStrallocpy(url,  &(shell->url));CHKERRQ(ierr);
   ierr = PetscShellParseURL_Private(url, &path, &name, &shell->vtable_type);CHKERRQ(ierr);
-  switch(shell->vtable_type) {
+  switch (shell->vtable_type) {
   case PETSC_SHELL_VTABLE_SO:
     {
       struct _n_PetscShellVTable_SO *vt;

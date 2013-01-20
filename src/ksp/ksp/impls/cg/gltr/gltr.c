@@ -320,7 +320,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   cg->norm_r[0] = PetscSqrtReal(rz);                            /* norm_r = |r|_M    */
 
-  switch(ksp->normtype) {
+  switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
     ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);   /* norm_r = |z|      */
     break;
@@ -401,7 +401,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   dMp = 0.0;
   norm_d = 0.0;
-  switch(cg->dtype) {
+  switch (cg->dtype) {
   case GLTR_PRECONDITIONED_DIRECTION:
     norm_p = rz;
     break;
@@ -485,7 +485,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /* down.                                                                   */
   /***************************************************************************/
 
-  while(1) {
+  while (1) {
     /*************************************************************************/
     /* Know that kappa is nonzero, because we have not broken down, so we    */
     /* can compute the steplength.                                           */
@@ -582,7 +582,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
     ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
 
-    switch(cg->dtype) {
+    switch (cg->dtype) {
     case GLTR_PRECONDITIONED_DIRECTION:
       norm_d = norm_dp1;
       break;
@@ -622,7 +622,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     cg->norm_r[l_size+1] = PetscSqrtReal(rz);                   /* norm_r = |r|_M   */
 
-    switch(ksp->normtype) {
+    switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);/* norm_r = |z|      */
       break;
@@ -686,7 +686,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     cg->beta[l_size] = beta;
     ierr = VecAYPX(p, beta, z);CHKERRQ(ierr);           /* p = z + beta p    */
 
-    switch(cg->dtype) {
+    switch (cg->dtype) {
     case GLTR_PRECONDITIONED_DIRECTION:
       dMp = beta*(dMp + alpha*norm_p);
       norm_p = beta*(rzm1 + beta*norm_p);
@@ -826,7 +826,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     cg->norm_r[l_size+1] = PetscSqrtReal(rz);                   /* norm_r = |r|_M    */
 
-    switch(ksp->normtype) {
+    switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);/* norm_r = |z|      */
       break;
@@ -971,7 +971,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   }
 #endif
 
-  while(1) {
+  while (1) {
     for (i = 0; i < t_size; ++i) {
       t_diag[i] = cg->diag[i] + cg->lambda;
       t_offd[i] = cg->offd[i];

@@ -136,7 +136,7 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
   /* Link mode */
 #if defined(MATHEMATICA_3_0)
   argv[4] = "-linkmode";
-  switch(vmath->linkmode) {
+  switch (vmath->linkmode) {
   case MATHEMATICA_LINK_CREATE:
     argv[5] = "Create";
     break;
@@ -148,7 +148,7 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
     break;
   }
 #else
-  switch(vmath->linkmode) {
+  switch (vmath->linkmode) {
   case MATHEMATICA_LINK_CREATE:
     argv[4] = "-linkcreate";
     break;
@@ -479,7 +479,7 @@ PetscErrorCode  PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   int                     pkt;                 /* The packet type */
 
   PetscFunctionBegin;
-  while((pkt = MLNextPacket(link)) && (pkt != type))
+  while ((pkt = MLNextPacket(link)) && (pkt != type))
     MLNewPacket(link);
   if (!pkt) {
     MLClearError(link);

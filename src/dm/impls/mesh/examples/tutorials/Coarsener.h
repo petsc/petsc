@@ -56,11 +56,11 @@ namespace Coarsener {
       ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(*v_iter);
       ALE::Mesh::topology_type::label_sequence::iterator s_iter     = support->begin();
       ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
-      while(s_iter != s_iter_end) {
+      while (s_iter != s_iter_end) {
         ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
         ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
         ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
-        while(n_iter != n_iter_end) {
+        while (n_iter != n_iter_end) {
           if (*v_iter != *n_iter) {
             rBuf = coords->restrict(patch, *n_iter);
             PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
@@ -178,7 +178,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
     //Add the vertices from the next coarser patch to the list of included vertices.
     ALE::Mesh::topology_type::label_sequence::iterator v_iter = previousVertices->begin();
     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = previousVertices->end();
-    while(v_iter != v_iter_end) {
+    while (v_iter != v_iter_end) {
       incPoints.push_front(*v_iter);
       v_iter++;
     }
@@ -258,7 +258,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   c_iter_end = incPoints.end();
   index = 0;
 
-  while(c_iter != c_iter_end) {
+  while (c_iter != c_iter_end) {
     input->pointmarkerlist[index] = *c_iter;
     c_iter++;
     index++;
@@ -325,12 +325,12 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(vertex);
   ALE::Mesh::topology_type::label_sequence::iterator s_iter = support->begin();
   ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
-  while(s_iter != s_iter_end) {
+  while (s_iter != s_iter_end) {
       if (topology->getPatch(patch)->support(*s_iter)->size() < 2) {
       ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
       ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
       ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
-      while(n_iter != n_iter_end) {
+      while (n_iter != n_iter_end) {
         if (vertex != *n_iter) {
           if (!foundNeighbor) {
             const double *nCoords = coords->restrict(patch, *n_iter);

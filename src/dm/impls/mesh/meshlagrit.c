@@ -5,7 +5,7 @@
 void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim)
 {
   if (3 == meshDim && 4 == numCorners) {
-    for(int iCell = 0; iCell < numCells; ++iCell) {
+    for (int iCell = 0; iCell < numCells; ++iCell) {
       const int i1 = iCell*numCorners+1;
       const int i2 = iCell*numCorners+2;
       const int tmp = (*cells)[i1];
@@ -83,19 +83,19 @@ namespace ALE {
       // ???
       x = strtok(NULL, " ");
       ierr = PetscMalloc(numVertices*dim * sizeof(PetscReal), &coords);CHKERRXX(ierr);
-      for(PetscInt i = 0; i < numVertices; ++i) {
+      for (PetscInt i = 0; i < numVertices; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
         // Ignore vertex number
         x = strtok(NULL, " ");
-        for(int c = 0; c < dim; c++) {
+        for (int c = 0; c < dim; c++) {
           coords[i*dim+c] = atof(x);
           x = strtok(NULL, " ");
         }
       }
       *coordinates = coords;
       ierr = PetscMalloc(numElements*numCorners * sizeof(PetscInt), &verts);CHKERRXX(ierr);
-      for(PetscInt i = 0; i < numElements; ++i) {
+      for (PetscInt i = 0; i < numElements; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
         // Ignore element number
@@ -104,7 +104,7 @@ namespace ALE {
         x = strtok(NULL, " ");
         // Ignore element type
         x = strtok(NULL, " ");
-        for(int c = 0; c < numCorners; c++) {
+        for (int c = 0; c < numCorners; c++) {
           verts[i*numCorners+c] = atoi(x) - 1;
           x = strtok(NULL, " ");
         }
@@ -167,7 +167,7 @@ namespace ALE {
       // Number of psets
       x = strtok(NULL, " ");
       numPsets = atoi(x);
-      for(PetscInt p = 0; p < numPsets; ++p) {
+      for (PetscInt p = 0; p < numPsets; ++p) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         // Read name
         x = strtok(buf, " ");
@@ -179,7 +179,7 @@ namespace ALE {
         x = strtok(NULL, " ");
         const PetscInt totalVerts = atoi(x);
 
-        for(PetscInt v = 0; v < totalVerts; ++v) {
+        for (PetscInt v = 0; v < totalVerts; ++v) {
           if (v%vertsPerLine == 0) {
             if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
             x = strtok(buf, " ");

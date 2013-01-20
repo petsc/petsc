@@ -175,7 +175,7 @@ checktick()
 
    for (i = 0; i < M; i++) {
         t1 = second();
-        while( ((t2=second()) - t1) < 1.0E-6 )
+        while (((t2=second()) - t1) < 1.0E-6)
             ;
         timesfound[i] = t1 = t2;
         }

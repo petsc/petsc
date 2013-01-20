@@ -409,7 +409,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
 
     /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
-    switch(ncg->type) {
+    switch (ncg->type) {
     case SNES_NCG_FR: /* Fletcher-Reeves */
       dXolddotFold = dXdotF;
       ierr = VecDot(dX, dX, &dXdotF);CHKERRQ(ierr);

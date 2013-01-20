@@ -1879,7 +1879,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     for (j=0;j<pcis->n_shared[i];j++) {
       k = pcis->shared[i][j];
       neigh_position = 0;
-      while(mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
+      while (mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
       s = (mat_graph->neighbours_set[k][0] == -1 ?  1 : 0);
       neigh_position = neigh_position - s;
       all_factors[k][neigh_position]=recv_buffer[ptrs_buffer[i-1]+j];
@@ -1911,7 +1911,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     }
     array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while(n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values+k] < rank) {n_neg_values++;}
+    while (n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values+k] < rank) {n_neg_values++;}
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s=0;s<n_neg_values;s++) {
@@ -2383,7 +2383,7 @@ static PetscErrorCode  PCBDDCScatterCoarseDataBegin(PC pc,Vec vec_from, Vec vec_
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
 
   PetscFunctionBegin;
-  switch(pcbddc->coarse_communications_type) {
+  switch (pcbddc->coarse_communications_type) {
     case SCATTERS_BDDC:
       ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
       break;
@@ -2406,14 +2406,14 @@ static PetscErrorCode  PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to
 
   PetscFunctionBegin;
 
-  switch(pcbddc->coarse_communications_type) {
+  switch (pcbddc->coarse_communications_type) {
     case SCATTERS_BDDC:
       ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
       break;
     case GATHERS_BDDC:
       if (vec_from) VecGetArray(vec_from,&array_from);
       if (vec_to)   VecGetArray(vec_to,&array_to);
-      switch(pcbddc->coarse_problem_type) {
+      switch (pcbddc->coarse_problem_type) {
         case SEQUENTIAL_BDDC:
           if (smode == SCATTER_FORWARD) {
             ierr = MPI_Gatherv(&array_from[0],pcbddc->local_primal_size,MPIU_SCALAR,&pcbddc->replicated_local_primal_values[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
@@ -2674,7 +2674,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     for (i=0;i<n_vertices;i++) {
       used_vertex=PETSC_FALSE;
       k=0;
-      while(!used_vertex && k<nnsp_size) {
+      while (!used_vertex && k<nnsp_size) {
         ierr = VecGetArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
         if (PetscAbsScalar(array_vector[is_indices[i]])>0.0) {
           temp_indices_to_constraint[temp_indices[total_counts]]=is_indices[i];
@@ -2777,7 +2777,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       /* retain eigenvalues greater than tol: note that lapack SYEV gives eigs in ascending order */
       j=0;
-      while( j < Bt && singular_vals[j] < tol) j++;
+      while ( j < Bt && singular_vals[j] < tol) j++;
       total_counts=total_counts-j;
       if (j<temp_constraints) {
         for (k=j;k<Bt;k++) { singular_vals[k]=1.0/PetscSqrtReal(singular_vals[k]); }
@@ -2808,7 +2808,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       /* retain eigenvalues greater than tol: note that lapack SVD gives eigs in descending order */
       j=0;
-      while( j < min_n && singular_vals[min_n-j-1] < tol) j++;
+      while ( j < min_n && singular_vals[min_n-j-1] < tol) j++;
       total_counts = total_counts-(PetscInt)Bt+(min_n-j);
 #endif
     }
@@ -2838,7 +2838,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     size_of_constraint=temp_indices[i+1]-temp_indices[i];
     if (change_basis[i] || size_of_constraint == 1) {
       k=0;
-      while(k < size_of_constraint && array_vector[temp_indices_to_constraint[temp_indices[i]+size_of_constraint-k-1]] != 0.0) {
+      while (k < size_of_constraint && array_vector[temp_indices_to_constraint[temp_indices[i]+size_of_constraint-k-1]] != 0.0) {
         k=k+1;
       }
       j=temp_indices_to_constraint[temp_indices[i]+size_of_constraint-k-1];
@@ -3987,7 +3987,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     }
   }
 
-  switch(pcbddc->coarse_problem_type) {
+  switch (pcbddc->coarse_problem_type) {
 
     case(MULTILEVEL_BDDC):   /* we define a coarse mesh where subdomains are elements */
     {
@@ -4300,7 +4300,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       break;
   }
 
-  switch(pcbddc->coarse_communications_type) {
+  switch (pcbddc->coarse_communications_type) {
 
     case(SCATTERS_BDDC):
       {
@@ -4385,7 +4385,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             /* evaluate indices I will insert in coarse mat */
             ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
             j = 0;
-            for(i=0;i<pcbddc->coarse_size;i++) {
+            for (i=0;i<pcbddc->coarse_size;i++) {
               if (aux_ins_indices[i]) {
                 ins_local_primal_indices[j] = i;
                 j++;
@@ -4405,7 +4405,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             ierr = PetscMemzero(dnz,ins_local_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
             /* use aux_ins_indices to realize a global to local mapping */
             j=0;
-            for(i=0;i<pcbddc->coarse_size;i++) {
+            for (i=0;i<pcbddc->coarse_size;i++) {
               if (aux_ins_indices[i]==0) {
                 aux_ins_indices[i]=-1;
               } else {
@@ -5042,9 +5042,9 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   }
   mat_graph->ncmps = 0;
   i=0;
-  while(nodes_touched<mat_graph->nvtxs) {
+  while (nodes_touched<mat_graph->nvtxs) {
     /*  find first untouched node in local ordering */
-    while(mat_graph->touched[i]) i++;
+    while (mat_graph->touched[i]) i++;
     mat_graph->touched[i]=PETSC_TRUE;
     mat_graph->where[i]=where_values;
     nodes_touched++;
@@ -5158,7 +5158,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     cum_recv_counts[0]=0;
     for (i=1;i<where_values+1;i++) {
       j=0;
-      while(mat_graph->where[j] != i) { j++; }
+      while (mat_graph->where[j] != i) { j++; }
       where_to_nodes_indices[i-1]=j;
       if (mat_graph->neighbours_set[j][0]!=-1) { cum_recv_counts[i]=cum_recv_counts[i-1]+mat_graph->count[j]; } /* We don't want sends/recvs_to/from_self -> here I don't count myself  */
       else { cum_recv_counts[i]=cum_recv_counts[i-1]+mat_graph->count[j]-1; }

@@ -275,11 +275,11 @@ PetscErrorCode VecAXPBY_kernel(PetscInt thread_id,Vec yin,PetscScalar *alpha_p,P
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
 
   if (b == (PetscScalar)0.0) {
-    for(i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
+    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
       yy[i] = a*xx[i];
     }
   } else {
-    for(i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
+    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
   }
@@ -368,19 +368,19 @@ PetscErrorCode VecAXPBYPCZ_kernel(PetscInt thread_id,Vec zin,PetscScalar *alpha_
   ierr = VecGetArray(zin,&zz);CHKERRQ(ierr);
 
   if (alpha == (PetscScalar)1.0) {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
     }
   } else if (gamma == (PetscScalar)1.0) {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
     }
   } else if (gamma == (PetscScalar)0.0) {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i];
     }
   } else {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
     }
   }

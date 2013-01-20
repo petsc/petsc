@@ -658,7 +658,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }
@@ -731,7 +731,7 @@ PetscErrorCode PetscThreadCommRunKernel0(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }
@@ -798,7 +798,7 @@ PetscErrorCode PetscThreadCommRunKernel1(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }
@@ -867,7 +867,7 @@ PetscErrorCode PetscThreadCommRunKernel2(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }
@@ -938,7 +938,7 @@ PetscErrorCode PetscThreadCommRunKernel3(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }
@@ -1011,7 +1011,7 @@ PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }
@@ -1087,7 +1087,7 @@ PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
         ;
     }
   }

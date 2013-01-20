@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   ierr = PetscLogEventRegister("Update q",MAT_CLASSID,&event_update_q);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage_timestep);CHKERRQ(ierr);
   /* Begin time loop */
-  while(t < user.T) {
+  while (t < user.T) {
     ierr = Update_q(user.q,user.u,user.M_0,&user);
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);

@@ -142,7 +142,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   }
 
     int j = 0;
-    while(j < src->numberofedges) {
+    while (j < src->numberofedges) {
         sieve->addArrow(src->edgelist[2*j]+src->numberoftriangles, src->numberofpoints + src->numberoftriangles + j,  src->numberofpoints + src->numberoftriangles + j);
         sieve->addArrow(src->edgelist[2*j+1]+src->numberoftriangles, src->numberofpoints + src->numberoftriangles + j,  src->numberofpoints + src->numberoftriangles + j);
       for (int i = 0; i < src->numberoftriangles; i++) {
@@ -179,7 +179,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
   ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
   const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
-  while(v_iter != v_iter_end) {
+  while (v_iter != v_iter_end) {
     topology->setValue(markers, *v_iter, src->pointmarkerlist[*v_iter - src->numberoftriangles]);
     coordinates->update(patch, *v_iter, src->pointlist+2*(*v_iter-src->numberoftriangles));
     v_iter++;
@@ -260,7 +260,7 @@ PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim
    sprintf(triangleOptions, "-zeQa%f",ref_lim);
    triangulate(triangleOptions, input, output, NULL); //refine
 
-   //for(int i = 0; i < output->numberofpoints; i++) {
+   //for (int i = 0; i < output->numberofpoints; i++) {
    //  printf("%d", output->pointmarkerlist[i]);
    //}
    //printf("\n");

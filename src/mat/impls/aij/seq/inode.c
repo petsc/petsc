@@ -103,7 +103,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
       ia[i1+1]++;
       ia[i2+1]++;
       i2++;                     /* Start col of next node */
-      while((j<jmax) && ((col=*j+ishift)<tns[i2])) ++j;
+      while ((j<jmax) && ((col=*j+ishift)<tns[i2])) ++j;
       i2 = tvc[col];
     }
     if (i2 == i1) ia[i2+1]++;    /* now the diagonal element */
@@ -131,7 +131,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
       ja[work[i2]++] = i1 + oshift;
       ja[work[i1]++] = i2 + oshift;
       ++i2;
-      while((j<jmax) && ((col=*j+ishift)< tns[i2])) ++j; /* Skip rest col indices in this node */
+      while ((j<jmax) && ((col=*j+ishift)< tns[i2])) ++j; /* Skip rest col indices in this node */
       i2 = tvc[col];
     }
     if (i2 == i1) ja[work[i1]++] = i2 + oshift;
@@ -214,7 +214,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
     while (nz-- > 0) {
       ja[work[i1]++] = i2 + oshift;
       ++i2;
-      while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
+      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
       if (nz > 0) i2 = tvc[col];
     }
   }
@@ -336,7 +336,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
       /* ja[work[i1]++] = i2 + oshift; */
       ja[work[i2]++] = i1 + oshift;
       i2++;
-      while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
+      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
       if (nz > 0) i2 = tvc[col];
     }
   }
@@ -2793,7 +2793,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       }
       ierr = PetscMemcpy(ibdiag+cnt,bdiag+cnt,sizes[i]*sizes[i]*sizeof(MatScalar));CHKERRQ(ierr);
 
-      switch(sizes[i]) {
+      switch (sizes[i]) {
         case 1:
           /* Create matrix data structure */
           if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);

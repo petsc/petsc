@@ -708,7 +708,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
 
 
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
-      switch(vascii->mode) {
+      switch (vascii->mode) {
       case FILE_MODE_READ:
         vascii->fd = fopen(fname,"r");
         break;

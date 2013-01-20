@@ -12,5 +12,6 @@
 
 find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
+ | grep -v '/ftn-auto/' \
  | xargs grep "( \| )"
 

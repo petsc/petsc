@@ -111,26 +111,26 @@ PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y
 {
   PetscInt        i;
   PetscScalar     prod=0.0;
-  for(i=0; i<DIM; i++) prod += x[i]*y[i];
+  for (i=0; i<DIM; i++) prod += x[i]*y[i];
   return prod;
 }
 PETSC_STATIC_INLINE PetscReal NormDIM(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(DotDIM(x,x))); }
 PETSC_STATIC_INLINE void axDIM(const PetscScalar a,PetscScalar *x)
 {
   PetscInt        i;
-  for(i=0; i<DIM; i++) x[i] *= a;
+  for (i=0; i<DIM; i++) x[i] *= a;
 }
 PETSC_STATIC_INLINE void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar* w)
 {
   PetscInt        i;
-  for(i=0; i<DIM; i++) w[i] = x[i]*a;
+  for (i=0; i<DIM; i++) w[i] = x[i]*a;
 }
 PETSC_STATIC_INLINE void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
 {                               /* Split x into normal and tangential components */
   PetscInt        i;
   PetscScalar     c;
   c = DotDIM(x,n)/DotDIM(n,n);
-  for(i=0; i<DIM; i++) {
+  for (i=0; i<DIM; i++) {
     xn[i] = c*n[i];
     xt[i] = x[i]-xn[i];
   }
@@ -593,7 +593,7 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   /* TODO check the sign of p */
   eu->pressure(eu->pars,x,&p);
   f->r = nu * x->r;
-  for(i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;
+  for (i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;
   f->e = nu*(x->e+p);
   PetscFunctionReturn(0);
 }
@@ -609,7 +609,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, cons
   PetscFunctionBeginUser;
   xG[0] = xI[0];
   NormalSplitDIM(n,xI+1,xn,xt);
-  for(i=0; i<DIM; i++) xG[i+1] = -xn[i]+xt[i];
+  for (i=0; i<DIM; i++) xG[i+1] = -xn[i]+xt[i];
   xG[DIM+1] = xI[DIM+1];
   PetscFunctionReturn(0);
 }
@@ -646,7 +646,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
   u[0] =1.0;
   u[DIM+1] = 1.0+PetscAbsReal(x[0]);
-  for(i=1; i<DIM+1; i++) u[i] = 0.0;
+  for (i=1; i<DIM+1; i++) u[i] = 0.0;
   PetscFunctionReturn(0);
 }
 
@@ -739,7 +739,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   ierr = ISGetLocalSize(innerIS, &numCells);CHKERRQ(ierr);
   ierr = ISGetIndices(innerIS, &cells);CHKERRQ(ierr);
   ierr = DMPlexCreateLabel(dm, bdname);CHKERRQ(ierr);
-  for(c = 0; c < numCells; ++c) {
+  for (c = 0; c < numCells; ++c) {
     const PetscInt  cell = cells[c];
     const PetscInt *faces;
     PetscInt        numFaces, f;
@@ -747,7 +747,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
     if ((cell < cStart) || (cell >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", cell);
     ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       const PetscInt  face = faces[f];
       const PetscInt *neighbors;
       PetscInt        nC, regionA, regionB;
@@ -812,7 +812,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
   ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
   user->numSplitFaces = 0;
-  for(fs = 0; fs < numFS; ++fs) {
+  for (fs = 0; fs < numFS; ++fs) {
     PetscInt numBdFaces;
 
     ierr = DMPlexGetStratumSize(dm, labelName, ids[fs], &numBdFaces);CHKERRQ(ierr);
@@ -823,9 +823,9 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMPlexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
   /* Set cone and support sizes */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  for(d = 0; d <= depth; ++d) {
+  for (d = 0; d <= depth; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt newp = p;
       PetscInt size;
 
@@ -836,7 +836,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     }
   }
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  for(fs = 0, newf = fEnd; fs < numFS; ++fs) {
+  for (fs = 0, newf = fEnd; fs < numFS; ++fs) {
     IS              faceIS;
     const PetscInt *faces;
     PetscInt        numFaces, f;
@@ -844,7 +844,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = DMPlexGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f, ++newf) {
+    for (f = 0; f < numFaces; ++f, ++newf) {
       PetscInt size;
 
       /* Right now I think that both faces should see both cells */
@@ -861,27 +861,27 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   ierr = PetscMalloc(PetscMax(maxConeSize, maxSupportSize) * sizeof(PetscInt), &newpoints);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
+  for (p = pStart; p < pEnd; ++p) {
     const PetscInt *points, *orientations;
     PetscInt        size, i, newp = p;
 
     ierr = DMPlexGetConeSize(dm, p, &size);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &points);CHKERRQ(ierr);
     ierr = DMPlexGetConeOrientation(dm, p, &orientations);CHKERRQ(ierr);
-    for(i = 0; i < size; ++i) {
+    for (i = 0; i < size; ++i) {
       newpoints[i] = points[i];
     }
     ierr = DMPlexSetCone(sdm, newp, newpoints);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(sdm, newp, orientations);CHKERRQ(ierr);
     ierr = DMPlexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, p, &points);CHKERRQ(ierr);
-    for(i = 0; i < size; ++i) {
+    for (i = 0; i < size; ++i) {
       newpoints[i] = points[i];
     }
     ierr = DMPlexSetSupport(sdm, newp, newpoints);CHKERRQ(ierr);
   }
   ierr = PetscFree(newpoints);CHKERRQ(ierr);
-  for(fs = 0, newf = fEnd; fs < numFS; ++fs) {
+  for (fs = 0, newf = fEnd; fs < numFS; ++fs) {
     IS              faceIS;
     const PetscInt *faces;
     PetscInt        numFaces, f;
@@ -889,7 +889,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = DMPlexGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f, ++newf) {
+    for (f = 0; f < numFaces; ++f, ++newf) {
       const PetscInt *points;
 
       ierr = DMPlexGetCone(dm, faces[f], &points);CHKERRQ(ierr);
@@ -910,7 +910,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newCoordSection, vStart, vEnd);CHKERRQ(ierr);
-  for(v = vStart; v < vEnd; ++v) {
+  for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionSetDof(newCoordSection, v, dim);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
   }
@@ -920,7 +920,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMSetCoordinatesLocal(sdm, coordinates);CHKERRQ(ierr);
   /* Convert labels */
   ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
-  for(l = 0; l < numLabels; ++l) {
+  for (l = 0; l < numLabels; ++l) {
     const char *lname;
     PetscBool   isDepth;
 
@@ -931,7 +931,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = DMPlexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
     ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
-    for(fs = 0; fs < numFS; ++fs) {
+    for (fs = 0; fs < numFS; ++fs) {
       IS              pointIS;
       const PetscInt *points;
       PetscInt        numPoints;
@@ -939,7 +939,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
       ierr = DMPlexGetStratumIS(dm, lname, ids[fs], &pointIS);CHKERRQ(ierr);
       ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-      for(p = 0; p < numPoints; ++p) {
+      for (p = 0; p < numPoints; ++p) {
         PetscInt newpoint = points[p];
 
         ierr = DMPlexSetLabelValue(sdm, lname, newpoint, ids[fs]);CHKERRQ(ierr);
@@ -970,7 +970,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
-    for(l = 0; l < numLeaves; ++l) {
+    for (l = 0; l < numLeaves; ++l) {
       glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l]; */
       gremotePoints[l].rank  = remotePoints[l].rank;
       gremotePoints[l].index = newRemoteLocation[localPoints[l]];
@@ -1215,7 +1215,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     ierr = PetscSectionSetDof(sectionCell, c, sizeof(CellGeom)/sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
@@ -1223,7 +1223,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
-  for(c = cStart; c < user->cEndInterior; ++c) {
+  for (c = cStart; c < user->cEndInterior; ++c) {
     const PetscScalar *coords = PETSC_NULL;
     PetscInt           coordSize, numCorners, p;
     PetscScalar        sx = 0, sy = 0;
@@ -1233,7 +1233,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscMemzero(cg,sizeof(*cg));CHKERRQ(ierr);
     numCorners = coordSize/dim;
-    for(p = 0; p < numCorners; ++p) {
+    for (p = 0; p < numCorners; ++p) {
       const PetscScalar *x = coords+p*dim, *y = coords+((p+1)%numCorners)*dim;
       const PetscScalar cross = x[0]*y[1] - x[1]*y[0];
       cg->volume += 0.5*cross;
@@ -1251,7 +1251,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionFace);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
-  for(f = fStart; f < fEnd; ++f) {
+  for (f = fStart; f < fEnd; ++f) {
     ierr = PetscSectionSetDof(sectionFace, f, sizeof(FaceGeom)/sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
@@ -1259,7 +1259,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = DMCreateLocalVector(dmFace, facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
   minradius = PETSC_MAX_REAL;
-  for(f = fStart; f < fEnd; ++f) {
+  for (f = fStart; f < fEnd; ++f) {
     const PetscScalar *coords = PETSC_NULL;
     const PetscInt    *cells;
     PetscInt           ghost,i,coordSize;
@@ -1355,7 +1355,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
@@ -1363,7 +1363,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &part);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     PetscScalar *p;
 
     ierr = DMPlexPointLocalRef(*dmCell, c, part, &p);CHKERRQ(ierr);
@@ -1396,7 +1396,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionMass);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionMass, vStart, vEnd);CHKERRQ(ierr);
-  for(v = vStart; v < vEnd; ++v) {
+  for (v = vStart; v < vEnd; ++v) {
     PetscInt numFaces;
 
     ierr = DMPlexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
@@ -1412,7 +1412,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = VecGetArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  for(v = vStart; v < vEnd; ++v) {
+  for (v = vStart; v < vEnd; ++v) {
     const PetscInt    *faces;
     const FaceGeom    *fgA, *fgB, *cg;
     const PetscScalar *vertex;
@@ -1421,10 +1421,10 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
     ierr = DMPlexPointLocalRead(dmCoord, v, coords, &vertex);CHKERRQ(ierr);
     ierr = DMPlexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dmMass, v, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       sides[0] = faces[f];
       ierr = DMPlexPointLocalRead(dmFace, faces[f], facegeom, &fgA);CHKERRQ(ierr);
-      for(g = 0; g < numFaces; ++g) {
+      for (g = 0; g < numFaces; ++g) {
         const PetscInt *cells = PETSC_NULL;;
         PetscReal       area  = 0.0;
         PetscInt        numCells;
@@ -1461,7 +1461,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &stateSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
 #if 0
     {
@@ -1471,21 +1471,21 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
     }
 #endif
   }
-  for(c = user->cEndInterior; c < cEnd; ++c) {
+  for (c = user->cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
   ierr = PetscMalloc(dof * sizeof(PetscInt), &cind);CHKERRQ(ierr);
-  for(d = 0; d < dof; ++d) cind[d] = d;
+  for (d = 0; d < dof; ++d) cind[d] = d;
 #if 0
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     PetscInt val;
 
     ierr = DMPlexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
     if (val < 0) {ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);}
   }
 #endif
-  for(c = user->cEndInterior; c < cEnd; ++c) {
+  for (c = user->cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);
   }
   ierr = PetscFree(cind);CHKERRQ(ierr);
@@ -1701,7 +1701,7 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(X, &x);CHKERRQ(ierr);
-  for(c = cStart; c < cEndInterior; ++c) {
+  for (c = cStart; c < cEndInterior; ++c) {
     const CellGeom *cg;
     PetscScalar *xc;
 
@@ -1736,7 +1736,7 @@ static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
   ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
-  for(fs = 0; fs < numFS; ++fs) {
+  for (fs = 0; fs < numFS; ++fs) {
     BoundaryFunction bcFunc;
     void             *bcCtx;
     IS               faceIS;
@@ -1747,7 +1747,7 @@ static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
     ierr = DMPlexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       const PetscInt    face = faces[f], *cells;
       const PetscScalar *xI;
       PetscScalar       *xG;

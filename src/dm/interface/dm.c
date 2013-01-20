@@ -1725,7 +1725,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     MPI_Op       op;
     PetscScalar *lArray, *gArray;
 
-    switch(mode) {
+    switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
 #if defined(PETSC_HAVE_MPI_REPLACE)
@@ -1736,8 +1736,8 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     case ADD_VALUES:
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
-  default:
-    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+    default:
+      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     }
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
@@ -1781,7 +1781,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
     MPI_Op       op;
     PetscScalar *lArray, *gArray;
 
-    switch(mode) {
+    switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
 #if defined(PETSC_HAVE_MPI_REPLACE)
@@ -2941,7 +2941,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
       local[l+d-c] = off+d;
     }
     if (gdof < 0) {
-      for(d = 0; d < gsize; ++d, ++l) {
+      for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
         ierr = PetscFindInt(offset,size,ranges,&r);CHKERRQ(ierr);
@@ -2950,7 +2950,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
         remote[l].index = offset - ranges[r];
       }
     } else {
-      for(d = 0; d < gsize; ++d, ++l) {
+      for (d = 0; d < gsize; ++d, ++l) {
         remote[l].rank  = rank;
         remote[l].index = goff+d - ranges[rank];
       }

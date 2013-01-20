@@ -233,7 +233,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   }
 #if 0 // We do no currently make sections for the element blocks, and num_eb is not broadcast
   /* Broadcast element block names. This will be needed later when creating the matching sections */
-  for(int eb = 0; eb < num_eb; ++eb) {
+  for (int eb = 0; eb < num_eb; ++eb) {
     ierr = MPI_Bcast(eb_name[eb],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);
   }
 #endif
@@ -253,7 +253,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
                       num_ss,int*,&side_set_elem_list,
                       num_ss,int*,&side_set_side_list,
                       num_ss,char*,&ss_name);CHKERRQ(ierr);
-  for(int ss = 0; ss < num_ss; ++ss) {
+  for (int ss = 0; ss < num_ss; ++ss) {
     num_sides_in_set[ss] = 0;
     ierr = PetscMalloc((MAX_STR_LENGTH+1)*sizeof(char),&ss_name[ss]);CHKERRQ(ierr);
   }
@@ -278,7 +278,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   }
 #if 0 // We do no currently make sections for the side sets, and num_ss is not broadcast
   /* Broadcast side sets names. This will be needed later when creating the matching sections */
-  for(int ss = 0; ss < num_ss; ++ss) {
+  for (int ss = 0; ss < num_ss; ++ss) {
     ierr = MPI_Bcast(ss_name[ss],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);
   }
 #endif
@@ -294,7 +294,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
                       num_ns,int,&num_nodes_in_set,
                       num_ns,int*,&node_list,
                       num_ns,char*,&ns_name);CHKERRQ(ierr);
-  for(int ns = 0; ns < num_ns; ++ns) {
+  for (int ns = 0; ns < num_ns; ++ns) {
     num_nodes_in_set[ns] = 0;
     ierr = PetscMalloc((MAX_STR_LENGTH+1)*sizeof(char),&ns_name[ns]);CHKERRQ(ierr);
   }
@@ -314,7 +314,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   }
 #if 0 // We do no currently make sections for the node sets, and num_ns is not broadcast
   /* Broadcast node sets names. This will be needed later when creating the matching sections */
-  for(int ns = 0; ns < num_ns; ++ns) {
+  for (int ns = 0; ns < num_ns; ++ns) {
     ierr = MPI_Bcast(ns_name[ns],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);
   }
 #endif
@@ -330,7 +330,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   int **connectivity_table = PETSC_NULL;
   int   num_local_corners = 0;
 
-  for(int eb = 0; eb < num_eb; ++eb) {
+  for (int eb = 0; eb < num_eb; ++eb) {
     num_local_corners += num_nodes_per_elem[eb] * num_elem_in_block[eb];
   }
   ierr = PetscMalloc2(num_local_corners,int,&cells,num_elem,int*,&connectivity_table);CHKERRQ(ierr);
@@ -430,7 +430,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   ALE::Obj<FlexMesh>                    mFS     = new FlexMesh(meshBody->comm(),meshBody->debug());
   ALE::Obj<FlexMesh::sieve_type>        sFS     = new FlexMesh::sieve_type(meshBody->comm(),meshBody->debug());
 
-  for(int k = 0,ss = 0; ss < num_ss; ++ss) {
+  for (int k = 0,ss = 0; ss < num_ss; ++ss) {
     /*
      The type of parent cells for all faces in a face set has to be identical.
      We trust that this is the case and do not do any test.
@@ -457,14 +457,14 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
    Get the number of points in the face set
   */
   ierr = PetscMalloc(vertexCount * sizeof(PetscInt),&faces);CHKERRQ(ierr);
-  for(int k = 0, ss = 0; ss < num_ss; ++ss) {
+  for (int k = 0, ss = 0; ss < num_ss; ++ss) {
     /*
      The type of parent cells for all faces in a face set has to be identical.
      We trust that this is the case and do not do any test.
     */
     faceParentBlock  = cellParentBlock[side_set_elem_list[ss][0]-1];
     ierr = EXOGetElemType(eb_elemtype[faceParentBlock],&cell_type);CHKERRQ(ierr);
-    for(int s = 0; s < num_sides_in_set[ss]; ++s) {
+    for (int s = 0; s < num_sides_in_set[ss]; ++s) {
       /*
        Get the point number of the faces described by vertices side_set_side_list[ss][s]
        initialize side_set_point_list from side_set_elem_list and side_set_side_list
@@ -495,7 +495,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
        have different number of vertices (prisms, for instance)
       */
       numCorners = faceNumVertex;
-      for(int v = 0; v < faceNumVertex; v++,k++) {
+      for (int v = 0; v < faceNumVertex; v++,k++) {
         faces[k] = connectivity_table[faceCell][faceVertex[v]] + num_elem;
       }
       faceCount++;

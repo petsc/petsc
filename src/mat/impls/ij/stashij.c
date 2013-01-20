@@ -348,7 +348,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
       }
     }/* if (i) */
     lastidx = idx;
-    while((high) - (low) > 1) {
+    while ((high) - (low) > 1) {
       p = (high+low)/2;
       if (i < stash->rmap->range[p]) {
         high = p;

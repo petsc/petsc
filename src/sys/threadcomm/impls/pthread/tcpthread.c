@@ -59,7 +59,7 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
     /* CPU affinity */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     PetscInt j;
-    switch(ptcomm->aff) {
+    switch (ptcomm->aff) {
     case PTHREADAFFPOLICY_ONECORE:
       CPU_ZERO(&cpuset[i]);
       CPU_SET(tcomm->affinities[i]%ncores,&cpuset[i]);
@@ -150,7 +150,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       ptcomm->thread_num_start = 0;
     }
 
-    switch(ptcomm->sync) {
+    switch (ptcomm->sync) {
     case PTHREADSYNC_LOCKFREE:
       ptcomm->initialize      = PetscPThreadCommInitialize_LockFree;
       ptcomm->finalize        = PetscPThreadCommFinalize_LockFree;

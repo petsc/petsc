@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file1",FILE_MODE_WRITE,&view1);CHKERRQ(ierr);
   /* Begin time loop */
-  while(t < user.T) {
+  while (t < user.T) {
     ierr = VecView(user.u1,view1);CHKERRQ(ierr);
     ierr = VecView(user.u2,view1);CHKERRQ(ierr);
     ierr = VecView(user.u3,view1);CHKERRQ(ierr);

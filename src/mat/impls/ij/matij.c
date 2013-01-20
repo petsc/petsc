@@ -60,7 +60,7 @@ typedef struct {
                                   "MatIJ not assembled");                                     \
     if (((mat)->assembled) && !(needassembled)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, \
                                   "Mat already assembled");                                 \
-  } while(0)
+  } while (0)
 
 
 
@@ -81,7 +81,7 @@ do                                                                      \
     }                                                                   \
   }                                                                     \
  }                                                                      \
-while(0)
+while (0)
 
 #define MatIJGetIndexImage_Private(A,mode,i,ii)                         \
 {                                                                       \
@@ -843,7 +843,7 @@ static PetscErrorCode MatIJGetAssembledEdges_Private(Mat A, PetscInt *len, Petsc
   }
   if (pg->hsupp) {
     PetscHashIIterBegin(pg->hsupp,hi);
-    while(!PetscHashIIterAtEnd(pg->hsupp,hi)) {
+    while (!PetscHashIIterAtEnd(pg->hsupp,hi)) {
       PetscHashIIterGetKeyVal(pg->hsupp,hi,ii,i);
       for (k = pg->ijlen[i]; k < pg->ijlen[i+1]; ++k) {
         if (ixidx_) ixidx_[k] = ii;
@@ -1122,7 +1122,7 @@ static PetscErrorCode MatIJSetEdgesLocal_Private(Mat A, const PetscInt len, Pets
     ++i;
     /* the relevant portion of iy is already sorted. */
     ij[j++] = iyidx[start++];
-    while(start < end) {
+    while (start < end) {
       if (pg->multivalued || iyidx[start] > iyidx[start-1])
         ij[j++] = iyidx[start];
       ++start;
@@ -2001,7 +2001,7 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
   } else {
     PetscHashIIterBegin(pg->hsupp,it);
   }
-  while(1) {
+  while (1) {
     if (pg->hsupp) {
       if (PetscHashIIterAtEnd(pg->hsupp,it)) break;
       else {

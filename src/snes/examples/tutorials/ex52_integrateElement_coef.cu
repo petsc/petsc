@@ -15,7 +15,7 @@ __device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], realType ka
 {
   vecType f1;
 
-  switch(comp) {
+  switch (comp) {
   case 0:
     f1.x = 0.5*(gradU[0].x + gradU[0].x);
     f1.y = 0.5*(gradU[0].y + gradU[1].x);
@@ -39,7 +39,7 @@ __device__ vecType f1_elasticity_coef(realType u[], vecType gradU[], int comp)
 {
   vecType f1;
 
-  switch(comp) {
+  switch (comp) {
   case 0:
     f1.x = 0.5*(gradU[0].x + gradU[0].x);
     f1.y = 0.5*(gradU[0].y + gradU[1].x);
@@ -230,7 +230,7 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
         const int q = 0;
         const int i = bidx/N_comp;
         // Prints f1[0].x, f1[1].x, f1[0].y, f1[1].y
-        switch(i) {
+        switch (i) {
         case 0:
           e_i = f_1[(cell*N_q+q)*N_comp+cidx].x;break;
         case 1:

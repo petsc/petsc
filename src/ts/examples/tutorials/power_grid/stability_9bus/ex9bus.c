@@ -200,7 +200,7 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx* user)
   ierr = VecGetArray(Xgen,&xgen);CHKERRQ(ierr);
   ierr = VecGetArray(Xnet,&xnet);CHKERRQ(ierr);
 
-  for(i=0; i < ngen; i++) {
+  for (i=0; i < ngen; i++) {
     Vr = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
     Vi = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
     Vm = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm2 = Vm*Vm;
@@ -300,7 +300,7 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx* user)
   ierr = VecGetArray(Fnet,&fnet);CHKERRQ(ierr);
 
   /* Generator subsystem */
-  for(i=0; i < ngen; i++) {
+  for (i=0; i < ngen; i++) {
     Eqp   = xgen[idx];
     Edp   = xgen[idx+1];
     delta = xgen[idx+2];
@@ -352,14 +352,14 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx* user)
   PetscScalar PD,QD,Vm0,*v0;
   PetscInt    k;
   ierr = VecGetArray(user->V0,&v0);CHKERRQ(ierr);
-  for(i=0; i < nload; i++) {
+  for (i=0; i < nload; i++) {
     Vr = xnet[2*lbus[i]]; /* Real part of load bus voltage */
     Vi = xnet[2*lbus[i]+1]; /* Imaginary part of the load bus voltage */
     Vm = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm2 = Vm*Vm;
     Vm0 = PetscSqrtScalar(v0[2*lbus[i]]*v0[2*lbus[i]] + v0[2*lbus[i]+1]*v0[2*lbus[i]+1]);
     PD = QD = 0.0;
-    for(k=0; k < ld_nsegsp[i];k++) PD += ld_alphap[k]*PD0[i]*PetscPowScalar((Vm/Vm0),ld_betap[k]);
-    for(k=0; k < ld_nsegsq[i];k++) QD += ld_alphaq[k]*QD0[i]*PetscPowScalar((Vm/Vm0),ld_betaq[k]);
+    for (k=0; k < ld_nsegsp[i];k++) PD += ld_alphap[k]*PD0[i]*PetscPowScalar((Vm/Vm0),ld_betap[k]);
+    for (k=0; k < ld_nsegsq[i];k++) QD += ld_alphaq[k]*QD0[i]*PetscPowScalar((Vm/Vm0),ld_betaq[k]);
 
     /* Load currents */
     IDr = (PD*Vr + QD*Vi)/Vm2;
@@ -400,7 +400,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx* use
   ierr = ResidualFunction(snes,X,F,user);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
-  for(i=0;i < ngen;i++) {
+  for (i=0;i < ngen;i++) {
     f[9*i]   += xdot[9*i];
     f[9*i+1] += xdot[9*i+1];
     f[9*i+2] += xdot[9*i+2];
@@ -432,7 +432,7 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void* ctx)
   PetscFunctionBegin;
   ierr = ResidualFunction(snes,X,F,user);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);
-  for(i=0;i < ngen;i++) {
+  for (i=0;i < ngen;i++) {
     f[9*i]   = 0;
     f[9*i+1] = 0;
     f[9*i+2] = 0;
@@ -457,9 +457,9 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   PetscFunctionBegin;
 
   ierr = PetscMalloc(user->neqs_pgrid*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-  for(i=0;i<user->neqs_pgrid;i++) d_nnz[i] = 0;
+  for (i=0;i<user->neqs_pgrid;i++) d_nnz[i] = 0;
   /* Generator subsystem */
-  for(i=0; i < ngen; i++) {
+  for (i=0; i < ngen; i++) {
 
     d_nnz[idx] += 3;
     d_nnz[idx+1] += 2;
@@ -482,7 +482,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 
   PetscInt       ncols;
 
-  for(i=0;i < nbus;i++) {
+  for (i=0;i < nbus;i++) {
     ierr = MatGetRow(user->Ybus,2*i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     d_nnz[start+2*i]   += ncols;
     d_nnz[start+2*i+1] += ncols;
@@ -530,7 +530,7 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
   ierr = VecGetArray(Xnet,&xnet);CHKERRQ(ierr);
 
   /* Generator subsystem */
-  for(i=0; i < ngen; i++) {
+  for (i=0; i < ngen; i++) {
     Eqp   = xgen[idx];
     Edp   = xgen[idx+1];
     delta = xgen[idx+2];
@@ -658,10 +658,10 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
   const PetscScalar *yvals;
   PetscInt k;
 
-  for(i=0;i<nbus;i++) {
+  for (i=0;i<nbus;i++) {
     ierr = MatGetRow(user->Ybus,2*i,&ncols,&cols,&yvals);CHKERRQ(ierr);
     row[0] = net_start + 2*i;
-    for(k=0;k<ncols;k++) {
+    for (k=0;k<ncols;k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -670,7 +670,7 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
 
     ierr = MatGetRow(user->Ybus,2*i+1,&ncols,&cols,&yvals);CHKERRQ(ierr);
     row[0] = net_start + 2*i+1;
-    for(k=0;k<ncols;k++) {
+    for (k=0;k<ncols;k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
@@ -686,19 +686,19 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
   PetscScalar dIDr_dVr,dIDr_dVi,dIDi_dVr,dIDi_dVi;
 
   ierr = VecGetArray(user->V0,&v0);CHKERRQ(ierr);
-  for(i=0; i < nload; i++) {
+  for (i=0; i < nload; i++) {
     Vr = xnet[2*lbus[i]]; /* Real part of load bus voltage */
     Vi = xnet[2*lbus[i]+1]; /* Imaginary part of the load bus voltage */
     Vm = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm2 = Vm*Vm; Vm4 = Vm2*Vm2;
     Vm0 = PetscSqrtScalar(v0[2*lbus[i]]*v0[2*lbus[i]] + v0[2*lbus[i]+1]*v0[2*lbus[i]+1]);
     PD = QD = 0.0;
     dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
-    for(k=0; k < ld_nsegsp[i];k++) {
+    for (k=0; k < ld_nsegsp[i];k++) {
       PD += ld_alphap[k]*PD0[i]*PetscPowScalar((Vm/Vm0),ld_betap[k]);
       dPD_dVr += ld_alphap[k]*ld_betap[k]*PD0[i]*PetscPowScalar((1/Vm0),ld_betap[k])*Vr*PetscPowScalar(Vm,(ld_betap[k]-2));
       dPD_dVi += ld_alphap[k]*ld_betap[k]*PD0[i]*PetscPowScalar((1/Vm0),ld_betap[k])*Vi*PetscPowScalar(Vm,(ld_betap[k]-2));
     }
-    for(k=0; k < ld_nsegsq[i];k++) {
+    for (k=0; k < ld_nsegsq[i];k++) {
       QD += ld_alphaq[k]*QD0[i]*PetscPowScalar((Vm/Vm0),ld_betaq[k]);
       dQD_dVr += ld_alphaq[k]*ld_betaq[k]*QD0[i]*PetscPowScalar((1/Vm0),ld_betaq[k])*Vr*PetscPowScalar(Vm,(ld_betaq[k]-2));
       dQD_dVi += ld_alphaq[k]*ld_betaq[k]*QD0[i]*PetscPowScalar((1/Vm0),ld_betaq[k])*Vi*PetscPowScalar(Vm,(ld_betaq[k]-2));
@@ -775,7 +775,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
   user->t = t;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = ResidualJacobian(snes,X,A,B,flag,user);CHKERRQ(ierr);
-  for(i=0;i < ngen;i++) {
+  for (i=0;i < ngen;i++) {
     row = 9*i;
     ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
     row = 9*i+1;
@@ -822,7 +822,7 @@ int main(int argc,char **argv)
   /* Create indices for differential and algebraic equations */
   PetscInt *idx2;
   ierr = PetscMalloc(7*ngen*sizeof(PetscInt),&idx2);CHKERRQ(ierr);
-  for(i=0;i<ngen;i++) {
+  for (i=0;i<ngen;i++) {
     idx2[7*i] = 9*i; idx2[7*i+1] = 9*i+1; idx2[7*i+2] = 9*i+2; idx2[7*i+3] = 9*i+3;
     idx2[7*i+4] = 9*i+6; idx2[7*i+5] = 9*i+7; idx2[7*i+6] = 9*i+8;
   }

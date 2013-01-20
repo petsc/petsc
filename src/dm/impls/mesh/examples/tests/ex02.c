@@ -116,18 +116,18 @@ PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
   ostringstream txt;
 
   txt << "Viewing strata of";
-  if(name != NULL) {
+  if (name != NULL) {
     txt << " " << name;
   }
   txt << " sieve of diameter " << sieve->diameter() << "\n";
   ierr = PetscPrintf(sieve->getComm(), txt.str().c_str());CHKERRQ(ierr);
 
-  for(int d = 0; d <= sieve->diameter(); d++) {
+  for (int d = 0; d <= sieve->diameter(); d++) {
     ALE::Point_set stratum = sieve->depthStratum(d);
     ierr = PetscPrintf(sieve->getComm(), "Depth stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();
   }
-  for(int d = 0; d <= sieve->diameter(); d++) {
+  for (int d = 0; d <= sieve->diameter(); d++) {
     ALE::Point_set stratum = sieve->heightStratum(d);
     ierr = PetscPrintf(sieve->getComm(), "Height stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();

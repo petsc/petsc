@@ -112,7 +112,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
             curr->SetState(SELECTED);
             curr->setColor(color); todo--; assert( todo >= 0 );
             todo2--;                       assert( todo2 >= 0 );
-            for( jj = 0; jj < curr->NumAdjac() ; jj++ ) { /* delete */
+            for ( jj = 0; jj < curr->NumAdjac() ; jj++ ) { /* delete */
               ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
               NUMR_NODE *curr2 = &nodes[ii];
               if (curr2->IsGhost() && curr2->GetState() != SELECTED) {
@@ -134,7 +134,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
       /* receive(tag) */
       do{
         ipos = procTable.GetHeadPosition();
-        while( ipos ) {
+        while ( ipos ) {
           proc = procTable.GetNext( ipos ) - 1;  /* one based table!!! */
           do{
             MPI_Iprobe( proc, tag+color, Comm, &receive, &status );
@@ -146,14 +146,14 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
             } else if (receive && ii == 1) break; /* capper, will recv latter */
           } while (receive && todo2);
         }
-      }while( ndone == 0 && todo2 );
+      }while ( ndone == 0 && todo2 );
 
       /* send DELETED bound */
-      for(  xx = 0 ; xx < nLocalNd ; xx++ ) {
+      for (  xx = 0 ; xx < nLocalNd ; xx++ ) {
         NUMR_NODE *curr = &nodes[xx];
         if (curr->GetState() == DELETED && !curr->IsMarked()) {
           curr->Mark();
-          for( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
+          for ( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
             ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
             NUMR_NODE *curr2 = &nodes[ii];
             if (curr2->IsGhost() && curr2->GetState() != SELECTED) {
@@ -169,7 +169,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
 
     /* send capper */
     ipos = procTable.GetHeadPosition();
-    while( ipos ) {
+    while ( ipos ) {
       proc = procTable.GetNext(ipos) - 1; assert(proc>=0);
       if (todo != 0 || sentdoneProcs.Add(proc+1)) {
         MPI_Send( &todo, 1, MPI_INT, proc, tag+color, Comm );
@@ -177,7 +177,7 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
     }
     /* receive(tag) for ghosts, and capper */
     ipos = procTable.GetHeadPosition();
-    while( ipos ) {
+    while ( ipos ) {
       proc = procTable.GetNext( ipos ) - 1;
       if (doneProcs.Find(proc+1)) continue;
       while (1) {
@@ -199,12 +199,12 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
   }
 
   /* get max color and clear marks (optional) */
-  for( xx = 0, color = 0 ; xx < nLocalNd ; xx++ ) {
+  for ( xx = 0, color = 0 ; xx < nLocalNd ; xx++ ) {
     NUMR_NODE *curr = &nodes[xx]; curr->Mark(FALSE);
     assert(curr->color() > 0);
     if (curr->color() > color) color = curr->color();
     /* debug */
-    for( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
+    for ( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
       ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
       NUMR_NODE *curr2 = &nodes[ii];
       assert(curr2==curr || curr->color() != curr2->color());

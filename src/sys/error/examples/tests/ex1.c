@@ -33,7 +33,7 @@ int main(int argc, char *args[])
 
   ierr = PetscInitialize(&argc, &args, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscPushSignalHandler(handleSignal, &user);CHKERRQ(ierr);
-  while(!user.exitHandler) {
+  while (!user.exitHandler) {
     if (user.signum > 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum);CHKERRQ(ierr);
       user.signum = -1;

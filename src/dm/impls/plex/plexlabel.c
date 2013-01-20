@@ -33,7 +33,7 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
     const PetscInt value = label->stratumValues[v];
     PetscInt       p;
 
-    for(p = label->stratumOffsets[v]; p < label->stratumOffsets[v]+label->stratumSizes[v]; ++p) {
+    for (p = label->stratumOffsets[v]; p < label->stratumOffsets[v]+label->stratumSizes[v]; ++p) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, label->points[p], value);CHKERRQ(ierr);
     }
   }
@@ -82,7 +82,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
   PetscFunctionBegin;
   PetscValidPointer(value, 3);
   *value = -1;
-  for(v = 0; v < label->numStrata; ++v) {
+  for (v = 0; v < label->numStrata; ++v) {
     PetscInt i;
 
     ierr = PetscFindInt(point, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], &i);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 
   PetscFunctionBegin;
   /* Find label value */
-  for(v = 0; v < label->numStrata; ++v) {
+  for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) break;
   }
   if (v >= label->numStrata) PetscFunctionReturn(0);
@@ -218,7 +218,7 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
   PetscFunctionBegin;
   PetscValidPointer(size, 3);
   *size = 0;
-  for(v = 0; v < label->numStrata; ++v) {
+  for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) {
       *size = label->stratumSizes[v];
       break;
@@ -237,7 +237,7 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
   PetscFunctionBegin;
   PetscValidPointer(points, 3);
   *points = PETSC_NULL;
-  for(v = 0; v < label->numStrata; ++v) {
+  for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) {
       ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], PETSC_COPY_VALUES, points);CHKERRQ(ierr);
       break;
@@ -253,7 +253,7 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
   PetscInt v;
 
   PetscFunctionBegin;
-  for(v = 0; v < label->numStrata; ++v) {
+  for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) break;
   }
   if (v >= label->numStrata) PetscFunctionReturn(0);
@@ -289,7 +289,7 @@ PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  while(next) {
+  while (next) {
     ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
     if (flg) break;
     next = next->next;
@@ -611,7 +611,7 @@ PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(numLabels, 2);
-  while(next) {
+  while (next) {
     ++n;
     next = next->next;
   }
@@ -647,7 +647,7 @@ PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 3);
-  while(next) {
+  while (next) {
     if (l == n) {
       *name = next->name;
       PetscFunctionReturn(0);
@@ -688,7 +688,7 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   PetscValidCharPointer(name, 2);
   PetscValidPointer(hasLabel, 3);
   *hasLabel = PETSC_FALSE;
-  while(next) {
+  while (next) {
     ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
     if (*hasLabel) break;
     next = next->next;
@@ -727,7 +727,7 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
   PetscValidCharPointer(name, 2);
   PetscValidPointer(label, 3);
   *label = PETSC_NULL;
-  while(next) {
+  while (next) {
     ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       *label = next;
@@ -801,7 +801,7 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
   ierr = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   *label = PETSC_NULL;
   if (!hasLabel) PetscFunctionReturn(0);
-  while(next) {
+  while (next) {
     ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       if (last) last->next = next->next;

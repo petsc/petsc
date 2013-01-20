@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 
 
 
-  while(t<user.T) {
+  while (t<user.T) {
     char         filename[PETSC_MAX_PATH_LEN];
     PetscScalar  a = 1.0;
     PetscInt     i;

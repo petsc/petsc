@@ -475,8 +475,8 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt
   ierr  = MatGetOwnershipRange( Amat, &my0, &Iend );CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
-  if(nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
-  if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+  if (nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
+  if ((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
   oldarrsz = pc_ml->dim * pc_ml->nloc;
   pc_ml->dim = ndm;
@@ -488,10 +488,10 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt
     ierr = PetscFree( pc_ml->coords );CHKERRQ(ierr);
     ierr = PetscMalloc((arrsz)*sizeof(PetscReal), &pc_ml->coords );CHKERRQ(ierr);
   }
-  for(kk=0;kk<arrsz;kk++)pc_ml->coords[kk] = -999.;
+  for (kk=0;kk<arrsz;kk++)pc_ml->coords[kk] = -999.;
   /* copy data in - column oriented */
-  for( kk = 0 ; kk < nloc ; kk++ ) {
-    for( ii = 0 ; ii < ndm ; ii++ ) {
+  for ( kk = 0 ; kk < nloc ; kk++ ) {
+    for ( ii = 0 ; ii < ndm ; ii++ ) {
       pc_ml->coords[ii*nloc + kk] =  coords[kk*ndm + ii];
     }
   }

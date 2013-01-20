@@ -336,7 +336,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos         pos;
         ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
-        while(pos) {
+        while (pos) {
           PetscInt flid;
           ierr = PetscLLNGetID(pos, &flid);CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);

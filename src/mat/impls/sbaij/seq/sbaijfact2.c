@@ -2250,7 +2250,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
         qm = k;
         do {
           m  = qm; qm = q[m];
-        } while(qm < vj);
+        } while (qm < vj);
         if (qm == vj) {
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Duplicate entry in A\n");
         }

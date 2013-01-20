@@ -1173,7 +1173,7 @@ PetscErrorCode VecMDot_SeqCUSPOld(Vec xin,PetscInt nv,const Vec yin[],PetscScala
 
   PetscFunctionBegin;
   ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-  switch(j_rem=nv&0x3) {
+  switch (j_rem=nv&0x3) {
   case 3:
     ierr = VecCUSPGetArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayRead(yyin[1],&yy1);CHKERRQ(ierr);

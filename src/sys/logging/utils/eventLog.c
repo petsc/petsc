@@ -207,14 +207,14 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  while(size > eventLog->maxEvents) {
+  while (size > eventLog->maxEvents) {
     ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(PetscEventPerfInfo), &eventInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(eventInfo, eventLog->eventInfo, eventLog->maxEvents * sizeof(PetscEventPerfInfo));CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
   }
-  while(eventLog->numEvents < size) {
+  while (eventLog->numEvents < size) {
     ierr = EventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

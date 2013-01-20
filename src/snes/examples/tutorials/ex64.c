@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   }
-  while(t<user.T) {
+  while (t<user.T) {
 
     char         filename[PETSC_MAX_PATH_LEN];
     PetscScalar  a = 1.0;

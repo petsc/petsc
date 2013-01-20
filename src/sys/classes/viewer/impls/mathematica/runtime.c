@@ -27,7 +27,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
     argv[3] = (char *) linkhost;
   }
   /* Link mode */
-  switch(linkmode) {
+  switch (linkmode) {
   case MATHEMATICA_LINK_CREATE:
     argv[4] = "-linkcreate";
     break;
@@ -69,7 +69,7 @@ static int processPacket(MLINK link, int indent)
 
   PetscFunctionBegin;
   ierr = printIndent(indent);CHKERRQ(ierr);
-  switch(tokenType) {
+  switch (tokenType) {
   case MLTKFUNC:
     {
       long numArguments;
@@ -147,9 +147,9 @@ static int processPackets(MLINK link)
   int ierr;
 
   PetscFunctionBegin;
-  while(loop) {
-    while((packetType = MLNextPacket(link)) && (packetType != RETURNPKT)) {
-      switch(packetType) {
+  while (loop) {
+    while ((packetType = MLNextPacket(link)) && (packetType != RETURNPKT)) {
+      switch (packetType) {
       case BEGINDLGPKT:
         printf("Begin dialog packet\n");
         break;

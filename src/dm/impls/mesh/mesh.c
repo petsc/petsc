@@ -111,7 +111,7 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
     p->setChart(PETSC_MESH_TYPE::int_section_type::chart_type(*cells));
     p->setFiberDimension(cells, 1);
     p->allocatePoint();
-    for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    for (PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
       p->updatePoint(*c_iter, &rank);
     }
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
@@ -151,19 +151,19 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
       num  = mesh->depthStratum(0)->size();
       ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
-      for(PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+      for (PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       num  = mesh->heightStratum(0)->size();
       ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", dim);CHKERRQ(ierr);
-      for(PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+      for (PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      for(int d = 0; d <= dim; d++) {
+      for (int d = 0; d <= dim; d++) {
         num  = mesh->depthStratum(d)->size();
         ierr = MPI_Gather(&num, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, mesh->comm());CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", d);CHKERRQ(ierr);
-        for(PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+        for (PetscInt p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
@@ -236,23 +236,23 @@ PetscErrorCode DMMeshView_Mesh_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Max sizes cone: %d support: %d\n", maxConeSize, maxSupportSize);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "orientation is missing\n", name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "cap --> base:\n", name);CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, s;
 
       ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->supportSection, p, &off);CHKERRQ(ierr);
-      for(s = off; s < off+dof; ++s) {
+      for (s = off; s < off+dof; ++s) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %d ----> %d\n", rank, p, mesh->supports[s]);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "base <-- cap:\n", name);CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, c;
 
       ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
-      for(c = off; c < off+dof; ++c) {
+      for (c = off; c < off+dof; ++c) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %d <---- %d\n", rank, p, mesh->cones[c]);CHKERRQ(ierr);
         /* ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d]: %d <---- %d: %d\n", rank, p, mesh->cones[c], mesh->coneOrientations[c]);CHKERRQ(ierr); */
       }
@@ -277,21 +277,21 @@ PetscErrorCode DMMeshView_Mesh_Ascii(DM dm, PetscViewer viewer)
       pEnd = pEnd - pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", 0);CHKERRQ(ierr);
-      for(p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+      for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = DMMeshGetHeightStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
       ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", dim);CHKERRQ(ierr);
-      for(p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+      for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      for(d = 0; d <= dim; d++) {
+      for (d = 0; d <= dim; d++) {
         ierr = DMMeshGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
         pEnd = pEnd - pStart;
         ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "  %d-cells:", d);CHKERRQ(ierr);
-        for(p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
+        for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %d", sizes[p]);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
@@ -520,7 +520,7 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
   ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->joinTmpA,mesh->joinTmpB);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->closureTmpA,mesh->closureTmpB);CHKERRQ(ierr);
-  while(next) {
+  while (next) {
     SieveLabel tmp;
 
     ierr = PetscFree(next->name);CHKERRQ(ierr);
@@ -621,10 +621,10 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
   PetscInt *ltog;
 
   ierr = PetscMalloc(s->size() * sizeof(PetscInt), &ltog);CHKERRQ(ierr); // We want the local+overlap size
-  for(PetscInt p = s->getChart().min(), l = 0; p < s->getChart().max(); ++p) {
+  for (PetscInt p = s->getChart().min(), l = 0; p < s->getChart().max(); ++p) {
     PetscInt g = globalOrder->getIndex(p);
 
-    for(PetscInt c = 0; c < s->getConstrainedFiberDimension(p); ++c, ++l) {
+    for (PetscInt c = 0; c < s->getConstrainedFiberDimension(p); ++c, ++l) {
       ltog[l] = g+c;
     }
   }
@@ -1058,7 +1058,7 @@ PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 
     m->getSieve()->cone(p, v);
     if (!mesh->meetTmpA) {ierr = PetscMalloc2(m->getSieve()->getMaxConeSize(),PetscInt,&mesh->meetTmpA,m->getSieve()->getMaxConeSize(),PetscInt,&mesh->meetTmpB);CHKERRQ(ierr);}
-    for(size_t c = 0; c < v.getSize(); ++c) {
+    for (size_t c = 0; c < v.getSize(); ++c) {
       mesh->meetTmpA[c] = v.getPoints()[c];
     }
     *cone = mesh->meetTmpA;
@@ -1102,7 +1102,7 @@ PetscErrorCode DMMeshSetCone(DM dm, PetscInt p, const PetscInt cone[])
     ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
-    for(c = 0; c < dof; ++c) {
+    for (c = 0; c < dof; ++c) {
       if ((cone[c] < pStart) || (cone[c] >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %d is not in the valid range [%d. %d)", cone[c], pStart, pEnd);
       mesh->cones[off+c] = cone[c];
     }
@@ -1186,7 +1186,7 @@ PetscErrorCode DMMeshGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
     m->getSieve()->support(p, v);
     if (!mesh->joinTmpA) {ierr = PetscMalloc2(m->getSieve()->getMaxSupportSize(),PetscInt,&mesh->joinTmpA,m->getSieve()->getMaxSupportSize(),PetscInt,&mesh->joinTmpB);CHKERRQ(ierr);}
-    for(size_t s = 0; s < v.getSize(); ++s) {
+    for (size_t s = 0; s < v.getSize(); ++s) {
       mesh->joinTmpA[s] = v.getPoints()[s];
     }
     *support = mesh->joinTmpA;
@@ -1246,7 +1246,7 @@ PetscErrorCode DMMeshGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
       ierr = DMMeshGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
       ierr = DMMeshGetSupport(dm, p, &tmp);CHKERRQ(ierr);
     }
-    for(t = 0; t < tmpSize; ++t) {
+    for (t = 0; t < tmpSize; ++t) {
       mesh->closureTmpA[closureSize++] = tmp[t];
     }
     if (numPoints) *numPoints = closureSize;
@@ -1266,7 +1266,7 @@ PetscErrorCode DMMeshGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
     }
     int i = 0;
 
-    for(std::set<PETSC_MESH_TYPE::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++i) {
+    for (std::set<PETSC_MESH_TYPE::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++i) {
       mesh->closureTmpA[i] = *p_iter;
     }
     if (numPoints) *numPoints = cV.getPoints().size();
@@ -1382,16 +1382,16 @@ PetscErrorCode DMMeshSymmetrize(DM dm)
     /* Calculate support sizes */
     ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(mesh->supportSection, pStart, pEnd);CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, c;
 
       ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
-      for(c = off; c < off+dof; ++c) {
+      for (c = off; c < off+dof; ++c) {
         ierr = PetscSectionAddDof(mesh->supportSection, mesh->cones[c], 1);CHKERRQ(ierr);
       }
     }
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt dof;
 
       ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
@@ -1403,12 +1403,12 @@ PetscErrorCode DMMeshSymmetrize(DM dm)
     ierr = PetscMalloc(supportSize * sizeof(PetscInt), &mesh->supports);CHKERRQ(ierr);
     ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &offsets);CHKERRQ(ierr);
     ierr = PetscMemzero(offsets, (pEnd - pStart) * sizeof(PetscInt));CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, c;
 
       ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
-      for(c = off; c < off+dof; ++c) {
+      for (c = off; c < off+dof; ++c) {
         const PetscInt q = mesh->cones[c];
         PetscInt       offS;
 
@@ -1465,7 +1465,7 @@ PetscErrorCode DMMeshStratify(DM dm)
     /* Calculate depth */
     ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
     /* Initialize roots and count leaves */
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt coneSize, supportSize;
 
       ierr = PetscSectionGetDof(mesh->coneSection, p, &coneSize);CHKERRQ(ierr);
@@ -1478,7 +1478,7 @@ PetscErrorCode DMMeshStratify(DM dm)
       }
     }
     if (numRoots + numLeaves == (pEnd - pStart)) {
-      for(p = pStart; p < pEnd; ++p) {
+      for (p = pStart; p < pEnd; ++p) {
         PetscInt coneSize, supportSize;
 
         ierr = PetscSectionGetDof(mesh->coneSection, p, &coneSize);CHKERRQ(ierr);
@@ -1532,15 +1532,15 @@ PetscErrorCode DMMeshGetLabelValue(DM dm, const char name[], PetscInt point, Pet
     PetscInt   v, p;
 
     *value = 0;
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) break;
       next = next->next;
     }
     if (!flg) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
     /* Find, or add, label value */
-    for(v = 0; v < next->numStrata; ++v) {
-      for(p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
+    for (v = 0; v < next->numStrata; ++v) {
+      for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
         if (next->points[p] == point) {
           *value = next->stratumValues[v];
           break;
@@ -1589,7 +1589,7 @@ PetscErrorCode DMMeshSetLabelValue(DM dm, const char name[], PetscInt point, Pet
     PetscInt   v, p;
 
     /* Find, or create, label */
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) break;
       next = next->next;
@@ -1602,13 +1602,13 @@ PetscErrorCode DMMeshSetLabelValue(DM dm, const char name[], PetscInt point, Pet
       ierr = PetscStrallocpy(name, &next->name);CHKERRQ(ierr);
     }
     /* Find, or add, label value */
-    for(v = 0; v < next->numStrata; ++v) {
+    for (v = 0; v < next->numStrata; ++v) {
       if (next->stratumValues[v] == value) break;
     }
     if (v >= next->numStrata) {
       PetscInt *tmpV, *tmpO, *tmpS;
       ierr = PetscMalloc3(next->numStrata+1,PetscInt,&tmpV,next->numStrata+2,PetscInt,&tmpO,next->numStrata+1,PetscInt,&tmpS);CHKERRQ(ierr);
-      for(v = 0; v < next->numStrata; ++v) {
+      for (v = 0; v < next->numStrata; ++v) {
         tmpV[v] = next->stratumValues[v];
         tmpO[v] = next->stratumOffsets[v];
         tmpS[v] = next->stratumSizes[v];
@@ -1624,7 +1624,7 @@ PetscErrorCode DMMeshSetLabelValue(DM dm, const char name[], PetscInt point, Pet
       next->stratumSizes   = tmpS;
     }
     /* Check whether point exists */
-    for(p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
+    for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
       if (next->points[p] == point) {
         break;
       }
@@ -1641,11 +1641,11 @@ PetscErrorCode DMMeshSetLabelValue(DM dm, const char name[], PetscInt point, Pet
         PetscInt  w, q;
 
         ierr = PetscMalloc(allocSize * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
-        for(q = 0; q < next->stratumOffsets[v]+next->stratumSizes[v]; ++q) {
+        for (q = 0; q < next->stratumOffsets[v]+next->stratumSizes[v]; ++q) {
           newPoints[q] = next->points[q];
         }
-        for(w = v+1; w < next->numStrata; ++w) {
-          for(q = next->stratumOffsets[w]; q < next->stratumOffsets[w]+next->stratumSizes[w]; ++q) {
+        for (w = v+1; w < next->numStrata; ++w) {
+          for (q = next->stratumOffsets[w]; q < next->stratumOffsets[w]+next->stratumSizes[w]; ++q) {
               newPoints[q+shift] = next->points[q];
           }
           next->stratumOffsets[w] += shift;
@@ -1700,7 +1700,7 @@ PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
     PetscBool  flg;
 
     *size = 0;
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) {
         *size = next->numStrata;
@@ -1750,12 +1750,12 @@ PetscErrorCode DMMeshGetLabelIdIS(DM dm, const char name[], IS *ids)
     SieveLabel next = mesh->labels;
     PetscBool  flg;
 
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) {
         size = next->numStrata;
         ierr = PetscMalloc(size * sizeof(PetscInt), &values);CHKERRQ(ierr);
-        for(i = 0; i < next->numStrata; ++i) {
+        for (i = 0; i < next->numStrata; ++i) {
           values[i] = next->stratumValues[i];
         }
         break;
@@ -1770,7 +1770,7 @@ PetscErrorCode DMMeshGetLabelIdIS(DM dm, const char name[], IS *ids)
 
     size = labelIds->size();
     ierr = PetscMalloc(size * sizeof(PetscInt), &values);CHKERRQ(ierr);
-    for(PETSC_MESH_TYPE::label_type::capSequence::const_iterator i_iter = labelIds->begin(); i_iter != iEnd; ++i_iter, ++i) {
+    for (PETSC_MESH_TYPE::label_type::capSequence::const_iterator i_iter = labelIds->begin(); i_iter != iEnd; ++i_iter, ++i) {
       values[i] = *i_iter;
     }
   }
@@ -1812,12 +1812,12 @@ PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, Pe
     PetscBool  flg;
 
     *size = 0;
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) {
         PetscInt v;
 
-        for(v = 0; v < next->numStrata; ++v) {
+        for (v = 0; v < next->numStrata; ++v) {
           if (next->stratumValues[v] == value) {
             *size = next->stratumSizes[v];
             break;
@@ -1869,12 +1869,12 @@ PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *
     SieveLabel next = mesh->labels;
     PetscBool  flg;
 
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
       if (flg) {
         PetscInt v;
 
-        for(v = 0; v < next->numStrata; ++v) {
+        for (v = 0; v < next->numStrata; ++v) {
           if (next->stratumValues[v] == value) {
             ierr = ISCreateGeneral(PETSC_COMM_SELF, next->stratumSizes[v], &next->points[next->stratumOffsets[v]], PETSC_COPY_VALUES, is);CHKERRQ(ierr);
             break;
@@ -1892,7 +1892,7 @@ PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *
       PetscInt *idx, i = 0;
 
       ierr = PetscMalloc(stratum->size() * sizeof(PetscInt), &idx);CHKERRQ(ierr);
-      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = stratum->begin(); e_iter != stratum->end(); ++e_iter, ++i) {
+      for (PETSC_MESH_TYPE::label_sequence::iterator e_iter = stratum->begin(); e_iter != stratum->end(); ++e_iter, ++i) {
         idx[i] = *e_iter;
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF, stratum->size(), idx, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
@@ -1946,19 +1946,19 @@ PetscErrorCode DMMeshMeetPoints(DM dm, PetscInt numPoints, const PetscInt points
     /* Copy in cone of first point */
     ierr = PetscSectionGetDof(mesh->coneSection, points[0], &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(mesh->coneSection, points[0], &off);CHKERRQ(ierr);
-    for(meetSize = 0; meetSize < dof; ++meetSize) {
+    for (meetSize = 0; meetSize < dof; ++meetSize) {
       meet[i][meetSize] = mesh->cones[off+meetSize];
     }
     /* Check each successive cone */
-    for(p = 1; p < numPoints; ++p) {
+    for (p = 1; p < numPoints; ++p) {
       PetscInt newMeetSize = 0;
 
       ierr = PetscSectionGetDof(mesh->coneSection, points[p], &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(mesh->coneSection, points[p], &off);CHKERRQ(ierr);
-      for(c = 0; c < dof; ++c) {
+      for (c = 0; c < dof; ++c) {
         const PetscInt point = mesh->cones[off+c];
 
-        for(m = 0; m < meetSize; ++m) {
+        for (m = 0; m < meetSize; ++m) {
           if (point == meet[i][m]) {
             meet[1-i][newMeetSize++] = point;
             break;
@@ -2008,7 +2008,7 @@ PetscErrorCode DMMeshGetMaximumDegree(DM dm, PetscInt *maxDegree)
   const ALE::Obj<PETSC_MESH_TYPE::sieve_type>&     sieve    = m->getSieve();
   PetscInt                                         maxDeg   = -1;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     maxDeg = PetscMax(maxDeg, (PetscInt) sieve->getSupportSize(*v_iter));
   }
   *maxDegree = maxDeg;
@@ -2202,7 +2202,7 @@ PetscErrorCode MatSetValuesTopology(Mat mat, DM dmr, PetscInt nrow, const PetscI
                   (int) pow((double) mc->getSieve()->getMaxConeSize(), mc->depth())*mc->getMaxDof()*ncol, mc->depth() > 1);
 
   try {
-    for(PetscInt r = 0; r < nrow; ++r) {
+    for (PetscInt r = 0; r < nrow; ++r) {
       ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mr->getSieve(), rowPoints[r], rV);
     }
   } catch(ALE::Exception e) {
@@ -2211,7 +2211,7 @@ PetscErrorCode MatSetValuesTopology(Mat mat, DM dmr, PetscInt nrow, const PetscI
   const PetscInt *rowIndices    = rV.getValues();
   const int       numRowIndices = rV.getSize();
   try {
-    for(PetscInt c = 0; c < ncol; ++c) {
+    for (PetscInt c = 0; c < ncol; ++c) {
       ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mc->getSieve(), colPoints[c], cV);
     }
   } catch(ALE::Exception e) {
@@ -2457,7 +2457,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
   {
     PetscInt cornersSeen[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; /* Could use PetscBT */
 
-    for(c = cStart; c < cEnd; ++c) {
+    for (c = cStart; c < cEnd; ++c) {
       PetscInt corners;
 
       ierr = DMMeshGetConeSize(dm, c, &corners);CHKERRQ(ierr);
@@ -2519,7 +2519,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     ierr = DMMeshGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
     ierr = PetscMalloc(maxConeSize*maxSupportSize * sizeof(PetscInt), &neighborCells);CHKERRQ(ierr);
     /* Count neighboring cells */
-    for(cell = cStart; cell < cEnd; ++cell) {
+    for (cell = cStart; cell < cEnd; ++cell) {
       const PetscInt *cone;
       PetscInt        numNeighbors = 0;
       PetscInt        coneSize, c;
@@ -2527,17 +2527,17 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
       /* Get support of the cone, and make a set of the cells */
       ierr = DMMeshGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
       ierr = DMMeshGetCone(dm, cell, &cone);CHKERRQ(ierr);
-      for(c = 0; c < coneSize; ++c) {
+      for (c = 0; c < coneSize; ++c) {
         const PetscInt *support;
         PetscInt        supportSize, s;
 
         ierr = DMMeshGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
         ierr = DMMeshGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
-        for(s = 0; s < supportSize; ++s) {
+        for (s = 0; s < supportSize; ++s) {
           const PetscInt point = support[s];
 
           if (point == cell) continue;
-          for(n = 0; n < numNeighbors; ++n) {
+          for (n = 0; n < numNeighbors; ++n) {
             if (neighborCells[n] == point) break;
           }
           if (n == numNeighbors) {
@@ -2547,7 +2547,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
         }
       }
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
-      for(n = 0; n < numNeighbors; ++n) {
+      for (n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2] = {cell, neighborCells[n]};
         PetscInt        meetSize;
         const PetscInt *meet;
@@ -2556,7 +2556,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
         if (meetSize) {
           PetscInt f;
 
-          for(f = 0; f < numFaceCases; ++f) {
+          for (f = 0; f < numFaceCases; ++f) {
             if (numFaceVertices[f] == meetSize) {
               ++off[cell-cStart+1];
               break;
@@ -2566,12 +2566,12 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
       }
     }
     /* Prefix sum */
-    for(cell = 1; cell <= numCells; ++cell) {
+    for (cell = 1; cell <= numCells; ++cell) {
       off[cell] += off[cell-1];
     }
     ierr = PetscMalloc(off[numCells] * sizeof(PetscInt), &adj);CHKERRQ(ierr);
     /* Get neighboring cells */
-    for(cell = cStart; cell < cEnd; ++cell) {
+    for (cell = cStart; cell < cEnd; ++cell) {
       const PetscInt *cone;
       PetscInt        numNeighbors = 0;
       PetscInt        cellOffset   = 0;
@@ -2580,17 +2580,17 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
       /* Get support of the cone, and make a set of the cells */
       ierr = DMMeshGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
       ierr = DMMeshGetCone(dm, cell, &cone);CHKERRQ(ierr);
-      for(c = 0; c < coneSize; ++c) {
+      for (c = 0; c < coneSize; ++c) {
         const PetscInt *support;
         PetscInt        supportSize, s;
 
         ierr = DMMeshGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
         ierr = DMMeshGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
-        for(s = 0; s < supportSize; ++s) {
+        for (s = 0; s < supportSize; ++s) {
           const PetscInt point = support[s];
 
           if (point == cell) continue;
-          for(n = 0; n < numNeighbors; ++n) {
+          for (n = 0; n < numNeighbors; ++n) {
             if (neighborCells[n] == point) break;
           }
           if (n == numNeighbors) {
@@ -2600,7 +2600,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
         }
       }
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
-      for(n = 0; n < numNeighbors; ++n) {
+      for (n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2] = {cell, neighborCells[n]};
         PetscInt        meetSize;
         const PetscInt *meet;
@@ -2609,7 +2609,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
         if (meetSize) {
           PetscInt f;
 
-          for(f = 0; f < numFaceCases; ++f) {
+          for (f = 0; f < numFaceCases; ++f) {
             if (numFaceVertices[f] == meetSize) {
               adj[off[cell-cStart]+cellOffset] = neighborCells[n];
               ++cellOffset;
@@ -2626,10 +2626,10 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     OffsetVisitor<typename Mesh::sieve_type> oV(*sieve, *overlapSieve, off);
     PetscInt p;
 
-    for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+    for (typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
       sieve->cone(*c_iter, oV);
     }
-    for(p = 1; p <= numCells; ++p) {
+    for (p = 1; p <= numCells; ++p) {
       off[p] = off[p] + off[p-1];
     }
     ierr = PetscMalloc(off[numCells] * sizeof(PetscInt), &adj);CHKERRQ(ierr);
@@ -2637,7 +2637,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, AdjVisitor<typename Mesh::sieve_type> > sV(*sieve, aV);
     ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, AdjVisitor<typename Mesh::sieve_type> > ovSV(*overlapSieve, aV);
 
-    for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+    for (typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
       aV.setCell(*c_iter);
       sieve->cone(*c_iter, sV);
       sieve->cone(*c_iter, ovSV);
@@ -2708,7 +2708,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
     PetscFunctionReturn(0);
   }
   FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
-  for(i = 0; i < start[numVertices]; ++i) {
+  for (i = 0; i < start[numVertices]; ++i) {
     ++adjacency[i];
   }
   if (global_method == INERTIAL_METHOD) {
@@ -2752,13 +2752,13 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   /* Convert to PetscSection+IS */
   ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
-  for(v = 0; v < nvtxs; ++v) {
+  for (v = 0; v < nvtxs; ++v) {
     ierr = PetscSectionAddDof(*partSection, assignment[v], 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
   ierr = PetscMalloc(nvtxs * sizeof(PetscInt), &points);CHKERRQ(ierr);
-  for(p = 0, i = 0; p < commSize; ++p) {
-    for(v = 0; v < nvtxs; ++v) {
+  for (p = 0, i = 0; p < commSize; ++p) {
+    for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
     }
   }
@@ -2768,7 +2768,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
     /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */
   }
   ierr = PetscFree(assignment);CHKERRQ(ierr);
-  for(i = 0; i < start[numVertices]; ++i) {
+  for (i = 0; i < start[numVertices]; ++i) {
     --adjacency[i];
   }
   PetscFunctionReturn(0);
@@ -2804,7 +2804,7 @@ PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *parti
     ierr = PetscSectionSetDof(*partSection, 0, cEnd-cStart);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
     ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscInt), &points);CHKERRQ(ierr);
-    for(c = cStart; c < cEnd; ++c) {
+    for (c = cStart; c < cEnd; ++c) {
       points[c] = c;
     }
     ierr = ISCreateGeneral(((PetscObject) dm)->comm, cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
@@ -2857,13 +2857,13 @@ PetscErrorCode DMMeshCreatePartitionClosure(DM dm, PetscSection pointSection, IS
   ierr = ISGetIndices(pointPartition, &partArray);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, rStart, rEnd);CHKERRQ(ierr);
-  for(rank = rStart; rank < rEnd; ++rank) {
+  for (rank = rStart; rank < rEnd; ++rank) {
     PetscInt partSize = 0;
     PetscInt numPoints, offset, p;
 
     ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
-    for(p = 0; p < numPoints; ++p) {
+    for (p = 0; p < numPoints; ++p) {
       PetscInt        point = partArray[offset+p], closureSize;
       const PetscInt *closure;
 
@@ -2889,13 +2889,13 @@ PetscErrorCode DMMeshCreatePartitionClosure(DM dm, PetscSection pointSection, IS
   ierr = PetscSectionGetStorageSize(*section, &newSize);CHKERRQ(ierr);
   ierr = PetscMalloc(newSize * sizeof(PetscInt), &allPoints);CHKERRQ(ierr);
 
-  for(rank = rStart; rank < rEnd; ++rank) {
+  for (rank = rStart; rank < rEnd; ++rank) {
     PetscInt partSize = 0, newOffset;
     PetscInt numPoints, offset, p;
 
     ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
-    for(p = 0; p < numPoints; ++p) {
+    for (p = 0; p < numPoints; ++p) {
       PetscInt        point = partArray[offset+p], closureSize;
       const PetscInt *closure;
 
@@ -3007,7 +3007,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       numRemoteRanks = 0;
     }
     ierr = PetscMalloc(numRemoteRanks * sizeof(PetscSFNode), &remoteRanks);CHKERRQ(ierr);
-    for(p = 0; p < numRemoteRanks; ++p) {
+    for (p = 0; p < numRemoteRanks; ++p) {
       remoteRanks[p].rank  = p;
       remoteRanks[p].index = 0;
     }
@@ -3048,7 +3048,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       PetscInt pStart, pEnd, p;
 
       ierr = PetscSectionGetChart(newConeSection, &pStart, &pEnd);CHKERRQ(ierr);
-      for(p = pStart; p < pEnd; ++p) {
+      for (p = pStart; p < pEnd; ++p) {
         PetscInt coneSize;
         ierr = PetscSectionGetDof(newConeSection, p, &coneSize);CHKERRQ(ierr);
         pmesh->maxConeSize = PetscMax(pmesh->maxConeSize, coneSize);
@@ -3092,10 +3092,10 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       PetscInt   numLabels = 0, l;
 
       /* Bcast number of labels */
-      while(next) {++numLabels; next = next->next;}
+      while (next) {++numLabels; next = next->next;}
       ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
       next = mesh->labels;
-      for(l = 0; l < numLabels; ++l) {
+      for (l = 0; l < numLabels; ++l) {
         SieveLabel      newLabel;
         const PetscInt *partArray;
         PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
@@ -3125,17 +3125,17 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
           ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
           ierr = PetscMalloc(numProcs*next->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
           ierr = PetscMemzero(stratumSizes, numProcs*next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
-          for(s = 0; s < next->numStrata; ++s) {
-            for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
+          for (s = 0; s < next->numStrata; ++s) {
+            for (p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
               const PetscInt point = next->points[p];
               PetscInt       proc;
 
-              for(proc = 0; proc < numProcs; ++proc) {
+              for (proc = 0; proc < numProcs; ++proc) {
                 PetscInt dof, off, pPart;
 
                 ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
                 ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-                for(pPart = off; pPart < off+dof; ++pPart) {
+                for (pPart = off; pPart < off+dof; ++pPart) {
                   if (partArray[pPart] == point) {
                     ++stratumSizes[proc*next->numStrata+s];
                     break;
@@ -3149,33 +3149,33 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
         ierr = MPI_Scatter(stratumSizes, newLabel->numStrata, MPI_INT, newLabel->stratumSizes, newLabel->numStrata, MPI_INT, 0, comm);CHKERRQ(ierr);
         /* Calculate stratumOffsets */
         newLabel->stratumOffsets[0] = 0;
-        for(s = 0; s < newLabel->numStrata; ++s) {
+        for (s = 0; s < newLabel->numStrata; ++s) {
           newLabel->stratumOffsets[s+1] = newLabel->stratumSizes[s] + newLabel->stratumOffsets[s];
         }
         /* Pack points and Scatter */
         if (!rank) {
           ierr = PetscMalloc3(numProcs,PetscMPIInt,&sendcnts,numProcs,PetscMPIInt,&offsets,numProcs+1,PetscMPIInt,&displs);CHKERRQ(ierr);
           displs[0] = 0;
-          for(p = 0; p < numProcs; ++p) {
+          for (p = 0; p < numProcs; ++p) {
             sendcnts[p] = 0;
-            for(s = 0; s < next->numStrata; ++s) {
+            for (s = 0; s < next->numStrata; ++s) {
               sendcnts[p] += stratumSizes[p*next->numStrata+s];
             }
             offsets[p]  = displs[p];
             displs[p+1] = displs[p] + sendcnts[p];
           }
           ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
-          for(s = 0; s < next->numStrata; ++s) {
-            for(p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
+          for (s = 0; s < next->numStrata; ++s) {
+            for (p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
               const PetscInt point = next->points[p];
               PetscInt       proc;
 
-              for(proc = 0; proc < numProcs; ++proc) {
+              for (proc = 0; proc < numProcs; ++proc) {
                 PetscInt dof, off, pPart;
 
                 ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
                 ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-                for(pPart = off; pPart < off+dof; ++pPart) {
+                for (pPart = off; pPart < off+dof; ++pPart) {
                   if (partArray[pPart] == point) {
                     points[offsets[proc]++] = point;
                     break;
@@ -3193,7 +3193,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
         /* Renumber points */
         ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newLabel->stratumOffsets[newLabel->numStrata], newLabel->points, PETSC_NULL, newLabel->points);CHKERRQ(ierr);
         /* Sort points */
-        for(s = 0; s < newLabel->numStrata; ++s) {
+        for (s = 0; s < newLabel->numStrata; ++s) {
           ierr = PetscSortInt(newLabel->stratumSizes[s], &newLabel->points[newLabel->stratumOffsets[s]]);CHKERRQ(ierr);
         }
         /* Insert into list */
@@ -3220,10 +3220,10 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
 
       ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
-      for(p = 0; p < numRoots*2; ++p) {
+      for (p = 0; p < numRoots*2; ++p) {
         rowners[p] = 0;
       }
-      for(p = 0; p < numLeaves; ++p) {
+      for (p = 0; p < numLeaves; ++p) {
         lowners[p*2+0] = rank;
         lowners[p*2+1] = PetscMPIIntCast(leaves ? leaves[p] : p);
       }
@@ -3231,12 +3231,12 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
-      for(p = 0; p < numLeaves; ++p) {
+      for (p = 0; p < numLeaves; ++p) {
         if (lowners[p*2+0] != rank) ++numGhostPoints;
       }
       ierr = PetscMalloc(numGhostPoints * sizeof(PetscInt),    &ghostPoints);CHKERRQ(ierr);
       ierr = PetscMalloc(numGhostPoints * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
-      for(p = 0, gp = 0; p < numLeaves; ++p) {
+      for (p = 0, gp = 0; p < numLeaves; ++p) {
         if (lowners[p*2+0] != rank) {
           ghostPoints[gp]       = leaves ? leaves[p] : p;
           remotePoints[gp].rank  = lowners[p*2+0];
@@ -3386,12 +3386,12 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     ierr = PetscMalloc(in.numberofpoints*dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = VecGetArray(bd->coordinates, &array);CHKERRQ(ierr);
-    for(v = vStart; v < vEnd; ++v) {
+    for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
       PetscInt       off, d;
 
       ierr = PetscSectionGetOffset(bd->coordSection, v, &off);CHKERRQ(ierr);
-      for(d = 0; d < dim; ++d) {
+      for (d = 0; d < dim; ++d) {
         in.pointlist[idx*dim + d] = array[off+d];
       }
       ierr = DMMeshGetLabelValue(boundary, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
@@ -3403,7 +3403,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   if (in.numberofsegments > 0) {
     ierr = PetscMalloc(in.numberofsegments*2 * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
     ierr = PetscMalloc(in.numberofsegments   * sizeof(int), &in.segmentmarkerlist);CHKERRQ(ierr);
-    for(e = eStart; e < eEnd; ++e) {
+    for (e = eStart; e < eEnd; ++e) {
       const PetscInt  idx = e - eStart;
       const PetscInt *cone;
 
@@ -3420,8 +3420,8 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   ierr = DMMeshGetHoles(boundary, &in.numberofholes, &holeCords);CHKERRQ(ierr);
   if (in.numberofholes > 0) {
     ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
-    for(h = 0; h < in.numberofholes; ++h) {
-      for(d = 0; d < dim; ++d) {
+    for (h = 0; h < in.numberofholes; ++h) {
+      for (d = 0; d < dim; ++d) {
         in.holelist[h*dim+d] = holeCoords[h*dim+d];
       }
     }
@@ -3460,11 +3460,11 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     PetscScalar   *coords;
 
     ierr = DMMeshSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
-    for(c = 0; c < numCells; ++c) {
+    for (c = 0; c < numCells; ++c) {
       ierr = DMMeshSetConeSize(*dm, c, numCorners);CHKERRQ(ierr);
     }
     ierr = DMMeshSetUp(*dm);CHKERRQ(ierr);
-    for(c = 0; c < numCells; ++c) {
+    for (c = 0; c < numCells; ++c) {
       PetscInt cone[numCorners] = {cells[c*numCorners+0]+numCells, cells[c*numCorners+1]+numCells, cells[c*numCorners+2]+numCells};
 
       ierr = DMMeshSetCone(*dm, c, cone);CHKERRQ(ierr);
@@ -3472,7 +3472,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     ierr = DMMeshSymmetrize(*dm);CHKERRQ(ierr);
     ierr = DMMeshStratify(*dm);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
-    for(v = numCells; v < numCells+numVertices; ++v) {
+    for (v = numCells; v < numCells+numVertices; ++v) {
       ierr = PetscSectionSetDof(mesh->coordSection, v, dim);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
@@ -3480,18 +3480,18 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
     ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-    for(v = 0; v < numVertices; ++v) {
+    for (v = 0; v < numVertices; ++v) {
       coords[v*dim+0] = meshCoords[v*dim+0];
       coords[v*dim+1] = meshCoords[v*dim+1];
     }
     ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-    for(v = 0; v < numVertices; ++v) {
+    for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
         ierr = DMMeshSetLabelValue(*dm, "marker", v+numCells, out.pointmarkerlist[v]);CHKERRQ(ierr);
       }
     }
     if (interpolate) {
-      for(e = 0; e < out.numberofedges; e++) {
+      for (e = 0; e < out.numberofedges; e++) {
         if (out.edgemarkerlist[e]) {
           const PetscInt vertices[2] = {out.edgelist[e*2+0]+numCells, out.edgelist[e*2+1]+numCells};
           PetscInt       edge;
@@ -3662,7 +3662,7 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
       ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
       if (pStart == pEnd) {PetscFunctionReturn(0);}
     }
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
       if (flg) break;
       next = next->next;
@@ -3716,7 +3716,7 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
       ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
       if (pStart == pEnd) {PetscFunctionReturn(0);}
     }
-    while(next) {
+    while (next) {
       ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
       if (flg) break;
       next = next->next;
@@ -3756,9 +3756,9 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(dim+1,PetscInt,&numDofTot,numFields+1,PetscInt,&maxConstraints);CHKERRQ(ierr);
-  for(PetscInt d = 0; d <= dim; ++d) {
+  for (PetscInt d = 0; d <= dim; ++d) {
     numDofTot[d] = 0;
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       numDofTot[d] += numDof[f*(dim+1)+d];
     }
   }
@@ -3766,7 +3766,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
   if (numFields > 1) {
     ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
     if (numComp) {
-      for(PetscInt f = 0; f < numFields; ++f) {
+      for (PetscInt f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldComponents(*section, f, numComp[f]);CHKERRQ(ierr);
       }
     }
@@ -3775,18 +3775,18 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
   }
   ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
-  for(PetscInt d = 0; d <= dim; ++d) {
+  for (PetscInt d = 0; d <= dim; ++d) {
     ierr = DMMeshGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-    for(PetscInt p = pStart; p < pEnd; ++p) {
-      for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt p = pStart; p < pEnd; ++p) {
+      for (PetscInt f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
     }
   }
   if (numBC) {
-    for(PetscInt f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
-    for(PetscInt bc = 0; bc < numBC; ++bc) {
+    for (PetscInt f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
+    for (PetscInt bc = 0; bc < numBC; ++bc) {
       PetscInt        field = 0;
       const PetscInt *idx;
       PetscInt        n;
@@ -3794,7 +3794,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
       if (numFields) {field = bcField[bc];}
       ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
       ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
-      for(PetscInt i = 0; i < n; ++i) {
+      for (PetscInt i = 0; i < n; ++i) {
         const PetscInt p = idx[i];
         PetscInt       depth, numConst;
 
@@ -3808,7 +3808,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
       }
       ierr = ISRestoreIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
     }
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       maxConstraints[numFields] += maxConstraints[f];
     }
   }
@@ -3818,7 +3818,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
 
     ierr = PetscMalloc(maxConstraints[numFields] * sizeof(PetscInt), &indices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(*section, &pStart, &pEnd);CHKERRQ(ierr);
-    for(PetscInt p = pStart; p < pEnd; ++p) {
+    for (PetscInt p = pStart; p < pEnd; ++p) {
       PetscInt cDof;
 
       ierr = PetscSectionGetConstraintDof(*section, p, &cDof);CHKERRQ(ierr);
@@ -3827,12 +3827,12 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
         if (numFields) {
           PetscInt numConst = 0, fOff = 0;
 
-          for(PetscInt f = 0; f < numFields; ++f) {
+          for (PetscInt f = 0; f < numFields; ++f) {
             PetscInt cfDof, fDof;
 
             ierr = PetscSectionGetFieldDof(*section, p, f, &fDof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldConstraintDof(*section, p, f, &cfDof);CHKERRQ(ierr);
-            for(PetscInt d = 0; d < cfDof; ++d) {
+            for (PetscInt d = 0; d < cfDof; ++d) {
               indices[numConst+d] = fOff+d;
             }
             ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, &indices[numConst]);CHKERRQ(ierr);
@@ -3841,7 +3841,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numFields, Pets
           }
           if (cDof != numConst) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of field constraints %d should be %d", numConst, cDof);
         } else {
-          for(PetscInt d = 0; d < cDof; ++d) {
+          for (PetscInt d = 0; d < cDof; ++d) {
             indices[d] = d;
           }
         }
@@ -3875,25 +3875,25 @@ PetscErrorCode DMMeshConvertSection(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const
   ierr = PetscSectionCreate(mesh->comm(), section);CHKERRQ(ierr);
   if (numFields) {
     ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       ierr = PetscSectionSetFieldComponents(*section, f, s->getSpaceComponents(f));CHKERRQ(ierr);
     }
   }
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
-  for(PetscInt p = pStart; p < pEnd; ++p) {
+  for (PetscInt p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionSetDof(*section, p, s->getFiberDimension(p));CHKERRQ(ierr);
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       ierr = PetscSectionSetFieldDof(*section, p, f, s->getFiberDimension(p, f));CHKERRQ(ierr);
     }
     ierr = PetscSectionSetConstraintDof(*section, p, s->getConstraintDimension(p));CHKERRQ(ierr);
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       ierr = PetscSectionSetFieldConstraintDof(*section, p, f, s->getConstraintDimension(p, f));CHKERRQ(ierr);
     }
   }
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-  for(PetscInt p = pStart; p < pEnd; ++p) {
+  for (PetscInt p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionSetConstraintIndices(*section, p, (PetscInt *) s->getConstraintDof(p));CHKERRQ(ierr);
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, (PetscInt *) s->getConstraintDof(p, f));CHKERRQ(ierr);
     }
   }
@@ -3929,36 +3929,36 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section)
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     s->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(pStart, pEnd));
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-    for(PetscInt f = 0; f < numFields; ++f) {
+    for (PetscInt f = 0; f < numFields; ++f) {
       PetscInt comp;
       ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRQ(ierr);
       s->addSpace(comp);
     }
-    for(PetscInt p = pStart; p < pEnd; ++p) {
+    for (PetscInt p = pStart; p < pEnd; ++p) {
       PetscInt fDim, cDim;
 
       ierr = PetscSectionGetDof(section, p, &fDim);CHKERRQ(ierr);
       s->setFiberDimension(p, fDim);
-      for(PetscInt f = 0; f < numFields; ++f) {
+      for (PetscInt f = 0; f < numFields; ++f) {
         ierr = PetscSectionGetFieldDof(section, p, f, &fDim);CHKERRQ(ierr);
         s->setFiberDimension(p, fDim, f);
       }
       ierr = PetscSectionGetConstraintDof(section, p, &cDim);CHKERRQ(ierr);
       if (cDim) {
         s->setConstraintDimension(p, cDim);
-        for(PetscInt f = 0; f < numFields; ++f) {
+        for (PetscInt f = 0; f < numFields; ++f) {
           ierr = PetscSectionGetFieldConstraintDof(section, p, f, &cDim);CHKERRQ(ierr);
           s->setConstraintDimension(p, cDim, f);
         }
       }
     }
     s->allocatePoint();
-    for(PetscInt p = pStart; p < pEnd; ++p) {
+    for (PetscInt p = pStart; p < pEnd; ++p) {
       const PetscInt *indices;
 
       ierr = PetscSectionGetConstraintIndices(section, p, &indices);CHKERRQ(ierr);
       s->setConstraintDof(p, indices);
-      for(PetscInt f = 0; f < numFields; ++f) {
+      for (PetscInt f = 0; f < numFields; ++f) {
         ierr = PetscSectionGetFieldConstraintIndices(section, p, f, &indices);CHKERRQ(ierr);
         s->setConstraintDof(p, indices, f);
       }
@@ -3970,7 +3970,7 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section)
       if (isDefault) {
         PetscInt maxDof = 0;
 
-        for(PetscInt p = pStart; p < pEnd; ++p) {
+        for (PetscInt p = pStart; p < pEnd; ++p) {
           PetscInt fDim;
 
           ierr = PetscSectionGetDof(section, p, &fDim);CHKERRQ(ierr);
@@ -4086,7 +4086,7 @@ PetscErrorCode DMMeshCreateConeSection(DM dm, PetscSection *section)
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, mesh->getSieve()->getChart().min(), mesh->getSieve()->getChart().max());CHKERRQ(ierr);
-  for(p = mesh->getSieve()->getChart().min(); p < mesh->getSieve()->getChart().max(); ++p) {
+  for (p = mesh->getSieve()->getChart().min(); p < mesh->getSieve()->getChart().max(); ++p) {
     ierr = PetscSectionSetDof(*section, p, mesh->getSieve()->getConeSize(p));CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
@@ -4515,12 +4515,12 @@ PetscErrorCode SectionGetArray(DM dm, const char name[], PetscInt *numElements, 
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for (PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for (PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
@@ -4536,7 +4536,7 @@ PetscErrorCode SectionGetArray(DM dm, const char name[], PetscInt *numElements, 
 inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
 {
   const int end = interval.prefix + interval.index;
-  for(int i = interval.index; i < end; i++) {
+  for (int i = interval.index; i < end; i++) {
     indices[indx++] = i;
   }
 }
@@ -4545,10 +4545,10 @@ inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
 #define __FUNCT__ "ExpandInterval_New"
 inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt *indx)
 {
-  for(int i = 0; i < interval.prefix; i++) {
+  for (int i = 0; i < interval.prefix; i++) {
     indices[(*indx)++] = interval.index + i;
   }
-  for(int i = 0; i < -interval.prefix; i++) {
+  for (int i = 0; i < -interval.prefix; i++) {
     indices[(*indx)++] = -1;
   }
 }

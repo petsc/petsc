@@ -160,7 +160,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 PetscErrorCode SetupQuadrature(AppCtx *user)
 {
   PetscFunctionBeginUser;
-  switch(user->dim) {
+  switch (user->dim) {
   case 2:
   case 3:
     user->q.numQuadPoints = NUM_QUADRATURE_POINTS_0;
@@ -689,7 +689,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = PetscLogFlops((((2+(2+2*dim)*dim)*numBasisComps*numBasisFuncs+(2+2)*dim*numBasisComps)*numQuadPoints + (2+2*dim)*dim*numQuadPoints*numBasisComps*numBasisFuncs)*numChunks*numBatches*batchSize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
   } else {
-    switch(user->op) {
+    switch (user->op) {
     case LAPLACIAN:
       ierr = IntegrateLaplacianBatchCPU(numChunks*numBatches*batchSize, numBasisFuncs, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec, user);CHKERRQ(ierr);break;
     case ELASTICITY:
@@ -701,7 +701,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   /* Remainder */
   PetscInt numRemainder = numCells % (numBatches * batchSize);
   PetscInt offset       = numCells - numRemainder;
-  switch(user->op) {
+  switch (user->op) {
   case LAPLACIAN:
     ierr = IntegrateLaplacianBatchCPU(numRemainder, numBasisFuncs, &u[offset*numBasisFuncs*numBasisComps], &invJ[offset*dim*dim], &detJ[offset],
                                       numQuadPoints, quadPoints, quadWeights, basis, basisDer, &elemVec[offset*numBasisFuncs*numBasisComps], user);CHKERRQ(ierr);break;
@@ -1006,7 +1006,7 @@ int main(int argc, char **argv)
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
     if (user.batch) {
-      switch(user.op) {
+      switch (user.op) {
       case LAPLACIAN:
         ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);break;
       case ELASTICITY:
@@ -1016,7 +1016,7 @@ int main(int argc, char **argv)
       }
       ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalBatch);CHKERRQ(ierr);
     } else {
-      switch(user.op) {
+      switch (user.op) {
       case LAPLACIAN:
         ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
         ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalLaplacian);CHKERRQ(ierr);break;
@@ -1041,7 +1041,7 @@ int main(int argc, char **argv)
     if (user.batch) {
       ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalBatch);CHKERRQ(ierr);
     } else {
-      switch(user.op) {
+      switch (user.op) {
       case LAPLACIAN:
         ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalLaplacian);CHKERRQ(ierr);break;
       case ELASTICITY:

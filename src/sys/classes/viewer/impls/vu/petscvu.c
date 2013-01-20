@@ -98,7 +98,7 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
   if (rank != 0) PetscFunctionReturn(0);
   ierr = PetscStrallocpy(name, &vu->filename);CHKERRQ(ierr);
   ierr = PetscFixFilename(name, fname);CHKERRQ(ierr);
-  switch(vu->mode) {
+  switch (vu->mode) {
   case FILE_MODE_READ:
     vu->fd = fopen(fname, "r");
     break;

@@ -136,7 +136,7 @@ PetscErrorCode CreatePartition(DM mesh, SectionInt *partition)
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshGetCellSectionInt(mesh, "partition", 1, partition);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(mesh, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     ierr = SectionIntUpdate(*partition, c, &rank, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
@@ -186,17 +186,17 @@ PetscErrorCode CreateOdd(DM mesh, Options *options, SectionInt *odd)
   const Obj<PETSC_MESH_TYPE::int_section_type>& section = new PETSC_MESH_TYPE::int_section_type(((PetscObject) mesh)->comm, options->debug);
 
   ierr = DMMeshGetHeightStratum(mesh, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     if (c%2) {
       section->setFiberDimension(c, c%3+1);
     }
   }
   section->allocatePoint();
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     int val[3];
 
     if (c%2) {
-      for(int n = 0; n <= c%3; n++) val[n] = c+n;
+      for (int n = 0; n <= c%3; n++) val[n] = c+n;
       section->updatePoint(c, val);
     }
   }
@@ -271,7 +271,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 
   if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numBC);CHKERRQ(!ierr);}
   ierr = MPI_Bcast(&numBC, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  for(bc = 0; bc < numBC; ++bc) {
+  for (bc = 0; bc < numBC; ++bc) {
     Obj<PETSC_MESH_TYPE::label_type> label;
     char     bdName[2048];
     size_t   len      = 0;
@@ -292,7 +292,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 
     if (!m->commRank()) {ierr = fscanf(fp, "%d %d\n", &bcType, &numFaces);CHKERRQ(!ierr);}
 
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       Retriever visitor(1);
       PetscInt  numCorners, c;
 
@@ -300,7 +300,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
       PetscInt face[numCorners];
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    Face %d with %d corners\n", f, numCorners);CHKERRQ(ierr);}
-      for(c = 0; c < numCorners; ++c) {
+      for (c = 0; c < numCorners; ++c) {
         ierr = fscanf(fp, " %d", &face[c]);CHKERRQ(!ierr);
 
         // Must transform from vertex numbering to sieve point numbering
@@ -311,7 +311,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 
         if (debug) {
           ierr = PetscPrintf(PETSC_COMM_SELF, "      (");CHKERRQ(ierr);
-          for(PetscInt d = 0; d < fiberDim; ++d) {
+          for (PetscInt d = 0; d < fiberDim; ++d) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "%g ", coords[d]);CHKERRQ(ierr);
           }
           ierr = PetscPrintf(PETSC_COMM_SELF, ") %d\n", face[c]);CHKERRQ(ierr);

@@ -38,7 +38,7 @@ void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadComm
 
   ptcomm = (PetscThreadComm_PThread)tcomm->data;
 
-  switch(ptcomm->spark) {
+  switch (ptcomm->spark) {
   case PTHREADPOOLSPARK_SELF:
     if (CheckThreadCommMembership(myrank,tcomm)) {
       job_lockfree.data[myrank] = job;
@@ -64,7 +64,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
   job_lockfree.my_job_status[PetscPThreadRank] = THREAD_INITIALIZED;
 
   /* Spin loop */
-  while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
+  while (PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
     glob_kernel_ctr = PetscReadOnce(int,PetscJobQueue->kernel_ctr);
     if (my_kernel_ctr < glob_kernel_ctr) {
       job = &PetscJobQueue->jobs[my_job_counter];
@@ -100,7 +100,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
     PetscFunctionReturn(0);
   }
   /* Loop till all threads signal that they have done their job */
-  while(wait) {
+  while (wait) {
     for (i=0;i<tcomm->nworkThreads;i++) {
       job_status = job->job_status[ptcomm->granks[i]];
       active_threads += job_status;
@@ -134,7 +134,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
 
   PetscInt  threads_initialized=0;
   /* Wait till all threads have been initialized */
-  while(threads_initialized != tcomm->nworkThreads) {
+  while (threads_initialized != tcomm->nworkThreads) {
     threads_initialized=0;
     for (i=0;i<tcomm->nworkThreads;i++) {
       if (!job_lockfree.my_job_status[ptcomm->granks[i]])

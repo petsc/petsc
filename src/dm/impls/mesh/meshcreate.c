@@ -74,12 +74,12 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
     PetscInt e, ex, ey;
 
     ierr = DMMeshSetChart(dm, 0, numEdges+numVertices);CHKERRQ(ierr);
-    for(e = 0; e < numEdges; ++e) {
+    for (e = 0; e < numEdges; ++e) {
       ierr = DMMeshSetConeSize(dm, e, 2);CHKERRQ(ierr);
     }
     ierr = DMMeshSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for(vy = 0; vy <= edges[1]; vy++) {
-      for(ex = 0; ex < edges[0]; ex++) {
+    for (vy = 0; vy <= edges[1]; vy++) {
+      for (ex = 0; ex < edges[0]; ex++) {
         PetscInt edge    = vy*edges[0]     + ex;
         PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
         PetscInt cone[2] = {vertex, vertex+1};
@@ -94,8 +94,8 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
         }
       }
     }
-    for(vx = 0; vx <= edges[0]; vx++) {
-      for(ey = 0; ey < edges[1]; ey++) {
+    for (vx = 0; vx <= edges[0]; vx++) {
+      for (ey = 0; ey < edges[1]; ey++) {
         PetscInt edge    = vx*edges[1] + ey + edges[0]*(edges[1]+1);
         PetscInt vertex  = ey*(edges[0]+1) + vx + numEdges;
         PetscInt cone[2] = {vertex, vertex+edges[0]+1};
@@ -115,7 +115,7 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = DMMeshStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = PetscSectionSetChart(mesh->coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
-  for(v = numEdges; v < numEdges+numVertices; ++v) {
+  for (v = numEdges; v < numEdges+numVertices; ++v) {
     ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
@@ -123,8 +123,8 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-  for(vy = 0; vy <= edges[1]; ++vy) {
-    for(vx = 0; vx <= edges[0]; ++vx) {
+  for (vy = 0; vy <= edges[1]; ++vy) {
+    for (vx = 0; vx <= edges[0]; ++vx) {
       coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
       coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
     }
@@ -166,11 +166,11 @@ PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
     PetscInt f;
 
     ierr = DMMeshSetChart(dm, 0, numFaces+numVertices);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       ierr = DMMeshSetConeSize(dm, f, 4);CHKERRQ(ierr);
     }
     ierr = DMMeshSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for(v = 0; v < numFaces+numVertices; ++v) {
+    for (v = 0; v < numFaces+numVertices; ++v) {
       ierr = DMMeshSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
     { // Side 0 (Front)
@@ -202,16 +202,16 @@ PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   ierr = DMMeshStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = PetscSectionSetChart(mesh->coordSection, numFaces, numFaces + numVertices);CHKERRQ(ierr);
-  for(v = numFaces; v < numFaces+numVertices; ++v) {
+  for (v = numFaces; v < numFaces+numVertices; ++v) {
     ierr = PetscSectionSetDof(mesh->coordSection, v, 3);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-  for(vz = 0; vz <= faces[2]; ++vz) {
-    for(vy = 0; vy <= faces[1]; ++vy) {
-      for(vx = 0; vx <= faces[0]; ++vx) {
+  for (vz = 0; vz <= faces[2]; ++vz) {
+    for (vy = 0; vy <= faces[1]; ++vy) {
+      for (vx = 0; vx <= faces[0]; ++vx) {
         coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+0] = lower[0] + ((upper[0] - lower[0])/faces[0])*vx;
         coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+1] = lower[1] + ((upper[1] - lower[1])/faces[1])*vy;
         coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+2] = lower[2] + ((upper[2] - lower[2])/faces[2])*vz;
@@ -240,7 +240,7 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
     PetscValidLogicalCollectiveInt(boundary,dim,2);
     ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
     ierr = DMMeshSetDimension(boundary, dim-1);CHKERRQ(ierr);
-    switch(dim) {
+    switch (dim) {
     case 2:
     {
       PetscReal lower[2] = {0.0, 0.0};
@@ -317,17 +317,17 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
   mesh->setSieve(sieve);
-  for(PetscInt c = 0; c < numCells; ++c) {
+  for (PetscInt c = 0; c < numCells; ++c) {
     sieve->setConeSize(c, numCorners);
   }
   sieve->symmetrizeSizes(numCells, numCorners, cellVertices, numCells);
   sieve->allocate();
   ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
-  for(PetscInt v = 0; v < numCorners; ++v) {
+  for (PetscInt v = 0; v < numCorners; ++v) {
     coneO[v] = 1;
   }
-  for(PetscInt c = 0; c < numCells; ++c) {
-    for(PetscInt v = 0; v < numCorners; ++v) {
+  for (PetscInt c = 0; c < numCells; ++c) {
+    for (PetscInt v = 0; v < numCorners; ++v) {
       cone[v] = cellVertices[c*numCorners+v]+numCells;
     }
     sieve->setCone(cone, c);
@@ -361,12 +361,12 @@ PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, 
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
   mesh->setSieve(sieve);
-  for(PetscInt c = 0; c < numCells; ++c) {
+  for (PetscInt c = 0; c < numCells; ++c) {
     sieve->setConeSize(c, numCorners[c]);
   }
   //sieve->symmetrizeSizes(numCells, numCorners, cellVertices);
   sieve->allocate();
-  for(PetscInt c = 0, offset = 0; c < numCells; offset += numCorners[c], ++c) {
+  for (PetscInt c = 0, offset = 0; c < numCells; offset += numCorners[c], ++c) {
     sieve->setCone(&cellVertices[offset], c);
   }
   sieve->symmetrize();
@@ -429,9 +429,9 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   /* Number each cell for the vertex in the lower left corner */
   if (dim < 3) {ze = 1; P = 1;} else {ze = info.gzs+info.gzm-1;}
   if (dim < 2) {ye = 1; N = 1;} else {ye = info.gys+info.gym-1;}
-  for(PetscInt k = info.zs; k < ze; ++k) {
-    for(PetscInt j = info.ys; j < ye; ++j) {
-      for(PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i, ++c) {
+  for (PetscInt k = info.zs; k < ze; ++k) {
+    for (PetscInt j = info.ys; j < ye; ++j) {
+      for (PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i, ++c) {
         PetscInt globalC = (k*(N-1) + j)*(M-1) + i;
 
         renumbering[globalC] = c;
@@ -441,9 +441,9 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   }
   if (c != numCells) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Error in generated cell numbering, %d should be %d", c, numCells);
   /* Get vertex renumbering */
-  for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
-    for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
-      for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i, ++v) {
+  for (PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
+    for (PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+      for (PetscInt i = info.xs; i < info.gxs+info.gxm; ++i, ++v) {
         PetscInt globalV = (k*N + j)*M + i + numGlobalCells;
 
         renumbering[globalV] = v+numCells;
@@ -452,12 +452,12 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   }
   if (v != numVertices) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Error in generated vertex numbering, %d should be %d", v, numVertices);
   /* Calculate support sizes */
-  for(PetscInt k = info.zs; k < ze; ++k, ++c) {
-    for(PetscInt j = info.ys; j < ye; ++j) {
-      for(PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i) {
-        for(PetscInt kp = k; kp <= k+(dim>2); ++kp) {
-          for(PetscInt jp = j; jp <= j+(dim>1); ++jp) {
-            for(PetscInt ip = i; ip <= i+1; ++ip) {
+  for (PetscInt k = info.zs; k < ze; ++k, ++c) {
+    for (PetscInt j = info.ys; j < ye; ++j) {
+      for (PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i) {
+        for (PetscInt kp = k; kp <= k+(dim>2); ++kp) {
+          for (PetscInt jp = j; jp <= j+(dim>1); ++jp) {
+            for (PetscInt ip = i; ip <= i+1; ++ip) {
               PetscInt globalV = (kp*N + jp)*M + ip + numGlobalCells;
 
               sieve->addSupportSize(renumbering[globalV], 1);
@@ -469,12 +469,12 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   }
   sieve->allocate();
   ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
-  for(PetscInt v = 0; v < numCorners; ++v) {
+  for (PetscInt v = 0; v < numCorners; ++v) {
     coneO[v] = 1;
   }
-  for(PetscInt k = info.zs; k < ze; ++k) {
-    for(PetscInt j = info.ys; j < ye; ++j) {
-      for(PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i) {
+  for (PetscInt k = info.zs; k < ze; ++k) {
+    for (PetscInt j = info.ys; j < ye; ++j) {
+      for (PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i) {
         PetscInt globalC = (k*(N-1) + j)*(M-1) + i;
         PetscInt v       = 0;
 
@@ -502,8 +502,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   {
     const Obj<PETSC_MESH_TYPE::label_type>& boundary = mesh->createLabel("marker");
 
-    for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
-      for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+    for (PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
+      for (PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
         if (info.xs == 0) {
           PetscInt globalV = (k*N + j)*M + info.xs + numGlobalCells;
 
@@ -517,8 +517,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
       }
     }
     if (dim > 1) {
-      for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
-        for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+      for (PetscInt k = info.zs; k < info.gzs+info.gzm; ++k) {
+        for (PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
           if (info.ys == 0) {
             PetscInt globalV = (k*N + info.ys)*M + i + numGlobalCells;
 
@@ -533,8 +533,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
       }
     }
     if (dim > 2) {
-      for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
-        for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+      for (PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+        for (PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
           if (info.zs == 0) {
             PetscInt globalV = (info.zs*N + j)*M + i + numGlobalCells;
 
@@ -555,7 +555,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   /* Set coordinates */
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(section, numCells, numCells+numVertices);CHKERRQ(ierr);
-  for(PetscInt v = numCells; v < numCells+numVertices; ++v) {
+  for (PetscInt v = numCells; v < numCells+numVertices; ++v) {
     ierr = PetscSectionSetDof(section, v, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
@@ -565,13 +565,13 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   {
     Obj<PETSC_MESH_TYPE::real_section_type> coordSection = mesh->getRealSection("coordinates");
 
-    switch(dim) {
+    switch (dim) {
     case 1:
     {
       PetscScalar **coords;
 
       ierr = DMDAVecGetArrayDOF(cda, coordinates, &coords);CHKERRQ(ierr);
-      for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+      for (PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
         PetscInt globalV = i + numGlobalCells;
 
         coordSection->updatePoint(renumbering[globalV], coords[i]);
@@ -584,8 +584,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
       PetscScalar ***coords;
 
       ierr = DMDAVecGetArrayDOF(cda, coordinates, &coords);CHKERRQ(ierr);
-      for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
-        for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+      for (PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+        for (PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
           PetscInt globalV = j*M + i + numGlobalCells;
 
           coordSection->updatePoint(renumbering[globalV], coords[j][i]);
@@ -599,9 +599,9 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
       PetscScalar ****coords;
 
       ierr = DMDAVecGetArrayDOF(cda, coordinates, &coords);CHKERRQ(ierr);
-      for(PetscInt k = info.zs; k < info.gzs+info.gzm; ++k, ++v) {
-        for(PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
-          for(PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
+      for (PetscInt k = info.zs; k < info.gzs+info.gzm; ++k, ++v) {
+        for (PetscInt j = info.ys; j < info.gys+info.gym; ++j) {
+          for (PetscInt i = info.xs; i < info.gxs+info.gxm; ++i) {
             PetscInt globalV = (k*N + j)*M + i + numGlobalCells;
 
             coordSection->updatePoint(renumbering[globalV], coords[k][j][i]);

@@ -336,7 +336,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
     petsc_printfqueuelength++;
     next->size = -1;
-    while((PetscInt)fullLength >= next->size) {
+    while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
@@ -401,7 +401,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char forma
     else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
     petsc_printfqueuelength++;
     next->size = -1;
-    while((PetscInt)fullLength >= next->size) {
+    while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);

@@ -170,7 +170,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     ierr = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);
     norm1 = nrm;
-    while(1) {
+    while (1) {
       ierr = VecCopy(Ytmp,Y);CHKERRQ(ierr);
       nrm = norm1;
 

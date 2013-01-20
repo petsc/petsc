@@ -158,7 +158,7 @@ PetscErrorCode  MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm
   const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
-  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+  for (std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
     newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
   }
   newMesh->setupField(s);

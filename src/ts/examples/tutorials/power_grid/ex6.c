@@ -117,8 +117,8 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
       if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         p[j][i] = 0.0;
@@ -222,8 +222,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void* ctx)
   ierr = DMDAVecGetArray(user->da,localX,&p);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         f[j][i] = p[j][i];
       } else {
@@ -268,8 +268,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *Jpre,MatStructure
 
   ierr = DMGetCoordinatesLocal(user->da,&gc);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
       PetscInt nc = 0;
       row.i = i; row.j = j;

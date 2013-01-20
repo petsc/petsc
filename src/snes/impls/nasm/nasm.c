@@ -268,7 +268,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
-  for(i=0;i<nasm->n;i++) {
+  for (i=0;i<nasm->n;i++) {
     subsnes = nasm->subsnes[i];
     ierr = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
     iscat = nasm->iscatter[i];
@@ -419,7 +419,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   if (normtype == SNES_NORM_FUNCTION) {
     if (i == snes->max_its) {
       ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
-      if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+      if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else {
     if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* NASM is meant to be used as a preconditioner */
