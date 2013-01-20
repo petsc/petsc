@@ -37,8 +37,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);
-//  ierr = VecGetSize(input,&vsize);CHKERRQ(ierr);
-//  printf("Size of the input Vector is %d\n",vsize);
+/*  ierr = VecGetSize(input,&vsize);CHKERRQ(ierr); */
+/*  printf("Size of the input Vector is %d\n",vsize); */
 
   DIM = 3;
   dim[0] = N0; dim[1] = N1; dim[2] = N2;
@@ -67,19 +67,19 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
-//  if (enorm > 1.e-14) {
+/*  if (enorm > 1.e-14) { */
     if (!rank)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-//      }
+/*      } */
 
 
 
 
-// ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
-//  printf("Vector size from ex148 %d\n",vsize);
-//  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-//      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-//      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+/* ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); */
+/*  printf("Vector size from ex148 %d\n",vsize); */
+/*  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr); */
+/*      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr); */
+/*      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr); */
 
   ierr = PetscFinalize();
   return 0;

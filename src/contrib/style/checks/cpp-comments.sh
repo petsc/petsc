@@ -17,10 +17,11 @@
 
 find src/ include/ -name *.[ch] \
  | grep -v 'src/docs' \
- | xargs grep "//" \
- | grep -v "http\|ftp:\|file:\|://" \
+ | xargs grep -F "//" \
+ | grep -v "http\|ftp:\|file:" \
  | grep -v -F ":$" \
- | grep -v -F "<!DOCTYPE" \
  | grep -v -F "src/dm/impls/mesh/" \
- | grep -v -F "||//J||"
+ | grep -v -F "<!DOCTYPE" \
+ | grep -v -F "||//J||" \
+ | grep -v -F "\"://\""
 

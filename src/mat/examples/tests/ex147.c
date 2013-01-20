@@ -49,21 +49,21 @@ PetscInt main(PetscInt argc,char **args)
     N=2*N0*N1*N2*(N3/2+1);N_factor=N0*N1*N2*N3;
     n=2*local_n0*N1*N2*(N3/2+1);n1=local_n1*N0*2*N1*N2;
 
-//    printf("The value N is  %d from process %d\n",N,rank);
-//    printf("The value n is  %d from process %d\n",n,rank);
-//    printf("The value n1 is  %d from process %d\n",n1,rank);
+/*    printf("The value N is  %d from process %d\n",N,rank); */
+/*    printf("The value n is  %d from process %d\n",n,rank); */
+/*    printf("The value n1 is  %d from process %d\n",n1,rank); */
     /* Creating data vector and accompanying array with VeccreateMPIWithArray */
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar *)in1,&fin);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1);CHKERRQ(ierr);
 
-//    VecGetSize(fin,&size);
-//    printf("The size is %d\n",size);
+/*    VecGetSize(fin,&size); */
+/*    printf("The size is %d\n",size); */
 
     VecSet(fin,one);
-//    VecAssemblyBegin(fin);
-//    VecAssemblyEnd(fin);
-//    VecView(fin,PETSC_VIEWER_STDOUT_WORLD);
+/*    VecAssemblyBegin(fin); */
+/*    VecAssemblyEnd(fin); */
+/*    VecView(fin,PETSC_VIEWER_STDOUT_WORLD); */
 
 
     VecGetArray(fin,&x_arr);
@@ -82,8 +82,8 @@ PetscInt main(PetscInt argc,char **args)
     VecRestoreArray(fout1,&z_arr);
     VecRestoreArray(fout,&y_arr);
 
-//    a = 1.0/(PetscReal)N_factor;
-//    ierr = VecScale(fout1,a);CHKERRQ(ierr);
+/*    a = 1.0/(PetscReal)N_factor; */
+/*    ierr = VecScale(fout1,a);CHKERRQ(ierr); */
 
     VecAssemblyBegin(fout1);
     VecAssemblyEnd(fout1);

@@ -483,12 +483,12 @@ static int block_system(void)
     Vec *vecs;
     ierr = VecNestGetSubVecs( x, PETSC_NULL, &vecs );CHKERRQ(ierr);
     bv = vecs[0];
-//    ierr = VecBlockGetSubVec( x, 0, &bv );CHKERRQ(ierr);
+/*    ierr = VecBlockGetSubVec( x, 0, &bv );CHKERRQ(ierr); */
     ierr = VecSetValue( bv, 0, 2.0, INSERT_VALUES );CHKERRQ(ierr);  /* xx[0] = 2.0; */
     ierr = VecAssemblyBegin(bv);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bv);CHKERRQ(ierr);
 
-//    ierr = VecBlockGetSubVec( x, 1, &bv );CHKERRQ(ierr);
+/*    ierr = VecBlockGetSubVec( x, 1, &bv );CHKERRQ(ierr); */
     bv = vecs[1];
     ierr = VecSetValue( bv, 0, 3.0, INSERT_VALUES );CHKERRQ(ierr);  /* xx[1] = 3.0; */
     ierr = VecAssemblyBegin(bv);CHKERRQ(ierr);
