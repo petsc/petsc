@@ -2,6 +2,7 @@
 
 # Checks for compliance with the rule 'Do not put a blank line immediately after PetscFunctionBegin;'
 
+
 # Steps:
 # - Read each file argument to a single string, then run a regular expression on it.
 #
