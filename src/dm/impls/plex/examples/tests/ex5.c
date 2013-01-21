@@ -7,6 +7,33 @@ static char help[] = "Tests for creation of hybrid meshes\n\n";
 */
 
 #include <petscdmplex.h>
+/* List of test meshes
+
+Test 0:
+Two triangles sharing a face
+
+        4
+      / | \
+     8  |  9
+    /   |   \
+   2  0 7 1  5
+    \   |   /
+     6  |  10
+      \ | /
+        3
+
+should become two triangles separated by a zero-volume cell with 6 vertices
+
+        5--16--8
+      / |      | \
+    11  |      |  12
+    /   |      |   \
+   3  0 10  2 14 1  6
+    \   |      |   /
+     9  |      |  13
+      \ |      | /
+        4--15--7
+*/
 
 typedef struct {
   DM        dm;
@@ -54,7 +81,7 @@ PetscErrorCode CreateTopology(DM dm, PetscInt depth, const PetscInt numPoints[],
     ierr = DMPlexSetConeSize(dm, p, coneSize[p-pStart]);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-  for(p = pStart, off = 0; p < pEnd; ++p, off += coneSize[p-pStart]) {
+  for(p = pStart, off = 0; p < pEnd; off += coneSize[p-pStart], ++p) {
     ierr = DMPlexSetCone(dm, p, &cones[off]);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, p, &coneOrientations[off]);CHKERRQ(ierr);
   }
@@ -88,36 +115,9 @@ PetscErrorCode CreateTopology(DM dm, PetscInt depth, const PetscInt numPoints[],
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateSimplex_2D"
-/* List of test meshes
-
-Test 0:
-Two triangles sharing a face
-
-        4
-      / | \
-     8  |  9
-    /   |   \
-   2  0 7 1  5
-    \   |   /
-     6  |  10
-      \ | /
-        3
-
-should become two triangles separated by a zero-volume cell with 6 vertices
-
-        5--16--8
-      / |      | \
-    11  |      |  12
-    /   |      |   \
-   3  0 10  2 14 1  6
-    \   |      |   /
-     9  |      |  13
-      \ |      | /
-        4--15--7
-*/
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
 {
-  PetscInt       depth = 2, testNum  = 0, p, d;
+  PetscInt       depth = 2, testNum  = 0, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -131,12 +131,12 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
       PetscInt    coneSize[11]         = {3, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2};
       PetscInt    cones[16]            = {6, 7, 8,  9, 7, 10,  2, 3,  3, 4,  4, 2,  5, 4,  3, 5};
       PetscInt    coneOrientations[16] = {0, 0, 0,  0, -2, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
-      PetscScalar vertexCoords[8]      = {-0.5, 0.5, -0.2, 0.0, -0.2, 1.0, 0.5, 0.5};
-      PetscInt    markerPoints[8]      = {6, 1, 8, 1, 9, 1, 10, 1};
+      PetscScalar vertexCoords[8]      = {-0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.5, 0.5};
+      PetscInt    markerPoints[16]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 8, 1, 9, 1, 10, 1};
       PetscInt    faultPoints[6]       = {7, 1, 3, 0, 4, 0};
 
       ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for(p = 0; p < 4; ++p) {
+      for(p = 0; p < 8; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
       for(p = 0; p < 3; ++p) {
@@ -186,7 +186,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DMLabel label;
 
     ierr = DMPlexGetLabel(*dm, "fault", &label);CHKERRQ(ierr);
-    ierr = DMLabelCohesiveComplete(label);CHKERRQ(ierr);
+    ierr = DMLabelCohesiveComplete(*dm, label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMPlexConstructCohesiveCells(*dm, "fault", &hybridMesh);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = hybridMesh;
