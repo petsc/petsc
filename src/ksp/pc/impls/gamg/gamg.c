@@ -858,6 +858,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);      assert(ii==1);
       ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
       ierr = PCSetType(pc2, PCLU);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
     }
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */

@@ -45,8 +45,8 @@ PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
     dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE;
   } else {
     dir->info.shifttype = (PetscReal) shifttype;
-    if (shifttype == MAT_SHIFT_NONZERO && dir->info.shiftamount == 0.0) {
-      dir->info.shiftamount = 1.e-12; /* set default amount if user has not called PCFactorSetShiftAmount() yet */
+    if ((shifttype == MAT_SHIFT_NONZERO || shifttype ==  MAT_SHIFT_INBLOCKS) && dir->info.shiftamount == 0.0) {
+      dir->info.shiftamount = 100.0*PETSC_MACHINE_EPSILON; /* set default amount if user has not called PCFactorSetShiftAmount() yet */
     }
   }
   PetscFunctionReturn(0);
@@ -60,7 +60,7 @@ PetscErrorCode  PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
 
   PetscFunctionBegin;
   if (shiftamount == (PetscReal) PETSC_DECIDE) {
-    dir->info.shiftamount = 1.e-12;
+    dir->info.shiftamount = 100.0*PETSC_MACHINE_EPSILON;
   } else {
     dir->info.shiftamount = shiftamount;
   }

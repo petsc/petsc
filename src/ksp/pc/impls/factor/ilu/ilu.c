@@ -384,7 +384,7 @@ PetscErrorCode  PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol              = PETSC_DEFAULT;
-  ((PC_Factor*)ilu)->info.shifttype          = (PetscReal)MAT_SHIFT_NONZERO;
+  ((PC_Factor*)ilu)->info.shifttype          = (PetscReal)MAT_SHIFT_INBLOCKS;
   ((PC_Factor*)ilu)->info.shiftamount        = 100.0*PETSC_MACHINE_EPSILON;
   ((PC_Factor*)ilu)->info.zeropivot          = 100.0*PETSC_MACHINE_EPSILON;
   ((PC_Factor*)ilu)->info.pivotinblocks      = 1.0;

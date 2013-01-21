@@ -229,16 +229,21 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     if (!i && levels > 1) {
       ierr = KSPAppendOptionsPrefix(mglevels[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
 
-      /* coarse solve is (redundant) LU by default */
+      /* coarse solve is (redundant) LU by default; set shifttype NONZERO to avoid annoying zero-pivot in LU preconditioner */
       ierr = KSPSetType(mglevels[0]->smoothd,KSPPREONLY);CHKERRQ(ierr);
       ierr = KSPGetPC(mglevels[0]->smoothd,&ipc);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
+        KSP innerksp;
+        PC  innerpc;
         ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
+        ierr = PCRedundantGetKSP(ipc,&innerksp);CHKERRQ(ierr);
+        ierr = KSPGetPC(innerksp,&innerpc);CHKERRQ(ierr);
+        ierr = PCFactorSetShiftType(innerpc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       } else {
         ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
+        ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       }
-
     } else {
       char tprefix[128];
       sprintf(tprefix,"mg_levels_%d_",(int)i);
