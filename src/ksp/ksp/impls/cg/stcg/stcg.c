@@ -96,26 +96,22 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
   KSP_STCG       *cg = (KSP_STCG *)ksp->data;
-
   PetscErrorCode ierr;
   MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
-
   PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal      alpha, beta, kappa, rz, rzm1;
   PetscReal      rr, r2, step;
-
   PetscInt       max_cg_its;
-
   PetscBool      diagonalscale;
 
-  PetscFunctionBegin;
   /***************************************************************************/
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
 
+  PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (cg->radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
@@ -630,11 +626,11 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
-
+  
+  PetscFunctionBegin;
   ierr = KSPDefaultGetWork(ksp, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -645,12 +641,11 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-
  /***************************************************************************/
   /* Clear composed functions                                                */
   /***************************************************************************/
-
+  
+  PetscFunctionBegin;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -761,7 +756,6 @@ PetscErrorCode  KSPCreate_STCG(KSP ksp)
   KSP_STCG       *cg;
 
   PetscFunctionBegin;
-
   ierr = PetscNewLog(ksp,KSP_STCG, &cg);CHKERRQ(ierr);
 
   cg->radius = 0.0;

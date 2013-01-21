@@ -108,7 +108,6 @@ PetscErrorCode    KSPSetUp_DGMRES (KSP ksp)
   PetscInt        max_k  = dgmres->max_k+1;
 
   PetscFunctionBegin;
-
   ierr          = KSPSetUp_GMRES (ksp);CHKERRQ(ierr);
   if (dgmres->neig==0) PetscFunctionReturn (0);
 
@@ -390,9 +389,9 @@ static PetscErrorCode KSPDGMRESBuildSoln (PetscScalar* nrs,Vec vs,Vec vdest,KSP 
   PetscInt       ii,k,j;
   KSP_DGMRES      *dgmres = (KSP_DGMRES *) (ksp->data);
 
-  PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
 
+  PetscFunctionBegin;
   /* If it is < 0, no gmres steps have been performed */
   if (it < 0) {
     ierr = VecCopy (vs,vdest);CHKERRQ(ierr);     /* VecCopy() is smart, exists immediately if vguess == vdest */

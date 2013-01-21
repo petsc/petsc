@@ -374,7 +374,6 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   PetscBool      isSeqAIJ,isSeqSBAIJ,isMPIAIJ;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
@@ -598,20 +597,20 @@ M*/
 #define __FUNCT__ "MatGetInfo_PaStiX"
 PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
 {
-    Mat_Pastix  *lu =(Mat_Pastix*)A->spptr;
+  Mat_Pastix  *lu =(Mat_Pastix*)A->spptr;
 
-    PetscFunctionBegin;
-    info->block_size        = 1.0;
-    info->nz_allocated      = lu->iparm[IPARM_NNZEROS];
-    info->nz_used           = lu->iparm[IPARM_NNZEROS];
-    info->nz_unneeded       = 0.0;
-    info->assemblies        = 0.0;
-    info->mallocs           = 0.0;
-    info->memory            = 0.0;
-    info->fill_ratio_given  = 0;
-    info->fill_ratio_needed = 0;
-    info->factor_mallocs    = 0;
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  info->block_size        = 1.0;
+  info->nz_allocated      = lu->iparm[IPARM_NNZEROS];
+  info->nz_used           = lu->iparm[IPARM_NNZEROS];
+  info->nz_unneeded       = 0.0;
+  info->assemblies        = 0.0;
+  info->mallocs           = 0.0;
+  info->memory            = 0.0;
+  info->fill_ratio_given  = 0;
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
+  PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN

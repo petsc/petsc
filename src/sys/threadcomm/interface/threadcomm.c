@@ -156,7 +156,6 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (!*tcomm) PetscFunctionReturn(0);
   if (!--(*tcomm)->refct) {
     /* Destroy the implementation specific data struct */

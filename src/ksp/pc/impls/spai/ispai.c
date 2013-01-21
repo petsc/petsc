@@ -66,7 +66,6 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   Mat            AT;
 
   PetscFunctionBegin;
-
   init_SPAI();
 
   if (ispai->sp) {
@@ -679,7 +678,6 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   struct compressed_lines *rows;
 
   PetscFunctionBegin;
-
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);

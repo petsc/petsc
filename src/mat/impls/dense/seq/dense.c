@@ -694,6 +694,7 @@ PetscErrorCode MatGetRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
 PetscErrorCode MatRestoreRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **vals)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (cols) {ierr = PetscFree(*cols);CHKERRQ(ierr);}
   if (vals) {ierr = PetscFree(*vals);CHKERRQ(ierr); }
@@ -1042,7 +1043,6 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);

@@ -607,7 +607,6 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   PetscBool      match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   *flg = 0; /* When a message is discovered this is reset to 1 */
   /* Return if no more messages to process */
   if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); }

@@ -43,7 +43,6 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
   PetscBool      flg = PETSC_FALSE,spetsc;
 
   PetscFunctionBegin;
-
   /* first check options database */
   ierr = PetscStrncmp(name,"PETSC_",6,&spetsc);CHKERRQ(ierr);
 

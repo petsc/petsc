@@ -472,7 +472,6 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   VecScatter     vecscat;
 
   PetscFunctionBegin;
-
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 

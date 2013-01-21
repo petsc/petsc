@@ -247,7 +247,6 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* Free work vectors */
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);

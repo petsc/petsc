@@ -611,7 +611,6 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   void           *ctx;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   PetscValidHeaderSpecific(Udot,VEC_CLASSID,4);

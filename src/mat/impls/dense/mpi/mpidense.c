@@ -558,7 +558,6 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
@@ -747,7 +746,6 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
   PetscBool      iascii,isbinary,isdraw,issocket;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket);CHKERRQ(ierr);

@@ -27,8 +27,8 @@
 PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
-
   /* get work vectors needed by PIPECG */
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);

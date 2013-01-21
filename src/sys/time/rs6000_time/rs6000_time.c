@@ -11,7 +11,6 @@ PetscLogDouble  rs6000_time(void)
    PetscLogDouble   time;
 
    PetscFunctionBegin;
-
    /* read in the register values */
    read_real_time(&t,TIMEBASE_SZ);
 

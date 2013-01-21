@@ -108,6 +108,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   PetscErrorCode ierr;
   PetscScalar    *x,*t,avg_dev,sum;
   PetscInt       i;
+  
   PetscFunctionBegin;
   user->cw = 5;
   user->kw = 2; /* Rayleigh distribution */
@@ -185,8 +186,8 @@ PetscErrorCode SetInductionGeneratorParams(AppCtx *user)
 PetscErrorCode GetWindPower(PetscScalar wm,PetscScalar vw,PetscScalar *Pw,AppCtx *user)
 {
   PetscScalar temp,lambda,lambda_i,cp;
+  
   PetscFunctionBegin;
-
   temp = user->nGB*2*user->Rt*ws/user->np;
   lambda = temp*wm/vw;
   lambda_i = 1/(1/lambda + 0.002);

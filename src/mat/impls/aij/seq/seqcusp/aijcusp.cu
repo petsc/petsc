@@ -41,6 +41,7 @@ PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 #if defined PETSC_HAVE_TXPETSCGPU
   Mat_SeqAIJCUSP *cuspMat  = (Mat_SeqAIJCUSP*)A->spptr;
 #endif
+
   PetscFunctionBegin;
 #if defined PETSC_HAVE_TXPETSCGPU
   switch (op) {
@@ -86,6 +87,7 @@ PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFo
 #if defined PETSC_HAVE_TXPETSCGPU
   PetscErrorCode ierr;
 #endif
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID,1);
 #if defined PETSC_HAVE_TXPETSCGPU
@@ -102,6 +104,7 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
   PetscErrorCode ierr;
   MatCUSPStorageFormat format;
   PetscBool      flg;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
@@ -267,6 +270,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
 #else
   CUSPMATRIX* mat = (CUSPMATRIX*)cuspstruct->mat;
 #endif
+
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
     if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
@@ -326,7 +330,6 @@ PetscErrorCode MatGetVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (right) {
     ierr = VecCreate(((PetscObject)mat)->comm,right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -408,6 +411,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode ierr;
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *)A->spptr;
   CUSPARRAY      *xarray,*yarray,*zarray;
+  
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
      ierr = MatCUSPCopyToGPU(A);CHKERRQ(ierr); */
@@ -458,6 +462,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
+  
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   ierr = MatCUSPCopyToGPU(A);CHKERRQ(ierr);
@@ -621,6 +626,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode ierr;
   MatCUSPStorageFormat format = MAT_CUSP_CSR;
+  
   PetscFunctionBegin;
   ierr            = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
   B->ops->mult    = MatMult_SeqAIJCUSP;

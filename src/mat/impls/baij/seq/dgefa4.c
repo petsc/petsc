@@ -170,7 +170,6 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(float *a)
      bool Invert4x4(SMLXMatrix &);
   */
   PetscFunctionBegin;
-
   SSE_SCOPE_BEGIN;
     SSE_INLINE_BEGIN_1(a)
 

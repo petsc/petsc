@@ -314,7 +314,6 @@ PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,PetscInt *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (pc->setupcalled > 0 && jac->n!=blocks) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called");
   jac->n = blocks;
   if (!lens) {
@@ -741,6 +740,7 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
+  
   PetscFunctionBegin;
   /*
       The VecPlaceArray() is to avoid having to copy the
@@ -865,7 +865,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   PetscBool              wasSetup = PETSC_TRUE;
 
   PetscFunctionBegin;
-
   if (!pc->setupcalled) {
     const char *prefix;
 

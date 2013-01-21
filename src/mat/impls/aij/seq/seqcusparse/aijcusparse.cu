@@ -79,6 +79,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
 {
   Mat_SeqAIJCUSPARSE *cusparseMat  = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  
   PetscFunctionBegin;
   switch (op) {
   case MAT_CUSPARSE_MULT:
@@ -123,6 +124,7 @@ EXTERN_C_END
 PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID,1);
   ierr = PetscTryMethod(A, "MatCUSPARSESetFormat_C",(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat),(A,op,format));CHKERRQ(ierr);
@@ -136,6 +138,7 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
   PetscErrorCode     ierr;
   MatCUSPARSEStorageFormat format;
   PetscBool      flg;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SeqAIJCUSPARSE options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
@@ -272,7 +275,6 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildUpperTriMatrix(Mat A)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
     try {
       /* next, figure out the number of nonzeros in the upper triangular matrix. */
@@ -534,7 +536,6 @@ PetscErrorCode MatGetVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (right) {
     ierr = VecCreate(((PetscObject)mat)->comm,right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -621,6 +622,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE *)A->spptr;
   CUSPARRAY      *xarray,*yarray,*zarray;
+  
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
      ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr); */
@@ -653,6 +655,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE *)A->spptr;
   CUSPARRAY      *xarray,*yarray,*zarray;
+  
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
      ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr); */
@@ -686,6 +689,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
+  
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);

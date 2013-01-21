@@ -4043,7 +4043,6 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   PetscInt       m=A->rmap->n;
 
   PetscFunctionBegin;
-
   c->inode.use          = a->inode.use;
   c->inode.limit        = a->inode.limit;
   c->inode.max_limit    = a->inode.max_limit;
@@ -4080,6 +4079,7 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
 PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt nzl,PetscInt nzu,PetscInt nz,PetscInt *ai,PetscInt *aj,PetscInt *adiag,PetscInt row)
 {
   PetscInt k, *vi;
+  
   PetscFunctionBegin;
   vi = aj + ai[row];
   for (k=0;k<nzl;k++) cols[k] = vi[k];

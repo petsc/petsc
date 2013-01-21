@@ -1513,7 +1513,6 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   PC_GAMG_AGG      *pc_gamg_agg;
 
   PetscFunctionBegin;
-
   if (pc_gamg->subctx) {
     /* call base class */
     ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);

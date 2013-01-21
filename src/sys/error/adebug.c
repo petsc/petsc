@@ -213,7 +213,6 @@ PetscErrorCode  PetscAttachDebugger(void)
 #endif
 
   PetscFunctionBegin;
-
 #if defined(PETSC_CANNOT_START_DEBUGGER) || !defined(PETSC_HAVE_FORK)
   (*PetscErrorPrintf)("System cannot start debugger\n");
   (*PetscErrorPrintf)("On Cray run program in Totalview debugger\n");

@@ -158,8 +158,8 @@ PetscErrorCode PetscShellGraphAddEdge(PetscShellGraph graph, PetscInt row, Petsc
 {
   PetscErrorCode        ierr;
   PetscInt              *rp,low,high,t,ii,i;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   if (row < 0 || row >= graph->vcount) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Source vertex %D out of range: min %D max %D",row, 0, graph->vcount);
   }
@@ -209,6 +209,7 @@ PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n
   PetscInt ii, k, jj, Nqueued = 0;
   PetscBool  progress;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!n || !queue) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid return argument pointers n or vertices");
@@ -257,6 +258,7 @@ PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n
 PetscErrorCode PetscShellGraphDestroy(PetscShellGraph graph)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(graph->i);CHKERRQ(ierr);
   ierr = PetscFree(graph->j);CHKERRQ(ierr);
@@ -272,6 +274,7 @@ PetscErrorCode PetscShellGraphCreate(PetscShellGraph *graph_p)
 {
   PetscShellGraph graph;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_PetscShellGraph, graph_p);CHKERRQ(ierr);
   graph = *graph_p;
@@ -324,6 +327,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
   PetscShellCallFunction call = PETSC_NULL;
   PetscShellMessageFunction msg = PETSC_NULL;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscStrlen(name, &namelen);CHKERRQ(ierr);
   ierr = PetscStrlen(message, &messagelen);CHKERRQ(ierr);
@@ -411,6 +415,7 @@ PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message)
 PetscErrorCode PetscShellCall(PetscShell shell, const char* message)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(message,2);
@@ -515,6 +520,7 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
 PetscErrorCode  PetscShellClearURL_Private(PetscShell shell)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   switch (shell->vtable_type) {
   case PETSC_SHELL_VTABLE_SO:
@@ -574,6 +580,7 @@ PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[])
 {
   PetscErrorCode ierr;
   char *path, *name;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(url,2);
@@ -639,6 +646,7 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
   PetscInt i, id;
   PetscBool         iascii;
   PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   if (!viewer) {
@@ -693,6 +701,7 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
 PetscErrorCode PetscShellView(PetscShell shell,  PetscViewer viewer)
 {
   PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
   ierr = PetscShellView_Private(shell, 0,-1, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -757,6 +766,7 @@ PetscErrorCode PetscShellVisit(PetscShell shell, const char* message)
   PetscInt i, id, N, *vertices;
   PetscShell component;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(message,2);
@@ -782,6 +792,7 @@ PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], P
   PetscInt i;
   PetscBool  eq;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
   if (_found) {*_found = PETSC_FALSE;}
@@ -802,6 +813,7 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
   PetscInt v, id = 0;
   PetscBool  found;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
   ierr = PetscShellGetKeyID_Private(shell, key, &id, &found);CHKERRQ(ierr);
@@ -881,6 +893,7 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
 PetscErrorCode  PetscShellRegisterComponentShell(PetscShell shell, const char key[], PetscShell component)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(key,2);
@@ -915,6 +928,7 @@ PetscErrorCode  PetscShellRegisterComponentURL(PetscShell shell, const char key[
 {
   PetscErrorCode ierr;
   PetscInt id;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(key,2);
@@ -949,6 +963,7 @@ PetscErrorCode  PetscShellRegisterDependence(PetscShell shell, const char server
 {
   PetscInt clientid, serverid;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(clientkey,2);
@@ -1022,6 +1037,7 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
 {
   PetscShell shell_;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscShellInitializePackage(PETSC_NULL);CHKERRQ(ierr);
@@ -1072,6 +1088,7 @@ PetscErrorCode  PetscShellGetComponent(PetscShell shell, const char key[], Petsc
   PetscInt id = 0;
   PetscErrorCode ierr;
   PetscBool found_;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(key,2);
@@ -1100,6 +1117,7 @@ PetscErrorCode PetscShellFinalizePackage(void)
 PetscErrorCode PetscShellInitializePackage(const char path[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (PetscShellPackageInitialized) PetscFunctionReturn(0);
   PetscShellPackageInitialized = PETSC_TRUE;

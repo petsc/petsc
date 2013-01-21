@@ -672,7 +672,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-
   if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
     PetscReal valid_time;
     PetscBool isvalid;

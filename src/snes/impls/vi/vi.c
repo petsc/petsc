@@ -384,6 +384,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *f
 PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
 {
   PetscErrorCode     ierr;
+  
   PetscFunctionBegin;
   ierr = DMComputeVariableBounds(snes->dm, xl, xu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -414,7 +415,6 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-
   ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 

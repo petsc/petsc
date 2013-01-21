@@ -49,8 +49,6 @@ static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-
-  PetscFunctionBegin;
   ierr = MPI_Comm_size(red->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {

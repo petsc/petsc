@@ -110,7 +110,6 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   PetscInt       i,nlocal;
 
   PetscFunctionBegin;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(snes->xl,&l);CHKERRQ(ierr);

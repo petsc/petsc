@@ -33,7 +33,6 @@ namespace Coarsener {
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
 
     PetscFunctionBegin;
-
     //initialize the spacing function section
 
     Obj<ALE::Mesh::real_section_type> spacing = mesh->getRealSection("spacing");

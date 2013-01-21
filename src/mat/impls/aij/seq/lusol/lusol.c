@@ -363,7 +363,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   int            i, m, n, nz, nnz;
 
   PetscFunctionBegin;
-
   /************************************************************************/
   /* Check the arguments.                                                 */
   /************************************************************************/

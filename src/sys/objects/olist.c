@@ -80,7 +80,6 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   PetscBool       match;
 
   PetscFunctionBegin;
-
   if (!obj) { /* this means remove from list if it is there */
     nlist = *fl; prev = 0;
     while (nlist) {

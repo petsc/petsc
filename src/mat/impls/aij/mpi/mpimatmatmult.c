@@ -506,7 +506,6 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   Mat                  workB;
 
   PetscFunctionBegin;
-
   /* diagonal block of A times all local rows of B*/
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(aij->A,bdense->A,cdense->A);CHKERRQ(ierr);
 

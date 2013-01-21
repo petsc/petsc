@@ -26,6 +26,7 @@ PetscErrorCode SNESReset_NASM(SNES snes)
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;
   PetscErrorCode ierr;
   PetscInt       i;
+  
   PetscFunctionBegin;
   for (i=0;i<nasm->n;i++) {
     if (nasm->xl) { ierr = VecDestroy(&nasm->xl[i]);CHKERRQ(ierr); }
@@ -57,6 +58,7 @@ PetscErrorCode SNESReset_NASM(SNES snes)
 PetscErrorCode SNESDestroy_NASM(SNES snes)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = SNESReset_NASM(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
@@ -69,6 +71,7 @@ PetscErrorCode DMGlobalToLocalSubDomainDirichletHook_Private(DM dm,Vec g,InsertM
 {
   PetscErrorCode ierr;
   Vec bcs = (Vec)ctx;
+  
   PetscFunctionBegin;
   ierr = VecCopy(bcs,l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -87,7 +90,6 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   Vec            F;
 
   PetscFunctionBegin;
-
   if (!nasm->subsnes) {
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     if (dm) {
@@ -156,6 +158,7 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   const char *const SNESNASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
   PetscBool      flg;
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Nonlinear Additive Schwartz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
@@ -183,8 +186,6 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
 PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  
-
   PetscFunctionReturn(0);
 }
 
@@ -194,6 +195,7 @@ PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScat
 {
   PetscErrorCode ierr;
   PetscErrorCode (*f)(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
+  
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMSetSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
   ierr = (f)(snes,n,subsnes,iscatter,oscatter,gscatter);CHKERRQ(ierr);
@@ -208,6 +210,7 @@ PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsnes[],Ve
   PetscInt       i;
   PetscErrorCode ierr;
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;
+  
   PetscFunctionBegin;
   if (snes->setupcalled)SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
 
@@ -334,7 +337,6 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   SNESNormType   normtype;
 
   PetscFunctionBegin;
-
   X = snes->vec_sol;
   Y = snes->vec_sol_update;
   F = snes->vec_func;
@@ -444,8 +446,6 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-
   ierr = PetscNewLog(snes, SNES_NASM, &nasm);CHKERRQ(ierr);
   snes->data = (void*)nasm;
 

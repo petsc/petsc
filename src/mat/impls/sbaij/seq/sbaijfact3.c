@@ -17,7 +17,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,const MatFactorIn
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
-
   /* initialization */
   ierr = PetscMalloc(9*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,9*mbs*sizeof(MatScalar));CHKERRQ(ierr);

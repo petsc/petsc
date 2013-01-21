@@ -11,6 +11,7 @@
 PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (F) {
     ierr = VecCopy(F,fd->w1);CHKERRQ(ierr);
@@ -31,7 +32,6 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscReal      x,y;
 
   PetscFunctionBegin;
-
   /* loop over colors  */
   for (i=0; i<fd->ncolors; i++) {
     for (j=0; j<fd->nrows[i]; j++) {

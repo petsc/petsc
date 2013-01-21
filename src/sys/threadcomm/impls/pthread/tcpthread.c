@@ -47,7 +47,6 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
   PetscInt                i;
 
   PetscFunctionBegin;
-
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(cpu_set_t),&cpuset);CHKERRQ(ierr);
   ptcomm->cpuset = cpuset;

@@ -528,7 +528,6 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
 
   /* do not use 'b=(Mat_SeqBAIJ*)baij->B->data' as B can be reset in disassembly */
   PetscFunctionBegin;
-
   if (!baij->donotstash &&  !mat->nooffprocentries) {
     while (1) {
       ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
@@ -1264,6 +1263,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool  flg)
 PetscErrorCode MatTranspose_MPISBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (MAT_INITIAL_MATRIX || *B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
@@ -1645,7 +1645,6 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (bs < 1) SETERRQ1(((PetscObject)B)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
   ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
@@ -1739,7 +1738,6 @@ PetscErrorCode  MatCreate_MPISBAIJ(Mat B)
   PetscBool      flg;
 
   PetscFunctionBegin;
-
   ierr    = PetscNewLog(B,Mat_MPISBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);

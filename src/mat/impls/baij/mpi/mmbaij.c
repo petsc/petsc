@@ -26,7 +26,6 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 #endif
 
   PetscFunctionBegin;
-
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
   ierr = PetscTableCreate(B->mbs,baij->Nbs+1,&gid1_lid1);CHKERRQ(ierr);

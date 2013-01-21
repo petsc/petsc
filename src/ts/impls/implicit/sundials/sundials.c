@@ -226,7 +226,6 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
   PetscInt        glosize,locsize;
 
   PetscFunctionBegin;
-
   /* get the vector size */
   ierr = VecGetSize(X,&glosize);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&locsize);CHKERRQ(ierr);

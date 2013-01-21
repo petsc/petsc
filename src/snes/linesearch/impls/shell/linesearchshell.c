@@ -109,7 +109,6 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-
   /* apply the user function */
   if (shell->func) {
     ierr = (*shell->func)(linesearch, shell->ctx);CHKERRQ(ierr);

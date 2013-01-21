@@ -55,7 +55,6 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscMPIInt       rank, npro;
 
   PetscFunctionBegin;
-
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
   ierr = PCGetOperators(pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
   MPI_Comm_size(((PetscObject)pmat)->comm,&npro);
@@ -469,7 +468,6 @@ PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxi
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
   PetscFunctionBegin;
-
   if (tol != parms->solvetol) {
     parms->solvetol = tol;
     pc->setupcalled = 0;
@@ -525,12 +523,10 @@ PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
   PetscFunctionBegin;
-
   if (restart != parms->maxdim) {
     parms->maxdim = restart;
     pc->setupcalled = 0;
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

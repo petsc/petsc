@@ -31,7 +31,6 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   char           noise_file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-
   ierr = PetscNewLog(snes,DIFFPAR_MORE,&neP);CHKERRQ(ierr);
   neP->function_count = 0;
   neP->fnoise_min     = 1.0e-20;
@@ -241,7 +240,6 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   MPI_Comm       comm = ((PetscObject)snes)->comm;
 
   PetscFunctionBegin;
-
   /* Compute function and analytic Jacobian at x */
   ierr = SNESGetJacobian(snes,&Jmf,&J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESComputeJacobian(snes,x,&Jmf,&J,&sparsity);CHKERRQ(ierr);

@@ -150,6 +150,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
 static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(ctx->hctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -220,7 +221,6 @@ PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
   MatMFFD_WP     *hctx;
 
   PetscFunctionBegin;
-
   /* allocate my own private data structure */
   ierr               = PetscNewLog(ctx,MatMFFD_WP,&hctx);CHKERRQ(ierr);
   ctx->hctx          = (void*)hctx;

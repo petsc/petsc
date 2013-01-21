@@ -153,7 +153,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Finite difference matrix free parameters");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -264,7 +264,6 @@ PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-
   /* allocate my own private data structure */
   ierr       = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
   ctx->hctx  = (void*)hctx;

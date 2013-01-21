@@ -441,6 +441,7 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
   SNESConvergedReason reason;
   Vec                 FPC;
   SNES                smoothd;
+  
   PetscFunctionBegin;
   ierr = SNESFASCycleGetSmootherDown(snes, &smoothd);CHKERRQ(ierr);
   ierr = SNESSetInitialFunction(smoothd, F);CHKERRQ(ierr);
@@ -470,8 +471,8 @@ PetscErrorCode SNESFASUpSmooth_Private (SNES snes, Vec B, Vec X, Vec F, PetscRea
   SNESConvergedReason reason;
   Vec                 FPC;
   SNES                smoothu;
+  
   PetscFunctionBegin;
-
   ierr = SNESFASCycleGetSmootherUp(snes, &smoothu);CHKERRQ(ierr);
   ierr = SNESSolve(smoothu, B, X);CHKERRQ(ierr);
   /* check convergence reason for the smoother */

@@ -1487,7 +1487,6 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 #endif
 
   PetscFunctionBegin;
-
   /* PCGAMG is an inherited class of PCMG. Initialize pc as PCMG */
   ierr = PCSetType(pc, PCMG);CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
   ierr = PetscObjectChangeTypeName((PetscObject)pc, PCGAMG);CHKERRQ(ierr);

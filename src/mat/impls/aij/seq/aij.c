@@ -2035,6 +2035,7 @@ EXTERN_C_END
 PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatIsTranspose_SeqAIJ(A,A,tol,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2045,6 +2046,7 @@ PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
 PetscErrorCode MatIsHermitian_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatIsHermitianTranspose_SeqAIJ(A,A,tol,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2487,6 +2489,7 @@ PetscErrorCode MatSetUp_SeqAIJ(Mat A)
 PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+  
   PetscFunctionBegin;
   *array = a->a;
   PetscFunctionReturn(0);
@@ -3174,7 +3177,6 @@ PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
   PetscInt   i,nz,n;
 
   PetscFunctionBegin;
-
   nz = aij->maxnz;
   n  = mat->rmap->n;
   for (i=0; i<nz; i++) {

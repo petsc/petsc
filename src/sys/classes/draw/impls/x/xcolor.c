@@ -128,7 +128,6 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   PetscBool      fast = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   if (colormap)  gColormap = colormap;
   else           gColormap = XCreateColormap(display,RootWindow(display,screen),visual,AllocAll);
 

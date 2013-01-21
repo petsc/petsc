@@ -120,7 +120,6 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
 
   PetscFunctionBegin;
-
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscThreadCommJobCtx),&job_lockfree.data);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&job_lockfree.my_job_status);CHKERRQ(ierr);
 
@@ -153,6 +152,7 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
   void*                    jstatus;
   PetscThreadComm_PThread  ptcomm=(PetscThreadComm_PThread)tcomm->data;
   PetscInt                 i;
+  
   PetscFunctionBegin;
   ierr = PetscThreadCommBarrier_PThread_LockFree(tcomm);CHKERRQ(ierr);
   for (i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {

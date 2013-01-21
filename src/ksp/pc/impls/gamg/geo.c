@@ -130,7 +130,6 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc)
     MPI_Comm  wcomm = ((PetscObject)pc)->comm;
     PetscPrintf(wcomm,"[%d]%s done\n",0,__FUNCT__);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -174,8 +173,8 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   int                  kk,nPlotPts,sid;
   MPI_Comm             wcomm = ((PetscObject)a_Prol)->comm;
   PetscReal            tm;
+  
   PetscFunctionBegin;
-
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = ISGetSize(selected_2, &nselected_2);CHKERRQ(ierr);
@@ -587,6 +586,7 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
   Mat            Gmat;
   PetscBool  set,flg,symm;
+  
   PetscFunctionBegin;
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);

@@ -1581,7 +1581,6 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
   PetscRandom    rctx;
 
   PetscFunctionBegin;
-
   /* check if we should scale with diagonal */
   if (asa->scale_diag) {
     /* Get diagonal scaling factors */

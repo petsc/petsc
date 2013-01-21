@@ -230,7 +230,6 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

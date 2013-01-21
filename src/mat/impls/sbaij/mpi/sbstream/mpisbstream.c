@@ -190,7 +190,6 @@ PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,MatReuse reuse
   Mat_SeqSBSTRM  *sbstrm;
 
   PetscFunctionBegin;
-
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }

@@ -1878,7 +1878,6 @@ static PetscErrorCode MatView_SeqBAIJ_Draw(Mat A,PetscViewer viewer)
   PetscBool      isnull;
 
   PetscFunctionBegin;
-
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
@@ -2597,6 +2596,7 @@ PetscErrorCode MatSetUp_SeqBAIJ(Mat A)
 PetscErrorCode MatSeqBAIJGetArray_SeqBAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  
   PetscFunctionBegin;
   *array = a->a;
   PetscFunctionReturn(0);
@@ -3485,7 +3485,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 #define __FUNCT__ "MatDuplicate_SeqBAIJ"
 PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);

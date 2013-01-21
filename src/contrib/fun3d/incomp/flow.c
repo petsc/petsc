@@ -641,7 +641,6 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
   /*int       iramp = tsCtx->iramp;*/
 
   PetscFunctionBegin;
-
   tsCtx->ires = 0;
   ierr = FormFunction(snes,tsCtx->qold,func,user);CHKERRQ(ierr);
   tsCtx->ires = 1;

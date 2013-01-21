@@ -21,6 +21,7 @@ typedef struct {
 PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
 {
   SNESLineSearch_BT  *bt;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   bt = (SNESLineSearch_BT *)linesearch->data;
@@ -47,6 +48,7 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
 {
   SNESLineSearch_BT  *bt;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   bt = (SNESLineSearch_BT *)linesearch->data;
@@ -75,7 +77,6 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscErrorCode    (*objective)(SNES,Vec,PetscReal *,void*);
 
   PetscFunctionBegin;
-
   ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, &G);CHKERRQ(ierr);
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
@@ -437,8 +438,8 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
 
   PetscErrorCode       ierr;
   SNESLineSearch_BT    *bt;
+  
   PetscFunctionBegin;
-
   bt = (SNESLineSearch_BT*)linesearch->data;
 
   ierr = PetscOptionsHead("SNESLineSearch BT options");CHKERRQ(ierr);

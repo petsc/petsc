@@ -19,7 +19,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C,Mat A,c
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
-
   /* initialization */
   ierr = PetscMalloc(16*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,16*mbs*sizeof(MatScalar));CHKERRQ(ierr);

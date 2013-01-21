@@ -575,7 +575,6 @@ PetscErrorCode SNESVIRSAUGComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,M
   PetscInt       i,nlocal;
 
   PetscFunctionBegin;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(vi->xl,&l);CHKERRQ(ierr);
@@ -1797,7 +1796,6 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
   if (vi->computevariablebounds) {
@@ -1875,7 +1873,6 @@ PetscErrorCode SNESDestroy_VIRSAUG(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (snes->ops->solve == SNESSolveVI_SS) {
     /* clear vectors */
     ierr = VecDestroy(&vi->dpsi);CHKERRQ(ierr);
@@ -2468,8 +2465,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  SNESLineSearchSetType_VIRSAUG(SNES snes, SNESLineSearchType type)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
-
   switch (type) {
   case SNES_LS_BASIC:
     ierr = SNESLineSearchSet(snes,SNESLineSearchNo_VIRSAUG,PETSC_NULL);CHKERRQ(ierr);

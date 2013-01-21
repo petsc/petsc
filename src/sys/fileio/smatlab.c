@@ -38,7 +38,6 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
 #endif
 
   PetscFunctionBegin;
-
 #if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
   /* check if MATLAB is not already running */
   ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);

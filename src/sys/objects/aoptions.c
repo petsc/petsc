@@ -471,7 +471,6 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   size_t         j;
 
   PetscFunctionBegin;
-
   CHKMEMQ;
   if (PetscOptionsObject.next) {
     if (!PetscOptionsPublishCount) {

@@ -933,7 +933,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   PetscFunctionBegin;
-
   if (!PetscInitializeCalled) {
     printf("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);

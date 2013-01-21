@@ -50,11 +50,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm)
 PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-if (r_factor <= 0.0) {
+  if (r_factor <= 0.0) {
     mesh = ALE::PCICE::Builder::readMesh(comm, 2, baseFile, true, true, debug);
     IdentifyBoundary(mesh, 2);
   } else {
@@ -79,20 +80,20 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, std::string filename, std::
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-    ALE::LogStage stage = ALE::LogStageRegister("VTKOutput");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh file\n");CHKERRQ(ierr);
-    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRQ(ierr);
-    ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
-    if (cell) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);}
-    else {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
-    ierr = FieldView_Sieve(mesh, field.c_str(), viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ALE::LogStagePop(stage);
+  ALE::LogStage stage = ALE::LogStageRegister("VTKOutput");
+  ALE::LogStagePush(stage);
+  ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh file\n");CHKERRQ(ierr);
+  ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRQ(ierr);
+  ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
+  if (cell) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);}
+  else {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
+  ierr = FieldView_Sieve(mesh, field.c_str(), viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ALE::LogStagePop(stage);
   PetscFunctionReturn(0);
 }
 
@@ -104,19 +105,19 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-    ALE::LogStage stage = ALE::LogStageRegister("MeshOutput");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(mesh->comm(), "Creating original format mesh file\n");CHKERRQ(ierr);
-    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
-    ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ALE::LogStagePop(stage);
+  ALE::LogStage stage = ALE::LogStageRegister("MeshOutput");
+  ALE::LogStagePush(stage);
+  ierr = PetscPrintf(mesh->comm(), "Creating original format mesh file\n");CHKERRQ(ierr);
+  ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
+  ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ALE::LogStagePop(stage);
   PetscFunctionReturn(0);
 }
 
@@ -201,73 +202,71 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
 */
 PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim)
 {
+  PetscFunctionBegin;
+  //create the previous boundary set, feed into triangle with the boundaries marked.
+  triangulateio * input = new triangulateio;
+  //  triangulateio * ioutput = new triangulateio;
+  triangulateio * output = new triangulateio;
 
+  //set up input
 
-   PetscFunctionBegin;
-//create the previous boundary set, feed into triangle with the boundaries marked.
-   triangulateio * input = new triangulateio;
- //  triangulateio * ioutput = new triangulateio;
-   triangulateio * output = new triangulateio;
+  input->numberofpoints = 4;
+  input->numberofpointattributes = 0;
+  double coords[8] = {0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0};
+  input->pointlist = coords;
+  input->numberofpointattributes = 0;
+  input->pointattributelist = NULL;
+  int pointmarks[4] = {1,1,1,1};
+  input->pointmarkerlist = pointmarks; //mark as boundaries
 
-//set up input
+  input->numberoftriangles = 0;
+  input->numberofcorners = 0;
+  input->numberoftriangleattributes = 0;
+  input->trianglelist = NULL;
+  input->triangleattributelist = NULL;
+  input->trianglearealist = NULL;
 
-   input->numberofpoints = 4;
-   input->numberofpointattributes = 0;
-   double coords[8] = {0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0};
-   input->pointlist = coords;
-   input->numberofpointattributes = 0;
-   input->pointattributelist = NULL;
-   int pointmarks[4] = {1,1,1,1};
-   input->pointmarkerlist = pointmarks; //mark as boundaries
+  int segments[8] = {0, 1, 1, 2, 2, 3, 3, 0};
+  input->segmentlist = segments;
+  int segmentmarks[4] = {1, 1, 1, 1};
+  input->segmentmarkerlist = segmentmarks;  //mark as boundaries.
+  input->numberofsegments = 4;
 
-   input->numberoftriangles = 0;
-   input->numberofcorners = 0;
-   input->numberoftriangleattributes = 0;
-   input->trianglelist = NULL;
-   input->triangleattributelist = NULL;
-   input->trianglearealist = NULL;
+  input->holelist = NULL;
+  input->numberofholes = 0;
 
-   int segments[8] = {0, 1, 1, 2, 2, 3, 3, 0};
-   input->segmentlist = segments;
-   int segmentmarks[4] = {1, 1, 1, 1};
-   input->segmentmarkerlist = segmentmarks;  //mark as boundaries.
-   input->numberofsegments = 4;
+  input->regionlist = NULL;
+  input->numberofregions = 0;
 
-   input->holelist = NULL;
-   input->numberofholes = 0;
+  //set up output
 
-   input->regionlist = NULL;
-   input->numberofregions = 0;
+  output->pointlist = NULL;
+  output->pointattributelist = NULL;
+  output->pointmarkerlist = NULL;
+  output->trianglelist = NULL;
+  output->triangleattributelist = NULL;
+  output->trianglearealist = NULL;
+  output->neighborlist = NULL;
+  output->segmentlist = NULL;
+  output->segmentmarkerlist = NULL;
+  output->holelist = NULL;
+  output->regionlist = NULL;
+  output->edgelist = NULL;
+  output->edgemarkerlist = NULL;
+  output->normlist = NULL;
 
-//set up output
+  char triangleOptions[256];
+  sprintf(triangleOptions, "-zeQa%f",ref_lim);
+  triangulate(triangleOptions, input, output, NULL); //refine
 
-   output->pointlist = NULL;
-   output->pointattributelist = NULL;
-   output->pointmarkerlist = NULL;
-   output->trianglelist = NULL;
-   output->triangleattributelist = NULL;
-   output->trianglearealist = NULL;
-   output->neighborlist = NULL;
-   output->segmentlist = NULL;
-   output->segmentmarkerlist = NULL;
-   output->holelist = NULL;
-   output->regionlist = NULL;
-   output->edgelist = NULL;
-   output->edgemarkerlist = NULL;
-   output->normlist = NULL;
+  //for (int i = 0; i < output->numberofpoints; i++) {
+  //  printf("%d", output->pointmarkerlist[i]);
+  //}
+  //printf("\n");
 
-   char triangleOptions[256];
-   sprintf(triangleOptions, "-zeQa%f",ref_lim);
-   triangulate(triangleOptions, input, output, NULL); //refine
+  TriangleToMesh(mesh, output, 0);
 
-   //for (int i = 0; i < output->numberofpoints; i++) {
-   //  printf("%d", output->pointmarkerlist[i]);
-   //}
-   //printf("\n");
-
-   TriangleToMesh(mesh, output, 0);
-
-   PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 
 }
 
@@ -277,7 +276,6 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
 {
 
   PetscFunctionBegin;
-
   if (dim == 2)
   {
     ALE::Mesh::section_type::patch_type patch = 0;

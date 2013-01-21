@@ -159,7 +159,6 @@ PetscErrorCode SNESDefaultApplyGS(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscFunctionBegin;
   /* see if there's a coloring on the DM */
-
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +239,6 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   SNESNormType   normtype;
 
   PetscFunctionBegin;
-
   X = snes->vec_sol;
   F = snes->vec_func;
   B = snes->vec_rhs;

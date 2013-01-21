@@ -2405,7 +2405,6 @@ static PetscErrorCode  PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to
   PetscInt i;
 
   PetscFunctionBegin;
-
   switch (pcbddc->coarse_communications_type) {
     case SCATTERS_BDDC:
       ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
@@ -5523,7 +5522,6 @@ static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph graph, PetscInt 
   PetscBool *touched;
 
   PetscFunctionBegin;
-
   nvtxs   = graph->nvtxs;
   xadj    = graph->xadj;
   adjncy  = graph->adjncy;

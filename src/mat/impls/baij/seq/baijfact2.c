@@ -2193,6 +2193,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
   const MatScalar   *aa=a->a,*v;
   PetscScalar       *x,*t,*ls;
   const PetscScalar *b;
+  
   PetscFunctionBegin;
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -5552,7 +5553,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   PetscInt        sol_ver;
 
   PetscFunctionBegin;
-
   ierr = PetscOptionsGetInt(((PetscObject)A)->prefix,"-sol_ver",&sol_ver,PETSC_NULL);CHKERRQ(ierr);
 
   /* generate work space needed by the factorization */

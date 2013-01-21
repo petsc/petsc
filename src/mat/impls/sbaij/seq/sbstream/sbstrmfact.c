@@ -25,7 +25,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
   PetscInt           slen;
 
   PetscFunctionBegin;
-
   slen = 4*(ai[mbs]-ai[0]);
   v0  = as + 16*ai[0];
   v1  = v0 + slen;
@@ -119,7 +118,6 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_4_NaturalOrdering(PetscInt *ai,PetscInt
   PetscInt           slen;
 
   PetscFunctionBegin;
-
   slen = 4*(ai[mbs]-ai[0]);
   v0  = aa + 16*ai[0];
   v1  = v0 + slen;
@@ -386,9 +384,6 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscInt
   PetscInt           slen;
 
   PetscFunctionBegin;
-
-
-
   slen = 5*(ai[mbs]-ai[0]);
   v0  = aa + 25*ai[0];
   v1  = v0 + slen;
@@ -436,8 +431,6 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscIn
   PetscInt           slen;
 
   PetscFunctionBegin;
-
-
   slen = 5*(ai[mbs]-ai[0]);
   v0  = aa + 25*ai[0]+5*(ai[mbs]-ai[0]);
   v1  = v0 + slen;
@@ -655,6 +648,7 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
 PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscInt ierr;
+  
   PetscFunctionBegin;
   ierr = (MatICCFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;
@@ -666,6 +660,7 @@ PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorIn
 PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscInt ierr;
+  
   PetscFunctionBegin;
   ierr = (MatCholeskyFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;

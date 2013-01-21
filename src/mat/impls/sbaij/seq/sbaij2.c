@@ -1225,7 +1225,6 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscBool * flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((A->rmap->N != B->rmap->N) || (A->cmap->n != B->cmap->n) || (A->rmap->bs != B->rmap->bs)|| (a->nz != b->nz)) {
     *flg = PETSC_FALSE;

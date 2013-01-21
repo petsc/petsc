@@ -294,7 +294,6 @@ PetscErrorCode  PCCreate_PBJacobi(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.

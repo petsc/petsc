@@ -37,7 +37,6 @@ PetscErrorCode  PetscDrawRegisterAll(const char *path)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_TIKZ,     path,"PetscDrawCreate_TikZ",  PetscDrawCreate_TikZ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_OPENGLES)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_OPENGLES, path,"PetscDrawCreate_OpenGLES",  PetscDrawCreate_OpenGLES);CHKERRQ(ierr);

@@ -178,7 +178,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr           = PetscNewLog(v,Vec_MPI,&s);CHKERRQ(ierr);
   v->data        = (void*)s;
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);

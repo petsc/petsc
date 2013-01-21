@@ -187,7 +187,6 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx* user)
   PetscScalar    theta,Vd,Vq,SE;
 
   PetscFunctionBegin;
-
   M[0] = 2*H[0]/w_s; M[1] = 2*H[1]/w_s; M[2] = 2*H[2]/w_s;
   D[0] = 0.1*M[0]; D[1] = 0.1*M[1]; D[2] = 0.1*M[2];
 
@@ -277,7 +276,6 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx* user)
   PetscScalar    IGr,IGi,IDr,IDi;
 
   PetscFunctionBegin;
-
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Fgen,&Fnet);CHKERRQ(ierr);
@@ -455,7 +453,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   PetscInt       i,idx=0,start=0;
 
   PetscFunctionBegin;
-
   ierr = PetscMalloc(user->neqs_pgrid*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   for (i=0;i<user->neqs_pgrid;i++) d_nnz[i] = 0;
   /* Generator subsystem */
@@ -520,7 +517,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
   PetscInt       net_start=user->neqs_gen;
 
   PetscFunctionBegin;
-
   *flag = SAME_NONZERO_PATTERN;
   ierr = MatZeroEntries(*A);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
@@ -734,7 +730,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
 
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -750,11 +745,9 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg,void*
   Userctx        *user=(Userctx*)ctx;
 
   PetscFunctionBegin;
-
   ierr = ResidualJacobian(snes,X,A,B,flg,ctx);CHKERRQ(ierr);
   ierr = MatSetOption(*A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatZeroRowsIS(*A,user->is_diff,1.0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

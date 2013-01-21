@@ -5,7 +5,6 @@ const char *const SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNE
 #define __FUNCT__ "SNESReset_NCG"
 PetscErrorCode SNESReset_NCG(SNES snes)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -132,7 +131,6 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   MatStructure     flg = DIFFERENT_NONZERO_PATTERN;
 
   PetscFunctionBegin;
-
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   X = linesearch->vec_sol;
   W = linesearch->vec_sol_new;
@@ -234,6 +232,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscTryMethod(snes,"SNESNCGSetType_C",(SNES,SNESNCGType),(snes,btype));CHKERRQ(ierr);
@@ -247,6 +246,7 @@ EXTERN_C_BEGIN
 PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 {
   SNES_NCG *ncg = (SNES_NCG *)snes->data;
+  
   PetscFunctionBegin;
   ncg->type = btype;
   PetscFunctionReturn(0);

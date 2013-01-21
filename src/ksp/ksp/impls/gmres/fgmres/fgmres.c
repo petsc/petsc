@@ -112,7 +112,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   MatStructure   pflag;
 
   PetscFunctionBegin;
-
   /* Number of pseudo iterations since last restart is the number
      of prestart directions */
   loc_it = 0;

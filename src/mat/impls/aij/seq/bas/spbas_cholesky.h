@@ -72,7 +72,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(
    const PetscReal xtra_perc = 20;
 
    PetscFunctionBegin;
-
    /*********************************************************
     1. Choose appropriate array size
     Count number of rows and memory usage which is already final */

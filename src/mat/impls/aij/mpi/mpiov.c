@@ -729,7 +729,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   PetscBool      rowflag,colflag,wantallmatrix=PETSC_FALSE,twantallmatrix,*allcolumns;
 
   PetscFunctionBegin;
-
   /* Currently, unsorted column indices will result in inverted column indices in the resulting submatrices. */
   /* It would make sense to error out in MatGetSubMatrices_MPIAIJ_Local(), the most impl-specific level.
      However, there are more careful users of MatGetSubMatrices_MPIAIJ_Local() -- MatPermute_MPIAIJ() -- that
@@ -836,7 +835,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   PetscMPIInt    idex,idex2,end;
 
   PetscFunctionBegin;
-
   comm   = ((PetscObject)C)->comm;
   tag0   = ((PetscObject)C)->tag;
   size   = c->size;
@@ -1571,6 +1569,7 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
 PetscErrorCode MatMPIAIJExtractSeqMatrices_Private(Mat C, Mat *A, Mat *B)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*) (C->data);
+  
   PetscFunctionBegin;
   PetscValidPointer(A,2);
   PetscValidPointer(B,3);

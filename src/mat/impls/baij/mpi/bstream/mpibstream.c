@@ -172,7 +172,6 @@ PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,MatType type,MatReuse reuse,Mat
   Mat_SeqBSTRM  *bstrm;
 
   PetscFunctionBegin;
-
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }

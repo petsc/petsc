@@ -40,7 +40,6 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   PetscInt                 *nvp,nreds,i,j;
 
   PetscFunctionBegin;
-
   ierr = PetscThreadCommGetInts(((PetscObject)xin)->comm,&nvp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nv; i+=nreds) {
     nreds = PetscMin(nv-i,PETSC_REDUCTIONS_MAX);
@@ -354,7 +353,6 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   Vec               *yy;
 
   PetscFunctionBegin;
-
   sum0 = 0.;
   sum1 = 0.;
   sum2 = 0.;

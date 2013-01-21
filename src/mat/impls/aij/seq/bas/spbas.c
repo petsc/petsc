@@ -197,7 +197,6 @@ PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt * irow_in, PetscIn
    PetscInt       *ihlp2;      /* Pointers to previous version of arrays, */
 
    PetscFunctionBegin;
-
    ierr = PetscMalloc(nrows*sizeof(PetscInt),&ialloc);CHKERRQ(ierr);
 
    ihlp1 = ialloc;
@@ -751,7 +750,6 @@ PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, 
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-
    /* Copy input values */
    retval.nrows = nrows;
    retval.ncols = ncols;

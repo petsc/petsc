@@ -20,6 +20,7 @@
 PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS* inact)
 {
   SNES_VINEWTONRSLS  *vi = (SNES_VINEWTONRSLS*)snes->data;
+  
   PetscFunctionBegin;
   *inact = vi->IS_inact_prev;
   PetscFunctionReturn(0);
@@ -336,7 +337,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   KSPConvergedReason kspreason;
 
   PetscFunctionBegin;
-
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;

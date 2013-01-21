@@ -907,7 +907,6 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscBool         skipHeader;
 
   PetscFunctionBegin;
-
   /* Write vector header */
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
   if (!skipHeader) {

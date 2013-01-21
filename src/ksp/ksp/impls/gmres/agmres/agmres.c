@@ -201,6 +201,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   PetscInt        max_it = ksp->max_it;
 
   /* Perform one cycle of dgmres to find the eigenvalues and compute the first approximations of the eigenvectors */
+  
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_AGMRESComputeShifts, ksp, 0,0,0);CHKERRQ(ierr);
   /* Send the size of the augmented basis to DGMRES */
@@ -526,8 +527,8 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscReal       res;
   PetscErrorCode  ierr;
   PetscInt        KspSize = KSPSIZE;
+  
   PetscFunctionBegin;
-
   /* check for the convergence */
   res = ksp->rnorm; /* Norm of the initial residual vector */
   if (!res) {
@@ -572,7 +573,6 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   PetscInt        test;
 
   PetscFunctionBegin;
-
   ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
   ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);

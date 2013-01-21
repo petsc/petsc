@@ -185,7 +185,6 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
   FILE           *fd;
 
   PetscFunctionBegin;
-
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (machine && machine[0]) {
     ierr = PetscStrcpy(command,"ssh ");CHKERRQ(ierr);

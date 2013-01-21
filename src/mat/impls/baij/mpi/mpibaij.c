@@ -480,7 +480,6 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
 #endif
 
   PetscFunctionBegin;
-
   if (roworiented) {
     stepval = (n-1)*bs;
   } else {
@@ -4128,7 +4127,7 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   PetscErrorCode ierr;
 
 
- PetscFunctionBegin;
+  PetscFunctionBegin;
   if (i[0]) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   }

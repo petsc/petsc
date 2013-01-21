@@ -150,7 +150,6 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
 PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt *reallocs)
 {
   PetscFunctionBegin;
-
   if (nstash)  *nstash   = stash->n*stash->bs;
   if (reallocs) {
     if (stash->reallocs < 0) *reallocs = 0;
@@ -247,7 +246,6 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   MPI_Request    *send_waits,*recv_waits;
 
   PetscFunctionBegin;
-
   /*  first count number of contributors to each processor */
   ierr   = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -360,7 +358,6 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   PetscBool      match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   *flg = 0; /* When a message is discovered this is reset to 1 */
   /* Return if no more messages to process */
   if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); }

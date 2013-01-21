@@ -767,7 +767,6 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
 static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
 {
   PetscFunctionBegin;
-
   /* 0 */
   ops->duplicate               = VecDuplicate_Nest;
   ops->duplicatevecs           = VecDuplicateVecs_Default;
@@ -979,7 +978,6 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   if (idxm >= bx->nb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",idxm,bx->nb);
 
   PetscFunctionBegin;
-
   ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);       /* destroy the existing vector */
   ierr = VecDuplicate(x,&bx->v[idxm]);CHKERRQ(ierr);   /* duplicate the layout of given vector */
   ierr = VecCopy(x,bx->v[idxm]);CHKERRQ(ierr);         /* copy the contents of the given vector */

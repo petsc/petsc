@@ -376,7 +376,6 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
   PetscScalar        *val;
 
   PetscFunctionBegin;
-
   if (reuse == MAT_INITIAL_MATRIX) {
     nz = bs2*(aa->nz + bb->nz);
     *nnz = nz;

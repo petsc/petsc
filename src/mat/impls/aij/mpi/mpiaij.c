@@ -670,6 +670,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   InsertMode     addv = mat->insertmode;
 
   /* do not use 'b = (Mat_SeqAIJ *)aij->B->data' as B can be reset in disassembly */
+  
   PetscFunctionBegin;
   if (!aij->donotstash && !mat->nooffprocentries) {
     while (1) {
@@ -1192,7 +1193,6 @@ PetscErrorCode  MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-
   /* Easy test: symmetric diagonal block */
   Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
   ierr = MatIsTranspose(Adia,Bdia,tol,f);CHKERRQ(ierr);
@@ -5769,7 +5769,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
   PetscErrorCode ierr;
   Mat_MPIAIJ     *maij;
 
- PetscFunctionBegin;
+  PetscFunctionBegin;
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
   if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   if (oi[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"oi (row indices) must start with 0");
