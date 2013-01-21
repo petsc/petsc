@@ -1895,21 +1895,21 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
   ierr = PetscMemzero(norms,n*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&a);CHKERRQ(ierr);
   if (type == NORM_2) {
-    for (i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
         norms[i] += PetscAbsScalar(a[j]*a[j]);
       }
       a += m;
     }
   } else if (type == NORM_1) {
-    for (i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
         norms[i] += PetscAbsScalar(a[j]);
       }
       a += m;
     }
   } else if (type == NORM_INFINITY) {
-    for (i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
         norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
       }

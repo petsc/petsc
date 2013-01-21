@@ -266,7 +266,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
     f[i].u = xdot[i].u - (x[i-1].w + x[i+1].w - 2.0*x[i].w)*sx;
     if (ctx->energy==4) {
       f[i].u = xdot[i].u;
-      /* approximation of \grad (M(u) \grad w ), where M(u) = (1-u^2) */
+      /* approximation of \grad (M(u) \grad w), where M(u) = (1-u^2) */
       r = (1.0 - x[i+1].u*x[i+1].u)*(x[i+2].w-x[i].w)*.5/hx;
       l = (1.0 - x[i-1].u*x[i-1].u)*(x[i].w-x[i-2].w)*.5/hx;
       f[i].u -= (r - l)*.5/hx;

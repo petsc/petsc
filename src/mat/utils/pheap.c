@@ -48,7 +48,7 @@ PETSC_STATIC_INLINE PetscInt MinChild(PetscHeap h,PetscInt loc)
   right = PetscMin(left+ARITY-1,h->end-1);
   chld = 0;
   min = PETSC_MAX_INT;
-  for ( ; left <= right; left++) {
+  for (; left <= right; left++) {
     PetscInt val = Value(h,left);
     if (val < min) {
       min = val;

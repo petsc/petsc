@@ -521,10 +521,10 @@ PetscErrorCode PointOnBoundary_2D(const PetscScalar coords[], PetscBool onBd[])
   const PetscReal eps = 1.0e-10;
 
   PetscFunctionBeginUser;
-  onBd[bottom] = PetscAbsScalar(coords[1]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+  onBd[bottom] = PetscAbsScalar(coords[1])       < eps ? PETSC_TRUE : PETSC_FALSE;
   onBd[right]  = PetscAbsScalar(coords[0] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
   onBd[top]    = PetscAbsScalar(coords[1] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
-  onBd[left]   = PetscAbsScalar(coords[0]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+  onBd[left]   = PetscAbsScalar(coords[0])       < eps ? PETSC_TRUE : PETSC_FALSE;
   onBd[corner] = onBd[bottom] + onBd[right] + onBd[top] + onBd[left] > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1163,9 +1163,9 @@ int main(int argc, char **argv)
     PetscInt i,k,j,mlocal;
     PetscReal *coords;
 
-    ierr = SNESGetKSP( snes, &ksp );CHKERRQ(ierr);
-    ierr = KSPGetPC( ksp, &pc );CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal( user.dm, &crd_vec );CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
@@ -1173,8 +1173,8 @@ int main(int argc, char **argv)
       for (i=0; i<SPATIAL_DIM_0; i++,k++)
         coords[k] = PetscRealPart(v[k]);
     ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    ierr = PCSetCoordinates( pc, SPATIAL_DIM_0, mlocal, coords );CHKERRQ(ierr);
-    ierr = PetscFree( coords );CHKERRQ(ierr);
+    ierr = PCSetCoordinates(pc, SPATIAL_DIM_0, mlocal, coords);CHKERRQ(ierr);
+    ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
   ierr = DMPlexProjectFunction(user.dm, numComponents, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);

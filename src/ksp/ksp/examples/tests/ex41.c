@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
-  /* set val=one to A ( replace with random values! */
+  /* set val=one to A (replace with random values!) */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   if (size == 1) {

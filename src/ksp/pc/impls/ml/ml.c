@@ -78,7 +78,7 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
     row   = requested_rows[i];
     row_lengths[i] = a->ilen[row];
     if (allocated_space < k+row_lengths[i]) return(0);
-    if ( (row >= 0) || (row <= (m-1)) ) {
+    if ((row >= 0) || (row <= (m-1))) {
       aj = a->j + a->i[row];
       aa = a->a + a->i[row];
       for (j=0; j<row_lengths[i]; j++) {
@@ -459,7 +459,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_ML"
-PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords )
+PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_ML          *pc_ml = (PC_ML*)mg->innerctx;
@@ -469,10 +469,10 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt
 
   /* this function copied and modified from PCSetCoordinates_GEO -TGI */
   PetscFunctionBegin;
-  PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
-  ierr  = MatGetBlockSize( Amat, &bs );CHKERRQ( ierr );
+  PetscValidHeaderSpecific(Amat, MAT_CLASSID, 1);
+  ierr  = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
 
-  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend );CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRange(Amat, &my0, &Iend);CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
   if (nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
@@ -485,13 +485,13 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML( PC pc, PetscInt ndm, PetscInt
 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_ml->coords==0 || (oldarrsz != arrsz)) {
-    ierr = PetscFree( pc_ml->coords );CHKERRQ(ierr);
-    ierr = PetscMalloc((arrsz)*sizeof(PetscReal), &pc_ml->coords );CHKERRQ(ierr);
+    ierr = PetscFree(pc_ml->coords);CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz)*sizeof(PetscReal), &pc_ml->coords);CHKERRQ(ierr);
   }
   for (kk=0;kk<arrsz;kk++)pc_ml->coords[kk] = -999.;
   /* copy data in - column oriented */
-  for ( kk = 0 ; kk < nloc ; kk++ ) {
-    for ( ii = 0 ; ii < ndm ; ii++ ) {
+  for (kk = 0; kk < nloc; kk++) {
+    for (ii = 0; ii < ndm; ii++) {
       pc_ml->coords[ii*nloc + kk] =  coords[kk*ndm + ii];
     }
   }

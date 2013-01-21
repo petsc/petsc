@@ -94,11 +94,11 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(Vec)*bx->nb,&sub);CHKERRQ(ierr);
-  for (i=0; i<bx->nb; i++ ) {
+  for (i=0; i<bx->nb; i++) {
     ierr = VecDuplicate(bx->v[i],&sub[i]);CHKERRQ(ierr);
   }
   ierr = VecCreateNest(((PetscObject)x)->comm,bx->nb,bx->is,sub,&Y);CHKERRQ(ierr);
-  for (i=0; i<bx->nb; i++ ) {
+  for (i=0; i<bx->nb; i++) {
     ierr = VecDestroy(&sub[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(sub);CHKERRQ(ierr);

@@ -270,7 +270,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"lldb",&islldb);CHKERRQ(ierr);
 
-    if (isxxgdb || isups || isddd ) {
+    if (isxxgdb || isups || isddd) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
@@ -547,7 +547,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
 
-  if (isxxgdb || isups || isddd || iskdbg ) {
+  if (isxxgdb || isups || isddd || iskdbg) {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #if defined(PETSC_USE_A_FOR_DEBUGGER)

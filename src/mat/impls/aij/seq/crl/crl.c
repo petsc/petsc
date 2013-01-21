@@ -23,7 +23,7 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
     ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
   }
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

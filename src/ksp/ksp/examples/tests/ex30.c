@@ -276,7 +276,7 @@ int main(int argc,char **args)
     ierr = KSPSetInitialGuessNonzero(ksp,initialguess);CHKERRQ(ierr);
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
-    while ( num_numfac-- ) {
+    while (num_numfac--) {
 
 
       ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ int main(int argc,char **args)
         PetscInt  num_rhs=1;
         ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
 
-        while ( num_rhs-- ) {
+        while (num_rhs--) {
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -354,7 +354,7 @@ int main(int argc,char **args)
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G\n",enorm);CHKERRQ(ierr);
         }
 
-      } /* while ( num_rhs-- ) */
+      } /* while (num_rhs--) */
       ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
       tsolve = tsolve2 - tsolve1;
 
@@ -414,7 +414,7 @@ int main(int argc,char **args)
         PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);
       }
 
-    } /* while ( num_numfac-- ) */
+    } /* while (num_numfac--) */
 
     /*
        Free work space.  All PETSc objects should be destroyed when they

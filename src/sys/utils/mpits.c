@@ -114,7 +114,7 @@ static PetscErrorCode SegArrayDestroy(SegArray *seg)
   SegArray s;
 
   PetscFunctionBegin;
-  for (s=*seg; s; ) {
+  for (s=*seg; s;) {
     SegArray tail = s->tail;
     ierr = PetscFree(s);CHKERRQ(ierr);
     s = tail;
@@ -139,7 +139,7 @@ static PetscErrorCode SegArrayExtract(SegArray *seg,void *contiguous)
   ierr = PetscMalloc((s->used+s->tailused)*unitbytes,&contig);CHKERRQ(ierr);
   ptr = contig + s->tailused*unitbytes;
   ierr = PetscMemcpy(ptr,s->u.array,s->used*unitbytes);CHKERRQ(ierr);
-  for (t=s->tail; t; ) {
+  for (t=s->tail; t;) {
     SegArray tail = t->tail;
     ptr -= t->used*unitbytes;
     ierr = PetscMemcpy(ptr,t->u.array,t->used*unitbytes);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ static PetscErrorCode BuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI
 
   nrecvs = 0;
   barrier = MPI_REQUEST_NULL;
-  for (done=0; !done; ) {
+  for (done=0; !done;) {
     PetscMPIInt flag;
     MPI_Status status;
     ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);

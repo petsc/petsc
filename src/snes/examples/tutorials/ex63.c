@@ -374,11 +374,11 @@ PetscErrorCode DPsi(AppCtx* user)
 
   for (i=0;i<n;i++)
   {
-    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*( Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
+    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
 
-    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*( Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
+    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
 
-    DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*( Evf*cv_p[i] + Eif*ci_p[i] + kBT*( cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i] ) ) + 2.0*eta_p[i]*A*( (cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
+    DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*(Evf*cv_p[i] + Eif*ci_p[i] + kBT*(cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i])) + 2.0*eta_p[i]*A*((cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
 
 
   }
@@ -472,9 +472,9 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
           vals_cv[k] = cv_v;
           vals_ci[k] = ci_v;
           vals_eta[k] = eta_v;
-        } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
-          /* r = (s - xwidth*(6.0/64.0) )/(0.5*lambda); */
-          r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
+        } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0)) {
+          /* r = (s - xwidth*(6.0/64.0))/(0.5*lambda); */
+          r = (s - xwidth*(6.0/64.0))/(xwidth/64.0);
           hhr = 0.25*(-r*r*r + 3*r + 2);
           vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
           vals_ci[k] = ci_m + (1.0 - hhr)*(ci_v - ci_m);
@@ -513,7 +513,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 
 
     for (i=0;i<n/5;i++) {
-      if (i%5 <4 ) {
+      if (i%5 <4) {
         cv_p[i] = 0.0;
         ci_p[i] = 1.0e-2;
       } else {

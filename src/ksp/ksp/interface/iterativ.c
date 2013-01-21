@@ -435,7 +435,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
     ierr = VecNorm(b, NORM_2, &(scale->bnrm));CHKERRQ(ierr);
   }
   ierr = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
-  inner_rtol = PetscMin( scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999 );
+  inner_rtol = PetscMin(scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999);
   /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %G\n", inner_rtol);CHKERRQ(ierr);*/
 
   /* if pc is ksp */

@@ -379,7 +379,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   MPIAIJ_MPIDense        *contents;
   VecScatter             ctx = aij->Mvctx;
   VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
-  VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
+  VecScatter_MPI_General *to   = (VecScatter_MPI_General*) ctx->todata;
   PetscInt               m=A->rmap->n,n=B->cmap->n;
 
   PetscFunctionBegin;
@@ -422,7 +422,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   PetscScalar            *b,*w,*svalues,*rvalues;
   VecScatter             ctx = aij->Mvctx;
   VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
-  VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
+  VecScatter_MPI_General *to   = (VecScatter_MPI_General*) ctx->todata;
   PetscInt               i,j,k;
   PetscInt               *sindices,*sstarts,*rindices,*rstarts;
   PetscMPIInt            *sprocs,*rprocs,nrecvs;

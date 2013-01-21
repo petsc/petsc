@@ -628,7 +628,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
       ci[i+1]++;
 
       /* stash if anything else remains in this row of B */
-      for ( ; bb[j] < bi[acol[j]+1]; bb[j]++) {
+      for (; bb[j] < bi[acol[j]+1]; bb[j]++) {
         PetscInt bcol = bj[bb[j]];
         if (!PetscBTLookupSet(bt,bcol)) { /* new entry */
           ierr = PetscHeapAdd(h,j,bcol);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
       ierr = PetscHeapPop(h,&j,&col);CHKERRQ(ierr);
     }
     if (fptr) {                 /* Clear the bits for this row */
-      for ( ; fptr<current_space->array; fptr++) {ierr = PetscBTClear(bt,*fptr);CHKERRQ(ierr);}
+      for (; fptr<current_space->array; fptr++) {ierr = PetscBTClear(bt,*fptr);CHKERRQ(ierr);}
     } else {                    /* We reallocated so we don't remember (easily) how to clear only the bits we changed */
       ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr);
     }

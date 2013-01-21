@@ -15,7 +15,7 @@ struct timezone { int tz_minuteswest;
   int i;
 
   i = gettimeofday(&tp,&tzp);
-  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+  return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 # include <stdio.h>
 # include <math.h>
@@ -188,7 +188,7 @@ checktick()
 
    minDelta = 1000000;
    for (i = 1; i < M; i++) {
-        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
         minDelta = MIN(minDelta, MAX(Delta,0));
         }
 

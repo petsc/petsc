@@ -409,52 +409,52 @@ PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscIn
   PetscScalar an=s->hx/s->hy, anb=s->hx/(s->hy/2);
 
   PetscFunctionBeginUser;
-  if ( i==0 && j==0 ) { /* south-west corner */
+  if (i==0 && j==0) { /* south-west corner */
     *size=3;
     cols[0]=p; vals[0]=-(ae+awb+asb+an);
     cols[1]=e; vals[1]=ae;
     cols[2]=n; vals[2]=an;
   }
-  else if ( i==0 && j==s->ny-1 ) { /* north-west corner */
+  else if (i==0 && j==s->ny-1) { /* north-west corner */
     *size=3;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(ae+awb+as+anb);
     cols[2]=e; vals[2]=ae;
   }
-  else if ( i==s->nx-1 && j==0 ) { /* south-east corner */
+  else if (i==s->nx-1 && j==0) { /* south-east corner */
     *size=3;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(aeb+aw+asb+an);
     cols[2]=n; vals[2]=an;
   }
-  else if ( i==s->nx-1 && j==s->ny-1 ) { /* north-east corner */
+  else if (i==s->nx-1 && j==s->ny-1) { /* north-east corner */
     *size=3;
     cols[0]=s2; vals[0]=as;
     cols[1]=w; vals[1]=aw;
     cols[2]=p; vals[2]=-(aeb+aw+as+anb);
   }
-  else if ( i==0 ) { /* west boundary */
+  else if (i==0) { /* west boundary */
     *size=4;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(ae+awb+as+an);
     cols[2]=e; vals[2]=ae;
     cols[3]=n; vals[3]=an;
   }
-  else if ( i==s->nx-1 ) { /* east boundary */
+  else if (i==s->nx-1) { /* east boundary */
     *size=4;
     cols[0]=s2; vals[0]=as;
     cols[1]=w; vals[1]=aw;
     cols[2]=p; vals[2]=-(aeb+aw+as+an);
     cols[3]=n; vals[3]=an;
   }
-  else if ( j==0 ) { /* south boundary */
+  else if (j==0) { /* south boundary */
     *size=4;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(ae+aw+asb+an);
     cols[2]=e; vals[2]=ae;
     cols[3]=n; vals[3]=an;
   }
-  else if ( j==s->ny-1 ) { /* north boundary */
+  else if (j==s->ny-1) { /* north boundary */
     *size=4;
     cols[0]=s2; vals[0]=as;
     cols[1]=w; vals[1]=aw;
@@ -479,43 +479,43 @@ PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscIn
   PetscScalar aw=-s->hy/2, awb=0;
 
   PetscFunctionBeginUser;
-  if ( i==0 && j==0 ) { /* south-west corner */
+  if (i==0 && j==0) { /* south-west corner */
     *size=2;
     cols[0]=p; vals[0]=-(ae+awb);
     cols[1]=e; vals[1]=ae;
   }
-  else if ( i==0 && j==s->ny-1 ) { /* north-west corner */
+  else if (i==0 && j==s->ny-1) { /* north-west corner */
     *size=2;
     cols[0]=p; vals[0]=-(ae+awb);
     cols[1]=e; vals[1]=ae;
   }
-  else if ( i==s->nx-1 && j==0 ) { /* south-east corner */
+  else if (i==s->nx-1 && j==0) { /* south-east corner */
     *size=2;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(aeb+aw);
   }
-  else if ( i==s->nx-1 && j==s->ny-1 ) { /* north-east corner */
+  else if (i==s->nx-1 && j==s->ny-1) { /* north-east corner */
     *size=2;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(aeb+aw);
   }
-  else if ( i==0 ) { /* west boundary */
+  else if (i==0) { /* west boundary */
     *size=2;
     cols[0]=p; vals[0]=-(ae+awb);
     cols[1]=e; vals[1]=ae;
   }
-  else if ( i==s->nx-1 ) { /* east boundary */
+  else if (i==s->nx-1) { /* east boundary */
     *size=2;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(aeb+aw);
   }
-  else if ( j==0 ) { /* south boundary */
+  else if (j==0) { /* south boundary */
     *size=3;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(ae+aw);
     cols[2]=e; vals[2]=ae;
   }
-  else if ( j==s->ny-1 ) { /* north boundary */
+  else if (j==s->ny-1) { /* north boundary */
     *size=3;
     cols[0]=w; vals[0]=aw;
     cols[1]=p; vals[1]=-(ae+aw);
@@ -537,44 +537,44 @@ PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscIn
   PetscScalar an= s->hx/2, anb=0;
 
   PetscFunctionBeginUser;
-  if ( i==0 && j==0 ) { /* south-west corner */
+  if (i==0 && j==0) { /* south-west corner */
     *size=2;
     cols[0]=p; vals[0]=-(asb+an);
     cols[1]=n; vals[1]=an;
   }
-  else if ( i==0 && j==s->ny-1 ) { /* north-west corner */
+  else if (i==0 && j==s->ny-1) { /* north-west corner */
     *size=2;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(as+anb);
   }
-  else if ( i==s->nx-1 && j==0 ) { /* south-east corner */
+  else if (i==s->nx-1 && j==0) { /* south-east corner */
     *size=2;
     cols[0]=p; vals[0]=-(asb+an);
     cols[1]=n; vals[1]=an;
   }
-  else if ( i==s->nx-1 && j==s->ny-1 ) { /* north-east corner */
+  else if (i==s->nx-1 && j==s->ny-1) { /* north-east corner */
     *size=2;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(as+anb);
   }
-  else if ( i==0 ) { /* west boundary */
+  else if (i==0) { /* west boundary */
     *size=3;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(as+an);
     cols[2]=n; vals[2]=an;
   }
-  else if ( i==s->nx-1 ) { /* east boundary */
+  else if (i==s->nx-1) { /* east boundary */
     *size=3;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(as+an);
     cols[2]=n; vals[2]=an;
   }
-  else if ( j==0 ) { /* south boundary */
+  else if (j==0) { /* south boundary */
     *size=2;
     cols[0]=p; vals[0]=-(asb+an);
     cols[1]=n; vals[1]=an;
   }
-  else if ( j==s->ny-1 ) { /* north boundary */
+  else if (j==s->ny-1) { /* north boundary */
     *size=2;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(as+anb);

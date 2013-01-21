@@ -38,7 +38,7 @@ static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
   PetscFunctionBegin;
   ierr = PetscNewLog(sdm,DMSNES_DA ,&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {
-    ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_DA ));CHKERRQ(ierr);
+    ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_DA));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

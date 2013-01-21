@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
     //ierr = MeshIDBoundary(mesh_set[0]);
 //    mesh->createLabel("marker");
 //    mesh->markBoundaryCells("marker", 1, 2, false);
-    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1],NULL,options.curvatureCutoff );
+    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1],NULL,options.curvatureCutoff);
     Obj<ALE::Mesh> ale_meshes[options.levels];
     for (int i = 0; i < options.levels; i++) {
       MeshGetMesh(mesh_set[i], ale_meshes[i]);

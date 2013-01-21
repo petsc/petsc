@@ -105,7 +105,7 @@ void PETSC_STDCALL  matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*
   *ierr = MatNullSpaceSetFunction(*sp,ournullfunction,ctx);
 }
 
-void PETSC_STDCALL   matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr )
+void PETSC_STDCALL   matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
 {
   CHKFORTRANNULLOBJECT(right);
   CHKFORTRANNULLOBJECT(left);
@@ -381,62 +381,62 @@ void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Vec *out,PetscE
   *ierr = MatNullSpaceRemove(*sp,*vec,out);
 }
 
-void PETSC_STDCALL   matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr )
+void PETSC_STDCALL   matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr)
 {
   *__ierr = MatGetInfo(*mat,*flag,info);
 }
 
-void PETSC_STDCALL   matlufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matlufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactor(*mat,*row,*col,info);
 }
 
-void PETSC_STDCALL   matilufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matilufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactor(*mat,*row,*col,info);
 }
 
-void PETSC_STDCALL   matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-void PETSC_STDCALL   matlufactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matlufactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorNumeric(*fact,*mat,info);
 }
 
-void PETSC_STDCALL   matcholeskyfactor_(Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matcholeskyfactor_(Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactor(*mat,*perm,info);
 }
 
-void PETSC_STDCALL   matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-void PETSC_STDCALL   matcholeskyfactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matcholeskyfactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorNumeric(*fact,*mat,info);
 }
 
-void PETSC_STDCALL   matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-void PETSC_STDCALL   maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-void PETSC_STDCALL   maticcfactor_(Mat *mat,IS *row, MatFactorInfo* info, int *__ierr )
+void PETSC_STDCALL   maticcfactor_(Mat *mat,IS *row, MatFactorInfo* info, int *__ierr)
 {
   *__ierr = MatICCFactor(*mat,*row,info);
 }
 
-void PETSC_STDCALL   matfactorinfoinitialize_(MatFactorInfo *info, int *__ierr )
+void PETSC_STDCALL   matfactorinfoinitialize_(MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatFactorInfoInitialize(info);
 }

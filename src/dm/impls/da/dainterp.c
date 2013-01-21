@@ -145,7 +145,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       col     = dof*(i_c-i_start_ghost_c);
       cols[0] = idx_c[col]/dof;
       Ni[0]   = 1.0;
-      if ( (li==0) || (li==nxi-1) ) {
+      if ((li==0) || (li==nxi-1)) {
         ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
@@ -161,7 +161,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       Ni[0] = 0.5*(1.0-xi[li]);
       Ni[1] = 0.5*(1.0+xi[li]);
       for (n=0; n<2; n++) {
-        if ( PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
+        if (PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
       }
       ierr = MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -427,8 +427,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         col     = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
         cols[0] = col_shift + idx_c[col]/dof; /* left, below */
         Ni[0]   = 1.0;
-        if ( (li==0) || (li==nxi-1) ) {
-          if ( (lj==0) || (lj==neta-1) ) {
+        if ((li==0) || (li==nxi-1)) {
+          if ((lj==0) || (lj==neta-1)) {
             ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
             continue;
           }
@@ -451,10 +451,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         Ni[3] = 0.25*(1.0+xi[li])*(1.0+eta[lj]);
 
         nc = 0;
-        if ( PetscAbsScalar(Ni[0])<1.0e-32) { cols[0]=-1; }
-        if ( PetscAbsScalar(Ni[1])<1.0e-32) { cols[1]=-1; }
-        if ( PetscAbsScalar(Ni[2])<1.0e-32) { cols[2]=-1; }
-        if ( PetscAbsScalar(Ni[3])<1.0e-32) { cols[3]=-1; }
+        if (PetscAbsScalar(Ni[0])<1.0e-32) { cols[0]=-1; }
+        if (PetscAbsScalar(Ni[1])<1.0e-32) { cols[1]=-1; }
+        if (PetscAbsScalar(Ni[2])<1.0e-32) { cols[2]=-1; }
+        if (PetscAbsScalar(Ni[3])<1.0e-32) { cols[3]=-1; }
 
         ierr = MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
       }
@@ -926,9 +926,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           col     = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c)+m_ghost_c*(j_c-j_start_ghost_c)+(i_c-i_start_ghost_c));
           cols[0] = idx_c[col]/dof;
           Ni[0]   = 1.0;
-          if ( (li==0) || (li==nxi-1) ) {
-            if ( (lj==0) || (lj==neta-1) ) {
-              if ( (lk==0) || (lk==nzeta-1) ) {
+          if ((li==0) || (li==nxi-1)) {
+            if ((lj==0) || (lj==neta-1)) {
+              if ((lk==0) || (lk==nzeta-1)) {
                 ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
                 continue;
               }
@@ -963,7 +963,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           Ni[7] = 0.125*(1.0+xi[li])*(1.0+eta[lj])*(1.0+zeta[lk]);
 
           for (n=0; n<8; n++) {
-            if ( PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
+            if (PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
           }
           ierr = MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -1313,9 +1313,9 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
 
-  if ( Mf < Mc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
-  if ( Nf < Nc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
-  if ( Pf < Pc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
+  if (Mf < Mc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
+  if (Nf < Nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
+  if (Pf < Pc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
 
   if (Pc < 0) Pc = 1;
   if (Pf < 0) Pf = 1;
@@ -1341,7 +1341,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
 
   /* create the matrix that will contain the restriction operator */
-  ierr = MatCreateAIJ( ((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+  ierr = MatCreateAIJ(((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
                           max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */

@@ -258,7 +258,7 @@ PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, Pe
   if (a_destidx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_destidx);
   if (a_destidx==a_srcidx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"a_destidx==a_srcidx %d.",a_destidx);
   n = ail->array[a_destidx];
-  if (!n ) ail->array[a_destidx] = ail->array[a_srcidx];
+  if (!n) ail->array[a_destidx] = ail->array[a_srcidx];
   else {
     do {
       if (!n->next) {

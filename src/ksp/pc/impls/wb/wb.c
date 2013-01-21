@@ -55,14 +55,14 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     Xface are the interpolation onto faces but not into the interior
 
     Xsurf are the interpolation onto the vertices and edges (the surfbasket)
-                                        Xint
-    Symbolically one could write P = (  Xface  ) after interchanging the rows to match the natural ordering on the domain
-                                        Xsurf
+                                      Xint
+    Symbolically one could write P = (Xface) after interchanging the rows to match the natural ordering on the domain
+                                      Xsurf
   */
   N     = (m - istart)*(n - jstart)*(p - kstart);
   Nint  = (m-2-istart)*(n-2-jstart)*(p-2-kstart);
-  Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) );
-  Nwire = 4*( (m-2-istart) + (n-2-jstart) + (p-2-kstart) ) + 8;
+  Nface = 2*((m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart));
+  Nwire = 4*((m-2-istart) + (n-2-jstart) + (p-2-kstart)) + 8;
   Nsurf = Nface + Nwire;
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,PETSC_NULL,&Xint);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
@@ -333,14 +333,14 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     Xface are the interpolation onto faces but not into the interior
 
     Xsurf are the interpolation onto the vertices and edges (the surfbasket)
-                                        Xint
-    Symbolically one could write P = (  Xface  ) after interchanging the rows to match the natural ordering on the domain
-                                        Xsurf
+                                      Xint
+    Symbolically one could write P = (Xface) after interchanging the rows to match the natural ordering on the domain
+                                      Xsurf
   */
   N     = (m - istart)*(n - jstart)*(p - kstart);
   Nint  = (m-2-istart)*(n-2-jstart)*(p-2-kstart);
-  Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) );
-  Nwire = 4*( (m-2-istart) + (n-2-jstart) + (p-2-kstart) ) + 8;
+  Nface = 2*((m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart));
+  Nwire = 4*((m-2-istart) + (n-2-jstart) + (p-2-kstart)) + 8;
   Nsurf = Nface + Nwire;
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,6,PETSC_NULL,&Xint);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,6,PETSC_NULL,&Xsurf);CHKERRQ(ierr);

@@ -229,7 +229,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (SE) {
     tmp = 1.0;
     ierr = MatGetSize(Amat,&size1,&size2);CHKERRQ(ierr);
-    if ( size1 > size2 ) tmp = size1 - size2;
+    if (size1 > size2) tmp = size1 - size2;
     tmp = rnorm / PetscSqrtScalar(tmp);
     ierr = VecSqrtAbs(SE);CHKERRQ(ierr);
     ierr = VecScale(SE,tmp);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRSetStandardErrorVec"
-PetscErrorCode  KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
+PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP ksp, Vec se)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
@@ -277,7 +277,7 @@ PetscErrorCode  KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetStandardErrorVec"
-PetscErrorCode  KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
+PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
@@ -288,7 +288,7 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetArnorm"
-PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
+PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;

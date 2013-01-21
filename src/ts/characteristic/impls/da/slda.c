@@ -113,12 +113,12 @@ PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar 
   ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);
 
   if (bx == DMDA_BOUNDARY_PERIODIC) {
-      while (*x >= ( PetscScalar ) gx ) { *x -= ( PetscScalar ) gx; }
-      while (*x < 0.0 )                 { *x += ( PetscScalar ) gx; }
+      while (*x >= (PetscScalar)gx) { *x -= (PetscScalar)gx; }
+      while (*x < 0.0)              { *x += (PetscScalar)gx; }
     }
     if (by == DMDA_BOUNDARY_PERIODIC) {
-      while (*y >= ( PetscScalar ) gy ) { *y -= ( PetscScalar ) gy; }
-      while (*y < 0.0 )                 { *y += ( PetscScalar ) gy; }
+      while (*y >= (PetscScalar)gy) { *y -= (PetscScalar)gy; }
+      while (*y < 0.0)              { *y += (PetscScalar)gy; }
     }
   PetscFunctionReturn(ierr);
 }

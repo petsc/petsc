@@ -71,13 +71,13 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   if (idx==0) {
     PetscFunctionReturn(0);
   } else if (idx==1) { /* dam break */
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
   } else if (idx==2) { /* stagnation in a corner */
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, 0.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, 0.0,1.0, -1.0,1.0);CHKERRQ(ierr);
   } else if (idx==3) { /* nautilis */
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
   } else if (idx==4) {
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
   }
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   n = n / dim;
 
   for (i=0; i<n; i++) {
-    if ( (dim==3) && (idx!=2) ) {
+    if ((dim==3) && (idx!=2)) {
       PetscScalar Ni[8];
       PetscScalar xi   = XX[dim*i  ];
       PetscScalar eta  = XX[dim*i+1];
@@ -110,7 +110,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       Ni[6] = 0.125*(1.0-xi)*(1.0+eta)*(1.0+zeta);
       Ni[7] = 0.125*(1.0+xi)*(1.0+eta)*(1.0+zeta);
       xx = yy = zz = 0.0;
-      for (p=0; p<8; p++ ) {
+      for (p=0; p<8; p++) {
         xx += Ni[p]*xn[p];
         yy += Ni[p]*yn[p];
         zz += Ni[p]*zn[p];
@@ -184,7 +184,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       Ni[2] = 0.25*(1.0-xi)*(1.0+eta);
       Ni[3] = 0.25*(1.0+xi)*(1.0+eta);
       xx = yy = 0.0;
-      for (p=0; p<4; p++ ) {
+      for (p=0; p<4; p++) {
         xx += Ni[p]*xn[p];
         yy += Ni[p]*yn[p];
       }
@@ -210,7 +210,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
@@ -218,8 +218,8 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
 
   for (i=sx; i<sx+nx; i++) {
-    for (j=sy; j<sy+ny; j++ ) {
-      for (k=sz; k<sz+nz; k++ ) {
+    for (j=sy; j<sy+ny; j++) {
+      for (k=sz; k<sz+nz; k++) {
         PetscScalar Ni[8];
         PetscScalar xi   = XX[k][j][i].x;
         PetscScalar eta  = XX[k][j][i].y;
@@ -239,7 +239,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
         Ni[6] = 0.125*(1.0-xi)*(1.0+eta)*(1.0+zeta);
         Ni[7] = 0.125*(1.0+xi)*(1.0+eta)*(1.0+zeta);
         xx = yy = zz = 0.0;
-        for (p=0; p<8; p++ ) {
+        for (p=0; p<8; p++) {
           xx += Ni[p]*xn[p];
           yy += Ni[p]*yn[p];
           zz += Ni[p]*zn[p];
@@ -277,7 +277,7 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   ierr = DMDAGetCorners(da,&sx,&sy,0,&nx,&ny,0);CHKERRQ(ierr);
 
   for (i=sx; i<sx+nx; i++) {
-    for (j=sy; j<sy+ny; j++ ) {
+    for (j=sy; j<sy+ny; j++) {
       FF[j][i] = 10.0 + 3.0 * XX[j][i].x + 5.5 * XX[j][i].y + 8.003 * XX[j][i].x * XX[j][i].y;
     }
   }
@@ -310,7 +310,7 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
 
   for (k=sz; k<sz+nz; k++) {
-    for (j=sy; j<sy+ny; j++ ) {
+    for (j=sy; j<sy+ny; j++) {
       for (i=sx; i<sx+nx; i++) {
         FF[k][j][i] = 10.0
                 + 4.05 * XX[k][j][i].x
@@ -344,12 +344,12 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate1d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,
                       mx+1,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
                       PETSC_NULL,
-                      &dac );CHKERRQ(ierr);
+                      &dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
@@ -454,7 +454,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 
   /* apply conformal mappings */
   map_id = 0;
-  ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL );CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-cmap", &map_id,PETSC_NULL );CHKERRQ(ierr);
   if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
@@ -557,7 +557,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   /*ierr = DAApplyTrilinearMapping(dac);CHKERRQ(ierr);*/
   /* apply conformal mappings */
   map_id = 0;
-  ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL );CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-cmap", &map_id,PETSC_NULL);CHKERRQ(ierr);
   if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
@@ -600,7 +600,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,nrm/sqrt((PetscReal)N) );
+    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,nrm/sqrt((PetscReal)N));
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
@@ -638,13 +638,13 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,0,help);
 
   mx = my = mz = 2;
-  PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0 );
-  PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0 );
-  PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0 );
+  PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0);
+  PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0);
+  PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0);
   nl = 1;
-  PetscOptionsGetInt(PETSC_NULL,"-nl", &nl, 0 );
+  PetscOptionsGetInt(PETSC_NULL,"-nl", &nl, 0);
   dim = 2;
-  PetscOptionsGetInt(PETSC_NULL,"-dim", &dim, 0 );
+  PetscOptionsGetInt(PETSC_NULL,"-dim", &dim, 0);
 
   for (l=0; l<nl; l++) {
     if      (dim==1) { da_test_RefineCoords1D(mx); }

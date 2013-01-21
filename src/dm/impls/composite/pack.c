@@ -1067,7 +1067,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,MatType mt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (ctype == IS_COLORING_GHOSTED) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Only global coloring supported" );
+  if (ctype == IS_COLORING_GHOSTED) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Only global coloring supported");
   else if (ctype == IS_COLORING_GLOBAL) {
     n = com->n;
   } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");

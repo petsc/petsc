@@ -138,7 +138,7 @@ __global__ void STREAM_Scale_Optimized_double(double *a, double *b, double scale
   if (idx < len) b[idx] = scale* a[idx];
 }
 
-__global__ void STREAM_Add( float *a, float *b, float *c,  size_t len)
+__global__ void STREAM_Add(float *a, float *b, float *c,  size_t len)
 {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
@@ -147,7 +147,7 @@ __global__ void STREAM_Add( float *a, float *b, float *c,  size_t len)
   }
 }
 
-__global__ void STREAM_Add_double( double *a, double *b, double *c,  size_t len)
+__global__ void STREAM_Add_double(double *a, double *b, double *c,  size_t len)
 {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
@@ -156,7 +156,7 @@ __global__ void STREAM_Add_double( double *a, double *b, double *c,  size_t len)
   }
 }
 
-__global__ void STREAM_Add_Optimized( float *a, float *b, float *c,  size_t len)
+__global__ void STREAM_Add_Optimized(float *a, float *b, float *c,  size_t len)
 {
   /*
    * Ensure size of thread index space is as large as or greater than
@@ -167,7 +167,7 @@ __global__ void STREAM_Add_Optimized( float *a, float *b, float *c,  size_t len)
   if (idx < len) c[idx] = a[idx]+b[idx];
 }
 
-__global__ void STREAM_Add_Optimized_double( double *a, double *b, double *c,  size_t len)
+__global__ void STREAM_Add_Optimized_double(double *a, double *b, double *c,  size_t len)
 {
   /*
    * Ensure size of thread index space is as large as or greater than
@@ -178,7 +178,7 @@ __global__ void STREAM_Add_Optimized_double( double *a, double *b, double *c,  s
   if (idx < len) c[idx] = a[idx]+b[idx];
 }
 
-__global__ void STREAM_Triad( float *a, float *b, float *c, float scalar, size_t len)
+__global__ void STREAM_Triad(float *a, float *b, float *c, float scalar, size_t len)
 {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
@@ -187,7 +187,7 @@ __global__ void STREAM_Triad( float *a, float *b, float *c, float scalar, size_t
   }
 }
 
-__global__ void STREAM_Triad_double( double *a, double *b, double *c, double scalar, size_t len)
+__global__ void STREAM_Triad_double(double *a, double *b, double *c, double scalar, size_t len)
 {
   size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
   while (idx < len) {
@@ -196,7 +196,7 @@ __global__ void STREAM_Triad_double( double *a, double *b, double *c, double sca
   }
 }
 
-__global__ void STREAM_Triad_Optimized( float *a, float *b, float *c, float scalar, size_t len)
+__global__ void STREAM_Triad_Optimized(float *a, float *b, float *c, float scalar, size_t len)
 {
   /*
    * Ensure size of thread index space is as large as or greater than
@@ -207,7 +207,7 @@ __global__ void STREAM_Triad_Optimized( float *a, float *b, float *c, float scal
   if (idx < len) c[idx] = a[idx]+scalar*b[idx];
 }
 
-__global__ void STREAM_Triad_Optimized_double( double *a, double *b, double *c, double scalar, size_t len)
+__global__ void STREAM_Triad_Optimized_double(double *a, double *b, double *c, double scalar, size_t len)
 {
   /*
    * Ensure size of thread index space is as large as or greater than
@@ -471,120 +471,120 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   cudaEvent_t start, stop;
 
   /* both timers report msec */
-  ierr = cudaEventCreate( &start );CHKERRQ(ierr); /* gpu timer facility */
-  ierr = cudaEventCreate( &stop );CHKERRQ(ierr);  /* gpu timer facility */
+  ierr = cudaEventCreate(&start);CHKERRQ(ierr); /* gpu timer facility */
+  ierr = cudaEventCreate(&stop);CHKERRQ(ierr);  /* gpu timer facility */
 
   scalar=3.0f;
   for (k = 0; k < NTIMES; ++k) {
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Copy<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[0][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[0][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[0][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Copy_Optimized<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[1][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[1][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[1][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Scale<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[2][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[2][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[2][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Scale_Optimized<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[3][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[3][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[3][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Add<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[4][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[4][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[4][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Add_Optimized<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[5][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[5][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[5][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Triad<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[6][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[6][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[6][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Triad_Optimized<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[7][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[7][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[7][k], start, stop);CHKERRQ(ierr);
     }
 
   }
@@ -593,16 +593,16 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   float *h_a, *h_b, *h_c;
   bool errorSTREAMkernel = true;
 
-  if ( (h_a = (float*)calloc( N, sizeof(float) )) == (float*)NULL ) {
+  if ((h_a = (float*)calloc(N, sizeof(float))) == (float*)NULL) {
     printf("Unable to allocate array h_a, exiting ...\n");
     exit(1);
   }
-  if ( (h_b = (float*)calloc( N, sizeof(float) )) == (float*)NULL ) {
+  if ((h_b = (float*)calloc(N, sizeof(float))) == (float*)NULL) {
     printf("Unable to allocate array h_b, exiting ...\n");
     exit(1);
   }
 
-  if ( (h_c = (float*)calloc( N, sizeof(float) )) == (float*)NULL ) {
+  if ((h_c = (float*)calloc(N, sizeof(float))) == (float*)NULL) {
     printf("Unalbe to allocate array h_c, exiting ...\n");
     exit(1);
   }
@@ -618,8 +618,8 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
 
   STREAM_Copy<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Copy_verify(h_a, h_c, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy:\t\tError detected in device STREAM_Copy, exiting\n");CHKERRQ(ierr);
@@ -634,8 +634,8 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
 
   STREAM_Copy_Optimized<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Copy_verify(h_a, h_c, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy_Optimized:\tError detected in device STREAM_Copy_Optimized, exiting\n");CHKERRQ(ierr);
@@ -649,8 +649,8 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
 
   STREAM_Scale<<<dimGrid,dimBlock>>>(d_b, d_c, scalar, N);
-  ierr = cudaMemcpy( h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Scale_verify(h_b, h_c, scalar, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Scale:\t\tError detected in device STREAM_Scale, exiting\n");CHKERRQ(ierr);
@@ -665,9 +665,9 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
 
   STREAM_Add<<<dimGrid,dimBlock>>>(d_a, d_b, d_c, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Add_verify(h_a, h_b, h_c, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Add:\t\tError detected in device STREAM_Add, exiting\n");CHKERRQ(ierr);
@@ -682,9 +682,9 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   set_array<<<dimGrid,dimBlock>>>(d_c, .5f, N);
 
   STREAM_Triad<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_b, d_b, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Triad_verify(h_b, h_c, h_a, scalar, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Triad:\t\tError detected in device STREAM_Triad, exiting\n");CHKERRQ(ierr);
@@ -697,8 +697,8 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   printResultsReadable(times);
 
   //clean up timers
-  ierr = cudaEventDestroy( stop );CHKERRQ(ierr);
-  ierr = cudaEventDestroy( start );CHKERRQ(ierr);
+  ierr = cudaEventDestroy(stop);CHKERRQ(ierr);
+  ierr = cudaEventDestroy(start);CHKERRQ(ierr);
 
   /* Free memory on device */
   ierr = cudaFree(d_a);CHKERRQ(ierr);
@@ -740,120 +740,120 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   cudaEvent_t start, stop;
 
   /* both timers report msec */
-  ierr = cudaEventCreate( &start );CHKERRQ(ierr); /* gpu timer facility */
-  ierr = cudaEventCreate( &stop );CHKERRQ(ierr);  /* gpu timer facility */
+  ierr = cudaEventCreate(&start);CHKERRQ(ierr); /* gpu timer facility */
+  ierr = cudaEventCreate(&stop);CHKERRQ(ierr);  /* gpu timer facility */
 
   scalar=3.0;
   for (k = 0; k < NTIMES; ++k) {
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Copy_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     if (bDontUseGPUTiming) {
       PetscTimeAdd(cpuTimer);
       times[0][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[0][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[0][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Copy_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     if (bDontUseGPUTiming) {
       PetscTimeAdd(cpuTimer);
       times[1][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[1][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[1][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Scale_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[2][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[2][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[2][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Scale_Optimized_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[3][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[2][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[2][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Add_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[4][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[3][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[3][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Add_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[5][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[3][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[3][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Triad_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[6][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[4][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[4][k], start, stop);CHKERRQ(ierr);
     }
 
     cpuTimer = 0.0;
     PetscTimeSubtract(cpuTimer);
-    ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(start, 0);CHKERRQ(ierr);
     STREAM_Triad_Optimized_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
-    ierr = cudaEventRecord( stop, 0 );CHKERRQ(ierr);
+    ierr = cudaEventRecord(stop, 0);CHKERRQ(ierr);
     ierr = cudaEventSynchronize(stop);CHKERRQ(ierr);
     //get the the total elapsed time in ms
     PetscTimeAdd(cpuTimer);
     if (bDontUseGPUTiming) {
       times[7][k] = cpuTimer;
     } else {
-      ierr = cudaEventElapsedTime( &times[4][k], start, stop );CHKERRQ(ierr);
+      ierr = cudaEventElapsedTime(&times[4][k], start, stop);CHKERRQ(ierr);
     }
 
   }
@@ -862,16 +862,16 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   double *h_a, *h_b, *h_c;
   bool errorSTREAMkernel = true;
 
-  if ( (h_a = (double*)calloc( N, sizeof(double) )) == (double*)NULL ) {
+  if ((h_a = (double*)calloc(N, sizeof(double))) == (double*)NULL) {
     printf("Unable to allocate array h_a, exiting ...\n");
     exit(1);
   }
-  if ( (h_b = (double*)calloc( N, sizeof(double) )) == (double*)NULL ) {
+  if ((h_b = (double*)calloc(N, sizeof(double))) == (double*)NULL) {
     printf("Unable to allocate array h_b, exiting ...\n");
     exit(1);
   }
 
-  if ( (h_c = (double*)calloc( N, sizeof(double) )) == (double*)NULL ) {
+  if ((h_c = (double*)calloc(N, sizeof(double))) == (double*)NULL) {
     printf("Unalbe to allocate array h_c, exiting ...\n");
     exit(1);
   }
@@ -887,8 +887,8 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
 
   STREAM_Copy_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Copy_verify_double(h_a, h_c, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy:\t\tError detected in device STREAM_Copy, exiting\n");CHKERRQ(ierr);
@@ -903,8 +903,8 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
 
   STREAM_Copy_Optimized_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Copy_verify_double(h_a, h_c, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Copy_Optimized:\tError detected in device STREAM_Copy_Optimized, exiting\n");CHKERRQ(ierr);
@@ -918,8 +918,8 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
 
   STREAM_Scale_double<<<dimGrid,dimBlock>>>(d_b, d_c, scalar, N);
-  ierr = cudaMemcpy( h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Scale_verify_double(h_b, h_c, scalar, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Scale:\t\tError detected in device STREAM_Scale, exiting\n");CHKERRQ(ierr);
@@ -934,9 +934,9 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
 
   STREAM_Add_double<<<dimGrid,dimBlock>>>(d_a, d_b, d_c, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Add_verify_double(h_a, h_b, h_c, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Add:\t\tError detected in device STREAM_Add, exiting\n");CHKERRQ(ierr);
@@ -951,9 +951,9 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   set_array_double<<<dimGrid,dimBlock>>>(d_c, .5, N);
 
   STREAM_Triad_double<<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar, N);
-  ierr = cudaMemcpy( h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-  ierr = cudaMemcpy( h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_a, d_a, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_b, d_b, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
+  ierr = cudaMemcpy(h_c, d_c, sizeof(double) * N, cudaMemcpyDeviceToHost);CHKERRQ(ierr);
   errorSTREAMkernel = STREAM_Triad_verify_double(h_b, h_c, h_a, scalar, N);
   if (errorSTREAMkernel) {
     ierr = PetscPrintf(PETSC_COMM_SELF, " device STREAM_Triad:\t\tError detected in device STREAM_Triad, exiting\n");CHKERRQ(ierr);
@@ -966,8 +966,8 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   printResultsReadable(times);
 
   //clean up timers
-  ierr = cudaEventDestroy( stop );CHKERRQ(ierr);
-  ierr = cudaEventDestroy( start );CHKERRQ(ierr);
+  ierr = cudaEventDestroy(stop);CHKERRQ(ierr);
+  ierr = cudaEventDestroy(start);CHKERRQ(ierr);
 
   /* Free memory on device */
   ierr = cudaFree(d_a);CHKERRQ(ierr);

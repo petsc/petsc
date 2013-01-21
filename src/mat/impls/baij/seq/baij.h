@@ -213,8 +213,8 @@ extern PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
-extern PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool );
-extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool );
+extern PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool);
+extern PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool);
 
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2

@@ -72,7 +72,7 @@ extern int FormInterpolation(AppCtx *,GridCtx*,GridCtx*);
 */
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   SNES          snes;
   AppCtx        user;
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
   PC            pc;
   PLogDouble    v1, v2, elapsed;
 
-  PetscInitialize( &argc, &argv,PETSC_NULL,help );
+  PetscInitialize(&argc, &argv,PETSC_NULL,help);
 
   /* set problem parameters */
   user.tleft  = 1.0;
@@ -176,7 +176,7 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,finegrid->x);CHKERRA(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load SNES iterations = %d\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load SNES iterations = %d\n", its);CHKERRA(ierr);
 
   /* Reset options, start timer, then solve nonlinear system */
   ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
@@ -191,10 +191,10 @@ int main( int argc, char **argv )
   elapsed = v2 - v1;
   ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed );CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %d\n", its );CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n", lits );CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n", litspit );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %d\n", its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n", lits);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n", litspit);CHKERRA(ierr);
 
   /* Free data structures on the levels */
   for (i=0; i<user.nlevels; i++) {
@@ -836,8 +836,8 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,m_f_local,m_c_local,m_f,m_c,5,0,3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
-  for ( j=j_start; j<j_start+n; j++ ) {
-    for ( i=i_start; i<i_start+m; i++ ) {
+  for (j=j_start; j<j_start+n; j++) {
+    for (i=i_start; i<i_start+m; i++) {
       /* convert to local "natural" numbering and
          then to PETSc global numbering */
       row    = idx[m_ghost*(j-j_start_ghost) + (i-i_start_ghost)];

@@ -25,16 +25,16 @@ PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt  iter,PetscReal rnorm,KSPCon
     PetscFunctionReturn(0);
   }
 
-  ierr = KSPGetTolerances( solksp, &rtol, &atol, &dtol, &mxiter );CHKERRQ(ierr);
-  if ( iter > mxiter ) {
+  ierr = KSPGetTolerances(solksp, &rtol, &atol, &dtol, &mxiter);CHKERRQ(ierr);
+  if (iter > mxiter) {
     *reason = KSP_DIVERGED_ITS;
     PetscFunctionReturn(0);
   }
 
-  ierr = KSPGetSolution( solksp, &x_sol );CHKERRQ(ierr);
+  ierr = KSPGetSolution(solksp, &x_sol);CHKERRQ(ierr);
   ierr = VecNorm(x_sol, NORM_2 , &xnorm);CHKERRQ(ierr);
 
-  ierr = KSPLSQRGetArnorm( solksp, &arnorm, &bnorm, &anorm);CHKERRQ(ierr);
+  ierr = KSPLSQRGetArnorm(solksp, &arnorm, &bnorm, &anorm);CHKERRQ(ierr);
   if (bnorm > 0.0)  {
     stop1 = rnorm / bnorm;
     rtol = rtol + atol * anorm*xnorm/bnorm;
@@ -43,11 +43,11 @@ PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt  iter,PetscReal rnorm,KSPCon
     rtol = 0.0;
   }
   stop2 = 0.0;
-  if (rnorm > 0.0) stop2 = arnorm / (anorm * rnorm );
+  if (rnorm > 0.0) stop2 = arnorm / (anorm * rnorm);
 
   /* Test for tolerances set by the user */
-  if ( stop1 <= rtol ) *reason = KSP_CONVERGED_RTOL;
-  if ( stop2 <= atol ) *reason = KSP_CONVERGED_ATOL;
+  if (stop1 <= rtol) *reason = KSP_CONVERGED_RTOL;
+  if (stop2 <= atol) *reason = KSP_CONVERGED_ATOL;
 
   /* Test for machine precision */
   if (bnorm > 0)  {
@@ -57,7 +57,7 @@ PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt  iter,PetscReal rnorm,KSPCon
   }
   stop1 = 1.0 + stop1;
   stop2 = 1.0 + stop2;
-  if ( stop1 <= 1.0 ) *reason = KSP_CONVERGED_RTOL;
-  if ( stop2 <= 1.0 ) *reason = KSP_CONVERGED_ATOL;
+  if (stop1 <= 1.0) *reason = KSP_CONVERGED_RTOL;
+  if (stop2 <= 1.0) *reason = KSP_CONVERGED_ATOL;
   PetscFunctionReturn(0);
 }

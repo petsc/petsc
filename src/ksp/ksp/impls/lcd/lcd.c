@@ -104,7 +104,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
       ierr = KSP_MatMult(ksp,Amat,lcd->P[it+1],Z);CHKERRQ(ierr);
       ierr = KSP_PCApply(ksp,Z,lcd->Q[it+1]);CHKERRQ(ierr);
 
-      for ( j = 0; j <= it; j++) {
+      for (j = 0; j <= it; j++) {
         ierr = VecDot(lcd->P[j],lcd->Q[it+1],&num);CHKERRQ(ierr);
         ierr = VecDot(lcd->P[j],lcd->Q[j],&den);CHKERRQ(ierr);
         beta = - num/den;

@@ -1482,7 +1482,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
       acol = aj + ai[k];
       aval = aa + ai[k];
       bval = ba + bi[k];
-      while (nz -- ) {
+      while (nz--) {
         rtmp[*acol++] = *aval++;
         *bval++       = 0.0; /* for in-place factorization */
       }

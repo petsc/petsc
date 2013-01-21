@@ -66,7 +66,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   PetscFunctionBegin;
   /* Check the proper order of complex conjugate pairs */
   j = 0;
-  while (j  < m ) {
+  while (j  < m) {
     if (im[j] != 0.0) {/* complex eigenvalue */
       if (im[j] < 0.0) { /* change the order */
         temp = im[j+1];

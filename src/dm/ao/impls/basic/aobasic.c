@@ -74,7 +74,7 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-    if (ia[i] >= 0 && ia[i] < N ) {
+    if (ia[i] >= 0 && ia[i] < N) {
       ia[i] = aobasic->app[ia[i]];
     } else {
       ia[i] = -1;

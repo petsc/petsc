@@ -160,7 +160,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       ierr = VecCopy(W,S);CHKERRQ(ierr);         /*     s <- w          */
     } else {
       beta = gamma / gammaold;
-      alpha = gamma / ( delta - beta / alpha * gamma );
+      alpha = gamma / (delta - beta / alpha * gamma);
       ierr = VecAYPX(Z,beta,N);CHKERRQ(ierr);    /*     z <- n + beta * z   */
       ierr = VecAYPX(Q,beta,M);CHKERRQ(ierr);    /*     q <- m + beta * q   */
       ierr = VecAYPX(P,beta,U);CHKERRQ(ierr);    /*     p <- u + beta * p   */

@@ -363,11 +363,11 @@ static PetscErrorCode TSSolve_RK(TS ts)
 
      /*Computing next stepsize. See page 167 in Solving ODE 1
       *
-      * h_new = h * min( facmax , max( facmin , fac * (tol/err)^(1/(p+1)) ) )
+      * h_new = h * min(facmax , max(facmin , fac * (tol/err)^(1/(p+1))))
       * facmax set above
       * facmin
       */
-     dt_fac = exp(log((rk->maxerror) / norm) / ((rk->p) + 1) ) * 0.9 ;
+     dt_fac = exp(log((rk->maxerror) / norm) / ((rk->p) + 1)) * 0.9 ;
 
      if (dt_fac > fac) {
         /*ierr = PetscPrintf(PETSC_COMM_WORLD,"changing fac %f\n",fac);*/

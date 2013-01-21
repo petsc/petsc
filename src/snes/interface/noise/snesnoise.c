@@ -122,7 +122,7 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
     /* Compute the nf function values needed to estimate the noise from
        the difference table */
     for (k=0; k<nf; k++) {
-      alpha = h * ( k+1 - (nf+1)/2 );
+      alpha = h * (k+1 - (nf+1)/2);
       ierr = VecWAXPY(xp,alpha,p,x);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,xp,fvec);CHKERRQ(ierr);
       neP->function_count++;

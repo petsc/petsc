@@ -134,7 +134,7 @@ int main(int argc,char *argv[])
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
 
-  if  ( (quantum = checktick()) >= 1) {
+  if  ((quantum = checktick()) >= 1) {
     PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity/precision appears to be "
            "%d microseconds.\n", quantum);
   } else {
@@ -148,8 +148,8 @@ int main(int argc,char *argv[])
   t = 1.0E6 * (Second() - t);
 
   PetscPrintf(PETSC_COMM_WORLD,"Each test below will take on the order"
-         " of %d microseconds.\n", (int) t  );
-  PetscPrintf(PETSC_COMM_WORLD,"   (= %d clock ticks)\n", (int) (t/quantum) );
+         " of %d microseconds.\n", (int) t);
+  PetscPrintf(PETSC_COMM_WORLD,"   (= %d clock ticks)\n", (int) (t/quantum));
   PetscPrintf(PETSC_COMM_WORLD,"Increase the size of the arrays if this shows that\n");
   PetscPrintf(PETSC_COMM_WORLD,"you are not getting at least 20 clock ticks per test.\n");
 
@@ -303,7 +303,7 @@ static int checktick()
 
   minDelta = 1000000;
   for (i = 1; i < M; i++) {
-    Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+    Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
     minDelta = MIN(minDelta, MAX(Delta,0));
   }
 

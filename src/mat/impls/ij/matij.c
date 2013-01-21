@@ -188,7 +188,7 @@ PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
         continue;
       }
     }
-    if (outidxi_ || (inval && outval_) || (inidxj && outidxj_) ) {
+    if (outidxi_ || (inval && outval_) || (inidxj && outidxj_)) {
       for (k = pg->ijlen[indi]; k < pg->ijlen[indi+1]; ++k) {
         MatIJGetIndexImage_Private(A,outtype,pg->ij[k],indj);
         if (outidxi_)         outidxi_[j] = indj;
@@ -315,7 +315,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
     pg->binoffsets[j+1] += pg->binoffsets[j];
   }
   /* Now bin the input indices and values. */
-  if (outidxi_ || (inval && outval) || (inidxj && outidxj_) ) {
+  if (outidxi_ || (inval && outval) || (inidxj && outidxj_)) {
     /* Allocate the bin size array, if necessary. */
     if (!binsizes_) {
       if (!pg->binsizes) {
@@ -346,7 +346,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
         ++binsizes[j];
       }
     }/* for (i = 0; i < insize; ++i) */
-  }/* if (outidxi_ || (inval && outval_) || (inidxj && outidxj_) ) */
+  }/* if (outidxi_ || (inval && outval_) || (inidxj && outidxj_)) */
   if (outsize) *outsize = pg->binoffsets[pg->n];
   PetscFunctionReturn(0);
 }
@@ -499,7 +499,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
     pga->binoffsets[j+1] += pga->binoffsets[j];
   }
   /* Now bin the input indices and values. */
-  if (outidxi_ || (inval && outval_) || (inidxj && outidxj_) ) {
+  if (outidxi_ || (inval && outval_) || (inidxj && outidxj_)) {
     /* Initialize bin sizes to zero. */
     for (j = 0; j < pga->n; ++j) {
       binsizes_[j] = 0;
@@ -524,7 +524,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
         ++binsizes_[j];
       }
     }/* for (i = 0; i < insize; ++i) */
-  }/* if (outidxi_ || (inval && outval_) || (inidxj && outidxj_) ) */
+  }/* if (outidxi_ || (inval && outval_) || (inidxj && outidxj_)) */
   PetscFunctionReturn(0);
 }
 

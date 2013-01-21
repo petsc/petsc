@@ -456,7 +456,7 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,PetscReal x,P
   }
   SelectFont(hdc,hfont);
   SetTextColor(hdc,windraw->currentcolor);
-  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE );
+  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE);
   DeleteObject(hfont);
   /* Forces a WM_PAINT message and erases background */
   InvalidateRect(windraw->hWnd,NULL,TRUE);
@@ -655,8 +655,8 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
 
   if (!hWnd) {
     lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
-    MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
-    LocalFree( lpMsgBuf );
+    MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
+    LocalFree(lpMsgBuf);
     exit(0);
   }
   pop->hWnd = hWnd;
@@ -748,8 +748,8 @@ void MessageLoopThread_Win32(PetscDraw draw)
 
   if (!hWnd) {
     lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
-    MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
-    LocalFree( lpMsgBuf );
+    MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
+    LocalFree(lpMsgBuf);
     exit(0);
   }
   windraw->hWnd = hWnd;

@@ -4,7 +4,7 @@ static char help[] = "Pattern Formation with Reaction-Diffusion Equations.\n";
 /*
      Page 21, Pattern Formation with Reaction-Diffusion Equations
 
-        u_t = D1 (u_xx + u_yy)  - u*v^2 + gama( 1 -u)
+        u_t = D1 (u_xx + u_yy)  - u*v^2 + gama(1 -u)
         v_t = D2 (v_xx + v_yy)  + u*v^2 - (gamma + kappa)v
 
     Unlike in the book this uses periodic boundary conditions instead of Neumann

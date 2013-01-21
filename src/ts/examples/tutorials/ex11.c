@@ -1558,7 +1558,7 @@ static PetscErrorCode BoundaryLinkDestroy(BoundaryLink *link)
   if (!link) PetscFunctionReturn(0);
   l = *link;
   *link = PETSC_NULL;
-  for ( ; l; l=next) {
+  for (; l; l=next) {
     next = l->next;
     ierr = PetscFree(l->ids);CHKERRQ(ierr);
     ierr = PetscFree(l->name);CHKERRQ(ierr);
@@ -1677,7 +1677,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
   if (!link) PetscFunctionReturn(0);
   l = *link;
   *link = PETSC_NULL;
-  for ( ; l; l=next) {
+  for (; l; l=next) {
     next = l->next;
     ierr = PetscFree(l->name);CHKERRQ(ierr);
     ierr = PetscFree(l);CHKERRQ(ierr);

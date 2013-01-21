@@ -1768,7 +1768,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
 
 .seealso: MatSetNearNullSpace
 @*/
-PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords )
+PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
 {
   PetscErrorCode ierr;
 

@@ -1684,9 +1684,9 @@ int main(int argc, char **argv)
     PetscInt i,k,j,mlocal;
     PetscReal *coords;
 
-    ierr = SNESGetKSP( snes, &ksp );CHKERRQ(ierr);
-    ierr = KSPGetPC( ksp, &pc );CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateVec( user.dm, &crd_vec );CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = DMPlexGetCoordinateVec(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
@@ -1694,8 +1694,8 @@ int main(int argc, char **argv)
       for (i=0; i<SPATIAL_DIM_0; i++,k++)
         coords[k] = PetscRealPart(v[k]);
     ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    ierr = PCSetCoordinates( pc, SPATIAL_DIM_0, mlocal, coords );CHKERRQ(ierr);
-    ierr = PetscFree( coords );CHKERRQ(ierr);
+    ierr = PCSetCoordinates(pc, SPATIAL_DIM_0, mlocal, coords);CHKERRQ(ierr);
+    ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
   ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);

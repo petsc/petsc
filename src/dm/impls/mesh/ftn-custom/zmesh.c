@@ -62,7 +62,7 @@ void PETSC_STDCALL  dmmeshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFile
   FIXCHAR(coordFilename,lenC,cF);
   FIXCHAR(adjFilename,lenA,aF);
   FIXCHAR(bcFilename,lenB,bF);
-  *ierr = DMMeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,*interpolate,bF,dm);
+  *ierr = DMMeshCreatePCICE(MPI_Comm_f2c(*(comm)),*dim,cF,aF,*interpolate,bF,dm);
   FREECHAR(coordFilename,cF);
   FREECHAR(adjFilename,aF);
   FREECHAR(bcFilename,bF);
@@ -71,7 +71,7 @@ void PETSC_STDCALL  dmmeshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIX
 {
   char *cF;
   FIXCHAR(filename,len,cF);
-  *ierr = DMMeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,dm);
+  *ierr = DMMeshCreateExodus(MPI_Comm_f2c(*(comm)),cF,dm);
   FREECHAR(filename,cF);
 }
 void PETSC_STDCALL  dmmeshdistribute_(DM *serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), DM *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))

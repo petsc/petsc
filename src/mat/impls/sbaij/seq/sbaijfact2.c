@@ -2626,7 +2626,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   a->permute = PETSC_FALSE;
 
   /* special case that simply copies fill pattern */
-  if (!levels ) {
+  if (!levels) {
     /* reuse the column pointers and row offsets for memory savings */
     ui           = a->i;
     uj           = a->j;

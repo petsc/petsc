@@ -94,7 +94,7 @@ int main(int argc,char **args)
 
     ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
     ierr = ISDestroy(&mis);CHKERRQ(ierr);
-    if (displayIS && !rank ) {
+    if (displayIS && !rank) {
       PetscInt i;
       printf("[ %d ] count:\n",rank);
       for (i=0; i<size; i++) {

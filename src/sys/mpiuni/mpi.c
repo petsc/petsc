@@ -436,12 +436,12 @@ void PETSC_STDCALL mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatyp
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_send_(void*buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr )
+void PETSC_STDCALL mpi_send_(void*buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_recv_(void*buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr )
+void PETSC_STDCALL mpi_recv_(void*buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }

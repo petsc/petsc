@@ -135,8 +135,7 @@ static PetscErrorCode createLevel(const PC pc,
                                    const PetscBool stokes,
                                    Mat *a_P_inout,
                                    Mat *a_Amat_crs,
-                                   PetscMPIInt *a_nactive_proc
-                                  )
+                                   PetscMPIInt *a_nactive_proc)
 {
   PetscErrorCode   ierr;
   PC_MG           *mg = (PC_MG*)pc->data;

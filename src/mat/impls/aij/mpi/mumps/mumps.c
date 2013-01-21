@@ -271,7 +271,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
   }
 
   jj = 0; irow = rstart;
-  for ( i=0; i<m; i++ ) {
+  for (i=0; i<m; i++) {
     ajj    = aj + ai[i];                 /* ptr to the beginning of this row */
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
@@ -331,7 +331,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
   }
 
   jj = 0; irow = rstart;
-  for ( i=0; i<m; i++ ) {
+  for (i=0; i<m; i++) {
     ajj    = aj + ai[i];                 /* ptr to the beginning of this row */
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
@@ -390,7 +390,7 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
   }
 
   jj = 0; irow = rstart;
-  for ( i=0; i<mbs; i++ ) {
+  for (i=0; i<mbs; i++) {
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
     ajj    = aj + ai[i];
@@ -474,7 +474,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   }
 
   jj = 0; irow = rstart;
-  for ( i=0; i<m; i++ ) {
+  for (i=0; i<m; i++) {
     ajj    = aj + adiag[i];                 /* ptr to the beginning of the diagonal of this row */
     v1     = av + adiag[i];
     countA = ai[i+1] - adiag[i];
@@ -772,7 +772,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsInt("-mat_mumps_icntl_4","ICNTL(4): level of printing (0 to 4)","None",mumps->id.ICNTL(4),&icntl,&flg);CHKERRQ(ierr);
   if (flg) mumps->id.ICNTL(4) = icntl;
-  if (mumps->id.ICNTL(4) || PetscLogPrintInfo ) mumps->id.ICNTL(3) = 6; /* resume MUMPS default id.ICNTL(3) = 6 */
+  if (mumps->id.ICNTL(4) || PetscLogPrintInfo) mumps->id.ICNTL(3) = 6; /* resume MUMPS default id.ICNTL(3) = 6 */
 
   ierr = PetscOptionsInt("-mat_mumps_icntl_6","ICNTL(6): permuting and/or scaling the matrix (0 to 7)","None",mumps->id.ICNTL(6),&icntl,&flg);CHKERRQ(ierr);
   if (flg) mumps->id.ICNTL(6) = icntl;

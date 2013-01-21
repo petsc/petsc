@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 
   vwgt = NULL;
 
-  for ( i = 0 ; i < size ; i++ )
+  for (i = 0 ; i < size ; i++)
     tpwgts[i] = 1. / size ;
 
   ubvec[0] = 1.05;

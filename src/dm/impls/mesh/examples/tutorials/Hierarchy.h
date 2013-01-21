@@ -769,7 +769,7 @@ namespace Hierarchy {
         }
         if (pointList.size() > 0) {
           printf(" - ERROR - %d Points unaccounted for.", pointList.size());
-          //GO THROUGH THE LIST AND -1 OUT THAT! (There will be no prolongation operator for this one :( In fact, this shouldn't happen at all once I take out the boundaries)
+          //GO THROUGH THE LIST AND -1 OUT THAT! (There will be no prolongation operator for this one :/ In fact, this shouldn't happen at all once I take out the boundaries)
           std::list<point_type>::iterator bp_iter = pointList.begin();
           std::list<point_type>::iterator bp_iter_end = pointList.end();
           while (bp_iter != bp_iter_end) {

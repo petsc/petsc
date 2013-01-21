@@ -230,7 +230,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
   ierr = VecAXPY(s2,neg_one,s1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
-  if ( norm1>tol) {
+  if (norm1>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%G\n",norm1);CHKERRQ(ierr);
   }
 

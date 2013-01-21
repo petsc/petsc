@@ -483,7 +483,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
      matrix one row at a time.
   */
   v[0] = sone; v[1] = stwo; v[2] = sone;
-  for ( i=mstart; i<mend; i++ ) {
+  for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }

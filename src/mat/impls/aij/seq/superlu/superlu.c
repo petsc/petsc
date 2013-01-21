@@ -134,7 +134,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
     if (lu->options.Equil) {
       ierr = MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
-    if ( lu->lwork >= 0 ) {
+    if (lu->lwork >= 0) {
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
       lu->options.Fact = SamePattern;
@@ -213,20 +213,20 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   }
-  if ( !sinfo || sinfo == lu->A.ncol+1 ) {
-    if ( lu->options.PivotGrowth )
+  if (!sinfo || sinfo == lu->A.ncol+1) {
+    if (lu->options.PivotGrowth)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
-    if ( lu->options.ConditionNumber )
+    if (lu->options.ConditionNumber)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
-  } else if ( sinfo > 0 ) {
-    if ( lu->lwork == -1 ) {
+  } else if (sinfo > 0) {
+    if (lu->lwork == -1) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
   } else { /* sinfo < 0 */
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo);
   }
 
-  if ( lu->options.PrintStat ) {
+  if (lu->options.PrintStat) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");
     StatPrint(&lu->stat);
     Lstore = (SCformat *) lu->L.Store;
@@ -313,7 +313,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   PetscReal      ferr,berr;
 
   PetscFunctionBegin;
-  if ( lu->lwork == -1 ) {
+  if (lu->lwork == -1) {
     PetscFunctionReturn(0);
   }
 
@@ -399,15 +399,15 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   }
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
 
-  if ( !info || info == lu->A.ncol+1 ) {
-    if ( lu->options.IterRefine ) {
+  if (!info || info == lu->A.ncol+1) {
+    if (lu->options.IterRefine) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Iterative Refinement:\n");
       ierr = PetscPrintf(PETSC_COMM_SELF,"  %8s%8s%16s%16s\n", "rhs", "Steps", "FERR", "BERR");
       for (i = 0; i < 1; ++i)
         ierr = PetscPrintf(PETSC_COMM_SELF,"  %8d%8d%16e%16e\n", i+1, lu->stat.RefineSteps, ferr, berr);
     }
-  } else if ( info > 0 ) {
-    if ( lu->lwork == -1 ) {
+  } else if (info > 0) {
+    if (lu->lwork == -1) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", info - lu->A.ncol);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
@@ -416,7 +416,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
   }
 
-  if ( lu->options.PrintStat ) {
+  if (lu->options.PrintStat) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve__SuperLU():\n");
     StatPrint(&lu->stat);
   }
@@ -644,7 +644,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     ierr = PetscOptionsBool("-mat_superlu_printstat","PrintStat","None",(PetscBool)lu->options.PrintStat,&flg,0);CHKERRQ(ierr);
     if (flg) lu->options.PrintStat = YES;
     ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr);
-    if (lu->lwork > 0 ) {
+    if (lu->lwork > 0) {
       ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr);
     } else if (lu->lwork != 0 && lu->lwork != -1) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %D is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);

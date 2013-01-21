@@ -22,7 +22,7 @@
 #define AGMRES_DELTA_DIRECTIONS 10
 static PetscErrorCode KSPAGMRESBuildSoln(KSP,PetscInt);
 static PetscErrorCode KSPComputeShifts_GMRES(KSP);
-static PetscErrorCode KSPAGMRESBuildBasis(KSP );
+static PetscErrorCode KSPAGMRESBuildBasis(KSP);
 static PetscErrorCode KSPAGMRESBuildHessenberg(KSP);
 
 PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
@@ -118,7 +118,7 @@ PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec  ptr, Vec *result)
 
 /* This function computes the shifts  needed to generate stable basis vectors (through the Newton polynomials)
  * At input, the operators (matrix and preconditioners) are used to create a new GMRES KSP.
- * One cycle of GMRES with the Arnoldi process is performed and the eigenvalues of the induced Hessenberg matrix (the Ritz values ) are computed.
+ * One cycle of GMRES with the Arnoldi process is performed and the eigenvalues of the induced Hessenberg matrix (the Ritz values) are computed.
  * NOTE: This function is not currently used; the next function is rather used when  the eigenvectors are needed next to augment the basis
  */
 #undef __FUNCT__
@@ -214,7 +214,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   }
   else ksp->reason = KSP_CONVERGED_ITERATING;
 
-  if ((agmres->r == 0) && (agmres->neig > 0) ) {  /* Compute the eigenvalues for the shifts and the eigenvectors (to augment the Newton basis) */
+  if ((agmres->r == 0) && (agmres->neig > 0)) {  /* Compute the eigenvalues for the shifts and the eigenvectors (to augment the Newton basis) */
     agmres->HasSchur = PETSC_FALSE;
     ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp, &Neig);CHKERRQ (ierr);
     Neig = max_k;
@@ -239,7 +239,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE;
     if (ksp->reason == KSP_CONVERGED_RTOL) PetscFunctionReturn(0);
     else ksp->reason = KSP_CONVERGED_ITERATING;
-    if (agmres->neig > 0 ) { /* Compute the eigenvalues for the shifts) and the eigenvectors (to augment the Newton basis */
+    if (agmres->neig > 0) { /* Compute the eigenvalues for the shifts) and the eigenvectors (to augment the Newton basis */
       agmres->HasSchur = PETSC_FALSE;
       ierr = KSPDGMRESComputeDeflationData_DGMRES (ksp, &Neig);CHKERRQ (ierr);
       Neig = max_k;
@@ -274,7 +274,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
  *  - Shifts values in agmres->Rshift and agmres->Ishift.
  * Output :
  *  - agmres->vecs or VEC_V : basis vectors
- *  - agmres->Scale : Scaling factors (equal to 1 if no scaling is done )
+ *  - agmres->Scale : Scaling factors (equal to 1 if no scaling is done)
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESBuildBasis"
@@ -301,7 +301,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
       } else if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP);CHKERRQ(ierr);
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP );CHKERRQ(ierr);
+        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
       } else {
         ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
       }
@@ -324,7 +324,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
       } else if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP);CHKERRQ(ierr);
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP );CHKERRQ(ierr);
+        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
       } else {
         ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
       }
@@ -345,7 +345,7 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
       } else if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
         ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP);CHKERRQ(ierr);
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP );CHKERRQ(ierr);
+        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
       } else {
         ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
       }
@@ -804,32 +804,32 @@ PetscErrorCode  KSPCreate_AGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
 
-  ierr = PetscObjectComposeFunctionDynamic ( (PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C",
+  ierr = PetscObjectComposeFunctionDynamic ((PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C",
                                              "KSPGMRESSetPreAllocateVectors_GMRES",
                                              KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ (ierr);
-  ierr = PetscObjectComposeFunctionDynamic ( (PetscObject) ksp,"KSPGMRESSetOrthogonalization_C",
+  ierr = PetscObjectComposeFunctionDynamic ((PetscObject) ksp,"KSPGMRESSetOrthogonalization_C",
                                              "KSPGMRESSetOrthogonalization_GMRES",
                                              KSPGMRESSetOrthogonalization_GMRES);CHKERRQ (ierr);
-  ierr = PetscObjectComposeFunctionDynamic ( (PetscObject) ksp,"KSPGMRESSetRestart_C",
+  ierr = PetscObjectComposeFunctionDynamic ((PetscObject) ksp,"KSPGMRESSetRestart_C",
                                              "KSPGMRESSetRestart_GMRES",
                                              KSPGMRESSetRestart_GMRES);CHKERRQ (ierr);
-  ierr = PetscObjectComposeFunctionDynamic ( (PetscObject) ksp,"KSPGMRESSetHapTol_C",
+  ierr = PetscObjectComposeFunctionDynamic ((PetscObject) ksp,"KSPGMRESSetHapTol_C",
                                              "KSPGMRESSetHapTol_GMRES",
                                              KSPGMRESSetHapTol_GMRES);CHKERRQ (ierr);
-  ierr = PetscObjectComposeFunctionDynamic ( (PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C",
+  ierr = PetscObjectComposeFunctionDynamic ((PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C",
                                              "KSPGMRESSetCGSRefinementType_GMRES",
                                              KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ (ierr);
   /* -- New functions defined in DGMRES -- */
-  ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESSetEigen_C",
+  ierr=PetscObjectComposeFunctionDynamic ((PetscObject) ksp, "KSPDGMRESSetEigen_C",
                                            "KSPDGMRESSetEigen_DGMRES",
                                            KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
-  ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESComputeSchurForm_C",
+  ierr=PetscObjectComposeFunctionDynamic ((PetscObject) ksp, "KSPDGMRESComputeSchurForm_C",
                                            "KSPDGMRESComputeSchurForm_DGMRES",
                                            KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
-  ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",
+  ierr=PetscObjectComposeFunctionDynamic ((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",
                                            "KSPDGMRESComputeDeflationData_DGMRES",
                                            KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
-  ierr=PetscObjectComposeFunctionDynamic ( (PetscObject) ksp, "KSPDGMRESApplyDeflation_C",
+  ierr=PetscObjectComposeFunctionDynamic ((PetscObject) ksp, "KSPDGMRESApplyDeflation_C",
                                            "KSPDGMRESApplyDeflation_DGMRES",
                                            KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
 

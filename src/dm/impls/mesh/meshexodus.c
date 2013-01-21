@@ -797,7 +797,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
     if (r_iter->second < num_cells && r_iter->first > my_num_cells_global) {
       my_num_cells_global = r_iter->first;
     }
-    if (r_iter->second > num_cells-1 ) {
+    if (r_iter->second > num_cells-1) {
       allvertices[r_iter->second - num_cells] = r_iter->first;
     }
   }
@@ -919,7 +919,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
     if (r_iter->second < num_cells && r_iter->first > my_num_cells_global) {
       my_num_cells_global = r_iter->first;
     }
-    if (r_iter->second < num_cells ) {
+    if (r_iter->second < num_cells) {
       cells[r_iter->second] = r_iter->first;
     }
   }
@@ -999,7 +999,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
        r_iter->first  is a point number in the sequential (global) mesh
        r_iter->second is the matching local point number in the distributed (local) mesh
     */
-    if (r_iter->second < num_cells ) {
+    if (r_iter->second < num_cells) {
       allcells[r_iter->second] = r_iter->first;
     }
   }

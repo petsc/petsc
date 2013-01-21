@@ -114,15 +114,15 @@ static void ShapeFunctionQ13D_Evaluate(PetscScalar _xi[],PetscScalar Ni[])
   PetscReal eta  = PetscRealPart(_xi[1]);
   PetscReal zeta = PetscRealPart(_xi[2]);
 
-  Ni[0] = 0.125 * ( 1.0 - xi ) * ( 1.0 - eta ) * ( 1.0 - zeta );
-  Ni[1] = 0.125 * ( 1.0 - xi ) * ( 1.0 + eta ) * ( 1.0 - zeta );
-  Ni[2] = 0.125 * ( 1.0 + xi ) * ( 1.0 + eta ) * ( 1.0 - zeta );
-  Ni[3] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta ) * ( 1.0 - zeta );
+  Ni[0] = 0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 - zeta);
+  Ni[1] = 0.125 * (1.0 - xi) * (1.0 + eta) * (1.0 - zeta);
+  Ni[2] = 0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 - zeta);
+  Ni[3] = 0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 - zeta);
 
-  Ni[4] = 0.125 * ( 1.0 - xi ) * ( 1.0 - eta ) * ( 1.0 + zeta );
-  Ni[5] = 0.125 * ( 1.0 - xi ) * ( 1.0 + eta ) * ( 1.0 + zeta );
-  Ni[6] = 0.125 * ( 1.0 + xi ) * ( 1.0 + eta ) * ( 1.0 + zeta );
-  Ni[7] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta ) * ( 1.0 + zeta );
+  Ni[4] = 0.125 * (1.0 - xi) * (1.0 - eta) * (1.0 + zeta);
+  Ni[5] = 0.125 * (1.0 - xi) * (1.0 + eta) * (1.0 + zeta);
+  Ni[6] = 0.125 * (1.0 + xi) * (1.0 + eta) * (1.0 + zeta);
+  Ni[7] = 0.125 * (1.0 + xi) * (1.0 - eta) * (1.0 + zeta);
 }
 
 static void ShapeFunctionQ13D_Evaluate_dxi(PetscScalar _xi[],PetscScalar GNi[][NODES_PER_EL])
@@ -131,35 +131,35 @@ static void ShapeFunctionQ13D_Evaluate_dxi(PetscScalar _xi[],PetscScalar GNi[][N
   PetscReal eta  = PetscRealPart(_xi[1]);
   PetscReal zeta = PetscRealPart(_xi[2]);
   /* xi deriv */
-  GNi[0][0] = - 0.125 * ( 1.0 - eta ) * ( 1.0 - zeta );
-  GNi[0][1] = - 0.125 * ( 1.0 + eta ) * ( 1.0 - zeta );
-  GNi[0][2] =   0.125 * ( 1.0 + eta ) * ( 1.0 - zeta );
-  GNi[0][3] =   0.125 * ( 1.0 - eta ) * ( 1.0 - zeta );
+  GNi[0][0] = - 0.125 * (1.0 - eta) * (1.0 - zeta);
+  GNi[0][1] = - 0.125 * (1.0 + eta) * (1.0 - zeta);
+  GNi[0][2] =   0.125 * (1.0 + eta) * (1.0 - zeta);
+  GNi[0][3] =   0.125 * (1.0 - eta) * (1.0 - zeta);
 
-  GNi[0][4] = - 0.125 * ( 1.0 - eta ) * ( 1.0 + zeta );
-  GNi[0][5] = - 0.125 * ( 1.0 + eta ) * ( 1.0 + zeta );
-  GNi[0][6] =   0.125 * ( 1.0 + eta ) * ( 1.0 + zeta );
-  GNi[0][7] =   0.125 * ( 1.0 - eta ) * ( 1.0 + zeta );
+  GNi[0][4] = - 0.125 * (1.0 - eta) * (1.0 + zeta);
+  GNi[0][5] = - 0.125 * (1.0 + eta) * (1.0 + zeta);
+  GNi[0][6] =   0.125 * (1.0 + eta) * (1.0 + zeta);
+  GNi[0][7] =   0.125 * (1.0 - eta) * (1.0 + zeta);
   /* eta deriv */
-  GNi[1][0] = - 0.125 * ( 1.0 - xi ) * ( 1.0 - zeta );
-  GNi[1][1] =   0.125 * ( 1.0 - xi ) * ( 1.0 - zeta );
-  GNi[1][2] =   0.125 * ( 1.0 + xi ) * ( 1.0 - zeta );
-  GNi[1][3] = - 0.125 * ( 1.0 + xi ) * ( 1.0 - zeta );
+  GNi[1][0] = - 0.125 * (1.0 - xi) * (1.0 - zeta);
+  GNi[1][1] =   0.125 * (1.0 - xi) * (1.0 - zeta);
+  GNi[1][2] =   0.125 * (1.0 + xi) * (1.0 - zeta);
+  GNi[1][3] = - 0.125 * (1.0 + xi) * (1.0 - zeta);
 
-  GNi[1][4] = - 0.125 * ( 1.0 - xi ) * ( 1.0 + zeta );
-  GNi[1][5] =   0.125 * ( 1.0 - xi ) * ( 1.0 + zeta );
-  GNi[1][6] =   0.125 * ( 1.0 + xi ) * ( 1.0 + zeta );
-  GNi[1][7] = - 0.125 * ( 1.0 + xi ) * ( 1.0 + zeta );
+  GNi[1][4] = - 0.125 * (1.0 - xi) * (1.0 + zeta);
+  GNi[1][5] =   0.125 * (1.0 - xi) * (1.0 + zeta);
+  GNi[1][6] =   0.125 * (1.0 + xi) * (1.0 + zeta);
+  GNi[1][7] = - 0.125 * (1.0 + xi) * (1.0 + zeta);
   /* zeta deriv */
-  GNi[2][0] = -0.125 * ( 1.0 - xi ) * ( 1.0 - eta );
-  GNi[2][1] = -0.125 * ( 1.0 - xi ) * ( 1.0 + eta );
-  GNi[2][2] = -0.125 * ( 1.0 + xi ) * ( 1.0 + eta );
-  GNi[2][3] = -0.125 * ( 1.0 + xi ) * ( 1.0 - eta );
+  GNi[2][0] = -0.125 * (1.0 - xi) * (1.0 - eta);
+  GNi[2][1] = -0.125 * (1.0 - xi) * (1.0 + eta);
+  GNi[2][2] = -0.125 * (1.0 + xi) * (1.0 + eta);
+  GNi[2][3] = -0.125 * (1.0 + xi) * (1.0 - eta);
 
-  GNi[2][4] = 0.125 * ( 1.0 - xi ) * ( 1.0 - eta );
-  GNi[2][5] = 0.125 * ( 1.0 - xi ) * ( 1.0 + eta );
-  GNi[2][6] = 0.125 * ( 1.0 + xi ) * ( 1.0 + eta );
-  GNi[2][7] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta );
+  GNi[2][4] = 0.125 * (1.0 - xi) * (1.0 - eta);
+  GNi[2][5] = 0.125 * (1.0 - xi) * (1.0 + eta);
+  GNi[2][6] = 0.125 * (1.0 + xi) * (1.0 + eta);
+  GNi[2][7] = 0.125 * (1.0 + xi) * (1.0 - eta);
 }
 
 static void matrix_inverse_3x3(PetscScalar A[3][3],PetscScalar B[3][3])
@@ -888,19 +888,19 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
         ierr = DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek);CHKERRQ(ierr);
 
         for (n=0; n<NODES_PER_EL; n++) {
-          if ( (u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1)) {
+          if ((u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1)) {
             _ZERO_ROWCOL_i(Ae,3*n);
             _ZERO_ROW_i   (Ge,3*n);
             _ZERO_COL_i   (De,3*n);
           }
 
-          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
+          if ((u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+1);
             _ZERO_ROW_i   (Ge,3*n+1);
             _ZERO_COL_i   (De,3*n+1);
           }
 
-          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
+          if ((u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+2);
             _ZERO_ROW_i   (Ge,3*n+2);
             _ZERO_COL_i   (De,3*n+2);
@@ -978,19 +978,19 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
         ierr = DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek);CHKERRQ(ierr);
 
         for (n=0; n<NODES_PER_EL; n++) {
-          if ( (u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1)) {
+          if ((u_eqn[3*n].i == 0) || (u_eqn[3*n].i == M-1)) {
             _ZERO_ROWCOL_i(Ae,3*n);
             _ZERO_ROW_i   (Ge,3*n);
             _ZERO_COL_i   (De,3*n);
           }
 
-          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
+          if ((u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+1);
             _ZERO_ROW_i   (Ge,3*n+1);
             _ZERO_COL_i   (De,3*n+1);
           }
 
-          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
+          if ((u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
             _ZERO_ROWCOL_i(Ae,3*n+2);
             _ZERO_ROW_i   (Ge,3*n+2);
             _ZERO_COL_i   (De,3*n+2);
@@ -1070,15 +1070,15 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
         ierr = DMDAGetElementEqnums3D_up(u_eqn,p_eqn,ei,ej,ek);CHKERRQ(ierr);
 
         for (n=0; n<NODES_PER_EL; n++) {
-          if ( (u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1)) {
+          if ((u_eqn[3*n  ].i == 0) || (u_eqn[3*n  ].i == M-1)) {
             Fe[3*n  ] = 0.0;
           }
 
-          if ( (u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
+          if ((u_eqn[3*n+1].j == 0) || (u_eqn[3*n+1].j == N-1)) {
             Fe[3*n+1] = 0.0;
           }
 
-          if ( (u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
+          if ((u_eqn[3*n+2].k == 0) || (u_eqn[3*n+2].k == P-1)) {
             Fe[3*n+2] = 0.0;
           }
         }
@@ -1369,7 +1369,7 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
              */
             u_e_L2  += fac*Ni_p[i]*(u_error*u_error+v_error*v_error+w_error*w_error);
 
-            u_e_H1 = u_e_H1+fac*( GNx_p[0][i]*u_error*GNx_p[0][i]*u_error              /* du/dx */
+            u_e_H1 = u_e_H1+fac*(GNx_p[0][i]*u_error*GNx_p[0][i]*u_error              /* du/dx */
                                   +GNx_p[1][i]*u_error*GNx_p[1][i]*u_error
                                   +GNx_p[2][i]*u_error*GNx_p[2][i]*u_error
                                   +GNx_p[0][i]*v_error*GNx_p[0][i]*v_error              /* dv/dx */
@@ -1377,7 +1377,7 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
                                   +GNx_p[2][i]*v_error*GNx_p[2][i]*v_error
                                   +GNx_p[0][i]*w_error*GNx_p[0][i]*w_error              /* dw/dx */
                                   +GNx_p[1][i]*w_error*GNx_p[1][i]*w_error
-                                  +GNx_p[2][i]*w_error*GNx_p[2][i]*w_error );
+                                  +GNx_p[2][i]*w_error*GNx_p[2][i]*w_error);
           }
         }
 
@@ -1973,7 +1973,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             cell->fz[p] = 0.0;
             cell->hc[p] = 0.0;
 
-            if ( (fabs(xp-0.5) < 0.2) &&
+            if ((fabs(xp-0.5) < 0.2) &&
                  (fabs(yp-0.5) < 0.2) &&
                  (fabs(zp-0.5) < 0.2)) {
               cell->eta[p] = 1.0;

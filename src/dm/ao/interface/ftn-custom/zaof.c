@@ -19,7 +19,7 @@ void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCode *ierr)
   *ierr = AOView(*ao,v);
 }
 
-void PETSC_STDCALL aodestroy_(AO *ao, int *__ierr )
+void PETSC_STDCALL aodestroy_(AO *ao, int *__ierr)
 {
   *__ierr = AODestroy(ao);
 }

@@ -3,7 +3,7 @@ static char help[] = "Tests VecMDot() and VecDot()\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
   Vec            *V,t;

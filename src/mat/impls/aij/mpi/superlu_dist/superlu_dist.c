@@ -73,7 +73,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
       Destroy_CompCol_Matrix_dist(&lu->A_sup);
     } else {
       Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);
-      if ( lu->options.SolveInitialized ) {
+      if (lu->options.SolveInitialized) {
 #if defined(PETSC_USE_COMPLEX)
         zSolveFinalize(&lu->options, &lu->SOLVEstruct);
 #else
@@ -357,7 +357,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       }
     }
     nz = 0;
-    for ( i=0; i<m; i++ ) {
+    for (i=0; i<m; i++) {
       lu->row[i] = nz;
       countA = ai[i+1] - ai[i];
       countB = bi[i+1] - bi[i];

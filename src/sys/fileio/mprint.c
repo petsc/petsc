@@ -49,7 +49,7 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
   while (format[i] && j < (PetscInt)size-1) {
     if (format[i] == '%' && format[i+1] != '%') {
       /* Find the letter */
-      for ( ; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
+      for (; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
       switch (format[i]) {
       case 'D':
 #if !defined(PETSC_USE_64BIT_INDICES)

@@ -79,7 +79,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
   DM_DA         *da  = (DM_DA *) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
-  const PetscInt nC  = (mx  )*(dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+  const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
 
   PetscFunctionBegin;
   if (numCells) {
@@ -128,7 +128,7 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
   DM_DA         *da  = (DM_DA *) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
-  const PetscInt nxF = (dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+  const PetscInt nxF = (dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
   const PetscInt nXF = (mx+1)*nxF;
   const PetscInt nyF = mx*(dim > 2 ? mz : 1);
   const PetscInt nYF = dim > 1 ? (my+1)*nyF : 0;

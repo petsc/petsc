@@ -170,7 +170,7 @@ PetscErrorCode testPTAPRectangular(void)
   PETSc_CHKERRQ(_ierr);
 
   /* compute C */
-  _ierr = MatPtAP( A, P, MAT_INITIAL_MATRIX, 1.0, &C);
+  _ierr = MatPtAP(A, P, MAT_INITIAL_MATRIX, 1.0, &C);
   PETSc_CHKERRQ(_ierr);
 
   _ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);
@@ -187,7 +187,7 @@ PetscErrorCode testPTAPRectangular(void)
   actualC = 0.0;
   for (int i=0; i<cols; i++) {
     for (int j=0; j<cols; j++) {
-      _ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j) );
+      _ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));
       PETSc_CHKERRQ(_ierr); ;
     }
   }

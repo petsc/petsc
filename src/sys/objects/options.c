@@ -1414,7 +1414,7 @@ PetscErrorCode  PetscOptionsGetEList(const char pre[],const char opt[],const cha
   PetscInt       i;
 
   PetscFunctionBegin;
-  for ( i=0; i<ntext; i++) {
+  for (i=0; i<ntext; i++) {
     ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
     if (alen > len) len = alen;
   }

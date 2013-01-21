@@ -24,15 +24,15 @@ In this test we replace the Jacobian systems
   [J]{x} = {F}
 where
 
-[J] = ( j_00, j_01 ),  {x} = ( x_0, x_1 )^T,   {F} = ( f_0, f_1 )^T
-      ( j_10, j_11 )
+[J] = (j_00, j_01),  {x} = (x_0, x_1)^T,   {F} = (f_0, f_1)^T
+      (j_10, j_11)
 where [J] \in \mathbb^{2 \times 2}, {x},{F} \in \mathbb^{2 \times 1},
 
 with a block system in which each block is of length 1.
 i.e. The block system is thus
 
-[J] = ( [j00], [j01] ),  {x} = ( {x0}, {x1} )^T, {F} = ( {f0}, {f1} )^T
-      ( [j10], [j11] )
+[J] = ([j00], [j01]),  {x} = ({x0}, {x1})^T, {F} = ({f0}, {f1})^T
+      ([j10], [j11])
 where
 [j00], [j01], [j10], [j11] \in \mathbb^{1 \times 1}
 {x0}, {x1}, {f0}, {f1} \in \mathbb^{1 \times 1}
@@ -70,7 +70,7 @@ static PetscErrorCode assembled_system(void)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  PetscPrintf( PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n" );
+  PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Create nonlinear solver context
@@ -359,7 +359,7 @@ static int block_system(void)
   Mat bA[2][2];
 
   PetscFunctionBeginUser;
-  PetscPrintf( PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n" );
+  PetscPrintf(PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n");
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
@@ -398,24 +398,24 @@ static int block_system(void)
   /*
   Create sub Jacobian matrix data structure
   */
-  ierr = MatCreate( PETSC_COMM_WORLD, &j11 );CHKERRQ(ierr);
-  ierr = MatSetSizes( j11, 1, 1, 1, 1 );CHKERRQ(ierr);
-  ierr = MatSetType( j11, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &j11);CHKERRQ(ierr);
+  ierr = MatSetSizes(j11, 1, 1, 1, 1);CHKERRQ(ierr);
+  ierr = MatSetType(j11, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(j11);CHKERRQ(ierr);
 
-  ierr = MatCreate( PETSC_COMM_WORLD, &j12 );CHKERRQ(ierr);
-  ierr = MatSetSizes( j12, 1, 1, 1, 1 );CHKERRQ(ierr);
-  ierr = MatSetType( j12, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &j12);CHKERRQ(ierr);
+  ierr = MatSetSizes(j12, 1, 1, 1, 1);CHKERRQ(ierr);
+  ierr = MatSetType(j12, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(j12);CHKERRQ(ierr);
 
-  ierr = MatCreate( PETSC_COMM_WORLD, &j21 );CHKERRQ(ierr);
-  ierr = MatSetSizes( j21, 1, 1, 1, 1 );CHKERRQ(ierr);
-  ierr = MatSetType( j21, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &j21);CHKERRQ(ierr);
+  ierr = MatSetSizes(j21, 1, 1, 1, 1);CHKERRQ(ierr);
+  ierr = MatSetType(j21, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(j21);CHKERRQ(ierr);
 
-  ierr = MatCreate( PETSC_COMM_WORLD, &j22 );CHKERRQ(ierr);
-  ierr = MatSetSizes( j22, PETSC_DECIDE, PETSC_DECIDE, 1, 1 );CHKERRQ(ierr);
-  ierr = MatSetType( j22, MATSEQAIJ );CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &j22);CHKERRQ(ierr);
+  ierr = MatSetSizes(j22, PETSC_DECIDE, PETSC_DECIDE, 1, 1);CHKERRQ(ierr);
+  ierr = MatSetType(j22, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetUp(j22);CHKERRQ(ierr);
   /*
   Create block Jacobian matrix data structure
@@ -481,16 +481,16 @@ static int block_system(void)
     ierr = VecSet(x,pfive);CHKERRQ(ierr);
   } else {
     Vec *vecs;
-    ierr = VecNestGetSubVecs( x, PETSC_NULL, &vecs );CHKERRQ(ierr);
+    ierr = VecNestGetSubVecs(x, PETSC_NULL, &vecs);CHKERRQ(ierr);
     bv = vecs[0];
-/*    ierr = VecBlockGetSubVec( x, 0, &bv );CHKERRQ(ierr); */
-    ierr = VecSetValue( bv, 0, 2.0, INSERT_VALUES );CHKERRQ(ierr);  /* xx[0] = 2.0; */
+/*    ierr = VecBlockGetSubVec(x, 0, &bv);CHKERRQ(ierr); */
+    ierr = VecSetValue(bv, 0, 2.0, INSERT_VALUES);CHKERRQ(ierr);  /* xx[0] = 2.0; */
     ierr = VecAssemblyBegin(bv);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bv);CHKERRQ(ierr);
 
-/*    ierr = VecBlockGetSubVec( x, 1, &bv );CHKERRQ(ierr); */
+/*    ierr = VecBlockGetSubVec(x, 1, &bv);CHKERRQ(ierr); */
     bv = vecs[1];
-    ierr = VecSetValue( bv, 0, 3.0, INSERT_VALUES );CHKERRQ(ierr);  /* xx[1] = 3.0; */
+    ierr = VecSetValue(bv, 0, 3.0, INSERT_VALUES);CHKERRQ(ierr);  /* xx[1] = 3.0; */
     ierr = VecAssemblyBegin(bv);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bv);CHKERRQ(ierr);
   }
@@ -533,26 +533,26 @@ static PetscErrorCode FormFunction1_block(SNES snes,Vec x,Vec f,void *dummy)
 
   PetscFunctionBeginUser;
   /* get blocks for function */
-  ierr = VecNestGetSubVecs( f, &nb, &ff );CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs(f, &nb, &ff);CHKERRQ(ierr);
   f1 = ff[0];  f2 = ff[1];
 
   /* get blocks for solution */
-  ierr = VecNestGetSubVecs( x, &nb, &xx );CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs(x, &nb, &xx);CHKERRQ(ierr);
   x1 = xx[0];  x2 = xx[1];
 
   /* get solution values */
   index = 0;
-  ierr = VecGetValues( x1,1, &index, &xx_0 );CHKERRQ(ierr);
-  ierr = VecGetValues( x2,1, &index, &xx_1 );CHKERRQ(ierr);
+  ierr = VecGetValues(x1,1, &index, &xx_0);CHKERRQ(ierr);
+  ierr = VecGetValues(x2,1, &index, &xx_1);CHKERRQ(ierr);
 
   /* Compute function */
   ff_0 = xx_0*xx_0 + xx_0*xx_1 - 3.0;
   ff_1 = xx_0*xx_1 + xx_1*xx_1 - 6.0;
 
   /* set function values */
-  ierr = VecSetValue( f1, index, ff_0, INSERT_VALUES );CHKERRQ(ierr);
+  ierr = VecSetValue(f1, index, ff_0, INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = VecSetValue( f2, index, ff_1, INSERT_VALUES );CHKERRQ(ierr);
+  ierr = VecSetValue(f2, index, ff_1, INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
@@ -574,13 +574,13 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat *jac,Mat *B,MatStr
 
   PetscFunctionBeginUser;
   /* get blocks for solution */
-  ierr = VecNestGetSubVecs( x, &nb, &xx );CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs(x, &nb, &xx);CHKERRQ(ierr);
   x1 = xx[0];  x2 = xx[1];
 
   /* get solution values */
   index = 0;
-  ierr = VecGetValues( x1,1, &index, &xx_0 );CHKERRQ(ierr);
-  ierr = VecGetValues( x2,1, &index, &xx_1 );CHKERRQ(ierr);
+  ierr = VecGetValues(x1,1, &index, &xx_0);CHKERRQ(ierr);
+  ierr = VecGetValues(x2,1, &index, &xx_1);CHKERRQ(ierr);
 
   /* get block matrices */
   ierr = MatNestGetSubMats(*jac,PETSC_NULL,PETSC_NULL,&mats);CHKERRQ(ierr);
@@ -596,10 +596,10 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat *jac,Mat *B,MatStr
   A_11 = xx_0 + 2.0*xx_1;
 
   /* set jacobian values */
-  ierr = MatSetValue( j11, 0,0, A_00, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue( j12, 0,0, A_01, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue( j21, 0,0, A_10, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue( j22, 0,0, A_11, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(j11, 0,0, A_00, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(j12, 0,0, A_01, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(j21, 0,0, A_10, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(j22, 0,0, A_11, INSERT_VALUES);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
 

@@ -27,7 +27,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr )
+void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {
   Vec vp = 0;
   CHKFORTRANNULLOBJECT(v);
@@ -36,7 +36,7 @@ void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr )
   *ierr = KSPBuildSolution(*ksp,vp,V);
 }
 
-void PETSC_STDCALL   kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr )
+void PETSC_STDCALL   kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
 {
   Vec tp = 0,vp = 0;
   CHKFORTRANNULLOBJECT(t);

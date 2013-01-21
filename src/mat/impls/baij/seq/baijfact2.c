@@ -5531,7 +5531,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------------*/
-extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
+extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering"
@@ -6009,7 +6009,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
-  ierr = PetscMalloc( (bs2*(bdiag[0]+1) )*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc((bs2*(bdiag[0]+1))*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
   b->j          = bj;
   b->i          = bi;
   b->diag       = bdiag;

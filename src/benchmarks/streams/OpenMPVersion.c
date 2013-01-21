@@ -143,7 +143,7 @@ int main()
 #endif
 
     printf("Total memory required = %.1f MB.\n",
-        (3.0 * BytesPerWord) * ( (double) N / 1048576.0));
+        (3.0 * BytesPerWord) * ((double) N / 1048576.0));
     printf("Each test is run %d times, but only\n", NTIMES);
     printf("the *best* time for each is used.\n");
 
@@ -170,7 +170,7 @@ int main()
 
     /*printf(HLINE);*/
 
-    if  ( (quantum = checktick()) >= 1)
+    if  ((quantum = checktick()) >= 1)
       ;/*  printf("Your clock granularity/precision appears to be "
         "%d microseconds.\n", quantum);*/
     else {
@@ -186,8 +186,8 @@ int main()
     t = 1.0E6 * (mysecond() - t);
 
     /*printf("Each test below will take on the order"
-        " of %d microseconds.\n", (int) t  );
-    printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+        " of %d microseconds.\n", (int) t);
+    printf("   (= %d clock ticks)\n", (int) (t/quantum));
     printf("Increase the size of the arrays if this shows that\n");
     printf("you are not getting at least 20 clock ticks per test.\n");
 
@@ -291,7 +291,7 @@ checktick()
 
     minDelta = 1000000;
     for (i = 1; i < M; i++) {
-        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
         minDelta = MIN(minDelta, MAX(Delta,0));
         }
 
@@ -312,7 +312,7 @@ double mysecond()
         int i;
 
         i = gettimeofday(&tp,&tzp);
-        return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+        return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 
 void checkSTREAMresults ()

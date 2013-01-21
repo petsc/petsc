@@ -1605,7 +1605,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 
 /* ----------------------------------------------------------------*/
 
-extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
+extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
 
 /*
    ilu() under revised new data structure.
@@ -3338,7 +3338,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 
     /* add pivot rows into linked list */
     row = lnk[n];
-    while (row < i ) {
+    while (row < i) {
       nzi_bl = bi[row+1] - bi[row] + 1;
       bjtmp = bj + bdiag[row+1]+1; /* points to 1st column next to the diagonal in U */
       ierr  = PetscLLAddSortedLU(bjtmp,row,nlnk,lnk,lnkbt,i,nzi_bl,im);CHKERRQ(ierr);
@@ -3352,7 +3352,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     /* numerical factorization */
     bjtmp = jtmp;
     row   = *bjtmp++; /* 1st pivot row */
-    while  ( row < i ) {
+    while (row < i) {
       pc         = rtmp + row;
       pv         = ba + bdiag[row]; /* 1./(diag of the pivot row) */
       multiplier = (*pc) * (*pv);

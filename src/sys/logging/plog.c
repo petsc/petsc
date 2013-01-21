@@ -2134,13 +2134,13 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   /*   Time */
   ierr = MPI_Gather(&locTotalTime,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "Time = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "Time = [ ");CHKERRQ(ierr);
     tot  = 0.0;
     for (i=0; i<size; i++) {
       tot += mydata[i];
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
     avg  = (tot)/((PetscLogDouble) size);
     TotalTime = tot;
   }
@@ -2149,21 +2149,21 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   avg  = (PetscLogDouble) petsc_numObjects;
   ierr = MPI_Gather(&avg,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "Objects = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "Objects = [ ");CHKERRQ(ierr);
     for (i=0; i<size; i++) {
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
   }
 
   /*   Flops */
   ierr = MPI_Gather(&petsc_TotalFlops,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "Flops = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "Flops = [ ");CHKERRQ(ierr);
     tot  = 0.0;
     for (i=0; i<size; i++) {
       tot += mydata[i];
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
     ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
     TotalFlops = tot;
@@ -2173,24 +2173,24 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
   ierr = MPI_Gather(&mem,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "Memory = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "Memory = [ ");CHKERRQ(ierr);
     for (i=0; i<size; i++) {
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
   }
 
   /*   Messages */
   mess = 0.5*(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
   ierr = MPI_Gather(&mess,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "MPIMessages = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "MPIMessages = [ ");CHKERRQ(ierr);
     tot  = 0.0;
     for (i=0; i<size; i++) {
       tot += mydata[i];
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
     numMessages = tot;
   }
 
@@ -2198,26 +2198,26 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   mess = 0.5*(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
   ierr = MPI_Gather(&mess,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "MPIMessageLengths = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "MPIMessageLengths = [ ");CHKERRQ(ierr);
     tot  = 0.0;
     for (i=0; i<size; i++) {
       tot += mydata[i];
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
     messageLength = tot;
   }
 
   /*   Reductions */
   ierr = MPI_Gather(&red,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscFPrintf(comm, fd, "MPIReductions = [ " );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "MPIReductions = [ ");CHKERRQ(ierr);
     tot  = 0.0;
     for (i=0; i<size; i++) {
       tot += mydata[i];
-      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
     numReductions = tot;
   }
 
@@ -2379,9 +2379,9 @@ for (stage = 0; stage < numStages; stage++) {
         ierr = PetscFPrintf(comm, fd, "%s.Count = [ ", eventName);CHKERRQ(ierr);
         if (!rank) {
           for (i=0; i<size; i++) {
-            ierr = PetscFPrintf(comm, fd, "  %7d,",mycount[i] );CHKERRQ(ierr);
+            ierr = PetscFPrintf(comm, fd, "  %7d,",mycount[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
         /* Time */
         if (hasEvent) {tmpR = eventInfo[event].time;}
@@ -2390,9 +2390,9 @@ for (stage = 0; stage < numStages; stage++) {
         if (!rank) {
           ierr = PetscFPrintf(comm, fd, "%s.Time  = [ ", eventName);CHKERRQ(ierr);
           for (i=0; i<size; i++) {
-            ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+            ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
         if (hasEvent) {tmpR = eventInfo[event].time2;}
         else          {tmpR = 0.0;}
@@ -2402,7 +2402,7 @@ for (stage = 0; stage < numStages; stage++) {
           for (i=0; i<size; i++) {
             ierr = PetscFPrintf(comm, fd, "  %5.3e,", mydata[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
         /* Flops */
         if (hasEvent) {tmpR = eventInfo[event].flops;}
@@ -2411,7 +2411,7 @@ for (stage = 0; stage < numStages; stage++) {
         if (!rank) {
           ierr = PetscFPrintf(comm, fd, "%s.Flops = [ ", eventName);CHKERRQ(ierr);
           for (i=0; i<size; i++) {
-            ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+            ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
           }
           ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
@@ -2432,9 +2432,9 @@ for (stage = 0; stage < numStages; stage++) {
         ierr = PetscFPrintf(comm, fd, "%s.NumMessages = [ ", eventName);CHKERRQ(ierr);
         if (!rank) {
           for (i=0; i<size; i++) {
-            ierr = PetscFPrintf(comm, fd, "  %7.1e,",mydata[i] );CHKERRQ(ierr);
+            ierr = PetscFPrintf(comm, fd, "  %7.1e,",mydata[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
         /* Message Length */
         if (hasEvent) {tmpR = eventInfo[event].messageLength;}
@@ -2443,9 +2443,9 @@ for (stage = 0; stage < numStages; stage++) {
         if (!rank) {
           ierr = PetscFPrintf(comm, fd, "%s.MessageLength = [ ", eventName);CHKERRQ(ierr);
           for (i=0; i<size; i++) {
-            ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
+            ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
         /* Num Reductions */
         if (hasEvent) {tmpR = eventInfo[event].numReductions;}
@@ -2454,9 +2454,9 @@ for (stage = 0; stage < numStages; stage++) {
         ierr = PetscFPrintf(comm, fd, "%s.NumReductions = [ ", eventName);CHKERRQ(ierr);
         if (!rank) {
           for (i=0; i<size; i++) {
-            ierr = PetscFPrintf(comm, fd, "  %7.1e,",mydata[i] );CHKERRQ(ierr);
+            ierr = PetscFPrintf(comm, fd, "  %7.1e,",mydata[i]);CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
       }
     }
@@ -2557,7 +2557,7 @@ PetscClassId PETSC_OBJECT_CLASSID  = 0;
 .keywords: log, class, register
 
 @*/
-PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass )
+PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass)
 {
 #if defined(PETSC_USE_LOG)
   PetscStageLog  stageLog;

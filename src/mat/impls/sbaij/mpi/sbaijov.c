@@ -282,7 +282,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
       *data1_start[rank] = idx; data1_start[rank]++; /* for local proccessing */
       proc_end = ctable[idx];
       for (proc_id=0;  proc_id<=proc_end; proc_id++) { /* for others to process */
-        if (proc_id == rank ) continue; /* done before this loop */
+        if (proc_id == rank) continue; /* done before this loop */
         if (proc_id < proc_end && !PetscBTLookup(table[proc_id],idx))
           continue;   /* no need for sending idx to [proc_id] */
         *data1_start[proc_id] = idx; data1_start[proc_id]++;

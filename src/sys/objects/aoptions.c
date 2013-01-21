@@ -136,7 +136,7 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
   if (!rank) {
     c = (char) getchar();
     i = 0;
-    while ( c != '\n' && i < n-1) {
+    while (c != '\n' && i < n-1) {
       str[i++] = c;
       c = (char) getchar();
     }

@@ -1147,7 +1147,7 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
   for (i=0; i<a->mbs; i++) {
     pcnt = cnt;
     for (j=B->i[i]; j<B->i[i+1]; j++) {
-      if ( (col = garray[B->j[j]]) > cstart) break;
+      if ((col = garray[B->j[j]]) > cstart) break;
       for (l=0; l<bs; l++) {
         column_indices[cnt++] = bs*col+l;
       }
@@ -1196,7 +1196,7 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
   for (i=0; i<a->mbs; i++) {
     rlen = bs*(B->i[i+1] - B->i[i] + A->i[i+1] - A->i[i]);
     for (j=B->i[i]; j<B->i[i+1]; j++) {
-      if ( garray[B->j[j]] > cstart) break;
+      if (garray[B->j[j]] > cstart) break;
       for (l=0; l<bs; l++) {
         for (ll=0; ll<bs; ll++) {
           column_values[cnt + l*rlen + ll] = B->a[bs2*j+l+bs*ll];

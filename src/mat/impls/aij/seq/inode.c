@@ -4130,7 +4130,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool  samestructure)
       nzl2    = ai[j+1] - ai[j];
       nzu2    = adiag[j] - adiag[j+1] - 1;
       nzy     = nzl2 + nzu2 + 1;
-      if ( nzy != nzx) break;
+      if (nzy != nzx) break;
       ierr    = PetscMalloc((nzy+1)*sizeof(PetscInt),&cols2);CHKERRQ(ierr);
       ierr = MatGetRow_FactoredLU(cols2,nzl2,nzu2,nzy,ai,aj,adiag,j);CHKERRQ(ierr);
       ierr = PetscMemcmp(cols1,cols2,nzx*sizeof(PetscInt),&flag);CHKERRQ(ierr);

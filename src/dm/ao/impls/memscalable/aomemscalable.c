@@ -176,7 +176,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
     if (j != rank) {
       sindices[start[j]++]  = ia[i];
     } else { /* compute my own map */
-      if (ia[i] >= owners[rank] && ia[i] < owners[rank+1] ) {
+      if (ia[i] >= owners[rank] && ia[i] < owners[rank+1]) {
         ia[i] = maploc[ia[i]-owners[rank]];
       } else {
         ia[i] = -1 ; /* ia[i] is not in the range of 0 and N-1, maps it to -1 */

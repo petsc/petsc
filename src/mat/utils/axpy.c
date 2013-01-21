@@ -374,7 +374,7 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
         xcol = xj[*xi + jx];
         ycol = yj[*yi + jy];  /* col index for y */
       }
-      while ( ycol < xcol ) {
+      while (ycol < xcol) {
         jy++;
         if (ygarray) {
           ycol = ygarray[yj[*yi + jy]];

@@ -259,7 +259,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     /*
        forward sweep:
        for i=0,...,m-1:
-         sum[i] = (b[i] - U(i,:)x )/d[i];
+         sum[i] = (b[i] - U(i,:)x)/d[i];
          x[i]   = (1-omega)x[i] + omega*sum[i];
          b      = b - x[i]*U^T(i,:);
 
@@ -284,7 +284,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
        backward sweep:
        b = b - x[i]*U^T(i,:), i=0,...,n-2
        for i=m-1,...,0:
-         sum[i] = (b[i] - U(i,:)x )/d[i];
+         sum[i] = (b[i] - U(i,:)x)/d[i];
          x[i]   = (1-omega)x[i] + omega*sum[i];
       */
       /* if there was a forward sweep done above then I thing the next two for loops are not needed */

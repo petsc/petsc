@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   PetscBool       flg;
 
   /* Initialize PETSc */
-  PetscInitialize(&argc, &argv, (char *)0, help );
+  PetscInitialize(&argc, &argv, (char *)0, help);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
@@ -226,9 +226,9 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d8 = (xt-xlt);
 
       df1dxc = d1*hydhx;
-      df2dxc = ( d1*hydhx + d4*hxdhy );
+      df2dxc = (d1*hydhx + d4*hxdhy);
       df3dxc = d3*hxdhy;
-      df4dxc = ( d2*hydhx + d3*hxdhy );
+      df4dxc = (d2*hydhx + d3*hxdhy);
       df5dxc = d2*hydhx;
       df6dxc = d4*hxdhy;
 
@@ -241,12 +241,12 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d7 /= hy;
       d8 /= hx;
 
-      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
 
       df1dxc /= f1;
       df2dxc /= f2;
@@ -255,7 +255,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
+      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc)/2.0;
 
     }
   }
@@ -384,12 +384,12 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
 
-      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
@@ -650,7 +650,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i< xs+xm; i++) {
-        x[j][i] = ( (j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
+        x[j][i] = ((j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
                    (i+1)*left[j-ys+1]/mx+(mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
       }
     }
@@ -700,7 +700,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
         t1=(2.0*i-mx)*bmy;
         t2=(2.0*j-my)*bmx;
         t3=bmx*bmx*bmy*bmy;
-        if ( t1*t1 + t2*t2 <= t3) {
+        if (t1*t1 + t2*t2 <= t3) {
           xl[j][i] = user->bheight;
         }
       }

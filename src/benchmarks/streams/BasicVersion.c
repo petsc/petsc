@@ -15,7 +15,7 @@ struct timezone { int tz_minuteswest;
   int i;
 
   i = gettimeofday(&tp,&tzp);
-  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+  return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 # include <stdio.h>
 # include <math.h>
@@ -131,7 +131,7 @@ int main(int argc,char **args)
         }
 
    if (!rank) {
-     if  ( (quantum = checktick()) >= 1) ;/* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
+     if  ((quantum = checktick()) >= 1) ;/* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
      else ;/* printf("Your clock granularity appears to be less than one microsecond.\n");*/
    }
 
@@ -141,8 +141,8 @@ int main(int argc,char **args)
    t = 1.0E6 * (second() - t);
 
    if (!rank) {
-     /*  printf("Each test below will take on the order of %d microseconds.\n", (int) t  );
-     printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+     /*  printf("Each test below will take on the order of %d microseconds.\n", (int) t);
+     printf("   (= %d clock ticks)\n", (int) (t/quantum));
      printf("Increase the size of the arrays if this shows that\n");
       printf("you are not getting at least 20 clock ticks per test.\n");
       printf(HLINE);*/
@@ -233,7 +233,7 @@ checktick()
 
    minDelta = 1000000;
    for (i = 1; i < M; i++) {
-        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
         minDelta = MIN(minDelta, MAX(Delta,0));
         }
 

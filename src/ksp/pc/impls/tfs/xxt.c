@@ -76,12 +76,11 @@ xxt_ADT XXT_new(void)
 
 /**************************************xxt.c***********************************/
 PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
-           PetscInt *local2global,  /* global column mapping       */
-           PetscInt n,              /* local num rows              */
-           PetscInt m,              /* local num cols              */
-           void *matvec,       /* b_loc=A_local.x_loc         */
-           void *grid_data     /* grid data for matvec        */
-           )
+           PetscInt *local2global,      /* global column mapping       */
+           PetscInt n,                  /* local num rows              */
+           PetscInt m,                  /* local num cols              */
+           void *matvec,                /* b_loc=A_local.x_loc         */
+           void *grid_data)             /* grid data for matvec        */
 {
   PCTFS_comm_init();
   check_handle(xxt_handle);

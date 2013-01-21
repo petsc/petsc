@@ -162,8 +162,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
                                               const PetscInt crsGID[],
                                               const PetscInt bs,
                                               Mat a_Prol, /* prolongation operator (output) */
-                                              PetscReal *a_worst_best /* measure of worst missed fine vertex, 0 is no misses */
-                                             )
+                                              PetscReal *a_worst_best) /* measure of worst missed fine vertex, 0 is no misses */
 {
 #if defined(PETSC_HAVE_TRIANGLE)
   PetscErrorCode       ierr;
@@ -471,8 +470,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
                                             const Mat Gmat1,
                                             IS *a_selected_2,
                                             Mat *a_Gmat_2,
-                                            PetscInt **a_crsGID
-                                           )
+                                            PetscInt **a_crsGID)
 {
   PetscErrorCode ierr;
   PetscMPIInt    mype,npe;
@@ -578,8 +576,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
 #define __FUNCT__ "PCGAMGgraph_GEO"
 PetscErrorCode PCGAMGgraph_GEO(PC pc,
                                 const Mat Amat,
-                                Mat *a_Gmat
-                               )
+                                Mat *a_Gmat)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -624,8 +621,7 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,
 #define __FUNCT__ "PCGAMGcoarsen_GEO"
 PetscErrorCode PCGAMGcoarsen_GEO(PC a_pc,
                                   Mat *a_Gmat,
-                                  PetscCoarsenData **a_llist_parent
-                                 )
+                                  PetscCoarsenData **a_llist_parent)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)a_pc->data;
@@ -729,8 +725,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
                                       const Mat Amat,
                                       const Mat Gmat,
                                       PetscCoarsenData *agg_lists,
-                                      Mat *a_P_out
-                                     )
+                                      Mat *a_P_out)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;

@@ -58,7 +58,7 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if ( comm_size == 1 ) {
+  if (comm_size == 1) {
     ierr = DMCreateMatrix(da, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
     ierr = DMCreateMatrix(da, MATMPIAIJ, &H);CHKERRQ(ierr);
@@ -68,8 +68,8 @@ int main(int Argc,char **Args)
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
   /* Assemble the matrix */
-  for ( x=xs; x<xs+xm; x++ ) {
-    for ( y=ys; y<ys+ym; y++ ) {
+  for (x=xs; x<xs+xm; x++) {
+    for (y=ys; y<ys+ym; y++) {
       /* each lattice point sets only the *forward* pointing parameters (right, down),
          i.e. Nabla_1^+ and Nabla_2^+.
          In this way we can use only local random number creation. That means
@@ -83,8 +83,8 @@ int main(int Argc,char **Args)
       PetscReal s = sin(2.*PETSC_PI*r2);
 
       /* use those to set the field */
-      uxy1 = PetscExpScalar( ((PetscScalar) (R*c/beta))*PETSC_i);
-      uxy2 = PetscExpScalar( ((PetscScalar) (R*s/beta))*PETSC_i);
+      uxy1 = PetscExpScalar(((PetscScalar) (R*c/beta))*PETSC_i);
+      uxy2 = PetscExpScalar(((PetscScalar) (R*s/beta))*PETSC_i);
 
       sxy.i = x; sxy.j = y; /* the point where we are */
 

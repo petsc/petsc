@@ -16,7 +16,7 @@
 /*
  * Take the processes that own the vectors and Organize them on a virtual ring.
  */
-static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal *, PetscReal *, PetscReal *, PetscInt );
+static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal *, PetscReal *, PetscReal *, PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESRoddecInitNeighboor"
@@ -109,10 +109,10 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
 /*
  * Compute the QR factorization of the Krylov basis vectors
  * Input :
- *  - the vectors are availabe in agmres->vecs (alias VEC_V )
+ *  - the vectors are availabe in agmres->vecs (alias VEC_V)
  *  - nvec :  the number of vectors
  * Output :
- *  - agmres->Qloc : product of elementary reflectors for the QR of the (local part ) of the vectors.
+ *  - agmres->Qloc : product of elementary reflectors for the QR of the (local part) of the vectors.
  *  - agmres->sgn :  Sign of the rotations
  *  - agmres->tloc : scalar factors of the elementary reflectors.
 
@@ -238,7 +238,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 /*
  *  Computes Out <-- Q * In where Q is the orthogonal matrix from AGMRESRoddec
  *  Input
- *   - Qloc, sgn, tloc, nvec (see AGMRESRoddec above )
+ *   - Qloc, sgn, tloc, nvec (see AGMRESRoddec above)
  *   - In : input vector (size nvec)
  *  Output :
  *   - Out : Petsc vector (distributed as the basis vectors)

@@ -50,14 +50,14 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
     ierr = spbas_pattern_only(am, am, ai, aj, &Pattern_0);CHKERRQ(ierr);
 
     /* Apply the permutation */
-    ierr = spbas_apply_reordering( &Pattern_0, rip, riip);CHKERRQ(ierr);
+    ierr = spbas_apply_reordering(&Pattern_0, rip, riip);CHKERRQ(ierr);
 
     /* Raise the power */
-    ierr = spbas_power( Pattern_0, (int) levels+1, &Pattern_P);CHKERRQ(ierr);
-    ierr = spbas_delete( Pattern_0 );CHKERRQ(ierr);
+    ierr = spbas_power(Pattern_0, (int) levels+1, &Pattern_P);CHKERRQ(ierr);
+    ierr = spbas_delete(Pattern_0);CHKERRQ(ierr);
 
     /* Keep only upper triangle of pattern */
-    ierr = spbas_keep_upper( &Pattern_P );CHKERRQ(ierr);
+    ierr = spbas_keep_upper(&Pattern_P);CHKERRQ(ierr);
 
     /* Convert to Sparse Row Storage  */
     ierr = spbas_matrix_to_crs(Pattern_P, PETSC_NULL, &ui, &uj);CHKERRQ(ierr);
@@ -133,9 +133,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   if (info->usedt) {
     droptol = info->dt;
   }
-  for (ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL; )
+  for (ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL;)
   {
-     ierr  = spbas_incomplete_cholesky( A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT);CHKERRQ(ierr);
+     ierr  = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT);CHKERRQ(ierr);
      if (ierr == NEGATIVE_DIAGONAL)
      {
         shiftnz *= 1.5;
@@ -145,7 +145,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   }
   ierr = spbas_delete(Pattern);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(PETSC_NULL,"    memory_usage for  spbas_incomplete_cholesky  %G bytes per row\n", (PetscReal) spbas_memory_requirement( matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
+  ierr = PetscInfo1(PETSC_NULL,"    memory_usage for  spbas_incomplete_cholesky  %G bytes per row\n", (PetscReal) spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);

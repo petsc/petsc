@@ -158,7 +158,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
             v[num] = -HxdHy;              col[num].i = i;   col[num].j = j+1;
             num++; numj++;
           }
-          v[num] = ( (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx ); col[num].i = i;   col[num].j = j;
+          v[num] = ((PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx); col[num].i = i;   col[num].j = j;
           num++;
           ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }

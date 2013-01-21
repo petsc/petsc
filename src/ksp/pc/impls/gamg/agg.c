@@ -331,8 +331,7 @@ static const NState REMOVED=-3;
 static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
                                   const Mat Gmat_1, /* base graph */
                                   /* const IS selected_2, [nselected local] selected vertices */
-                                  PetscCoarsenData *aggs_2 /* [nselected local] global ID of aggregate */
-                                 )
+                                  PetscCoarsenData *aggs_2) /* [nselected local] global ID of aggregate */
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
@@ -733,8 +732,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
                                 PetscReal      data_in[],   /* [data_stride][nSAvec] */
                                 const PetscInt flid_fgid[], /* [data_stride/bs] */
                                 PetscReal **a_data_out,
-                                Mat a_Prol /* prolongation operator (output)*/
-                               )
+                                Mat a_Prol) /* prolongation operator (output)*/
 {
   PetscErrorCode ierr;
   PetscInt  Istart,my0,Iend,nloc,clid,flid,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
@@ -926,8 +924,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 #define __FUNCT__ "PCGAMGgraph_AGG"
 PetscErrorCode PCGAMGgraph_AGG(PC pc,
                                 const Mat Amat,
-                                Mat *a_Gmat
-                               )
+                                Mat *a_Gmat)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -976,8 +973,7 @@ PetscErrorCode PCGAMGgraph_AGG(PC pc,
 #define __FUNCT__ "PCGAMGCoarsen_AGG"
 PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,
                                   Mat *a_Gmat1,
-                                  PetscCoarsenData **agg_lists
-                                 )
+                                  PetscCoarsenData **agg_lists)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)a_pc->data;
@@ -1111,8 +1107,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,
                                       const Mat Amat,
                                       const Mat Gmat,
                                       PetscCoarsenData *agg_lists,
-                                      Mat *a_P_out
-                                     )
+                                      Mat *a_P_out)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1266,8 +1261,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,
 #define __FUNCT__ "PCGAMGOptprol_AGG"
 PetscErrorCode PCGAMGOptprol_AGG(PC pc,
                                   const Mat Amat,
-                                  Mat *a_P
-                                 )
+                                  Mat *a_P)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -1399,8 +1393,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,
 PetscErrorCode PCGAMGKKTProl_AGG(PC pc,
                                   const Mat Prol11,
                                   const Mat A21,
-                                  Mat *a_P22
-                                 )
+                                  Mat *a_P22)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;

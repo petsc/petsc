@@ -47,7 +47,7 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
     {
       SYSTEM_INFO sysinfo;
-      GetSystemInfo( &sysinfo );
+      GetSystemInfo(&sysinfo);
       N_CORES = sysinfo.dwNumberOfProcessors;
     }
 #endif

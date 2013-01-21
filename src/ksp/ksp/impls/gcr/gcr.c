@@ -16,7 +16,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GCR_cycle"
-PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
+PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -31,23 +31,23 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
 
   PetscFunctionBegin;
   restart = ctx->restart;
-  ierr = KSPGetPC( ksp, &pc );CHKERRQ(ierr);
-  ierr = KSPGetOperators( ksp, &A, &B, 0 );CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, &B, 0);CHKERRQ(ierr);
 
   x = ksp->vec_sol;
   r = ctx->R;
 
-  for ( k=0; k<restart; k++ ) {
+  for (k=0; k<restart; k++) {
     v = ctx->VV[k];
     s = ctx->SS[k];
     if (ctx->modifypc) {
       ierr = (*ctx->modifypc)(ksp,ksp->its,ksp->rnorm,ctx->modifypc_ctx);CHKERRQ(ierr);
     }
 
-    ierr = PCApply( pc, r, s );CHKERRQ(ierr); /* s = B^{-1} r */
-    ierr = MatMult( A, s, v );CHKERRQ(ierr);  /* v = A s */
+    ierr = PCApply(pc, r, s);CHKERRQ(ierr); /* s = B^{-1} r */
+    ierr = MatMult(A, s, v);CHKERRQ(ierr);  /* v = A s */
 
-    ierr = VecMDot( v,k, ctx->VV, ctx->val );CHKERRQ(ierr);
+    ierr = VecMDot(v,k, ctx->VV, ctx->val);CHKERRQ(ierr);
     for (i=0; i<k; i++) ctx->val[i] = -ctx->val[i];
     ierr = VecMAXPY(v,k,ctx->val,ctx->VV);CHKERRQ(ierr); /* v = v - sum_{i=0}^{k-1} alpha_i v_i */
     ierr = VecMAXPY(s,k,ctx->val,ctx->SS);CHKERRQ(ierr); /* s = s - sum_{i=0}^{k-1} alpha_i s_i */
@@ -55,12 +55,12 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     ierr = VecDotNorm2(r,v,&r_dot_v,&nrm);CHKERRQ(ierr);
     nrm     = PetscSqrtReal(nrm);
     r_dot_v = r_dot_v/nrm;
-    ierr = VecScale( v, 1.0/nrm );CHKERRQ(ierr);
-    ierr = VecScale( s, 1.0/nrm );CHKERRQ(ierr);
-    ierr = VecAXPY( x,  r_dot_v, s );CHKERRQ(ierr);
-    ierr = VecAXPY( r, -r_dot_v, v );CHKERRQ(ierr);
-    if (ksp->its > ksp->chknorm  ) {
-      ierr = VecNorm( r, NORM_2, &norm_r );CHKERRQ(ierr);
+    ierr = VecScale(v, 1.0/nrm);CHKERRQ(ierr);
+    ierr = VecScale(s, 1.0/nrm);CHKERRQ(ierr);
+    ierr = VecAXPY(x,  r_dot_v, s);CHKERRQ(ierr);
+    ierr = VecAXPY(r, -r_dot_v, v);CHKERRQ(ierr);
+    if (ksp->its > ksp->chknorm) {
+      ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
     }
     /* update the local counter and the global counter */
     ksp->its++;
@@ -70,12 +70,12 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     KSPLogResidualHistory(ksp,res);
     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
-    if ( ksp->its > ksp->chknorm  ) {
+    if (ksp->its > ksp->chknorm) {
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
 
-    if ( ksp->its >= ksp->max_it ) {
+    if (ksp->its >= ksp->max_it) {
       ksp->reason = KSP_CONVERGED_ITS;
       break;
     }
@@ -86,7 +86,7 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GCR"
-PetscErrorCode KSPSolve_GCR( KSP ksp )
+PetscErrorCode KSPSolve_GCR(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -95,15 +95,15 @@ PetscErrorCode KSPSolve_GCR( KSP ksp )
   PetscReal      norm_r;
 
   PetscFunctionBegin;
-  ierr = KSPGetOperators( ksp, &A, &B, PETSC_NULL );CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, &B, PETSC_NULL);CHKERRQ(ierr);
   x = ksp->vec_sol;
   b = ksp->vec_rhs;
   r = ctx->R;
 
   /* compute initial residual */
-  ierr = MatMult( A, x, r );CHKERRQ(ierr);
-  ierr = VecAYPX( r, -1.0, b );CHKERRQ(ierr); /* r = b - A x  */
-  ierr = VecNorm( r, NORM_2, &norm_r );CHKERRQ(ierr);
+  ierr = MatMult(A, x, r);CHKERRQ(ierr);
+  ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr); /* r = b - A x  */
+  ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr);
 
   ksp->its = 0;
   ksp->rnorm0 = norm_r;
@@ -114,7 +114,7 @@ PetscErrorCode KSPSolve_GCR( KSP ksp )
   if (ksp->reason) PetscFunctionReturn(0);
 
   do {
-    ierr = KSPSolve_GCR_cycle( ksp );CHKERRQ(ierr);
+    ierr = KSPSolve_GCR_cycle(ksp);CHKERRQ(ierr);
     if (ksp->reason) break; /* catch case when convergence occurs inside the cycle */
   } while (ksp->its < ksp->max_it);CHKERRQ(ierr);
   if (ksp->its >= ksp->max_it) {
@@ -125,7 +125,7 @@ PetscErrorCode KSPSolve_GCR( KSP ksp )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_GCR"
-PetscErrorCode KSPView_GCR( KSP ksp, PetscViewer viewer )
+PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -134,8 +134,8 @@ PetscErrorCode KSPView_GCR( KSP ksp, PetscViewer viewer )
   PetscFunctionBegin;
   PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  GCR: restart = %D \n", ctx->restart );CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GCR: restarts performed = %D \n", ctx->n_restarts );CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GCR: restart = %D \n", ctx->restart);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GCR: restarts performed = %D \n", ctx->n_restarts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -143,7 +143,7 @@ PetscErrorCode KSPView_GCR( KSP ksp, PetscViewer viewer )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GCR"
-PetscErrorCode KSPSetUp_GCR( KSP ksp )
+PetscErrorCode KSPSetUp_GCR(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
@@ -154,18 +154,18 @@ PetscErrorCode KSPSetUp_GCR( KSP ksp )
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = KSPGetOperators( ksp, &A, 0, 0 );CHKERRQ(ierr);
-  ierr = MatGetVecs( A, &ctx->R, PETSC_NULL );CHKERRQ(ierr);
-  ierr = VecDuplicateVecs( ctx->R, ctx->restart, &ctx->VV );CHKERRQ(ierr);
-  ierr = VecDuplicateVecs( ctx->R, ctx->restart, &ctx->SS );CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, 0, 0);CHKERRQ(ierr);
+  ierr = MatGetVecs(A, &ctx->R, PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);
 
-  ierr = PetscMalloc( sizeof(PetscScalar)*ctx->restart, &ctx->val );CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*ctx->restart, &ctx->val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_GCR"
-PetscErrorCode KSPReset_GCR( KSP ksp )
+PetscErrorCode KSPReset_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -183,7 +183,7 @@ PetscErrorCode KSPReset_GCR( KSP ksp )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_GCR"
-PetscErrorCode KSPDestroy_GCR( KSP ksp )
+PetscErrorCode KSPDestroy_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -244,7 +244,7 @@ EXTERN_C_END
  -  destroy  - the function to use to destroy the user provided application context.
 
  Calling Sequence of function:
-  PetscErrorCode function ( KSP ksp, PetscInt n, PetscReal rnorm, void *ctx )
+  PetscErrorCode function (KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
 
  ksp   - iterative context
  n     - the total number of GCR iterations that have occurred
@@ -301,7 +301,7 @@ PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
   PetscFunctionBegin;
   x = ksp->vec_sol;
   if (v) {
-    ierr = VecCopy( x, v );CHKERRQ(ierr);
+    ierr = VecCopy(x, v);CHKERRQ(ierr);
     if (V) *V = v;
   } else if (V) {
     *V = ksp->vec_sol;
@@ -319,7 +319,7 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
   PetscFunctionBegin;
   ctx = (KSP_GCR *)ksp->data;
   if (v) {
-    ierr = VecCopy( ctx->R, v );CHKERRQ(ierr);
+    ierr = VecCopy(ctx->R, v);CHKERRQ(ierr);
     if (V) *V = v;
   } else if (V) {
     *V = ctx->R;
@@ -385,8 +385,8 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->buildsolution        = KSPBuildSolution_GCR;
   ksp->ops->buildresidual        = KSPBuildResidual_GCR;
 
-  ierr = PetscObjectComposeFunctionDynamic(  (PetscObject)ksp, "KSPGCRSetRestart_C",
-                                      "KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR );CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp, "KSPGCRSetRestart_C",
+                                      "KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGCRSetModifyPC_C",
                                            "KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);

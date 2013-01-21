@@ -150,7 +150,7 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
 }
 /* -------------------------------------------------------------*/
 
-void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr )
+void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr)
 {
   Vec B = *b,X = *x;
   if (FORTRANNULLOBJECT(b)) B = PETSC_NULL;

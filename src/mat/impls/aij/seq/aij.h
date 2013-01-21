@@ -90,9 +90,9 @@ extern PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat,MatAssemblyType);
 extern PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
 extern PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
-extern PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscBool );
+extern PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscBool);
 extern PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat*);
-extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
+extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
 extern PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat,Mat,const MatFactorInfo*);
 extern PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat,const MatFactorInfo*);
 
@@ -276,8 +276,8 @@ extern PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
 extern PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
 extern PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat);
-extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );
-extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
+extern PetscErrorCode Mat_CheckInode(Mat,PetscBool);
+extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool);
 
 extern PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 

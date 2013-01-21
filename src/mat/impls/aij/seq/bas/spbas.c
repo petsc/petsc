@@ -24,7 +24,7 @@ M*/
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_memory_requirement"
-long int spbas_memory_requirement( spbas_matrix matrix)
+long int spbas_memory_requirement(spbas_matrix matrix)
 {
    long int memreq = 6 * sizeof(PetscInt)         + /* nrows, ncols, nnz, n_alloc_icol,
                                                        n_alloc_val, col_idx_type */
@@ -58,7 +58,7 @@ long int spbas_memory_requirement( spbas_matrix matrix)
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_allocate_pattern"
-PetscErrorCode spbas_allocate_pattern( spbas_matrix * result, PetscBool  do_values)
+PetscErrorCode spbas_allocate_pattern(spbas_matrix * result, PetscBool  do_values)
 {
    PetscErrorCode ierr;
    PetscInt       nrows = result->nrows;
@@ -95,7 +95,7 @@ spbas_allocate_data:
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_allocate_data"
-PetscErrorCode spbas_allocate_data( spbas_matrix * result)
+PetscErrorCode spbas_allocate_data(spbas_matrix * result)
 {
    PetscInt       i;
    PetscInt       nnz   = result->nnz;
@@ -185,7 +185,7 @@ int spbas_row_order_icol(PetscInt i1, PetscInt i2, PetscInt *irow_in, PetscInt *
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_mergesort_icols"
-PetscErrorCode spbas_mergesort_icols( PetscInt nrows, PetscInt * irow_in, PetscInt * icol_in,PetscInt col_idx_type, PetscInt *isort)
+PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt * irow_in, PetscInt * icol_in,PetscInt col_idx_type, PetscInt *isort)
 {
    PetscErrorCode ierr;
    PetscInt       istep;       /* Chunk-sizes of already sorted parts of arrays */
@@ -222,10 +222,10 @@ PetscErrorCode spbas_mergesort_icols( PetscInt nrows, PetscInt * irow_in, PetscI
 
          /* Merge the two array parts */
          for (i=istart; i<i2end; i++)  {
-            if (i1<i1end && i2<i2end && spbas_row_order_icol( ihlp2[i1], ihlp2[i2], irow_in, icol_in, col_idx_type) < 0) {
+            if (i1<i1end && i2<i2end && spbas_row_order_icol(ihlp2[i1], ihlp2[i2], irow_in, icol_in, col_idx_type) < 0) {
                 ihlp1[i] = ihlp2[i1];
                 i1++;
-            } else if (i2<i2end ) {
+            } else if (i2<i2end) {
                 ihlp1[i] = ihlp2[i2];
                 i2++;
             } else {
@@ -279,7 +279,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    B->nnz   = nnz;
    B->col_idx_type= col_idx_type;
    B->block_data = PETSC_TRUE;
-   ierr = spbas_allocate_pattern( B, no_values);CHKERRQ(ierr);
+   ierr = spbas_allocate_pattern(B, no_values);CHKERRQ(ierr);
 
    /* When using an offset array, set it */
    if (col_idx_type==SPBAS_OFFSET_ARRAY)  {
@@ -300,7 +300,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    }
 
    /* Sort the rows so that identical columns will be next to each other */
-   ierr = spbas_mergesort_icols( nrows, irow_in, icol_in, col_idx_type, isort);CHKERRQ(ierr);
+   ierr = spbas_mergesort_icols(nrows, irow_in, icol_in, col_idx_type, isort);CHKERRQ(ierr);
    ierr = PetscInfo(PETSC_NULL,"Rows have been sorted for patterns\n");CHKERRQ(ierr);
 
    /* Replace identical rows with the first one in the list */
@@ -355,7 +355,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    ierr=PetscFree(used);CHKERRQ(ierr);
    ierr=PetscFree(ipoint);CHKERRQ(ierr);
 
-   mem_compressed = spbas_memory_requirement( *B );
+   mem_compressed = spbas_memory_requirement(*B);
    *mem_reduction = 100.0 * (PetscReal)(mem_orig-mem_compressed)/ (PetscReal) mem_orig;
    PetscFunctionReturn(0);
 }
@@ -416,12 +416,12 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-   ierr = PetscMalloc( sizeof(PetscInt) * (nrows+1), &irow);CHKERRQ(ierr);
-   ierr = PetscMalloc( sizeof(PetscInt) * nnz, &icol);CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(PetscInt) * (nrows+1), &irow);CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(PetscInt) * nnz, &icol);CHKERRQ(ierr);
    *icol_out = icol;
    *irow_out=irow;
    if (do_values)  {
-      ierr = PetscMalloc( sizeof(MatScalar) * nnz, &val);CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(MatScalar) * nnz, &val);CHKERRQ(ierr);
       *val_out = val; *icol_out = icol; *irow_out=irow;
    }
 
@@ -460,7 +460,7 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_transpose"
-PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
+PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix * result)
 {
    PetscInt       col_idx_type = in_matrix.col_idx_type;
    PetscInt       nnz   = in_matrix.nnz;
@@ -606,7 +606,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
                    ihlp1[i] = ihlp2[i1];
                    vhlp1[i] = vhlp2[i1];
                    i1++;
-               } else if (i2<i2end ) {
+               } else if (i2<i2end) {
                    ihlp1[i] = ihlp2[i2];
                    vhlp1[i] = vhlp2[i2];
                    i2++;
@@ -621,7 +621,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
                if (i1<i1end && i2<i2end && ihlp2[i1] < ihlp2[i2]) {
                    ihlp1[i] = ihlp2[i1];
                    i1++;
-               } else if (i2<i2end ) {
+               } else if (i2<i2end) {
                    ihlp1[i] = ihlp2[i2];
                    i2++;
                } else {
@@ -670,10 +670,10 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
    if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern\n");
 
    if (do_values)  {
-     ierr = PetscMalloc( sizeof(PetscScalar*)*nrows, &vals);CHKERRQ(ierr);
+     ierr = PetscMalloc(sizeof(PetscScalar*)*nrows, &vals);CHKERRQ(ierr);
    }
-   ierr = PetscMalloc( sizeof(PetscInt)*nrows, &row_nnz);CHKERRQ(ierr);
-   ierr = PetscMalloc( sizeof(PetscInt*)*nrows, &icols);CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(PetscInt)*nrows, &row_nnz);CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(PetscInt*)*nrows, &icols);CHKERRQ(ierr);
 
    for (i=0; i<nrows;i++) {
       ip = permutation[i];
@@ -701,7 +701,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_apply_reordering_cols"
-PetscErrorCode spbas_apply_reordering_cols( spbas_matrix *matrix_A,const PetscInt *permutation)
+PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A,const PetscInt *permutation)
 {
    PetscInt    i,j;
    PetscInt    nrows=matrix_A->nrows;
@@ -733,12 +733,12 @@ PetscErrorCode spbas_apply_reordering_cols( spbas_matrix *matrix_A,const PetscIn
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_apply_reordering"
-PetscErrorCode spbas_apply_reordering( spbas_matrix *matrix_A, const PetscInt *permutation, const PetscInt * inv_perm)
+PetscErrorCode spbas_apply_reordering(spbas_matrix *matrix_A, const PetscInt *permutation, const PetscInt * inv_perm)
 {
    PetscErrorCode ierr;
    PetscFunctionBegin;
-   ierr = spbas_apply_reordering_rows( matrix_A, inv_perm);CHKERRQ(ierr);
-   ierr = spbas_apply_reordering_cols( matrix_A, permutation);CHKERRQ(ierr);
+   ierr = spbas_apply_reordering_rows(matrix_A, inv_perm);CHKERRQ(ierr);
+   ierr = spbas_apply_reordering_cols(matrix_A, permutation);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 
@@ -803,8 +803,8 @@ PetscErrorCode spbas_mark_row_power(
    if (marker>1) {
       for (i=0; i<nnz;i++) {
          j = row + in_matrix->icols[row][i];
-         if (minmrk<=j && j<maxmrk && iwork[j] < marker ) {
-            ierr =  spbas_mark_row_power( iwork, row + in_matrix->icols[row][i],in_matrix, marker/2,minmrk,maxmrk);CHKERRQ(ierr);
+         if (minmrk<=j && j<maxmrk && iwork[j] < marker) {
+            ierr =  spbas_mark_row_power(iwork, row + in_matrix->icols[row][i],in_matrix, marker/2,minmrk,maxmrk);CHKERRQ(ierr);
             iwork[j] |= marker;
          }
       }
@@ -860,7 +860,7 @@ PetscErrorCode spbas_power (spbas_matrix in_matrix,PetscInt power, spbas_matrix 
    ierr = PetscMalloc(nrows * sizeof(PetscInt), &iwork);CHKERRQ(ierr);
 
    /* Erase the pattern for this row */
-   ierr = PetscMemzero( (void *) iwork, retval.nrows*sizeof(PetscInt));CHKERRQ(ierr);
+   ierr = PetscMemzero((void *) iwork, retval.nrows*sizeof(PetscInt));CHKERRQ(ierr);
 
    /* Calculate marker values */
    marker = 1; for (i=1; i<power; i++) {marker*=2;}
@@ -871,7 +871,7 @@ PetscErrorCode spbas_power (spbas_matrix in_matrix,PetscInt power, spbas_matrix 
       nnz    = in_matrix.row_nnz[i];
       kend   = i+in_matrix.icols[i][nnz-1];
       if (maxmrk<=kend) {maxmrk=kend+1;}
-      ierr =  spbas_mark_row_power( iwork, i, &in_matrix, marker, i, maxmrk);CHKERRQ(ierr);
+      ierr =  spbas_mark_row_power(iwork, i, &in_matrix, marker, i, maxmrk);CHKERRQ(ierr);
 
       /* Count the columns*/
       nnz = 0;
@@ -905,7 +905,7 @@ PetscErrorCode spbas_power (spbas_matrix in_matrix,PetscInt power, spbas_matrix 
 */
 #undef __FUNCT__
 #define __FUNCT__ "spbas_keep_upper"
-PetscErrorCode spbas_keep_upper( spbas_matrix * inout_matrix)
+PetscErrorCode spbas_keep_upper(spbas_matrix * inout_matrix)
 {
    PetscInt i, j;
    PetscInt jstart;

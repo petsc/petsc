@@ -25,7 +25,7 @@ extern PetscErrorCode  PCFactorSetFill_Factor(PC,PetscReal);
 extern PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC,MatOrderingType);
 extern PetscErrorCode  PCFactorSetLevels_Factor(PC,PetscInt);
 extern PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC);
-extern PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC,PetscBool );
+extern PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC,PetscBool);
 extern PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
 extern PetscErrorCode  PCFactorSetUpMatSolverPackage_Factor(PC);
 extern PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);

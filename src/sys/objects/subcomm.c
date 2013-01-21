@@ -190,7 +190,7 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   /* get color and subrank of this proc */
   rankstart = 0;
   for (i=0; i<nsubcomm; i++) {
-    if ( rank >= rankstart && rank < rankstart+subsize[i]) {
+    if (rank >= rankstart && rank < rankstart+subsize[i]) {
       color   = i;
       subrank = rank - rankstart;
       duprank = rank;

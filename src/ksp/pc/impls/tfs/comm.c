@@ -285,7 +285,7 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
 }
 
 /******************************************************************************/
-PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
+PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
   PetscInt       edge, type, dest, mask;
   PetscInt       stage_n;
