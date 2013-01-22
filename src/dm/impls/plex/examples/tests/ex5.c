@@ -1,6 +1,8 @@
 static char help[] = "Tests for creation of hybrid meshes\n\n";
 
 /* TODO
+ - Propagate hybridSize with distribution
+ - Test with multiple fault segments
  - Test with embedded fault
  - Test with multiple faults
  - Move over all PyLith tests?
@@ -9,6 +11,8 @@ static char help[] = "Tests for creation of hybrid meshes\n\n";
 #include <petscdmplex.h>
 /* List of test meshes
 
+Simplex
+-------
 Test 0:
 Two triangles sharing a face
 
@@ -33,6 +37,25 @@ should become two triangles separated by a zero-volume cell with 6 vertices
      9  |      |  13       7  |      | |  5
       \ |      | /          \ |      | | /
         4--15--7              3--11--5 2
+
+Hex
+------
+Test 0:
+Two quads sharing a face
+
+   5--10---4--14---7
+   |       |       |
+  11   0   9   1  13
+   |       |       |
+   2---8---3--12---6
+
+should become two quads separated by a zero-volume cell with 4 vertices
+
+   6--13---5-20-10--17---8    5--10---4-14--7  4---7---2
+   |       |     |       |    |       |     |  |       |
+  14   0  12  2 18   1  16   11   0   9  1 12  8   0   6
+   |       |     |       |    |       |     |  |       |
+   3--11---4-19--9--15---7    2---8---3-13--6  3---5---1
 */
 
 typedef struct {
@@ -157,6 +180,49 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateHex_2D"
+PetscErrorCode CreateHex_2D(MPI_Comm comm, DM dm)
+{
+  PetscInt       depth = 2, testNum  = 0, p;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    switch(testNum) {
+    case 0:
+    {
+      PetscInt    numPoints[3]         = {6, 7, 2};
+      PetscInt    coneSize[15]         = {4, 4, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2};
+      PetscInt    cones[22]            = {8, 9, 10, 11,  12, 13, 14,  9,  2, 3,  3, 4,  4, 5,  5, 2,  3, 6,  6, 7,  7, 4};
+      PetscInt    coneOrientations[22] = {0, 0,  0 , 0,   0,  0,  0, -2,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
+      PetscScalar vertexCoords[12]     = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
+      PetscInt    markerPoints[24]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 10, 1, 11, 1, 12, 1, 13, 1, 14, 1};
+      PetscInt    faultPoints[6]       = {9, 1, 3, 0, 4, 0};
+
+      ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for(p = 0; p < 12; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+      }
+      for(p = 0; p < 3; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p*2], faultPoints[p*2+1]);CHKERRQ(ierr);
+      }
+    }
+    break;
+    default:
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    }
+  } else {
+    PetscInt numPoints[3] = {0, 0, 0};
+
+    ierr = CreateTopology(dm, depth, numPoints, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -176,7 +242,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
     } else {
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for quadrilaterals");
+      ierr = CreateHex_2D(comm, *dm);CHKERRQ(ierr);
     }
     break;
   default:

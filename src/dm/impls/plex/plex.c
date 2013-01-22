@@ -4240,7 +4240,7 @@ PetscErrorCode DMLabelCohesiveComplete(DM dm, DMLabel label)
 {
   IS              dimIS;
   const PetscInt *points;
-  PetscInt        shift = 100, dim, numPoints, p;
+  PetscInt        shift = 100, dim, dep, cStart, cEnd, numPoints, p, val;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -4277,21 +4277,108 @@ PetscErrorCode DMLabelCohesiveComplete(DM dm, DMLabel label)
         }
       }
       if (c == coneSize) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Cell split face %d support does not have it in the cone", points[p]);
+      /* Put faces touching the fault in the label */
       for(c = 0; c < coneSize; ++c) {
-        if (cone[c] != points[p]) {
-          if (pos) {
-            ierr = DMLabelSetValue(label, cone[c],   shift+dim-1);CHKERRQ(ierr);
-          } else {
-            ierr = DMLabelSetValue(label, cone[c], -(shift+dim-1));CHKERRQ(ierr);
-            pos  = PETSC_FALSE;
+        const PetscInt point = cone[c];
+
+        ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
+        if (val == -1) {
+          PetscInt *closure = PETSC_NULL;
+          PetscInt  closureSize, cl;
+
+          ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+          for (cl = 0; cl < closureSize*2; cl += 2) {
+            const PetscInt clp = closure[cl];
+
+            ierr = DMLabelGetValue(label, clp, &val);CHKERRQ(ierr);
+            if ((val >= 0) && (val < dim-1)) {
+              ierr = DMLabelSetValue(label, point, pos == PETSC_TRUE ? shift+dim-1 : -(shift+dim-1));CHKERRQ(ierr);
+              break;
+            }
           }
+          ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
         }
       }
     }
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
-  /* Search for other cells/faces/edges connected to the fault */
+  /* Search for other cells/faces/edges connected to the fault by a vertex */
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(label, 0, &dimIS);CHKERRQ(ierr);
+  if (!dimIS) PetscFunctionReturn(0);
+  ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
+  for(p = 0; p < numPoints; ++p) {
+    PetscInt *star = PETSC_NULL;
+    PetscInt  starSize, s;
+    PetscInt  again = 1; /* 0: Finished 1: Keep iterating after a change 2: No change */
+
+    /* First mark cells connected to the fault */
+    ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    while (again) {
+      if (again > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Could not classify all cells connected to the fault");
+      again = 0;
+      for (s = 0; s < starSize*2; s += 2) {
+        const PetscInt  point = star[s];
+        const PetscInt *cone, *ornt;
+        PetscInt        coneSize, c;
+
+        if ((point < cStart) || (point >= cEnd)) continue;
+        ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
+        if (val != -1) continue;
+        again = 2;
+        ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+        ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+        for(c = 0; c < coneSize; ++c) {
+          ierr = DMLabelGetValue(label, cone[c], &val);CHKERRQ(ierr);
+          if (val != -1) {
+            if (abs(val) < shift) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
+            if (val > 0) {
+              ierr = DMLabelSetValue(label, point,   shift+dim);CHKERRQ(ierr);
+            } else {
+              ierr = DMLabelSetValue(label, point, -(shift+dim));CHKERRQ(ierr);
+            }
+            again = 1;
+            break;
+          }
+        }
+      }
+    }
+    /* Classify the rest by cell membership */
+    for (s = 0; s < starSize*2; s += 2) {
+      const PetscInt point = star[s];
+
+      ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
+      if (val == -1) {
+        PetscInt *sstar = PETSC_NULL;
+        PetscInt  sstarSize, ss;
+        PetscBool marked = PETSC_FALSE;
+
+        ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_FALSE, &sstarSize, &sstar);CHKERRQ(ierr);
+        for (ss = 0; ss < sstarSize*2; ss += 2) {
+          const PetscInt spoint = sstar[ss];
+
+          if ((spoint < cStart) || (spoint >= cEnd)) continue;
+          ierr = DMLabelGetValue(label, spoint, &val);CHKERRQ(ierr);
+          if (val == -1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Cell %d in star of %d does not have a valid label", spoint, point);
+          ierr = DMPlexGetLabelValue(dm, "depth", point, &dep);CHKERRQ(ierr);
+          if (val > 0) {
+            ierr = DMLabelSetValue(label, point,   shift+dep);CHKERRQ(ierr);
+          } else {
+            ierr = DMLabelSetValue(label, point, -(shift+dep));CHKERRQ(ierr);
+          }
+          marked = PETSC_TRUE;
+          break;
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &sstarSize, &sstar);CHKERRQ(ierr);
+        if (!marked) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Point %d could not be classified", point);
+      }
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
+  ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
