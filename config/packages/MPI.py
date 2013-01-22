@@ -193,6 +193,16 @@ class Configure(config.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(MPI_IN_PLACE,0, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
       self.haveInPlace = 1
       self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    if self.checkLink('#include <mpi.h>\n', 'int count=2; int blocklens[2]={0,1}; MPI_Aint indices[2]={0,1}; MPI_Datatype old_types[2]={0,1}; MPI_Datatype *newtype = 0;\n \
+                                             if (MPI_Type_create_struct(count, blocklens, indices, old_types, newtype));\n'):
+      self.haveTypeCreateStruct = 1
+      self.addDefine('HAVE_MPI_TYPE_CREATE_STRUCT', 1)
+    if self.checkLink('#include <mpi.h>\n', 'MPI_Comm_errhandler_fn * p_err_fun = 0; MPI_Errhandler * p_errhandler = 0; if (MPI_Comm_create_errhandler(p_err_fun,p_errhandler));\n'):
+      self.haveCommCreateErrhandler = 1
+      self.addDefine('HAVE_MPI_COMM_CREATE_ERRHANDLER', 1)
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN));\n'):
+      self.haveCommSetErrhandler = 1
+      self.addDefine('HAVE_MPI_COMM_SET_ERRHANDLER', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
