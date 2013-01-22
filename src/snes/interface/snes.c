@@ -7,7 +7,7 @@ PetscFunctionList SNESList              = PETSC_NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
-PetscLogEvent  SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
+PetscLogEvent  SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_NPCSolve;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetErrorIfNotConverged"
@@ -1982,7 +1982,9 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (snes->pc && snes->pcside == PC_LEFT) {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
   } else if (sdm->ops->computefunction) {
     ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);

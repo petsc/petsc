@@ -65,6 +65,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = PetscLogEventRegister("SNESGSEval",           SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLineSearch_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

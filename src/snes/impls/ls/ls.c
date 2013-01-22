@@ -199,7 +199,9 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
       ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, X);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
