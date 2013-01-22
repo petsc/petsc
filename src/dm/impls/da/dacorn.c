@@ -366,13 +366,26 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 {
   PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;
-  PetscInt         s,m,n,p,M,N,P,dim;
+  PetscInt         s,m,n,p,M,N,P,dim,Mo,No,Po;
   const PetscInt   *lx,*ly,*lz;
   DMDABoundaryType bx,by,bz;
   DMDAStencilType  stencil_type;
+  PetscInt         ox,oy,oz;
+  PetscInt         cl,rl;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,0,&s,&bx,&by,&bz,&stencil_type);CHKERRQ(ierr);
+  dim = dd->dim;
+  M   = dd->M;
+  N   = dd->N;
+  P   = dd->P;
+  m   = dd->m;
+  n   = dd->n;
+  p   = dd->p;
+  s   = dd->s;
+  bx  = dd->bx;
+  by  = dd->by;
+  bz  = dd->bz;
+  stencil_type = dd->stencil_type;
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
   if (dim == 1) {
     ierr = DMDACreate1d(((PetscObject)da)->comm,bx,M,nfields,s,dd->lx,nda);CHKERRQ(ierr);
@@ -385,6 +398,17 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
     ierr        = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);
     (*nda)->coordinates = da->coordinates;
   }
+
+  /* allow for getting a reduced DA corresponding to a domain decomposition */
+  ierr = DMDAGetOffset(da,&ox,&oy,&oz,&Mo,&No,&Po);CHKERRQ(ierr);
+  ierr = DMDASetOffset(*nda,ox,oy,oz,Mo,No,Po);CHKERRQ(ierr);
+
+  /* allow for getting a reduced DA corresponding to a coarsened DA */
+  ierr = DMGetCoarsenLevel(da,&cl);CHKERRQ(ierr);
+  ierr = DMGetRefineLevel(da,&rl);CHKERRQ(ierr);
+  (*nda)->levelup = rl;
+  (*nda)->leveldown = cl;
+
   PetscFunctionReturn(0);
 }
 

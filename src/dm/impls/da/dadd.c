@@ -39,7 +39,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
 
   /* construct the list of natural indices on this process when PETSc ordering is considered */
-  ierr = DMDAGetOffset(da,&ox,&oy,&oz);CHKERRQ(ierr);
+  ierr = DMDAGetOffset(da,&ox,&oy,&oz,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&natidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&globidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&leafidx);CHKERRQ(ierr);
@@ -166,24 +166,19 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
   if (info.bz == DMDA_BOUNDARY_PERIODIC || (info.zs+info.zm != info.mz)) {
     zsize += dd->overlap;
   }
-
   ierr = DMDASetSizes(da, xsize, ysize, zsize);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da, 1, 1, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED);CHKERRQ(ierr);
 
   /* set up as a block instead */
   ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetOffset(da,xo,yo,zo);CHKERRQ(ierr);
-
 
   /* todo - nonuniform coordinates */
   ierr = DMDAGetLocalBoundingBox(dm,lmin,lmax);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,lmin[0],lmax[0],lmin[1],lmax[1],lmin[2],lmax[2]);CHKERRQ(ierr);
 
-  dd = (DM_DA *)da->data;
-  dd->Mo = info.mx;
-  dd->No = info.my;
-  dd->Po = info.mz;
+  /* this alters the behavior of DMDAGetInfo, DMDAGetLocalInfo, DMDAGetCorners, and DMDAGetGhostedCorners and should be used with care */
+  ierr = DMDASetOffset(da,xo,yo,zo,info.mx,info.my,info.mz);CHKERRQ(ierr);
 
   *dddm = da;
 
@@ -251,27 +246,27 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
 
   ierr = DMDACreatePatchIS(dm,&lower,&upper,&gdis);CHKERRQ(ierr);
 
-    /* form the scatter */
-    ierr = DMGetGlobalVector(dm,&dvec);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(subdm,&svec);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(subdm,&slvec);CHKERRQ(ierr);
+  /* form the scatter */
+  ierr = DMGetGlobalVector(dm,&dvec);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(subdm,&svec);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(subdm,&slvec);CHKERRQ(ierr);
 
-    if (iscat) {ierr = VecScatterCreate(dvec,idis,svec,isis,&(*iscat)[0]);CHKERRQ(ierr);}
-    if (oscat) {ierr = VecScatterCreate(dvec,odis,svec,osis,&(*oscat)[0]);CHKERRQ(ierr);}
-    if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,PETSC_NULL,&(*lscat)[0]);CHKERRQ(ierr);}
+  if (iscat) {ierr = VecScatterCreate(dvec,idis,svec,isis,&(*iscat)[0]);CHKERRQ(ierr);}
+  if (oscat) {ierr = VecScatterCreate(dvec,odis,svec,osis,&(*oscat)[0]);CHKERRQ(ierr);}
+  if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,PETSC_NULL,&(*lscat)[0]);CHKERRQ(ierr);}
 
-    ierr = DMRestoreGlobalVector(dm,&dvec);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(subdm,&svec);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(subdm,&slvec);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm,&dvec);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(subdm,&svec);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(subdm,&slvec);CHKERRQ(ierr);
 
-    ierr = ISDestroy(&idis);CHKERRQ(ierr);
-    ierr = ISDestroy(&isis);CHKERRQ(ierr);
+  ierr = ISDestroy(&idis);CHKERRQ(ierr);
+  ierr = ISDestroy(&isis);CHKERRQ(ierr);
 
-    ierr = ISDestroy(&odis);CHKERRQ(ierr);
-    ierr = ISDestroy(&osis);CHKERRQ(ierr);
+  ierr = ISDestroy(&odis);CHKERRQ(ierr);
+  ierr = ISDestroy(&osis);CHKERRQ(ierr);
 
-    ierr = ISDestroy(&gdis);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  ierr = ISDestroy(&gdis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

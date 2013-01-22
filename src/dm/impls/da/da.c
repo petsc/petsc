@@ -217,18 +217,30 @@ PetscErrorCode  DMDASetOverlap(DM da, PetscInt overlap)
 .keywords:  distributed array, degrees of freedom
 .seealso: DMDAGetOffset(), DMDAVecGetArray()
 @*/
-PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo)
+PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, PetscInt Mo, PetscInt No, PetscInt Po)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(da,xo,2);
-  PetscValidLogicalCollectiveInt(da,yo,2);
-  PetscValidLogicalCollectiveInt(da,zo,2);
+  PetscValidLogicalCollectiveInt(da,yo,3);
+  PetscValidLogicalCollectiveInt(da,zo,4);
+  PetscValidLogicalCollectiveInt(da,Mo,5);
+  PetscValidLogicalCollectiveInt(da,No,6);
+  PetscValidLogicalCollectiveInt(da,Po,7);
   dd->xo = xo;
   dd->yo = yo;
   dd->zo = zo;
+  dd->Mo = Mo;
+  dd->No = No;
+  dd->Po = Po;
+
+  if (da->coordinateDM) {
+    ierr = DMDASetOffset(da->coordinateDM,xo,yo,zo,Mo,No,Po);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -245,14 +257,17 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo)
   Output Parameters:
 + xo  - The offset in the x direction
 . yo  - The offset in the y direction
-- zo  - The offset in the z direction
+. zo  - The offset in the z direction
+. Mo  - The global size in the x direction
+. No  - The global size in the y direction
+- Po  - The global size in the z direction
 
   Level: intermediate
 
 .keywords:  distributed array, degrees of freedom
 .seealso: DMDASetOffset(), DMDAVecGetArray()
 @*/
-PetscErrorCode  DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo)
+PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,PetscInt *Mo,PetscInt *No,PetscInt *Po)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -261,6 +276,9 @@ PetscErrorCode  DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo)
   if (xo) *xo = dd->xo;
   if (yo) *yo = dd->yo;
   if (zo) *zo = dd->zo;
+  if (Mo) *Mo = dd->Mo;
+  if (No) *No = dd->No;
+  if (Po) *Po = dd->Po;
   PetscFunctionReturn(0);
 }
 
