@@ -39,6 +39,12 @@ typedef struct {
   Vec            Xg;                           /* Galerkin solution projection */
   Vec            Fg;                           /* Galerkin function projection */
 
+  /* if logging times for each level */
+  PetscLogEvent  eventsmoothsetup;             /* level setup */
+  PetscLogEvent  eventsmoothsolve;             /* level smoother solves */
+  PetscLogEvent  eventresidual;                /* level residual evaluation */
+  PetscLogEvent  eventinterprestrict;          /* level interpolation and restriction */
+
 } SNES_FAS;
 
 #endif

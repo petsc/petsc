@@ -362,6 +362,60 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESFASSetLog"
+/*@
+   SNESFASSetLog - Sets or unsets time logging for various FAS stages on all levels
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes   - the FAS context
+-  flg    - monitor or not
+
+   Level: advanced
+
+.keywords: FAS, logging
+
+.seealso: SNESFASSetMonitor()
+@*/
+PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
+{
+  SNES_FAS       *fas = (SNES_FAS *)snes->data;
+  PetscErrorCode ierr;
+  PetscBool      isFine;
+  PetscInt       i, levels = fas->levels;
+  SNES           levelsnes;
+  char           eventname[128];
+
+  PetscFunctionBegin;
+  ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
+  if (isFine) {
+    for (i = 0; i < levels; i++) {
+      ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
+      fas = (SNES_FAS *)levelsnes->data;
+      if (flg) {
+        sprintf(eventname,"FASSetup %d",(int)i);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventsmoothsetup);CHKERRQ(ierr);
+        sprintf(eventname,"FASSmooth %d",(int)i);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventsmoothsolve);CHKERRQ(ierr);
+        sprintf(eventname,"FASResid %d",(int)i);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventresidual);CHKERRQ(ierr);
+        if (i) {
+          sprintf(eventname,"FASInterp %d",(int)i);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventinterprestrict);CHKERRQ(ierr);
+        }
+      } else {
+        fas->eventsmoothsetup    = PETSC_FALSE;
+        fas->eventsmoothsolve    = PETSC_FALSE;
+        fas->eventresidual       = PETSC_FALSE;
+        fas->eventinterprestrict = PETSC_FALSE;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESFASCycleCreateSmoother_Private"
 /*
 Creates the default smoother type.
