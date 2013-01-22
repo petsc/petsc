@@ -1980,15 +1980,16 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   if (snes->pc && snes->pcside == PC_LEFT) {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
   } else if (sdm->ops->computefunction) {
+    ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
     ierr = (*sdm->ops->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
+    ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
@@ -1996,7 +1997,6 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
   }
   snes->nfuncs++;
-  ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   VecValidValues(y,3,PETSC_FALSE);
   PetscFunctionReturn(0);
 }
