@@ -53,7 +53,11 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   /* Create new MPI datatype for communication of characteristic point structs */
   blockLen[0] = 1+c->numIds; indices[0] = 0;                              oldtypes[0] = MPIU_INT;
   blockLen[1] = numValues;   indices[1] = (1+c->numIds)*sizeof(PetscInt); oldtypes[1] = MPIU_SCALAR;
+#if defined(PETSC_HAVE_MPI_TYPE_CREATE_STRUCT)
+  ierr = MPI_Type_create_struct(2, blockLen, indices, oldtypes, &c->itemType);CHKERRQ(ierr);
+#else
   ierr = MPI_Type_struct(2, blockLen, indices, oldtypes, &c->itemType);CHKERRQ(ierr);
+#endif
   ierr = MPI_Type_commit(&c->itemType);CHKERRQ(ierr);
 
   /* Initialize the local queue for char foot values */

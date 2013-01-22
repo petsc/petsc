@@ -699,7 +699,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
+#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
+  ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+#else
   ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+#endif
 
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);

@@ -980,7 +980,11 @@ namespace ALE {
       MPI_Datatype oldtypes[2], newtype;
       blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_INT;
       blen[1] = 4; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
+#if defined(PETSC_HAVE_MPI_TYPE_CREATE_STRUCT)
+      ierr = MPI_Type_create_struct(2, blen, indices, oldtypes, &newtype);CHKERRQ(ierr);
+#else
       ierr = MPI_Type_struct(2, blen, indices, oldtypes, &newtype);CHKERRQ(ierr);
+#endif
       ierr = MPI_Type_commit(&newtype);CHKERRQ(ierr);
 
       if (mesh->commRank() == 0) {

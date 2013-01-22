@@ -355,7 +355,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_abort",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
+#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
+    ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+#else
     ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+#endif
     ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
@@ -364,7 +368,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-mpi_return_on_error",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
+#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
+    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+#else
     ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+#endif
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);
@@ -382,8 +390,16 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     MPI_Errhandler err_handler;
 
     ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_COMM_CREATE_ERRHANDLER)
+    ierr = MPI_Comm_create_errhandler((MPI_Handler_function*)Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
+#else
     ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_DebuggerOnError,&err_handler);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
+    ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
+#else
     ierr = MPI_Errhandler_set(comm,err_handler);CHKERRQ(ierr);
+#endif
     ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(PETSC_NULL,"-debug_terminal",string,64,&flg1);CHKERRQ(ierr);
@@ -432,8 +448,16 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       } else {
         ierr = PetscStopForDebugger();CHKERRQ(ierr);
       }
+#if defined(PETSC_HAVE_MPI_COMM_CREATE_ERRHANDLER)
+      ierr = MPI_Comm_create_errhandler((MPI_Handler_function*)Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
+#else
       ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_AbortOnError,&err_handler);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
+      ierr = MPI_Comm_set_errhandler(comm,err_handler);CHKERRQ(ierr);
+#else
       ierr = MPI_Errhandler_set(comm,err_handler);CHKERRQ(ierr);
+#endif
     }
     ierr = PetscFree(nodes);CHKERRQ(ierr);
   }
