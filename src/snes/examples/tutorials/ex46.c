@@ -223,7 +223,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         ux        = (x[j][i+1] - x[j][i])/hx;
         uy        = (x[j+1][i] - x[j][i])/hy;
         normGradZ = PetscRealPart(sqrt(ux*ux + uy*uy));
-        //PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ);
+        /* PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ); */
         if (normGradZ < 1.0e-8) {
           normGradZ = 1.0e-8;
         }

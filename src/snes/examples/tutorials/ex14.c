@@ -323,7 +323,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
           u_yy        = (-u_north + two*u - u_south)*hxhzdhy;
           u_zz        = (-u_up + two*u - u_down)*hxhydhz;
           f[k][j][i]  = u_xx + u_yy + u_zz - sc*PetscExpScalar(u);
-	}
+        }
       }
     }
   }

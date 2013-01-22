@@ -1,5 +1,5 @@
 
-#ifndef MatNest_impl_h
+#if !defined(MatNest_impl_h)
 #define MatNest_impl_h
 
 #include <petsc-private/matimpl.h>

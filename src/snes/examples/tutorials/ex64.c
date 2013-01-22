@@ -115,7 +115,7 @@ int main(int argc, char **argv)
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
+  /*ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   }
-  while(t<user.T) {
+  while (t<user.T) {
 
     char         filename[PETSC_MAX_PATH_LEN];
     PetscScalar  a = 1.0;
@@ -305,9 +305,9 @@ PetscErrorCode DPsi(AppCtx* user)
 
   for (i=0;i<n;i++)
   {
-    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(eta_p[i]+1.0)*(eta_p[i]+1.0)*( Evf + logcv_p[i] - logcv2_p[i]) - 2.0*A*(cv_p[i] - cv0)*eta_p[i]*(eta_p[i]+2.0)*(eta_p[i]-1.0)*(eta_p[i]-1.0) + 2.0*B*(cv_p[i] - 1.0)*eta_p[i]*eta_p[i];
+    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(eta_p[i]+1.0)*(eta_p[i]+1.0)*(Evf + logcv_p[i] - logcv2_p[i]) - 2.0*A*(cv_p[i] - cv0)*eta_p[i]*(eta_p[i]+2.0)*(eta_p[i]-1.0)*(eta_p[i]-1.0) + 2.0*B*(cv_p[i] - 1.0)*eta_p[i]*eta_p[i];
 
-    DPsieta_p[i] = 4.0*eta_p[i]*(eta_p[i]-1.0)*(eta_p[i]+1.0)*(Evf*cv_p[i] + cv_p[i]*logcv_p[i] + (1.0-cv_p[i])*logcv2_p[i] ) - A*(cv_p[i] - cv0)*(cv_p[i] - cv0)*(4.0*eta_p[i]*eta_p[i]*eta_p[i] - 6.0*eta_p[i] + 2.0) + 2.0*B*(cv_p[i]-1.0)*(cv_p[i]-1.0)*eta_p[i];
+    DPsieta_p[i] = 4.0*eta_p[i]*(eta_p[i]-1.0)*(eta_p[i]+1.0)*(Evf*cv_p[i] + cv_p[i]*logcv_p[i] + (1.0-cv_p[i])*logcv2_p[i]) - A*(cv_p[i] - cv0)*(cv_p[i] - cv0)*(4.0*eta_p[i]*eta_p[i]*eta_p[i] - 6.0*eta_p[i] + 2.0) + 2.0*B*(cv_p[i]-1.0)*(cv_p[i]-1.0)*eta_p[i];
 
   }
 
@@ -356,9 +356,9 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscErrorCode    ierr;
 
 
-  PetscInt         n,i,Mda;
-  PetscScalar	   *xx,*cv_p,*wv_p,*eta_p;
-  PetscViewer      view_out;
+  PetscInt          n,i,Mda;
+  PetscScalar       *xx,*cv_p,*wv_p,*eta_p;
+  PetscViewer       view_out;
   /* needed for the void growth case */
   PetscScalar       xmid,cv_v=1.0,cv_m=user->Sv*user->cv0,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscInt          nele,nen,idx[2];
@@ -402,9 +402,9 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
         vals_cv[k] = cv_v;
         vals_eta[k] = eta_v;
         vals_DDcv[k] = 0.0;
-      } else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
-        //r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
-        r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
+      } else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0)) {
+        /*r = (s - xwidth*(6.0/64.0))/(0.5*lambda);*/
+        r = (s - xwidth*(6.0/64.0))/(xwidth/64.0);
         hhr = 0.25*(-r*r*r + 3*r + 2);
         vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
         vals_eta[k] = eta_m + (1.0 - hhr)*(eta_v - eta_m);
@@ -665,7 +665,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMDAVecGetArrayDOF(da,UIN,&uin);CHKERRQ(ierr);
   ierr = ISGetIndices(act,&index);CHKERRQ(ierr);
   ierr = ISGetLocalSize(act,&n);CHKERRQ(ierr);
-  for (k=0;k<n;k++){
+  for (k=0;k<n;k++) {
     l = index[k]%5;
     i = index[k]/5;
     uin[i][l]=1.0;

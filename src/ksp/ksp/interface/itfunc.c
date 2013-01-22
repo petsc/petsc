@@ -184,7 +184,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   /* reset the convergence flag from the previous solves */
   ksp->reason = KSP_CONVERGED_ITERATING;
 
-  if (!((PetscObject)ksp)->type_name){
+  if (!((PetscObject)ksp)->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
   ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
@@ -1616,10 +1616,8 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
     ksp->res_hist        = a;
     ksp->res_hist_max    = na;
   } else {
-    if (na != PETSC_DECIDE && na != PETSC_DEFAULT)
-      ksp->res_hist_max = na;
-    else
-      ksp->res_hist_max = 10000; /* like default ksp->max_it */
+    if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->res_hist_max = na;
+    else                                           ksp->res_hist_max = 10000; /* like default ksp->max_it */
     ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist_alloc);CHKERRQ(ierr);
     ksp->res_hist = ksp->res_hist_alloc;
   }

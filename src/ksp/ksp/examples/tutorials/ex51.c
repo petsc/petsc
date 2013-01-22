@@ -83,7 +83,7 @@ int main(int argc,char **args)
   /* Allocate quadrature and create stiffness matrices */
   ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllNode);CHKERRQ(ierr);
   ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllWgts);CHKERRQ(ierr);
-  leggaulob(0.0,1.0,gllNode,gllWgts,p); // Get GLL nodes and weights
+  leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
   ierr = Form1DElementMass(h,p,gllNode,gllWgts,Me1D);CHKERRQ(ierr);
   ierr = Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D);CHKERRQ(ierr);
   ierr = Form2DElementMass(p,Me1D,Me2D);CHKERRQ(ierr);
@@ -368,7 +368,8 @@ static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "polyBasisFunc"
-static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval) {
+static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval)
+{
   PetscReal denominator = 1.;
   PetscReal numerator = 1.;
   PetscInt i=0;
@@ -386,7 +387,8 @@ static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVa
 
 #undef __FUNCT__
 #define __FUNCT__ "derivPolyBasisFunc"
-static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval) {
+static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal* xLocVal, PetscReal xval)
+{
   PetscReal denominator;
   PetscReal numerator;
   PetscReal numtmp;

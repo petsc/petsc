@@ -2,7 +2,7 @@
 #include <../src/dm/ao/aoimpl.h>
 #include <petsc-private/daimpl.h>
 #include <petsc-private/pleximpl.h>
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
 #include <petsc-private/meshimpl.h>
 #endif
 
@@ -91,7 +91,7 @@ static PetscBool  DMPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  DMFinalizePackage(void)
 {
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   PetscErrorCode ierr;
 #endif
 
@@ -99,7 +99,7 @@ PetscErrorCode  DMFinalizePackage(void)
   DMPackageInitialized = PETSC_FALSE;
   DMList               = PETSC_NULL;
   DMRegisterAllCalled  = PETSC_FALSE;
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   ierr = DMMeshFinalize();CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -139,7 +139,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   ierr = PetscClassIdRegister("SectionReal",&SECTIONREAL_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SectionInt",&SECTIONINT_CLASSID);CHKERRQ(ierr);
 #endif
@@ -159,7 +159,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
   ierr = PetscLogEventRegister("DMPlexDistribute",    DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexStratify",      DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
   ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshRestrictVector",   DM_CLASSID,&DMMesh_restrictVector);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
     if (className) {
       ierr = PetscInfoDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
     ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscInfoDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
     if (className) {
       ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
-#ifdef PETSC_HAVE_SIEVE
+#if defined(PETSC_HAVE_SIEVE)
     ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
 
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscdm"
@@ -230,7 +230,6 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

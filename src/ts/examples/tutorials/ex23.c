@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   ierr = TSSetIFunction(ts,r,FormIFunction,(void*)&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  //  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);/* Explicit Euler */
+  /*  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);*/ /* Explicit Euler */
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.T);CHKERRQ(ierr);
   /* Set lower and upper bound vectors */
   ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
@@ -261,8 +261,8 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //  ierr = MatView(*J,0);CHKERRQ(ierr);
-  // SETERRQ(PETSC_COMM_WORLD,1,"Stopped here\n");
+  /*  ierr = MatView(*J,0);CHKERRQ(ierr); */
+  /* SETERRQ(PETSC_COMM_WORLD,1,"Stopped here\n"); */
   PetscFunctionReturn(0);
 }
 
@@ -377,10 +377,10 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
       PetscInt j,k;
       for (j=0;j<3;j++) {
-	for (k=0;k<3;k++) {
-	  eM_0[k][j] += phi[j]*phi[k]*w;
-	  eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
-	}
+        for (k=0;k<3;k++) {
+          eM_0[k][j] += phi[j]*phi[k]*w;
+          eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
+        }
       }
     }
     PetscInt    row,cols[6],r;

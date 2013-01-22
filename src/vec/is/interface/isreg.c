@@ -36,7 +36,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 
   PetscFunctionBegin;
   PetscValidPointer(is,2);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -80,7 +80,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   if (match) PetscFunctionReturn(0);
 
   if (!ISRegisterAllCalled) {ierr = ISRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind( ((PetscObject)is)->comm,ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)is)->comm,ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);

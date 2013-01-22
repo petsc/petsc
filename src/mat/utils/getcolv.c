@@ -57,15 +57,15 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
     for (i=Rs; i<Re; i++) {
       ierr = MatGetRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
       if (nz && idx[0] <= col) {
-	/*
+        /*
           Should use faster search here
-	*/
-	for (j=0; j<nz; j++) {
-	  if (idx[j] >= col) {
-	    if (idx[j] == col) y[i-rs] = v[j];
-	    break;
-	  }
-	}
+        */
+        for (j=0; j<nz; j++) {
+          if (idx[j] >= col) {
+            if (idx[j] == col) y[i-rs] = v[j];
+            break;
+          }
+        }
       }
       ierr = MatRestoreRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
     }

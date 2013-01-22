@@ -5,8 +5,8 @@
 #define __FUNCT__ "SNESLineSearchApply_CP"
 static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 {
-  PetscBool      changed_y, changed_w, domainerror;
-  PetscErrorCode ierr;
+  PetscBool       changed_y, changed_w, domainerror;
+  PetscErrorCode  ierr;
   Vec             X, Y, F, W;
   SNES            snes;
   PetscReal       xnorm, ynorm, gnorm, steptol, atol, rtol, ltol, maxstep;
@@ -18,7 +18,6 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   PetscViewer     monitor;
 
   PetscFunctionBegin;
-
   ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);

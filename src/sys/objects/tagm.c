@@ -199,7 +199,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   }
 
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if(!flg) {
+  if (!flg) {
     /* Threadcomm does not exist on this communicator, get the global threadcomm and attach it to this communicator */
     ierr = PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
     ierr = PetscThreadCommAttach(*comm_out,tcomm);CHKERRQ(ierr);

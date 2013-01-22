@@ -87,12 +87,12 @@ PetscErrorCode SolveSubproblem(SNES snes)
   ierr = VecGetArray(residual,&r);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<n; i++) {
-    if (PetscAbsScalar(r[i]) > .20*rmax ) cnt++;
+    if (PetscAbsScalar(r[i]) > .20*rmax) cnt++;
   }
   ierr = PetscMalloc(cnt*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<n; i++) {
-    if (PetscAbsScalar(r[i]) > .20*rmax ) indices[cnt++] = i;
+    if (PetscAbsScalar(r[i]) > .20*rmax) indices[cnt++] = i;
   }
   if (cnt > .2*n) PetscFunctionReturn(0);
 

@@ -708,35 +708,35 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
 
 
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
-      switch(vascii->mode) {
+      switch (vascii->mode) {
       case FILE_MODE_READ:
-	vascii->fd = fopen(fname,"r");
-	break;
+        vascii->fd = fopen(fname,"r");
+        break;
       case FILE_MODE_WRITE:
-	vascii->fd = fopen(fname,"w");
-	break;
+        vascii->fd = fopen(fname,"w");
+        break;
       case FILE_MODE_APPEND:
-	vascii->fd = fopen(fname,"a");
-	break;
+        vascii->fd = fopen(fname,"a");
+        break;
       case FILE_MODE_UPDATE:
-	vascii->fd = fopen(fname,"r+");
-	if (!vascii->fd) {
-	  vascii->fd = fopen(fname,"w+");
-	}
-	break;
+        vascii->fd = fopen(fname,"r+");
+        if (!vascii->fd) {
+          vascii->fd = fopen(fname,"w+");
+        }
+        break;
       case FILE_MODE_APPEND_UPDATE:
-	/* I really want a file which is opened at the end for updating,
-	   not a+, which opens at the beginning, but makes writes at the end.
-	*/
-	vascii->fd = fopen(fname,"r+");
-	if (!vascii->fd) {
-	  vascii->fd = fopen(fname,"w+");
-	} else {
-	  ierr     = fseek(vascii->fd, 0, SEEK_END);CHKERRQ(ierr);
-	}
-	break;
+        /* I really want a file which is opened at the end for updating,
+           not a+, which opens at the beginning, but makes writes at the end.
+        */
+        vascii->fd = fopen(fname,"r+");
+        if (!vascii->fd) {
+          vascii->fd = fopen(fname,"w+");
+        } else {
+          ierr     = fseek(vascii->fd, 0, SEEK_END);CHKERRQ(ierr);
+        }
+        break;
       default:
-	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
       }
       if (!vascii->fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
     }

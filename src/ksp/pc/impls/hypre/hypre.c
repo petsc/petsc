@@ -395,7 +395,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     PetscStackCallStandard(HYPRE_BoomerAMGSetTruncFactor,(jac->hsolver,jac->truncfactor));
   }
 
- ierr = PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator ( 0=unlimited )","None",jac->pmax,&jac->pmax,&flg);CHKERRQ(ierr);
+ ierr = PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator (0=unlimited)","None",jac->pmax,&jac->pmax,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->pmax < 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"P_max %G must be greater than or equal to zero",jac->pmax);
     PetscStackCallStandard(HYPRE_BoomerAMGSetPMaxElmts,(jac->hsolver,jac->pmax));
@@ -501,9 +501,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   }
 
   /* Outer relaxation Weight */
-  ierr = PetscOptionsReal("-pc_hypre_boomeramg_outer_relax_weight_all","Outer relaxation weight for all levels ( -k = determined with k CG steps)","None",jac->outerrelaxweight, &tmpdbl ,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_hypre_boomeramg_outer_relax_weight_all","Outer relaxation weight for all levels (-k = determined with k CG steps)","None",jac->outerrelaxweight, &tmpdbl ,&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscStackCallStandard(HYPRE_BoomerAMGSetOuterWt,( jac->hsolver, tmpdbl));
+    PetscStackCallStandard(HYPRE_BoomerAMGSetOuterWt,(jac->hsolver, tmpdbl));
     jac->outerrelaxweight = tmpdbl;
   }
 
@@ -513,14 +513,14 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   if (flg) {
     if (n == 2) {
       indx =  (int)PetscAbsReal(twodbl[1]);
-      PetscStackCallStandard(HYPRE_BoomerAMGSetLevelOuterWt,( jac->hsolver, twodbl[0], indx));
+      PetscStackCallStandard(HYPRE_BoomerAMGSetLevelOuterWt,(jac->hsolver, twodbl[0], indx));
     } else {
       SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %d",n);
     }
   }
 
   /* the Relax Order */
-  ierr = PetscOptionsBool( "-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
 
   if (flg) {
     jac->relaxorder = 0;
@@ -561,16 +561,16 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     PetscStackCallStandard(HYPRE_BoomerAMGSetDebugFlag,(jac->hsolver,level));
   }
 
-  ierr = PetscOptionsBool( "-pc_hypre_boomeramg_nodal_coarsen", "HYPRE_BoomerAMGSetNodal()", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_coarsen", "HYPRE_BoomerAMGSetNodal()", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
   if (flg && tmp_truth) {
     jac->nodal_coarsen = 1;
     PetscStackCallStandard(HYPRE_BoomerAMGSetNodal,(jac->hsolver,1));
   }
 
-  ierr = PetscOptionsBool( "-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
   if (flg && tmp_truth) {
     PetscInt tmp_int;
-    ierr = PetscOptionsInt( "-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None",jac->nodal_relax_levels,&tmp_int,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None",jac->nodal_relax_levels,&tmp_int,&flg);CHKERRQ(ierr);
     if (flg) jac->nodal_relax_levels = tmp_int;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,(jac->hsolver,6));
     PetscStackCallStandard(HYPRE_BoomerAMGSetDomainType,(jac->hsolver,1));

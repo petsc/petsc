@@ -50,7 +50,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
     for (i=0; i<rbs; i++)
         asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
   }
-  switch (bs){
+  switch (bs) {
     case 4:
       a->A->ops->mult  = MatMult_SeqBSTRM_4;
       a->A->ops->sor   = MatSOR_SeqBSTRM_4;
@@ -82,7 +82,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
     for (i=0; i<rbs; i++)
         bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
   }
-  switch (bs){
+  switch (bs) {
     case 4:
       a->B->ops->multadd = MatMultAdd_SeqBSTRM_4;
       break;
@@ -172,7 +172,6 @@ PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,MatType type,MatReuse reuse,Mat
   Mat_SeqBSTRM  *bstrm;
 
   PetscFunctionBegin;
-
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
@@ -192,10 +191,10 @@ PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,MatType type,MatReuse reuse,Mat
     ierr = MatMPIBSTRM_create_bstrm(B);CHKERRQ(ierr);
   }
 
-  ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPIBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) B, MATMPIBSTRM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
-				     "MatMPIBAIJSetPreallocation_MPIBSTRM",
-				     MatMPIBAIJSetPreallocation_MPIBSTRM);CHKERRQ(ierr);
+                                           "MatMPIBAIJSetPreallocation_MPIBSTRM",
+                                           MatMPIBAIJSetPreallocation_MPIBSTRM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

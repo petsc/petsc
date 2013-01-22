@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL  ksppythonsettype_(KSP *ksp, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL  ksppythonsettype_(KSP *ksp, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);

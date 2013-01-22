@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy = 1;
-  //ierr = PetscOptionsGetInt(PETSC_NULL,"-energy",&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
+  /* ierr = PetscOptionsGetInt(PETSC_NULL,"-energy",&ctx.energy,PETSC_NULL);CHKERRQ(ierr); */
   ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic, 4=degenerate mobility and weird splitting)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
   ctx.tol = 1.0e-8;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
@@ -242,13 +242,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
     f[i].w =  x[i].w + ctx->kappa*(x[i-1].u + x[i+1].u - 2.0*x[i].u)*sx;
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
-      case 1: // double well
+      case 1: /* double well */
         f[i].w += -x[i].u*x[i].u*x[i].u + x[i].u;
         break;
-      case 2: // double obstacle
+      case 2: /* double obstacle */
         f[i].w += x[i].u;
         break;
-      case 3: // logarithmic
+      case 3: /* logarithmic */
         if (x[i].u < -1.0 + 2.0*ctx->tol) {
           f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         }
@@ -266,7 +266,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
     f[i].u = xdot[i].u - (x[i-1].w + x[i+1].w - 2.0*x[i].w)*sx;
     if (ctx->energy==4) {
       f[i].u = xdot[i].u;
-      // approximation of \grad (M(u) \grad w ), where M(u) = (1-u^2)
+      /* approximation of \grad (M(u) \grad w), where M(u) = (1-u^2) */
       r = (1.0 - x[i+1].u*x[i+1].u)*(x[i+2].w-x[i].w)*.5/hx;
       l = (1.0 - x[i-1].u*x[i-1].u)*(x[i].w-x[i-2].w)*.5/hx;
       f[i].u -= (r - l)*.5/hx;

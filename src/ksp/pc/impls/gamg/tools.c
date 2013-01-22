@@ -65,7 +65,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
     for (Ii = Istart; Ii < Iend ; Ii++) {
       PetscInt dest_row = Ii/bs;
       ierr = MatGetRow(Amat,Ii,&ncols,&idx,&vals);CHKERRQ(ierr);
-      for (jj=0;jj<ncols;jj++){
+      for (jj=0;jj<ncols;jj++) {
         PetscInt dest_col = idx[jj]/bs;
         PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
         ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&sv,ADD_VALUES);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm,Pe
   /* filter - dup zeros out matrix */
   ierr = PetscMalloc(nloc*sizeof(PetscInt), &d_nnz);CHKERRQ(ierr);
   ierr = PetscMalloc(nloc*sizeof(PetscInt), &o_nnz);CHKERRQ(ierr);
-  for (Ii = Istart, jj = 0 ; Ii < Iend; Ii++, jj++){
+  for (Ii = Istart, jj = 0 ; Ii < Iend; Ii++, jj++) {
     ierr = MatGetRow(Gmat,Ii,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     d_nnz[jj] = ncols;
     o_nnz[jj] = ncols;
@@ -156,9 +156,9 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm,Pe
     ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
   }
 
-  for (Ii = Istart, nnz0 = nnz1 = 0 ; Ii < Iend; Ii++){
+  for (Ii = Istart, nnz0 = nnz1 = 0 ; Ii < Iend; Ii++) {
     ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals);CHKERRQ(ierr);
-    for (jj=0;jj<ncols;jj++,nnz0++){
+    for (jj=0;jj<ncols;jj++,nnz0++) {
       PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
       if (PetscRealPart(sv) > vfilter) {
         nnz1++;
@@ -248,7 +248,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,const PetscReal
     ierr = VecScatterBegin(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mpimat->Mvctx,tmp_crds,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(mpimat->lvec, &data_arr);CHKERRQ(ierr);
-    for (kk=nloc,jj=0;jj<num_ghosts;kk++,jj++){
+    for (kk=nloc,jj=0;jj<num_ghosts;kk++,jj++) {
       datas[dir*nnodes + kk] = PetscRealPart(data_arr[jj]);
     }
     ierr = VecRestoreArray(mpimat->lvec, &data_arr);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
   if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
   for (kk = 0, idx = GAMG_HASH(a_key) ;
         kk < a_tab->size ;
-        kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1){
+        kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
 
     if (a_tab->table[idx] == a_key) {
       /* exists */
@@ -344,7 +344,7 @@ PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_d
 
   PetscFunctionBegin;
   if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
-  for (kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1){
+  for (kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
     if (a_tab->table[idx] == a_key) {
       *a_data = a_tab->data[idx];
       break;

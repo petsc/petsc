@@ -312,7 +312,8 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xlo
 
 #undef __FUNCT__
 #define __FUNCT__ "RDCheckDomain_Private"
-static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in) {
+static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in)
+{
   PetscErrorCode ierr;
   PetscInt       minloc;
   PetscReal      min;

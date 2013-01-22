@@ -4,7 +4,8 @@ static char help[] = "Testing PtAP for SeqMAIJ matrix, P, with SeqAIJ matrix, A.
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            pA,P,aijP;
   PetscScalar    pa[]={1.,-1.,0.,0.,1.,-1.,0.,0.,1.};
   PetscInt       i,pij[]={0,1,2};

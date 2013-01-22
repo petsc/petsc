@@ -65,7 +65,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 
-#ifndef __NOTHREADIMPLH
+#if !defined(__NOTHREADIMPLH)
 #define __NOTHREADIMPLH
 
 #include <petsc-private/threadcommimpl.h>

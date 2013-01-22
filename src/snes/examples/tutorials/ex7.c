@@ -266,7 +266,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
     temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
 #define CHECK_SOLUTION
-#ifdef CHECK_SOLUTION
+#if defined(CHECK_SOLUTION)
         ierr = ExactSolution(i*hx, j*hy, &x[j][i]);CHKERRQ(ierr);
 #else
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
@@ -330,7 +330,8 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool  isLower, int i, int
 
 #undef __FUNCT__
 #define __FUNCT__ "nonlinearResidual"
-PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[]) {
+PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[])
+{
   Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
   PetscScalar phi[3] = {0.0, 0.0, 0.0};
   Field       res;
@@ -621,7 +622,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ident.i = i; ident.j = j; ident.c = 1;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
-#ifdef PRES_BC
+#if defined(PRES_BC)
         ident.i = i; ident.j = j; ident.c = 2;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
 #endif
@@ -634,13 +635,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         numRows++;
         rows[numRows].i = i; rows[numRows].j = j; rows[numRows].c = 1;
         numRows++;
-#ifdef PRES_BC
+#if defined(PRES_BC)
         pressureRows[0] = numRows;
         rows[numRows].i = i; rows[numRows].j = j; rows[numRows].c = 2;
         numRows++;
 #endif
       }
-#ifndef PRES_BC
+#if !defined(PRES_BC)
       pressureRows[0] = numRows;
       rows[numRows].i = i; rows[numRows].j = j; rows[numRows].c = 2;
       numRows++;
@@ -658,7 +659,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ident.i = i+1; ident.j = j; ident.c = 1;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
-#ifdef PRES_BC
+#if defined(PRES_BC)
         ident.i = i+1; ident.j = j; ident.c = 2;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
 #endif
@@ -672,13 +673,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         numRows++;
         rows[numRows].i = i+1; rows[numRows].j = j; rows[numRows].c = 1;
         numRows++;
-#ifdef PRES_BC
+#if defined(PRES_BC)
         pressureRows[1] = numRows;
         rows[numRows].i = i+1; rows[numRows].j = j; rows[numRows].c = 2;
         numRows++;
 #endif
       }
-#ifndef PRES_BC
+#if !defined(PRES_BC)
       pressureRows[1] = numRows;
       rows[numRows].i = i+1; rows[numRows].j = j; rows[numRows].c = 2;
       numRows++;
@@ -695,7 +696,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ident.i = i+1; ident.j = j+1; ident.c = 1;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
-#ifdef PRES_BC
+#if defined(PRES_BC)
         ident.i = i+1; ident.j = j+1; ident.c = 2;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
 #endif
@@ -708,13 +709,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         numRows++;
         rows[numRows].i = i+1; rows[numRows].j = j+1; rows[numRows].c = 1;
         numRows++;
-#ifdef PRES_BC
+#if defined(PRES_BC)
         pressureRows[2] = numRows;
         rows[numRows].i = i+1; rows[numRows].j = j+1; rows[numRows].c = 2;
         numRows++;
 #endif
       }
-#ifndef PRES_BC
+#if !defined(PRES_BC)
       pressureRows[2] = numRows;
       rows[numRows].i = i+1; rows[numRows].j = j+1; rows[numRows].c = 2;
       numRows++;
@@ -732,7 +733,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ident.i = i; ident.j = j+1; ident.c = 1;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
-#ifdef PRES_BC
+#if defined(PRES_BC)
         ident.i = i; ident.j = j+1; ident.c = 2;
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
 #endif
@@ -746,13 +747,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         numRows++;
         rows[numRows].i = i; rows[numRows].j = j+1; rows[numRows].c = 1;
         numRows++;
-#ifdef PRES_BC
+#if defined(PRES_BC)
         pressureRows[3] = numRows;
         rows[numRows].i = i; rows[numRows].j = j+1; rows[numRows].c = 2;
         numRows++;
 #endif
       }
-#ifndef PRES_BC
+#if !defined(PRES_BC)
       pressureRows[3] = numRows;
       rows[numRows].i = i; rows[numRows].j = j+1; rows[numRows].c = 2;
       numRows++;
@@ -763,7 +764,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
 
       /* Lower Element */
       for (k = 0; k < 3; k++) {
-#ifdef PRES_BC
+#if defined(PRES_BC)
         if (!hasLower[k]) continue;
 #endif
         for (l = 0; l < 3; l++) {
@@ -786,7 +787,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
       }
       /* Upper Element */
       for (k = 0; k < 3; k++) {
-#ifdef PRES_BC
+#if defined(PRES_BC)
         if (!hasUpper[k]) continue;
 #endif
         for (l = 0; l < 3; l++) {

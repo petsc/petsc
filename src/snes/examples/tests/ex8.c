@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   PetscBool       flg;
 
   /* Initialize PETSc */
-  PetscInitialize(&argc, &argv, (char *)0, help );
+  PetscInitialize(&argc, &argv, (char *)0, help);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
@@ -169,44 +169,44 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute function over the locally owned part of the mesh */
-  for (j=ys; j < ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
+  for (j=ys; j < ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
 
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
-      if (i==0){ /* left side */
+      if (i==0) { /* left side */
         xl= user->left[j+1];
         xlt = user->left[j+2];
       } else {
         xl = x[j][i-1];
       }
 
-      if (j==0){ /* bottom side */
+      if (j==0) { /* bottom side */
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[j-1][i];
       }
 
-      if (i+1 == mx){ /* right side */
+      if (i+1 == mx) { /* right side */
         xr=user->right[j+1];
         xrb = user->right[j];
       } else {
         xr = x[j][i+1];
       }
 
-      if (j+1==0+my){ /* top side */
+      if (j+1==0+my) { /* top side */
         xt=user->top[i+1];
         xlt = user->top[i];
-      }else {
+      } else {
         xt = x[j+1][i];
       }
 
-      if (i>0 && j+1<my){ /* left top side */
+      if (i>0 && j+1<my) { /* left top side */
         xlt = x[j+1][i-1];
       }
-      if (j>0 && i+1<mx){ /* right bottom */
+      if (j>0 && i+1<mx) { /* right bottom */
         xrb = x[j-1][i+1];
       }
 
@@ -220,9 +220,9 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d8 = (xt-xlt);
 
       df1dxc = d1*hydhx;
-      df2dxc = ( d1*hydhx + d4*hxdhy );
+      df2dxc = (d1*hydhx + d4*hxdhy);
       df3dxc = d3*hxdhy;
-      df4dxc = ( d2*hydhx + d3*hxdhy );
+      df4dxc = (d2*hydhx + d3*hxdhy);
       df5dxc = d2*hydhx;
       df6dxc = d4*hxdhy;
 
@@ -235,12 +235,12 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d7 /= hy;
       d8 /= hx;
 
-      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
 
       df1dxc /= f1;
       df2dxc /= f2;
@@ -249,7 +249,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
+      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc)/2.0;
 
     }
   }
@@ -296,7 +296,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscFunctionBeginUser;
   /* Set various matrix options */
   info = MatAssembled(H,&assembled);CHKERRQ(info);
-  if (assembled){info = MatZeroEntries(H);CHKERRQ(info);}
+  if (assembled) {info = MatZeroEntries(H);CHKERRQ(info);}
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
@@ -310,13 +310,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
   /* Compute Jacobian over the locally owned part of the mesh */
-  for (j=ys; j< ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
+  for (j=ys; j< ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left */
-      if (i==0){
+      if (i==0) {
         xl= user->left[j+1];
         xlt = user->left[j+2];
       } else {
@@ -324,7 +324,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Bottom */
-      if (j==0){
+      if (j==0) {
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
@@ -332,7 +332,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Right */
-      if (i+1 == mx){
+      if (i+1 == mx) {
         xr=user->right[j+1];
         xrb = user->right[j];
       } else {
@@ -340,20 +340,20 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Top */
-      if (j+1==my){
+      if (j+1==my) {
         xt=user->top[i+1];
         xlt = user->top[i];
-      }else {
+      } else {
         xt = x[j+1][i];
       }
 
       /* Top left */
-      if (i>0 && j+1<my){
+      if (i>0 && j+1<my) {
         xlt = x[j+1][i-1];
       }
 
       /* Bottom right */
-      if (j>0 && i+1<mx){
+      if (j>0 && i+1<mx) {
         xrb = x[j-1][i+1];
       }
 
@@ -366,72 +366,72 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
 
-      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
-      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
-      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
-      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
-      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
-      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal(1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal(1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal(1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal(1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal(1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal(1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-	(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
+        (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-	(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
+        (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
       ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-	(-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
+        (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
       hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-	(-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+        (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
 
       hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
       htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-	hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
-	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
+        hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
+        (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
+        (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
       row.i = i;row.j= j;
       /* Bottom */
-      if (j>0){
-	v[k]=hb;
-	col[k].i = i; col[k].j=j-1; k++;
+      if (j>0) {
+        v[k]=hb;
+        col[k].i = i; col[k].j=j-1; k++;
       }
 
       /* Bottom right */
-      if (j>0 && i < mx -1){
-	v[k]=hbr;
-	col[k].i = i+1; col[k].j = j-1; k++;
+      if (j>0 && i < mx -1) {
+        v[k]=hbr;
+        col[k].i = i+1; col[k].j = j-1; k++;
       }
 
       /* left */
-      if (i>0){
-	v[k]= hl;
-	col[k].i = i-1; col[k].j = j; k++;
+      if (i>0) {
+        v[k]= hl;
+        col[k].i = i-1; col[k].j = j; k++;
       }
 
       /* Centre */
       v[k]= hc; col[k].i= row.i; col[k].j = row.j; k++;
 
       /* Right */
-      if (i < mx-1 ){
-	v[k]= hr;
-	col[k].i= i+1; col[k].j = j;k++;
+      if (i < mx-1) {
+        v[k]= hr;
+        col[k].i= i+1; col[k].j = j;k++;
       }
 
       /* Top left */
-      if (i>0 && j < my-1 ){
-	v[k]= htl;
-	col[k].i = i-1;col[k].j = j+1; k++;
+      if (i>0 && j < my-1) {
+        v[k]= htl;
+        col[k].i = i-1;col[k].j = j+1; k++;
       }
 
       /* Top */
-      if (j < my-1 ){
-	v[k]= ht;
-	col[k].i = i; col[k].j = j+1; k++;
+      if (j < my-1) {
+        v[k]= ht;
+        col[k].i = i; col[k].j = j+1; k++;
       }
 
       info = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(info);
@@ -483,51 +483,51 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
-  for (j=0; j<4; j++){
-    if (j==0){
+  for (j=0; j<4; j++) {
+    if (j==0) {
       yt=b;
       xt=l;
       limit=bsize;
       boundary=user->bottom;
-    } else if (j==1){
+    } else if (j==1) {
       yt=t;
       xt=l;
       limit=tsize;
       boundary=user->top;
-    } else if (j==2){
+    } else if (j==2) {
       yt=b;
       xt=l;
       limit=lsize;
       boundary=user->left;
-    } else { // if  (j==3)
+    } else { /* if  (j==3) */
       yt=b;
       xt=r;
       limit=rsize;
       boundary=user->right;
     }
 
-    for (i=0; i<limit; i++){
+    for (i=0; i<limit; i++) {
       u1=xt;
       u2=-yt;
-      for (k=0; k<maxits; k++){
-	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
-	if (fnorm <= tol) break;
-	njac11=one+u2*u2-u1*u1;
-	njac12=two*u1*u2;
-	njac21=-two*u1*u2;
-	njac22=-one - u1*u1 + u2*u2;
-	det = njac11*njac22-njac21*njac12;
-	u1 = u1-(njac22*nf1-njac12*nf2)/det;
-	u2 = u2-(njac11*nf2-njac21*nf1)/det;
+      for (k=0; k<maxits; k++) {
+        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
+        if (fnorm <= tol) break;
+        njac11=one+u2*u2-u1*u1;
+        njac12=two*u1*u2;
+        njac21=-two*u1*u2;
+        njac22=-one - u1*u1 + u2*u2;
+        det = njac11*njac22-njac21*njac12;
+        u1 = u1-(njac22*nf1-njac12*nf2)/det;
+        u2 = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
-	xt=xt+hx;
-      } else { // if (j==2 || j==3)
-	yt=yt+hy;
+        xt=xt+hx;
+      } else { /* if (j==2 || j==3) */
+        yt=yt+hy;
       }
     }
   }
@@ -558,7 +558,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscFunctionBeginUser;
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
 
-  if (flg && start==0){ /* The zero vector is reasonable */
+  if (flg && start==0) { /* The zero vector is reasonable */
 
     info = VecSet(X, zero);CHKERRQ(info);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
@@ -574,10 +574,10 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
     /* Perform local computations */
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i< xs+xm; i++){
-	x[j][i] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+
-		   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i< xs+xm; i++) {
+        x[j][i] = (((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+
+                   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
 

@@ -20,30 +20,38 @@ typedef struct {
   PetscInt      order;             /* Order of polynomials to test */
 } AppCtx;
 
-PetscScalar constant(const PetscReal coords[]) {
+PetscScalar constant(const PetscReal coords[])
+{
   return 1.0;
 }
 
-PetscScalar linear_x(const PetscReal coords[]) {
+PetscScalar linear_x(const PetscReal coords[])
+{
   return coords[0];
 }
-PetscScalar linear_y(const PetscReal coords[]) {
+PetscScalar linear_y(const PetscReal coords[])
+{
   return coords[1];
 }
-PetscScalar linear_z(const PetscReal coords[]) {
+PetscScalar linear_z(const PetscReal coords[])
+{
   return coords[2];
 }
 
-PetscScalar quadratic_xx(const PetscReal coords[]) {
+PetscScalar quadratic_xx(const PetscReal coords[])
+{
   return coords[0]*coords[0];
 }
-PetscScalar quadratic_xy(const PetscReal coords[]) {
+PetscScalar quadratic_xy(const PetscReal coords[])
+{
   return coords[0]*coords[1];
 }
-PetscScalar quadratic_yz(const PetscReal coords[]) {
+PetscScalar quadratic_yz(const PetscReal coords[])
+{
   return coords[1]*coords[2];
 }
-PetscScalar quadratic_zx(const PetscReal coords[]) {
+PetscScalar quadratic_zx(const PetscReal coords[])
+{
   return coords[2]*coords[0];
 }
 
@@ -163,9 +171,9 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   q[0].basisDer      = BasisDerivatives_0;
   user->fem.quad     = (PetscQuadrature *) &q;
   /* Setup functions to approximate */
-  switch(dim) {
+  switch (dim) {
   case 2:
-    switch(order) {
+    switch (order) {
     case 0:
       exactFuncs[0] = constant;
       exactFuncs[1] = constant;
@@ -183,7 +191,7 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
     }
     break;
   case 3:
-    switch(order) {
+    switch (order) {
     case 0:
       exactFuncs[0] = constant;
       exactFuncs[1] = constant;

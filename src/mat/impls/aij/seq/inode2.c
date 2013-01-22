@@ -1,7 +1,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );
+extern PetscErrorCode Mat_CheckInode(Mat,PetscBool);
 EXTERN_C_BEGIN
 extern PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
 extern PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
@@ -114,7 +114,7 @@ PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscBool  flg)
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  switch(op) {
+  switch (op) {
     case MAT_USE_INODES:
       a->inode.use         = flg;
       break;

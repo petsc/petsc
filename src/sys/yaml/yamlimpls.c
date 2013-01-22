@@ -1,6 +1,7 @@
 #include "yamlimpls.h"
 
-void options_list_delete(options_list_t *options_list) {
+void options_list_delete(options_list_t *options_list)
+{
   int i, j;
 
   for (i=0; i<(*options_list).count; i++)
@@ -25,7 +26,8 @@ void options_list_delete(options_list_t *options_list) {
   }
 }
 
-int options_list_populate_yaml(char *str, options_list_t *options_list) {
+int options_list_populate_yaml(char *str, options_list_t *options_list)
+{
   yaml_parser_t parser;
   yaml_event_t event, *events=0;
   int i, j, k, ii; /* generic counters */
@@ -48,7 +50,7 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
     return 0;
   }
   i=0;
-  while(event.type != YAML_STREAM_END_EVENT) {
+  while (event.type != YAML_STREAM_END_EVENT) {
     if (event.type == YAML_DOCUMENT_START_EVENT) {
       yaml_event_delete(&event);
       if (!yaml_parser_parse(&parser, &event)) {
@@ -65,7 +67,7 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
           if (strcmp((char*) event.data.scalar.value, "Options") == 0
           || strcmp((char*) event.data.scalar.value, "options") == 0) {
             i=3;alias_count=0;
-            while(event.type != YAML_DOCUMENT_END_EVENT) {
+            while (event.type != YAML_DOCUMENT_END_EVENT) {
               yaml_event_delete(&event);
               if (!yaml_parser_parse(&parser, &event)) {
                 fprintf(stderr, "Parser error. (%s:%d)", __FILE__, __LINE__-1);
@@ -104,7 +106,7 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
     fprintf(stderr, "Parser error. (%s:%d)\n", __FILE__, __LINE__-1);
     return 0;
   }
-  while(event.type != YAML_STREAM_END_EVENT) {
+  while (event.type != YAML_STREAM_END_EVENT) {
     i=0;j=0;sequence_stack=0;
     if (event.type == YAML_DOCUMENT_START_EVENT) {
       if (!yaml_event_initialize(&events[i], &event)) {
@@ -141,8 +143,8 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
               fprintf(stderr, "Parser error. (%s:%d)\n", __FILE__, __LINE__-1);
               return 0;
             }
-            while(event.type != YAML_DOCUMENT_END_EVENT) {
-              switch(event.type) {
+            while (event.type != YAML_DOCUMENT_END_EVENT) {
+              switch (event.type) {
                 case YAML_ALIAS_EVENT:
                   /* Copy all of the alias event info from the alias list */
                   for (j=0; j<list.count; j++) {
@@ -316,8 +318,8 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
           /* 2+1 for clear thought.  i+2 is the first sequence start event, so I will start at i+2+1 */
           sequence_stack=1;
           (*options_list).options[j].arguments.count = 0;
-          while(sequence_stack != 0) {
-            switch(events[k].type) {
+          while (sequence_stack != 0) {
+            switch (events[k].type) {
               case YAML_SEQUENCE_START_EVENT:
                 sequence_stack++;
                 break;
@@ -359,8 +361,8 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
           grouping_stack.groups[grouping_stack.count].start = i+3;
           k=i+1;
           mapping_stack=1;
-          while(mapping_stack!=0) {
-            switch(events[k].type) {
+          while (mapping_stack!=0) {
+            switch (events[k].type) {
               case YAML_MAPPING_START_EVENT:
                 mapping_stack++;
                 break;
@@ -393,8 +395,9 @@ int options_list_populate_yaml(char *str, options_list_t *options_list) {
   return 1;
 }
 
-int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in) {
-  switch((*in).type) {
+int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in)
+{
+  switch ((*in).type) {
     case YAML_STREAM_START_EVENT:
       if (!yaml_stream_start_event_initialize(&(*out), (*in).data.stream_start.encoding)) {
         fprintf(stderr, "error yaml_stream_start_event_initialize (%s:%d)\n", __FILE__, __LINE__-1);
@@ -473,7 +476,8 @@ int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in) {
   return 1;
 }
 
-int alias_list_populate_yaml(char *str, alias_list_t *list) {
+int alias_list_populate_yaml(char *str, alias_list_t *list)
+{
   yaml_parser_t parser;
   yaml_event_t event, *events=0;
   int i, j, k, stacknumber, events_length;
@@ -490,7 +494,7 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
     fprintf(stderr, "error yaml_parser_parse (%s:%d)\n", __FILE__, __LINE__-1);
     return 0;
   }
-  while(event.type != YAML_STREAM_END_EVENT) {
+  while (event.type != YAML_STREAM_END_EVENT) {
     i++;
     yaml_event_delete(&event);
     if (!yaml_parser_parse(&parser, &event)) {
@@ -525,7 +529,7 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
   stacknumber = 0;
   (*list).count = 0;
   for (i=0; i<events_length; i++) {
-    switch(events[i].type) {
+    switch (events[i].type) {
       case YAML_SCALAR_EVENT:
         if (events[i].data.scalar.anchor != NULL) {
           (*list).count++;
@@ -536,8 +540,8 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
           (*list).count++;
           stacknumber = 1;
           j=i;j++;
-          while(stacknumber != 0) {
-            switch(events[j].type) {
+          while (stacknumber != 0) {
+            switch (events[j].type) {
               case YAML_SEQUENCE_START_EVENT:
                 stacknumber++;
                 break;
@@ -556,8 +560,8 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
           (*list).count++;
           stacknumber = 1;
           j=i;j++;
-          while(stacknumber != 0) {
-            switch(events[j].type) {
+          while (stacknumber != 0) {
+            switch (events[j].type) {
               case YAML_MAPPING_START_EVENT:
                 stacknumber++;
                 break;
@@ -581,7 +585,7 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
   /* Now to run through the same algorithm to populate the list */
   j=0;
   for (i=0; i<events_length; i++) {
-    switch(events[i].type) {
+    switch (events[i].type) {
       case YAML_SCALAR_EVENT:
         if (events[i].data.scalar.anchor != NULL) {
           (*list).list[j].alias = (char*) calloc(
@@ -606,8 +610,8 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
           stacknumber = 1;
           j++;
           k=i;k++;
-          while(stacknumber != 0) {
-            switch(events[k].type) {
+          while (stacknumber != 0) {
+            switch (events[k].type) {
               case YAML_SEQUENCE_START_EVENT:
                 stacknumber++;
                 break;
@@ -638,8 +642,8 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
           stacknumber = 1;
           j++;
           k=i;k++;
-          while(stacknumber != 0) {
-            switch(events[k].type) {
+          while (stacknumber != 0) {
+            switch (events[k].type) {
               case YAML_MAPPING_START_EVENT:
                 stacknumber++;
                 break;
@@ -671,7 +675,8 @@ int alias_list_populate_yaml(char *str, alias_list_t *list) {
   return 1;
 }
 
-void alias_list_delete(alias_list_t *list) {
+void alias_list_delete(alias_list_t *list)
+{
   int i;
 
   for (i=0; i<(*list).count; i++) {
@@ -700,7 +705,7 @@ PetscErrorCode file_to_string(char* filename, char** str)
   ierr = PetscMalloc(128000*sizeof(char), str);CHKERRQ(ierr);
   /* might change to dynamically allocate this at a later time */
 
-  while(fgets(line, 64000, fh) != NULL) strcat((*str), line);
+  while (fgets(line, 64000, fh) != NULL) strcat((*str), line);
 
   ierr = PetscFree(line);CHKERRQ(ierr);
   if (fh) fclose(fh);

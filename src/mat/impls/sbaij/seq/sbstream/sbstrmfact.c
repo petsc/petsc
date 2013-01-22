@@ -25,7 +25,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
   PetscInt           slen;
 
   PetscFunctionBegin;
-
   slen = 4*(ai[mbs]-ai[0]);
   v0  = as + 16*ai[0];
   v1  = v0 + slen;
@@ -48,7 +47,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
     tp += 4;
   }
 
-  for (k=0; k<mbs; k++){
+  for (k=0; k<mbs; k++) {
     vj = aj + ai[k];
     tp = t + k*4;
     x0=tp[0]; x1=tp[1]; x2=tp[2]; x3=tp[3];
@@ -74,7 +73,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
   }
 
   /* solve U*x = y by back substitution */
-  for (k=mbs-1; k>=0; k--){
+  for (k=mbs-1; k>=0; k--) {
     vj = aj + ai[k+1];
     tp    = t + k*4;
     x0=tp[0]; x1=tp[1]; x2=tp[2]; x3=tp[3]; /* xk */
@@ -119,14 +118,13 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_4_NaturalOrdering(PetscInt *ai,PetscInt
   PetscInt           slen;
 
   PetscFunctionBegin;
-
   slen = 4*(ai[mbs]-ai[0]);
   v0  = aa + 16*ai[0];
   v1  = v0 + slen;
   v2  = v1 + slen;
   v3  = v2 + slen;
 
-  for (k=0; k<mbs; k++){
+  for (k=0; k<mbs; k++) {
     xp = x + k*4;
     x0=xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; /* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
@@ -170,7 +168,7 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering(PetscInt *ai,PetscIn
   v2  = v1 + slen;
   v3  = v2 + slen;
 
-  for (k=mbs-1; k>=0; k--){
+  for (k=mbs-1; k>=0; k--) {
     xp = x + k*4;
     x0=xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; /* xk */
     nz = ai[k+1] - ai[k];
@@ -311,7 +309,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
     tp += 5;
   }
 
-  for (k=0; k<mbs; k++){
+  for (k=0; k<mbs; k++) {
     vj = aj + ai[k];
     tp = t + k*5;
     x0=tp[0]; x1=tp[1]; x2=tp[2]; x3=tp[3]; x4=tp[4];
@@ -339,7 +337,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
   }
 
   /* solve U*x = y by back substitution */
-  for (k=mbs-1; k>=0; k--){
+  for (k=mbs-1; k>=0; k--) {
     vj = aj + ai[k+1];
     tp    = t + k*5;
     x0=tp[0]; x1=tp[1]; x2=tp[2]; x3=tp[3]; x4=tp[4];/* xk */
@@ -386,9 +384,6 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscInt
   PetscInt           slen;
 
   PetscFunctionBegin;
-
-
-
   slen = 5*(ai[mbs]-ai[0]);
   v0  = aa + 25*ai[0];
   v1  = v0 + slen;
@@ -396,7 +391,7 @@ PetscErrorCode MatForwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscInt
   v3  = v2 + slen;
   v4  = v3 + slen;
 
-  for (k=0; k<mbs; k++){
+  for (k=0; k<mbs; k++) {
     xp = x + k*5;
     x0=xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4];/* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
@@ -436,8 +431,6 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscIn
   PetscInt           slen;
 
   PetscFunctionBegin;
-
-
   slen = 5*(ai[mbs]-ai[0]);
   v0  = aa + 25*ai[0]+5*(ai[mbs]-ai[0]);
   v1  = v0 + slen;
@@ -445,7 +438,7 @@ PetscErrorCode MatBackwardSolve_SeqSBSTRM_5_NaturalOrdering(PetscInt *ai,PetscIn
   v3  = v2 + slen;
   v4  = v3 + slen;
 
-  for (k=mbs-1; k>=0; k--){
+  for (k=mbs-1; k>=0; k--) {
 
     xp = x + k*5;
     x0=xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4];/* xk */
@@ -586,13 +579,13 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
   for (i=0;i<rbs;i++) asp[i] = asu + i*slen;
 
   for (j=0;j<blen;j++) {
-     for (jb=0; jb<cbs; jb++){
-     for (ib=0; ib<rbs; ib++){
+     for (jb=0; jb<cbs; jb++) {
+     for (ib=0; ib<rbs; ib++) {
          asp[ib][j*cbs+jb] = aau[j*bs2+jb*rbs+ib];
      }}
   }
 
-  switch (bs){
+  switch (bs) {
     case 4:
        F->ops->forwardsolve   = MatForwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace;
        F->ops->backwardsolve  = MatBackwardSolve_SeqSBSTRM_4_NaturalOrdering_inplace;
@@ -634,7 +627,7 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch (bs){
+  switch (bs) {
     case 4:
        ierr = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(F,A,info);CHKERRQ(ierr);
        break;
@@ -655,6 +648,7 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
 PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscInt ierr;
+  
   PetscFunctionBegin;
   ierr = (MatICCFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;
@@ -666,6 +660,7 @@ PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorIn
 PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscInt ierr;
+  
   PetscFunctionBegin;
   ierr = (MatCholeskyFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;

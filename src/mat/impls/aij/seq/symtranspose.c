@@ -137,7 +137,6 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *ata,*aa=a->a;
 
   PetscFunctionBegin;
-
   ierr = PetscLogEventBegin(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX || *B == A) {

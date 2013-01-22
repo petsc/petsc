@@ -64,8 +64,8 @@ PetscErrorCode MINPACKdegr(PetscInt *n,const PetscInt * indrow,const PetscInt * 
     /* Function Body */
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
-	ndeg[jp] = 0;
-	iwa[jp] = 0;
+        ndeg[jp] = 0;
+        iwa[jp] = 0;
     }
 
 /*     Compute the degree sequence by determining the contributions */
@@ -74,33 +74,33 @@ PetscErrorCode MINPACKdegr(PetscInt *n,const PetscInt * indrow,const PetscInt * 
 
     i__1 = *n;
     for (jcol = 2; jcol <= i__1; ++jcol) {
-	iwa[jcol] = *n;
+        iwa[jcol] = *n;
 
 /*        Determine all positions (ir,jcol) which correspond */
 /*        to non-zeroes in the matrix. */
 
-	i__2 = jpntr[jcol + 1] - 1;
-	for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
-	    ir = indrow[jp];
+        i__2 = jpntr[jcol + 1] - 1;
+        for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
+            ir = indrow[jp];
 
 /*           For each row ir, determine all positions (ir,ic) */
 /*           which correspond to non-zeroes in the matrix. */
 
-	    i__3 = ipntr[ir + 1] - 1;
-	    for (ip = ipntr[ir]; ip <= i__3; ++ip) {
-		ic = indcol[ip];
+            i__3 = ipntr[ir + 1] - 1;
+            for (ip = ipntr[ir]; ip <= i__3; ++ip) {
+                ic = indcol[ip];
 
 /*              Array iwa marks columns which have contributed to */
 /*              the degree count of column jcol. Update the degree */
 /*              counts of these columns as well as column jcol. */
 
-		if (iwa[ic] < jcol) {
-		    iwa[ic] = jcol;
-		    ++ndeg[ic];
-		    ++ndeg[jcol];
-		}
-	    }
-	}
+                if (iwa[ic] < jcol) {
+                    iwa[ic] = jcol;
+                    ++ndeg[ic];
+                    ++ndeg[jcol];
+                }
+            }
+        }
     }
     PetscFunctionReturn(0);
 }

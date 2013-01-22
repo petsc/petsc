@@ -13,7 +13,8 @@ namespace ALE {
       int length;
     };
 
-    PetscErrorCode make_coarsest_boundary (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_section_type::patch_type patch) {
+    PetscErrorCode make_coarsest_boundary (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_section_type::patch_type patch)
+    {
       //creates a 2-level (PSLG) representation of the boundary for feeding into triangle or tetgen.
       PetscFunctionBegin;
       Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);

@@ -55,29 +55,29 @@ PetscErrorCode SPARSEPACKgenrcm(const PetscInt *neqns,const PetscInt *xadj,const
 
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
-	mask[i] = 1;
+        mask[i] = 1;
     }
     num = 1;
     i__1 = *neqns;
     for (i = 1; i <= i__1; ++i) {
 /*          FOR EACH MASKED CONNECTED COMPONENT ...*/
-	if (!mask[i]) {
-	    goto L200;
-	}
-	root = i;
+        if (!mask[i]) {
+            goto L200;
+        }
+        root = i;
 /*             FIRST FIND A PSEUDO-PERIPHERAL NODE ROOT.*/
 /*             NOTE THAT THE LEVEL STRUCTURE FOUND BY*/
 /*             FNROOT IS STORED STARTING AT PERM(NUM).*/
 /*             THEN RCM IS CALLED TO ORDER THE COMPONENT*/
 /*             USING ROOT AS THE STARTING NODE.*/
-	SPARSEPACKfnroot(&root,&xadj[1],&adjncy[1],&mask[1],&nlvl,&xls[1],&perm[num]);
-	SPARSEPACKrcm(&root,&xadj[1],&adjncy[1],&mask[1],&perm[num],&ccsize,&xls[1]);
-	num += ccsize;
-	if (num > *neqns) {
-	    PetscFunctionReturn(0);
-	}
+        SPARSEPACKfnroot(&root,&xadj[1],&adjncy[1],&mask[1],&nlvl,&xls[1],&perm[num]);
+        SPARSEPACKrcm(&root,&xadj[1],&adjncy[1],&mask[1],&perm[num],&ccsize,&xls[1]);
+        num += ccsize;
+        if (num > *neqns) {
+            PetscFunctionReturn(0);
+        }
 L200:
-	;
+        ;
     }
     PetscFunctionReturn(0);
 }

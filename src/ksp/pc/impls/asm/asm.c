@@ -242,7 +242,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
     }
-    if (!osm->is){ /* create the index sets */
+    if (!osm->is) { /* create the index sets */
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);
     }
     if (osm->n_local_true > 1 && !osm->is_local) {
@@ -353,7 +353,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
         ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
         ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-        if (domain_dm){
+        if (domain_dm) {
           ierr = KSPSetDM(ksp, domain_dm[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
           ierr = DMDestroy(&domain_dm[i]);CHKERRQ(ierr);

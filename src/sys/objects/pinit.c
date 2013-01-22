@@ -933,7 +933,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   PetscFunctionBegin;
-
   if (!PetscInitializeCalled) {
     printf("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
@@ -979,7 +978,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_MPE)
   mname[0] = 0;
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1){
+  if (flg1) {
     if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
     else          {ierr = PetscLogMPEDump(0);CHKERRQ(ierr);}
   }
@@ -1021,7 +1020,7 @@ PetscErrorCode  PetscFinalize(void)
   mname[0] = 0;
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2){
+  if (flg1 || flg2) {
     if (mname[0]) PetscLogDump(mname);
     else          PetscLogDump(0);
   }
@@ -1074,11 +1073,11 @@ PetscErrorCode  PetscFinalize(void)
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
       if (!nopt) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
       } else if (nopt == 1) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
       } else {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
       }
     }
 #if defined(PETSC_USE_DEBUG)

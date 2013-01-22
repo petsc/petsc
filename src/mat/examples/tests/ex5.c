@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,one,z);CHKERRQ(ierr);
   ierr = VecAXPY(x,negone,w);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-8){
+  if (norm > 1.e-8) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %G\n",norm);CHKERRQ(ierr);
   }
 
@@ -117,7 +117,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,one,u);CHKERRQ(ierr);
   ierr = VecAXPY(y,negone,s);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-8){
+  if (norm > 1.e-8) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %G\n",norm);CHKERRQ(ierr);
   }
 

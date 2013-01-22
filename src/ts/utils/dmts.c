@@ -85,7 +85,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);

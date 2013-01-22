@@ -106,9 +106,9 @@ int main(int argc,char **args)
             rank,start,end,mystart,myend);CHKERRQ(ierr);
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
-	if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
+        if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
            ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %G + %G i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
-	} else {
+        } else {
            ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %G\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
         }
       }

@@ -18,7 +18,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscReal      fill=2.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-#ifdef WRITEFILE
+#if defined(WRITEFILE)
  {
     PetscViewer    viewer;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing matrix A in binary to A.dat ...\n");CHKERRQ(ierr);

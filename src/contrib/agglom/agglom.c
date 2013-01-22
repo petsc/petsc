@@ -1,4 +1,4 @@
-#ifdef PETSC_RCS_HEADER
+#if defined(PETSC_RCS_HEADER)
 static char vcid[] = "$Id: agglom.c,v 1.1 1999/03/30 22:50:39 bsmith Exp bsmith $";
 #endif
 /*

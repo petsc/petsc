@@ -10,22 +10,22 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
 #include <limits.h>
 #include <float.h>
 
-#ifndef SSE2
+#if !defined(SSE2)
 #  define SSE2 1
 #endif
-#ifndef __SSE2__
+#if !defined(__SSE2__)
 #  error SSE2 instruction set is not enabled, try adding -march=native to CFLAGS or disable by adding -DSSE2=0
 #endif
-#ifndef PREFETCH_NTA /* Use software prefetch and set non-temporal policy so that lines evicted from L1D will not subsequently reside in L2 or L3. */
+#if !defined(PREFETCH_NTA) /* Use software prefetch and set non-temporal policy so that lines evicted from L1D will not subsequently reside in L2 or L3. */
 #  define PREFETCH_NTA 1
 #endif
-#ifndef STATIC_ALLOC /* Statically allocate the vectors. Most platforms do not find physical pages when memory is allocated, therefore the faulting strategy still affects performance. */
+#if !defined(STATIC_ALLOC) /* Statically allocate the vectors. Most platforms do not find physical pages when memory is allocated, therefore the faulting strategy still affects performance. */
 #  define STATIC_ALLOC 0
 #endif
-#ifndef FAULT_TOGETHER /* Faults all three vectors together which usually interleaves DRAM pages in physical memory. */
+#if !defined(FAULT_TOGETHER) /* Faults all three vectors together which usually interleaves DRAM pages in physical memory. */
 #  define FAULT_TOGETHER 0
 #endif
-#ifndef USE_MEMCPY /* Literally call memcpy(3) for the COPY benchmark. Some compilers detect the unoptimized loop as memcpy and call this anyway. */
+#if !defined(USE_MEMCPY) /* Literally call memcpy(3) for the COPY benchmark. Some compilers detect the unoptimized loop as memcpy and call this anyway. */
 #  define USE_MEMCPY 0
 #endif
 
@@ -54,10 +54,10 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
 
 # define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
+# if !defined(MIN)
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
-# ifndef MAX
+# if !defined(MAX)
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 
@@ -134,12 +134,13 @@ int main(int argc,char *argv[])
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
 
-  if  ( (quantum = checktick()) >= 1)
+  if  ((quantum = checktick()) >= 1) {
     PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity/precision appears to be "
            "%d microseconds.\n", quantum);
-  else
+  } else {
     PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity appears to be "
            "less than one microsecond.\n");
+  }
 
   t = Second();
   for (j = 0; j < N; j++)
@@ -147,8 +148,8 @@ int main(int argc,char *argv[])
   t = 1.0E6 * (Second() - t);
 
   PetscPrintf(PETSC_COMM_WORLD,"Each test below will take on the order"
-         " of %d microseconds.\n", (int) t  );
-  PetscPrintf(PETSC_COMM_WORLD,"   (= %d clock ticks)\n", (int) (t/quantum) );
+         " of %d microseconds.\n", (int) t);
+  PetscPrintf(PETSC_COMM_WORLD,"   (= %d clock ticks)\n", (int) (t/quantum));
   PetscPrintf(PETSC_COMM_WORLD,"Increase the size of the arrays if this shows that\n");
   PetscPrintf(PETSC_COMM_WORLD,"you are not getting at least 20 clock ticks per test.\n");
 
@@ -273,7 +274,8 @@ int main(int argc,char *argv[])
   return 0;
 }
 
-static double Second() {
+static double Second()
+{
   double t;
   PetscTime(t);
   return t;
@@ -301,7 +303,7 @@ static int checktick()
 
   minDelta = 1000000;
   for (i = 1; i < M; i++) {
-    Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+    Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
     minDelta = MIN(minDelta, MAX(Delta,0));
   }
 

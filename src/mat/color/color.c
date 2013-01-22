@@ -78,7 +78,7 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -122,7 +122,7 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
@@ -166,7 +166,7 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -212,7 +212,7 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
@@ -256,7 +256,7 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -301,7 +301,7 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
@@ -342,7 +342,7 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -371,7 +371,7 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */

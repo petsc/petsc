@@ -16,7 +16,7 @@ T*/
 */
 #include <petscvec.h>
 
-PetscScalar func(PetscScalar a){return 2*a/(1+a*a);}
+PetscScalar func(PetscScalar a) {return 2*a/(1+a*a);}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -45,10 +45,10 @@ int main(int argc,char **argv)
   ierr = VecSet(x,result);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xend);CHKERRQ(ierr);
   result=0.5;
-  if (rank == 0){
+  if (rank == 0) {
     i=0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
-  } else if (rank == nproc){
+  } else if (rank == nproc) {
     i=N-1;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
   k = 0;
-  for (i=rstart; i<rend; i++){
+  for (i=rstart; i<rend; i++) {
     xarray[k] = i*h;
     xarray[k] = func(xarray[k]);
     k++;
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
      Evaluates the integral.  First the sum of all the points is taken.
      That result is multiplied by the step size for the trapezoid rule.
      Then half the value at each endpoint is subtracted,
-	this is part of the composite trapezoid rule.
+     this is part of the composite trapezoid rule.
   */
   ierr = VecSum(x,&result);CHKERRQ(ierr);
   result = result*h;

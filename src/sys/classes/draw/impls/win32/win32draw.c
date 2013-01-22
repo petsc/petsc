@@ -110,7 +110,7 @@ static PetscErrorCode deletemouselist_Win32(WindowNode deletelist)
   /* Called upon window close. Frees memory of linked list of stored mouse commands */
   MouseNode node;
 
-  while(deletelist->MouseListHead != NULL) {
+  while (deletelist->MouseListHead != NULL) {
     node = deletelist->MouseListHead;
     if (deletelist->MouseListHead->mnext != NULL) {
       deletelist->MouseListHead = deletelist->MouseListHead->mnext;
@@ -456,7 +456,7 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,PetscReal x,P
   }
   SelectFont(hdc,hfont);
   SetTextColor(hdc,windraw->currentcolor);
-  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE );
+  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE);
   DeleteObject(hfont);
   /* Forces a WM_PAINT message and erases background */
   InvalidateRect(windraw->hWnd,NULL,TRUE);
@@ -564,7 +564,7 @@ static PetscErrorCode PetscDrawClear_Win32(PetscDraw draw)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawTriangle_Win32"
 static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,PetscReal x1,PetscReal yone,PetscReal x2,PetscReal y2,
-			      PetscReal x3,PetscReal y3,int c1,int c2,int c3)
+                                              PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HBRUSH          hbrush;
@@ -655,8 +655,8 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
 
   if (!hWnd) {
     lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
-    MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
-    LocalFree( lpMsgBuf );
+    MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
+    LocalFree(lpMsgBuf);
     exit(0);
   }
   pop->hWnd = hWnd;
@@ -748,8 +748,8 @@ void MessageLoopThread_Win32(PetscDraw draw)
 
   if (!hWnd) {
     lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
-    MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
-    LocalFree( lpMsgBuf );
+    MessageBox(NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION);
+    LocalFree(lpMsgBuf);
     exit(0);
   }
   windraw->hWnd = hWnd;
@@ -985,7 +985,7 @@ static void OnPaint_Win32(HWND hWnd)
   current = WindowListHead;
   hdc     = BeginPaint(hWnd, &ps);
 
-  while(current != NULL) {
+  while (current != NULL) {
     if (current->hWnd == hWnd) {
       /* flushes primary buffer to window */
       BitBlt(hdc,

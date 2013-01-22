@@ -580,15 +580,15 @@ PetscErrorCode  ISCreate_Block(IS is)
   ierr = PetscNewLog(is,IS_Block,&sub);CHKERRQ(ierr);
   is->data = sub;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C","ISBlockSetIndices_Block",
-					   ISBlockSetIndices_Block);CHKERRQ(ierr);
+                                           ISBlockSetIndices_Block);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetIndices_C","ISBlockGetIndices_Block",
-					   ISBlockGetIndices_Block);CHKERRQ(ierr);
+                                           ISBlockGetIndices_Block);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockRestoreIndices_C","ISBlockRestoreIndices_Block",
-					   ISBlockRestoreIndices_Block);CHKERRQ(ierr);
+                                           ISBlockRestoreIndices_Block);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetSize_C","ISBlockGetSize_Block",
-					   ISBlockGetSize_Block);CHKERRQ(ierr);
+                                           ISBlockGetSize_Block);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetLocalSize_C","ISBlockGetLocalSize_Block",
-					   ISBlockGetLocalSize_Block);CHKERRQ(ierr);
+                                           ISBlockGetLocalSize_Block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

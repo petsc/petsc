@@ -54,13 +54,13 @@
  *          that should be good to about 5% precision.
  */
 
-#ifndef N
+#if !defined(N)
 #   define N    2000000
 #endif
-#ifndef NTIMES
+#if !defined(NTIMES)
 #   define NTIMES       50
 #endif
-#ifndef OFFSET
+#if !defined(OFFSET)
 #   define OFFSET       0
 #endif
 
@@ -87,10 +87,10 @@
 
 # define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
+# if !defined(MIN)
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
-# ifndef MAX
+# if !defined(MAX)
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 
@@ -112,7 +112,7 @@ static double   bytes[4] = {
 
 extern double mysecond();
 extern void checkSTREAMresults();
-#ifdef TUNED
+#if defined(TUNED)
 extern void tuned_STREAM_Copy();
 extern void tuned_STREAM_Scale(double scalar);
 extern void tuned_STREAM_Add();
@@ -136,14 +136,14 @@ int main()
      BytesPerWord);
 
      printf(HLINE);
-#ifdef NO_LONG_LONG
+#if defined(NO_LONG_LONG)
     printf("Array size = %d, Offset = %d\n" , N, OFFSET);
 #else
     printf("Array size = %llu, Offset = %d\n", (unsigned long long) N, OFFSET);
 #endif
 
     printf("Total memory required = %.1f MB.\n",
-        (3.0 * BytesPerWord) * ( (double) N / 1048576.0));
+        (3.0 * BytesPerWord) * ((double) N / 1048576.0));
     printf("Each test is run %d times, but only\n", NTIMES);
     printf("the *best* time for each is used.\n");
 
@@ -170,7 +170,7 @@ int main()
 
     /*printf(HLINE);*/
 
-    if  ( (quantum = checktick()) >= 1)
+    if  ((quantum = checktick()) >= 1)
       ;/*  printf("Your clock granularity/precision appears to be "
         "%d microseconds.\n", quantum);*/
     else {
@@ -186,8 +186,8 @@ int main()
     t = 1.0E6 * (mysecond() - t);
 
     /*printf("Each test below will take on the order"
-        " of %d microseconds.\n", (int) t  );
-    printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+        " of %d microseconds.\n", (int) t);
+    printf("   (= %d clock ticks)\n", (int) (t/quantum));
     printf("Increase the size of the arrays if this shows that\n");
     printf("you are not getting at least 20 clock ticks per test.\n");
 
@@ -199,7 +199,7 @@ int main()
     for (k=0; k<NTIMES; k++)
         {
         times[0][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Copy();
 #else
 #pragma omp parallel for
@@ -209,7 +209,7 @@ int main()
         times[0][k] = mysecond() - times[0][k];
 
         times[1][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Scale(scalar);
 #else
 #pragma omp parallel for
@@ -219,7 +219,7 @@ int main()
         times[1][k] = mysecond() - times[1][k];
 
         times[2][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Add();
 #else
 #pragma omp parallel for
@@ -229,7 +229,7 @@ int main()
         times[2][k] = mysecond() - times[2][k];
 
         times[3][k] = mysecond();
-#ifdef TUNED
+#if defined(TUNED)
         tuned_STREAM_Triad(scalar);
 #else
 #pragma omp parallel for
@@ -278,7 +278,7 @@ checktick()
 
     for (i = 0; i < M; i++) {
         t1 = mysecond();
-        while( ((t2=mysecond()) - t1) < 1.0E-6 )
+        while (((t2=mysecond()) - t1) < 1.0E-6)
             ;
         timesfound[i] = t1 = t2;
         }
@@ -291,7 +291,7 @@ checktick()
 
     minDelta = 1000000;
     for (i = 1; i < M; i++) {
-        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
         minDelta = MIN(minDelta, MAX(Delta,0));
         }
 
@@ -312,7 +312,7 @@ double mysecond()
         int i;
 
         i = gettimeofday(&tp,&tzp);
-        return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+        return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 
 void checkSTREAMresults ()
@@ -349,13 +349,13 @@ void checkSTREAMresults ()
                 bsum += b[j];
                 csum += c[j];
         }
-#ifdef VERBOSE
+#if defined(VERBOSE)
         printf ("Results Comparison: \n");
         printf ("        Expected  : %f %f %f \n",aj,bj,cj);
         printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
 #endif
 
-#ifndef abs
+#if !defined(abs)
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
         epsilon = 1.e-8;

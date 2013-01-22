@@ -12,6 +12,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
 {
   PetscBool      flag;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   /* get the path for the Python interpreter executable */
   ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
@@ -34,8 +35,8 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   char path[PETSC_MAX_PATH_LEN+1];
   PetscBool  found = PETSC_FALSE;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
-
 #if defined(PETSC_PYTHON_LIB)
   ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -127,15 +128,15 @@ static void      (*PyErr_Restore)(PyObject *, PyObject *, PyObject *);
 #define PetscDLPyLibSym(symbol, value) \
   PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,PETSC_NULL,symbol,(void**)value)
 #define PetscDLPyLibClose(comm) \
-  do { } while(0)
+  do { } while (0)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonLoadLibrary"
 static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
-
   /* open the Python dynamic library */
   ierr = PetscDLPyLibOpen(pythonlib);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Python: loaded dynamic library %s\n", pythonlib);CHKERRQ(ierr);
@@ -209,6 +210,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 {
   PyObject          *module    = 0;
   PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
   if (PetscBeganPython) PetscFunctionReturn(0);
   /* Python executable */
@@ -283,6 +285,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 PetscErrorCode  PetscPythonPrintError(void)
 {
   PyObject *exc=0, *val=0, *tb=0;
+  
   PetscFunctionBegin;
   if (!PetscBeganPython) PetscFunctionReturn(0);
   if (!PyErr_Occurred()) PetscFunctionReturn(0);
@@ -315,6 +318,7 @@ EXTERN_C_END
 PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(url,2);

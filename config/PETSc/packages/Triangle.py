@@ -55,6 +55,7 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
     cflags += ' '+self.headers.toString('.')
+    cflags += ' -fPIC'
 
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')

@@ -21,7 +21,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_mat_sbaij",&testsbaij);CHKERRQ(ierr);
 
-  if (testsbaij){
+  if (testsbaij) {
     ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
     ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);

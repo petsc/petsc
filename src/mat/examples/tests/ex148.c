@@ -59,7 +59,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecScale(output,fac);CHKERRQ(ierr);
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
-  if (enorm > 1.e-11 && !rank){
+  if (enorm > 1.e-11 && !rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
   }
 

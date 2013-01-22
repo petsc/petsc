@@ -54,7 +54,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
    CALCULATE SQUARED LANCZOS  vectors
    */
   ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  while (!ksp->reason){
+  while (!ksp->reason) {
     ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
     ksp->its++;
 

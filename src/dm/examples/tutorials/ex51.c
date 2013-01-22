@@ -1,7 +1,8 @@
 static char help[] = "Tests DMDAVecGetArrayDOF()\n";
 #include <petscdmda.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   DM              da, daX, daY;
   DMDALocalInfo     info;
   MPI_Comm        commX, commY;
@@ -38,8 +39,8 @@ int main(int argc, char *argv[]) {
   /* Extract basis functions */
   ierr = DMDAVecGetArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
-  //arrayX[i][ndof];
-  //arrayY[j][ndof];
+  /*arrayX[i][ndof]; */
+  /*arrayY[j][ndof]; */
   ierr = DMDAVecRestoreArrayDOF(daX, basisX, &arrayX);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayDOF(daY, basisY, &arrayY);CHKERRQ(ierr);
   /* Return basis vectors */

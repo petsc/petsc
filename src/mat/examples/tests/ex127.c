@@ -83,7 +83,7 @@ PetscInt main(PetscInt argc,char **args)
 
   /* make A complex Hermitian */
   Ii = 0; J = dim-1;
-  if (Ii >= rstart && Ii < rend){
+  if (Ii >= rstart && Ii < rend) {
     v = sigma2*h2; /* RealPart(v) = 0.0 */
     ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
     v = -sigma2*h2;
@@ -91,7 +91,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   Ii = dim-2; J = dim-1;
-  if (Ii >= rstart && Ii < rend){
+  if (Ii >= rstart && Ii < rend) {
   v = sigma2*h2; /* RealPart(v) = 0.0 */
   ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
   v = -sigma2*h2;
@@ -105,12 +105,12 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Hermit;
-    if (disp_mat){
+    if (disp_mat) {
       if (!rank) printf(" A:\n");
       ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX, &Hermit);
-    if (disp_mat){
+    if (disp_mat) {
       if (!rank) printf(" A_Hermitian:\n");
       ierr = MatView(Hermit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
@@ -122,7 +122,7 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
-  if (disp_mat){
+  if (disp_mat) {
     if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," As:\n");CHKERRQ(ierr);}
     ierr = MatView(As,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -131,7 +131,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  if (use_random){
+  if (use_random) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
   } else {
     ierr = VecSet(x,1.0);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscInt main(PetscInt argc,char **args)
   /* Test MatMult */
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
   ierr = MatMult(As,x,ys);CHKERRQ(ierr);
-  if (disp_vec){
+  if (disp_vec) {
     printf("y = A*x:\n");
     ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"ys = As*x:\n");
@@ -154,7 +154,7 @@ PetscInt main(PetscInt argc,char **args)
   }
   ierr = VecAXPY(y,-1.0,ys);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-12 || disp_vec){
+  if (norm > 1.e-12 || disp_vec) {
     printf("|| A*x - As*x || = %G\n",norm);
   }
 

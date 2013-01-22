@@ -78,12 +78,12 @@ PetscErrorCode MINPACKslo(PetscInt *n,const PetscInt * indrow,const PetscInt * j
     mindeg = *n;
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
-	iwa1[jp - 1] = 0;
-	iwa4[jp] = *n;
-	list[jp] = ndeg[jp];
+        iwa1[jp - 1] = 0;
+        iwa4[jp] = *n;
+        list[jp] = ndeg[jp];
         /* Computing MIN */
-	i__2 = mindeg, i__3 = ndeg[jp];
-	mindeg = PetscMin(i__2,i__3);
+        i__2 = mindeg, i__3 = ndeg[jp];
+        mindeg = PetscMin(i__2,i__3);
     }
 
     /*     Create a doubly-linked list to access the degrees of the */
@@ -111,13 +111,13 @@ PetscErrorCode MINPACKslo(PetscInt *n,const PetscInt * indrow,const PetscInt * j
 
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
-	numdeg = ndeg[jp];
-	iwa2[jp] = 0;
-	iwa3[jp] = iwa1[numdeg];
-	if (iwa1[numdeg] > 0) {
-	    iwa2[iwa1[numdeg]] = jp;
-	}
-	iwa1[numdeg] = jp;
+        numdeg = ndeg[jp];
+        iwa2[jp] = 0;
+        iwa3[jp] = iwa1[numdeg];
+        if (iwa1[numdeg] > 0) {
+            iwa2[iwa1[numdeg]] = jp;
+        }
+        iwa1[numdeg] = jp;
     }
     *maxclq = 0;
     numord = *n;
@@ -131,7 +131,7 @@ L30:
 L40:
     jcol = iwa1[mindeg];
     if (jcol > 0) {
-	goto L50;
+        goto L50;
     }
     ++mindeg;
     goto L40;
@@ -142,21 +142,21 @@ L50:
     /*        found during the ordering. */
 
     if (mindeg + 1 == numord && !*maxclq) {
-	*maxclq = numord;
+        *maxclq = numord;
     }
 
     /*        Termination test. */
 
     --numord;
     if (!numord) {
-	goto L80;
+        goto L80;
     }
 
     /*        Delete column jcol from the mindeg list. */
 
     iwa1[mindeg] = iwa3[jcol];
     if (iwa3[jcol] > 0) {
-	iwa2[iwa3[jcol]] = 0;
+        iwa2[iwa3[jcol]] = 0;
     }
 
     /*        Find all columns adjacent to column jcol. */
@@ -168,50 +168,50 @@ L50:
 
     i__1 = jpntr[jcol + 1] - 1;
     for (jp = jpntr[jcol]; jp <= i__1; ++jp) {
-	ir = indrow[jp];
+        ir = indrow[jp];
 
         /*           For each row ir, determine all positions (ir,ic) */
         /*           which correspond to non-zeroes in the matrix. */
 
-	i__2 = ipntr[ir + 1] - 1;
-	for (ip = ipntr[ir]; ip <= i__2; ++ip) {
-	    ic = indcol[ip];
+        i__2 = ipntr[ir + 1] - 1;
+        for (ip = ipntr[ir]; ip <= i__2; ++ip) {
+            ic = indcol[ip];
 
             /*              Array iwa4 marks columns which are adjacent to */
             /*              column jcol. */
 
-	    if (iwa4[ic] > numord) {
-		iwa4[ic] = numord;
+            if (iwa4[ic] > numord) {
+                iwa4[ic] = numord;
 
                 /*                 Update the pointers to the current degree lists. */
 
-		numdeg = list[ic];
-		--list[ic];
+                numdeg = list[ic];
+                --list[ic];
                 /* Computing MIN */
-		i__3 = mindeg, i__4 = list[ic];
-		mindeg = PetscMin(i__3,i__4);
+                i__3 = mindeg, i__4 = list[ic];
+                mindeg = PetscMin(i__3,i__4);
 
                 /*                 Delete column ic from the numdeg list. */
 
-		if (!iwa2[ic]) {
-		    iwa1[numdeg] = iwa3[ic];
-		} else {
-		    iwa3[iwa2[ic]] = iwa3[ic];
-		}
-		if (iwa3[ic] > 0) {
-		    iwa2[iwa3[ic]] = iwa2[ic];
-		}
+                if (!iwa2[ic]) {
+                    iwa1[numdeg] = iwa3[ic];
+                } else {
+                    iwa3[iwa2[ic]] = iwa3[ic];
+                }
+                if (iwa3[ic] > 0) {
+                    iwa2[iwa3[ic]] = iwa2[ic];
+                }
 
                 /*                 Add column ic to the numdeg-1 list. */
 
-		iwa2[ic] = 0;
-		iwa3[ic] = iwa1[numdeg - 1];
-		if (iwa1[numdeg - 1] > 0) {
-		    iwa2[iwa1[numdeg - 1]] = ic;
-		}
-		iwa1[numdeg - 1] = ic;
-	    }
-	}
+                iwa2[ic] = 0;
+                iwa3[ic] = iwa1[numdeg - 1];
+                if (iwa1[numdeg - 1] > 0) {
+                    iwa2[iwa1[numdeg - 1]] = ic;
+                }
+                iwa1[numdeg - 1] = ic;
+            }
+        }
     }
 
     /*        End of iteration loop. */
@@ -223,11 +223,11 @@ L80:
 
     i__1 = *n;
     for (jcol = 1; jcol <= i__1; ++jcol) {
-	iwa2[list[jcol]] = jcol;
+        iwa2[list[jcol]] = jcol;
     }
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
-	list[jp] = iwa2[jp];
+        list[jp] = iwa2[jp];
     }
     PetscFunctionReturn(0);
 }

@@ -64,25 +64,25 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
-  //ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);
-  //ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);
+  /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
+  /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
-  switch (ipack){
+  switch (ipack) {
   case 0:
-#ifdef PETSC_HAVE_SUPERLU
+#if defined(PETSC_HAVE_SUPERLU)
     if (!rank) printf(" SUPERLU LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   case 1:
-#ifdef PETSC_HAVE_SUPERLU_DIST
+#if defined(PETSC_HAVE_SUPERLU_DIST)
     if (!rank) printf(" SUPERLU_DIST LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   case 2:
-#ifdef PETSC_HAVE_MUMPS
+#if defined(PETSC_HAVE_MUMPS)
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
@@ -100,32 +100,32 @@ int main(int argc,char **args)
   info.fill = 5.0;
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
-  for (nfact = 0; nfact < 2; nfact++){
+  for (nfact = 0; nfact < 2; nfact++) {
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatMatSolve() */
     /*
-    if ((ipack == 0 || ipack == 2) && testMatMatSolve){
+    if ((ipack == 0 || ipack == 2) && testMatMatSolve) {
       printf("   MatMatSolve() is not implemented for this package. Skip the testing.\n");
       testMatMatSolve = PETSC_FALSE;
     }
      */
-    if (testMatMatSolve){
-      if (!nfact){
+    if (testMatMatSolve) {
+      if (!nfact) {
         ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       } else {
         ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       }
-      for (nsolve = 0; nsolve < 2; nsolve++){
+      for (nsolve = 0; nsolve < 2; nsolve++) {
         if (!rank) printf("   %d-the MatMatSolve \n",nsolve);
         ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
         /* Check the error */
         ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-        if (norm > tol){
-          if (!rank){
+        if (norm > tol) {
+          if (!rank) {
             ierr = PetscPrintf(PETSC_COMM_SELF,"1st MatMatSolve: Norm of error %g, nsolve %d\n",norm,nsolve);CHKERRQ(ierr);
           }
         }
@@ -133,10 +133,10 @@ int main(int argc,char **args)
     }
 
     /* Test MatSolve() */
-    if (testMatSolve){
-      for (nsolve = 0; nsolve < 2; nsolve++){
+    if (testMatSolve) {
+      for (nsolve = 0; nsolve < 2; nsolve++) {
         ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-        for (i=0; i<m; i++){
+        for (i=0; i<m; i++) {
           ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
           array[i] = rval;
         }
@@ -150,12 +150,12 @@ int main(int argc,char **args)
         /* Check the error */
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-        if (norm > tol){
+        if (norm > tol) {
           ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           PetscReal resi;
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
-          if (!rank){
+          if (!rank) {
             ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %g, resi %g, LU numfact %d\n",norm,resi,nfact);CHKERRQ(ierr);
           }
         }
@@ -168,7 +168,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
-  if (testMatMatSolve){
+  if (testMatMatSolve) {
     ierr = MatDestroy(&RHS);CHKERRQ(ierr);
   }
 

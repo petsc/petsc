@@ -1038,13 +1038,13 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
   PetscValidLogicalCollectiveReal(linesearch,ltol,6);
   PetscValidLogicalCollectiveInt(linesearch,max_its,7);
 
-  if ( steptol!= PETSC_DEFAULT) {
-    if ( steptol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %14.12e must be non-negative",(double)steptol);
+  if (steptol!= PETSC_DEFAULT) {
+    if (steptol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %14.12e must be non-negative",(double)steptol);
     linesearch->steptol = steptol;
   }
 
-  if ( maxstep!= PETSC_DEFAULT) {
-    if ( maxstep < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %14.12e must be non-negative",(double)maxstep);
+  if (maxstep!= PETSC_DEFAULT) {
+    if (maxstep < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %14.12e must be non-negative",(double)maxstep);
     linesearch->maxstep = maxstep;
   }
 

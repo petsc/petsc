@@ -877,7 +877,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &neg);CHKERRQ(ierr);
   /* Mark ghost points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
-    for(e = 0; e < numExcludes; ++e) {
+    for (e = 0; e < numExcludes; ++e) {
       if ((p >= excludes[e*2+0]) && (p < excludes[e*2+1])) {
         ierr = PetscSectionSetDof(*gsection, p, 0);CHKERRQ(ierr);
         break;
@@ -1149,7 +1149,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 
   PetscFunctionBegin;
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = 0; p < pEnd-pStart; ++p) {
+  for (p = 0; p < pEnd-pStart; ++p) {
     PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
 
     if (off >= 0) {
@@ -1253,7 +1253,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
   ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);}
-  for(f = 0; f < numFields; ++f) {
+  for (f = 0; f < numFields; ++f) {
     const char *name    = PETSC_NULL;
     PetscInt    numComp = 0;
 
@@ -1267,12 +1267,12 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   ierr = ISGetIndices(subpointMap, &points);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subs, 0, numSubpoints);CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
+  for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof, fdof = 0, cfdof = 0;
 
     ierr = PetscFindInt(p, numSubpoints, points, &subp);CHKERRQ(ierr);
     if (subp < 0) continue;
-    for(f = 0; f < numFields; ++f) {
+    for (f = 0; f < numFields; ++f) {
       ierr = PetscSectionGetFieldDof(s, p, f, &fdof);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldDof(*subs, subp, f, fdof);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cfdof);CHKERRQ(ierr);
@@ -1285,12 +1285,12 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   }
   ierr = PetscSectionSetUp(*subs);CHKERRQ(ierr);
   /* Change offsets to original offsets */
-  for(p = pStart; p < pEnd; ++p) {
+  for (p = pStart; p < pEnd; ++p) {
     PetscInt off, foff = 0;
 
     ierr = PetscFindInt(p, numSubpoints, points, &subp);CHKERRQ(ierr);
     if (subp < 0) continue;
-    for(f = 0; f < numFields; ++f) {
+    for (f = 0; f < numFields; ++f) {
       ierr = PetscSectionGetFieldOffset(s, p, f, &foff);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldOffset(*subs, subp, f, foff);CHKERRQ(ierr);
     }
@@ -1298,12 +1298,12 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
     ierr = PetscSectionSetOffset(*subs, subp, off);CHKERRQ(ierr);
   }
   /* Copy constraint indices */
-  for(subp = 0; subp < numSubpoints; ++subp) {
+  for (subp = 0; subp < numSubpoints; ++subp) {
     PetscInt cdof;
 
     ierr = PetscSectionGetConstraintDof(*subs, subp, &cdof);CHKERRQ(ierr);
     if (cdof) {
-      for(f = 0; f < numFields; ++f) {
+      for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionGetFieldConstraintIndices(s, points[subp], f, &indices);CHKERRQ(ierr);
         ierr = PetscSectionSetFieldConstraintIndices(*subs, subp, f, indices);CHKERRQ(ierr);
       }
@@ -1504,7 +1504,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 
   PetscFunctionBegin;
   ierr = PetscFree(s->numFieldComponents);CHKERRQ(ierr);
-  for(f = 0; f < s->numFields; ++f) {
+  for (f = 0; f < s->numFields; ++f) {
     ierr = PetscSectionDestroy(&s->field[f]);CHKERRQ(ierr);
     ierr = PetscFree(s->fieldNames[f]);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 
-#ifndef __TCPTHREADIMPLH
+#if !defined(__TCPTHREADIMPLH)
 #define __TCPTHREADIMPLH
 
 #include <petsc-private/threadcommimpl.h>
@@ -47,8 +47,8 @@ struct _p_PetscThreadComm_PThread{
 #endif
   PetscBool  ismainworker;                   /* Is the main thread also a work thread?*/
   PetscInt   *granks;                        /* Thread ranks - if main thread is a worker then main thread
-				                rank is 0 and ranks for other threads start from 1,
-				                otherwise the thread ranks start from 0.
+                                                rank is 0 and ranks for other threads start from 1,
+                                                otherwise the thread ranks start from 0.
                                                 These ranks are with respect to the first initialized thread pool */
   PetscInt    thread_num_start;              /* index for the first created thread (= 1 if the main thread is a worker
                                                 else 0) */
@@ -69,9 +69,9 @@ extern pthread_key_t  PetscPThreadRankkey;
 #endif
 
 #if defined(PETSC_CPU_RELAX)
-#define PetscCPURelax() do {PETSC_CPU_RELAX();} while(0)
+#define PetscCPURelax() do {PETSC_CPU_RELAX();} while (0)
 #else
-#define PetscCPURelax() do { } while(0)
+#define PetscCPURelax() do { } while (0)
 #endif
 
 EXTERN_C_BEGIN

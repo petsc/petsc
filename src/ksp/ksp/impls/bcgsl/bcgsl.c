@@ -177,7 +177,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         /* Apply pseudo-inverse */
         max_s = bcgsl->s[0];
         for (i=1; i<bell; i++) {
-          if ( bcgsl->s[i] > max_s ) {
+          if (bcgsl->s[i] > max_s) {
             max_s = bcgsl->s[i];
           }
         }

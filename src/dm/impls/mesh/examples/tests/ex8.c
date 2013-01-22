@@ -5,7 +5,8 @@ static char help[] = "test2.c: test of the new generation ExodusII readers: load
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main (int argc,char ** argv) {
+int main (int argc,char ** argv)
+{
   DM              dmBody,dmFS;
   PetscBool       inflag;
   char            infilename[PETSC_MAX_PATH_LEN+1];

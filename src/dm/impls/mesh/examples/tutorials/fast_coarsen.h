@@ -23,12 +23,14 @@ namespace ALE { namespace Coarsener {
     int edgePoints;
   } coarsen_stats;
 
-  void coarsen_CollectStats(bool stats, bool display) {
+  void coarsen_CollectStats(bool stats, bool display)
+  {
     coarsen_stats.computeStats = stats;
     coarsen_stats.displayStats = display;
   }
 
-  void coarsen_DisplayStats() {
+  void coarsen_DisplayStats()
+  {
       printf("Data for: %d levels at %f coarsening factor\n", coarsen_stats.nMeshes, coarsen_stats.beta);
       printf("|Level          |Nodes          |Faces          |Regions        |Point Comp     |Reg Comp       |Max Ang. (rad) |Min Ang. (rad) |\n");
     for (int i = 0; i <= coarsen_stats.nMeshes; i++) {
@@ -50,7 +52,8 @@ namespace ALE { namespace Coarsener {
   double * ComputeAngles(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type);
   bool isOverlap(mis_node *, mis_node *, int, double);
   bool CompatibleWithEdge(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type, ALE::Mesh::point_type, ALE::Mesh::point_type, double);
-  PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41) {
+  PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41)
+  {
     coarsen_CollectStats(1, 1);
     PetscFunctionBegin;
     if (coarsen_stats.computeStats) {
@@ -117,11 +120,11 @@ namespace ALE { namespace Coarsener {
         }
       }
       //initialize the maximum spacing ball.
-      if(tmpPoint->maxSpacing < cur_space) tmpPoint->maxSpacing = cur_space;
+      if (tmpPoint->maxSpacing < cur_space) tmpPoint->maxSpacing = cur_space;
 
       //if it's essential, push it to the ColPoints stack, which will be the pool that is compared with during the traversal-MIS algorithm.
       int boundRank = topology->getValue(boundary, *v_iter);
-        if(boundRank == dim) {
+        if (boundRank == dim) {
           tmpPoint->childColPoints.push_front(*v_iter);
           globalNodes.push_front(*v_iter);
         } else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
@@ -150,7 +153,7 @@ namespace ALE { namespace Coarsener {
           bool canRefine = true;
             //define the criterion under which we cannot refine this particular section
           for (int i = 0; i < dim; i++) {
-            if((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) {
+            if ((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) {
               canRefine = false;
               //PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]),2*pBeta*tmpPoint->maxSpacing);
             }
@@ -195,7 +198,7 @@ namespace ALE { namespace Coarsener {
                 change = change * 2;
               }
               newBlocks[index]->childPoints.push_back(*p_iter);
-              if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
+              if (ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
               p_iter++;
             }
             p_iter = tmpPoint->childColPoints.begin();
@@ -209,7 +212,7 @@ namespace ALE { namespace Coarsener {
                 if ((tmpPoint->boundaries[2*d] + tmpPoint->boundaries[2*d+1])/2 > cur_coords[d]) index += change;
                 change = change * 2;
               }
-              if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
+              if (ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
               newBlocks[index]->childColPoints.push_back(*p_iter);
               p_iter++;
             }
@@ -226,7 +229,7 @@ namespace ALE { namespace Coarsener {
       } //ending refinement while.
       //MIS picking phase
       PetscPrintf(mesh->comm(), "%d Refinement Regions created for this level.\n", leaf_list.size());
-      if(coarsen_stats.computeStats) coarsen_stats.regions[curLevel] = leaf_list.size();
+      if (coarsen_stats.computeStats) coarsen_stats.regions[curLevel] = leaf_list.size();
       std::list<mis_node *>::iterator leaf_iter = leaf_list.begin();
       std::list<mis_node *>::iterator leaf_iter_end = leaf_list.end();
       //PetscPrintf(mesh->comm(), "- created %d comparison spaces\n", leaf_list.size());
@@ -240,7 +243,7 @@ namespace ALE { namespace Coarsener {
         // go top-down with the comparisons.
         mis_node * cur_leaf = *leaf_iter;
         mis_travQueue.push_front(root);
-        while(!mis_travQueue.empty()) {
+        while (!mis_travQueue.empty()) {
           mis_node * trav_node = *mis_travQueue.begin();
           mis_travQueue.pop_front();
           if (trav_node->isLeaf && trav_node != cur_leaf) { //add this leaf to the comparison list.
@@ -248,8 +251,8 @@ namespace ALE { namespace Coarsener {
           } else { //for non-leafs we compare the children using the same heuristic, namely if there could be any possible collision between the two.
             std::list<mis_node *>::iterator child_iter = trav_node->subspaces.begin();
             std::list<mis_node *>::iterator child_iter_end = trav_node->subspaces.end();
-            while(child_iter != child_iter_end) {
-              if(isOverlap(*child_iter, *leaf_iter, dim, pBeta)) mis_travQueue.push_front(*child_iter);
+            while (child_iter != child_iter_end) {
+              if (isOverlap(*child_iter, *leaf_iter, dim, pBeta)) mis_travQueue.push_front(*child_iter);
               child_iter++;
             }
           } //end what to do for non-leafs
@@ -315,7 +318,7 @@ namespace ALE { namespace Coarsener {
               }
               double mdist = l_space + a_space;
               /*if (curLevel != nMeshes && topology->getPatch(curLevel+1)->capContains(*adj_iter)) {
-                if(nearPoint == -1 || dist < nearPointDist) {
+                if (nearPoint == -1 || dist < nearPointDist) {
                   whyset = 1;
                   nearPoint = *adj_iter;
                   nearPointDist = dist;
@@ -327,7 +330,7 @@ namespace ALE { namespace Coarsener {
             comp_iter++;
           }
           if (l_is_ok) {  //this point has run the gambit... cool.
-            if(curLevel != 0) {
+            if (curLevel != 0) {
               cur_leaf->childColPoints.push_front(*l_points_iter);
                globalNodes.push_front(*l_points_iter); //so we only need to run this once and can keep a tally! (node nested enforced by default)
             };
@@ -346,7 +349,7 @@ namespace ALE { namespace Coarsener {
                 }
                 ps_iter++;
               }
-              if(contTri == -1) {
+              if (contTri == -1) {
                 const double * badNear = coords->restrict(0, nearPoint);
                //printf("ERROR: Couldn't find triangle for point %d: (%f, %f) - nearest is %d: (%f, %f) set for %d\n", *l_points_iter, l_coords[0], l_coords[1], nearPoint, badNear[0], badNear[1], whyset);
                //brute force find the actual nearest.
@@ -400,7 +403,7 @@ namespace ALE { namespace Coarsener {
       } //end while over leaf spaces; after this point we have a complete MIS in globalNodes
       //Mesh building phase
       //if (curLevel != 0) {
-#ifdef PETSC_HAVE_TRIANGLE
+#if defined(PETSC_HAVE_TRIANGLE)
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
 
@@ -429,7 +432,7 @@ namespace ALE { namespace Coarsener {
       c_iter = globalNodes.begin();
       c_iter_end = globalNodes.end();
       index = 0;
-      while(c_iter != c_iter_end) {
+      while (c_iter != c_iter_end) {
         input->pointmarkerlist[index] = *c_iter;
         c_iter++;
         index++;
@@ -451,7 +454,7 @@ namespace ALE { namespace Coarsener {
         ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
         while (n_iter != n_iter_end) {
           for (int i = 0; i < input->numberofpoints; i++) {
-            if(input->pointmarkerlist[i] == *n_iter) {
+            if (input->pointmarkerlist[i] == *n_iter) {
               if (input->segmentlist[2*index] == -1) {
                 input->segmentlist[2*index] = i;
               } else {
@@ -530,15 +533,17 @@ namespace ALE { namespace Coarsener {
   }  //end of CreateCoarsenedHierarchy
 
 
-/*  bool isOverlap(mis_node * a, mis_node * b, int dim) { //see if any two balls in the two sections could overlap at all.
+/*  bool isOverlap(mis_node * a, mis_node * b, int dim) //see if any two balls in the two sections could overlap at all.
+    {
     int sharedDim = 0;
     for (int i = 0; i < dim; i++) {
-      if((a->boundaries[2*i] - a->maxSpacing <= b->boundaries[2*i+1] + b->maxSpacing) && (b->boundaries[2*i] - b->maxSpacing <= a->boundaries[2*i+1] + a->maxSpacing)) sharedDim++;
+      if ((a->boundaries[2*i] - a->maxSpacing <= b->boundaries[2*i+1] + b->maxSpacing) && (b->boundaries[2*i] - b->maxSpacing <= a->boundaries[2*i+1] + a->maxSpacing)) sharedDim++;
     }
     if (sharedDim == dim) {return true;
     } else return false;
 }*/
-  bool IsPointInElement (Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::real_section_type::patch_type cPatch, ALE::Mesh::point_type triangle, ALE::Mesh::point_type node) {
+  bool IsPointInElement (Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::real_section_type::patch_type cPatch, ALE::Mesh::point_type triangle, ALE::Mesh::point_type node)
+  {
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
     double v_coords[dim];
@@ -578,7 +583,8 @@ namespace ALE { namespace Coarsener {
     if (t_area - area  > 0.00001*area) return false;
     return true;
   }
-  bool CompatibleWithEdge(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type ePatch, ALE::Mesh::point_type edge, ALE::Mesh::point_type point, double region) {
+  bool CompatibleWithEdge(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type ePatch, ALE::Mesh::point_type edge, ALE::Mesh::point_type point, double region)
+  {
     //If the point is within the region-sized area around the edge, then return false.
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
@@ -615,7 +621,8 @@ namespace ALE { namespace Coarsener {
     if (res_len < region*region) return false; //it's in the region surrounding the edge.
     return true;
   }
-  double * ComputeAngles(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type patch) {
+  double * ComputeAngles(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type patch)
+  {
     //return the minimum and maximum angles for the given patch.
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
@@ -635,7 +642,7 @@ namespace ALE { namespace Coarsener {
       int index = 0;
       while (p_iter != p_iter_end) {
         const double * tmpCoords;
-        if(topology->getPatch(patch)->depth(*p_iter) == 0) {
+        if (topology->getPatch(patch)->depth(*p_iter) == 0) {
           tmpCoords = coords->restrict(0, *p_iter);
           for (int i = 0; i < dim; i++) {
             point_coords[i + index*dim] = tmpCoords[i];

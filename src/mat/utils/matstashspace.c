@@ -20,7 +20,7 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2,PetscInt n,PetscMatStashSpace 
   a->total_space_size = 0;
   a->next             = PETSC_NULL;
 
-  if (*space){
+  if (*space) {
     (*space)->next      = a;
     a->total_space_size = (*space)->total_space_size;
   }
@@ -38,7 +38,7 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *spa
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  while ((*space) != PETSC_NULL){
+  while ((*space) != PETSC_NULL) {
     a    = (*space)->next;
     ierr = PetscMemcpy(val,(*space)->val,((*space)->local_used*bs2)*sizeof(PetscScalar));CHKERRQ(ierr);
     val += bs2*(*space)->local_used;
@@ -62,7 +62,7 @@ PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace *space)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  while (*space){
+  while (*space) {
     a      = (*space)->next;
     ierr   = PetscFree3((*space)->space_head,(*space)->idx,(*space)->idy);CHKERRQ(ierr);
     ierr   = PetscFree((*space));CHKERRQ(ierr);

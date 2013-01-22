@@ -6,7 +6,7 @@ Options: \n\
      -my : number elements in y-direciton \n\
      -c_str : indicates the structure of the coefficients to use. \n\
           -c_str 0 => Setup for an analytic solution with a vertical jump in viscosity. This problem is driven by the \n\
-                         forcing function f = ( 0, sin(n_z pi y )cos( pi x ). \n\
+                         forcing function f = (0, sin(n_z pi y)cos(pi x). \n\
                          Parameters: \n\
                               -solcx_eta0 : the viscosity to the left of the interface \n\
                               -solcx_eta1 : the viscosity to the right of the interface \n\
@@ -878,14 +878,14 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
       /* form element stiffness matrix */
       FormStressOperatorQ1(Ae,el_coords,prop_eta);
       FormGradientOperatorQ1(Ge,el_coords);
-      /*               FormDivergenceOperatorQ1( De, el_coords ); */
+      /*               FormDivergenceOperatorQ1(De, el_coords); */
       FormScaledMassMatrixOperatorQ1(Ce,el_coords,prop_eta);
 
       /* insert element matrix into global matrix */
       ierr = DMDAGetElementEqnums_up(u_eqn,p_eqn,ei,ej);CHKERRQ(ierr);
       ierr = MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*U_DOFS,u_eqn,Ae,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatSetValuesStencil(A,NODES_PER_EL*U_DOFS,u_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ge,ADD_VALUES);CHKERRQ(ierr);
-      /*     MatSetValuesStencil( A, NODES_PER_EL*P_DOFS,p_eqn, NODES_PER_EL*U_DOFS,u_eqn, De, ADD_VALUES ); */
+      /*     MatSetValuesStencil(A, NODES_PER_EL*P_DOFS,p_eqn, NODES_PER_EL*U_DOFS,u_eqn, De, ADD_VALUES); */
       ierr = MatSetValuesStencil(A,NODES_PER_EL*P_DOFS,p_eqn,NODES_PER_EL*P_DOFS,p_eqn,Ce,ADD_VALUES);CHKERRQ(ierr);
     }
   }
@@ -1228,7 +1228,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   /* local number of elements */
   ierr = DMDAGetLocalElementSize(da_Stokes,&mxl,&myl,PETSC_NULL);CHKERRQ(ierr);
 
-  /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!! // */
+  /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!!  */
   ierr = DMDAGetInfo(da_Stokes,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetElementOwnershipRanges2d(da_Stokes,&lx,&ly);CHKERRQ(ierr);
 
@@ -1248,7 +1248,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   /* define coefficients */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-c_str",&coefficient_structure,PETSC_NULL);CHKERRQ(ierr);
-  /*     PetscPrintf( PETSC_COMM_WORLD, "Using coeficient structure %D \n", coefficient_structure ); */
+  /*     PetscPrintf(PETSC_COMM_WORLD, "Using coeficient structure %D \n", coefficient_structure); */
 
   ierr = DMCreateGlobalVector(da_prop,&properties);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da_prop,&l_properties);CHKERRQ(ierr);
@@ -1440,7 +1440,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
           radius2 = PetscSqr(coord_x - opts_c0x) + PetscSqr(coord_y - opts_c0y);
           if (radius2 < opts_r*opts_r
-              || (   PetscAbs(+(coord_x - opts_s0x)*cos(opts_phi) + (coord_y - opts_s0y)*sin(opts_phi)) < opts_dx/2
+              || (PetscAbs(+(coord_x - opts_s0x)*cos(opts_phi) + (coord_y - opts_s0y)*sin(opts_phi)) < opts_dx/2
                   && PetscAbs(-(coord_x - opts_s0x)*sin(opts_phi) + (coord_y - opts_s0y)*cos(opts_phi)) < opts_dy/2)) {
             element_props[j][i].eta[p] =  opts_eta1;
             element_props[j][i].fx[p]  =  0.0;
@@ -1525,15 +1525,15 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   Vec x;
   PetscInt L;
   VecDuplicate(f,&x);
-  MatMult(A,X, x );
-  VecAXPY( x, -1.0, f );
-  VecNorm( x, NORM_2, &nrm );
-  PetscPrintf( PETSC_COMM_WORLD, "Its. %1.4d, norm |AX-f| = %1.5e \n", its, nrm );
+  MatMult(A,X, x);
+  VecAXPY(x, -1.0, f);
+  VecNorm(x, NORM_2, &nrm);
+  PetscPrintf(PETSC_COMM_WORLD, "Its. %1.4d, norm |AX-f| = %1.5e \n", its, nrm);
   VecDestroy(&x);
 
-  VecNorm( X, NORM_2, &nrm );
-  VecGetSize( X, &L );
-  PetscPrintf( PETSC_COMM_WORLD, "           norm |X|/sqrt{N} = %1.5e \n", nrm/sqrt( (PetscScalar)L ) );
+  VecNorm(X, NORM_2, &nrm);
+  VecGetSize(X, &L);
+  PetscPrintf(PETSC_COMM_WORLD, "           norm |X|/sqrt{N} = %1.5e \n", nrm/sqrt((PetscScalar)L));
   }
   */
 
@@ -1578,11 +1578,11 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     ierr = VecStrideNorm(X_analytic,2,NORM_INFINITY,&nrmI[2]);CHKERRQ(ierr);
 
     /*
-    PetscPrintf( PETSC_COMM_WORLD, "%1.4e   %1.4e %1.4e %1.4e    %1.4e %1.4e %1.4e    %1.4e %1.4e %1.4e\n",
+    PetscPrintf(PETSC_COMM_WORLD, "%1.4e   %1.4e %1.4e %1.4e    %1.4e %1.4e %1.4e    %1.4e %1.4e %1.4e\n",
     1.0/mx,
     nrm1[0]/(double)N, sqrt(nrm2[0]/(double)N), nrmI[0],
     nrm1[1]/(double)N, sqrt(nrm2[1]/(double)N), nrmI[1],
-    nrm1[2]/(double)N, sqrt(nrm2[2]/(double)N), nrmI[2] );
+    nrm1[2]/(double)N, sqrt(nrm2[2]/(double)N), nrmI[2]);
     */
     ierr = DMDestroy(&da_Stokes_analytic);CHKERRQ(ierr);
     ierr = VecDestroy(&X_analytic);CHKERRQ(ierr);
@@ -1651,7 +1651,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* /// */
+  /* --- */
 
   ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
@@ -1719,7 +1719,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* /// */
+  /* --- */
 
   ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
@@ -1787,7 +1787,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* /// */
+  /* --- */
 
   ierr = PetscMalloc(sizeof(PetscInt)*nx,&bc_global_ids);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscScalar)*nx,&bc_vals);CHKERRQ(ierr);
@@ -1855,7 +1855,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* /// */
+  /* --- */
 
   ierr = PetscMalloc(sizeof(PetscInt)*nx,&bc_global_ids);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscScalar)*nx,&bc_vals);CHKERRQ(ierr);

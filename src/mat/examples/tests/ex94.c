@@ -76,7 +76,7 @@ int main(int argc,char **args)
 
   /* Test MatMatMult() */
   /*-------------------*/
-  if (Test_MatMatMult){
+  if (Test_MatMatMult) {
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"matmatmult_");CHKERRQ(ierr); /* enable option '-matmatmult_' for matrix C */
@@ -85,7 +85,7 @@ int main(int argc,char **args)
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
-    for (i=0; i<2; i++){
+    for (i=0; i<2; i++) {
       alpha -=0.1;
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **args)
 
   /* Test MatTransposeMatMult() and MatMatTransposeMult() */
   /*------------------------------------------------------*/
-  if (Test_MatMatTr){
+  if (Test_MatMatTr) {
     /* Create P */
     PetscInt PN,rstart,rend;
     PN   = M/2;
@@ -135,11 +135,11 @@ int main(int argc,char **args)
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
-    for (i=0; i<nzp; i++){
+    for (i=0; i<nzp; i++) {
       ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
     }
-    for (i=rstart; i<rend; i++){
-      for (j=0; j<nzp; j++){
+    for (i=rstart; i<rend; i++) {
+      for (j=0; j<nzp; j++) {
         ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
       }
@@ -168,12 +168,12 @@ int main(int argc,char **args)
     /* Compare P^T*B and R*B */
     ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
     ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
-    if (!flg){
+    if (!flg) {
       /* Check norm of C1 = (-1.0)*C + C1 */
       PetscReal nrm;
       ierr = MatAXPY(C1,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(C1,NORM_INFINITY,&nrm);CHKERRQ(ierr);
-      if (nrm > 1.e-14){
+      if (nrm > 1.e-14) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatTransposeMatMult(): %g\n",nrm);
       }
     }
@@ -181,7 +181,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* C = B*R^T */
-    if (size == 1){
+    if (size == 1) {
       ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
       ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ int main(int argc,char **args)
       /* Check */
       ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
       ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
-      if (!flg){
+      if (!flg) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatMatTransposeMult()\n");
       }
       ierr = MatDestroy(&C1);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ int main(int argc,char **args)
 
   /* Test MatPtAP() */
   /*----------------------*/
-  if (Test_MatPtAP){
+  if (Test_MatPtAP) {
     PetscInt PN;
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
@@ -218,12 +218,12 @@ int main(int argc,char **args)
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<nzp; i++){
+    for (i=0; i<nzp; i++) {
       ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
     }
     ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
-      for (j=0; j<nzp; j++){
+    for (i=rstart; i<rend; i++) {
+      for (j=0; j<nzp; j++) {
         ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
       }
@@ -236,11 +236,11 @@ int main(int argc,char **args)
     ierr = MatGetSize(P,&pM,&pN);CHKERRQ(ierr);
     ierr = MatGetLocalSize(P,&pm,&pn);CHKERRQ(ierr);
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    /* if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF," MatPtAP() is done, P, %d, %d, %d,%d\n",pm,pn,pM,pN);} */
+    /* if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," MatPtAP() is done, P, %d, %d, %d,%d\n",pm,pn,pM,pN);} */
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
-    for (i=0; i<2; i++){
+    for (i=0; i<2; i++) {
       alpha -=0.1;
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -253,7 +253,7 @@ int main(int argc,char **args)
 
     if (size>1) Test_MatRARt = PETSC_FALSE;
     /* Test MatRARt() */
-    if (Test_MatRARt){
+    if (Test_MatRARt) {
       Mat       R, RARt;
       PetscBool equal;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
@@ -269,7 +269,7 @@ int main(int argc,char **args)
       ierr = MatDestroy(&RARt);CHKERRQ(ierr);
     }
 
-    if (Test_MatMatMatMult && size == 1){
+    if (Test_MatMatMatMult && size == 1) {
       Mat       R, RAP;
       PetscBool equal;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);

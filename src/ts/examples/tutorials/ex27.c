@@ -182,7 +182,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-		     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
@@ -190,15 +190,15 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       for (l = 0; l < N_SPECIES; l++) {
-	if (i == 0) {
-	  if (l == 0) {
-	    x[j][i].sp[l] = (ctx->x_inflow.sp[l]*((PetscScalar)j) / (My - 1));
-	  } else if (l == 1) {
-	    x[j][i].sp[l] = (ctx->x_inflow.sp[l]*(1. - ((PetscScalar)j) / (My - 1)));
-	  } else {
-	    x[j][i].sp[l] = ctx->x_0.sp[l];
-	  }
-	}
+        if (i == 0) {
+          if (l == 0) {
+            x[j][i].sp[l] = (ctx->x_inflow.sp[l]*((PetscScalar)j) / (My - 1));
+          } else if (l == 1) {
+            x[j][i].sp[l] = (ctx->x_inflow.sp[l]*(1. - ((PetscScalar)j) / (My - 1)));
+          } else {
+            x[j][i].sp[l] = ctx->x_0.sp[l];
+          }
+        }
       }
     }
   }
@@ -239,76 +239,76 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
       vyp = .5*(vy+avy); vym = .5*(vy-avy);
       /* chemical reactions */
       for (l = 0; l < N_SPECIES; l++) {
-	/* determine the velocites as the gradients of the pressure */
-	if (i == 0) {
-	  sxp = (x[j][i+1].sp[l] - x[j][i].sp[l])*dhx;
-	  sxm = sxp;
-	} else if (i == info->mx - 1) {
-	  sxp = (x[j][i].sp[l] - x[j][i-1].sp[l])*dhx;
-	  sxm = sxp;
-	} else {
-	  sxm = (x[j][i+1].sp[l] - x[j][i].sp[l])*dhx;
-	  sxp = (x[j][i].sp[l] - x[j][i-1].sp[l])*dhx;
-	}
-	if (j == 0) {
-	  syp = (x[j+1][i].sp[l] - x[j][i].sp[l])*dhy;
-	  sym = syp;
-	} else if (j == info->my - 1) {
-	  syp = (x[j][i].sp[l] - x[j-1][i].sp[l])*dhy;
-	  sym = syp;
-	} else {
-	  sym = (x[j+1][i].sp[l] - x[j][i].sp[l])*dhy;
-	  syp = (x[j][i].sp[l] - x[j-1][i].sp[l])*dhy;
-	} /* 4 flops per species*point */
+        /* determine the velocites as the gradients of the pressure */
+        if (i == 0) {
+          sxp = (x[j][i+1].sp[l] - x[j][i].sp[l])*dhx;
+          sxm = sxp;
+        } else if (i == info->mx - 1) {
+          sxp = (x[j][i].sp[l] - x[j][i-1].sp[l])*dhx;
+          sxm = sxp;
+        } else {
+          sxm = (x[j][i+1].sp[l] - x[j][i].sp[l])*dhx;
+          sxp = (x[j][i].sp[l] - x[j][i-1].sp[l])*dhx;
+        }
+        if (j == 0) {
+          syp = (x[j+1][i].sp[l] - x[j][i].sp[l])*dhy;
+          sym = syp;
+        } else if (j == info->my - 1) {
+          syp = (x[j][i].sp[l] - x[j-1][i].sp[l])*dhy;
+          sym = syp;
+        } else {
+          sym = (x[j+1][i].sp[l] - x[j][i].sp[l])*dhy;
+          syp = (x[j][i].sp[l] - x[j-1][i].sp[l])*dhy;
+        } /* 4 flops per species*point */
 
-	if (i == 0) {
-	  if (l == 0) {
-	    f[j][i].sp[l] = (x[j][i].sp[l] - ctx->x_inflow.sp[l]*((PetscScalar)j) / (info->my - 1));
-	  } else if (l == 1) {
-	    f[j][i].sp[l] = (x[j][i].sp[l] - ctx->x_inflow.sp[l]*(1. - ((PetscScalar)j) / (info->my - 1)));
-	  } else {
-	    f[j][i].sp[l] = x[j][i].sp[l];
-	  }
+        if (i == 0) {
+          if (l == 0) {
+            f[j][i].sp[l] = (x[j][i].sp[l] - ctx->x_inflow.sp[l]*((PetscScalar)j) / (info->my - 1));
+          } else if (l == 1) {
+            f[j][i].sp[l] = (x[j][i].sp[l] - ctx->x_inflow.sp[l]*(1. - ((PetscScalar)j) / (info->my - 1)));
+          } else {
+            f[j][i].sp[l] = x[j][i].sp[l];
+          }
 
-	} else {
-	  f[j][i].sp[l] = xt[j][i].sp[l]*scale;
-	  u       = x[j][i].sp[l];
-	  if (j == 0) {
-	    uyy = u - x[j+1][i].sp[l];
-	  } else if (j == info->my - 1) {
-	    uyy = u - x[j-1][i].sp[l];
-	  } else {
-	    uyy     = (2.0*u - x[j-1][i].sp[l] - x[j+1][i].sp[l])*hxdhy;
-	  }
-	  if (i != info->mx - 1) {
-	    uxx     = (2.0*u - x[j][i-1].sp[l] - x[j][i+1].sp[l])*hydhx;
-	  } else {
-	    uxx = u - x[j][i-1].sp[l];
-	  } /* 10 flops per species*point */
+        } else {
+          f[j][i].sp[l] = xt[j][i].sp[l]*scale;
+          u       = x[j][i].sp[l];
+          if (j == 0) {
+            uyy = u - x[j+1][i].sp[l];
+          } else if (j == info->my - 1) {
+            uyy = u - x[j-1][i].sp[l];
+          } else {
+            uyy     = (2.0*u - x[j-1][i].sp[l] - x[j+1][i].sp[l])*hxdhy;
+          }
+          if (i != info->mx - 1) {
+            uxx     = (2.0*u - x[j][i-1].sp[l] - x[j][i+1].sp[l])*hydhx;
+          } else {
+            uxx = u - x[j][i-1].sp[l];
+          } /* 10 flops per species*point */
 
-	  f_advect = 0.;
-	  f_advect += scale*(vxp*sxp + vxm*sxm);
-	  f_advect += scale*(vyp*syp + vym*sym);
-	  f[j][i].sp[l] += f_advect + ctx->dispersivity*(uxx + uyy);
-	  /* 14 flops per species*point */
-	}
+          f_advect = 0.;
+          f_advect += scale*(vxp*sxp + vxm*sxm);
+          f_advect += scale*(vyp*syp + vym*sym);
+          f[j][i].sp[l] += f_advect + ctx->dispersivity*(uxx + uyy);
+          /* 14 flops per species*point */
+        }
       }
       /* reaction */
       if (i != 0) {
-	for (m = 0; m < N_REACTIONS; m++) {
-	  rate = ctx->rate_constant[m];
-	  for (l = 0; l < N_SPECIES; l++) {
-	    if (stoich(m, l) < 0) {
-	      /* assume an elementary reaction */
-	      rate *= PetscPowScalar(x[j][i].sp[l], PetscAbsScalar(stoich(m, l)));
-	      /* ~10 flops per reaction per species per point */
-	    }
-	  }
-	  for (l = 0; l < N_SPECIES; l++) {
-	      f[j][i].sp[l] += -scale*stoich(m, l)*rate;  /* Reaction term */
-	      /* 3 flops per reaction per species per point */
-	  }
-	}
+        for (m = 0; m < N_REACTIONS; m++) {
+          rate = ctx->rate_constant[m];
+          for (l = 0; l < N_SPECIES; l++) {
+            if (stoich(m, l) < 0) {
+              /* assume an elementary reaction */
+              rate *= PetscPowScalar(x[j][i].sp[l], PetscAbsScalar(stoich(m, l)));
+              /* ~10 flops per reaction per species per point */
+            }
+          }
+          for (l = 0; l < N_SPECIES; l++) {
+              f[j][i].sp[l] += -scale*stoich(m, l)*rate;  /* Reaction term */
+              /* 3 flops per reaction per species per point */
+          }
+        }
       }
     }
   }
@@ -339,15 +339,15 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-		     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   ierr = DMDAVecGetArray(da,W,&x);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       for (l = 0; l < N_SPECIES; l++) {
-	if (x[j][i].sp[l] < 0.) {
-	  x[j][i].sp[l] = 0.;
-	}
+        if (x[j][i].sp[l] < 0.) {
+          x[j][i].sp[l] = 0.;
+        }
       }
     }
   }

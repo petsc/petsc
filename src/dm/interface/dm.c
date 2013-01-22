@@ -57,7 +57,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
   *dm = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
@@ -874,7 +874,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,MatType mtype,Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -1725,7 +1725,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     MPI_Op       op;
     PetscScalar *lArray, *gArray;
 
-    switch(mode) {
+    switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
 #if defined(PETSC_HAVE_MPI_REPLACE)
@@ -1736,8 +1736,8 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     case ADD_VALUES:
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
-  default:
-    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+    default:
+      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     }
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
@@ -1781,7 +1781,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
     MPI_Op       op;
     PetscScalar *lArray, *gArray;
 
-    switch(mode) {
+    switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
 #if defined(PETSC_HAVE_MPI_REPLACE)
@@ -2645,7 +2645,8 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPrintCellVector"
-PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[]) {
+PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[])
+{
   PetscInt       f;
   PetscErrorCode ierr;
 
@@ -2659,7 +2660,8 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPrintCellMatrix"
-PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[]) {
+PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[])
+{
   PetscInt       f, g;
   PetscErrorCode ierr;
 
@@ -2939,7 +2941,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
       local[l+d-c] = off+d;
     }
     if (gdof < 0) {
-      for(d = 0; d < gsize; ++d, ++l) {
+      for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
         ierr = PetscFindInt(offset,size,ranges,&r);CHKERRQ(ierr);
@@ -2948,7 +2950,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
         remote[l].index = offset - ranges[r];
       }
     } else {
-      for(d = 0; d < gsize; ++d, ++l) {
+      for (d = 0; d < gsize; ++d, ++l) {
         remote[l].rank  = rank;
         remote[l].index = goff+d - ranges[rank];
       }

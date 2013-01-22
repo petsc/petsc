@@ -62,11 +62,11 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
-  if (pc->setupcalled != 0){
+  if (pc->setupcalled != 0) {
     try {
       if (ainv->scaled) {
         delete (cuspainvprecondscaled*)ainv->AINVCUSP;
-      } else{
+      } else {
         delete (cuspainvprecond*)ainv->AINVCUSP;
       }
     } catch(char* ex) {
@@ -79,7 +79,7 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
     ainv->AINVCUSP =  0;CHKERRQ(1); /* TODO */
 #else
     gpustruct = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
 #else
     mat = (CUSPMATRIX*)gpustruct->mat;

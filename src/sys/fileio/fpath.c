@@ -74,32 +74,32 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
     char tmppath[PETSC_MAX_PATH_LEN];
     if (fullpath[1] == '/') {
 #if defined(PETSC_HAVE_GETPWUID)
-	pwde = getpwuid(geteuid());
-	if (!pwde) PetscFunctionReturn(0);
-	ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);
-	ierr = PetscStrlen(tmppath,&ln);CHKERRQ(ierr);
-	if (tmppath[ln-1] != '/') {ierr = PetscStrcat(tmppath+ln-1,"/");CHKERRQ(ierr);}
-	ierr = PetscStrcat(tmppath,fullpath + 2);CHKERRQ(ierr);
-	ierr = PetscStrncpy(fullpath,tmppath,flen);CHKERRQ(ierr);
+        pwde = getpwuid(geteuid());
+        if (!pwde) PetscFunctionReturn(0);
+        ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);
+        ierr = PetscStrlen(tmppath,&ln);CHKERRQ(ierr);
+        if (tmppath[ln-1] != '/') {ierr = PetscStrcat(tmppath+ln-1,"/");CHKERRQ(ierr);}
+        ierr = PetscStrcat(tmppath,fullpath + 2);CHKERRQ(ierr);
+        ierr = PetscStrncpy(fullpath,tmppath,flen);CHKERRQ(ierr);
 #else
         PetscFunctionReturn(0);
 #endif
     } else {
-	char *p,*name;
+        char *p,*name;
 
-	/* Find username */
-	name = fullpath + 1;
-	p    = name;
-	while (*p && *p != '/') p++;
-	*p = 0; p++;
-	pwde = getpwnam(name);
-	if (!pwde) PetscFunctionReturn(0);
-	
-	ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);
-	ierr = PetscStrlen(tmppath,&ln);CHKERRQ(ierr);
-	if (tmppath[ln-1] != '/') {ierr = PetscStrcat(tmppath+ln-1,"/");CHKERRQ(ierr);}
-	ierr = PetscStrcat(tmppath,p);CHKERRQ(ierr);
-	ierr = PetscStrncpy(fullpath,tmppath,flen);CHKERRQ(ierr);
+        /* Find username */
+        name = fullpath + 1;
+        p    = name;
+        while (*p && *p != '/') p++;
+        *p = 0; p++;
+        pwde = getpwnam(name);
+        if (!pwde) PetscFunctionReturn(0);
+
+        ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);
+        ierr = PetscStrlen(tmppath,&ln);CHKERRQ(ierr);
+        if (tmppath[ln-1] != '/') {ierr = PetscStrcat(tmppath+ln-1,"/");CHKERRQ(ierr);}
+        ierr = PetscStrcat(tmppath,p);CHKERRQ(ierr);
+        ierr = PetscStrncpy(fullpath,tmppath,flen);CHKERRQ(ierr);
     }
   }
   /* Remove the automounter part of the path */
@@ -131,5 +131,5 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullpath,path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}	
+}
 #endif

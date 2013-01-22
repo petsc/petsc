@@ -17,7 +17,7 @@ void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,Pets
   if (n_local) *n_local = nloc;
   CHKFORTRANNULLOBJECT(ksp);
   if (ksp) {
-    for (i=0; i<nloc; i++){
+    for (i=0; i<nloc; i++) {
       ksp[i] = tksp[i];
     }
   }

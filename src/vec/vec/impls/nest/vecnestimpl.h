@@ -1,5 +1,5 @@
 
-#ifndef VecNest_impl_h
+#if !defined(VecNest_impl_h)
 #define VecNest_impl_h
 
 #include <petsc-private/vecimpl.h>

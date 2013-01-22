@@ -150,7 +150,7 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
 }
 /* -------------------------------------------------------------*/
 
-void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr )
+void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr)
 {
   Vec B = *b,X = *x;
   if (FORTRANNULLOBJECT(b)) B = PETSC_NULL;
@@ -233,9 +233,9 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_STDCALL *func)
   CHKFORTRANNULLOBJECT(cctx);
   CHKFORTRANNULLFUNCTION(destroy);
 
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_){
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESDefaultConverged,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_){
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESSkipConverged,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)func,cctx);
@@ -338,7 +338,7 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitor,(PetscVoidFunction)func,mctx);
     if (*ierr) return;
-    if (FORTRANNULLFUNCTION(mondestroy)){
+    if (FORTRANNULLFUNCTION(mondestroy)) {
       *ierr = SNESMonitorSet(*snes,oursnesmonitor,*snes,PETSC_NULL);
     } else {
       CHKFORTRANNULLFUNCTION(mondestroy);
@@ -348,8 +348,9 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
   }
 }
 
-void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr ){
-*__ierr = SNESGetSNESLineSearch(*snes, linesearch);
+void PETSC_STDCALL  snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr)
+{
+  *__ierr = SNESGetSNESLineSearch(*snes, linesearch);
 }
 
 EXTERN_C_END

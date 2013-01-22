@@ -45,7 +45,7 @@ int main(int argc,char **argv)
 
   /* test MemoryScalable ao */
   /*-------------------------*/
-  if (!rank){
+  if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable: \n");
   }
   ierr = AOCreateMemoryScalableIS(isapp,ispetsc,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
 
   /* test MemoryScalable ao: ispetsc = PETSC_NULL */
   /*-----------------------------------------------*/
-  if (!rank){
+  if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable with ispetsc=PETSC_NULL:\n");
   }
   ierr = AOCreateMemoryScalableIS(isapp,PETSC_NULL,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
 
   /* test general API */
   /*------------------*/
-  if (!rank){
+  if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest general API: \n");
   }
   ierr = AOCreate(PETSC_COMM_WORLD,&ao);CHKERRQ(ierr);

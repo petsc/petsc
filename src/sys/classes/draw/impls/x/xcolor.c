@@ -80,7 +80,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 
   PetscFunctionBegin;
   if (colormap) gColormap = colormap;
-  else          gColormap   = DefaultColormap(display,screen);
+  else          gColormap = DefaultColormap(display,screen);
 
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
@@ -128,7 +128,6 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   PetscBool      fast = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   if (colormap)  gColormap = colormap;
   else           gColormap = XCreateColormap(display,RootWindow(display,screen),visual,AllocAll);
 
@@ -223,7 +222,7 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap col
 
   PetscFunctionBegin;
   if (XiWin->depth < 8) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
-  if (!gColormap){
+  if (!gColormap) {
     Display  *display;  /* Private display will exist forever contains colormap shared by all windows */
     int      screen;
     Visual*  vis;
@@ -253,12 +252,12 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap col
 /*
     This routine gets the visual class (PseudoColor, etc) and returns
     it.  It finds the default visual.  Possible returns are
-	PseudoColor
-	StaticColor
-	DirectColor
-	TrueColor
-	GrayScale
-	StaticGray
+        PseudoColor
+        StaticColor
+        DirectColor
+        TrueColor
+        GrayScale
+        StaticGray
  */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawXiSetVisualClass"
@@ -271,8 +270,7 @@ PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X* XiWin)
     XiWin->vis    = vinfo.visual;
   } else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
-  } else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,
-    DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)) {
+  } else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
   } else {
     XiWin->vis    = DefaultVisual(XiWin->disp,XiWin->screen);

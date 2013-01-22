@@ -2,7 +2,8 @@
 
 namespace ALE {
   namespace Bardhan {
-    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[], PetscReal *faceNormals[]) {
+    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[], PetscReal *faceNormals[])
+    {
       PetscViewer    viewer;
       FILE          *f;
       PetscReal     *coords;
@@ -29,14 +30,14 @@ namespace ALE {
       numElements = atoi(x);
       ierr = PetscMalloc(numVertices*(dim+1) * sizeof(PetscReal), &coords);CHKERRXX(ierr);
       ierr = PetscMalloc(numVertices*(dim+1) * sizeof(PetscReal), &normals);CHKERRXX(ierr);
-      for(PetscInt i = 0; i < numVertices; ++i) {
+      for (PetscInt i = 0; i < numVertices; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
-        for(int c = 0; c < dim+1; c++) {
+        for (int c = 0; c < dim+1; c++) {
           coords[i*(dim+1)+c] = atof(x);
           x = strtok(NULL, " ");
         }
-        for(int c = 0; c < dim+1; c++) {
+        for (int c = 0; c < dim+1; c++) {
           normals[i*(dim+1)+c] = atof(x);
           x = strtok(NULL, " ");
         }
@@ -50,10 +51,10 @@ namespace ALE {
       *coordinates = coords;
       *faceNormals = normals;
       ierr = PetscMalloc(numElements*numCorners * sizeof(PetscInt), &verts);CHKERRXX(ierr);
-      for(PetscInt i = 0; i < numElements; ++i) {
+      for (PetscInt i = 0; i < numElements; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
-        for(int c = 0; c < numCorners; c++) {
+        for (int c = 0; c < numCorners; c++) {
           verts[i*numCorners+c] = atoi(x) - 1;
           x = strtok(NULL, " ");
         }

@@ -251,7 +251,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
   PetscValidPointer(SP,5);
 
   *SP = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -368,7 +368,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
     ierr = VecMAXPY(vec,sp->n,sp->alpha,sp->vecs);CHKERRQ(ierr);
   }
 
-  if (sp->remove){
+  if (sp->remove) {
     ierr = (*sp->remove)(sp,vec,sp->rmctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
 
   ierr = MatMatMultSymbolic(A,B,fill,&D);CHKERRQ(ierr);
-  for (i=0; i<2; i++){
+  for (i=0; i<2; i++) {
     ierr = MatMatMultNumeric(A,B,D);CHKERRQ(ierr);
   }
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
 
   /* Test D = B*C (dense*dense) */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size == 1){
+  if (size == 1) {
     ierr = MatMatMult(B,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatMatMult(B,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);

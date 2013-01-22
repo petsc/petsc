@@ -105,20 +105,20 @@ int main(int argc,char **argv)
   ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
   } else {
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
-    if (fd_jacobian_coloring){ /* Use finite differences with coloring */
+    if (fd_jacobian_coloring) { /* Use finite differences with coloring */
       /* Get data structure of J */
       PetscBool  pc_diagonal;
       ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
-      if (pc_diagonal){ /* the preconditioner of J is a diagonal matrix */
+      if (pc_diagonal) { /* the preconditioner of J is a diagonal matrix */
         PetscInt rstart,rend,i;
         PetscScalar  zero=0.0;
         ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
-        for (i=rstart; i<rend; i++){
+        for (i=rstart; i<rend; i++) {
           ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
         }
         ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -154,12 +154,12 @@ int main(int argc,char **argv)
 
   /* Test TSSetPostStep() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
-  for (iout=1; iout<=NOUT; iout++){
+  for (iout=1; iout<=NOUT; iout++) {
     ierr = TSSetDuration(ts,time_steps,iout*ftime_original/NOUT);CHKERRQ(ierr);
     ierr = TSSolve(ts,global);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ int main(int argc,char **argv)
   ierr = TSInterpolate(ts,ftime_original,global);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_view",&flg);CHKERRQ(ierr);
-  if (flg){ /* print solution into a MATLAB file */
+  if (flg) { /* print solution into a MATLAB file */
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(global,viewfile);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ int main(int argc,char **argv)
   /* display solver info for Sundials */
   ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
-  if (sundials){
+  if (sundials) {
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr= MatDestroy(&J);CHKERRQ(ierr);
-  if (fd_jacobian_coloring){ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
+  if (fd_jacobian_coloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return 0;
 }

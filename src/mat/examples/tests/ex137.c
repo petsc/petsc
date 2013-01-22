@@ -24,7 +24,7 @@ int main(int argc,char **args)
     aa[0] = 0; aa[1] = 1; aa[2] = 2; aa[3] = 3; aa[4] = 4; aa[5] = 5; aa[6] = 6;
     /*  0 1
           1  2       6
-   	     3          7 */
+             3          7 */
   } else {
     ii[0] = 0; ii[1] = 2; ii[2] = 4; ii[3] = 6; ii[4] = 7;
     jj[0] = 4; jj[1] = 5; jj[2] = 5; jj[3] = 7; jj[4] = 6; jj[5] = 7; jj[6] = 7;
@@ -32,7 +32,7 @@ int main(int argc,char **args)
     /*    4  5
              5   7
                6 7
-	         7 */
+                 7 */
   }
   ierr = MatCreateMPISBAIJWithArrays(PETSC_COMM_WORLD,bs,m,m,PETSC_DECIDE,PETSC_DECIDE,ii,jj,aa,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

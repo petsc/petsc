@@ -227,7 +227,8 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Simplex_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
   PetscReal     *v0, *J, *invJ, detJ;
   PetscScalar   *a, *coords;
   PetscInt       p;
@@ -237,7 +238,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
   ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for(p = 0; p < ctx->n; ++p) {
+  for (p = 0; p < ctx->n; ++p) {
     PetscInt           c = ctx->cells[p];
     const PetscScalar *x;
     PetscReal          xi[4];
@@ -246,15 +247,15 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, PETSC_NULL, &x);CHKERRQ(ierr);
-    for(comp = 0; comp < ctx->dof; ++comp) {
+    for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] = x[0*ctx->dof+comp];
     }
-    for(d = 0; d < ctx->dim; ++d) {
+    for (d = 0; d < ctx->dim; ++d) {
       xi[d] = 0.0;
-      for(f = 0; f < ctx->dim; ++f) {
+      for (f = 0; f < ctx->dim; ++f) {
         xi[d] += invJ[d*ctx->dim+f]*0.5*PetscRealPart(coords[p*ctx->dim+f] - v0[f]);
       }
-      for(comp = 0; comp < ctx->dof; ++comp) {
+      for (comp = 0; comp < ctx->dof; ++comp) {
         a[p*ctx->dof+comp] += PetscRealPart(x[(d+1)*ctx->dof+comp] - x[0*ctx->dof+comp])*xi[d];
       }
     }
@@ -341,7 +342,8 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Quad_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
   DM             dmCoord;
   SNES           snes;
   KSP            ksp;
@@ -557,7 +559,8 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolate_Hex_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v) {
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
   DM             dmCoord;
   SNES           snes;
   KSP            ksp;
@@ -591,7 +594,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
 
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for(p = 0; p < ctx->n; ++p) {
+  for (p = 0; p < ctx->n; ++p) {
     const PetscScalar *x, *vertices;
     PetscScalar       *xi;
     PetscReal          xir[3];

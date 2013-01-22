@@ -162,7 +162,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
   PetscValidHeader(*sp,1);
 
   if (--((PetscObject)(*sp))->refct > 0) PetscFunctionReturn(0);
-  if (((PetscObject)(*sp))->classid == PETSC_DRAW_CLASSID){
+  if (((PetscObject)(*sp))->classid == PETSC_DRAW_CLASSID) {
     ierr = PetscDrawDestroy((PetscDraw*) sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -326,7 +326,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   if (!rank) {
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
-	ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
+        ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
       }
     }
   }

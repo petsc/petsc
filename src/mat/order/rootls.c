@@ -25,14 +25,13 @@
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKrootls"
 PetscErrorCode SPARSEPACKrootls(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,
-	PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
+                                PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
     PetscInt i__1, i__2;
 
     /* Local variables */
-    PetscInt node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize,
-	    nbr;
+    PetscInt node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize, nbr;
 
 /*       INITIALIZATION ...*/
 
@@ -61,39 +60,39 @@ L200:
 /*       NEIGHBORS OF NODES IN THE CURRENT LEVEL.*/
     i__1 = lvlend;
     for (i = lbegin; i <= i__1; ++i) {
-	node = ls[i];
-	jstrt = xadj[node];
-	jstop = xadj[node + 1] - 1;
-	if (jstop < jstrt) {
-	    goto L400;
-	}
-	i__2 = jstop;
-	for (j = jstrt; j <= i__2; ++j) {
-	    nbr = adjncy[j];
-	    if (!mask[nbr]) {
-		goto L300;
-	    }
-	    ++ccsize;
-	    ls[ccsize] = nbr;
-	    mask[nbr] = 0;
+        node = ls[i];
+        jstrt = xadj[node];
+        jstop = xadj[node + 1] - 1;
+        if (jstop < jstrt) {
+            goto L400;
+        }
+        i__2 = jstop;
+        for (j = jstrt; j <= i__2; ++j) {
+            nbr = adjncy[j];
+            if (!mask[nbr]) {
+                goto L300;
+            }
+            ++ccsize;
+            ls[ccsize] = nbr;
+            mask[nbr] = 0;
 L300:
-	    ;
-	}
+            ;
+        }
 L400:
-	;
+        ;
     }
 /*       COMPUTE THE CURRENT LEVEL WIDTH.*/
 /*       IF IT IS NONZERO, GENERATE THE NEXT LEVEL.*/
     lvsize = ccsize - lvlend;
     if (lvsize > 0) {
-	goto L200;
+        goto L200;
     }
 /*       RESET MASK TO ONE FOR THE NODES IN THE LEVEL STRUCTURE.*/
     xls[*nlvl + 1] = lvlend + 1;
     i__1 = ccsize;
     for (i = 1; i <= i__1; ++i) {
-	node = ls[i];
-	mask[node] = 1;
+        node = ls[i];
+        mask[node] = 1;
     }
     PetscFunctionReturn(0);
 }

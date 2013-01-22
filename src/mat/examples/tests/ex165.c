@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = MatMatMult(AT,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-view_C",&flg);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"C.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
     ierr = MatView(C,viewer);CHKERRQ(ierr);

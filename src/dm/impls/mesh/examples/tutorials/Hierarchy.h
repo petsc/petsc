@@ -71,14 +71,16 @@ namespace Hierarchy {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  PetscErrorCode HierarchyBuilder::GetLocalInterpolation(double * coeffs, point_type v, point_type e) {
+  PetscErrorCode HierarchyBuilder::GetLocalInterpolation(double * coeffs, point_type v, point_type e)
+  {
    // TEST FOR BUILDING THE RESTRICT (INTERPOLATE) OPERATOR.
    double * v0, * J, * invJ, detJ;
    mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
 
   }
 
-  HierarchyBuilder::HierarchyBuilder(Obj<ALE::Mesh> m, int dimensions, int levels, double C) {
+  HierarchyBuilder::HierarchyBuilder(Obj<ALE::Mesh> m, int dimensions, int levels, double C)
+  {
 
     //initialize the various variables that will cut our code size in half.
     patch = 0;
@@ -109,7 +111,8 @@ namespace Hierarchy {
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-  PetscErrorCode HierarchyBuilder::TriangleToMesh(triangulateio * src, patch_type patch) {
+  PetscErrorCode HierarchyBuilder::TriangleToMesh(triangulateio * src, patch_type patch)
+  {
     PetscFunctionBegin;
   // We store the global vertex numbers as markers to preserve them in the coarse mesh
   //   Here we convert from the new Triangle numbering to the original fine mesh numbering (same sieve points we started from)
@@ -186,7 +189,8 @@ namespace Hierarchy {
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  PetscErrorCode HierarchyBuilder::PointListToMesh(std::list<point_type> * points, patch_type newPatch) {
+  PetscErrorCode HierarchyBuilder::PointListToMesh(std::list<point_type> * points, patch_type newPatch)
+  {
     triangulateio * input = new triangulateio;
     triangulateio * output = new triangulateio;
     input->numberofpoints = points->size();
@@ -208,7 +212,7 @@ namespace Hierarchy {
     c_iter = points->begin();
     c_iter_end = points->end();
     index = 0;
-    while(c_iter != c_iter_end) {
+    while (c_iter != c_iter_end) {
       input->pointmarkerlist[index] = *c_iter;
       c_iter++;
       index++;
@@ -235,7 +239,7 @@ namespace Hierarchy {
       coneSequence::iterator n_iter_end = neighbors->end();
       while (n_iter != n_iter_end) {
         for (int i = 0; i < input->numberofpoints; i++) {
-          if(input->pointmarkerlist[i] == *n_iter) {
+          if (input->pointmarkerlist[i] == *n_iter) {
             if (input->segmentlist[2*index] == -1) {
               input->segmentlist[2*index] = i;
             } else {
@@ -293,7 +297,8 @@ namespace Hierarchy {
     delete output;
   }
 
-  int HierarchyBuilder::BoundaryNodeDimension_2D(point_type vertex) {
+  int HierarchyBuilder::BoundaryNodeDimension_2D(point_type vertex)
+  {
 
     const double *vCoords = coordinates->restrict(patch, vertex);
     double v_x = vCoords[0], v_y = vCoords[1];
@@ -305,12 +310,12 @@ namespace Hierarchy {
     Obj<supportSequence> support = topology->getPatch(patch)->support(vertex);
     label_sequence::iterator s_iter = support->begin();
     label_sequence::iterator s_iter_end = support->end();
-    while(s_iter != s_iter_end) {
+    while (s_iter != s_iter_end) {
       if (topology->getPatch(patch)->support(*s_iter)->size() < 2) {
         Obj<coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
         coneSequence::iterator n_iter = neighbors->begin();
         coneSequence::iterator n_iter_end = neighbors->end();
-        while(n_iter != n_iter_end) {
+        while (n_iter != n_iter_end) {
           if (vertex != *n_iter) {
             if (!foundNeighbor) {
               const double *nCoords = coordinates->restrict(patch, *n_iter);
@@ -322,7 +327,7 @@ namespace Hierarchy {
               double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
               double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
               if (parArea > .001*len) isEssential = 2;
-              if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
+              if (mesh->debug()) printf("Parallelogram area: %f\n", parArea);
             }
           }
           n_iter++;
@@ -345,7 +350,8 @@ namespace Hierarchy {
   };
 
 
-  PetscErrorCode HierarchyBuilder::IdentifyCoarsestBoundary () {
+  PetscErrorCode HierarchyBuilder::IdentifyCoarsestBoundary ()
+  {
       //creates a 2-level (PSLG) representation of the boundary for feeding into triangle or tetgen.
     PetscFunctionBegin;
     Obj<sieve_type> sieve = new sieve_type(mesh->comm(), 0);
@@ -474,7 +480,8 @@ namespace Hierarchy {
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  PetscErrorCode HierarchyBuilder::CreateSpacingFunction() {
+  PetscErrorCode HierarchyBuilder::CreateSpacingFunction()
+  {
     PetscFunctionBegin;
     const Obj<label_sequence>& vertices = topology->depthStratum(patch, 0);
 
@@ -493,7 +500,7 @@ namespace Hierarchy {
         Obj<coneSet> neighbors = topology->getPatch(patch)->cone(support);
         coneSet::iterator n_iter = neighbors->begin();
         coneSet::iterator n_iter_end = neighbors->end();
-        while(n_iter != n_iter_end) {
+        while (n_iter != n_iter_end) {
           if (*v_iter != *n_iter) {
             rBuf = coordinates->restrict(patch, *n_iter);
             PetscMemcpy(nCoords, rBuf, dim*sizeof(double));
@@ -534,7 +541,8 @@ namespace Hierarchy {
   // The reason this works is that the largest possible intersection involves a sphere on the edge of radius
   // such that it doesn't collide with the endpoints.
 
-  PetscErrorCode HierarchyBuilder::BuildLevels() { //ok we're going to try this: MESH-based coarsening.
+  PetscErrorCode HierarchyBuilder::BuildLevels() //ok we're going to try this: MESH-based coarsening.
+  {
     std::list<point_type> level_points;
     const Obj<label_sequence> & top_vertices = topology->depthStratum(C_levels, 0);
     label_sequence::iterator top_iter = top_vertices->begin();
@@ -545,7 +553,7 @@ namespace Hierarchy {
     }
     const double * tmpCoords;
     const Obj<topology_type::patch_label_type>& traversal = topology->getLabel(C_levels, "traversal");
-    for(int curLevel = C_levels - 1; curLevel > 0; curLevel--) {
+    for (int curLevel = C_levels - 1; curLevel > 0; curLevel--) {
       double factor = pow(C_factor, curLevel);
       Obj<label_sequence> triangles = topology->heightStratum(curLevel+1, 0); //triangles in next level up
       printf("%d triangles\n", triangles->size());
@@ -586,7 +594,7 @@ namespace Hierarchy {
                 if (part_depth == 0) { //point
                   double part_space = * spacing->restrict(patch, *parts_iter);
                   tmpCoords = coordinates->restrict(patch, *parts_iter);
-                  if(PointsCollide(p_coords, (double *)tmpCoords, factor*p_space, factor*part_space)) p_is_ok = false;
+                  if (PointsCollide(p_coords, (double *)tmpCoords, factor*p_space, factor*part_space)) p_is_ok = false;
                 } else if (part_depth == 1) { //edge
                   //prepare for edge comparison!
                   double part_space = 0;
@@ -604,10 +612,9 @@ namespace Hierarchy {
                     ind++;
                     pend_iter++;
                   }
-                  if(topology->getPatch(curLevel+1)->support(*parts_iter)->size() == 1) {
+                  if (topology->getPatch(curLevel+1)->support(*parts_iter)->size() == 1) {
                     if (PointInEdgeRegion(part_coords, p_coords, factor*p_space/2) && topology->getValue(boundary, *p_iter) == 0) p_is_ok = false;
-                  }
-                  else if(topology->getValue(traversal, *parts_iter) != 1 && PointMidpointCollide(part_coords, p_coords, factor*p_space)) {
+                  } else if (topology->getValue(traversal, *parts_iter) != 1 && PointMidpointCollide(part_coords, p_coords, factor*p_space)) {
                      compare_list.push_back(*parts_iter);
                      topology->setValue(traversal, *parts_iter, 1);
                   }
@@ -743,7 +750,7 @@ namespace Hierarchy {
           std::list<point_type>::iterator ipl_iter = pointList.begin();
           std::list<point_type>::iterator ipl_iter_end = pointList.end();
           while (ipl_iter != ipl_iter_end) {
-            if(PointIsInTriangle(t_coords, (double *)coordinates->restrict(patch, *ipl_iter))) {
+            if (PointIsInTriangle(t_coords, (double *)coordinates->restrict(patch, *ipl_iter))) {
               containsPoint = true;
               topology->setValue(included_location, *ipl_iter, curTri);
               ipl_iter = pointList.erase(ipl_iter);
@@ -753,7 +760,7 @@ namespace Hierarchy {
           supportSet::iterator n_iter = neighbors->begin();
           supportSet::iterator n_iter_end = neighbors->end();
           while (n_iter != n_iter_end) {
-            if(topology->getValue(traversal, *n_iter) != 1) {
+            if (topology->getValue(traversal, *n_iter) != 1) {
               topology->setValue(traversal, *n_iter, 1);
               trav_list.push_back(*n_iter);
             }
@@ -762,7 +769,7 @@ namespace Hierarchy {
         }
         if (pointList.size() > 0) {
           printf(" - ERROR - %d Points unaccounted for.", pointList.size());
-          //GO THROUGH THE LIST AND -1 OUT THAT! (There will be no prolongation operator for this one :( In fact, this shouldn't happen at all once I take out the boundaries)
+          //GO THROUGH THE LIST AND -1 OUT THAT! (There will be no prolongation operator for this one :/ In fact, this shouldn't happen at all once I take out the boundaries)
           std::list<point_type>::iterator bp_iter = pointList.begin();
           std::list<point_type>::iterator bp_iter_end = pointList.end();
           while (bp_iter != bp_iter_end) {
@@ -811,7 +818,9 @@ namespace Hierarchy {
       }
     }  //end for over levels
   }
-  PetscErrorCode HierarchyBuilder::BuildTopLevel() { //does a greedy build of the topmost level of the mesh.
+  
+  PetscErrorCode HierarchyBuilder::BuildTopLevel() //does a greedy build of the topmost level of the mesh.
+  {
     PetscFunctionBegin;
     double factor = pow(C_factor, C_levels);
     const Obj<label_sequence>& vertices = topology->depthStratum(patch, 0);
@@ -863,7 +872,7 @@ namespace Hierarchy {
           ep_iter++;
           index++;
         }
-        if(PointInEdgeRegion(e_coords, v_coords, factor*v_space) && topology->getValue(boundary, *v_iter) == 0) v_is_ok = false;
+        if (PointInEdgeRegion(e_coords, v_coords, factor*v_space) && topology->getValue(boundary, *v_iter) == 0) v_is_ok = false;
       e_iter++;
       }
       if (v_is_ok) incPoints.push_front(*v_iter);
@@ -986,7 +995,7 @@ namespace Hierarchy {
    /*
     printf("Starting loop\n");
     while (v_iter != v_iter_end) {
-      if(topology->getPatch(C_levels)->capContains(*v_iter)) {
+      if (topology->getPatch(C_levels)->capContains(*v_iter)) {
         topology->setValue(location, *v_iter, -1);
       } else {
         bool not_located = true;
@@ -1027,7 +1036,8 @@ namespace Hierarchy {
 
   ////////////////////////////////////////////////////////////////////////////////////
   //GEOMETRIC SUBFUNCTIONS - KEEP SIEVE/MESH INDEPENDENT BECAUSE WE CAN CONSERVE RESTRICTS FURTHER UP
-  bool HierarchyBuilder::PointsCollide(double * a, double * b, double a_space, double b_space) {
+  bool HierarchyBuilder::PointsCollide(double * a, double * b, double a_space, double b_space)
+  {
     double dist = 0;
     for (int i = 0; i < dim; i++) {
       dist += (a[i] - b[i])*(a[i] - b[i]);
@@ -1038,7 +1048,8 @@ namespace Hierarchy {
   }
 
 
-  bool HierarchyBuilder::PointInEdgeRegion(double * e_coords, double * p_coords, double region) {
+  bool HierarchyBuilder::PointInEdgeRegion(double * e_coords, double * p_coords, double region)
+  {
     double res_len = 0;
     double e_dot_e = 0;
     double p_dot_e = 0;
@@ -1055,7 +1066,8 @@ namespace Hierarchy {
     if (res_len < region*region) return true; //it's in the region surrounding the edge.
     return false;
   }
-  bool HierarchyBuilder::PointMidpointCollide(double * e_coords, double * p_coords, double p_space) {
+  bool HierarchyBuilder::PointMidpointCollide(double * e_coords, double * p_coords, double p_space)
+  {
     double midpoint[dim];
     double edgelensq = 0;
     double disttomid = 0;
@@ -1068,7 +1080,8 @@ namespace Hierarchy {
     if (disttomid < (p_space/2 + edgerad)*(p_space/2 + edgerad)) return true;
     return false;
   }
-  bool HierarchyBuilder::PointInEdgeRegionSub(double * e_coords, double * p_coords, double dif) { //version for triangle crossover calculation, diff being the added spacing functions of the endpoints
+  bool HierarchyBuilder::PointInEdgeRegionSub(double * e_coords, double * p_coords, double dif) //version for triangle crossover calculation, diff being the added spacing functions of the endpoints
+  {
     double res_len = 0;
     double edg_len = 0;
     double e_dot_e = 0;
@@ -1089,7 +1102,8 @@ namespace Hierarchy {
     return false;
   }
 
-  bool HierarchyBuilder::TrianglesOverlap(patch_type patchA, point_type TriA, patch_type patchB, point_type TriB) {
+  bool HierarchyBuilder::TrianglesOverlap(patch_type patchA, point_type TriA, patch_type patchB, point_type TriB)
+  {
     double pointsA[3*dim];
     double pointsB[3*dim];
     double edgesA[6*dim];
@@ -1128,16 +1142,17 @@ namespace Hierarchy {
     }
     //test for any point intersections.
     for (int i = 0; i < 3; i++) {
-      if(PointIsInTriangle(pointsA, &pointsB[dim*i]) || PointIsInTriangle(pointsB, &pointsA[dim*i])) return true;
+      if (PointIsInTriangle(pointsA, &pointsB[dim*i]) || PointIsInTriangle(pointsB, &pointsA[dim*i])) return true;
     }
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        if(EdgesIntersect(&edgesA[i*2*dim], &edgesB[j*2*dim])) return true;
+        if (EdgesIntersect(&edgesA[i*2*dim], &edgesB[j*2*dim])) return true;
       }
     }
     return false;
   }
-  bool HierarchyBuilder::EdgesIntersect(double * aCoords, double * bCoords) {
+  bool HierarchyBuilder::EdgesIntersect(double * aCoords, double * bCoords)
+  {
     //methodology: if for both edges the projection of the other edges endpoints onto the segment involves a sign flip of the residual signed distance, then those edges collide.
     //project B onto A:
     double a_dot_a = 0;
@@ -1176,7 +1191,8 @@ namespace Hierarchy {
     return false;
   }
 
-  void HierarchyBuilder::ElementCorners(double * buffer, patch_type aPatch, point_type aTriangle) {
+  void HierarchyBuilder::ElementCorners(double * buffer, patch_type aPatch, point_type aTriangle)
+  {
     Obj<coneSet> tt_support = topology->getPatch(aPatch)->closure(aTriangle);
     coneSet::iterator tts_iter = tt_support->begin();
     coneSet::iterator tts_iter_end = tt_support->end();
@@ -1194,7 +1210,8 @@ namespace Hierarchy {
     return;
   }
 
-  bool HierarchyBuilder::PointIsInTriangle(double * p_coords, double * v_coords) {
+  bool HierarchyBuilder::PointIsInTriangle(double * p_coords, double * v_coords)
+  {
     double area = 0; //compute the area of the triangle/volume of the tet
     //if (dim == 2) {
       area = fabs((p_coords[2] - p_coords[0])*(p_coords[5] - p_coords[1]) - (p_coords[4] - p_coords[0])*(p_coords[3] - p_coords[1]));

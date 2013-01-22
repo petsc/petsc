@@ -1,10 +1,11 @@
 #include <petscdmmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
-#ifdef PETSC_HAVE_LIBXML2
+#if defined(PETSC_HAVE_LIBXML2)
 
 namespace ALE {
   namespace Dolfin {
-    void XMLObject::error(std::string msg, ...) {
+    void XMLObject::error(std::string msg, ...)
+    {
       static char buffer[2048];
       va_list aptr;
 
@@ -13,7 +14,8 @@ namespace ALE {
       va_end(aptr);
       std::cerr << buffer << std::endl;
     }
-    int XMLObject::parseInt(const xmlChar* name, const xmlChar** attrs, const char* attribute) {
+    int XMLObject::parseInt(const xmlChar* name, const xmlChar** attrs, const char* attribute)
+    {
       // Check that we got the data
       if (!attrs) error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       // Parse data
@@ -28,7 +30,8 @@ namespace ALE {
       error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       return 0;
     };
-    unsigned int XMLObject::parseUnsignedInt(const xmlChar* name, const xmlChar** attrs, const char* attribute) {
+    unsigned int XMLObject::parseUnsignedInt(const xmlChar* name, const xmlChar** attrs, const char* attribute)
+    {
       // Check that we got the data
       if (!attrs) error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       // Parse data
@@ -46,7 +49,8 @@ namespace ALE {
       error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       return 0;
     };
-    double XMLObject::parseReal(const xmlChar* name, const xmlChar** attrs, const char* attribute) {
+    double XMLObject::parseReal(const xmlChar* name, const xmlChar** attrs, const char* attribute)
+    {
       // Check that we got the data
       if (!attrs) error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       // Parse data
@@ -61,7 +65,8 @@ namespace ALE {
       error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       return 0.0;
     };
-    std::string XMLObject::parseString(const xmlChar* name, const xmlChar** attrs, const char* attribute) {
+    std::string XMLObject::parseString(const xmlChar* name, const xmlChar** attrs, const char* attribute)
+    {
       // Check that we got the data
       if (!attrs) error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       // Parse data
@@ -76,7 +81,8 @@ namespace ALE {
       error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       return "";
     };
-    bool XMLObject::parseBool(const xmlChar* name, const xmlChar** attrs, const char* attribute) {
+    bool XMLObject::parseBool(const xmlChar* name, const xmlChar** attrs, const char* attribute)
+    {
       // Check that we got the data
       if (!attrs) error("Missing attribute \"%s\" for <%s> in XML file.", attribute, name);
       // Parse data
@@ -98,7 +104,8 @@ namespace ALE {
       return false;
     };
 
-    void XMLMesh::startElement(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::startElement(const xmlChar *name, const xmlChar **attrs)
+    {
       switch (state) {
       case OUTSIDE:
         if (xmlStrcasecmp(name, (xmlChar *) "mesh") == 0) {
@@ -133,7 +140,8 @@ namespace ALE {
         break;
       }
     };
-    void XMLMesh::endElement(const xmlChar *name) {
+    void XMLMesh::endElement(const xmlChar *name)
+    {
       switch (state) {
       case INSIDE_MESH:
         if (xmlStrcasecmp(name, (xmlChar *) "mesh") == 0) {
@@ -153,7 +161,8 @@ namespace ALE {
         break;
       }
     };
-    void XMLMesh::readMesh(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readMesh(const xmlChar *name, const xmlChar **attrs)
+    {
       // Parse values
       std::string type = parseString(name, attrs, "celltype");
       this->embedDim = parseUnsignedInt(name, attrs, "dim");
@@ -168,17 +177,20 @@ namespace ALE {
       }
       mesh->setDimension(tdim);
     };
-    void XMLMesh::readVertices(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readVertices(const xmlChar *name, const xmlChar **attrs)
+    {
       // Parse values
       unsigned int num_vertices = parseUnsignedInt(name, attrs, "size");
       // Set number of vertices
       this->coords = new double[num_vertices*this->embedDim];
     };
-    void XMLMesh::readCells(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readCells(const xmlChar *name, const xmlChar **attrs)
+    {
       // Parse values
       this->numCells = parseUnsignedInt(name, attrs, "size");
     };
-    void XMLMesh::readVertex(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readVertex(const xmlChar *name, const xmlChar **attrs)
+    {
       // Read index
       uint v = parseUnsignedInt(name, attrs, "index");
 
@@ -194,7 +206,8 @@ namespace ALE {
         error("Dimension of mesh must be 1, 2 or 3.");
       }
     };
-    void XMLMesh::readInterval(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readInterval(const xmlChar *name, const xmlChar **attrs)
+    {
       // Check dimension
       if (mesh->getDimension() != 1)
         error("Mesh entity (interval) does not match dimension of mesh (%d).", mesh->getDimension());
@@ -206,7 +219,8 @@ namespace ALE {
       mesh->getSieve()->addArrow(v0, c, 0);
       mesh->getSieve()->addArrow(v1, c, 1);
     };
-    void XMLMesh::readTriangle(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readTriangle(const xmlChar *name, const xmlChar **attrs)
+    {
       // Check dimension
       if (mesh->getDimension() != 2)
         error("Mesh entity (triangle) does not match dimension of mesh (%d).", mesh->getDimension());
@@ -220,7 +234,8 @@ namespace ALE {
       mesh->getSieve()->addArrow(v1, c, 1);
       mesh->getSieve()->addArrow(v2, c, 2);
     };
-    void XMLMesh::readTetrahedron(const xmlChar *name, const xmlChar **attrs) {
+    void XMLMesh::readTetrahedron(const xmlChar *name, const xmlChar **attrs)
+    {
       // Check dimension
       if (mesh->getDimension() != 3)
         error("Mesh entity (tetrahedron) does not match dimension of mesh (%d).", mesh->getDimension());
@@ -236,7 +251,8 @@ namespace ALE {
       mesh->getSieve()->addArrow(v2, c, 2);
       mesh->getSieve()->addArrow(v3, c, 3);
     };
-    void XMLMesh::closeMesh() {
+    void XMLMesh::closeMesh()
+    {
       mesh->stratify();
       ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, this->embedDim, this->coords);
       delete [] this->coords;

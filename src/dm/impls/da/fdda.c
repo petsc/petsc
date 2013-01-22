@@ -152,11 +152,11 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,MatType mtype,ISC
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_GHOSTED){
+  if (ctype == IS_COLORING_GHOSTED) {
     if (size == 1) {
       ctype = IS_COLORING_GLOBAL;
-    } else if (dim > 1){
-      if ((m==1 && bx == DMDA_BOUNDARY_PERIODIC) || (n==1 && by == DMDA_BOUNDARY_PERIODIC) || (p==1 && bz == DMDA_BOUNDARY_PERIODIC)){
+    } else if (dim > 1) {
+      if ((m==1 && bx == DMDA_BOUNDARY_PERIODIC) || (n==1 && by == DMDA_BOUNDARY_PERIODIC) || (p==1 && bz == DMDA_BOUNDARY_PERIODIC)) {
         SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
       }
     }
@@ -629,7 +629,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
@@ -748,7 +748,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
     if (!baij) {
       ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
     }
-    if (!baij){
+    if (!baij) {
       ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
       if (!sbaij) {
         ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
@@ -1202,21 +1202,21 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   cnt  = 0;
   /* coupling with process to the left */
   for (i=0; i<s; i++) {
-    for (j=0; j<nc; j++){
+    for (j=0; j<nc; j++) {
       ocols[cnt] = ((!rank) ? 0 : (s - i)*(ofill[j+1] - ofill[j]));
       cols[cnt]  = nc + (s + i)*(ofill[j+1] - ofill[j]);
       cnt++;
     }
   }
   for (i=s; i<nx-s; i++) {
-    for (j=0; j<nc; j++){
+    for (j=0; j<nc; j++) {
       cols[cnt]  = nc + 2*s*(ofill[j+1] - ofill[j]);
       cnt++;
     }
   }
  /* coupling with process to the right */
-  for (i=nx-s; i<nx; i++){
-    for (j=0; j<nc; j++){
+  for (i=nx-s; i<nx; i++) {
+    for (j=0; j<nc; j++) {
       ocols[cnt] = ((rank == (size-1)) ? 0 : (i - nx + s + 1)*(ofill[j+1] - ofill[j]));
       cols[cnt]  = nc + (s + nx - i - 1)*(ofill[j+1] - ofill[j]);
       cnt++;
@@ -1245,7 +1245,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
     row  = xs*nc;
     /* coupling with process to the left */
     for (i=xs; i<xs+s; i++) {
-      for (j=0; j<nc; j++){
+      for (j=0; j<nc; j++) {
         cnt = 0;
         if (rank) {
           for (l=0; l<s; l++) {
@@ -1263,7 +1263,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
       }
     }
     for (i=xs+s; i<xs+nx-s; i++) {
-      for (j=0; j<nc; j++){
+      for (j=0; j<nc; j++) {
         cnt = 0;
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s + l)*nc + ofill[k];
@@ -1279,8 +1279,8 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
       }
     }
     /* coupling with process to the right */
-    for (i=xs+nx-s; i<xs+nx; i++){
-      for (j=0; j<nc; j++){
+    for (i=xs+nx-s; i<xs+nx; i++) {
+      for (j=0; j<nc; j++) {
         cnt = 0;
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s + l)*nc + ofill[k];

@@ -25,8 +25,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-testseqaij",&flg);CHKERRQ(ierr);
-  if (flg){
-    if (size == 1){
+  if (flg) {
+    if (size == 1) {
       type[0] = MATSEQAIJ;
     } else {
       type[0] = MATMPIAIJ;
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   } else {
     type[0] = MATAIJ;
   }
-  if (size == 1){
+  if (size == 1) {
     ntypes = 3;
     type[1] = MATSEQBAIJ;
     type[2] = MATSEQSBAIJ;
@@ -45,13 +45,13 @@ int main(int argc,char **args)
   }
 
   /* input matrix C */
-  if (flg_loadmat){
+  if (flg_loadmat) {
     /* Open binary file. */
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
     /* Load a baij matrix, then destroy the viewer. */
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-    if (size == 1){
+    if (size == 1) {
       ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
     } else {
       ierr = MatSetType(C,MATMPIBAIJ);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
     if (bs <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
     m = mbs*bs;
     ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&C);CHKERRQ(ierr);
-    for (block=0; block<mbs; block++){
+    for (block=0; block<mbs; block++) {
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
@@ -82,7 +82,7 @@ int main(int argc,char **args)
     }
     /* off-diagonal blocks */
     value[0]=-1.0;
-    for (i=0; i<(mbs-1)*bs; i++){
+    for (i=0; i<(mbs-1)*bs; i++) {
       col[0]=i+bs;
       ierr = MatSetValues(C,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       col[0]=i; row=i+bs;
@@ -104,7 +104,7 @@ int main(int argc,char **args)
     }
     ierr = MatDestroy(&Ctrans);CHKERRQ(ierr);
   }
-  //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
@@ -119,7 +119,7 @@ int main(int argc,char **args)
       if (!rank && verbose) printf("Convert %s A to %s B\n",type[i],type[j]);
       ierr = MatConvert(A,type[j],MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
       /*
-      if (j == 2){
+      if (j == 2) {
         ierr = PetscPrintf(PETSC_COMM_SELF," A: %s\n",type[i]);CHKERRQ(ierr);
         ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_SELF," B: %s\n",type[j]);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int main(int argc,char **args)
       ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
       if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
 
-      if (size == 1 || j != 2){ /* Matconvert from mpisbaij mat to other formats are not supported */
+      if (size == 1 || j != 2) { /* Matconvert from mpisbaij mat to other formats are not supported */
         if (!rank && verbose) printf("Convert %s B to %s D\n",type[j],type[i]);
         ierr = MatConvert(B,type[i],MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
         ierr = MatMultEqual(B,D,10,&equal);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ int main(int argc,char **args)
     }
 
     /* Test in-place convert */
-    if (size == 1){ /* size > 1 is not working yet! */
+    if (size == 1) { /* size > 1 is not working yet! */
       j = (i+1)%ntypes;
       /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
       ierr = MatConvert(A,type[j],MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);

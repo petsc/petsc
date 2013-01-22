@@ -324,7 +324,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   }
   asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
   ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s_%d.Gif",draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
-  ASImage2file( asimage, 0, filename,ASIT_Gif,0);
+  ASImage2file(asimage, 0, filename,ASIT_Gif,0);
 
   XDestroyImage(image);
   PetscFunctionReturn(0);

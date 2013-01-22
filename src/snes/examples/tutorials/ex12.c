@@ -103,7 +103,7 @@ PetscReal IntegrateDualBasis_gen_0(const PetscReal *v0, const PetscReal *J, cons
   PetscReal refCoords[1];
   PetscReal coords[1];
 
-  switch(dualIndex) {
+  switch (dualIndex) {
     case 0:
       refCoords[0] = -1.0;
       break;
@@ -114,10 +114,10 @@ PetscReal IntegrateDualBasis_gen_0(const PetscReal *v0, const PetscReal *J, cons
       printf("dualIndex: %d\n", dualIndex);
       throw ALE::Exception("Bad dual index");
   }
-  for(int d = 0; d < 1; d++)
+  for (int d = 0; d < 1; d++)
   {
     coords[d] = v0[d];
-    for(int e = 0; e < 1; e++)
+    for (int e = 0; e < 1; e++)
     {
       coords[d] += J[d * 1 + e] * (refCoords[e] + 1.0);
     }
@@ -134,7 +134,7 @@ PetscReal IntegrateBdDualBasis_gen_0(const PetscReal *v0, const PetscReal *J, co
   PetscReal refCoords[1];
   PetscReal coords[2];
 
-  switch(dualIndex) {
+  switch (dualIndex) {
     case 0:
       refCoords[0] = -1.0;
       break;
@@ -145,10 +145,10 @@ PetscReal IntegrateBdDualBasis_gen_0(const PetscReal *v0, const PetscReal *J, co
       printf("dualIndex: %d\n", dualIndex);
       throw ALE::Exception("Bad dual index");
   }
-  for(int d = 0; d < 2; d++)
+  for (int d = 0; d < 2; d++)
   {
     coords[d] = v0[d];
-    for(int e = 0; e < 1; e++)
+    for (int e = 0; e < 1; e++)
     {
       coords[d] += J[d * 2 + e] * (refCoords[e] + 1.0);
     }
@@ -208,7 +208,7 @@ PetscReal IntegrateDualBasis_gen_1(const PetscReal *v0, const PetscReal *J, cons
   PetscReal refCoords[2];
   PetscReal coords[2];
 
-  switch(dualIndex) {
+  switch (dualIndex) {
     case 0:
       refCoords[0] = -1.0;
       refCoords[1] = -1.0;
@@ -225,10 +225,10 @@ PetscReal IntegrateDualBasis_gen_1(const PetscReal *v0, const PetscReal *J, cons
       printf("dualIndex: %d\n", dualIndex);
       throw ALE::Exception("Bad dual index");
   }
-  for(int d = 0; d < 2; d++)
+  for (int d = 0; d < 2; d++)
   {
     coords[d] = v0[d];
-    for(int e = 0; e < 2; e++)
+    for (int e = 0; e < 2; e++)
     {
       coords[d] += J[d * 2 + e] * (refCoords[e] + 1.0);
     }
@@ -245,7 +245,7 @@ PetscReal IntegrateBdDualBasis_gen_1(const PetscReal *v0, const PetscReal *J, co
   PetscReal refCoords[2];
   PetscReal coords[3];
 
-  switch(dualIndex) {
+  switch (dualIndex) {
     case 0:
       refCoords[0] = -1.0;
       refCoords[1] = -1.0;
@@ -262,10 +262,10 @@ PetscReal IntegrateBdDualBasis_gen_1(const PetscReal *v0, const PetscReal *J, co
       printf("dualIndex: %d\n", dualIndex);
       throw ALE::Exception("Bad dual index");
   }
-  for(int d = 0; d < 3; d++)
+  for (int d = 0; d < 3; d++)
   {
     coords[d] = v0[d];
-    for(int e = 0; e < 2; e++)
+    for (int e = 0; e < 2; e++)
     {
       coords[d] += J[d * 3 + e] * (refCoords[e] + 1.0);
     }
@@ -340,7 +340,7 @@ PetscReal IntegrateDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, cons
   PetscReal refCoords[3];
   PetscReal coords[3];
 
-  switch(dualIndex) {
+  switch (dualIndex) {
     case 0:
       refCoords[0] = -1.0;
       refCoords[1] = -1.0;
@@ -365,10 +365,10 @@ PetscReal IntegrateDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, cons
       printf("dualIndex: %d\n", dualIndex);
       throw ALE::Exception("Bad dual index");
   }
-  for(int d = 0; d < 3; d++)
+  for (int d = 0; d < 3; d++)
   {
     coords[d] = v0[d];
-    for(int e = 0; e < 3; e++)
+    for (int e = 0; e < 3; e++)
     {
       coords[d] += J[d * 3 + e] * (refCoords[e] + 1.0);
     }
@@ -385,7 +385,7 @@ PetscReal IntegrateBdDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, co
   PetscReal refCoords[3];
   PetscReal coords[4];
 
-  switch(dualIndex) {
+  switch (dualIndex) {
     case 0:
       refCoords[0] = -1.0;
       refCoords[1] = -1.0;
@@ -410,10 +410,10 @@ PetscReal IntegrateBdDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, co
       printf("dualIndex: %d\n", dualIndex);
       throw ALE::Exception("Bad dual index");
   }
-  for(int d = 0; d < 4; d++)
+  for (int d = 0; d < 4; d++)
   {
     coords[d] = v0[d];
-    for(int e = 0; e < 3; e++)
+    for (int e = 0; e < 3; e++)
     {
       coords[d] += J[d * 4 + e] * (refCoords[e] + 1.0);
     }
@@ -459,48 +459,59 @@ extern PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user);
 extern PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat J, AppCtx *user);
 
 PetscReal lambda = 0.0;
-PetscScalar guess(const PetscReal coords[]) {
+PetscScalar guess(const PetscReal coords[])
+{
   PetscScalar scale = lambda/(lambda+1.0);
   return scale*(0.5 - fabs(coords[0]-0.5))*(0.5 - fabs(coords[1]-0.5));
 }
 
-PetscScalar zero(const PetscReal coords[]) {
+PetscScalar zero(const PetscReal coords[])
+{
   return 0.0;
 }
 
-PetscScalar constant(const PetscReal x[]) {
+PetscScalar constant(const PetscReal x[])
+{
   return -4.0;
 };
 
-PetscScalar nonlinear_2d(const PetscReal x[]) {
+PetscScalar nonlinear_2d(const PetscReal x[])
+{
   return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
 };
 
-PetscScalar linear_2d(const PetscReal x[]) {
+PetscScalar linear_2d(const PetscReal x[])
+{
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
 };
 
-PetscScalar quadratic_2d(const PetscReal x[]) {
+PetscScalar quadratic_2d(const PetscReal x[])
+{
   return x[0]*x[0] + x[1]*x[1];
 };
 
-PetscScalar cubic_2d(const PetscReal x[]) {
+PetscScalar cubic_2d(const PetscReal x[])
+{
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
 };
 
-PetscScalar nonlinear_3d(const PetscReal x[]) {
+PetscScalar nonlinear_3d(const PetscReal x[])
+{
   return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
 };
 
-PetscScalar linear_3d(const PetscReal x[]) {
+PetscScalar linear_3d(const PetscReal x[])
+{
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
 };
 
-PetscScalar quadratic_3d(const PetscReal x[]) {
+PetscScalar quadratic_3d(const PetscReal x[])
+{
   return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
 };
 
-PetscScalar cubic_3d(const PetscReal x[]) {
+PetscScalar cubic_3d(const PetscReal x[])
+{
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
 };
 
@@ -553,7 +564,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 PetscErrorCode SetupQuadrature(AppCtx *user)
 {
   PetscFunctionBeginUser;
-  switch(user->dim) {
+  switch (user->dim) {
   case 1:
     user->q.numQuadPoints = NUM_QUADRATURE_POINTS_0;
     user->q.quadPoints    = points_0;
@@ -600,7 +611,7 @@ PetscErrorCode SetupSection(AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  switch(user->dim) {
+  switch (user->dim) {
   case 1:
     numDof = numDof_0;
     break;
@@ -630,7 +641,7 @@ PetscErrorCode SetupSection(AppCtx *user)
 PetscErrorCode SetupExactSolution(AppCtx *user)
 {
   PetscFunctionBeginUser;
-  switch(user->dim) {
+  switch (user->dim) {
   case 2:
     if (user->bcType == DIRICHLET) {
       if (user->lambda > 0.0) {
@@ -689,7 +700,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user)
   ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscReal          elemError = 0.0;
 
@@ -697,16 +708,16 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user)
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMMeshVecGetClosure(user->dm, localX, c, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
-    for(int q = 0; q < numQuadPoints; ++q) {
-      for(int d = 0; d < dim; d++) {
+    for (int q = 0; q < numQuadPoints; ++q) {
+      for (int d = 0; d < dim; d++) {
         coords[d] = v0[d];
-        for(int e = 0; e < dim; e++) {
+        for (int e = 0; e < dim; e++) {
           coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         }
       }
       const PetscScalar funcVal     = (*exactFunc)(coords);
       PetscReal         interpolant = 0.0;
-      for(int f = 0; f < numBasisFuncs; ++f) {
+      for (int f = 0; f < numBasisFuncs; ++f) {
         interpolant += x[f]*basis[q*numBasisFuncs+f];
       }
       elemError += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
@@ -927,7 +938,7 @@ PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal 
   ierr = DMMeshGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateVec(user->dm, &coordinates);CHKERRQ(ierr);
-  for(PetscInt v = vStart; v < vEnd; ++v) {
+  for (PetscInt v = vStart; v < vEnd; ++v) {
     PetscScalar  values[1];
     PetscScalar *coords;
 
@@ -955,18 +966,18 @@ PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal 
   PetscReal                                       detJ;
   ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), this->_mesh->depth())+1, true);
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for (PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), *c_iter, pV);
     const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
     const int                          oSize   = pV.getSize();
     int                                v       = 0;
 
     this->_mesh->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
-    for(int cl = 0; cl < oSize; ++cl) {
+    for (int cl = 0; cl < oSize; ++cl) {
       const int pointDim = s->getFiberDimension(oPoints[cl]);
 
       if (pointDim) {
-        for(int d = 0; d < pointDim; ++d, ++v) {
+        for (int d = 0; d < pointDim; ++d, ++v) {
           values[v] = (*this->_options.integrate)(v0, J, v, initFunc);
         }
       }
@@ -1008,7 +1019,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
 
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1017,43 +1028,43 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = DMMeshVecGetClosure(user->dm, X, c, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
 
-    for(int q = 0; q < numQuadPoints; ++q) {
+    for (int q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      for(int d = 0; d < dim; ++d) {
+      for (int d = 0; d < dim; ++d) {
         fieldGrad[d] = 0.0;
         coords[d] = v0[d];
-        for(int e = 0; e < dim; ++e) {
+        for (int e = 0; e < dim; ++e) {
           coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         }
         if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    coords[%d] %g\n", d, coords[d]);CHKERRQ(ierr);}
       }
-      for(int f = 0; f < numBasisFuncs; ++f) {
+      for (int f = 0; f < numBasisFuncs; ++f) {
         fieldVal += x[f]*basis[q*numBasisFuncs+f];
 
-        for(int d = 0; d < dim; ++d) {
+        for (int d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for(int e = 0; e < dim; ++e) {
+          for (int e = 0; e < dim; ++e) {
             realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
           fieldGrad[d] += realSpaceDer[d]*x[f];
         }
       }
       if (debug) {
-        for(int d = 0; d < dim; ++d) {
+        for (int d = 0; d < dim; ++d) {
           PetscPrintf(PETSC_COMM_SELF, "    fieldGrad[%d] %g\n", d, fieldGrad[d]);
         }
       }
       const PetscScalar funcVal = (*rhsFunc)(coords);
-      for(int f = 0; f < numBasisFuncs; ++f) {
+      for (int f = 0; f < numBasisFuncs; ++f) {
         /* Constant term: -f(x) */
         elemVec[f] -= basis[q*numBasisFuncs+f]*funcVal*quadWeights[q]*detJ;
         /* Linear term: -\Delta u */
         PetscScalar product = 0.0;
-        for(int d = 0; d < dim; ++d) {
+        for (int d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for(int e = 0; e < dim; ++e) {
+          for (int e = 0; e < dim; ++e) {
             realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
           product += realSpaceDer[d]*fieldGrad[d];
@@ -1071,7 +1082,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  for(int p = 0; p < user->numProcs; ++p) {
+  for (int p = 0; p < user->numProcs; ++p) {
     if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     ierr = PetscBarrier((PetscObject) user->dm);CHKERRQ(ierr);
   }
@@ -1103,7 +1114,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1111,29 +1122,29 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMMeshVecGetClosure(user->dm, X, c, &x);CHKERRQ(ierr);
 
-    for(int q = 0; q < numQuadPoints; ++q) {
+    for (int q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
 
-      for(int f = 0; f < numBasisFuncs; ++f) {
+      for (int f = 0; f < numBasisFuncs; ++f) {
         fieldVal += x[f]*basis[q*numBasisFuncs+f];
       }
-      for(int f = 0; f < numBasisFuncs; ++f) {
-        for(int d = 0; d < dim; ++d) {
+      for (int f = 0; f < numBasisFuncs; ++f) {
+        for (int d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
-          for(int e = 0; e < dim; ++e) {
+          for (int e = 0; e < dim; ++e) {
             realSpaceTestDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
         }
-        for(int g = 0; g < numBasisFuncs; ++g) {
-          for(int d = 0; d < dim; ++d) {
+        for (int g = 0; g < numBasisFuncs; ++g) {
+          for (int d = 0; d < dim; ++d) {
             realSpaceBasisDer[d] = 0.0;
-            for(int e = 0; e < dim; ++e) {
+            for (int e = 0; e < dim; ++e) {
               realSpaceBasisDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
           }
           /* Linear term: -\Delta u */
           PetscScalar product = 0.0;
-          for(int d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
+          for (int d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
           /* Nonlinear term: -\lambda e^{u} */
           elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;

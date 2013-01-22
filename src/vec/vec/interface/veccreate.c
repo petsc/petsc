@@ -32,7 +32,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   PetscFunctionBegin;
   PetscValidPointer(vec,2);
   *vec = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

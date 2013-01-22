@@ -67,7 +67,7 @@ PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   MPI_Comm       parent,children;
-							
+
   PetscFunctionBegin;
   ierr = MPI_Comm_get_parent(&parent);CHKERRQ(ierr);
   if (parent == MPI_COMM_NULL) {  /* the original processes started by user */

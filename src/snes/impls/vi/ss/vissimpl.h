@@ -8,7 +8,7 @@
    system of mixed complementarity equations
  */
 
-#ifndef __SNES_VISS_H
+#if !defined(__SNES_VISS_H)
 #define __SNES_VISS_H
 
 typedef struct {

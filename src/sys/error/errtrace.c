@@ -180,31 +180,31 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     if (p == PETSC_ERROR_INITIAL) {
       (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
       if (n == PETSC_ERR_MEM) {
-	(*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
-	(*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
-	(*PetscErrorPrintf)("destroying unneeded objects.\n");
-	PetscMallocGetCurrentUsage(&mem);
-	PetscMemoryGetCurrentUsage(&rss);
-	PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-	PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
-	PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg3);
-	if (flg2 || flg3) {
-	  PetscMallocDumpLog(stdout);
-	} else {
-	  (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
-	  if (flg1) {
-	    PetscMallocDump(stdout);
-	  } else {
-	    (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
-	  }
-	}
+        (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
+        (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
+        (*PetscErrorPrintf)("destroying unneeded objects.\n");
+        PetscMallocGetCurrentUsage(&mem);
+        PetscMemoryGetCurrentUsage(&rss);
+        PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+        PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
+        PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg3);
+        if (flg2 || flg3) {
+          PetscMallocDumpLog(stdout);
+        } else {
+          (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
+          if (flg1) {
+            PetscMallocDump(stdout);
+          } else {
+            (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
+          }
+        }
       } else {
         const char *text;
         PetscErrorMessage(n,&text,PETSC_NULL);
         if (text) (*PetscErrorPrintf)("%s!\n",text);
       }
       if (mess) {
-	(*PetscErrorPrintf)("%s!\n",mess);
+        (*PetscErrorPrintf)("%s!\n",mess);
       }
       (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
       (*PetscErrorPrintf)("%s\n",version);
@@ -213,7 +213,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       (*PetscErrorPrintf)("See docs/index.html for manual pages.\n");
       (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
       if (PetscErrorPrintfInitializeCalled) {
-	(*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+        (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
       }
       (*PetscErrorPrintf)("Libraries linked from %s\n",PETSC_LIB_DIR);
       (*PetscErrorPrintf)("Configure run at %s\n",petscconfigureruntime);

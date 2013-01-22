@@ -45,7 +45,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
   }
   ierr = KSPGetVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
-  if (lsqr->se_flg && !lsqr->se){
+  if (lsqr->se_flg && !lsqr->se) {
     /* lsqr->se is not set by user, get it from pmat */
     Vec *se;
     ierr = KSPGetVecs(ksp,1,&se,0,PETSC_NULL);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   /* standard error vector */
   SE = lsqr->se;
-  if (SE){
+  if (SE) {
     ierr = VecGetSize(SE,&size1);CHKERRQ(ierr);
     ierr = VecGetSize(X ,&size2);CHKERRQ(ierr);
     if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %d) does not match solution vector (size %d)",size1,size2);
@@ -143,7 +143,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
 
-  if (nopreconditioner){
+  if (nopreconditioner) {
     ierr = VecCopy(V,W);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(Z,W);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
-    if (beta == 0.0){
+    if (beta == 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       break;
     }
@@ -229,7 +229,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (SE) {
     tmp = 1.0;
     ierr = MatGetSize(Amat,&size1,&size2);CHKERRQ(ierr);
-    if ( size1 > size2 ) tmp = size1 - size2;
+    if (size1 > size2) tmp = size1 - size2;
     tmp = rnorm / PetscSqrtScalar(tmp);
     ierr = VecSqrtAbs(SE);CHKERRQ(ierr);
     ierr = VecScale(SE,tmp);CHKERRQ(ierr);
@@ -247,7 +247,6 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* Free work vectors */
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
@@ -255,7 +254,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   }
-  if (lsqr->se_flg){
+  if (lsqr->se_flg) {
     ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
   }
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
@@ -264,7 +263,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRSetStandardErrorVec"
-PetscErrorCode  KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
+PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP ksp, Vec se)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
@@ -277,7 +276,7 @@ PetscErrorCode  KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetStandardErrorVec"
-PetscErrorCode  KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
+PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
@@ -288,7 +287,7 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetArnorm"
-PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
+PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;

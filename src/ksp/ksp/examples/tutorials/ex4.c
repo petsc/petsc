@@ -72,14 +72,14 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   ierr = PetscMalloc2(ne*nl, PetscInt, elemRows, ne*nl*nl, PetscScalar, elemMats);CHKERRQ(ierr);
   er   = *elemRows;
   em   = *elemMats;
-  // Proc 0        Proc 1
-  // xs: 0  xm: 3  xs: 0 xm: 3
-  // ys: 0  ym: 2  ys: 2 ym: 1
-  // 8 elements x 3 vertices = 24 element matrix rows and 72 entries
-  //   6 offproc rows containing 18 element matrix entries
-  //  18  onproc rows containing 54 element matrix entries
-  //   3 offproc columns in 8 element matrix entries
-  //   so we should have 46 diagonal matrix entries
+  /* Proc 0        Proc 1                                               */
+  /* xs: 0  xm: 3  xs: 0 xm: 3                                          */
+  /* ys: 0  ym: 2  ys: 2 ym: 1                                          */
+  /* 8 elements x 3 vertices = 24 element matrix rows and 72 entries    */
+  /*   6 offproc rows containing 18 element matrix entries              */
+  /*  18  onproc rows containing 54 element matrix entries              */
+  /*   3 offproc columns in 8 element matrix entries                    */
+  /*   so we should have 46 diagonal matrix entries                     */
   for (j = info.ys; j < info.ys+nye; ++j) {
     for (i = info.xs; i < info.xs+nxe; ++i) {
       PetscInt rowA = j*X     + i, rowB = j*X     + i+1;

@@ -29,9 +29,9 @@
 
    Input Parameters:
 +  path - A string containing "directory:directory:..." (without the
-	  quotes, of course).
-	  As a special case, if the name is a single FILE, that file is
-	  used.
+          quotes, of course).
+          As a special case, if the name is a single FILE, that file is
+          used.
 .  defname - default name
 .  name - file name to use with the directories from env
 -  mode - file mode desired (usually r for readable, w for writable, or e for
@@ -76,23 +76,22 @@ PetscErrorCode  PetscGetFileFromPath(char *path,char *defname,char *name,char *f
       cdir = env;
       ierr = PetscStrchr(env,PETSC_PATH_SEPARATOR,&p);CHKERRQ(ierr);
       if (p) {
-	*p  = 0;
-	env = p + 1;
-      } else
-	env = 0;
+        *p  = 0;
+        env = p + 1;
+      } else env = 0;
 
       /* Form trial file name */
       ierr = PetscStrcpy(trial,cdir);CHKERRQ(ierr);
       ierr = PetscStrlen(trial,&ln);CHKERRQ(ierr);
       if (trial[ln-1] != '/')  trial[ln++] = '/';
-	
+
       ierr = PetscStrcpy(trial + ln,name);CHKERRQ(ierr);
 
       ierr = PetscTestFile(path,mode,&flg);CHKERRQ(ierr);
       if (flg) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
-	ierr = PetscGetFullPath(trial,fname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-	ierr = PetscFree(senv);CHKERRQ(ierr);
+        ierr = PetscGetFullPath(trial,fname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        ierr = PetscFree(senv);CHKERRQ(ierr);
         PetscFunctionReturn(1);
       }
     }

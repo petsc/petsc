@@ -48,14 +48,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr);
 
-  // DMDA with the correct fiber dimension
+  /* DMDA with the correct fiber dimension */
   ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                     dim[0], dim[1], dim[2],
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                     dof, stencil,
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da);CHKERRQ(ierr);
-  // DMDA with fiber dimension 1 for split fields
+  /* DMDA with fiber dimension 1 for split fields */
   ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                     dim[0], dim[1], dim[2],
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
@@ -63,7 +63,7 @@ PetscInt main(PetscInt argc,char **args)
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da1);CHKERRQ(ierr);
 
-  // Coordinates
+  /* Coordinates */
   ierr = DMGetCoordinateDM(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);
@@ -73,9 +73,9 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(coords, &a);CHKERRQ(ierr);
     PetscInt j,k,n = 0;
     for (i = 0; i < 3; ++i) {
-      for (j = 0; j < dim[i]; ++j){
+      for (j = 0; j < dim[i]; ++j) {
         for (k = 0; k < 3; ++k) {
-          a[n] = j*h[i]; // coordinate along the j-th point in the i-th dimension
+          a[n] = j*h[i]; /* coordinate along the j-th point in the i-th dimension */
           ++n;
         }
       }
@@ -86,7 +86,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DMSetCoordinates(da, coords);CHKERRQ(ierr);
   ierr = VecDestroy(&coords);CHKERRQ(ierr);
 
-  // Work vectors
+  /* Work vectors */
   ierr = DMGetGlobalVector(da, &x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &xx);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscObjectSetName((PetscObject) z, "USFFT reconstructed vector");CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &zz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector");CHKERRQ(ierr);
-  // Split vectors for FFTW
+  /* Split vectors for FFTW */
   for (ii = 0; ii < 3; ++ii) {
     ierr = DMGetGlobalVector(da1, &xxsplit[ii]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) xxsplit[ii], "Real space split vector");CHKERRQ(ierr);
@@ -141,8 +141,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecCopy(x,xx);CHKERRQ(ierr);
-  // Split xx
-  ierr = VecStrideGatherAll(xx,xxsplit, INSERT_VALUES);CHKERRQ(ierr); //YES! 'Gather' means 'split' (or maybe 'scatter'?)!
+  /* Split xx */
+  ierr = VecStrideGatherAll(xx,xxsplit, INSERT_VALUES);CHKERRQ(ierr); /*YES! 'Gather' means 'split' (or maybe 'scatter'?)! */
 
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm);CHKERRQ(ierr);
@@ -157,8 +157,8 @@ PetscInt main(PetscInt argc,char **args)
   for (ii = 0; ii < 3; ++ii) {
     ierr = MatMult(AA,xxsplit[ii],zzsplit[ii]);CHKERRQ(ierr);
   }
-  // Now apply USFFT and FFTW forward several (3) times
-  for (i=0; i<3; ++i){
+  /* Now apply USFFT and FFTW forward several (3) times */
+  for (i=0; i<3; ++i) {
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
     for (ii = 0; ii < 3; ++ii) {
       ierr = MatMult(AA,xxsplit[ii],yysplit[ii]);CHKERRQ(ierr);
@@ -168,10 +168,10 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatMult(AA,yysplit[ii],zzsplit[ii]);CHKERRQ(ierr);
     }
   }
-  // Unsplit yy
-  ierr = VecStrideScatterAll(yysplit, yy, INSERT_VALUES);CHKERRQ(ierr); //YES! 'Scatter' means 'collect' (or maybe 'gather'?)!
-  // Unsplit zz
-  ierr = VecStrideScatterAll(zzsplit, zz, INSERT_VALUES);CHKERRQ(ierr); //YES! 'Scatter' means 'collect' (or maybe 'gather'?)!
+  /* Unsplit yy */
+  ierr = VecStrideScatterAll(yysplit, yy, INSERT_VALUES);CHKERRQ(ierr); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
+  /* Unsplit zz */
+  ierr = VecStrideScatterAll(zzsplit, zz, INSERT_VALUES);CHKERRQ(ierr); /*YES! 'Scatter' means 'collect' (or maybe 'gather'?)! */
 
   if (view_y) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "y = \n");CHKERRQ(ierr);

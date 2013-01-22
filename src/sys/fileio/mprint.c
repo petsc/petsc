@@ -49,7 +49,7 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
   while (format[i] && j < (PetscInt)size-1) {
     if (format[i] == '%' && format[i+1] != '%') {
       /* Find the letter */
-      for ( ; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
+      for (; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
       switch (format[i]) {
       case 'D':
 #if !defined(PETSC_USE_64BIT_INDICES)
@@ -336,7 +336,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
     petsc_printfqueuelength++;
     next->size = -1;
-    while((PetscInt)fullLength >= next->size) {
+    while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
@@ -401,7 +401,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char forma
     else                   {petsc_printfqueuebase   = petsc_printfqueue = next;}
     petsc_printfqueuelength++;
     next->size = -1;
-    while((PetscInt)fullLength >= next->size) {
+    while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
@@ -703,7 +703,7 @@ PetscErrorCode  PetscFormatStrip(char *format)
   size_t   loc1 = 0, loc2 = 0;
 
   PetscFunctionBegin;
-  while (format[loc2]){
+  while (format[loc2]) {
     if (format[loc2] == '%') {
       format[loc1++] = format[loc2++];
       while (format[loc2] && ((format[loc2] >= '0' && format[loc2] <= '9') || format[loc2] == '.')) loc2++;

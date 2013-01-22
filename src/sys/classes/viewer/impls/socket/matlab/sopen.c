@@ -2,8 +2,8 @@
   Usage: A = sopen(portnumber);  [ 5000 < portnumber < 5010 ]
 
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
-	 Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
-	 Updated by Barry Smith, bsmith@mcs.anl.gov 8/11/06
+        Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
+        Updated by Barry Smith, bsmith@mcs.anl.gov 8/11/06
 
  Similar to MATLAB's sopen() only does not take file name, instead optional
  port to listen at.

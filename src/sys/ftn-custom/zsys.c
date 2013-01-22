@@ -1,7 +1,7 @@
 
 #include <petsc-private/fortranimpl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define chkmemfortran_             CHKMEMFORTRAN
 #define petscoffsetfortran_        PETSCOFFSETFORTRAN
 #define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE
@@ -17,11 +17,12 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr )
+void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateIncrease(*obj);
 }
-void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr ){
+void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr)
+{
   *ierr = PetscObjectStateDecrease(*obj);
 }
 
@@ -51,7 +52,7 @@ static char FIXCHARSTRING[1024];
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
     b = a = 0; \
   } else { \
-    while((n > 0) && (a[n-1] == ' ')) n--; \
+    while ((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       b = FIXCHARSTRING; \
       *ierr = PetscStrncpy(b,a,n); \

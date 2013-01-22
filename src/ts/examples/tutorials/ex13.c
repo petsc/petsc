@@ -70,7 +70,7 @@ int main(int argc,char **argv)
 
   /* Use coloring to compute Jacobian efficiently */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
-  if (coloring){
+  if (coloring) {
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);

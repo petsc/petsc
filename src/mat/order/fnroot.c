@@ -53,7 +53,7 @@ PetscErrorCode SPARSEPACKfnroot(PetscInt *root,const PetscInt *xadj,const PetscI
     SPARSEPACKrootls(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
     ccsize = xls[*nlvl + 1] - 1;
     if (*nlvl == 1 || *nlvl == ccsize) {
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
     }
 /*       PICK A NODE WITH MINIMUM DEGREE FROM THE LAST LEVEL.*/
 L100:
@@ -61,38 +61,38 @@ L100:
     mindeg = ccsize;
     *root = ls[jstrt];
     if (ccsize == jstrt) {
-	goto L400;
+        goto L400;
     }
     i__1 = ccsize;
     for (j = jstrt; j <= i__1; ++j) {
-	node = ls[j];
-	ndeg = 0;
-	kstrt = xadj[node];
-	kstop = xadj[node + 1] - 1;
-	i__2 = kstop;
-	for (k = kstrt; k <= i__2; ++k) {
-	    nabor = adjncy[k];
-	    if (mask[nabor] > 0) {
-		++ndeg;
-	    }
-	}
-	if (ndeg >= mindeg) {
-	    goto L300;
-	}
-	*root = node;
-	mindeg = ndeg;
+        node = ls[j];
+        ndeg = 0;
+        kstrt = xadj[node];
+        kstop = xadj[node + 1] - 1;
+        i__2 = kstop;
+        for (k = kstrt; k <= i__2; ++k) {
+            nabor = adjncy[k];
+            if (mask[nabor] > 0) {
+                ++ndeg;
+            }
+        }
+        if (ndeg >= mindeg) {
+            goto L300;
+        }
+        *root = node;
+        mindeg = ndeg;
 L300:
-	;
+        ;
     }
 /*       AND GENERATE ITS ROOTED LEVEL STRUCTURE.*/
 L400:
     SPARSEPACKrootls(root, &xadj[1], &adjncy[1], &mask[1], &nunlvl, &xls[1], &ls[1]);
     if (nunlvl <= *nlvl) {
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
     }
     *nlvl = nunlvl;
     if (*nlvl < ccsize) {
-	goto L100;
+        goto L100;
     }
     PetscFunctionReturn(0);
 }

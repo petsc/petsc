@@ -22,7 +22,7 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestQ2Q1DA"
-static PetscErrorCode TestQ2Q1DA( void )
+static PetscErrorCode TestQ2Q1DA(void)
 {
   DM             Q2_da,Q1_da,cda;
   PetscInt       mx,my,mz;

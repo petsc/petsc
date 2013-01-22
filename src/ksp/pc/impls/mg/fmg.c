@@ -14,7 +14,7 @@ PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG_Levels **mglevels)
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
-  for (i=l-1; i>0; i--){
+  for (i=l-1; i>0; i--) {
     if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatRestrict(mglevels[i]->restrct,mglevels[i]->b,mglevels[i-1]->b);CHKERRQ(ierr);
     if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
@@ -41,7 +41,7 @@ PetscErrorCode PCMGKCycle_Private(PC pc,PC_MG_Levels **mglevels)
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
-  for (i=l-1; i>0; i--){
+  for (i=l-1; i>0; i--) {
     if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatRestrict(mglevels[i]->restrct,mglevels[i]->b,mglevels[i-1]->b);CHKERRQ(ierr);
     if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}

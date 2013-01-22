@@ -21,8 +21,8 @@ EXTERN_C_BEGIN
 #include <pastix.h>
 EXTERN_C_END
 
-#ifdef PETSC_USE_COMPLEX
-#ifdef PETSC_USE_REAL_SINGLE
+#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL c_pastix
 #define PASTIX_CHECKMATRIX c_pastix_checkMatrix
 #define PastixScalar COMPLEX
@@ -34,7 +34,7 @@ EXTERN_C_END
 
 #else /* PETSC_USE_COMPLEX */
 
-#ifdef PETSC_USE_REAL_SINGLE
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL s_pastix
 #define PASTIX_CHECKMATRIX s_pastix_checkMatrix
 #define PastixScalar float
@@ -127,10 +127,10 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
     nnz     = aa->nz;
   }
 
-  if (!valOnly){
-    ierr = PetscMalloc(((*n)+1) *sizeof(PetscInt)   ,colptr );CHKERRQ(ierr);
-    ierr = PetscMalloc( nnz     *sizeof(PetscInt)   ,row);CHKERRQ(ierr);
-    ierr = PetscMalloc( nnz     *sizeof(PetscScalar),values);CHKERRQ(ierr);
+  if (!valOnly) {
+    ierr = PetscMalloc(((*n)+1) *sizeof(PetscInt)   ,colptr);CHKERRQ(ierr);
+    ierr = PetscMalloc(nnz      *sizeof(PetscInt)   ,row);CHKERRQ(ierr);
+    ierr = PetscMalloc(nnz      *sizeof(PetscScalar),values);CHKERRQ(ierr);
 
     if (isSBAIJ || isSeqSBAIJ || isMpiSBAIJ) {
         ierr = PetscMemcpy (*colptr, rowptr, ((*n)+1)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -250,7 +250,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
   PetscFunctionBegin;
   if (lu && lu->CleanUpPastix) {
     /* Terminate instance, deallocate memories */
-    if (size > 1){
+    if (size > 1) {
       ierr = VecScatterDestroy(&lu->scat_rhs);CHKERRQ(ierr);
       ierr = VecDestroy(&lu->b_seq);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   lu->rhsnbr = 1;
   x_seq = lu->b_seq;
-  if (lu->commSize > 1){
+  if (lu->commSize > 1) {
     /* PaStiX only supports centralized rhs. Scatter b into a seqential rhs vector */
     ierr = VecScatterBegin(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -313,7 +313,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
     ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   }
   lu->rhs = array;
-  if (lu->commSize == 1){
+  if (lu->commSize == 1) {
     ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
   } else {
     ierr = VecRestoreArray(x_seq,&array);CHKERRQ(ierr);
@@ -338,9 +338,9 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
               lu->iparm,
               lu->dparm);
 
-  if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER] );
+  if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER]);
 
-  if (lu->commSize == 1){
+  if (lu->commSize == 1) {
     ierr = VecRestoreArray(x,&(lu->rhs));CHKERRQ(ierr);
   } else {
     ierr = VecRestoreArray(x_seq,&(lu->rhs));CHKERRQ(ierr);
@@ -374,11 +374,10 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   PetscBool      isSeqAIJ,isSeqSBAIJ,isMPIAIJ;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
-  if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){
+  if (lu->matstruc == DIFFERENT_NONZERO_PATTERN) {
     (F)->ops->solve   = MatSolve_PaStiX;
 
     /* Initialize a PASTIX instance */
@@ -457,7 +456,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   }
 
   /*----------------*/
-  if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){
+  if (lu->matstruc == DIFFERENT_NONZERO_PATTERN) {
     if (!(isSeqAIJ || isSeqSBAIJ)) {
       /* PaStiX only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
         ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&lu->b_seq);CHKERRQ(ierr);
@@ -506,8 +505,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
     if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
   }
 
-  if (lu->commSize > 1){
-    if ((F)->factortype == MAT_FACTOR_LU){
+  if (lu->commSize > 1) {
+    if ((F)->factortype == MAT_FACTOR_LU) {
       F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     } else {
       F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
@@ -563,7 +562,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO){
+    if (format == PETSC_VIEWER_ASCII_INFO) {
       Mat_Pastix      *lu=(Mat_Pastix*)A->spptr;
 
       ierr = PetscViewerASCIIPrintf(viewer,"PaStiX run parameters:\n");CHKERRQ(ierr);
@@ -598,20 +597,20 @@ M*/
 #define __FUNCT__ "MatGetInfo_PaStiX"
 PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
 {
-    Mat_Pastix  *lu =(Mat_Pastix*)A->spptr;
+  Mat_Pastix  *lu =(Mat_Pastix*)A->spptr;
 
-    PetscFunctionBegin;
-    info->block_size        = 1.0;
-    info->nz_allocated      = lu->iparm[IPARM_NNZEROS];
-    info->nz_used           = lu->iparm[IPARM_NNZEROS];
-    info->nz_unneeded       = 0.0;
-    info->assemblies        = 0.0;
-    info->mallocs           = 0.0;
-    info->memory            = 0.0;
-    info->fill_ratio_given  = 0;
-    info->fill_ratio_needed = 0;
-    info->factor_mallocs    = 0;
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  info->block_size        = 1.0;
+  info->nz_allocated      = lu->iparm[IPARM_NNZEROS];
+  info->nz_used           = lu->iparm[IPARM_NNZEROS];
+  info->nz_unneeded       = 0.0;
+  info->assemblies        = 0.0;
+  info->mallocs           = 0.0;
+  info->memory            = 0.0;
+  info->fill_ratio_given  = 0;
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
+  PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN

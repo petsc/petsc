@@ -4,7 +4,8 @@ EXTERN_C_BEGIN
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestIACall"
-PetscErrorCode  TestIACall(PetscShell component, const char* message) {
+PetscErrorCode  TestIACall(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscBool  init;
@@ -22,7 +23,8 @@ PetscErrorCode  TestIACall(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestIBCall"
-PetscErrorCode  TestIBCall(PetscShell component, const char* message) {
+PetscErrorCode  TestIBCall(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -32,7 +34,8 @@ PetscErrorCode  TestIBCall(PetscShell component, const char* message) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestICCall"
-PetscErrorCode  TestICCall(PetscShell component, const char* message) {
+PetscErrorCode  TestICCall(PetscShell component, const char* message)
+{
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;

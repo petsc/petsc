@@ -58,7 +58,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mat: \n");CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-   // begin cholesky factorization
+  /* begin cholesky factorization */
   ierr = MatGetOrdering(mat,MATORDERINGNATURAL,&perm,&colp);CHKERRQ(ierr);
   ierr = ISDestroy(&colp);CHKERRQ(ierr);
   info.fill=1.0;

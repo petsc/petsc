@@ -26,8 +26,8 @@
 PetscErrorCode KSPSetUp_PIPECR(KSP ksp)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
-
   /* get work vectors needed by PIPECR */
   ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -135,7 +135,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
       ierr = VecCopy(U,P);CHKERRQ(ierr);         /*     p <- u          */
     } else {
       beta = gamma / gammaold;
-      alpha = gamma / ( delta - beta / alpha * gamma );
+      alpha = gamma / (delta - beta / alpha * gamma);
       ierr = VecAYPX(Z,beta,N);CHKERRQ(ierr);    /*     z <- n + beta * z   */
       ierr = VecAYPX(Q,beta,M);CHKERRQ(ierr);    /*     q <- m + beta * q   */
       ierr = VecAYPX(P,beta,U);CHKERRQ(ierr);    /*     p <- u + beta * p   */

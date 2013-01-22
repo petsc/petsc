@@ -27,7 +27,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   ierr = MatGetLocalSize(pc->pmat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
 
-  if (jac->n > 0 && jac->n < size){
+  if (jac->n > 0 && jac->n < size) {
     ierr = PCSetUp_BJacobi_Multiproc(pc);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -213,13 +213,13 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       if (jac->ksp && !jac->psubcomm) {
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        if (!rank){
+        if (!rank) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-      } else if (jac->psubcomm && !jac->psubcomm->color){
+      } else if (jac->psubcomm && !jac->psubcomm->color) {
         ierr = PetscViewerASCIIGetStdout(mpjac->psubcomm->comm,&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
@@ -314,7 +314,6 @@ PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,PetscInt *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (pc->setupcalled > 0 && jac->n!=blocks) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called");
   jac->n = blocks;
   if (!lens) {
@@ -741,6 +740,7 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
+  
   PetscFunctionBegin;
   /*
       The VecPlaceArray() is to avoid having to copy the
@@ -865,7 +865,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   PetscBool              wasSetup = PETSC_TRUE;
 
   PetscFunctionBegin;
-
   if (!pc->setupcalled) {
     const char *prefix;
 
@@ -1192,7 +1191,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     } else {
       ierr = KSPSetOperators(jac->ksp[i],bjac->pmat[i],bjac->pmat[i],pc->flag);CHKERRQ(ierr);
     }
-    if (pc->setfromoptionscalled){
+    if (pc->setfromoptionscalled) {
       ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
     }
   }
@@ -1215,7 +1214,7 @@ static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
   ierr = VecDestroy(&mpjac->ysub);CHKERRQ(ierr);
   ierr = VecDestroy(&mpjac->xsub);CHKERRQ(ierr);
   ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);
-  if (jac->ksp){ierr = KSPReset(jac->ksp[0]);CHKERRQ(ierr);}
+  if (jac->ksp) {ierr = KSPReset(jac->ksp[0]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1338,7 +1337,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     subcomm = mpjac->psubcomm->comm;
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
-      if (mpjac->submats){ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
+      if (mpjac->submats) {ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
       ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     } else {
       ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
@@ -1346,7 +1345,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);
   }
 
-  if (!wasSetup && pc->setfromoptionscalled){
+  if (!wasSetup && pc->setfromoptionscalled) {
     ierr = KSPSetFromOptions(jac->ksp[0]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

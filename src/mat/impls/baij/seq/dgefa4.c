@@ -46,11 +46,11 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_4(MatScalar *a,PetscReal shift)
 
         if (a[l + k3] == 0.0) {
           if (shift == 0.0) {
-	    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
-  	  } else {
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+          } else {
             /* SHIFT is applied to SINGLE diagonal entry; does this make any sense? */
-  	    a[l + k3] = shift;
-  	  }
+            a[l + k3] = shift;
+          }
         }
 
 /*           interchange if necessary */
@@ -170,7 +170,6 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_4_SSE(float *a)
      bool Invert4x4(SMLXMatrix &);
   */
   PetscFunctionBegin;
-
   SSE_SCOPE_BEGIN;
     SSE_INLINE_BEGIN_1(a)
 

@@ -77,7 +77,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   }
 
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  for ( ; !ksp->reason; it++) {
+  for (; !ksp->reason; it++) {
     Vec Zcur,Znext;
     if (pgmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = KSPGMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);

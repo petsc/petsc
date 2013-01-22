@@ -2,7 +2,7 @@
 #include <petscksp.h>
 #include <../src/sys/f90-src/f90impl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define kspgetresidualhistoryf90_     KSPGETRESIDUALHISTORYF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgetresidualhistoryf90_     kspgetresidualhistoryf90

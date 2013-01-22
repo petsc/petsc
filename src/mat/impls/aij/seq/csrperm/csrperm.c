@@ -80,7 +80,7 @@ PetscErrorCode  MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,M
   }
 
   /* Change the type of B to MATSEQAIJ. */
-  ierr = PetscObjectChangeTypeName( (PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
 
   *newmat = B;
   PetscFunctionReturn(0);
@@ -107,7 +107,7 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
 
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
    * to destroy everything that remains. */
-  ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
   /* Note that I don't call MatSetType().  I believe this is because that
    * is only to be called when *building* a matrix.  I could be wrong, but
    * that is how things work for the SuperLU matrix class. */

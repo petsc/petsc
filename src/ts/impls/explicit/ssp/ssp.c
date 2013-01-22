@@ -121,7 +121,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
     ierr = VecAXPY(work[0],dt/r,F);CHKERRQ(ierr);
   }
   ierr = VecCopy(work[0],work[1]);CHKERRQ(ierr);
-  for ( ; i<n*(n+1)/2-1; i++) {
+  for (; i<n*(n+1)/2-1; i++) {
     c = (i<n*(n+1)/2) ? 1.*i/(s-n) : (1.*i-n)/(s-n);
     stage_time = t0+c*dt;
     ierr = TSPreStage(ts,stage_time);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
     ierr = VecAXPBYPCZ(work[0],1.*n/(2*n-1.),(n-1.)*dt/(r*(2*n-1)),(n-1.)/(2*n-1.),work[1],F);CHKERRQ(ierr);
     i++;
   }
-  for ( ; i<s; i++) {
+  for (; i<s; i++) {
     c = (i<n*(n+1)/2) ? 1.*i/(s-n) : (1.*i-n)/(s-n);
     stage_time = t0+c*dt;
     ierr = TSPreStage(ts,stage_time);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ static PetscErrorCode TSSSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   }
   ierr = VecAXPBYPCZ(work[1],1./25,9./25,0,sol,work[0]);CHKERRQ(ierr);
   ierr = VecAXPBY(work[0],15,-5,work[1]);CHKERRQ(ierr);
-  for ( ; i<9; i++) {
+  for (; i<9; i++) {
     stage_time = t0+c[i]*dt;
     ierr = TSPreStage(ts,stage_time);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);

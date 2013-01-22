@@ -47,7 +47,7 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
     {
       SYSTEM_INFO sysinfo;
-      GetSystemInfo( &sysinfo );
+      GetSystemInfo(&sysinfo);
       N_CORES = sysinfo.dwNumberOfProcessors;
     }
 #endif
@@ -55,7 +55,7 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   if (ncores) *ncores = N_CORES;
   PetscFunctionReturn(0);
 }
-			
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommGetThreadComm"
 /*@C
@@ -156,7 +156,6 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (!*tcomm) PetscFunctionReturn(0);
   if (!--(*tcomm)->refct) {
     /* Destroy the implementation specific data struct */
@@ -251,7 +250,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting number of threads",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       if (nthr == PETSC_DECIDE) {
       tcomm->nworkThreads = N_CORES;
       } else tcomm->nworkThreads = nthr;
@@ -324,7 +323,7 @@ PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
    There must be no intervening spaces between the values.
 
 .seealso: PetscThreadCommGetAffinities(), PetscThreadCommSetNThreads()
-*/				
+*/
 PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt affinities[])
 {
   PetscErrorCode ierr;
@@ -343,7 +342,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
       if (nmax != tcomm->nworkThreads) {
-	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, Core affinities set = %D",tcomm->nworkThreads,nmax);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, Core affinities set = %D",tcomm->nworkThreads,nmax);
       }
     } else {
       /* PETSc default affinities */
@@ -658,8 +657,8 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 
@@ -731,8 +730,8 @@ PetscErrorCode PetscThreadCommRunKernel0(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 
@@ -798,8 +797,8 @@ PetscErrorCode PetscThreadCommRunKernel1(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 
@@ -867,8 +866,8 @@ PetscErrorCode PetscThreadCommRunKernel2(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 
@@ -938,8 +937,8 @@ PetscErrorCode PetscThreadCommRunKernel3(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 
@@ -1011,8 +1010,8 @@ PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 
@@ -1087,8 +1086,8 @@ PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm comm,PetscErrorCode (*func)(Pe
   job = &PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
-      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
-	;
+      while (PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+        ;
     }
   }
 

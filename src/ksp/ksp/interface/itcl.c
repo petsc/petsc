@@ -548,7 +548,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     */
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ksp_monitor_lg_true_residualnorm","Monitor graphically true residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg){
+    if (flg) {
       PetscDrawLG ctx;
 
       ierr = KSPMonitorLGTrueResidualNormCreate(((PetscObject)ksp)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);

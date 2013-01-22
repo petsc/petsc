@@ -54,7 +54,7 @@ PetscErrorCode ArrowTest()
   std::copy(i.lower_bound(Point(1,0)), i.upper_bound(Point(1,0)), std::ostream_iterator<SieveArrow>(std::cout));
 
   Point base(0,0);
-  for(int i = 4; i < 10000; ++i) {
+  for (int i = 4; i < 10000; ++i) {
     arrows.insert(SieveArrow(Point(0, i), base, 0));
   }
   PetscFunctionReturn(0);
@@ -68,55 +68,55 @@ PetscErrorCode ConeTest()
 
   PetscFunctionBegin;
   // Test cone of a point
-  for(int j = 0; j < 1; ++j) {
+  for (int j = 0; j < 1; ++j) {
     ALE::def::Point base(0, j);
     ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
 
-    for(int i = 1; i < 5000; ++i) {
+    for (int i = 1; i < 5000; ++i) {
       inCone->insert(ALE::def::Point(0, i));
     }
     sieve->addCone(inCone, base);
 
     ALE::Obj<ALE::def::Sieve<ALE::def::Point,int>::coneSequence> outCone = sieve->cone(base);
-    for(ALE::def::Sieve<ALE::def::Point,int>::coneSequence::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
+    for (ALE::def::Sieve<ALE::def::Point,int>::coneSequence::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
       std::cout << *iter << std::endl;
     }
   }
   sieve->clear();
   // Test colored cone of a point
-  for(int j = 0; j < 1; ++j) {
+  for (int j = 0; j < 1; ++j) {
     ALE::def::Point base(0, j);
     ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
 
-    for(int c = 1; c < 3; ++c) {
-      for(int i = 1; i < 4; ++i) {
+    for (int c = 1; c < 3; ++c) {
+      for (int i = 1; i < 4; ++i) {
         inCone->insert(ALE::def::Point(0, i));
       }
       sieve->addCone(inCone, base, c);
       inCone->clear();
     }
 
-    for(int c = 1; c < 3; ++c) {
+    for (int c = 1; c < 3; ++c) {
       ALE::Obj<ALE::def::Sieve<ALE::def::Point,int>::coneSequence> outCone = sieve->cone(base, c);
-      for(ALE::def::Sieve<ALE::def::Point,int>::coneSequence::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
+      for (ALE::def::Sieve<ALE::def::Point,int>::coneSequence::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
         std::cout << "Color " << c << ": " << *iter << std::endl;
       }
     }
   }
   sieve->clear();
   // Test cone of a point set
-  for(int j = 1; j < 6; ++j) {
+  for (int j = 1; j < 6; ++j) {
     ALE::def::Point base(0, j);
     ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
 
-    for(int i = 1; i < 4; ++i) {
+    for (int i = 1; i < 4; ++i) {
       inCone->insert(ALE::def::Point(j, i));
     }
     sieve->addCone(inCone, base);
   }
 
   ALE::Obj<ALE::def::PointSet> outCone = sieve->cone(sieve->base());
-  for(ALE::def::PointSet::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
+  for (ALE::def::PointSet::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
     std::cout << *iter << std::endl;
   }
   sieve->clear();

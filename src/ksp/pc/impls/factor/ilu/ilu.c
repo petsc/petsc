@@ -210,7 +210,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       if (ilu->nonzerosalongdiagonal) {
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
-      if (!((PC_Factor*)ilu)->fact){
+      if (!((PC_Factor*)ilu)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       }
       ierr = MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ PetscErrorCode  PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol              = PETSC_DEFAULT;
-  ((PC_Factor*)ilu)->info.shifttype          = (PetscReal)MAT_SHIFT_NONZERO;
+  ((PC_Factor*)ilu)->info.shifttype          = (PetscReal)MAT_SHIFT_INBLOCKS;
   ((PC_Factor*)ilu)->info.shiftamount        = 100.0*PETSC_MACHINE_EPSILON;
   ((PC_Factor*)ilu)->info.zeropivot          = 100.0*PETSC_MACHINE_EPSILON;
   ((PC_Factor*)ilu)->info.pivotinblocks      = 1.0;

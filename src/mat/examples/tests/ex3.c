@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
-  for (i=1; i<n-1; i++){
+  for (i=1; i<n-1; i++) {
     midx[0] = i-1; midx[1] = i; midx[2] = i+1;
     ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   }

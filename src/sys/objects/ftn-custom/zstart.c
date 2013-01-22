@@ -23,7 +23,7 @@ extern  PetscBool  PetscBeganMPI;
 
 extern PetscBool  PetscHMPIWorker;
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
 #define petscfinalize_                PETSCFINALIZE
 #define petscend_                     PETSCEND

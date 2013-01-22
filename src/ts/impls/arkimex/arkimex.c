@@ -615,7 +615,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) { 
-      if(!ark->imex && tab->stiffly_accurate) {/* Only the stiffly accurate implicit formula is used */ 
+      if (!ark->imex && tab->stiffly_accurate) {/* Only the stiffly accurate implicit formula is used */ 
         ierr = VecCopy(ark->Y[s-1],X);CHKERRQ(ierr);
       } else { /* Use the standard completion formula (bt,b) */
         ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
@@ -672,7 +672,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-
   if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
     PetscReal valid_time;
     PetscBool isvalid;
@@ -698,17 +697,17 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts_start->adapt=ts->adapt;
       PetscObjectReference((PetscObject)ts_start->adapt);
       ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
-      ierr = TSSetTime(ts_start,ts->ptime); CHKERRQ(ierr);
+      ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
       ierr = TSSetDuration(ts_start,1,ts->time_step);CHKERRQ(ierr);
-      ierr = TSSetTimeStep(ts_start,ts->time_step); CHKERRQ(ierr);
+      ierr = TSSetTimeStep(ts_start,ts->time_step);CHKERRQ(ierr);
       ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
       ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
       ierr = TSSetEquationType(ts_start,ts->equation_type);CHKERRQ(ierr);
       ierr = TSGetTolerances(ts,&atol,&vatol,&rtol,&vrtol);CHKERRQ(ierr);
-      ierr = TSSetTolerances(ts_start,atol,vatol,rtol,vrtol); CHKERRQ(ierr);
+      ierr = TSSetTolerances(ts_start,atol,vatol,rtol,vrtol);CHKERRQ(ierr);
       ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
-      ierr = TSGetTime(ts_start,&ts->ptime); CHKERRQ(ierr);
+      ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
       ts->time_step = ts_start->time_step;
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX *)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
@@ -760,13 +759,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       }
-      if(ts->equation_type>=TS_EQ_IMPLICIT){
-        if(i==0 && tab->explicit_first_stage){
+      if (ts->equation_type>=TS_EQ_IMPLICIT) {
+        if (i==0 && tab->explicit_first_stage) {
           ierr = VecCopy(Ydot0,YdotI[0]);CHKERRQ(ierr);
         } else {
           ierr = VecAXPBYPCZ(YdotI[i],-ark->scoeff/h,ark->scoeff/h,0,Z,Y[i]);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
         }
-      }else{
+      } else {
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
         ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],ark->imex);CHKERRQ(ierr);
         ierr = VecScale(YdotI[i], -1.0);CHKERRQ(ierr);
@@ -790,7 +789,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->ptime += ts->time_step;
       ts->time_step = next_time_step;
       ts->steps++;
-      if(ts->equation_type>=TS_EQ_IMPLICIT){/* save the initial slope for the next step*/
+      if (ts->equation_type>=TS_EQ_IMPLICIT) {/* save the initial slope for the next step*/
         ierr = VecCopy(YdotI[s-1],Ydot0);CHKERRQ(ierr);
       }
       ark->status = TS_STEP_COMPLETE;

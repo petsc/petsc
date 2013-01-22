@@ -5,7 +5,7 @@
    system of mixed complementarity equations
  */
 
-#ifndef __SNES_VIRS_H
+#if !defined(__SNES_VIRS_H)
 #define __SNES_VIRS_H
 
 typedef struct {

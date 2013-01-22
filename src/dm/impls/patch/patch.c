@@ -98,11 +98,11 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   ierr = DMDACreatePatchIS(dm, &loclower, &locupper, &is);CHKERRQ(ierr);
   ierr = ISGetIndices(is, &indices);CHKERRQ(ierr);
   q = 0;
-  for(k = szb; k < szb+mzb; ++k) {
+  for (k = szb; k < szb+mzb; ++k) {
     if ((k < szr) || (k >= ezr)) continue;
-    for(j = syb; j < syb+myb; ++j) {
+    for (j = syb; j < syb+myb; ++j) {
       if ((j < syr) || (j >= eyr)) continue;
-      for(i = sxb; i < sxb+mxb; ++i) {
+      for (i = sxb; i < sxb+mxb; ++i) {
         const PetscInt lp = ((k-szb)*rN + (j-syb))*rM + i-sxb;
         PetscInt r;
 
@@ -128,9 +128,9 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   ierr = DMDACreatePatchIS(dm, &loclower, &locupper, &is);CHKERRQ(ierr);
   ierr = ISGetIndices(is, &indices);CHKERRQ(ierr);
   q = 0;
-  for(k = szb; k < szb+mzb; ++k) {
-    for(j = syb; j < syb+myb; ++j) {
-      for(i = sxb; i < sxb+mxb; ++i, ++q) {
+  for (k = szb; k < szb+mzb; ++k) {
+    for (j = syb; j < syb+myb; ++j) {
+      for (i = sxb; i < sxb+mxb; ++i, ++q) {
         PetscInt r;
 
         localPoints[q]        = q;
@@ -157,7 +157,6 @@ typedef enum {PATCH_COMM_TYPE_WORLD = 0, PATCH_COMM_TYPE_SELF = 1} PatchCommType
 PetscErrorCode DMPatchSolve(DM dm)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
-  DM_Patch      *mesh = (DM_Patch *) dm->data;
   MPI_Comm       commz;
   DM             dmc;
   PetscSF        sfz, sfzr;
@@ -206,13 +205,15 @@ PetscErrorCode DMPatchSolve(DM dm)
      - l,m,n divides patchSize
      - commSize divides patchSize
    */
-  for(k = 0; k < P; k += PetscMax(patchSize.k, 1)) {
-    for(j = 0; j < N; j += PetscMax(patchSize.j, 1)) {
-      for(i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
+  for (k = 0; k < P; k += PetscMax(patchSize.k, 1)) {
+    for (j = 0; j < N; j += PetscMax(patchSize.j, 1)) {
+      for (i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
         MPI_Comm     commp   = MPI_COMM_NULL;
         DM           dmz     = PETSC_NULL;
+#if 0
         DM           dmf     = PETSC_NULL;
         Mat          interpz = PETSC_NULL;
+#endif
         Vec          XZ      = PETSC_NULL;
         PetscScalar *xcarray = PETSC_NULL;
         PetscScalar *xzarray = PETSC_NULL;

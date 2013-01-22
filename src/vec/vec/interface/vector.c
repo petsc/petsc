@@ -1153,7 +1153,7 @@ PetscErrorCode  VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
 @*/
 PetscErrorCode  VecConjugate(Vec x)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

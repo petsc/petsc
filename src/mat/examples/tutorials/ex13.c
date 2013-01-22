@@ -66,7 +66,7 @@ int main(int argc,char **args)
   ierr = MatSolveTranspose(F,x,y);CHKERRQ(ierr);
   F->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_N;
   ierr = MatSolveTranspose(F,x,w);CHKERRQ(ierr);
-  //  VecView(w,0);VecView(y,0);
+  /*  VecView(w,0);VecView(y,0); */
   ierr = VecAXPY(w,-1.0,y);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
   if (norm) {

@@ -59,13 +59,13 @@ int main(int argc,char **args)
       row = j*4+i;
       v = -1.0;
       if (i>0) {
-	col =  row-1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col =  row-1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
       if (i<3) {
-	col = row+1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col = row+1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
       if (j>0) {
-	col = row-4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col = row-4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
       if (j<3) {
-	col = row+4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col = row+4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
       v = 4.0;
       ierr = MatSetValues(A,1,&row,1,&row,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -96,8 +96,8 @@ int main(int argc,char **args)
     k = 0;
     for (i = 0; i < 4; ++i) {
       for (j = jlow[l]; j < jhigh[l]; ++j) {
-	subindices[k] = j*4+i;
-	k++;
+        subindices[k] = j*4+i;
+        k++;
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, 12, subindices, PETSC_OWN_POINTER, rowis+l);CHKERRQ(ierr);
@@ -124,26 +124,26 @@ int main(int argc,char **args)
     if (p == rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Number of subdomains: %D:\n", rank, size, nsub);CHKERRQ(ierr);
       for (l = 0; l < nsub; ++l) {
-	PetscInt i0, i1;
-	ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Subdomain row IS %D:\n", rank, size, l);CHKERRQ(ierr);
-	ierr = ISView(rowis[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Subdomain col IS %D:\n", rank, size, l);CHKERRQ(ierr);
-	ierr = ISView(colis[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Submatrix %D:\n", rank, size, l);CHKERRQ(ierr);
-	ierr = MatView(S[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-	if (show_inversions) {
-	  ierr = MatGetOwnershipRange(S[l], &i0,&i1);CHKERRQ(ierr);
-	  for (i = i0; i < i1; ++i) {
-	    ierr = MatGetRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
-	    for (j = 1; j < ncols; ++j) {
-	      if (cols[j] < cols[j-1]) {
-		ierr = PetscPrintf(PETSC_COMM_SELF, "***Inversion in row %D: col[%D] = %D < %D = col[%D]\n", i, j, cols[j], cols[j-1], j-1);CHKERRQ(ierr);
-		inversions++;
-	      }
-	    }
-	    ierr = MatRestoreRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
-	  }
-	}	
+        PetscInt i0, i1;
+        ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Subdomain row IS %D:\n", rank, size, l);CHKERRQ(ierr);
+        ierr = ISView(rowis[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Subdomain col IS %D:\n", rank, size, l);CHKERRQ(ierr);
+        ierr = ISView(colis[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Submatrix %D:\n", rank, size, l);CHKERRQ(ierr);
+        ierr = MatView(S[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        if (show_inversions) {
+          ierr = MatGetOwnershipRange(S[l], &i0,&i1);CHKERRQ(ierr);
+          for (i = i0; i < i1; ++i) {
+            ierr = MatGetRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
+            for (j = 1; j < ncols; ++j) {
+              if (cols[j] < cols[j-1]) {
+                ierr = PetscPrintf(PETSC_COMM_SELF, "***Inversion in row %D: col[%D] = %D < %D = col[%D]\n", i, j, cols[j], cols[j-1], j-1);CHKERRQ(ierr);
+                inversions++;
+              }
+            }
+            ierr = MatRestoreRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
+          }
+        }        
       }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);

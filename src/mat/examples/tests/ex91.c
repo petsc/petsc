@@ -40,7 +40,7 @@ int main(int argc,char **args)
   /* Now set blocks of random values */
   /* first, set diagonal blocks as zero */
   for (j=0; j<bs*bs; j++) vals[j] = 0.0;
-  for (i=0; i<m; i++){
+  for (i=0; i<m; i++) {
     cols[0] = i*bs; rows[0] = i*bs;
     for (j=1; j<bs; j++) {
       rows[j] = rows[j-1]+1;
@@ -137,7 +137,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    if (!flg){
+    if (!flg) {
       /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
          ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
       SETERRQ1(PETSC_COMM_SELF,1,"i=%d, is1 != is2",i);

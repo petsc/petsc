@@ -88,7 +88,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
 #if 0
-    for(ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+    for (ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
       ostringstream filename;
 
       filename << "coarseMesh." << *p_iter << ".vtk";

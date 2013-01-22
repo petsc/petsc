@@ -112,7 +112,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   MatStructure   pflag;
 
   PetscFunctionBegin;
-
   /* Number of pseudo iterations since last restart is the number
      of prestart directions */
   loc_it = 0;
@@ -492,7 +491,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (fgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated){
+  if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated) {
     nalloc = fgmres->vecs_allocated - it - VEC_OFFSET;
   }
   if (!nalloc) PetscFunctionReturn(0);

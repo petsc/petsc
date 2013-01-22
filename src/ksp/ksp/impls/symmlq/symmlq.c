@@ -100,7 +100,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     ksp->its = i+1;
 
     /*    Update    */
-    if (ksp->its > 1){
+    if (ksp->its > 1) {
       ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */
       ierr = VecCopy(U,UOLD);CHKERRQ(ierr);  /* u_old <- u; */
 
@@ -154,14 +154,14 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     /* Givens rotation: [c -s; s c] (different from the Reference!) */
     c = rho0 / rho1; s = beta / rho1;
 
-    if (ksp->its==1){
+    if (ksp->its==1) {
       ceta = beta1/rho1;
     } else {
       ceta = -(rho2*ceta_old + rho3*ceta_oold)/rho1;
     }
 
     s_prod = s_prod*PetscAbsScalar(s);
-    if (c == 0.0){
+    if (c == 0.0) {
       np = s_prod*1.e16;
     } else {
       np = s_prod/PetscAbsScalar(c);       /* residual norm for xc_k (CGNORM) */
@@ -175,7 +175,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   } while (i<ksp->max_it);
 
   /* move to the CG point: xc_(k+1) */
-  if (c == 0.0){
+  if (c == 0.0) {
     ceta_bar = ceta*1.e15;
   } else {
     ceta_bar = ceta/c;

@@ -1,5 +1,5 @@
 /*
- *  This file computes data for the deflated restarting in the Newton-basis GMRES. At each restart (or at each detected stagnation in the adaptive strategy), a basis of an (approximated )invariant subspace corresponding to the smallest eigenvalues is extracted from the Krylov subspace. It is then used to augment the Newton basis.
+ *  This file computes data for the deflated restarting in the Newton-basis GMRES. At each restart (or at each detected stagnation in the adaptive strategy), a basis of an (approximated)invariant subspace corresponding to the smallest eigenvalues is extracted from the Krylov subspace. It is then used to augment the Newton basis.
  *
  * References : D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflation of eigenvalues. Research report INRIA RR-7787.
  * Author: Desire NUENTSA WAKAM <desire.nuentsa_wakam@inria.fr>, 2011

@@ -36,7 +36,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 
     /* Enter these into the temp arrays i.e mark table_out[brow], enter brow into new index */
     bcol_max = 0;
-    for (j=0; j<n ; ++j){
+    for (j=0; j<n ; ++j) {
       brow = idx[j]/bs; /* convert the indices into block indices */
       if (brow >= mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if (!PetscBTLookupSet(table_out,brow)) {
@@ -48,16 +48,16 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
 
     k = 0;
-    for (j=0; j<ov; j++){ /* for each overlap */
+    for (j=0; j<ov; j++) { /* for each overlap */
       /* set table_in for lookup - only mark entries that are added onto nidx in (j-1)-th overlap */
       ierr = PetscBTMemzero(mbs,table_in);CHKERRQ(ierr);
       for (l=k; l<isz; l++) { ierr = PetscBTSet(table_in,nidx[l]);CHKERRQ(ierr); }
 
       n = isz;  /* length of the updated is[i] */
-      for (brow=0; brow<mbs; brow++){
+      for (brow=0; brow<mbs; brow++) {
         start = ai[brow]; end   = ai[brow+1];
-        if (PetscBTLookup(table_in,brow)){ /* brow is on nidx - row search: collect all bcol in this brow */
-          for (l = start; l<end ; l++){
+        if (PetscBTLookup(table_in,brow)) { /* brow is on nidx - row search: collect all bcol in this brow */
+          for (l = start; l<end ; l++) {
             bcol = aj[l];
             if (!PetscBTLookupSet(table_out,bcol)) {
               nidx[isz++] = bcol;
@@ -67,10 +67,10 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
           k++;
           if (k >= n) break; /* for (brow=0; brow<mbs; brow++) */
         } else { /* brow is not on nidx - col serach: add brow onto nidx if there is a bcol in nidx */
-          for (l = start; l<end ; l++){
+          for (l = start; l<end ; l++) {
             bcol = aj[l];
             if (bcol > bcol_max) break;
-            if (PetscBTLookup(table_in,bcol)){
+            if (PetscBTLookup(table_in,bcol)) {
               if (!PetscBTLookupSet(table_out,brow)) {nidx[isz++] = brow;}
               break; /* for l = start; l<end ; l++) */
             }
@@ -259,7 +259,7 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
       v += 4; jmin++;
@@ -310,7 +310,7 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
       z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
       z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
@@ -364,7 +364,7 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
@@ -421,7 +421,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){      /* (diag of A)*x */
+    if (*ib == i) {      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
       z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
@@ -482,7 +482,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){      /* (diag of A)*x */
+    if (*ib == i) {      /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
       z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
       z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
@@ -544,7 +544,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){      /* (diag of A)*x */
+    if (*ib == i) {      /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
       z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
       z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
@@ -628,11 +628,11 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 
     /* strict lower triangular part */
     idx = aj+ii[0];
-    if (*idx == i){
+    if (*idx == i) {
       ncols -= bs; v += bs2; idx++; n--;
     }
 
-    if (ncols > 0){
+    if (ncols > 0) {
       workt = work;
       ierr  = PetscMemzero(workt,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
@@ -718,7 +718,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){      /* (diag of A)*x */
+    if (*ib == i) {      /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
       v += 4; jmin++;
@@ -769,7 +769,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
      z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
      z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
      z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
@@ -824,7 +824,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){      /* (diag of A)*x */
+    if (*ib == i) {      /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
@@ -882,7 +882,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){      /* (diag of A)*x */
+    if (*ib == i) {      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
       z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
@@ -942,7 +942,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
       z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
       z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
@@ -1006,7 +1006,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     ib = aj + *ai;
     jmin = 0;
     nonzerorow += (n>0);
-    if (*ib == i){     /* (diag of A)*x */
+    if (*ib == i) {     /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
       z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
       z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
@@ -1090,10 +1090,10 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
     /* strict lower triangular part */
     idx = aj+ii[0];
-    if (*idx == i){
+    if (*idx == i) {
       ncols -= bs; v += bs2; idx++; n--;
     }
-    if (ncols > 0){
+    if (ncols > 0) {
       workt = work;
       ierr  = PetscMemzero(workt,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
@@ -1142,17 +1142,17 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
-    for (k=0; k<mbs; k++){
+    for (k=0; k<mbs; k++) {
       jmin = a->i[k]; jmax = a->i[k+1];
       col  = aj + jmin;
-      if (*col == k){         /* diagonal block */
-        for (i=0; i<bs2; i++){
+      if (*col == k) {         /* diagonal block */
+        for (i=0; i<bs2; i++) {
           sum_diag += PetscRealPart(PetscConj(*v)*(*v)); v++;
         }
         jmin++;
       }
-      for (j=jmin; j<jmax; j++){  /* off-diagonal blocks */
-        for (i=0; i<bs2; i++){
+      for (j=jmin; j<jmax; j++) {  /* off-diagonal blocks */
+        for (i=0; i<bs2; i++) {
           sum_off += PetscRealPart(PetscConj(*v)*(*v)); v++;
         }
       }
@@ -1170,10 +1170,10 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       i = jl[k]; /* first |A(i,k)| to be added */
       /* jl[k]=i: first nozero element in row i for submatrix A(1:k,k:n) (active window)
                   at step k */
-      while (i<mbs){
+      while (i<mbs) {
         nexti = jl[i];  /* next block row to be added */
         ik    = il[i];  /* block index of A(i,k) in the array a */
-        for (j=0; j<bs; j++){
+        for (j=0; j<bs; j++) {
           v = a->a + ik*bs2 + j*bs;
           for (k1=0; k1<bs; k1++) {
             sum[j] += PetscAbsScalar(*v); v++;
@@ -1182,7 +1182,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
         /* update il, jl */
         jmin = ik + 1; /* block index of array a: points to the next nonzero of A in row i */
         jmax = a->i[i+1];
-        if (jmin < jmax){
+        if (jmin < jmax) {
           il[i] = jmin;
           j   = a->j[jmin];
           jl[i] = jl[j]; jl[j]=i;
@@ -1192,9 +1192,9 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       /*-- row sum --*/
       jmin = a->i[k]; jmax = a->i[k+1];
       for (i=jmin; i<jmax; i++) {
-        for (j=0; j<bs; j++){
+        for (j=0; j<bs; j++) {
           v = a->a + i*bs2 + j;
-          for (k1=0; k1<bs; k1++){
+          for (k1=0; k1<bs; k1++) {
             sum[j] += PetscAbsScalar(*v); v += bs;
           }
         }
@@ -1202,11 +1202,11 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       /* add k_th block row to il, jl */
       col = aj+jmin;
       if (*col == k) jmin++;
-      if (jmin < jmax){
+      if (jmin < jmax) {
         il[k] = jmin;
         j = a->j[jmin]; jl[k] = jl[j]; jl[j] = k;
       }
-      for (j=0; j<bs; j++){
+      for (j=0; j<bs; j++) {
         if (sum[j] > *norm) *norm = sum[j];
       }
     }
@@ -1225,7 +1225,6 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscBool * flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((A->rmap->N != B->rmap->N) || (A->cmap->n != B->cmap->n) || (A->rmap->bs != B->rmap->bs)|| (a->nz != b->nz)) {
     *flg = PETSC_FALSE;
@@ -1265,7 +1264,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   aa   = a->a;
   ambs = a->mbs;
 
-  if (A->factortype == MAT_FACTOR_CHOLESKY || A->factortype == MAT_FACTOR_ICC){
+  if (A->factortype == MAT_FACTOR_CHOLESKY || A->factortype == MAT_FACTOR_ICC) {
     PetscInt *diag=a->diag;
     aa   = a->a;
     ambs = a->mbs;
@@ -1304,7 +1303,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  if (ll != rr){
+  if (ll != rr) {
     ierr = VecEqual(ll,rr,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
   }
@@ -1408,11 +1407,11 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
   for (i=0; i<mbs; i++) {
     ncols = ai[1] - ai[0]; ai++;
     brow  = bs*i;
-    for (j=0; j<ncols; j++){
+    for (j=0; j<ncols; j++) {
       bcol = bs*(*aj);
-      for (kcol=0; kcol<bs; kcol++){
+      for (kcol=0; kcol<bs; kcol++) {
         col = bcol + kcol;      /* col index */
-        for (krow=0; krow<bs; krow++){
+        for (krow=0; krow<bs; krow++) {
           atmp = PetscAbsScalar(*aa); aa++;
           row = brow + krow;    /* row index */
           if (PetscRealPart(x[row]) < atmp) x[row] = atmp;

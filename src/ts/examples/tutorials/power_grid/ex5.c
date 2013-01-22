@@ -108,6 +108,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   PetscErrorCode ierr;
   PetscScalar    *x,*t,avg_dev,sum;
   PetscInt       i;
+  
   PetscFunctionBegin;
   user->cw = 5;
   user->kw = 2; /* Rayleigh distribution */
@@ -127,7 +128,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   ierr = VecDuplicate(user->wind_data,&user->t_wind);CHKERRQ(ierr);
 
   ierr = VecGetArray(user->t_wind,&t);CHKERRQ(ierr);
-  for(i=0;i < user->nsamples;i++) t[i] = (i+1)*tmax/user->nsamples;
+  for (i=0;i < user->nsamples;i++) t[i] = (i+1)*tmax/user->nsamples;
   ierr = VecRestoreArray(user->t_wind,&t);CHKERRQ(ierr);
 
   /* Wind speed deviation = (-log(rand)/cw)^(1/kw) */
@@ -135,7 +136,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   ierr = VecLog(user->wind_data);CHKERRQ(ierr);
   ierr = VecScale(user->wind_data,-1/user->cw);CHKERRQ(ierr);
   ierr = VecGetArray(user->wind_data,&x);CHKERRQ(ierr);
-  for(i=0;i < user->nsamples;i++) {
+  for (i=0;i < user->nsamples;i++) {
     x[i] = PetscPowScalar(x[i],(1/user->kw));
   }
   ierr = VecRestoreArray(user->wind_data,&x);CHKERRQ(ierr);
@@ -185,8 +186,8 @@ PetscErrorCode SetInductionGeneratorParams(AppCtx *user)
 PetscErrorCode GetWindPower(PetscScalar wm,PetscScalar vw,PetscScalar *Pw,AppCtx *user)
 {
   PetscScalar temp,lambda,lambda_i,cp;
+  
   PetscFunctionBegin;
-
   temp = user->nGB*2*user->Rt*ws/user->np;
   lambda = temp*wm/vw;
   lambda_i = 1/(1/lambda + 0.002);

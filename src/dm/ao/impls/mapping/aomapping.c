@@ -290,7 +290,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscFunctionBegin;
   PetscValidPointer(aoout,5);
   *aoout = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -361,7 +361,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   for (i = 0; i < N; i++) {
     aomap->petscPerm[i] = allapp[petscPerm[i]];
   }
-#ifdef PETSC_USE_DEBUG
+#if defined(PETSC_USE_DEBUG)
   /* Check that the permutations are complementary */
   for (i = 0; i < N; i++) {
     if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");

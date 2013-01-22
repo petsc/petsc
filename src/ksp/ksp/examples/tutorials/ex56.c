@@ -33,8 +33,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   wcomm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank( wcomm, &mype );CHKERRQ(ierr);
-  ierr = MPI_Comm_size( wcomm, &npe );CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(wcomm,PETSC_NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {
@@ -73,12 +73,12 @@ int main(int argc,char **args)
   m *= 3; /* number of equations local*/
   /* Setup solver, get PC type and pc */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetType( ksp, KSPCG );CHKERRQ(ierr);
-  ierr = KSPSetComputeSingularValues( ksp, PETSC_TRUE );CHKERRQ(ierr);
-  ierr = KSPGetPC( ksp, &pc );CHKERRQ(ierr);
-  ierr = PCSetType( pc, PCGAMG );CHKERRQ(ierr); /* default */
-  ierr = KSPSetFromOptions( ksp );CHKERRQ(ierr);
-  ierr = PCGetType( pc, &type );CHKERRQ(ierr);
+  ierr = KSPSetType(ksp, KSPCG);CHKERRQ(ierr);
+  ierr = KSPSetComputeSingularValues(ksp, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc, PCGAMG);CHKERRQ(ierr); /* default */
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = PCGetType(pc, &type);CHKERRQ(ierr);
 
   {
     /* configureation */
@@ -93,16 +93,16 @@ int main(int argc,char **args)
     PetscScalar vv[24], v2[24];
 
     /* count nnz */
-    ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz );CHKERRQ(ierr);
-    ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &o_nnz );CHKERRQ(ierr);
-    for (i=Ni0,ic=0;i<Ni1;i++){
-      for (j=Nj0;j<Nj1;j++){
-        for (k=Nk0;k<Nk1;k++){
+    ierr = PetscMalloc((m+1)*sizeof(PetscInt), &d_nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc((m+1)*sizeof(PetscInt), &o_nnz);CHKERRQ(ierr);
+    for (i=Ni0,ic=0;i<Ni1;i++) {
+      for (j=Nj0;j<Nj1;j++) {
+        for (k=Nk0;k<Nk1;k++) {
           nbc = 0;
           if (i==Ni0 || i==Ni1-1)nbc++;
           if (j==Nj0 || j==Nj1-1)nbc++;
           if (k==Nk0 || k==Nk1-1)nbc++;
-          for (jj=0;jj<3;jj++,ic++){
+          for (jj=0;jj<3;jj++,ic++) {
             d_nnz[ic] = 3*(27-osz[nbc]);
             o_nnz[ic] = 3*osz[nbc];
           }
@@ -119,8 +119,8 @@ int main(int argc,char **args)
     ierr = MatSeqAIJSetPreallocation(Amat,0,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(Amat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
 
-    ierr = PetscFree( d_nnz );CHKERRQ(ierr);
-    ierr = PetscFree( o_nnz );CHKERRQ(ierr);
+    ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+    ierr = PetscFree(o_nnz);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
 
@@ -139,15 +139,15 @@ int main(int argc,char **args)
       file = fopen(fname, "r");
       if (file == 0) {
         PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);
-        for (i=0;i<24;i++){
-          for (j=0;j<24;j++){
+        for (i=0;i<24;i++) {
+          for (j=0;j<24;j++) {
             if (i==j)DD1[i][j] = 1.0;
             else DD1[i][j] = -.25;
           }
         }
       } else {
-        for (i=0;i<24;i++){
-          for (j=0;j<24;j++){
+        for (i=0;i<24;i++) {
+          for (j=0;j<24;j++) {
             ierr = fscanf(file, "%le", &DD1[i][j]);
           }
         }
@@ -161,25 +161,25 @@ int main(int argc,char **args)
             else DD2[i][j] = 0.0;
           } else DD2[i][j] = DD1[i][j];
       /* element residual/load vector */
-      for (i=0;i<24;i++){
+      for (i=0;i<24;i++) {
         if (i%3==0) vv[i] = h*h;
         else if (i%3==1) vv[i] = 2.0*h*h;
         else vv[i] = .0;
       }
-      for (i=0;i<24;i++){
+      for (i=0;i<24;i++) {
         if (i%3==0 && i>=12) v2[i] = h*h;
         else if (i%3==1 && i>=12) v2[i] = 2.0*h*h;
         else v2[i] = .0;
       }
     }
 
-    ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords );CHKERRQ(ierr);
+    ierr = PetscMalloc((m+1)*sizeof(PetscReal), &coords);CHKERRQ(ierr);
     coords[m] = -99.0;
 
     /* forms the element stiffness and coordinates */
-    for (i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++){
-      for (j=Nj0,jj=0;j<Nj1;j++,jj++){
-        for (k=Nk0,kk=0;k<Nk1;k++,kk++,ic++){
+    for (i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++) {
+      for (j=Nj0,jj=0;j<Nj1;j++,jj++) {
+        for (k=Nk0,kk=0;k<Nk1;k++,kk++,ic++) {
 
           /* coords */
           x = coords[3*ic] = h*(PetscReal)i;
@@ -188,7 +188,7 @@ int main(int argc,char **args)
           /* matrix */
           id = id0 + ii + NN*jj + NN*NN*kk;
         
-          if ( i<ne && j<ne && k<ne) {
+          if (i<ne && j<ne && k<ne) {
             /* radius */
             PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+
                                                (z-.5+h/2)*(z-.5+h/2));
@@ -198,7 +198,7 @@ int main(int argc,char **args)
                                       id+NN+1 + NN*NN, id+NN + NN*NN };
 
             /* correct indices */
-            if (i==Ni1-1 && Ni1!=nn){
+            if (i==Ni1-1 && Ni1!=nn) {
               idx[1] += NN*(NN*NN-1);
               idx[2] += NN*(NN*NN-1);
               idx[5] += NN*(NN*NN-1);
@@ -217,11 +217,11 @@ int main(int argc,char **args)
               idx[7] += NN*(nn*nn-NN*NN);
             }
         
-            if ( radius < 0.25 ){
+            if (radius < 0.25) {
               alpha = soft_alpha;
             }
             for (ix=0;ix<24;ix++)for (jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
-            if ( k>0 ) {
+            if (k>0) {
               ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
               ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)vv,ADD_VALUES);CHKERRQ(ierr);
             } else {
@@ -241,22 +241,22 @@ int main(int argc,char **args)
     ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
   }
 
-  if ( !PETSC_TRUE ) {
+  if (!PETSC_TRUE) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIOpen(wcomm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Amat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );
+    ierr = PetscViewerDestroy(&viewer);
   }
 
   /* finish KSP/PC setup */
-  ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
-  ierr = PCSetCoordinates( pc, 3, m/3, coords );CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetCoordinates(pc, 3, m/3, coords);CHKERRQ(ierr);
 
   ierr = MaybeLogStagePush(stage[0]);CHKERRQ(ierr);
 
   /* PC setup basically */
-  ierr = KSPSetUp( ksp );CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
   ierr = MaybeLogStagePop();CHKERRQ(ierr);
   ierr = MaybeLogStagePush(stage[1]);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ int main(int argc,char **args)
   /* test BCs */
   if (test_nonzero_cols) {
     VecZeroEntries(xx);
-    if (mype==0){
+    if (mype==0) {
       VecSetValue(xx,0,1.0,INSERT_VALUES);
     }
     VecAssemblyBegin(xx);
@@ -273,7 +273,7 @@ int main(int argc,char **args)
   }
 
   /* 1st solve */
-  ierr = KSPSolve( ksp, bb, xx );CHKERRQ(ierr);
+  ierr = KSPSolve(ksp, bb, xx);CHKERRQ(ierr);
 
   ierr = MaybeLogStagePop();CHKERRQ(ierr);
 
@@ -282,27 +282,27 @@ int main(int argc,char **args)
     PetscReal emax, emin;
     ierr = MaybeLogStagePush(stage[2]);CHKERRQ(ierr);
     /* PC setup basically */
-    ierr = MatScale( Amat, 100000.0 );CHKERRQ(ierr);
-    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
-    ierr = KSPSetUp( ksp );CHKERRQ(ierr);
+    ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[3]);CHKERRQ(ierr);
-    ierr = KSPSolve( ksp, bb, xx );CHKERRQ(ierr);
-    ierr = KSPComputeExtremeSingularValues( ksp, &emax, &emin );CHKERRQ(ierr);
+    ierr = KSPSolve(ksp, bb, xx);CHKERRQ(ierr);
+    ierr = KSPComputeExtremeSingularValues(ksp, &emax, &emin);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[4]);CHKERRQ(ierr);
 
     /* 3rd solve */
-    ierr = MatScale( Amat, 100000.0 );CHKERRQ(ierr);
-    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
-    ierr = KSPSetUp( ksp );CHKERRQ(ierr);
+    ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[5]);CHKERRQ(ierr);
 
-    ierr = KSPSolve( ksp, bb, xx );CHKERRQ(ierr);
+    ierr = KSPSolve(ksp, bb, xx);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
 
@@ -310,31 +310,31 @@ int main(int argc,char **args)
     /* PetscViewer viewer; */
     Vec res;
 
-    ierr = VecNorm( bb, NORM_2, &norm2 );CHKERRQ(ierr);
+    ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
 
-    ierr = VecDuplicate( xx, &res );CHKERRQ(ierr);
-    ierr = MatMult( Amat, xx, res );CHKERRQ(ierr);
-    ierr = VecAXPY( bb, -1.0, res );CHKERRQ(ierr);
-    ierr = VecDestroy( &res );CHKERRQ(ierr);
-    ierr = VecNorm( bb, NORM_2, &norm );CHKERRQ(ierr);
+    ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
+    ierr = MatMult(Amat, xx, res);CHKERRQ(ierr);
+    ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
+    ierr = VecDestroy(&res);CHKERRQ(ierr);
+    ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,norm/norm2,norm2,emax);
     /*ierr = PetscViewerASCIIOpen(wcomm, "residual.m", &viewer);CHKERRQ(ierr);
      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
      ierr = VecView(bb,viewer);CHKERRQ(ierr);
-     ierr = PetscViewerDestroy( &viewer );*/
+     ierr = PetscViewerDestroy(&viewer);*/
 
 
     /* ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB ); */
-    /* CHKERRQ( ierr ); */
-    /* ierr = VecView( bb,viewer );CHKERRQ(ierr); */
-    /* ierr = PetscViewerDestroy( &viewer );CHKERRQ(ierr); */
+    /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
+    /* CHKERRQ(ierr); */
+    /* ierr = VecView(bb,viewer);CHKERRQ(ierr); */
+    /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
 
     /* ierr = PetscViewerASCIIOpen(wcomm, "solution.m", &viewer);CHKERRQ(ierr); */
-    /* ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB ); */
+    /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
     /* CHKERRQ(ierr); */
-    /* ierr = VecView( xx, viewer );CHKERRQ(ierr); */
-    /* ierr = PetscViewerDestroy( &viewer );CHKERRQ(ierr); */
+    /* ierr = VecView(xx, viewer);CHKERRQ(ierr); */
+    /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
   }
 
   /* Free work space */
@@ -342,7 +342,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = PetscFree( coords );CHKERRQ(ierr);
+  ierr = PetscFree(coords);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

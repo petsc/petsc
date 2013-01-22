@@ -681,7 +681,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
            }
            new_loc_agg_dofs[a]++;
          }
-         /* #ifdef PCASA_VERBOSE */
+         /* #if defined(PCASA_VERBOSE) */
          else {
            ierr = PetscPrintf(asa_lev->comm, "Cutoff criteria invoked\n");CHKERRQ(ierr);
          }
@@ -909,7 +909,7 @@ PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
   ierr = PCComputeSpectralRadius_ASA(asa_lev);CHKERRQ(ierr);
   ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->nu);CHKERRQ(ierr);
 
-  while(asa_lev->next) {
+  while (asa_lev->next) {
     asa_next_lev = asa_lev->next;
     /* (a) aggregates are already constructed */
 
@@ -1222,7 +1222,7 @@ PetscErrorCode PCInitializationStage_ASA(PC pc, Vec x)
       /* interpolate up the chain */
       cand_vec = asa_lev->x;
       asa_lev->x = 0;
-      while(asa_lev->prev) {
+      while (asa_lev->prev) {
         /* interpolate to higher level */
         ierr = MatGetVecs(asa_lev->prev->smP, 0, &cand_vec_new);CHKERRQ(ierr);
         ierr = MatMult(asa_lev->prev->smP, cand_vec, cand_vec_new);CHKERRQ(ierr);
@@ -1430,7 +1430,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
   asa_lev->cand_vecs++;
 
   /* 6. loop over levels */
-  while(asa_next_lev && asa_next_lev->next) {
+  while (asa_next_lev && asa_next_lev->next) {
     ierr = PetscPrintf(asa_lev->comm, "General setup stage: processing level %D\n", asa_next_lev->level);CHKERRQ(ierr);
     /* (a) define B_{l+1} and P_{l+1}^L */
     /* construct P_{l+1}^l */
@@ -1529,7 +1529,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
   } else {
     cand_vec = asa_lev->x;
     asa_lev->x = 0;
-    while(asa_lev->prev) {
+    while (asa_lev->prev) {
       /* interpolate to higher level */
       ierr = MatGetVecs(asa_lev->prev->smP, 0, &cand_vec_new);CHKERRQ(ierr);
       ierr = MatMult(asa_lev->prev->smP, cand_vec, cand_vec_new);CHKERRQ(ierr);
@@ -1581,7 +1581,6 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
   PetscRandom    rctx;
 
   PetscFunctionBegin;
-
   /* check if we should scale with diagonal */
   if (asa->scale_diag) {
     /* Get diagonal scaling factors */
@@ -1867,7 +1866,7 @@ static PetscErrorCode PCDestroy_ASA(PC pc)
   ierr = VecDestroy(&(asa->r));CHKERRQ(ierr);
 
   /* Destroy each of the levels */
-  while(asa_lev) {
+  while (asa_lev) {
     asa_next_level = asa_lev->next;
     ierr = PCDestroyLevel_ASA(asa_lev);CHKERRQ(ierr);
     asa_lev = asa_next_level;
@@ -1962,7 +1961,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (asa_lev->next && asa_lev->smoothd == asa_lev->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
-      } else if (asa_lev->next){
+      } else if (asa_lev->next) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level ? -------------------------------\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(asa_lev->smoothu,viewer);CHKERRQ(ierr);

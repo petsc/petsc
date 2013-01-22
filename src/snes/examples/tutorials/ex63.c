@@ -52,7 +52,7 @@ PetscErrorCode CheckRedundancy(SNES,IS,IS*,DM);
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
-  Vec            x,r;  /* olution and residual vectors */
+  Vec            x,r;  /* Solution and residual vectors */
   SNES           snes; /* Nonlinear solver context */
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  //ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr);
+  /* ierr = SNESVISetRedundancyCheck(snes,(PetscErrorCode (*)(SNES,IS,IS*,void*))CheckRedundancy,user.da1_clone);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   }
-  while(t<user.T) {
+  while (t<user.T) {
     char         filename[PETSC_MAX_PATH_LEN];
     PetscScalar  a = 1.0;
     PetscInt     i;
@@ -374,11 +374,11 @@ PetscErrorCode DPsi(AppCtx* user)
 
   for (i=0;i<n;i++)
   {
-    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*( Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
+    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
 
-    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*( Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
+    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
 
-    DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*( Evf*cv_p[i] + Eif*ci_p[i] + kBT*( cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i] ) ) + 2.0*eta_p[i]*A*( (cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
+    DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*(Evf*cv_p[i] + Eif*ci_p[i] + kBT*(cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i])) + 2.0*eta_p[i]*A*((cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
 
 
   }
@@ -415,8 +415,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   for (i=0;i<n;i++) {
     if (x[i] < 1.0e-12) {
       y[i] = log(1.0e-12);
-    }
-    else {
+    } else {
       y[i] = log(x[i]);
     }
   }
@@ -431,9 +430,9 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscErrorCode    ierr;
 
 
-  PetscInt         n,i,Mda;
-  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta_p;
-  PetscViewer      view_out;
+  PetscInt          n,i,Mda;
+  PetscScalar       *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta_p;
+  PetscViewer       view_out;
   /* needed for the void growth case */
   PetscScalar       xmid,cv_v=1.0,cv_m=0.122,ci_v=0.0,ci_m=.00069,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscInt          nele,nen,idx[2];
@@ -473,9 +472,9 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
           vals_cv[k] = cv_v;
           vals_ci[k] = ci_v;
           vals_eta[k] = eta_v;
-        } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0) ) {
-          //r = (s - xwidth*(6.0/64.0) )/(0.5*lambda);
-          r = (s - xwidth*(6.0/64.0) )/(xwidth/64.0);
+        } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0)) {
+          /* r = (s - xwidth*(6.0/64.0))/(0.5*lambda); */
+          r = (s - xwidth*(6.0/64.0))/(xwidth/64.0);
           hhr = 0.25*(-r*r*r + 3*r + 2);
           vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
           vals_ci[k] = ci_m + (1.0 - hhr)*(ci_v - ci_m);
@@ -513,13 +512,11 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
      ierr = VecSet(user->ci,6.9e-8);CHKERRQ(ierr); */
 
 
-    for (i=0;i<n/5;i++)
-    {
-      if (i%5 <4 ) {
+    for (i=0;i<n/5;i++) {
+      if (i%5 <4) {
         cv_p[i] = 0.0;
         ci_p[i] = 1.0e-2;
-      }
-      else {
+      } else {
         cv_p[i] = 1.0e-2;
         ci_p[i] = 0.0;
       }
@@ -596,11 +593,9 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-    if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
+    if (eta_p[i]>=0.8 || w1[i]>user->P_casc) {
       Pv_p[i]=0;
-    }
-    else
-    {
+    } else {
       Pv_p[i]=w2[i]*user->VG;
       count = count + 1;
     }
@@ -772,7 +767,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
-  //for (i=0;i < nele + 1;i++) {
+  /* for (i=0;i < nele + 1;i++) { */
   for (i=0;i < nele;i++) {
 
       idx[0] = ele[2*i]; idx[1] = ele[2*i+1];
@@ -787,7 +782,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
 
     PetscInt    row,cols[4],r,row_M_0,cols2[2];
-    //PetscScalar vals[4],vals_M_0[1],vals2[2];
+    /* PetscScalar vals[4],vals_M_0[1],vals2[2]; */
     PetscScalar vals[4],vals_M_0[2],vals2[2];
 
     for (r=0;r<2;r++) {
@@ -796,9 +791,9 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       vals_M_0[0]=eM_0[r][0];
       vals_M_0[1]=eM_0[r][1];
 
-      //vals_M_0[0] = h;
+      /* vals_M_0[0] = h; */
       ierr = MatSetValuesLocal(M_0,1,&row_M_0,2,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
-      //ierr = MatSetValuesLocal(M_0,1,&row_M_0,1,&row_M_0,vals_M_0,INSERT_VALUES);CHKERRQ(ierr);
+      /* ierr = MatSetValuesLocal(M_0,1,&row_M_0,1,&row_M_0,vals_M_0,INSERT_VALUES);CHKERRQ(ierr); */
 
       row = 5*idx[r];
       cols[0] = 5*idx[0];     vals[0] = dt*eM_2[r][0]*cv_sum;
@@ -1007,7 +1002,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMDAVecGetArrayDOF(da,UIN,&uin);CHKERRQ(ierr);
   ierr = ISGetIndices(act,&index);CHKERRQ(ierr);
   ierr = ISGetLocalSize(act,&n);CHKERRQ(ierr);
-  for (k=0;k<n;k++){
+  for (k=0;k<n;k++) {
     l = index[k]%5;
     i = index[k]/5;
     uin[i][l]=1.0;

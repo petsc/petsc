@@ -395,6 +395,7 @@ $            PetscReal *next_dt,PetscBool *accepted,void *ctx);
 PetscErrorCode  TSAlphaSetAdapt(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscTryMethod(ts,"TSAlphaSetAdapt_C",(TS,TSAlphaAdaptFunction,void*),(ts,adapt,ctx));CHKERRQ(ierr);
@@ -409,8 +410,8 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
   SNESConvergedReason snesreason;
   PetscReal           dt,normX,normE,Emax,scale;
   PetscErrorCode      ierr;
+  
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 #if PETSC_USE_DEBUG
   {
@@ -449,10 +450,8 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
     *nextdt *= scale;
   }
   /* accept or reject step */
-  if (normE <= Emax)
-    *ok = PETSC_TRUE;
-  else
-    *ok = PETSC_FALSE;
+  if (normE <= Emax) *ok = PETSC_TRUE;
+  else               *ok = PETSC_FALSE;
 
   finally:
   *nextdt = PetscMax(*nextdt,th->dt_min);

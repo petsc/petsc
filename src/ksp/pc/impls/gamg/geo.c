@@ -65,7 +65,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   for (kk=0;kk<arrsz;kk++)pc_gamg->data[kk] = -999.;
   pc_gamg->data[arrsz] = -99.;
   /* copy data in - column oriented */
-  for (kk = 0 ; kk < nloc ; kk++){
+  for (kk = 0 ; kk < nloc ; kk++) {
     for (ii = 0 ; ii < ndm ; ii++) {
       pc_gamg->data[ii*nloc + kk] =  coords[kk*ndm + ii];
     }
@@ -130,7 +130,6 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc)
     MPI_Comm  wcomm = ((PetscObject)pc)->comm;
     PetscPrintf(wcomm,"[%d]%s done\n",0,__FUNCT__);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -162,8 +161,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
                                               const PetscInt crsGID[],
                                               const PetscInt bs,
                                               Mat a_Prol, /* prolongation operator (output) */
-                                              PetscReal *a_worst_best /* measure of worst missed fine vertex, 0 is no misses */
-                                             )
+                                              PetscReal *a_worst_best) /* measure of worst missed fine vertex, 0 is no misses */
 {
 #if defined(PETSC_HAVE_TRIANGLE)
   PetscErrorCode       ierr;
@@ -175,12 +173,12 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   int                  kk,nPlotPts,sid;
   MPI_Comm             wcomm = ((PetscObject)a_Prol)->comm;
   PetscReal            tm;
+  
   PetscFunctionBegin;
-
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = ISGetSize(selected_2, &nselected_2);CHKERRQ(ierr);
-  if (nselected_2 == 1 || nselected_2 == 2){ /* 0 happens on idle processors */
+  if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
   } else *a_worst_best = 0.0;
   ierr = MPI_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm);CHKERRQ(ierr);
@@ -199,7 +197,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   ierr = PetscMalloc(2*(nselected_2)*sizeof(REAL), &in.pointlist);CHKERRQ(ierr);
   ierr = ISGetIndices(selected_2, &selected_idx_2);CHKERRQ(ierr);
 
-  for (kk=0,sid=0;kk<nselected_2;kk++,sid += 2){
+  for (kk=0,sid=0;kk<nselected_2;kk++,sid += 2) {
     PetscInt lid = selected_idx_2[kk];
     in.pointlist[sid] = coords[lid];
     in.pointlist[sid+1] = coords[data_stride + lid];
@@ -245,7 +243,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   /*   zero (z), assign a regional attribute to each element (A), and  */
   /*   produce an edge list (e), a Voronoi diagram (v), and a triangle */
   /*   neighbor list (n).                                            */
-  if (nselected_2 != 0){ /* inactive processor */
+  if (nselected_2 != 0) { /* inactive processor */
     char args[] = "npczQ"; /* c is needed ? */
     triangulate(args, &in, &mid, (struct triangulateio *) NULL);
     /* output .poly files for 'showme' */
@@ -257,7 +255,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
       fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
       /*Following lines: <vertex #> <x> <y> */
-      for (kk=0,sid=0;kk<in.numberofpoints;kk++,sid += 2){
+      for (kk=0,sid=0;kk<in.numberofpoints;kk++,sid += 2) {
         fprintf(file, "%d %e %e\n",kk,in.pointlist[sid],in.pointlist[sid+1]);
       }
       /*One line: <# of segments> <# of boundary markers (0 or 1)> */
@@ -275,7 +273,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       /* First line: <# of triangles> <nodes per triangle> <# of attributes> */
       fprintf(file, "%d %d %d\n",mid.numberoftriangles,3,0);
       /* Remaining lines: <triangle #> <node> <node> <node> ... [attributes] */
-      for (kk=0,sid=0;kk<mid.numberoftriangles;kk++,sid += 3){
+      for (kk=0,sid=0;kk<mid.numberoftriangles;kk++,sid += 3) {
         fprintf(file, "%d %d %d %d\n",kk,mid.trianglelist[sid],mid.trianglelist[sid+1],mid.trianglelist[sid+2]);
       }
       fclose(file);
@@ -285,14 +283,14 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */
       fprintf(file, "%d  %d  %d  %d\n",nPlotPts,2,0,0);
       /*Following lines: <vertex #> <x> <y> */
-      for (kk=0,sid=0;kk<in.numberofpoints;kk++,sid+=2){
+      for (kk=0,sid=0;kk<in.numberofpoints;kk++,sid+=2) {
         fprintf(file, "%d %e %e\n",kk,in.pointlist[sid],in.pointlist[sid+1]);
       }
 
       sid /= 2;
-      for (jj=0;jj<nFineLoc;jj++){
+      for (jj=0;jj<nFineLoc;jj++) {
         PetscBool sel = PETSC_TRUE;
-        for (kk=0 ; kk<nselected_2 && sel ; kk++){
+        for (kk=0 ; kk<nselected_2 && sel ; kk++) {
           PetscInt lid = selected_idx_2[kk];
           if (lid == jj) sel = PETSC_FALSE;
         }
@@ -316,7 +314,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
 
     /* need list of triangles on node */
     for (kk=0;kk<nselected_2;kk++) nTri[kk] = 0;
-    for (tid=0,kk=0;tid<mid.numberoftriangles;tid++){
+    for (tid=0,kk=0;tid<mid.numberoftriangles;tid++) {
       for (jj=0;jj<3;jj++) {
         PetscInt cid = mid.trianglelist[kk++];
         if (nTri[cid] == 0) node_tri[cid] = tid;
@@ -325,18 +323,18 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
     }
 #define EPS 1.e-12
     /* find points and set prolongation */
-    for (mm = clid = 0 ; mm < nFineLoc ; mm++){
+    for (mm = clid = 0 ; mm < nFineLoc ; mm++) {
       PetscBool ise;
       ierr = PetscCDEmptyAt(agg_lists_1,mm,&ise);CHKERRQ(ierr);
       if (!ise) {
         const PetscInt lid = mm;
-        //for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++){
-        //PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1);
+        /* for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++) { */
+        /* PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1); */
         PetscScalar AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos         pos;
         ierr = PetscCDGetHeadPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
-        while(pos){
+        while (pos) {
           PetscInt flid;
           ierr = PetscLLNGetID(pos, &flid);CHKERRQ(ierr);
           ierr = PetscCDGetNextPos(agg_lists_1,lid,&pos);CHKERRQ(ierr);
@@ -350,8 +348,8 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
             /* look for it */
             for (tid = node_tri[clid], jj=0;
                  jj < 5 && !haveit && tid != -1;
-                 jj++){
-              for (tt=0;tt<3;tt++){
+                 jj++) {
+              for (tt=0;tt<3;tt++) {
                 PetscInt cid2 = mid.trianglelist[3*tid + tt];
                 PetscInt lid2 = selected_idx_2[cid2];
                 AA[tt][0] = coords[lid2]; AA[tt][1] = coords[data_stride + lid2]; AA[tt][2] = 1.0;
@@ -366,7 +364,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
                 PetscBool have=PETSC_TRUE;  PetscReal lowest=1.e10;
                 for (tt = 0, idx = 0 ; tt < 3 ; tt++) {
                   if (PetscRealPart(alpha[tt]) > (1.0+EPS) || PetscRealPart(alpha[tt]) < -EPS) have = PETSC_FALSE;
-                  if (PetscRealPart(alpha[tt]) < lowest){
+                  if (PetscRealPart(alpha[tt]) < lowest) {
                     lowest = PetscRealPart(alpha[tt]);
                     idx = tt;
                   }
@@ -378,8 +376,8 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
 
             if (!haveit) {
               /* brute force */
-              for (tid=0 ; tid<mid.numberoftriangles && !haveit ; tid++){
-                for (tt=0;tt<3;tt++){
+              for (tid=0 ; tid<mid.numberoftriangles && !haveit ; tid++) {
+                for (tt=0;tt<3;tt++) {
                   PetscInt cid2 = mid.trianglelist[3*tid + tt];
                   PetscInt lid2 = selected_idx_2[cid2];
                   AA[tt][0] = coords[lid2]; AA[tt][1] = coords[data_stride + lid2]; AA[tt][2] = 1.0;
@@ -404,7 +402,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
             if (!haveit) {
               if (best_alpha > *a_worst_best) *a_worst_best = best_alpha;
               /* use best one */
-              for (tt=0;tt<3;tt++){
+              for (tt=0;tt<3;tt++) {
                 PetscInt cid2 = mid.trianglelist[3*bestTID + tt];
                 PetscInt lid2 = selected_idx_2[cid2];
                 AA[tt][0] = coords[lid2]; AA[tt][1] = coords[data_stride + lid2]; AA[tt][2] = 1.0;
@@ -416,12 +414,12 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
             }
 
             /* put in row of P */
-            for (idx=0;idx<3;idx++){
+            for (idx=0;idx<3;idx++) {
               PetscScalar shp = alpha[idx];
               if (PetscAbs(PetscRealPart(shp)) > 1.e-6) {
                 PetscInt cgid = crsGID[clids[idx]];
                 PetscInt jj = cgid*bs, ii = fgid*bs; /* need to gloalize */
-                for (tt=0 ; tt < bs ; tt++, ii++, jj++){
+                for (tt=0 ; tt < bs ; tt++, ii++, jj++) {
                   ierr = MatSetValues(a_Prol,1,&ii,1,&jj,&shp,INSERT_VALUES);CHKERRQ(ierr);
                 }
               }
@@ -471,8 +469,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
                                             const Mat Gmat1,
                                             IS *a_selected_2,
                                             Mat *a_Gmat_2,
-                                            PetscInt **a_crsGID
-                                           )
+                                            PetscInt **a_crsGID)
 {
   PetscErrorCode ierr;
   PetscMPIInt    mype,npe;
@@ -511,7 +508,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
     mpimat2 = (Mat_MPIAIJ*)Gmat2->data;
     ierr = MatGetVecs(Gmat2, &locState, 0);CHKERRQ(ierr);
     ierr = VecSet(locState, (PetscScalar)(PetscReal)(-1));CHKERRQ(ierr); /* set with UNKNOWN state */
-    for (kk=0;kk<nselected_1;kk++){
+    for (kk=0;kk<nselected_1;kk++) {
       PetscInt fgid = clid_lid_1[kk] + my0;
       PetscScalar v = (PetscScalar)(kk+myCrs0);
       ierr = VecSetValues(locState, 1, &fgid, &v, INSERT_VALUES);CHKERRQ(ierr); /* set with PID */
@@ -522,7 +519,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
     ierr =   VecScatterEnd(mpimat2->Mvctx,locState,mpimat2->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetLocalSize(mpimat2->lvec, &num_fine_ghosts);CHKERRQ(ierr);
     ierr = VecGetArray(mpimat2->lvec, &cpcol_state);CHKERRQ(ierr);
-    for (kk=0,num_crs_ghost=0;kk<num_fine_ghosts;kk++){
+    for (kk=0,num_crs_ghost=0;kk<num_fine_ghosts;kk++) {
       if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) num_crs_ghost++;
     }
     ierr = PetscMalloc((nselected_1+num_crs_ghost)*sizeof(PetscInt), &crsGID);CHKERRQ(ierr); /* output */
@@ -530,8 +527,8 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
       PetscInt *selected_set;
       ierr = PetscMalloc((nselected_1+num_crs_ghost)*sizeof(PetscInt), &selected_set);CHKERRQ(ierr);
       /* do ghost of 'crsGID' */
-      for (kk=0,idx=nselected_1;kk<num_fine_ghosts;kk++){
-        if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1){
+      for (kk=0,idx=nselected_1;kk<num_fine_ghosts;kk++) {
+        if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) {
           PetscInt cgid = (PetscInt)PetscRealPart(cpcol_state[kk]);
           selected_set[idx] = nloc + kk;
           crsGID[idx++] = cgid;
@@ -541,8 +538,8 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
       ierr = VecRestoreArray(mpimat2->lvec, &cpcol_state);CHKERRQ(ierr);
       /* do locals in 'crsGID' */
       ierr = VecGetArray(locState, &cpcol_state);CHKERRQ(ierr);
-      for (kk=0,idx=0;kk<nloc;kk++){
-        if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1){
+      for (kk=0,idx=0;kk<nloc;kk++) {
+        if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) {
           PetscInt cgid = (PetscInt)PetscRealPart(cpcol_state[kk]);
           selected_set[idx] = kk;
           crsGID[idx++] = cgid;
@@ -578,8 +575,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
 #define __FUNCT__ "PCGAMGgraph_GEO"
 PetscErrorCode PCGAMGgraph_GEO(PC pc,
                                 const Mat Amat,
-                                Mat *a_Gmat
-                               )
+                                Mat *a_Gmat)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -590,6 +586,7 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
   Mat            Gmat;
   PetscBool  set,flg,symm;
+  
   PetscFunctionBegin;
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);
@@ -624,8 +621,7 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,
 #define __FUNCT__ "PCGAMGcoarsen_GEO"
 PetscErrorCode PCGAMGcoarsen_GEO(PC a_pc,
                                   Mat *a_Gmat,
-                                  PetscCoarsenData **a_llist_parent
-                                 )
+                                  PetscCoarsenData **a_llist_parent)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)a_pc->data;
@@ -729,8 +725,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
                                       const Mat Amat,
                                       const Mat Gmat,
                                       PetscCoarsenData *agg_lists,
-                                      Mat *a_P_out
-                                     )
+                                      Mat *a_P_out)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -858,7 +853,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
     { /* create next coords - output */
       PetscReal *crs_crds;
       ierr = PetscMalloc(dim*nLocalSelected*sizeof(PetscReal), &crs_crds);CHKERRQ(ierr);
-      for (kk=0;kk<nLocalSelected;kk++){/* grab local select nodes to promote - output */
+      for (kk=0;kk<nLocalSelected;kk++) {/* grab local select nodes to promote - output */
         PetscInt lid = clid_flid[kk];
         for (jj=0;jj<dim;jj++) crs_crds[jj*nLocalSelected + kk] = pc_gamg->data[jj*nloc + lid];
       }

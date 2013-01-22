@@ -95,7 +95,7 @@ int main(int argc,char **args)
        parameters could alternatively be specified at runtime via
        KSPSetFromOptions();
   */
-  if (TEST_PROCEDURAL){
+  if (TEST_PROCEDURAL) {
     PetscMPIInt size;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **args)
   /*  Solve linear system */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-  if (TEST_PROCEDURAL){ /* View solver info; */
+  if (TEST_PROCEDURAL) { /* View solver info; */
     ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 

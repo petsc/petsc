@@ -77,7 +77,6 @@ You can use this as a template!
 PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void* dummy)
 {
   PetscFunctionBegin;
-
   PetscFunctionReturn(0);
 }
 

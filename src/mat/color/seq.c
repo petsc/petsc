@@ -78,50 +78,50 @@ PetscErrorCode MINPACKseq(PetscInt *n,const PetscInt *indrow,const PetscInt *jpn
     *maxgrp = 0;
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
-	ngrp[jp] = *n;
-	iwa[jp] = 0;
+        ngrp[jp] = *n;
+        iwa[jp] = 0;
     }
 
     /*     Beginning of iteration loop. */
 
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	jcol = list[j];
+        jcol = list[j];
 
         /*        Find all columns adjacent to column jcol. */
 
         /*        Determine all positions (ir,jcol) which correspond */
         /*        to non-zeroes in the matrix. */
 
-	i__2 = jpntr[jcol + 1] - 1;
-	for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
-	    ir = indrow[jp];
+        i__2 = jpntr[jcol + 1] - 1;
+        for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
+            ir = indrow[jp];
 
             /*           For each row ir, determine all positions (ir,ic) */
             /*           which correspond to non-zeroes in the matrix. */
 
-	    i__3 = ipntr[ir + 1] - 1;
-	    for (ip = ipntr[ir]; ip <= i__3; ++ip) {
-		ic = indcol[ip];
+            i__3 = ipntr[ir + 1] - 1;
+            for (ip = ipntr[ir]; ip <= i__3; ++ip) {
+                ic = indcol[ip];
 
                 /*              Array iwa marks the group numbers of the */
                 /*              columns which are adjacent to column jcol. */
 
-		iwa[ngrp[ic]] = j;
-	    }
-	}
+                iwa[ngrp[ic]] = j;
+            }
+        }
 
         /*        Assign the smallest un-marked group number to jcol. */
 
-	i__2 = *maxgrp;
-	for (jp = 1; jp <= i__2; ++jp) {
-	    if (iwa[jp] != j) {
-		goto L50;
-	    }
-	}
-	++(*maxgrp);
+        i__2 = *maxgrp;
+        for (jp = 1; jp <= i__2; ++jp) {
+            if (iwa[jp] != j) {
+                goto L50;
+            }
+        }
+        ++(*maxgrp);
 L50:
-	ngrp[jcol] = jp;
+        ngrp[jcol] = jp;
     }
 
     /*        End of iteration loop. */

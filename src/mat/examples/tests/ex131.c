@@ -27,8 +27,8 @@ int main(int argc,char **args)
   flg = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-vec",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg){
-    if (file[0] == '0'){
+  if (flg) {
+    if (file[0] == '0') {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);

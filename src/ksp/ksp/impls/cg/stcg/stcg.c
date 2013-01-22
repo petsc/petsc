@@ -92,30 +92,26 @@ PetscErrorCode  KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 #define __FUNCT__ "KSPSolve_STCG"
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
   KSP_STCG       *cg = (KSP_STCG *)ksp->data;
-
   PetscErrorCode ierr;
   MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
-
   PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal      alpha, beta, kappa, rz, rzm1;
   PetscReal      rr, r2, step;
-
   PetscInt       max_cg_its;
-
   PetscBool      diagonalscale;
 
-  PetscFunctionBegin;
   /***************************************************************************/
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
 
+  PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (cg->radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
@@ -250,7 +246,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* gradient iteration has been performed.                                  */
   /***************************************************************************/
 
-  switch(ksp->normtype) {
+  switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
     ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);   /* norm_r = |z|      */
     break;
@@ -328,7 +324,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   dMp = 0.0;
   norm_d = 0.0;
-  switch(cg->dtype) {
+  switch (cg->dtype) {
   case STCG_PRECONDITIONED_DIRECTION:
     norm_p = rz;
     break;
@@ -405,7 +401,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* gradient method breaks down.                                            */
   /***************************************************************************/
 
-  while(1) {
+  while (1) {
     /*************************************************************************/
     /* Know that kappa is nonzero, because we have not broken down, so we    */
     /* can compute the steplength.                                           */
@@ -460,7 +456,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
     ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
 
-    switch(cg->dtype) {
+    switch (cg->dtype) {
     case STCG_PRECONDITIONED_DIRECTION:
       norm_d = norm_dp1;
       break;
@@ -498,7 +494,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* Compute the residual and check for convergence.                       */
     /*************************************************************************/
 
-    switch(ksp->normtype) {
+    switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);/* norm_r = |z|      */
       break;
@@ -561,7 +557,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     ierr = VecAYPX(p, beta, z);CHKERRQ(ierr);          /* p = z + beta p    */
 
-    switch(cg->dtype) {
+    switch (cg->dtype) {
     case STCG_PRECONDITIONED_DIRECTION:
       dMp = beta*(dMp + alpha*norm_p);
       norm_p = beta*(rzm1 + beta*norm_p);
@@ -630,11 +626,11 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
-
+  
+  PetscFunctionBegin;
   ierr = KSPDefaultGetWork(ksp, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -645,12 +641,11 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-
  /***************************************************************************/
   /* Clear composed functions                                                */
   /***************************************************************************/
-
+  
+  PetscFunctionBegin;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -761,7 +756,6 @@ PetscErrorCode  KSPCreate_STCG(KSP ksp)
   KSP_STCG       *cg;
 
   PetscFunctionBegin;
-
   ierr = PetscNewLog(ksp,KSP_STCG, &cg);CHKERRQ(ierr);
 
   cg->radius = 0.0;

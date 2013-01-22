@@ -54,7 +54,7 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   ta->tablesize = intable->tablesize;
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
-  for (i = 0; i < ta->tablesize ; i++){
+  for (i = 0; i < ta->tablesize ; i++) {
     ta->keytable[i] = intable->keytable[i];
     ta->table[i]    = intable->table[i];
 #if defined(PETSC_USE_DEBUG)
@@ -243,7 +243,7 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
 
   PetscFunctionBegin;
   /* before making the table larger check if key is already in table */
-  while (ii++ < ta->tablesize){
+  while (ii++ < ta->tablesize) {
     if (ta->keytable[hash] == key) PetscFunctionReturn(0);
     hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
   }

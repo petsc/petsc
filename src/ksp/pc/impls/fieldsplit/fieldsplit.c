@@ -156,7 +156,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     if (jac->realdiagonal) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using actual matrix for blocks rather than preconditioner matrix\n");CHKERRQ(ierr);
     }
-    switch(jac->schurpre) {
+    switch (jac->schurpre) {
     case PC_FIELDSPLIT_SCHUR_PRE_SELF:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_A11:
@@ -1363,7 +1363,7 @@ PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
     PetscBool         found;
 
     *is = PETSC_NULL;
-    while(ilink) {
+    while (ilink) {
       ierr = PetscStrcmp(ilink->splitname, splitname, &found);CHKERRQ(ierr);
       if (found) {
         *is = ilink->is;

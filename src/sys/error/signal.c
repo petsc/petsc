@@ -48,7 +48,7 @@ static void PetscSignalHandler_Private(int sig)
   PetscFunctionBegin;
   if (!sh || !sh->handler) {
     ierr = PetscDefaultSignalHandler(sig,(void*)0);
-  } else{
+  } else {
     if (sh->classid != SIGNAL_CLASSID) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
     ierr = (*sh->handler)(sig,sh->ctx);
   }

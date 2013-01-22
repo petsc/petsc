@@ -35,7 +35,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKfndsep"
 PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,
-	                        PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
+                                PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
 {
     PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */
 
@@ -59,14 +59,14 @@ PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const Pets
 /*       IF THE NUMBER OF LEVELS IS LESS THAN 3, RETURN */
 /*       THE WHOLE COMPONENT AS THE SEPARATOR.*/
     if (nlvl >= 3) {
-	goto L200;
+        goto L200;
     }
     *nsep = xls[nlvl + 1] - 1;
     i__1 = *nsep;
     for (i = 1; i <= i__1; ++i) {
-	node = ls[i];
-	sep[i] = node;
-	mask[node] = 0;
+        node = ls[i];
+        sep[i] = node;
+        mask[node] = 0;
     }
     PetscFunctionReturn(0);
 /*       FIND THE MIDDLE LEVEL OF THE ROOTED LEVEL STRUCTURE.*/
@@ -82,36 +82,36 @@ L200:
 /*       NODES IN THE MIDDLE+1 LEVEL.*/
     i__1 = mp1end;
     for (i = mp1beg; i <= i__1; ++i) {
-	node = ls[i];
-	xadj[node] = -xadj[node];
+        node = ls[i];
+        xadj[node] = -xadj[node];
     }
     *nsep = 0;
     i__1 = midend;
     for (i = midbeg; i <= i__1; ++i) {
-	node = ls[i];
-	jstrt = xadj[node];
-	jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
-	i__2 = jstop;
-	for (j = jstrt; j <= i__2; ++j) {
-	    nbr = adjncy[j];
-	    if (xadj[nbr] > 0) {
-		goto L400;
-	    }
-	    ++(*nsep);
-	    sep[*nsep] = node;
-	    mask[node] = 0;
-	    goto L500;
+        node = ls[i];
+        jstrt = xadj[node];
+        jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
+        i__2 = jstop;
+        for (j = jstrt; j <= i__2; ++j) {
+            nbr = adjncy[j];
+            if (xadj[nbr] > 0) {
+                goto L400;
+            }
+            ++(*nsep);
+            sep[*nsep] = node;
+            mask[node] = 0;
+            goto L500;
 L400:
-	    ;
-	}
+            ;
+        }
 L500:
-	;
+        ;
     }
 /*       RESET XADJ TO ITS CORRECT SIGN.*/
     i__1 = mp1end;
     for (i = mp1beg; i <= i__1; ++i) {
-	node = ls[i];
-	xadj[node] = -xadj[node];
+        node = ls[i];
+        xadj[node] = -xadj[node];
     }
     PetscFunctionReturn(0);
 }

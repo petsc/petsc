@@ -2,7 +2,7 @@
 #include <petscsys.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStartMatlab"	
+#define __FUNCT__ "PetscStartMatlab"
 /*@C
     PetscStartMatlab - starts up MATLAB with a MATLAB script
 
@@ -38,7 +38,6 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
 #endif
 
   PetscFunctionBegin;
-
 #if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
   /* check if MATLAB is not already running */
   ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);

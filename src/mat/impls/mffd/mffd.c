@@ -701,7 +701,7 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

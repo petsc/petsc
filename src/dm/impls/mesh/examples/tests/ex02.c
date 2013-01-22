@@ -64,7 +64,8 @@ int main(int argc, char *argv[])
 
 #undef  __FUNCT__
 #define __FUNCT__ "createDoubletSieveBottomUp"
-PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p) {
+PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p)
+{
   PetscFunctionBegin;
   ALE::Sieve *doublet = new ALE::Sieve(comm);
   *doublet_p = doublet;
@@ -85,7 +86,8 @@ PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p)
 
 #undef  __FUNCT__
 #define __FUNCT__ "createDoubletSieveTopDown"
-PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p) {
+PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p)
+{
   PetscFunctionBegin;
   ALE::Sieve *doublet = new ALE::Sieve(comm);
   *doublet_p = doublet;
@@ -107,24 +109,25 @@ PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p) 
 
 #undef  __FUNCT__
 #define __FUNCT__ "viewStrata"
-PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name) {
+PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ostringstream txt;
 
   txt << "Viewing strata of";
-  if(name != NULL) {
+  if (name != NULL) {
     txt << " " << name;
   }
   txt << " sieve of diameter " << sieve->diameter() << "\n";
   ierr = PetscPrintf(sieve->getComm(), txt.str().c_str());CHKERRQ(ierr);
 
-  for(int d = 0; d <= sieve->diameter(); d++) {
+  for (int d = 0; d <= sieve->diameter(); d++) {
     ALE::Point_set stratum = sieve->depthStratum(d);
     ierr = PetscPrintf(sieve->getComm(), "Depth stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();
   }
-  for(int d = 0; d <= sieve->diameter(); d++) {
+  for (int d = 0; d <= sieve->diameter(); d++) {
     ALE::Point_set stratum = sieve->heightStratum(d);
     ierr = PetscPrintf(sieve->getComm(), "Height stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();

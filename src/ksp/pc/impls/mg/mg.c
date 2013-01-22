@@ -15,7 +15,6 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
   PetscInt       cycles = (mglevels->level == 1) ? 1 : (PetscInt) mglevels->cycles;
 
   PetscFunctionBegin;
-
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);  /* pre-smooth */
   if (mglevels->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
@@ -230,16 +229,21 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     if (!i && levels > 1) {
       ierr = KSPAppendOptionsPrefix(mglevels[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
 
-      /* coarse solve is (redundant) LU by default */
+      /* coarse solve is (redundant) LU by default; set shifttype NONZERO to avoid annoying zero-pivot in LU preconditioner */
       ierr = KSPSetType(mglevels[0]->smoothd,KSPPREONLY);CHKERRQ(ierr);
       ierr = KSPGetPC(mglevels[0]->smoothd,&ipc);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
+        KSP innerksp;
+        PC  innerpc;
         ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
+        ierr = PCRedundantGetKSP(ipc,&innerksp);CHKERRQ(ierr);
+        ierr = KSPGetPC(innerksp,&innerpc);CHKERRQ(ierr);
+        ierr = PCFactorSetShiftType(innerpc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       } else {
         ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
+        ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       }
-
     } else {
       char tprefix[128];
       sprintf(tprefix,"mg_levels_%d_",(int)i);
@@ -476,7 +480,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (i && mglevels[i]->smoothd == mglevels[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
-      } else if (i){
+      } else if (i) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
@@ -703,7 +707,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (pc->dm) {
     /* need to tell all the coarser levels to rebuild the matrix using the DM for that level */
-    for (i=0; i<n-1; i++){
+    for (i=0; i<n-1; i++) {
       if (mglevels[i]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[i]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
     }
   }

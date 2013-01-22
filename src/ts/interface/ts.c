@@ -611,7 +611,6 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   void           *ctx;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   PetscValidHeaderSpecific(Udot,VEC_CLASSID,4);
@@ -2318,10 +2317,8 @@ PetscErrorCode  TSStep(TS ts)
       } else SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->max_steps)
-      ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time)
-      ts->reason = TS_CONVERGED_TIME;
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
 
   PetscFunctionReturn(0);
@@ -2426,10 +2423,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else {
     /* steps the requested number of timesteps. */
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    if (ts->steps >= ts->max_steps)
-      ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time)
-      ts->reason = TS_CONVERGED_TIME;
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
       ierr = TSStep(ts);CHKERRQ(ierr);
       ierr = TSPostStep(ts);CHKERRQ(ierr);
@@ -2568,7 +2563,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4379,7 +4374,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
 #endif
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))){
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4449,7 +4444,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 #endif
   ierr = VecRestoreArrayRead(y,&yy);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))){
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4475,7 +4470,7 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,
   ierr = TSGetSNESIterations(ts,&its);CHKERRQ(ierr);
   y    = its - ctx->snes_its;
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   ctx->snes_its = its;
@@ -4502,7 +4497,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
   ierr = TSGetKSPIterations(ts,&its);CHKERRQ(ierr);
   y    = its - ctx->ksp_its;
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   ctx->ksp_its = its;

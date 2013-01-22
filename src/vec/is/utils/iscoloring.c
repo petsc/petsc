@@ -150,23 +150,23 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
       ierr = PetscMalloc(nc*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-	mcolors[colors[i]]++;
+        mcolors[colors[i]]++;
       }
 
       ierr = PetscMalloc(nc*sizeof(PetscInt*),&ii);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&ii[0]);CHKERRQ(ierr);
       for (i=1; i<nc; i++) {
-	ii[i] = ii[i-1] + mcolors[i-1];
+        ii[i] = ii[i-1] + mcolors[i-1];
       }
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
-      if (iscoloring->ctype == IS_COLORING_GLOBAL){
+      if (iscoloring->ctype == IS_COLORING_GLOBAL) {
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) {
           ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
         }
-      } else if (iscoloring->ctype == IS_COLORING_GHOSTED){
+      } else if (iscoloring->ctype == IS_COLORING_GHOSTED) {
         for (i=0; i<n; i++) {
           ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
         }
@@ -176,7 +176,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
-	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
       }
 
       iscoloring->is   = is;

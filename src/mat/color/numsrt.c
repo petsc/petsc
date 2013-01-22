@@ -63,44 +63,44 @@ PetscErrorCode MINPACKnumsrt(PetscInt *n,PetscInt *nmax,PetscInt *num,PetscInt *
 
     i__1 = *nmax;
     for (i = 0; i <= i__1; ++i) {
-	last[i] = 0;
+        last[i] = 0;
     }
     i__1 = *n;
     for (k = 1; k <= i__1; ++k) {
-	l = num[k];
-	next[k] = last[l];
-	last[l] = k;
+        l = num[k];
+        next[k] = last[l];
+        last[l] = k;
     }
     if (!*mode) {
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
     }
 
 /*     Store the pointers to the sorted array in index. */
 
     i = 1;
     if (*mode > 0) {
-	jl = 0;
-	ju = *nmax;
-	jinc = 1;
+        jl = 0;
+        ju = *nmax;
+        jinc = 1;
     } else {
-	jl = *nmax;
-	ju = 0;
-	jinc = -1;
+        jl = *nmax;
+        ju = 0;
+        jinc = -1;
     }
     i__1 = ju;
     i__2 = jinc;
     for (j = jl; i__2 < 0 ? j >= i__1 : j <= i__1; j += i__2) {
-	k = last[j];
+        k = last[j];
 L30:
-	if (!k) {
-	    goto L40;
-	}
-	idex[i] = k;
-	++i;
-	k = next[k];
-	goto L30;
+        if (!k) {
+            goto L40;
+        }
+        idex[i] = k;
+        ++i;
+        k = next[k];
+        goto L30;
 L40:
-	;
+        ;
     }
     PetscFunctionReturn(0);
 }

@@ -27,33 +27,33 @@ typedef struct gamg_TAG{
   PetscReal      eigtarget[2];
   PetscReal     *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscReal     *orig_data;      /* cache data */
-  PetscErrorCode (*graph)( PC, const Mat, Mat * );
-  PetscErrorCode (*coarsen)( PC, Mat *, PetscCoarsenData** );
-  PetscErrorCode (*prolongator)( PC, const Mat, const Mat, PetscCoarsenData *, Mat* );
-  PetscErrorCode (*optprol)( PC, const Mat, Mat* );
-  PetscErrorCode (*formkktprol)( PC, const Mat, const Mat, Mat* );
-  PetscErrorCode (*createdefaultdata)( PC, Mat ); /* for data methods that have a default (SA) */
+  PetscErrorCode (*graph)(PC, const Mat, Mat *);
+  PetscErrorCode (*coarsen)(PC, Mat *, PetscCoarsenData**);
+  PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData *, Mat*);
+  PetscErrorCode (*optprol)(PC, const Mat, Mat*);
+  PetscErrorCode (*formkktprol)(PC, const Mat, const Mat, Mat*);
+  PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   void          *subctx;
 } PC_GAMG;
 
 #define GAMGAGG "agg"
 #define GAMGGEO "geo"
 
-PetscErrorCode PCSetFromOptions_MG( PC );
-PetscErrorCode PCReset_MG( PC );
+PetscErrorCode PCSetFromOptions_MG(PC);
+PetscErrorCode PCReset_MG(PC);
 
 /* hooks create derivied classes */
-PetscErrorCode  PCCreateGAMG_GEO( PC pc );
-PetscErrorCode  PCCreateGAMG_AGG( PC pc );
+PetscErrorCode  PCCreateGAMG_GEO(PC pc);
+PetscErrorCode  PCCreateGAMG_AGG(PC pc);
 
-PetscErrorCode PCSetFromOptions_GAMG( PC pc );
+PetscErrorCode PCSetFromOptions_GAMG(PC pc);
 PetscErrorCode PCDestroy_GAMG(PC pc);
 
 /* helper methods */
-PetscErrorCode PCGAMGCreateGraph( const Mat, Mat * );
-PetscErrorCode PCGAMGFilterGraph( Mat *, const PetscReal, const PetscBool, const PetscInt );
-PetscErrorCode PCGAMGGetDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],
-                                       PetscInt *a_stride, PetscReal **a_data_out );
+PetscErrorCode PCGAMGCreateGraph(const Mat, Mat *);
+PetscErrorCode PCGAMGFilterGraph(Mat *, const PetscReal, const PetscBool, const PetscInt);
+PetscErrorCode PCGAMGGetDataWithGhosts(const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],
+                                       PetscInt *a_stride, PetscReal **a_data_out);
 
 #if defined PETSC_USE_LOG
 /* #define PETSC_GAMG_USE_LOG */
@@ -77,10 +77,10 @@ typedef struct _GAMGHashTable{
   PetscInt   size;
 }GAMGHashTable;
 
-extern PetscErrorCode GAMGTableCreate( PetscInt a_size, GAMGHashTable *a_tab );
-extern PetscErrorCode GAMGTableDestroy( GAMGHashTable * );
-extern PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data );
-extern PetscErrorCode GAMGTableFind( GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data );
+extern PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab);
+extern PetscErrorCode GAMGTableDestroy(GAMGHashTable *);
+extern PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data);
+extern PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data);
 
 #endif
 

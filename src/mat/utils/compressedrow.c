@@ -41,7 +41,7 @@ PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pets
 
   /* compute number of zero rows */
   nrows = 0;
-  for (i=0; i<mbs; i++){        /* for each row */
+  for (i=0; i<mbs; i++) {        /* for each row */
     nz = ai[i+1] - ai[i];       /* number of nonzeros */
     if (nz == 0) nrows++;
   }
@@ -59,7 +59,7 @@ PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pets
     ierr = PetscMalloc2(nrows+1,PetscInt,&cpi,nrows,PetscInt,&ridx);CHKERRQ(ierr);
     row    = 0;
     cpi[0] = 0;
-    for (i=0; i<mbs; i++){
+    for (i=0; i<mbs; i++) {
       nz = ai[i+1] - ai[i];
       if (nz == 0) continue;
       cpi[row+1]  = ai[i+1];    /* compressed row pointer */

@@ -98,6 +98,10 @@
         <li>Added <tt>Users should use PetscFunctionBeginUser in there code instead of PetscFunctionBegin.</li>
         <li>Replaced the hodge-podge of -xxx_view -xxx_view_yyy with a single consistent scheme: -xxx_view [ascii,binary,draw,socket,matlab,vtk][:filename][:ascii_info,ascii_info_detail,ascii_matlab,draw_contour,etc].</li>
         <li>In PETSc options files, the comment characters <tt>!</tt> and <tt>%</tt> are no longer supported, use <tt>#</tt>.</li>
+        <li>
+          <tt>PetscFList</tt> and <tt>PetscOList</tt> have been changed to <tt>PetscFunctionList</tt> and <tt>PetscObjectList</tt>.
+          The arguments to <tt>PetscFunctionListFind</tt> now takes the communicator as the first argument.
+        </li>
       </ul>
       <h4>Logging:</h4>
       <h4>config/configure.py:</h4>

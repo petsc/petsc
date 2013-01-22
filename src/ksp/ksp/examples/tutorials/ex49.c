@@ -97,9 +97,9 @@ typedef struct {
 
 /*
 
- D = E/( (1+nu)(1-2nu) ) * [ 1-nu   nu        0     ]
-                           [  nu   1-nu       0     ]
-                           [  0     0   0.5*(1-2nu) ]
+ D = E/((1+nu)(1-2nu)) * [ 1-nu   nu        0     ]
+                         [  nu   1-nu       0     ]
+                         [  0     0   0.5*(1-2nu) ]
 
  B = [ d_dx   0   ]
      [  0    d_dy ]
@@ -540,7 +540,7 @@ static void FormStressOperatorQ1(PetscScalar Ke[],PetscScalar coords[],PetscScal
     /* form D for the quadrature point */
     prop_E  = E[p];
     prop_nu = nu[p];
-    factor = prop_E / (  (1.0+prop_nu)*(1.0-2.0*prop_nu)  );
+    factor = prop_E / ((1.0+prop_nu)*(1.0-2.0*prop_nu));
     constit_D[0][0] = 1.0-prop_nu;  constit_D[0][1] = prop_nu;      constit_D[0][2] = 0.0;
     constit_D[1][0] = prop_nu;      constit_D[1][1] = 1.0-prop_nu;  constit_D[1][2] = 0.0;
     constit_D[2][0] = 0.0;          constit_D[2][1] = 0.0;          constit_D[2][2] = 0.5*(1.0-2.0*prop_nu);
@@ -839,7 +839,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   /* local number of elements */
   ierr = DMDAGetLocalElementSize(elas_da,&mxl,&myl,PETSC_NULL);CHKERRQ(ierr);
 
-  /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!! // */
+  /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!! */
   ierr = DMDAGetInfo(elas_da,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetElementOwnershipRanges2d(elas_da,&lx,&ly);CHKERRQ(ierr);
 
@@ -971,13 +971,13 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
         flg = PETSC_FALSE;
         maxnbricks = 10;
-        ierr = PetscOptionsGetRealArray( PETSC_NULL, "-brick_E",values_E,&maxnbricks,&flg);CHKERRQ(ierr);
+        ierr = PetscOptionsGetRealArray(PETSC_NULL, "-brick_E",values_E,&maxnbricks,&flg);CHKERRQ(ierr);
         nbricks = maxnbricks;
         if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");CHKERRQ(ierr);
 
         flg = PETSC_FALSE;
         maxnbricks = 10;
-        ierr = PetscOptionsGetRealArray( PETSC_NULL, "-brick_nu",values_nu,&maxnbricks,&flg);CHKERRQ(ierr);
+        ierr = PetscOptionsGetRealArray(PETSC_NULL, "-brick_nu",values_nu,&maxnbricks,&flg);CHKERRQ(ierr);
         if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");CHKERRQ(ierr);
         if (maxnbricks != nbricks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");CHKERRQ(ierr);
 
@@ -987,7 +987,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         /* cycle through the indices so that no two material properties are repeated in lines of x or y */
         jj = (j/span)%nbricks;
         index = (jj+i/span)%nbricks;
-        /*printf("j=%d: index = %d \n", j,index ); */
+        /*printf("j=%d: index = %d \n", j,index); */
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           element_props[j][i].E[p]  = values_E[index];
@@ -1020,8 +1020,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
           element_props[j][i].E[p]  = opts_E0;
           element_props[j][i].nu[p] = opts_nu0;
         }
-        if ( (ci >= opts_t) && (ci < opts_t+opts_w) ) {
-          if ( (cj >= opts_t) && (cj < opts_t+opts_w) ) {
+        if ((ci >= opts_t) && (ci < opts_t+opts_w)) {
+          if ((cj >= opts_t) && (cj < opts_t+opts_w)) {
             for (p = 0; p < GAUSS_POINTS; p++) {
               element_props[j][i].E[p]  = opts_E1;
               element_props[j][i].nu[p] = opts_nu1;
@@ -1168,7 +1168,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* /// */
+  /* --- */
 
   ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
@@ -1239,7 +1239,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* /// */
+  /* --- */
 
   ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
@@ -1325,11 +1325,11 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecGetOwnershipRange(x,&start,&end);CHKERRQ(ierr);
   ierr = VecGetArray(x,&_x);CHKERRQ(ierr);
   cnt = 0;
-  for (i = 0; i < m; i++ ) {
+  for (i = 0; i < m; i++) {
     PetscReal val;
 
     val = PetscRealPart(_x[i]);
-    if ( fabs(val) < 0.1 ) {
+    if (fabs(val) < 0.1) {
       unconstrained[cnt] = start + i;
       cnt++;
     }

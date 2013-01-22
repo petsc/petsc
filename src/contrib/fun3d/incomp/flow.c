@@ -522,16 +522,14 @@ int Update(SNES snes,void *ctx)
     ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
   }
-  if (user->PreLoading)
-   max_steps = 1;
-  else
-   max_steps = tsCtx->max_steps;
+  if (user->PreLoading) max_steps = 1;
+  else                  max_steps = tsCtx->max_steps;
   fratio = 1.0;
   /*tsCtx->ptime = 0.0;*/
   ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
- /*if (!user->PreLoading) {
+ /* if (!user->PreLoading) {
   PetscBool  flg = PETSC_FALSE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
@@ -552,7 +550,7 @@ int Update(SNES snes,void *ctx)
   ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
   if (nfailsCum >= 2) SETERRQ(PETSC_COMM_SELF,1,"Unable to find a Newton Step");
-  if (print_flag){
+  if (print_flag) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
                        tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   }
@@ -600,7 +598,7 @@ int Update(SNES snes,void *ctx)
   int eve0,eve1;
   FILE *cfp0,*cfp1;
   char str[256];
-  /*if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
+  /* if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
    SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter\n");
   ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
   if (gen_read != gen_start) {
@@ -643,7 +641,6 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
   /*int       iramp = tsCtx->iramp;*/
 
   PetscFunctionBegin;
-
   tsCtx->ires = 0;
   ierr = FormFunction(snes,tsCtx->qold,func,user);CHKERRQ(ierr);
   tsCtx->ires = 1;
@@ -657,7 +654,7 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
      tsCtx->cfl = PetscMin(newcfl,tsCtx->cfl_max);
   }
 
-  /*if (iramp < 0) {
+  /* if (iramp < 0) {
    newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/tsCtx->fnorm;
   } else {
    if (tsCtx->dt < 0 && iramp > 0)
@@ -760,8 +757,7 @@ int GetLocalOrdering(GRID *grid)
   if (!rank) {
     if (size == 1) {
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
-    }
-    else {
+    } else {
       char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool  exists;
 
@@ -919,7 +915,7 @@ int GetLocalOrdering(GRID *grid)
     grid->eptr[i] = node1;
     grid->eptr[nedgeLoc+i] = node2;
 #endif
-    /*if (node1 > node2)
+    /* if (node1 > node2)
      printf("On processor %d, for edge %d node1 = %d, node2 = %d\n",
             rank,i,node1,node2);CHKERRQ(ierr);*/
     if ((node1 <= cross_node) && (node2 > cross_node)) {
@@ -1191,7 +1187,7 @@ int GetLocalOrdering(GRID *grid)
     grid->xyzn_thr[ie2+2] = grid->xyzn[ie3+2];
     grid->xyzn_thr[ie2+3] = grid->xyzn[ie3+3];
     tmp[thr1]+=1;
-    if (thr1 != thr2){
+    if (thr1 != thr2) {
      ie1 = 2*tmp[thr2];
      ie2 = 4*tmp[thr2];
      grid->edge_thr[ie1] = node1;
@@ -1506,10 +1502,10 @@ int GetLocalOrdering(GRID *grid)
    grid->f2ntv[nvfacetLoc+i] = tmp[j++] + 1;
    grid->f2ntv[2*nvfacetLoc+i] = tmp[j++] + 1;
   }
- ierr = PetscFree(tmp);CHKERRQ(ierr);
- ierr = PetscFree(tmp1);CHKERRQ(ierr);
- ierr = PetscFree(tmp2);CHKERRQ(ierr);
- ierr = PetscFree(ftmp);CHKERRQ(ierr);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  ierr = PetscFree(tmp1);CHKERRQ(ierr);
+  ierr = PetscFree(tmp2);CHKERRQ(ierr);
+  ierr = PetscFree(ftmp);CHKERRQ(ierr);
 
 /* Now identify the triangles on which the current proceesor
    would perform force calculation */
@@ -1672,7 +1668,7 @@ int GetLocalOrdering(GRID *grid)
    FCALLOC(7*nnodesLoc,   &grid->rxy);
 
 /* Map the 'ja' array in petsc ordering */
-  for (i = 0; i < nnz; i++){
+  for (i = 0; i < nnz; i++) {
     grid->ja[i] = l2a[grid->ja[i] - 1];
   }
   ierr = AOApplicationToPetsc(ao,nnz,grid->ja);CHKERRQ(ierr);
@@ -1938,7 +1934,8 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscFunctionReturn(0);
 }
 
-static void SortInt2(PetscInt *a,PetscInt *b) {
+static void SortInt2(PetscInt *a,PetscInt *b)
+{
   if (*b < *a) {
     PetscInt c = *b;
     *b = *a;
@@ -1949,7 +1946,8 @@ static void SortInt2(PetscInt *a,PetscInt *b) {
 #undef __FUNCT__
 #define __FUNCT__ "IntersectInt"
 /* b = intersection(a,b) */
-static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,PetscInt *b) {
+static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,PetscInt *b)
+{
   PetscInt i,n,j;
 
   PetscFunctionBegin;
@@ -2271,7 +2269,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = PetscSNPrintf(vtu_fname,sizeof(vtu_fname),"%s-%D-%D.vtu",fname,tsCtx->itstep,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,pvtu_fname,"w",&pvtu);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,pvtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-#ifdef PETSC_WORDS_BIGENDIAN
+#if defined(PETSC_WORDS_BIGENDIAN)
   ierr = PetscFPrintf(comm,pvtu,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");CHKERRQ(ierr);
 #else
   ierr = PetscFPrintf(comm,pvtu,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
@@ -2330,7 +2328,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = PetscFOpen(PETSC_COMM_SELF,vtu_fname,"w",&vtu);CHKERRQ(ierr);
   boffset = 0;
   ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-#ifdef PETSC_WORDS_BIGENDIAN
+#if defined(PETSC_WORDS_BIGENDIAN)
   ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");CHKERRQ(ierr);
 #else
   ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
@@ -2522,10 +2520,11 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     val_diag[i] = nbrs_diag;
     val_offd[i] = nbrs_offd;
@@ -2542,10 +2541,11 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     for (j = 0; j < 4; j++) {
       row = 4*i + j;
@@ -2679,7 +2679,7 @@ int set_up_grid(GRID *grid)
    jalloc = 0;
    kvisc  = grid->jvisc;*/
 
-   /*if (ilu0 >=1 && ifcn == 1) jalloc=0;*/
+   /* if (ilu0 >=1 && ifcn == 1) jalloc=0;*/
 
 /*
  * stuff to read in dave's grids
@@ -2694,7 +2694,7 @@ int set_up_grid(GRID *grid)
 /* end of stuff */
 
 
-   /*if (ileast == 0) lnodes = 1;
+   /* if (ileast == 0) lnodes = 1;
      printf("In set_up_grid->jvisc = %d\n",grid->jvisc);
 
    if (grid->jvisc != 2 && grid->jvisc != 4 && grid->jvisc != 6)vface = 1;
@@ -2857,7 +2857,7 @@ int write_fine_grid(GRID *grid)
 /* open file for output      */
 /* call the output frame.out */
 
-   if (!(output = fopen("frame.out","a"))){
+   if (!(output = fopen("frame.out","a"))) {
       SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n");

@@ -55,7 +55,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
 
-  if (!a->inew){
+  if (!a->inew) {
     ierr = PetscMalloc2(mbs+1,PetscInt,&ai, 2*a->i[mbs],PetscInt,&aj);CHKERRQ(ierr);
   } else {
     ai = a->inew; aj = a->jnew;
@@ -65,7 +65,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
 
   /*
      Phase 1: Find row index r in which to store each nonzero.
-	      Initialize count of nonzeros to be stored in each row (nzr).
+              Initialize count of nonzeros to be stored in each row (nzr).
               At the end of this phase, a nonzero a(*,*)=a(r(),aj())
               s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
   */
@@ -76,11 +76,11 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   for (i=0; i<ai[mbs]; i++) r[i] = 0;
 
   /*  for each nonzero element */
-  for (i=0; i<mbs; i++){
+  for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
     j = ai[i];
     /* printf("nz = %d, j=%d\n",nz,j); */
-    while (nz--){
+    while (nz--) {
       /*  --- find row (=r[j]) and column (=aj[j]) in which to store a[j] ...*/
       k = aj[j];                          /* col. index */
       /* printf("nz = %d, k=%d\n", nz,k); */
@@ -99,7 +99,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
               At the end of this phase, (aj[j],a[j]) will be stored in
               (aj[r(j)],a[r(j)]).
   */
-    for (i=0; i<mbs; i++){
+    for (i=0; i<mbs; i++) {
       ai[i+1] = ai[i] + nzr[i];
       nzr[i]    = ai[i+1];
     }
@@ -109,7 +109,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   jmin = ai[0]; jmax = ai[mbs];
   nz = jmax - jmin;
   j = jmax-1;
-  while (nz--){
+  while (nz--) {
     i = r[j];  /* row value */
     if (aj[j] == i) r[j] = ai[i]; /* put diagonal nonzero at beginning of row */
     else { /* put off-diagonal nonzero in last unused location in row */
@@ -122,8 +122,8 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr  = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Phase 3: permute (aj,a) to upper triangular form (wrt new ordering) */
-  for (j=jmin; j<jmax; j++){
-    while (r[j] != j){
+  for (j=jmin; j<jmax; j++) {
+    while (r[j] != j) {
       k = r[j]; r[j] = r[k]; r[k] = k;
       ajk = aj[k]; aj[k] = aj[j]; aj[j] = ajk;
       /* ak = aa[k]; aa[k] = aa[j]; aa[j] = ak; */

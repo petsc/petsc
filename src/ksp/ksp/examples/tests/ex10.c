@@ -365,7 +365,7 @@ PetscErrorCode paulsetup20(void)
   c = 1.0/8.0;
   for (j=0; j<N_int; j++) {
     for (i=0; i<20; i++) {
-      if (i==0 || i==2 || i==5 || i==7 || i==12 || i==14 || i== 17 || i==19){
+      if (i==0 || i==2 || i==5 || i==7 || i==12 || i==14 || i== 17 || i==19) {
         N[i][j] = c*(1.0 + r2[i]*rst[0][j])*
                 (1.0 + s2[i]*rst[1][j])*(1.0 + t2[i]*rst[2][j])*
                 (-2.0 + r2[i]*rst[0][j] + s2[i]*rst[1][j] + t2[i]*rst[2][j]);

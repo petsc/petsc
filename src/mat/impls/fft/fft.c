@@ -13,7 +13,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   Mat_FFT        *fft = (Mat_FFT*)A->data;
 
   PetscFunctionBegin;
-  if (fft->matdestroy){
+  if (fft->matdestroy) {
     ierr = (fft->matdestroy)(A);CHKERRQ(ierr);
   }
   ierr = PetscFree(fft->dim);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   ierr = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
   FFT->data = (void*)fft;
   N = 1;
-  for (i=0; i<ndim; i++){
+  for (i=0; i<ndim; i++) {
     if (dim[i] < 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
     N *= dim[i];
   }

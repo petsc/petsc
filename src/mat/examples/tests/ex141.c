@@ -24,7 +24,7 @@ int main(int argc,char **args)
    if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* input matrix C */
-  if (loadmat){
+  if (loadmat) {
     /* Open binary file. Load a sbaij matrix, then destroy the viewer. */
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **args)
     ierr = MatSetUp(C);CHKERRQ(ierr);
     ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
-    for (block=0; block<mbs; block++){
+    for (block=0; block<mbs; block++) {
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
@@ -60,8 +60,8 @@ int main(int argc,char **args)
     }
     /* off-diagonal blocks */
     value[0]=-1.0; value[1] = -0.1; value[2] = 0.0; value[3] = -1.0; /* row-oriented */
-    for (block=0; block<mbs-1; block++){
-      for (i=0; i<bs; i++){
+    for (block=0; block<mbs-1; block++) {
+      for (i=0; i<bs; i++) {
         ridx[i] = block*bs+i; cidx[i] = (block+1)*bs+i;
       }
       ierr = MatSetValues(C,bs,ridx,bs,cidx,value,INSERT_VALUES);CHKERRQ(ierr);

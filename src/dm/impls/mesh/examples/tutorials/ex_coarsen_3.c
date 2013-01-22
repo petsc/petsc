@@ -158,7 +158,7 @@ PetscErrorCode  MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm
   const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
-  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+  for (std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
     newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
   }
   newMesh->setupField(s);
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
     //ierr = MeshIDBoundary(mesh_set[0]);
 //    mesh->createLabel("marker");
 //    mesh->markBoundaryCells("marker", 1, 2, false);
-    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1],NULL,options.curvatureCutoff );
+    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1],NULL,options.curvatureCutoff);
     Obj<ALE::Mesh> ale_meshes[options.levels];
     for (int i = 0; i < options.levels; i++) {
       MeshGetMesh(mesh_set[i], ale_meshes[i]);

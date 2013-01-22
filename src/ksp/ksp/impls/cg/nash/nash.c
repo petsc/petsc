@@ -93,7 +93,7 @@ PetscErrorCode  KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 PetscErrorCode KSPSolve_NASH(KSP ksp)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "NASH is not available for complex systems");
 #else
   KSP_NASH       *cg = (KSP_NASH *)ksp->data;
@@ -250,7 +250,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   /* gradient iteration has been performed.                                  */
   /***************************************************************************/
 
-  switch(ksp->normtype) {
+  switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
     ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);   /* norm_r = |z|      */
     break;
@@ -328,7 +328,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   dMp = 0.0;
   norm_d = 0.0;
-  switch(cg->dtype) {
+  switch (cg->dtype) {
   case NASH_PRECONDITIONED_DIRECTION:
     norm_p = rz;
     break;
@@ -405,7 +405,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   /* gradient method breaks down.                                            */
   /***************************************************************************/
 
-  while(1) {
+  while (1) {
     /*************************************************************************/
     /* Know that kappa is nonzero, because we have not broken down, so we    */
     /* can compute the steplength.                                           */
@@ -460,7 +460,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
     ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
 
-    switch(cg->dtype) {
+    switch (cg->dtype) {
     case NASH_PRECONDITIONED_DIRECTION:
       norm_d = norm_dp1;
       break;
@@ -498,7 +498,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /* Compute the residual and check for convergence.                       */
     /*************************************************************************/
 
-    switch(ksp->normtype) {
+    switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
       ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);/* norm_r = |z|      */
       break;
@@ -561,7 +561,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
     ierr = VecAYPX(p, beta, z);CHKERRQ(ierr);          /* p = z + beta p    */
 
-    switch(cg->dtype) {
+    switch (cg->dtype) {
     case NASH_PRECONDITIONED_DIRECTION:
       dMp = beta*(dMp + alpha*norm_p);
       norm_p = beta*(rzm1 + beta*norm_p);

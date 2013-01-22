@@ -60,7 +60,7 @@ int main(int argc,char **args)
 
   ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
-  if (type == PETSC_SUBCOMM_GENERAL){/* user provides color, subrank and duprank */
+  if (type == PETSC_SUBCOMM_GENERAL) {/* user provides color, subrank and duprank */
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
@@ -68,9 +68,9 @@ int main(int argc,char **args)
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
     ierr = PetscSubcommSetTypeGeneral(psubcomm,color,subrank,duprank);CHKERRQ(ierr);
-  } else if (type == PETSC_SUBCOMM_CONTIGUOUS){
+  } else if (type == PETSC_SUBCOMM_CONTIGUOUS) {
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
-  } else if (type == PETSC_SUBCOMM_INTERLACED){
+  } else if (type == PETSC_SUBCOMM_INTERLACED) {
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
   } else {
     SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
@@ -78,7 +78,7 @@ int main(int argc,char **args)
   subcomm = psubcomm->comm;
 
   ierr = PetscOptionsHasName(PETSC_NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     PetscMPIInt subsize,subrank,duprank;
     ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ int main(int argc,char **args)
   ierr = MatMult(subA,subx,subu);CHKERRQ(ierr);
   ierr = VecAXPY(subu,-1.0,subb);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-4 && !rank){
+  if (norm > 1.e-4 && !rank) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
     printf("Error: Residual norm of each block |subb - subA*subx |= %G\n",norm);
   }
@@ -126,7 +126,7 @@ int main(int argc,char **args)
   ierr = VecResetArray(subu);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
-  if (flg && rank == id){
+  if (flg && rank == id) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
     for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));

@@ -16,7 +16,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
 
   /* create subMat object with the relavent layout */
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
     ierr = MatSetType(*subMat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatSetSizes(*subMat,mat->rmap->n,mat->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
     }
   }
 
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     /* Now compute preallocation for the offdiag mat */
     ierr = PetscMalloc(aij->B->rmap->n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
     ierr = PetscMemzero(nnz,aij->B->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -66,7 +66,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
     ierr = MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
     ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
-  } else if ( ((Mat_MPIAIJ*)(*subMat)->data)->A != aij->A  ){
+  } else if (((Mat_MPIAIJ*)(*subMat)->data)->A != aij->A) {
     PetscObject obj = (PetscObject)((Mat_MPIAIJ*)((*subMat)->data))->A;
     ierr = PetscObjectReference((PetscObject)obj);CHKERRQ(ierr);
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
@@ -92,7 +92,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   /* deallocate temporary data */
   ierr = PetscFree(commRankMap);CHKERRQ(ierr);
   ierr = PetscFree(garrayCMap);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscFree(nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

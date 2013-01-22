@@ -422,7 +422,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
   nalloc = PetscMin(ksp->max_it,gmres->delta_allocate);
   /* Adjust the number to allocate to make sure that we don't exceed the
     number of available slots */
-  if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated){
+  if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated) {
     nalloc = gmres->vecs_allocated - it - VEC_OFFSET;
   }
   if (!nalloc) PetscFunctionReturn(0);

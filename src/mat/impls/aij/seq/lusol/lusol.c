@@ -23,14 +23,17 @@ EXTERN_C_BEGIN
 /*
     Dummy symbols that the MINOS files mi25bfac.f and mi15blas.f may require
 */
-void PETSC_STDCALL M1PAGE() {
+void PETSC_STDCALL M1PAGE()
+{
   ;
 }
-void PETSC_STDCALL M5SETX() {
+void PETSC_STDCALL M5SETX()
+{
   ;
 }
 
-void PETSC_STDCALL M6RDEL() {
+void PETSC_STDCALL M6RDEL()
+{
   ;
 }
 
@@ -68,13 +71,13 @@ typedef struct  {
   double *mnsv;
 
   double elbowroom;
-  double luroom;		/* Extra space allocated when factor fails   */
-  double parmlu[30];		/* Input/output to LUSOL                     */
+  double luroom;                /* Extra space allocated when factor fails   */
+  double parmlu[30];            /* Input/output to LUSOL                     */
 
-  int n;			/* Number of rows/columns in matrix          */
-  int nz;			/* Number of nonzeros                        */
-  int nnz;			/* Number of nonzeros allocated for factors  */
-  int luparm[30];		/* Input/output to LUSOL                     */
+  int n;                        /* Number of rows/columns in matrix          */
+  int nz;                       /* Number of nonzeros                        */
+  int nnz;                      /* Number of nonzeros allocated for factors  */
+  int luparm[30];               /* Input/output to LUSOL                     */
 
   PetscBool  CleanUpLUSOL;
 
@@ -266,15 +269,15 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
       nnz = PetscMax(lusol->nnz, (int)(lusol->elbowroom*nz));
       nnz = PetscMax(nnz, 5*n);
 
-      if (nnz < lusol->luparm[12]){
+      if (nnz < lusol->luparm[12]) {
         nnz = (int)(lusol->luroom * lusol->luparm[12]);
-      } else if ((factorizations > 0) && (lusol->luroom < 6)){
+      } else if ((factorizations > 0) && (lusol->luroom < 6)) {
         lusol->luroom += 0.1;
       }
 
       nnz = PetscMax(nnz, (int)(lusol->luroom*(lusol->luparm[22] + lusol->luparm[23])));
 
-      if (nnz > lusol->nnz){
+      if (nnz > lusol->nnz) {
         ierr = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
         ierr = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
         lusol->nnz  = nnz;
@@ -313,24 +316,24 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
              lusol->lenc, lusol->lenr, lusol->locc, lusol->locr,
              lusol->iploc, lusol->iqloc, lusol->ipinv,
              lusol->iqinv, lusol->mnsw, &status);
-	
-      switch(status)
+
+      switch (status)
         {
-        case 0:		/* factored */
+        case 0:         /* factored */
           break;
 
-        case 7:		/* insufficient memory */
+        case 7:         /* insufficient memory */
           break;
 
         case 1:
-        case -1:		/* singular */
+        case -1:        /* singular */
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Singular matrix");
 
         case 3:
-        case 4:		/* error conditions */
+        case 4:         /* error conditions */
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix error");
 
-        default:		/* unknown condition */
+        default:        /* unknown condition */
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix unknown return code");
         }
 
@@ -360,7 +363,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   int            i, m, n, nz, nnz;
 
   PetscFunctionBegin;
-	
   /************************************************************************/
   /* Check the arguments.                                                 */
   /************************************************************************/

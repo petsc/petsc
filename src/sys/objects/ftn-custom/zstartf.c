@@ -1,7 +1,7 @@
 
 #include <petsc-private/fortranimpl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
@@ -63,7 +63,7 @@ void PETSC_STDCALL petscinitializefortran_(int *ierr)
 
 void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
                                   void *fnull_integer,void* fnull,void *fnull_scalar,void * fnull_double,
-  				  void *fnull_real,void *fnull_object,
+                                  void *fnull_real,void *fnull_object,
                                   void* fnull_truth,void (*fnull_function)(void) PETSC_END_LEN(len))
 {
   PETSC_NULL_CHARACTER_Fortran  = fnull_character;

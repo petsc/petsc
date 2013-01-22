@@ -1,11 +1,11 @@
 
 #include <../src/mat/impls/adj/mpi/mpiadj.h>       /*I "petscmat.h" I*/
 
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 
-#ifdef PETSC_HAVE_STDLIB_H
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
@@ -20,26 +20,26 @@ extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
 extern int FREE_GRAPH;
 
 /*
-int       nvtxs;		number of vertices in full graph
-int      *start;		start of edge list for each vertex
-int      *adjacency;	        edge list data
-int      *vwgts;	        weights for all vertices
-float    *ewgts;	        weights for all edges
-float    *x, *y, *z;	        coordinates for inertial method
+int       nvtxs;                number of vertices in full graph
+int      *start;                start of edge list for each vertex
+int      *adjacency;            edge list data
+int      *vwgts;                weights for all vertices
+float    *ewgts;                weights for all edges
+float    *x, *y, *z;            coordinates for inertial method
 char     *outassignname;        name of assignment output file
 char     *outfilename;          output file name
-short    *assignment;	        set number of each vtx (length n)
+short    *assignment;           set number of each vtx (length n)
 int       architecture;         0 => hypercube, d => d-dimensional mesh
-int       ndims_tot;	        total number of cube dimensions to divide
+int       ndims_tot;            total number of cube dimensions to divide
 int       mesh_dims[3];         dimensions of mesh of processors
-double   *goal;	                desired set sizes for each set
+double   *goal;                 desired set sizes for each set
 int       global_method;        global partitioning algorithm
 int       local_method;         local partitioning algorithm
-int       rqi_flag;	        should I use RQI/Symmlq eigensolver?
-int       vmax;	                how many vertices to coarsen down to?
-int       ndims;	        number of eigenvectors (2^d sets)
-double    eigtol;	        tolerance on eigenvectors
-long      seed;	                for random graph mutations
+int       rqi_flag;             should I use RQI/Symmlq eigensolver?
+int       vmax;                 how many vertices to coarsen down to?
+int       ndims;                number of eigenvectors (2^d sets)
+double    eigtol;               tolerance on eigenvectors
+long      seed;                 for random graph mutations
 */
 
 EXTERN_C_END
@@ -74,7 +74,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   double                eigtol;
   long                  seed;
   char                  *mesg_log;
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   int                   fd_stdout,fd_pipe[2],count,err;
 #endif
 
@@ -129,7 +129,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
     adjacency[i] = (adj->j)[i] + 1;   /* 1-based indexing */
 
   /* redirect output to buffer */
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
   if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
@@ -142,7 +142,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
             PETSC_NULL,PETSC_NULL,assignment,architecture,ndims_tot,mesh_dims,
             PETSC_NULL,global_method,local_method,rqi_flag,vmax,ndims,eigtol,seed);
 
-#ifdef PETSC_HAVE_UNISTD_H
+#if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));
@@ -246,15 +246,17 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part,MPChacoG
 
   PetscFunctionBegin;
   if (method==PETSC_DEFAULT) chaco->global_method = MP_CHACO_MULTILEVEL;
-  else switch (method) {
-    case MP_CHACO_MULTILEVEL:
-    case MP_CHACO_SPECTRAL:
-    case MP_CHACO_LINEAR:
-    case MP_CHACO_RANDOM:
-    case MP_CHACO_SCATTERED:
-      chaco->global_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+  else {
+    switch (method) {
+      case MP_CHACO_MULTILEVEL:
+      case MP_CHACO_SPECTRAL:
+      case MP_CHACO_LINEAR:
+      case MP_CHACO_RANDOM:
+      case MP_CHACO_SCATTERED:
+        chaco->global_method = method; break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -343,12 +345,14 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
 
   PetscFunctionBegin;
   if (method==PETSC_DEFAULT) chaco->local_method = MP_CHACO_KERNIGHAN;
-  else switch (method) {
-    case MP_CHACO_KERNIGHAN:
-    case MP_CHACO_NONE:
-      chaco->local_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+  else {
+    switch (method) {
+      case MP_CHACO_KERNIGHAN:
+      case MP_CHACO_NONE:
+        chaco->local_method = method; break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -480,12 +484,14 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part,MPC
 
   PetscFunctionBegin;
   if (method==PETSC_DEFAULT) chaco->eigen_method = MP_CHACO_LANCZOS;
-  else switch (method) {
-    case MP_CHACO_LANCZOS:
-    case MP_CHACO_RQI:
-      chaco->eigen_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+  else {
+    switch (method) {
+      case MP_CHACO_LANCZOS:
+      case MP_CHACO_RQI:
+        chaco->eigen_method = method; break;
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    }
   }
   PetscFunctionReturn(0);
 }

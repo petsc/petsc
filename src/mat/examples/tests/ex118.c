@@ -42,7 +42,7 @@ int main(int argc,char **args)
   isplit = iblock + n;
 
   /* Set symmetric tridiagonal matrix */
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
     D[i] = 2.0;
     E[i] = 1.0;
   }
@@ -67,7 +67,7 @@ int main(int argc,char **args)
 #endif
   /* View evals */
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);
     for (i=0; i<nevs; i++) PetscPrintf(PETSC_COMM_SELF,"%d  %G\n",i,evals[i]);
   }
@@ -77,9 +77,9 @@ int main(int argc,char **args)
   ierr = MatSetSizes(T,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(T,MATSBAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(T);CHKERRQ(ierr);
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
     ierr = MatSetValues(T,1,&i,1,&i,&D[i],INSERT_VALUES);CHKERRQ(ierr);
-    if (i != n-1){
+    if (i != n-1) {
       j = i+1;
       ierr = MatSetValues(T,1,&i,1,&j,&E[i],INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -88,7 +88,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
-  for (i=0; i<nevs; i++){
+  for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr = VecSetFromOptions(evecs[i]);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   tols[0] = 1.e-8;  tols[1] = 1.e-8;
   ierr = CkEigenSolutions(cklvl,T,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
 
-  for (i=0; i<nevs; i++){
+  for (i=0; i<nevs; i++) {
     ierr = VecResetArray(evecs[i]);CHKERRQ(ierr);
   }
 
@@ -106,7 +106,7 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(&T);CHKERRQ(ierr);
 
-  for (i=0; i<nevs; i++){ ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
+  for (i=0; i<nevs; i++) { ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
   ierr = PetscFree(D);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
@@ -150,21 +150,21 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   ierr = VecDuplicate(evec[0],&vt1);CHKERRQ(ierr);
   ierr = VecDuplicate(evec[0],&vt2);CHKERRQ(ierr);
 
-  switch (cklvl){
+  switch (cklvl) {
   case 2:
     dot_max = 0.0;
-    for (i = il; i<iu; i++){
+    for (i = il; i<iu; i++) {
       ierr = VecCopy(evec[i], vt1);CHKERRQ(ierr);
-      for (j=il; j<iu; j++){
+      for (j=il; j<iu; j++) {
         ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
-        if (j == i){
+        if (j == i) {
           dot = PetscAbsScalar(dot - 1.0);
         } else {
           dot = PetscAbsScalar(dot);
         }
         if (PetscAbsScalar(dot) > dot_max) dot_max = PetscAbsScalar(dot);
-#ifdef DEBUG_CkEigenSolutions
-        if (dot > tols[1] ) {
+#if defined(DEBUG_CkEigenSolutions)
+        if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
           ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);CHKERRQ(ierr);
         }
@@ -175,7 +175,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 
   case 1:
     norm_max = 0.0;
-    for (i = il; i< iu; i++){
+    for (i = il; i< iu; i++) {
       ierr = MatMult(A, evec[i], vt1);CHKERRQ(ierr);
       ierr = VecCopy(evec[i], vt2);CHKERRQ(ierr);
       tmp  = -eval[i];
@@ -183,10 +183,10 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
-#ifdef DEBUG_CkEigenSolutions
+#if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
-      if (norm > tols[0]){
-        printf( "  residual violation: %d, resi: %g\n",i, norm);
+      if (norm > tols[0]) {
+        printf("  residual violation: %d, resi: %g\n",i, norm);
       }
 #endif
     }

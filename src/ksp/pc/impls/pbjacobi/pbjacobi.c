@@ -213,7 +213,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   ierr        = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
   jac->bs     = A->rmap->bs;
   jac->mbs    = A->rmap->n/A->rmap->bs;
-  switch (jac->bs){
+  switch (jac->bs) {
     case 1:
       pc->ops->apply = PCApply_PBJacobi_1;
       break;
@@ -294,7 +294,6 @@ PetscErrorCode  PCCreate_PBJacobi(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.

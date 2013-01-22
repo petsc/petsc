@@ -104,7 +104,7 @@ PetscErrorCode PetscViewerDestroyMathematica_Private(void)
 PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
-#ifdef MATHEMATICA_3_0
+#if defined(MATHEMATICA_3_0)
   int                     argc = 6;
   char                    *argv[6];
 #else
@@ -134,9 +134,9 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
   }
 
   /* Link mode */
-#ifdef MATHEMATICA_3_0
+#if defined(MATHEMATICA_3_0)
   argv[4] = "-linkmode";
-  switch(vmath->linkmode) {
+  switch (vmath->linkmode) {
   case MATHEMATICA_LINK_CREATE:
     argv[5] = "Create";
     break;
@@ -148,7 +148,7 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
     break;
   }
 #else
-  switch(vmath->linkmode) {
+  switch (vmath->linkmode) {
   case MATHEMATICA_LINK_CREATE:
     argv[4] = "-linkcreate";
     break;
@@ -174,7 +174,7 @@ PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -479,7 +479,7 @@ PetscErrorCode  PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   int                     pkt;                 /* The packet type */
 
   PetscFunctionBegin;
-  while((pkt = MLNextPacket(link)) && (pkt != type))
+  while ((pkt = MLNextPacket(link)) && (pkt != type))
     MLNewPacket(link);
   if (!pkt) {
     MLClearError(link);

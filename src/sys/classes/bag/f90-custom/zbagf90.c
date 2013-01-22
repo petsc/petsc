@@ -56,7 +56,7 @@ void PETSC_STDCALL petscbagload_(PetscViewer *viewer,PetscBag *bag,PetscErrorCod
 }
 
 void PETSC_STDCALL petscbagregisterint_(PetscBag *bag,void *ptr,PetscInt *def,CHAR s1 PETSC_MIXED_LEN(l1),
-					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                        CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
@@ -67,7 +67,7 @@ void PETSC_STDCALL petscbagregisterint_(PetscBag *bag,void *ptr,PetscInt *def,CH
 }
 
 void PETSC_STDCALL petscbagregisterintarray_(PetscBag *bag,void *ptr,PetscInt *msize,CHAR s1 PETSC_MIXED_LEN(l1),
-					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                             CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
@@ -78,7 +78,7 @@ void PETSC_STDCALL petscbagregisterintarray_(PetscBag *bag,void *ptr,PetscInt *m
 }
 
 void PETSC_STDCALL petscbagregisterscalar_(PetscBag *bag,void *ptr,PetscScalar *def,CHAR s1 PETSC_MIXED_LEN(l1),
-					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                           CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
@@ -89,7 +89,7 @@ void PETSC_STDCALL petscbagregisterscalar_(PetscBag *bag,void *ptr,PetscScalar *
 }
 
 void PETSC_STDCALL petscbagregisterreal_(PetscBag *bag,void *ptr,PetscReal *def,CHAR s1 PETSC_MIXED_LEN(l1),
-					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                         CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
@@ -100,7 +100,7 @@ void PETSC_STDCALL petscbagregisterreal_(PetscBag *bag,void *ptr,PetscReal *def,
 }
 
 void PETSC_STDCALL petscbagregisterrealarray_(PetscBag *bag,void *ptr,PetscInt *msize,CHAR s1 PETSC_MIXED_LEN(l1),
-					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                              CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2;
   FIXCHAR(s1,l1,t1);
@@ -111,7 +111,7 @@ void PETSC_STDCALL petscbagregisterrealarray_(PetscBag *bag,void *ptr,PetscInt *
 }
 
 void PETSC_STDCALL petscbagregisterbool_(PetscBag *bag,void *ptr,PetscBool  *def,CHAR s1 PETSC_MIXED_LEN(l1),
-					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                         CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char       *t1,*t2;
   PetscBool  flg = PETSC_FALSE;
@@ -126,7 +126,7 @@ void PETSC_STDCALL petscbagregisterbool_(PetscBag *bag,void *ptr,PetscBool  *def
 }
 
 void PETSC_STDCALL petscbagregisterstring_(PetscBag *bag,CHAR p PETSC_MIXED_LEN(pl),CHAR cs1 PETSC_MIXED_LEN(cl1),CHAR s1 PETSC_MIXED_LEN(l1),
-					   CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(pl) PETSC_END_LEN(cl1) PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+                                           CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(pl) PETSC_END_LEN(cl1) PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2,*ct1;
   FIXCHAR(s1,l1,t1);

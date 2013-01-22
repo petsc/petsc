@@ -84,7 +84,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
     ierr = KSP_MatMult(ksp,Amat,lcd->P[it],Z);CHKERRQ(ierr);
     ierr = KSP_PCApply(ksp,Z,lcd->Q[it]);CHKERRQ(ierr);
 
-    while(!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
+    while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
       ksp->its++;
       ierr = VecDot(lcd->P[it],R,&num);CHKERRQ(ierr);
       ierr = VecDot(lcd->P[it],lcd->Q[it], &den);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
       ierr = KSP_MatMult(ksp,Amat,lcd->P[it+1],Z);CHKERRQ(ierr);
       ierr = KSP_PCApply(ksp,Z,lcd->Q[it+1]);CHKERRQ(ierr);
 
-      for ( j = 0; j <= it; j++) {
+      for (j = 0; j <= it; j++) {
         ierr = VecDot(lcd->P[j],lcd->Q[it+1],&num);CHKERRQ(ierr);
         ierr = VecDot(lcd->P[j],lcd->Q[j],&den);CHKERRQ(ierr);
         beta = - num/den;

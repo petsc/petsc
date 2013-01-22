@@ -191,7 +191,7 @@ extern PetscErrorCode PCTFS_ivec_and(PetscInt *arg1, PetscInt *arg2, PetscInt le
 extern PetscErrorCode PCTFS_ivec_lxor(PetscInt *arg1, PetscInt *arg2, PetscInt n);
 extern PetscErrorCode PCTFS_ivec_lor(PetscInt *arg1, PetscInt *arg2, PetscInt len);
 extern PetscErrorCode PCTFS_ivec_land(PetscInt *arg1, PetscInt *arg2, PetscInt len);
-extern PetscErrorCode PCTFS_ivec_and3( PetscInt *arg1,  PetscInt *arg2,  PetscInt *arg3, PetscInt n);
+extern PetscErrorCode PCTFS_ivec_and3(PetscInt *arg1,  PetscInt *arg2,  PetscInt *arg3, PetscInt n);
 
 extern PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar, PetscInt *ar2, PetscInt size);
 extern PetscErrorCode PCTFS_ivec_sort(PetscInt *ar, PetscInt size);
@@ -320,9 +320,8 @@ extern PetscInt XXT_factor(xxt_ADT xxt_handle,   /* prev. allocated xxt  handle 
                       PetscInt *local2global,    /* global column mapping       */
                       PetscInt n,                /* local num rows              */
                       PetscInt m,                /* local num cols              */
-                      void *mylocmatvec,    /* b_loc=A_local.x_loc         */
-                      void *grid_data       /* grid data for matvec        */
-                      );
+                      void *mylocmatvec,         /* b_loc=A_local.x_loc         */
+                      void *grid_data);          /* grid data for matvec        */
 
 
 /*************************************xxt.h************************************
@@ -435,9 +434,8 @@ extern PetscInt XYT_factor(xyt_ADT xyt_handle,   /* prev. allocated xyt  handle 
                       PetscInt *local2global,    /* global column mapping       */
                       PetscInt n,                /* local num rows              */
                       PetscInt m,                /* local num cols              */
-                      void *mylocmatvec,    /* b_loc=A_local.x_loc         */
-                      void *grid_data       /* grid data for matvec        */
-                      );
+                      void *mylocmatvec,         /* b_loc=A_local.x_loc         */
+                      void *grid_data);          /* grid data for matvec        */
 
 
 /*************************************xyt.h************************************

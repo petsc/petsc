@@ -575,23 +575,23 @@ PetscErrorCode PetscAMSDisplayList(FILE *fd)
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
       fprintf(fd,"<ul>\r\n");
       while (mem_list[i]) {
-	fprintf(fd,"<li> %s</li>\r\n",mem_list[i]);
-	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-	j = 0;
-	fprintf(fd,"<ul>\r\n");
-	while (fld_list[j]) {
-	  fprintf(fd,"<li> %s",fld_list[j]);
-	  ierr = AMS_Memory_get_field_info(memory, fld_list[j], &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-	  if (len == 1) {
-	    if (dtype == AMS_INT)        fprintf(fd," %d",*(int*)addr);
-	    else if (dtype == AMS_STRING) fprintf(fd," %s",*(char**)addr);
-	  }
-	  fprintf(fd,"</li>\r\n");
-	  j++;
-	}
-	fprintf(fd,"</ul>\r\n");
-	i++;
+        fprintf(fd,"<li> %s</li>\r\n",mem_list[i]);
+        ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        j = 0;
+        fprintf(fd,"<ul>\r\n");
+        while (fld_list[j]) {
+          fprintf(fd,"<li> %s",fld_list[j]);
+          ierr = AMS_Memory_get_field_info(memory, fld_list[j], &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+          if (len == 1) {
+            if (dtype == AMS_INT)        fprintf(fd," %d",*(int*)addr);
+            else if (dtype == AMS_STRING) fprintf(fd," %s",*(char**)addr);
+          }
+          fprintf(fd,"</li>\r\n");
+          j++;
+        }
+        fprintf(fd,"</ul>\r\n");
+        i++;
       }
       fprintf(fd,"</ul>\r\n");
     }
@@ -634,12 +634,12 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 
       /* get maximum number of objects */
       while (mem_list[i]) {
-	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
         ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         Id = (int*) addr2;
         maxId = PetscMax(maxId,*Id);
-	i++;
+        i++;
       }
       maxId++;
 
@@ -650,18 +650,18 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
       i = 0;
       while (mem_list[i]) {
-	ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-	ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
         ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         Id = (int*) addr2;
-	ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-	parentId = (int*) addr3;
-	ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        parentId = (int*) addr3;
+        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         clas = *(char**)addr;
-	ierr = AMS_Memory_get_field_info(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        ierr = AMS_Memory_get_field_info(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
         sclas = *(char**)addr4;
         parentid[*Id] = *parentId;
-	mask[*Id]     = PETSC_FALSE;
+        mask[*Id]     = PETSC_FALSE;
         ierr = PetscStrallocpy(clas,classes+*Id);CHKERRQ(ierr);
         ierr = PetscStrallocpy(sclas,subclasses+*Id);CHKERRQ(ierr);
         i++;
@@ -685,7 +685,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
       fprintf(fd, "<canvas width=800 height=600 id=\"tree\"></canvas>\r\n");
       fprintf(fd, "<script type=\"text/javascript\">\r\n");
-      fprintf(fd, "  function draw(){\r\n");
+      fprintf(fd, "  function draw() {\r\n");
       fprintf(fd, "  var example = document.getElementById('tree');\r\n");
       fprintf(fd, "  var context = example.getContext('2d');\r\n");
       /* adjust font size based on how big a tree is printed */
@@ -704,26 +704,26 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 
       cnt = 0;
       for (i=0; i<Nlevels; i++) {
-	fprintf(fd, "  var xspace = example.width/%d;\r\n",Levelcnt[i]+1);
-	for (j=0; j<Levelcnt[i]; j++) {
+        fprintf(fd, "  var xspace = example.width/%d;\r\n",Levelcnt[i]+1);
+        for (j=0; j<Levelcnt[i]; j++) {
           id   = Idbylevel[cnt++];
           clas  = classes[id];
           sclas = subclasses[id];
-	  fprintf(fd, "  var width = context.measureText(\"%s\");\r\n",clas);
-	  fprintf(fd, "  var swidth = context.measureText(\"%s\");\r\n",sclas);
-	  fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
-	  fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d*yspace-height/2, width.width, height);\r\n",j+1,i+1);
-	  fprintf(fd, "  context.fillRect((%d)*xspace-swidth.width/2, %d*yspace+height/2, swidth.width, height);\r\n",j+1,i+1);
-	  fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
-	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d*yspace-height/2);\r\n",clas,j+1,i+1);
-	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-swidth.width/2, %d*yspace+height/2);\r\n",sclas,j+1,i+1);
+          fprintf(fd, "  var width = context.measureText(\"%s\");\r\n",clas);
+          fprintf(fd, "  var swidth = context.measureText(\"%s\");\r\n",sclas);
+          fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
+          fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d*yspace-height/2, width.width, height);\r\n",j+1,i+1);
+          fprintf(fd, "  context.fillRect((%d)*xspace-swidth.width/2, %d*yspace+height/2, swidth.width, height);\r\n",j+1,i+1);
+          fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
+          fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d*yspace-height/2);\r\n",clas,j+1,i+1);
+          fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-swidth.width/2, %d*yspace+height/2);\r\n",sclas,j+1,i+1);
           if (parentid[id]) {
-	    fprintf(fd, "  context.moveTo(%d*xspace,%d*yspace-height/2);\r\n",j+1,i+1);
-	    fprintf(fd, "  context.lineTo(%d*xspacep,%d*yspace+3*height/2);\r\n",Column[parentid[id]]+1,i);
-	    fprintf(fd, "  context.stroke();\r\n");
+            fprintf(fd, "  context.moveTo(%d*xspace,%d*yspace-height/2);\r\n",j+1,i+1);
+            fprintf(fd, "  context.lineTo(%d*xspacep,%d*yspace+3*height/2);\r\n",Column[parentid[id]]+1,i);
+            fprintf(fd, "  context.stroke();\r\n");
           }
-	}
-	fprintf(fd, "  xspacep = xspace;\r\n");
+        }
+        fprintf(fd, "  xspacep = xspace;\r\n");
       }
       ierr = PetscFree(Level);CHKERRQ(ierr);
       ierr = PetscFree(Levelcnt);CHKERRQ(ierr);
@@ -798,7 +798,7 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
   else if (!list) {ierr = PetscInfo(PETSC_NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);}
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-  if (list){
+  if (list) {
     ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
   } else {
     ierr = PetscStrallocpy("No AMS publisher running",&(*argso)[0]);CHKERRQ(ierr);
@@ -1285,7 +1285,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
       fprintf(fd, "<HR>\r\n");
 #if defined(PETSC_HAVE_AMS)
       if (PetscAMSPublishAll) {
-	fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
+        fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
         fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
       }
 #endif

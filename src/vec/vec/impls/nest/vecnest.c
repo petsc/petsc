@@ -94,11 +94,11 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(Vec)*bx->nb,&sub);CHKERRQ(ierr);
-  for (i=0; i<bx->nb; i++ ) {
+  for (i=0; i<bx->nb; i++) {
     ierr = VecDuplicate(bx->v[i],&sub[i]);CHKERRQ(ierr);
   }
   ierr = VecCreateNest(((PetscObject)x)->comm,bx->nb,bx->is,sub,&Y);CHKERRQ(ierr);
-  for (i=0; i<bx->nb; i++ ) {
+  for (i=0; i<bx->nb; i++) {
     ierr = VecDestroy(&sub[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(sub);CHKERRQ(ierr);
@@ -767,7 +767,6 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
 static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
 {
   PetscFunctionBegin;
-
   /* 0 */
   ops->duplicate               = VecDuplicate_Nest;
   ops->duplicatevecs           = VecDuplicateVecs_Default;
@@ -979,10 +978,9 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   if (idxm >= bx->nb) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",idxm,bx->nb);
 
   PetscFunctionBegin;
-
-  ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);	/* destroy the existing vector */
-  ierr = VecDuplicate(x,&bx->v[idxm]);CHKERRQ(ierr);	/* duplicate the layout of given vector */
-  ierr = VecCopy(x,bx->v[idxm]);CHKERRQ(ierr);	/* copy the contents of the given vector */
+  ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);       /* destroy the existing vector */
+  ierr = VecDuplicate(x,&bx->v[idxm]);CHKERRQ(ierr);   /* duplicate the layout of given vector */
+  ierr = VecCopy(x,bx->v[idxm]);CHKERRQ(ierr);         /* copy the contents of the given vector */
 
   /* check if we need to update the IS for the block */
   offset = X->map->rstart;

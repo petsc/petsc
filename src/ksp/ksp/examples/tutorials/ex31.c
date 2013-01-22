@@ -218,7 +218,7 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
 #define __FUNCT__ "TaylorGalerkinStepI"
 /* This is equation 32,
 
-   U^{n+\phi}_E = {1\over Vol_E} \left( \int_\Omega [N]{U^n} d\Omega - \phi\Delta t \int_\Omega [\nabla N]\cdot{F^n} d\Omega \right) + \phi\Delta t Q^n
+   U^{n+\phi}_E = {1\over Vol_E} \left(\int_\Omega [N]{U^n} d\Omega - \phi\Delta t \int_\Omega [\nabla N]\cdot{F^n} d\Omega \right) + \phi\Delta t Q^n
 
 which is really simple for linear elements
 

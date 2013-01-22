@@ -67,7 +67,7 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if ( comm_size == 1 ) {
+  if (comm_size == 1) {
     ierr = DMCreateMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
     ierr = DMCreateMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
@@ -81,8 +81,8 @@ int main(int Argc,char **Args)
   ierr = PetscMalloc(2*sizeof(PetscInt), &(sxy_m.x));CHKERRQ(ierr);
 
   /* Assemble the matrix */
-  for ( x=lcs[0]; x<lce[0]; x++ ) {
-    for ( y=lcs[1]; y<lce[1]; y++ ) {
+  for (x=lcs[0]; x<lce[0]; x++) {
+    for (y=lcs[1]; y<lce[1]; y++) {
       /* each lattice point sets only the *forward* pointing parameters (right, down),
          i.e. Nabla_1^+ and Nabla_2^+.
          In this way we can use only local random number creation. That means
@@ -96,8 +96,8 @@ int main(int Argc,char **Args)
       PetscReal s = sin(2.*PETSC_PI*r2);
 
       /* use those to set the field */
-      uxy1 = PetscExpScalar( ((PetscScalar) (R*c/beta))*PETSC_i);
-      uxy2 = PetscExpScalar( ((PetscScalar) (R*s/beta))*PETSC_i);
+      uxy1 = PetscExpScalar(((PetscScalar) (R*c/beta))*PETSC_i);
+      uxy2 = PetscExpScalar(((PetscScalar) (R*s/beta))*PETSC_i);
 
       sxy.x[0] = x; sxy.x[1] = y; /* the point where we are */
 

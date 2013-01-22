@@ -190,12 +190,12 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   }
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
       v  = aa + 1;
       vj = aj + 1;
-      for (i=0; i<m; i++){
+      for (i=0; i<m; i++) {
         nz = ai[i+1] - ai[i] - 1;
         tmp = - (x[i] = omega*t[i]*aidiag[i]);
         for (j=0; j<nz; j++) {
@@ -207,21 +207,21 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
     }
 
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       int nz2;
-      if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)){
+      if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)) {
 #if defined(PETSC_USE_BACKWARD_LOOP)
-	v  = aa + ai[m] - 1;
-	vj = aj + ai[m] - 1;
-	for (i=m-1; i>=0; i--){
+        v  = aa + ai[m] - 1;
+        vj = aj + ai[m] - 1;
+        for (i=m-1; i>=0; i--) {
           sum = b[i];
-	  nz  = ai[i+1] - ai[i] - 1;
+          nz  = ai[i+1] - ai[i] - 1;
           {PetscInt __i;for (__i=0;__i<nz;__i++) sum -= v[-__i] * x[vj[-__i]];}
 #else
-	v  = aa + ai[m-1] + 1;
-	vj = aj + ai[m-1] + 1;
-	nz = 0;
-	for (i=m-1; i>=0; i--){
+        v  = aa + ai[m-1] + 1;
+        vj = aj + ai[m-1] + 1;
+        nz = 0;
+        for (i=m-1; i>=0; i--) {
           sum = b[i];
           nz2 = ai[i] - ai[i-1] - 1;
           PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
@@ -230,26 +230,26 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           nz   = nz2;
 #endif
           x[i] = omega*sum*aidiag[i];
-	  v  -= nz + 1;
-	  vj -= nz + 1;
-	}
-	ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+          v  -= nz + 1;
+          vj -= nz + 1;
+        }
+        ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
       } else {
         v  = aa + ai[m-1] + 1;
-	vj = aj + ai[m-1] + 1;
-	nz = 0;
-	for (i=m-1; i>=0; i--){
+        vj = aj + ai[m-1] + 1;
+        nz = 0;
+        for (i=m-1; i>=0; i--) {
           sum = t[i];
-	  nz2 = ai[i] - ai[i-1] - 1;
-	  PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
-	  PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
-	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);
+          nz2 = ai[i] - ai[i-1] - 1;
+          PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
+          PetscSparseDenseMinusDot(sum,x,v,vj,nz);
           x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];
-	  nz  = nz2;
-	  v  -= nz + 1;
-	  vj -= nz + 1;
-	}
-	ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+          nz  = nz2;
+          v  -= nz + 1;
+          vj -= nz + 1;
+        }
+        ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
       }
     }
     its--;
@@ -259,15 +259,15 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     /*
        forward sweep:
        for i=0,...,m-1:
-         sum[i] = (b[i] - U(i,:)x )/d[i];
+         sum[i] = (b[i] - U(i,:)x)/d[i];
          x[i]   = (1-omega)x[i] + omega*sum[i];
          b      = b - x[i]*U^T(i,:);
 
     */
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      for (i=0; i<m; i++){
+      for (i=0; i<m; i++) {
         v  = aa + ai[i] + 1; v1=v;
         vj = aj + ai[i] + 1; vj1=vj;
         nz = ai[i+1] - ai[i] - 1; nz1=nz;
@@ -279,25 +279,25 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       }
     }
 
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       /*
        backward sweep:
        b = b - x[i]*U^T(i,:), i=0,...,n-2
        for i=m-1,...,0:
-         sum[i] = (b[i] - U(i,:)x )/d[i];
+         sum[i] = (b[i] - U(i,:)x)/d[i];
          x[i]   = (1-omega)x[i] + omega*sum[i];
       */
       /* if there was a forward sweep done above then I thing the next two for loops are not needed */
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      for (i=0; i<m-1; i++){  /* update rhs */
+      for (i=0; i<m-1; i++) {  /* update rhs */
         v  = aa + ai[i] + 1;
         vj = aj + ai[i] + 1;
         nz = ai[i+1] - ai[i] - 1;
         ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
-      for (i=m-1; i>=0; i--){
+      for (i=m-1; i>=0; i--) {
         v  = aa + ai[i] + 1;
         vj = aj + ai[i] + 1;
         nz = ai[i+1] - ai[i] - 1;

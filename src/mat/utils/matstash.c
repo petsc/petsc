@@ -242,7 +242,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
-  if (!space || space->local_remaining < n){
+  if (!space || space->local_remaining < n) {
     ierr = MatStashExpand_Private(stash,n);CHKERRQ(ierr);
   }
   space = stash->space;
@@ -285,7 +285,7 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
-  if (!space || space->local_remaining < n){
+  if (!space || space->local_remaining < n) {
     ierr = MatStashExpand_Private(stash,n);CHKERRQ(ierr);
   }
   space = stash->space;
@@ -333,7 +333,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
-  if (!space || space->local_remaining < n){
+  if (!space || space->local_remaining < n) {
     ierr = MatStashExpand_Private(stash,n);CHKERRQ(ierr);
   }
   space = stash->space;
@@ -389,7 +389,7 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
-  if (!space || space->local_remaining < n){
+  if (!space || space->local_remaining < n) {
     ierr = MatStashExpand_Private(stash,n);CHKERRQ(ierr);
   }
   space = stash->space;
@@ -459,10 +459,10 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   i = j    = 0;
   lastidx  = -1;
   space    = stash->space_head;
-  while (space != PETSC_NULL){
+  while (space != PETSC_NULL) {
     space_next = space->next;
     sp_idx     = space->idx;
-    for (l=0; l<space->local_used; l++){
+    for (l=0; l<space->local_used; l++) {
       /* if indices are NOT locally sorted, need to start search at the beginning */
       if (lastidx > (idx = sp_idx[l])) j = 0;
       lastidx = idx;
@@ -510,12 +510,12 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
 
   i     = 0;
   space = stash->space_head;
-  while (space != PETSC_NULL){
+  while (space != PETSC_NULL) {
     space_next = space->next;
     sp_idx = space->idx;
     sp_idy = space->idy;
     sp_val = space->val;
-    for (l=0; l<space->local_used; l++){
+    for (l=0; l<space->local_used; l++) {
       j = owner[i];
       if (bs2 == 1) {
         svalues[startv[j]] = sp_val[l];
@@ -524,7 +524,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
         PetscScalar *buf1,*buf2;
         buf1 = svalues+bs2*startv[j];
         buf2 = space->val + bs2*l;
-        for (k=0; k<bs2; k++){ buf1[k] = buf2[k]; }
+        for (k=0; k<bs2; k++) { buf1[k] = buf2[k]; }
       }
       sindices[starti[j]]             = sp_idx[l];
       sindices[starti[j]+nlengths[j]] = sp_idy[l];
@@ -607,7 +607,6 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   PetscBool      match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   *flg = 0; /* When a message is discovered this is reset to 1 */
   /* Return if no more messages to process */
   if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); }

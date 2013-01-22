@@ -107,8 +107,8 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (hctx->computenormU){ierr =  PetscViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}
-    else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}
+    if (hctx->computenormU) {ierr =  PetscViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}
+    else                    {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
@@ -150,6 +150,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
 static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(ctx->hctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -220,7 +221,6 @@ PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
   MatMFFD_WP     *hctx;
 
   PetscFunctionBegin;
-
   /* allocate my own private data structure */
   ierr               = PetscNewLog(ctx,MatMFFD_WP,&hctx);CHKERRQ(ierr);
   ctx->hctx          = (void*)hctx;

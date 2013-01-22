@@ -47,7 +47,6 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
   PetscInt                i;
 
   PetscFunctionBegin;
-
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(cpu_set_t),&cpuset);CHKERRQ(ierr);
   ptcomm->cpuset = cpuset;
@@ -59,7 +58,7 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
     /* CPU affinity */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     PetscInt j;
-    switch(ptcomm->aff) {
+    switch (ptcomm->aff) {
     case PTHREADAFFPOLICY_ONECORE:
       CPU_ZERO(&cpuset[i]);
       CPU_SET(tcomm->affinities[i]%ncores,&cpuset[i]);
@@ -150,7 +149,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       ptcomm->thread_num_start = 0;
     }
 
-    switch(ptcomm->sync) {
+    switch (ptcomm->sync) {
     case PTHREADSYNC_LOCKFREE:
       ptcomm->initialize      = PetscPThreadCommInitialize_LockFree;
       ptcomm->finalize        = PetscPThreadCommFinalize_LockFree;
@@ -217,9 +216,9 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
     for (i=0; i < tcomm->nworkThreads;i++) {
       for (j=0;j < gtcomm->nworkThreads; j++) {
-	if (tcomm->affinities[i] == gaffinities[j]) {
-	  ptcomm->granks[i] = granks[j];
-	}
+        if (tcomm->affinities[i] == gaffinities[j]) {
+          ptcomm->granks[i] = granks[j];
+        }
       }
     }
   }

@@ -59,7 +59,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
 #if defined (PETSC_USE_CTABLE)
       ierr = PetscTableFind(gid1_lid1,ival+1,&tt);CHKERRQ(ierr);
       if (!tt) {
-	ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = PetscTableAdd(gid1_lid1,ival+1,isz+1,INSERT_VALUES);CHKERRQ(ierr);
         isz++;
       }
 #else
@@ -201,7 +201,7 @@ PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,Pet
   for (i=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    for (j=0; j<len ; ++j){
+    for (j=0; j<len ; ++j) {
       for (k=0; k<bs; k++) nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);

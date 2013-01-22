@@ -66,7 +66,6 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   Mat            AT;
 
   PetscFunctionBegin;
-
   init_SPAI();
 
   if (ispai->sp) {
@@ -679,7 +678,6 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   struct compressed_lines *rows;
 
   PetscFunctionBegin;
-
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
@@ -864,10 +862,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   for (i=0; i<B->mnls[rank]; i++) {
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
-      if ((global_col >= first_diag_col) && (global_col < last_diag_col))
-        d_nnz[i]++;
-      else
-        o_nnz[i]++;
+      if ((global_col >= first_diag_col) && (global_col < last_diag_col)) d_nnz[i]++;
+      else o_nnz[i]++;
     }
   }
 

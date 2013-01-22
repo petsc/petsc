@@ -21,7 +21,7 @@ int main(int argc,char **argv)
       for (k=0; k<p; k++) {
         for (l=0; l<q; l++) {
           xx[i][j][k][l] = cnt++;
-	}
+        }
       }
     }
   }

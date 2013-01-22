@@ -73,7 +73,7 @@ extern PetscErrorCode FormInterpolation(AppCtx *);
 */
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   SNES           snes;
   AppCtx         user;
@@ -88,7 +88,7 @@ int main( int argc, char **argv )
       Initialize PETSc, note that default options in ex11options can be
       overridden at the command line
   */
-  PetscInitialize( &argc, &argv,"ex11options",help );
+  PetscInitialize(&argc, &argv,"ex11options",help);
 
   user.ratio = 2;
   user.coarse.mx = 5; user.coarse.my = 5; user.param = 6.0;
@@ -194,7 +194,7 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,user.fine.x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,user.fine.x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n", its );CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.redundant_build) {
@@ -253,11 +253,11 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - Xs + (j - Ys)*Xm;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtReal( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) );
+      x[row] = temp1*PetscSqrtReal(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
@@ -302,7 +302,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         uxx = (two*u - x[row-1] - x[row+1])*hydhx;
         uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
         f[row] = uxx + uyy - sc*exp(u);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         f[row] = .5*two*(hydhx + hxdhy)*x[row];
       } else {
         f[row] = .25*two*(hydhx + hxdhy)*x[row];
@@ -357,7 +357,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
         ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
@@ -409,7 +409,7 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat 
         v[3] = -hydhx; col[3] = row + 1;
         v[4] = -hxdhy; col[4] = row + mx;
         ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
+      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
         ierr = MatSetValues(jac,1,&row,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
@@ -505,8 +505,8 @@ PetscErrorCode FormInterpolation(AppCtx *user)
                          5,0,3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
-  for ( j=j_start; j<j_start+n; j++ ) {
-    for ( i=i_start; i<i_start+m; i++ ) {
+  for (j=j_start; j<j_start+n; j++) {
+    for (i=i_start; i<i_start+m; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx[m_ghost*(j-j_start_ghost) + (i-i_start_ghost)];
 

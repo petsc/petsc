@@ -13,7 +13,7 @@ PetscBool          CharacteristicRegisterAllCalled = PETSC_FALSE;
 
 PetscErrorCode DMDAGetNeighborsRank(DM, PetscMPIInt []);
 PetscInt       DMDAGetNeighborRelative(DM, PassiveReal, PassiveReal);
-PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar [] );
+PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar []);
 
 PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
 PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
@@ -81,7 +81,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscFunctionBegin;
   PetscValidPointer(c, 2);
   *c = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = CharacteristicInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -215,7 +215,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
 
-  if (!((PetscObject)c)->type_name){
+  if (!((PetscObject)c)->type_name) {
     ierr = CharacteristicSetType(c, CHARACTERISTICDA);CHKERRQ(ierr);
   }
 
@@ -519,7 +519,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     if (1) { /* hacked bounds test...let's do better */
       PetscScalar im = interpIndices[0]; PetscScalar jm = interpIndices[1];
 
-      if (( im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) {
+      if ((im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) {
         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
       }
     }
@@ -768,8 +768,7 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
       queue[root] = queue[maxChild];
       queue[maxChild] = temp;
       root = maxChild;
-    } else
-      done = PETSC_TRUE;
+    } else done = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }

@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc-private/pleximpl.h>    /*I   "petscdmplex.h"   I*/
 
-#ifdef PETSC_HAVE_EXODUSII
+#if defined(PETSC_HAVE_EXODUSII)
 #include<netcdf.h>
 #include<exodusII.h>
 #endif
@@ -108,7 +108,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   if (interpolate) {
     DM idm;
 
-    switch(dim) {
+    switch (dim) {
     case 2:
       ierr = DMPlexInterpolate_2D(*dm, &idm);CHKERRQ(ierr);break;
     case 3:
@@ -140,11 +140,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Get vertex set ids */
     ierr = PetscMalloc(num_vs * sizeof(int), &vs_id);CHKERRQ(ierr);
     ierr = ex_get_node_set_ids(exoid, vs_id);CHKERRQ(ierr);
-    for(vs = 0; vs < num_vs; ++vs) {
+    for (vs = 0; vs < num_vs; ++vs) {
       ierr = ex_get_node_set_param(exoid, vs_id[vs], &num_vertex_in_set, &num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc(num_vertex_in_set * sizeof(int), &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
-      for(v = 0; v < num_vertex_in_set; ++v) {
+      for (v = 0; v < num_vertex_in_set; ++v) {
         ierr = DMPlexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
       ierr = PetscFree(vs_vertex_list);CHKERRQ(ierr);
@@ -194,17 +194,17 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Get side set ids */
     ierr = PetscMalloc(num_fs * sizeof(int), &fs_id);CHKERRQ(ierr);
     ierr = ex_get_side_set_ids(exoid, fs_id);CHKERRQ(ierr);
-    for(fs = 0; fs < num_fs; ++fs) {
+    for (fs = 0; fs < num_fs; ++fs) {
       ierr = ex_get_side_set_param(exoid, fs_id[fs], &num_side_in_set, &num_dist_fact_in_set);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_side_in_set,int,&fs_vertex_count_list,num_side_in_set*4,int,&fs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
-      for(f = 0, voff = 0; f < num_side_in_set; ++f) {
+      for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces    = PETSC_NULL;
         PetscInt        faceSize = fs_vertex_count_list[f], numFaces;
         PetscInt        faceVertices[4], v;
 
         if (faceSize > 4) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "ExodusII side cannot have %d > 4 vertices", faceSize);
-        for(v = 0; v < faceSize; ++v, ++voff) {
+        for (v = 0; v < faceSize; ++v, ++voff) {
           faceVertices[v] = fs_vertex_list[voff]+numCells-1;
         }
         ierr = DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);

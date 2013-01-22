@@ -58,13 +58,13 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
  *          that should be good to about 5% precision.
  */
 
-#ifndef N
+#if !defined(N)
 #   define N  2000000
 #endif
-#ifndef NTIMES
+#if !defined(NTIMES)
 #   define NTIMES       50
 #endif
-#ifndef OFFSET
+#if !defined(OFFSET)
 #   define OFFSET       0
 #endif
 
@@ -91,14 +91,14 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
 
 # define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
+# if !defined(MIN)
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
-# ifndef MAX
+# if !defined(MAX)
 # define MAX(x,y) ((x)>(y)?(x):(y))
 # endif
 
-#ifndef STATIC_ALLOC
+#if !defined(STATIC_ALLOC)
 #  define STATIC_ALLOC 1
 #endif
 
@@ -123,7 +123,7 @@ static double   bytes[4] = {
 double mysecond();
 void checkSTREAMresults();
 
-#ifndef WITH_PTHREADS
+#if !defined(WITH_PTHREADS)
 #  define WITH_PTHREADS 1
 #endif
 
@@ -169,13 +169,13 @@ int main(int argc,char *argv[])
   printf("This system uses %d bytes per DOUBLE PRECISION word.\n",BytesPerWord);
 
   printf(HLINE);
-#ifdef NO_LONG_LONG
+#if defined(NO_LONG_LONG)
   printf("Array size = %d, Offset = %d\n" , N, OFFSET);
 #else
   printf("Array size = %llu, Offset = %d\n", (unsigned long long) N, OFFSET);
 #endif
 
-  printf("Total memory required = %.1f MB.\n",(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
+  printf("Total memory required = %.1f MB.\n",(3.0 * BytesPerWord) * ((double) N / 1048576.0));
   printf("Each test is run %d times, but only\n", NTIMES);
   printf("the *best* time for each is used.\n");
 
@@ -200,7 +200,7 @@ int main(int argc,char *argv[])
     /*printf(HLINE);*/
 
     /* Get initial value for system clock. */
-    if  ( (quantum = checktick()) >= 1)
+    if  ((quantum = checktick()) >= 1)
       ;
       /*      printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
     else {
@@ -218,8 +218,8 @@ int main(int argc,char *argv[])
 #endif
     t = 1.0E6 * (mysecond() - t);
 
-    /*    printf("Each test below will take on the order of %d microseconds.\n", (int) t  );
-    printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+    /*    printf("Each test below will take on the order of %d microseconds.\n", (int) t);
+    printf("   (= %d clock ticks)\n", (int) (t/quantum));
     printf("Increase the size of the arrays if this shows that\n");
     printf("you are not getting at least 20 clock ticks per test.\n");
 
@@ -292,7 +292,8 @@ int main(int argc,char *argv[])
 
 # define        M        20
 
-int checktick() {
+int checktick()
+{
   int           i, minDelta, Delta;
   double        t1, t2, timesfound[M];
 
@@ -300,7 +301,7 @@ int checktick() {
 
   for (i = 0; i < M; i++) {
     t1 = mysecond();
-    while( ((t2=mysecond()) - t1) < 1.0E-6 )
+    while (((t2=mysecond()) - t1) < 1.0E-6)
       ;
     timesfound[i] = t1 = t2;
   }
@@ -313,7 +314,7 @@ int checktick() {
 
     minDelta = 1000000;
     for (i = 1; i < M; i++) {
-      Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+      Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
       minDelta = MIN(minDelta, MAX(Delta,0));
     }
 
@@ -325,16 +326,18 @@ int checktick() {
 
 #include <sys/time.h>
 
-double mysecond() {
+double mysecond()
+{
   struct timeval tp;
   struct timezone tzp;
   int i=0;
 
   i = gettimeofday(&tp,&tzp);
-  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+  return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 
-void checkSTREAMresults () {
+void checkSTREAMresults()
+{
   double aj,bj,cj,scalar;
   double asum,bsum,csum;
   double epsilon;
@@ -366,13 +369,13 @@ void checkSTREAMresults () {
     bsum += b[j];
     csum += c[j];
   }
-#ifdef VERBOSE
+#if defined(VERBOSE)
   printf ("Results Comparison: \n");
   printf ("        Expected  : %f %f %f \n",aj,bj,cj);
   printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
 #endif
 
-#ifndef abs
+#if !defined(abs)
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
   epsilon = 1.e-8;
@@ -415,7 +418,8 @@ void tuned_STREAM_2A()
   PetscThreadsRunKernel(tuned_STREAM_2A_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai = data->a,*bi = data->b, *ci = data->c;
   int         nloc = data->nloc,i=0;
@@ -428,7 +432,8 @@ PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Initialize(double scalar) {
+void tuned_STREAM_Initialize(double scalar)
+{
   PetscInt       Q,R,istart=0,i=0;
   PetscBool      S;
   nWorkThreads = PetscMaxThreads + PetscMainThreadShareWork;
@@ -454,7 +459,8 @@ void tuned_STREAM_Initialize(double scalar) {
   PetscThreadsRunKernel(tuned_STREAM_Initialize_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*ci=data->c;
   int         j=0,nloc=data->nloc;
@@ -464,11 +470,13 @@ PetscErrorCode tuned_STREAM_Copy_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Copy() {
+void tuned_STREAM_Copy()
+{
   PetscThreadsRunKernel(tuned_STREAM_Copy_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      scalar = data->scalar;
   double      *bi=data->b,*ci=data->c;
@@ -479,11 +487,13 @@ PetscErrorCode tuned_STREAM_Scale_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Scale(double scalar) {
+void tuned_STREAM_Scale(double scalar)
+{
   PetscThreadsRunKernel(tuned_STREAM_Scale_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Add_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Add_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*bi=data->b,*ci=data->c;
   int         j=0,nloc=data->nloc;
@@ -494,11 +504,13 @@ PetscErrorCode tuned_STREAM_Add_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Add() {
+void tuned_STREAM_Add()
+{
   PetscThreadsRunKernel(tuned_STREAM_Add_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 
-PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg) {
+PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg)
+{
   Kernel_Data *data = (Kernel_Data*)arg;
   double      *ai=data->a,*bi=data->b,*ci=data->c,scalar=data->scalar;
   int         j=0,nloc=data->nloc;
@@ -509,7 +521,8 @@ PetscErrorCode tuned_STREAM_Triad_Kernel(void* arg) {
   return(0);
 }
 
-void tuned_STREAM_Triad(double scalar) {
+void tuned_STREAM_Triad(double scalar)
+{
   PetscThreadsRunKernel(tuned_STREAM_Triad_Kernel,(void**)pdata,nWorkThreads,ThreadAffinities);
 }
 #endif

@@ -102,12 +102,12 @@ PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
     numPoints = overlap->getNumPoints();
     ierr = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
     ierr = PetscMalloc(numPoints * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
-    for(PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
+    for (PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
       const PetscInt                                                      rank   = overlap->getRank(r);
       const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(rank);
       const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cEnd   = overlap->supportEnd(rank);
 
-      for(PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter, ++i) {
+      for (PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter, ++i) {
         local[i]        = *c_iter;
         remote[i].rank  = rank;
         remote[i].index = c_iter.color();
@@ -137,7 +137,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, PetscSF 
   PetscFunctionBegin;
   ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
   numPoints = rankOffsets[numRanks];
-  for(i = 0; i < numPoints; ++i) {
+  for (i = 0; i < numPoints; ++i) {
     PetscInt dof;
 
     ierr = PetscSectionGetDof(section, localPoints[i], &dof);CHKERRQ(ierr);
@@ -147,19 +147,19 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, PetscSF 
 #if 0
   PetscInt *localOffsets;
   ierr = PetscMalloc2(numPoints,PetscInt,&localOffsets,numPoints,PetscInt,&remoteOffsets);CHKERRQ(ierr);
-  for(i = 0; i < numPoints; ++i) {
+  for (i = 0; i < numPoints; ++i) {
     ierr = PetscSectionGetOffset(section, localPoints[i], &localOffsets[i]);CHKERRQ(ierr);
   }
   ierr = PetscSFBcastBegin(sf, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, localOffsets, remoteOffsets);CHKERRQ(ierr);
-  for(i = 0; i < numPoints; ++i) {
+  for (i = 0; i < numPoints; ++i) {
     ierr = PetscSynchronizedPrintf(((PetscObject) sf)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i]);CHKERRQ(ierr);
   }
 #else
   ierr = PetscMalloc((section->atlasLayout.pEnd - section->atlasLayout.pStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sf, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf, MPIU_INT, &section->atlasOff[-section->atlasLayout.pStart], &remoteOffsets[-section->atlasLayout.pStart]);CHKERRQ(ierr);
-  for(i = section->atlasLayout.pStart; i < section->atlasLayout.pEnd; ++i) {
+  for (i = section->atlasLayout.pStart; i < section->atlasLayout.pEnd; ++i) {
     ierr = PetscSynchronizedPrintf(((PetscObject) sf)->comm, "remoteOffsets[%d]: %d\n", i, remoteOffsets[i-section->atlasLayout.pStart]);CHKERRQ(ierr);
   }
 #endif
@@ -167,17 +167,17 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, PetscSF 
   ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(numIndices * sizeof(PetscSFNode), &remoteIndices);CHKERRQ(ierr);
   /* Create new index graph */
-  for(r = 0, ind = 0; r < numRanks; ++r) {
+  for (r = 0, ind = 0; r < numRanks; ++r) {
     PetscInt rank = ranks[r];
 
-    for(i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
+    for (i = rankOffsets[r]; i < rankOffsets[r+1]; ++i) {
       PetscInt localPoint   = localPoints[i];
       PetscInt remoteOffset = remoteOffsets[localPoint-section->atlasLayout.pStart];
       PetscInt localOffset, dof, d;
 
       ierr = PetscSectionGetOffset(section, localPoint, &localOffset);CHKERRQ(ierr);
       ierr = PetscSectionGetDof(section, localPoint, &dof);CHKERRQ(ierr);
-      for(d = 0; d < dof; ++d, ++ind) {
+      for (d = 0; d < dof; ++d, ++ind) {
         localIndices[ind]        = localOffset+d;
         remoteIndices[ind].rank  = rank;
         remoteIndices[ind].index = remoteOffset+d;

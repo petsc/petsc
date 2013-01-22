@@ -22,7 +22,6 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   PetscReal      fnorm,f1norm,dnorm;
 
   PetscFunctionBegin;
-
   if (A != snes->jacobian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
 
   ierr = PetscPrintf(((PetscObject)snes)->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
@@ -132,6 +131,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 PetscErrorCode SNESDestroy_Test(SNES snes)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -145,7 +145,6 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -160,7 +159,6 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

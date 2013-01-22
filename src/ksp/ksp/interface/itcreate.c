@@ -653,7 +653,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
   *inksp = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

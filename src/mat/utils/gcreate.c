@@ -67,7 +67,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscValidPointer(A,2);
 
   *A = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

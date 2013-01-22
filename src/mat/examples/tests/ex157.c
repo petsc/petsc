@@ -20,28 +20,28 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Complex DFT. Your current data type is real");
-//#endif
+/* #if !defined(PETSC_USE_COMPLEX) */
+/*  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Complex DFT. Your current data type is real"); */
+/* #endif */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
   ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
-//  ierr = VecSet(input,one);CHKERRQ(ierr);
-//  ierr = VecSetValue(input,1,two,INSERT_VALUES);CHKERRQ(ierr);
-//  ierr = VecSetValue(input,2,three,INSERT_VALUES);CHKERRQ(ierr);
-//  ierr = VecSetValue(input,3,three,INSERT_VALUES);CHKERRQ(ierr);
+/*  ierr = VecSet(input,one);CHKERRQ(ierr); */
+/*  ierr = VecSetValue(input,1,two,INSERT_VALUES);CHKERRQ(ierr); */
+/*  ierr = VecSetValue(input,2,three,INSERT_VALUES);CHKERRQ(ierr); */
+/*  ierr = VecSetValue(input,3,three,INSERT_VALUES);CHKERRQ(ierr); */
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-//  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-//  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
+/*  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr); */
+/*  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr); */
   ierr = VecDuplicate(input,&output);
 
   DIM = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
-//  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
-//  ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
+/*  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); */
+/*  ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); */
 
   ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
   printf("The vector size  of input from the main routine is %d\n",vsize);
@@ -67,14 +67,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
 
-//  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-//  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+/*  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+/*  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
-//  if (enorm > 1.e-14){
+/*  if (enorm > 1.e-14) { */
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-//      }
+/*      } */
 
   ierr = VecDestroy(&output);CHKERRQ(ierr);
   ierr = VecDestroy(&input);CHKERRQ(ierr);

@@ -1,7 +1,7 @@
 
 #include <petscsys.h> /*I "petscsys.h" I*/
 
-#ifdef PETSC_HAVE_SSE
+#if defined(PETSC_HAVE_SSE)
 
 #include PETSC_HAVE_SSE
 #define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
@@ -47,7 +47,8 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
 
-static void PetscSSEDisabledHandler(int sig) {
+static void PetscSSEDisabledHandler(int sig)
+{
   signal(SIGILL,SIG_IGN);
   exit(-1);
 }

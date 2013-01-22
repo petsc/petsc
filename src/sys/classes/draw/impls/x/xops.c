@@ -406,22 +406,16 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   XMaskEvent(win->disp,ButtonReleaseMask,&report);
   switch (report.xbutton.button) {
     case Button1:
-      if (report.xbutton.state & ShiftMask)
-        *button = PETSC_BUTTON_LEFT_SHIFT;
-      else
-        *button = PETSC_BUTTON_LEFT;
+      if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_LEFT_SHIFT;
+      else                                  *button = PETSC_BUTTON_LEFT;
       break;
     case Button2:
-      if (report.xbutton.state & ShiftMask)
-        *button = PETSC_BUTTON_CENTER_SHIFT;
-      else
-        *button = PETSC_BUTTON_CENTER;
+      if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_CENTER_SHIFT;
+      else                                  *button = PETSC_BUTTON_CENTER;
       break;
     case Button3:
-      if (report.xbutton.state & ShiftMask)
-        *button = PETSC_BUTTON_RIGHT_SHIFT;
-      else
-        *button = PETSC_BUTTON_RIGHT;
+      if (report.xbutton.state & ShiftMask) *button = PETSC_BUTTON_RIGHT_SHIFT;
+      else                                  *button = PETSC_BUTTON_RIGHT;
       break;
   }
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);
@@ -626,7 +620,7 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                  PetscDrawGetMouseButton_X,
                                  PetscDrawPause_X,
                                  PetscDrawSynchronizedClear_X,
-				 0,
+                                 0,
                                  0,
                                  PetscDrawGetPopup_X,
                                  PetscDrawSetTitle_X,
@@ -660,7 +654,6 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   PetscDraw_X *Xwin = (PetscDraw_X*)draw->data,*sXwin;
 
   PetscFunctionBegin;
-
   ierr = PetscDrawCreate(PETSC_COMM_SELF,draw->display,draw->title,draw->x,draw->y,draw->w,draw->h,sdraw);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*sdraw,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);

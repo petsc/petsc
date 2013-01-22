@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file1",FILE_MODE_WRITE,&view1);CHKERRQ(ierr);
   /* Begin time loop */
-  while(t < user.T) {
+  while (t < user.T) {
     ierr = VecView(user.u1,view1);CHKERRQ(ierr);
     ierr = VecView(user.u2,view1);CHKERRQ(ierr);
     ierr = VecView(user.u3,view1);CHKERRQ(ierr);
@@ -175,18 +175,18 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
   PetscErrorCode ierr;
   PetscScalar    *q_arr,*w_arr;
   PetscInt       i,n;
-  //PetscViewer    view_q;
+  /*PetscViewer    view_q;*/
 
   PetscFunctionBeginUser;
   ierr = VecSet(user->work1,user->dt/3);CHKERRQ(ierr);
-  //    ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*    ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = MatMult(M_0,user->work1,user->work2);CHKERRQ(ierr);
-  //    ierr = VecView(user->work2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*    ierr = VecView(user->work2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   ierr = MatMult(M_0,u1,user->work1);CHKERRQ(ierr);
   ierr = MatMult(M_0,u1,user->work4);CHKERRQ(ierr);
-  //    ierr = VecView(u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //    ierr = VecView(user->work4,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*    ierr = VecView(u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  /*    ierr = VecView(user->work4,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = VecScale(user->work1,-1.0-(user->dt));CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,1.0,user->work2);CHKERRQ(ierr);
 
@@ -269,19 +269,19 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
                 PetscInt r;
                 for (r=0;r<3;r++) {
                         valsrand[r]=5*x[r]*(1-x[r])*y[r]*(1-y[r]);
-                        if (x[r]>=0.5 && y[r]>=0.5){
+                        if (x[r]>=0.5 && y[r]>=0.5) {
                                 vals1[r]=0.75;
                                 vals2[r]=0.0;
                         }
-                        if (x[r]>=0.5 && y[r]<0.5){
+                        if (x[r]>=0.5 && y[r]<0.5) {
                                 vals1[r]=0.0;
                                 vals2[r]=0.0;
                         }
-                        if (x[r]<0.5 && y[r]>=0.5){
+                        if (x[r]<0.5 && y[r]>=0.5) {
                                 vals1[r]=0.0;
                                 vals2[r]=0.75;
                         }
-                        if (x[r]<0.5 && y[r]<0.5){
+                        if (x[r]<0.5 && y[r]<0.5) {
                                 vals1[r]=0.75;
                                 vals2[r]=0.0;
                         }
@@ -311,7 +311,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
                 if (xx[4*i+1]>1) {
                         xx[4*i+1]=1;
                 }
-                if (xx[4*i]+xx[4*i+1]>1){
+                if (xx[4*i]+xx[4*i+1]>1) {
                         xx[4*i+1] = 1.0 - xx[4*i];
                 }
                 xx[4*i+2] = 1.0 - xx[4*i] - xx[4*i+1];
@@ -521,8 +521,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         cols[2] = 4*idx[2]+2;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_odd[r][2];
         /* Insert values in matrix M for 3nd dof */
         ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-      }
-      else{
+      } else {
         row = 4*idx[r];
         cols[0] = 4*idx[0];     vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
         cols[1] = 4*idx[1];     vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];

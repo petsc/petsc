@@ -1,7 +1,7 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscdmplex.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmplexdistribute_          DMPLEXDISTRIBUTE
 #define dmplexhaslabel_            DMPLEXHASLABEL
 #define dmplexgetlabelvalue_       DMPLEXGETLABELVALUE
@@ -24,7 +24,8 @@
 /* Definitions of Fortran Wrapper routines */
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, DM *dmParallel, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, DM *dmParallel, int *ierr PETSC_END_LEN(lenN))
+{
   char *partitioner;
 
   FIXCHAR(name, lenN, partitioner);
@@ -32,7 +33,8 @@ void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), Pe
   FREECHAR(name, partitioner);
 }
 
-void PETSC_STDCALL dmplexhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscBool *hasLabel, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscBool *hasLabel, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);
@@ -40,7 +42,8 @@ void PETSC_STDCALL dmplexhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), Pets
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);
@@ -48,7 +51,8 @@ void PETSC_STDCALL dmplexgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN),
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);
@@ -56,7 +60,8 @@ void PETSC_STDCALL dmplexsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN),
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);
@@ -64,7 +69,8 @@ void PETSC_STDCALL dmplexgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), 
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);
@@ -72,7 +78,8 @@ void PETSC_STDCALL dmplexgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), 
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);
@@ -80,7 +87,8 @@ void PETSC_STDCALL dmplexgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN)
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmplexgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
+{
   char *lname;
 
   FIXCHAR(name, lenN, lname);

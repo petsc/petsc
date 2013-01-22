@@ -111,7 +111,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
   ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecTDot_kernel,xin,yin,red);CHKERRQ(ierr);
   ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
-  if(xin->map->n > 0) {
+  if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -166,9 +166,9 @@ PetscErrorCode VecScale_Seq(Vec xin,PetscScalar alpha)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(alpha == (PetscScalar)0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
-  } else if(alpha != (PetscScalar)1.0) {
+  } else if (alpha != (PetscScalar)1.0) {
     PetscScalar *scalar;
     ierr = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     *scalar = alpha;
@@ -274,12 +274,12 @@ PetscErrorCode VecAXPBY_kernel(PetscInt thread_id,Vec yin,PetscScalar *alpha_p,P
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
 
-  if(b == (PetscScalar)0.0) {
-    for(i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
+  if (b == (PetscScalar)0.0) {
+    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
       yy[i] = a*xx[i];
     }
   } else {
-    for(i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
+    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
   }
@@ -367,20 +367,20 @@ PetscErrorCode VecAXPBYPCZ_kernel(PetscInt thread_id,Vec zin,PetscScalar *alpha_
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
   ierr = VecGetArray(zin,&zz);CHKERRQ(ierr);
 
-  if(alpha == (PetscScalar)1.0) {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
+  if (alpha == (PetscScalar)1.0) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
     }
   } else if (gamma == (PetscScalar)1.0) {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
     }
-  } else if(gamma == (PetscScalar)0.0) {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+  } else if (gamma == (PetscScalar)0.0) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i];
     }
   } else {
-    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
     }
   }

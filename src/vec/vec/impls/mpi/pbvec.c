@@ -140,7 +140,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecNorm_Seq,
             VecMDot_Seq,
             VecMTDot_Seq,
-	    VecLoad_Default,			
+            VecLoad_Default,
             VecReciprocal_Default,
             VecConjugate_Seq,
             0,
@@ -151,15 +151,15 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
-  	    VecGetValues_MPI,
-    	    0,
-    	    0,
-    	    0,
-    	    0,
-    	    0,
-    	    0,
-   	    VecStrideGather_Default,
-   	    VecStrideScatter_Default
+            VecGetValues_MPI,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            VecStrideGather_Default,
+            VecStrideScatter_Default
 };
 
 #undef __FUNCT__
@@ -178,7 +178,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr           = PetscNewLog(v,Vec_MPI,&s);CHKERRQ(ierr);
   v->data        = (void*)s;
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);

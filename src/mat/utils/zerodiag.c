@@ -93,9 +93,9 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
           Look for a later column we can swap with this one
       */
       for (k=0; k<nz; k++) {
-	if (icol[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
+        if (icol[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
           /* found a suitable later column */
-	  repl  = icol[j[k]];
+          repl  = icol[j[k]];
           SWAP(icol[col[prow]],icol[col[repl]]);
           SWAP(col[prow],col[repl]);
           goto found;
@@ -103,8 +103,8 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
       }
       /*
            Did not find a suitable later column so look for an earlier column
-	   We need to be sure that we don't introduce a zero in a previous
-	   diagonal
+           We need to be sure that we don't introduce a zero in a previous
+           diagonal
       */
       for (k=0; k<nz; k++) {
         if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
@@ -117,7 +117,7 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
               SWAP(icol[col[prow]],icol[col[repl]]);
               SWAP(col[prow],col[repl]);
               goto found;
-	    }
+            }
           }
           ierr = MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
         }

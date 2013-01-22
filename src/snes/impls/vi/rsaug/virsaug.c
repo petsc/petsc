@@ -186,7 +186,7 @@ PetscErrorCode  DMCoarsen_SNESVIRSAUG(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = ISGetIndices(dmsnesvi1->inactive,&index);CHKERRQ(ierr);
   ierr = ISGetLocalSize(dmsnesvi1->inactive,&n);CHKERRQ(ierr);
   ierr = VecSet(finemarked,0.0);CHKERRQ(ierr);
-  for (k=0;k<n;k++){
+  for (k=0;k<n;k++) {
       ierr = VecSetValue(finemarked,index[k],1.0,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(finemarked);CHKERRQ(ierr);
@@ -575,7 +575,6 @@ PetscErrorCode SNESVIRSAUGComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,M
   PetscInt       i,nlocal;
 
   PetscFunctionBegin;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(vi->xl,&l);CHKERRQ(ierr);
@@ -632,7 +631,7 @@ PetscErrorCode SNESVIRSAUGComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,M
    jac = Da + Db*jacfun
    where Db is the row scaling matrix stored as a vector,
          Da is the diagonal perturbation matrix stored as a vector
-   and   jacfun is the jacobian of the original nonlinear function.	
+   and   jacfun is the jacobian of the original nonlinear function.        
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIRSAUGComputeJacobian"
@@ -792,12 +791,12 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
-  W		= snes->work[2];
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->work[0];        /* work vectors */
+  G             = snes->work[1];
+  W             = snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -814,7 +813,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
    /* Compute Merit function */
   ierr = SNESVIRSAUGComputeMeritFunction(vi->phi,&vi->merit,&vi->phinorm);CHKERRQ(ierr);
 
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
@@ -869,7 +868,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
       ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */
@@ -889,7 +888,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     }
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
-	PetscBool ismin;
+        PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESVIRSAUGCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
@@ -1105,12 +1104,12 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
-  W		= snes->work[2];
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->work[0];        /* work vectors */
+  G             = snes->work[1];
+  W             = snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -1124,7 +1123,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     PetscFunctionReturn(0);
   }
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
@@ -1167,7 +1166,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
     if (vi->checkredundancy) {
       (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);CHKERRQ(ierr);
-      if (IS_redact){
+      if (IS_redact) {
         ierr = ISSort(IS_redact);CHKERRQ(ierr);
         ierr = ISComplement(IS_redact,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
@@ -1333,7 +1332,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */
@@ -1353,7 +1352,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     }
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
-	PetscBool ismin;
+        PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESVIRSAUGCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
@@ -1485,12 +1484,12 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
-  G		= snes->work[1];
-  W		= snes->work[2];
+  maxits        = snes->max_its;        /* maximum number of iterations */
+  X             = snes->vec_sol;        /* solution vector */
+  F             = snes->vec_func;       /* residual vector */
+  Y             = snes->work[0];        /* work vectors */
+  G             = snes->work[1];
+  W             = snes->work[2];
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -1504,7 +1503,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     PetscFunctionReturn(0);
   }
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
@@ -1548,30 +1547,30 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
       IS_redact  = PETSC_NULL;
       if (vi->checkredundancy) {
-	(*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
+        (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
       }
 
       if (!IS_redact) {
-	/* User called checkredundancy function but didn't create IS_redact because
+        /* User called checkredundancy function but didn't create IS_redact because
            there were no redundant active set variables */
-	/* Copy over all active set indices to the list */
-	ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
-	for (k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
-	nkept = nis_act;
+        /* Copy over all active set indices to the list */
+        ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
+        for (k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
+        nkept = nis_act;
       } else {
-	ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
-	ierr = PetscMalloc((nis_act-nis_redact)*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
+        ierr = PetscMalloc((nis_act-nis_redact)*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
 
-	/* Create reduced active set list */
-	ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
-	ierr = ISGetIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
-	j1 = 0;nkept = 0;
-	for (k=0;k<nis_act;k++) {
-	  if (j1 < nis_redact && idx_act[k] == idx_redact[j1]) j1++;
-	  else idx_actkept[nkept++] = idx_act[k];
-	}
-	ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
-	ierr = ISRestoreIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
+        /* Create reduced active set list */
+        ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
+        ierr = ISGetIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
+        j1 = 0;nkept = 0;
+        for (k=0;k<nis_act;k++) {
+          if (j1 < nis_redact && idx_act[k] == idx_redact[j1]) j1++;
+          else idx_actkept[nkept++] = idx_act[k];
+        }
+        ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
 
         ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
       }
@@ -1622,16 +1621,16 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
 
       /* Set the original jacobian matrix in J_aug */
       for (row=0;row<snes->jacobian->rmap->n;row++) {
-	ierr = MatGetRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-	ierr = MatSetValues(J_aug,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-	ierr = MatRestoreRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+        ierr = MatGetRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+        ierr = MatSetValues(J_aug,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
       }
       /* Add the augmented part */
       for (k=0;k<nkept;k++) {
-	row = snes->jacobian->rmap->n+k;
-	col[0] = idx_actkept[k]; col[1] = snes->jacobian->rmap->n+k;
-	ierr = MatSetValues(J_aug,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-	ierr = MatSetValues(J_aug,1,&col[0],1,&row,&value[0],INSERT_VALUES);CHKERRQ(ierr);
+        row = snes->jacobian->rmap->n+k;
+        col[0] = idx_actkept[k]; col[1] = snes->jacobian->rmap->n+k;
+        ierr = MatSetValues(J_aug,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(J_aug,1,&col[0],1,&row,&value[0],INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = MatAssemblyBegin(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1696,8 +1695,8 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       /* Copy over inactive Y_aug to Y */
       j1 = 0;
       for (i1=Y->map->rstart;i1 < Y->map->rend;i1++) {
-	if (j1 < nkept && idx_actkept[j1] == i1) j1++;
-	else y1[i1-Y->map->rstart] = y2[i1-Y->map->rstart];
+        if (j1 < nkept && idx_actkept[j1] == i1) j1++;
+        else y1[i1-Y->map->rstart] = y2[i1-Y->map->rstart];
       }
       ierr = VecRestoreArray(Y,&y1);CHKERRQ(ierr);
       ierr = VecRestoreArray(Y_aug,&y2);CHKERRQ(ierr);
@@ -1707,7 +1706,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       ierr = MatDestroy(&J_aug);CHKERRQ(ierr);
       ierr = PetscFree(idx_actkept);CHKERRQ(ierr);
     }
-	
+        
     if (!isequal) {
       ierr = ISDestroy(&vi->IS_inact_prev);CHKERRQ(ierr);
       ierr = ISDuplicate(IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
@@ -1723,7 +1722,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */
@@ -1742,7 +1741,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     }
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
-	PetscBool ismin;
+        PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
         ierr = SNESVIRSAUGCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
@@ -1797,7 +1796,6 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
   if (vi->computevariablebounds) {
@@ -1875,7 +1873,6 @@ PetscErrorCode SNESDestroy_VIRSAUG(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (snes->ops->solve == SNESSolveVI_SS) {
     /* clear vectors */
     ierr = VecDestroy(&vi->dpsi);CHKERRQ(ierr);
@@ -2005,7 +2002,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
     *flag  = PETSC_FALSE;
     goto theend1;
   }
-  if (*ynorm > snes->maxstep) {	/* Step too big, so scale back */
+  if (*ynorm > snes->maxstep) {        /* Step too big, so scale back */
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: Scaling step by %g old ynorm %g\n",(double)(snes->maxstep/(*ynorm)),(double)(*ynorm));CHKERRQ(ierr);
@@ -2041,7 +2038,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
   }
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo4(snes,"Initial fnorm %g gnorm %g alpha %g initslope %g\n",(double)fnorm,(double)*gnorm,(double)snes->ls_alpha,(double)initslope);CHKERRQ(ierr);
-  if ((*gnorm)*(*gnorm) <= (1.0 - snes->ls_alpha)*fnorm*fnorm ) { /* Sufficient reduction */
+  if ((*gnorm)*(*gnorm) <= (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* Sufficient reduction */
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: Using full step: fnorm %g gnorm %g\n",(double)fnorm,(double)(*gnorm));CHKERRQ(ierr);
@@ -2083,7 +2080,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
     ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: gnorm after quadratic fit %g\n",(double)(*gnorm));CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
-  if ((*gnorm)*(*gnorm) < (1.0 - snes->ls_alpha)*fnorm*fnorm ) { /* sufficient reduction */
+  if ((*gnorm)*(*gnorm) < (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* sufficient reduction */
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",(double)lambda);CHKERRQ(ierr);
@@ -2098,8 +2095,8 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
     if (lambda <= minlambda) {
       if (snes->ls_monitor) {
         ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
- 	ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)(*gnorm),(double)(*ynorm),(double)minlambda,(double)lambda,(double)initslope);CHKERRQ(ierr);
+         ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)(*gnorm),(double)(*ynorm),(double)minlambda,(double)lambda,(double)initslope);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       }
       *flag = PETSC_FALSE;
@@ -2143,7 +2140,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if ((*gnorm)*(*gnorm) < (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* is reduction enough? */
       if (snes->ls_monitor) {
-	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %g lambda=%18.16e\n",(double)(*gnorm),(double)lambda);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %g lambda=%18.16e\n",(double)(*gnorm),(double)lambda);CHKERRQ(ierr);
       }
       break;
     } else {
@@ -2216,7 +2213,7 @@ PetscErrorCode SNESLineSearchQuadratic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f
     *flag  = PETSC_FALSE;
     goto theend2;
   }
-  if (*ynorm > snes->maxstep) {	/* Step too big, so scale back */
+  if (*ynorm > snes->maxstep) {        /* Step too big, so scale back */
     ierr   = VecScale(y,snes->maxstep/(*ynorm));CHKERRQ(ierr);
     *ynorm = snes->maxstep;
   }
@@ -2468,8 +2465,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  SNESLineSearchSetType_VIRSAUG(SNES snes, SNESLineSearchType type)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
-
   switch (type) {
   case SNES_LS_BASIC:
     ierr = SNESLineSearchSet(snes,SNESLineSearchNo_VIRSAUG,PETSC_NULL);CHKERRQ(ierr);

@@ -497,7 +497,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
       pm1 = p-1;
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKsterf_(&pm1,&glldata->zGL[1],M,&lierr);
-      if ( lierr ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
+      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = PetscFree(M);CHKERRQ(ierr);
     }
@@ -885,7 +885,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   }
 
   /* Pass null space information to BDDC (don't pass it via MatSetNullSpace!) */
-  if(dd.pure_neumann) {
+  if (dd.pure_neumann) {
     MatNullSpace nsp;
     ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,PETSC_NULL,&nsp);CHKERRQ(ierr);
     ierr = PCBDDCSetNullSpace(pc,nsp);CHKERRQ(ierr);
@@ -968,14 +968,14 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
     if (nprocs!=dd->npx*dd->npy) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 2D must be equal to npx*npy");
     }
-    if (dd->nex<dd->npx || dd->ney<dd->npy ) {
+    if (dd->nex<dd->npx || dd->ney<dd->npy) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
     }
   } else {
     if (nprocs!=dd->npx*dd->npy*dd->npz) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 3D must be equal to npx*npy*npz");
     }
-    if (dd->nex<dd->npx || dd->ney<dd->npy || dd->nez<dd->npz ) {
+    if (dd->nex<dd->npx || dd->ney<dd->npy || dd->nez<dd->npz) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
     }
   }

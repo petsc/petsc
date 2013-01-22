@@ -111,7 +111,7 @@ int main(int argc,char **args)
     flg = PETSC_FALSE;
     ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    if (flg){ /* rhs is stored in a separate file */
+    if (flg) { /* rhs is stored in a separate file */
       if (file[2][0] == '0') {
         PetscInt    m;
         PetscScalar one = 1.0;
@@ -147,7 +147,7 @@ int main(int argc,char **args)
       ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
       ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PetscOptionsGetBool(PETSC_NULL, "-set_row_zero", &flg1,PETSC_NULL);CHKERRQ(ierr);
-      if (flg1){ /* set entire row as zero */
+      if (flg1) { /* set entire row as zero */
         ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
       } else { /* only set (row,row) entry as zero */
         ierr = MatSetValues(A,1,&row,1,&row,zeros,INSERT_VALUES);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ int main(int argc,char **args)
       ierr = VecDestroy(&min);CHKERRQ(ierr);
     }
 
-    //  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /*  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -276,7 +276,7 @@ int main(int argc,char **args)
     ierr = KSPSetInitialGuessNonzero(ksp,initialguess);CHKERRQ(ierr);
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
-    while ( num_numfac-- ){
+    while (num_numfac--) {
       PetscBool  lsqr;
       char       str[32];
       ierr = PetscOptionsGetString(PETSC_NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
@@ -320,12 +320,12 @@ int main(int argc,char **args)
         ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
         cknorm = PETSC_FALSE;
         ierr = PetscOptionsGetBool(PETSC_NULL,"-cknorm",&cknorm,PETSC_NULL);CHKERRQ(ierr);
-        while ( num_rhs-- ) {
+        while (num_rhs--) {
           if (num_rhs == 1) VecSet(x,0.0);
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-        if (cknorm){   /* Check error for each rhs */
+        if (cknorm) {   /* Check error for each rhs */
           if (trans) {
             ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
           } else {
@@ -340,7 +340,7 @@ int main(int argc,char **args)
             ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",norm);CHKERRQ(ierr);
           }
         }
-      } /* while ( num_rhs-- ) */
+      } /* while (num_rhs--) */
       ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
       tsolve = tsolve2 - tsolve1;
 
@@ -414,13 +414,13 @@ int main(int argc,char **args)
 
       flg  = PETSC_FALSE;
       ierr = PetscOptionsGetBool(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
-      if (flg){
+      if (flg) {
         KSPConvergedReason reason;
         ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
         PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);
       }
 
-    } /* while ( num_numfac-- ) */
+    } /* while (num_numfac--) */
 
     /*
        Free work space.  All PETSc objects should be destroyed when they

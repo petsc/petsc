@@ -2,7 +2,7 @@
    Private context for Richardson iteration
 */
 
-#ifndef __SNES_NCG_H
+#if !defined(__SNES_NCG_H)
 #define __SNES_NCG_H
 #include <petsc-private/snesimpl.h>
 #include <petsc-private/linesearchimpl.h>

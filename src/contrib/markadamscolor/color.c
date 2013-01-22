@@ -57,164 +57,160 @@ typedef enum NdStTAG{SELECTED=0,DELETED,UNKNOWN}NodeState;
  *  RETURN:
  *     - PETSc error code
  */
-int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
+int NUMR_GRID::ColorVertices(const int tag, int &ncolors)
 {
   int ierr,todo,ii,xx,color,todo2,receive,doit,proc,*pb,ndone,jj,proctodo,its;
   int rbuf[6],sbuf[6]
   MPI_Status status;
-  TABLE      gid_ghost( 2*(nNodes - nLocalNd)+17 ); // number of ghosts+
+  TABLE      gid_ghost(2*(nNodes - nLocalNd)+17); /* number of ghosts+ */
   TABLE_INT  procTable, doneProcs, sentdoneProcs;
   TableiPos  ipos;
 
-  // clear, make gid_ghost and procTable
-  for( xx = 0 ; xx < nNodes ; xx++ ){           // "nodes" = [locals,ghosts]
-    NUMR_NODE *curr = &nodes[xx];               // nLocalNd <= nNodes
-    assert(curr->color()==0);    //curr->setColor(0);
-    if( curr->IsGhost() ){                      // |ghosts| = nNodes-nLocalNd
-      gid_ghost.Add( curr, curr->index.global()+1 );
-      proc = curr->GetProc();                   // need processors
-      procTable.Add( proc + 1 );                // tables are 1 bases!!!!
+  /* clear, make gid_ghost and procTable */
+  for (xx = 0 ; xx < nNodes ; xx++) {           /* "nodes" = [locals,ghosts] */
+    NUMR_NODE *curr = &nodes[xx];               /* nLocalNd <= nNodes */
+    assert(curr->color()==0);                   /* curr->setColor(0); */
+    if (curr->IsGhost()) {                      /* |ghosts| = nNodes-nLocalNd */
+      gid_ghost.Add(curr, curr->index.global()+1);
+      proc = curr->GetProc();                   /* need processors */
+      procTable.Add(proc + 1);                /* tables are 1 bases!!!! */
 
-    }
-    else assert(xx < nLocalNd);
+    } else assert(xx < nLocalNd);
   }
 
-  // colors
+  /* colors */
   proctodo = procTable.GetCount();
-  for( todo = nLocalNd, color = 1 ; todo || proctodo ; color++ ) {
-    // clear
-    for( xx = 0, todo2 = 0 ; xx < nNodes ; xx++ ) {
+  for (todo = nLocalNd, color = 1 ; todo || proctodo ; color++) {
+    /* clear */
+    for (xx = 0, todo2 = 0 ; xx < nNodes ; xx++) {
       NUMR_NODE *curr = &nodes[xx];
-      if( curr->color() == 0 ){
+      if (curr->color() == 0) {
         curr->SetState(UNKNOWN);
         curr->Mark(FALSE);
-        if( xx < nLocalNd ) todo2++;
+        if (xx < nLocalNd) todo2++;
       }
     }
-    // MIS, ignore colored (SELECTED) nodes
-    for( its = 0 ; todo2 ; its++ ){
-      // one MIS iteration
-      for( xx = 0, ndone = 0 ; xx < nLocalNd ; xx++ ) {
+    /* MIS, ignore colored (SELECTED) nodes */
+    for (its = 0 ; todo2 ; its++) {
+      /* one MIS iteration */
+      for (xx = 0, ndone = 0 ; xx < nLocalNd ; xx++) {
         NUMR_NODE *curr = &nodes[xx];
-        if( curr->GetState() == UNKNOWN ) {
-          // check for selectable
-          for( jj = 0, doit = TRUE; jj < curr->NumAdjac() && doit ; jj++ ) {
+        if (curr->GetState() == UNKNOWN) {
+          /* check for selectable */
+          for (jj = 0, doit = TRUE; jj < curr->NumAdjac() && doit ; jj++) {
             ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
             NUMR_NODE *curr2 = &nodes[ii];
-            if( curr2->GetState() == SELECTED && curr2->color() == color ) {
-              doit = FALSE; // selected on this round
+            if (curr2->GetState() == SELECTED && curr2->color() == color) {
+              doit = FALSE; /* selected on this round */
               curr->SetState(DELETED);  assert(curr2->IsGhost());
               todo2--;
-            }
-            else if( curr2->IsGhost() && curr2->GetState() == UNKNOWN ) {
-              if( curr2->GetProc() > myproc ) doit = FALSE;
+            } else if (curr2->IsGhost() && curr2->GetState() == UNKNOWN) {
+              if (curr2->GetProc() > myproc) doit = FALSE;
             }
           }
-          if( doit ) { // select
+          if (doit) { /* select */
             curr->SetState(SELECTED);
-            curr->setColor(color); todo--; assert( todo >= 0 );
-            todo2--;                       assert( todo2 >= 0 );
-            for( jj = 0; jj < curr->NumAdjac() ; jj++ ) { // delete
+            curr->setColor(color); todo--; assert(todo >= 0);
+            todo2--;                       assert(todo2 >= 0);
+            for (jj = 0; jj < curr->NumAdjac() ; jj++) { /* delete */
               ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
               NUMR_NODE *curr2 = &nodes[ii];
-              if( curr2->IsGhost() && curr2->GetState() != SELECTED ){
+              if (curr2->IsGhost() && curr2->GetState() != SELECTED) {
                 proc = curr2->GetProc();
                 pb = sbuf; *pb++ = SELECTED; *pb++ = curr2->index.global();
                 *pb++ = curr->index.global(); *pb++ = color;
-                // send(tag+color) < SELECTED, gid_DEL_gh, gid_SEL_loc, color >
+                /* send(tag+color) < SELECTED, gid_DEL_gh, gid_SEL_loc, color > */
                 MPI_Send(sbuf,pb-sbuf,MPI_INT, proc, tag+color,Comm);
-                if( curr2->GetState() == UNKNOWN ) curr2->SetState(DELETED);
+                if (curr2->GetState() == UNKNOWN) curr2->SetState(DELETED);
               }
-              if( curr2->GetState() == UNKNOWN ) {
+              if (curr2->GetState() == UNKNOWN) {
                 curr2->SetState(DELETED);
-                if( !curr2->IsGhost() ) todo2--; assert( todo2 >= 0 );
+                if (!curr2->IsGhost()) todo2--; assert(todo2 >= 0);
               }        
             }
           }
         }
       }
-      // receive(tag)
+      /* receive(tag) */
       do{
         ipos = procTable.GetHeadPosition();
-        while( ipos ) {
-          proc = procTable.GetNext( ipos ) - 1;  // one based table!!!
+        while (ipos) {
+          proc = procTable.GetNext(ipos) - 1;  /* one based table!!! */
           do{
-            MPI_Iprobe( proc, tag+color, Comm, &receive, &status );
-            MPI_Get_count( &status, MPI_INT, &ii );
-            if( receive && ii > 1 ){
-              // recv(tag+color) <SEL,gid_DEL,gid2_SEL,color>|<DELETED,gid_gh>
+            MPI_Iprobe(proc, tag+color, Comm, &receive, &status);
+            MPI_Get_count(&status, MPI_INT, &ii);
+            if (receive && ii > 1) {
+              /* recv(tag+color) <SEL,gid_DEL,gid2_SEL,color>|<DELETED,gid_gh> */
               ierr =  receiveState(gid_ghost,ndone,todo2,tag+color,proc,Comm);
               CHKERRQ(ierr);
-            }
-            else if( receive && ii == 1 ) break; // capper, will recv latter
-          }while( receive && todo2 );
+            } else if (receive && ii == 1) break; /* capper, will recv latter */
+          } while (receive && todo2);
         }
-      }while( ndone == 0 && todo2 );
+      } while (ndone == 0 && todo2);
 
-      // send DELETED bound
-      for(  xx = 0 ; xx < nLocalNd ; xx++ ) {
+      /* send DELETED bound */
+      for (xx = 0 ; xx < nLocalNd ; xx++) {
         NUMR_NODE *curr = &nodes[xx];
-        if( curr->GetState() == DELETED && !curr->IsMarked() ) {
+        if (curr->GetState() == DELETED && !curr->IsMarked()) {
           curr->Mark();
-          for( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
+          for (jj = 0; jj < curr->NumAdjac() ; jj++) {
             ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
             NUMR_NODE *curr2 = &nodes[ii];
-            if( curr2->IsGhost() && curr2->GetState() != SELECTED ){
+            if (curr2->IsGhost() && curr2->GetState() != SELECTED) {
               proc = curr2->GetProc();
               pb = sbuf; *pb++ = DELETED; *pb++ = curr->index.global();
-              // send(tag+color) < DELETED, gid_loc >
-              MPI_Send( sbuf, pb-sbuf, MPI_INT, proc, tag+color, Comm);
+              /* send(tag+color) < DELETED, gid_loc > */
+              MPI_Send(sbuf, pb-sbuf, MPI_INT, proc, tag+color, Comm);
             }
           }
         }
       }
     }
 
-    // send capper
+    /* send capper */
     ipos = procTable.GetHeadPosition();
-    while( ipos ) {
+    while (ipos) {
       proc = procTable.GetNext(ipos) - 1; assert(proc>=0);
-      if( todo != 0 || sentdoneProcs.Add(proc+1) ) {
-        MPI_Send( &todo, 1, MPI_INT, proc, tag+color, Comm );
+      if (todo != 0 || sentdoneProcs.Add(proc+1)) {
+        MPI_Send(&todo, 1, MPI_INT, proc, tag+color, Comm);
       }
     }
-    // receive(tag) for ghosts, and capper
+    /* receive(tag) for ghosts, and capper */
     ipos = procTable.GetHeadPosition();
-    while( ipos ) {
-      proc = procTable.GetNext( ipos ) - 1;
-      if( doneProcs.Find(proc+1) ) continue;
-      while(1){
-        MPI_Probe( proc, tag+color, Comm, &status );
-        MPI_Get_count( &status, MPI_INT, &ii );
-        if( ii > 1 ){
-          // recv(tag) <SEL,gid_DEL_loc,gid2_SEL_gh,color> or <DELETED,gid_gh>
+    while (ipos) {
+      proc = procTable.GetNext(ipos) - 1;
+      if (doneProcs.Find(proc+1)) continue;
+      while (1) {
+        MPI_Probe(proc, tag+color, Comm, &status);
+        MPI_Get_count(&status, MPI_INT, &ii);
+        if (ii > 1) {
+          /* recv(tag) <SEL,gid_DEL_loc,gid2_SEL_gh,color> or <DELETED,gid_gh> */
           ierr =  receiveState(gid_ghost,ndone,todo2,tag+color,proc,Comm);
           CHKERRQ(ierr);
-        }
-        else if( ii == 1 ){
-          MPI_Recv( &jj, 1, MPI_INT, proc, tag+color, Comm, &status );
-          if( jj == 0 ) {
+        } else if (ii == 1) {
+          MPI_Recv(&jj, 1, MPI_INT, proc, tag+color, Comm, &status);
+          if (jj == 0) {
             int add = doneProcs.Add(proc+1); assert(add); proctodo--;
           }
-          break; // done with this proc
+          break; /* done with this proc */
         }
       }
     }
   }
 
-  // get max color and clear marks (optional)
-  for( xx = 0, color = 0 ; xx < nLocalNd ; xx++ ) {
+  /* get max color and clear marks (optional) */
+  for (xx = 0, color = 0 ; xx < nLocalNd ; xx++) {
     NUMR_NODE *curr = &nodes[xx]; curr->Mark(FALSE);
     assert(curr->color() > 0);
-    if( curr->color() > color ) color = curr->color();
-    // debug
-    for( jj = 0; jj < curr->NumAdjac() ; jj++ ) {
+    if (curr->color() > color) color = curr->color();
+    /* debug */
+    for (jj = 0; jj < curr->NumAdjac() ; jj++) {
       ii = curr->LidAdj[jj];  assert(ii>=0 && ii < nNodes);
       NUMR_NODE *curr2 = &nodes[ii];
       assert(curr2==curr || curr->color() != curr2->color());
     }
   }
-  MPI_Allreduce( &color, &ncolors, 1, MPI_INT, MPI_MAX, Comm ); // barrier!
+  MPI_Allreduce(&color, &ncolors, 1, MPI_INT, MPI_MAX, Comm); /* barrier! */
 
   return 0;
 }
@@ -235,43 +231,41 @@ int NUMR_GRID::ColorVertices( const int tag, int &ncolors )
  *  RETURN:
  *     - PETSc error code
  */
-int NUMR_GRID::receiveState( TABLE &gid_ghost, int &ndone, int &todo2,
-                             const int tag, const int proc, MPI_Comm comm )
+int NUMR_GRID::receiveState(TABLE &gid_ghost, int &ndone, int &todo2,
+                             const int tag, const int proc, MPI_Comm comm)
 {
   int ii, cclr, gid, gid2, *pb, state;
   MPI_Status  status;
 
-  // recv(tag) <SEL,gid_DEL_loc,gid2_SEL_gh,color> or <DELETED,gid_gh>
-  MPI_Recv( rbuf, 6, MPI_INT, proc, tag, comm, &status );
+  /* recv(tag) <SEL,gid_DEL_loc,gid2_SEL_gh,color> or <DELETED,gid_gh> */
+  MPI_Recv(rbuf, 6, MPI_INT, proc, tag, comm, &status);
   pb = rbuf; state = *pb++;  gid = *pb++;
-  if( state == (int)SELECTED ) {
-    // recv(tag) < SELECTED, gid_DEL_loc, gid2_SEL_gh, color >
+  if (state == (int)SELECTED) {
+    /* recv(tag) < SELECTED, gid_DEL_loc, gid2_SEL_gh, color > */
     gid2 = *pb++; cclr = *pb++;
-    MPI_Get_count( &status, MPI_INT, &ii ); assert(pb-rbuf == ii);
-    // gid2_SELECTED_gh
-    NUMR_NODE *curr2 = (NUMR_NODE*)gid_ghost.Find( gid2+1 ); assert(curr2);
-    if( curr2->GetState() == UNKNOWN ) {
+    MPI_Get_count(&status, MPI_INT, &ii); assert(pb-rbuf == ii);
+    /* gid2_SELECTED_gh */
+    NUMR_NODE *curr2 = (NUMR_NODE*)gid_ghost.Find(gid2+1); assert(curr2);
+    if (curr2->GetState() == UNKNOWN) {
       curr2->SetState(SELECTED);     assert(curr2->color() == 0);
-      curr2->setColor( cclr );
+      curr2->setColor(cclr);
       ndone++;
-    }
-    else assert( curr2->GetState() == SELECTED );
-    // gid_DELETED_loc
+    } else assert(curr2->GetState() == SELECTED);
+    /* gid_DELETED_loc */
     ii = gid - proc_gnode[myproc]; assert(ii>=0 && ii < nLocalNd);
     NUMR_NODE *curr = &nodes[ii];
-    if( curr->GetState() == UNKNOWN ) {
-      curr->SetState(DELETED); assert( curr->color() == 0 );
-      todo2--;                       assert( todo2 >= 0 );
+    if (curr->GetState() == UNKNOWN) {
+      curr->SetState(DELETED); assert(curr->color() == 0);
+      todo2--;                       assert(todo2 >= 0);
     }
-    else if( curr->GetState() == SELECTED ) assert(curr->color());
-    else assert( curr->GetState() == DELETED );
-  }
-  else {
-    MPI_Get_count( &status, MPI_INT, &ii ); assert(pb-rbuf == ii);
-    assert(state == (int)DELETED );
-    // recv(tag) < DELETED, gid_gh >
-    NUMR_NODE *curr2 = (NUMR_NODE*)gid_ghost.Find( gid+1 ); assert(curr2);
-    if( curr2->GetState() == UNKNOWN ) {
+    else if (curr->GetState() == SELECTED) assert(curr->color());
+    else assert(curr->GetState() == DELETED);
+  } else {
+    MPI_Get_count(&status, MPI_INT, &ii); assert(pb-rbuf == ii);
+    assert(state == (int)DELETED);
+    /* recv(tag) < DELETED, gid_gh > */
+    NUMR_NODE *curr2 = (NUMR_NODE*)gid_ghost.Find(gid+1); assert(curr2);
+    if (curr2->GetState() == UNKNOWN) {
       curr2->SetState(DELETED);
       ndone++;
     }

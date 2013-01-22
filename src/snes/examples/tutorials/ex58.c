@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   Mat             J;                /* Jacobian matrix */
   DM              da;
 
-  PetscInitialize(&argc, &argv, (char *)0, help );
+  PetscInitialize(&argc, &argv, (char *)0, help);
 
   /* Create distributed array to manage the 2d grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
@@ -180,44 +180,44 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   /* Compute function over the locally owned part of the mesh */
-  for (j=ys; j < ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
+  for (j=ys; j < ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
 
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
-      if (i==0){ /* left side */
+      if (i==0) { /* left side */
         xl= user->left[j+1];
         xlt = user->left[j+2];
       } else {
         xl = x[j][i-1];
       }
 
-      if (j==0){ /* bottom side */
+      if (j==0) { /* bottom side */
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[j-1][i];
       }
 
-      if (i+1 == mx){ /* right side */
+      if (i+1 == mx) { /* right side */
         xr=user->right[j+1];
         xrb = user->right[j];
       } else {
         xr = x[j][i+1];
       }
 
-      if (j+1==0+my){ /* top side */
+      if (j+1==0+my) { /* top side */
         xt=user->top[i+1];
         xlt = user->top[i];
-      }else {
+      } else {
         xt = x[j+1][i];
       }
 
-      if (i>0 && j+1<my){ /* left top side */
+      if (i>0 && j+1<my) { /* left top side */
         xlt = x[j+1][i-1];
       }
-      if (j>0 && i+1<mx){ /* right bottom */
+      if (j>0 && i+1<mx) { /* right bottom */
         xrb = x[j-1][i+1];
       }
 
@@ -231,9 +231,9 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d8 = (xt-xlt);
 
       df1dxc = d1*hydhx;
-      df2dxc = ( d1*hydhx + d4*hxdhy );
+      df2dxc = (d1*hydhx + d4*hxdhy);
       df3dxc = d3*hxdhy;
-      df4dxc = ( d2*hydhx + d3*hxdhy );
+      df4dxc = (d2*hydhx + d3*hxdhy);
       df5dxc = d2*hydhx;
       df6dxc = d4*hxdhy;
 
@@ -246,12 +246,12 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       d7 /= hy;
       d8 /= hx;
 
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = sqrt(1.0 + d1*d1 + d7*d7);
+      f2 = sqrt(1.0 + d1*d1 + d4*d4);
+      f3 = sqrt(1.0 + d3*d3 + d8*d8);
+      f4 = sqrt(1.0 + d3*d3 + d2*d2);
+      f5 = sqrt(1.0 + d2*d2 + d5*d5);
+      f6 = sqrt(1.0 + d4*d4 + d6*d6);
 
       df1dxc /= f1;
       df2dxc /= f2;
@@ -260,7 +260,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       df5dxc /= f5;
       df6dxc /= f6;
 
-      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
+      g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc)/2.0;
 
     }
   }
@@ -313,7 +313,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
 /* Set various matrix options */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(H);CHKERRQ(ierr);}
+  if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
@@ -327,13 +327,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   /* Compute Jacobian over the locally owned part of the mesh */
-  for (j=ys; j< ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
+  for (j=ys; j< ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left */
-      if (i==0){
+      if (i==0) {
         xl= user->left[j+1];
         xlt = user->left[j+2];
       } else {
@@ -341,7 +341,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Bottom */
-      if (j==0){
+      if (j==0) {
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
@@ -349,7 +349,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Right */
-      if (i+1 == mx){
+      if (i+1 == mx) {
         xr=user->right[j+1];
         xrb = user->right[j];
       } else {
@@ -357,20 +357,20 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       }
 
       /* Top */
-      if (j+1==my){
+      if (j+1==my) {
         xt=user->top[i+1];
         xlt = user->top[i];
-      }else {
+      } else {
         xt = x[j+1][i];
       }
 
       /* Top left */
-      if (i>0 && j+1<my){
+      if (i>0 && j+1<my) {
         xlt = x[j+1][i-1];
       }
 
       /* Bottom right */
-      if (j>0 && i+1<mx){
+      if (j>0 && i+1<mx) {
         xrb = x[j-1][i+1];
       }
 
@@ -383,72 +383,72 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
 
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = sqrt(1.0 + d1*d1 + d7*d7);
+      f2 = sqrt(1.0 + d1*d1 + d4*d4);
+      f3 = sqrt(1.0 + d3*d3 + d8*d8);
+      f4 = sqrt(1.0 + d3*d3 + d2*d2);
+      f5 = sqrt(1.0 + d2*d2 + d5*d5);
+      f6 = sqrt(1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-	(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
+        (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-	(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
+        (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
       ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-	(-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
+        (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
       hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-	(-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+        (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
 
       hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
       htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-	hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2.0*d1*d4)/(f2*f2*f2) +
-	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2.0*d2*d3)/(f4*f4*f4);
+        hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
+        (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2.0*d1*d4)/(f2*f2*f2) +
+        (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2.0*d2*d3)/(f4*f4*f4);
 
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
       row.i = i;row.j= j;
       /* Bottom */
-      if (j>0){
-	v[k]=hb;
-	col[k].i = i; col[k].j=j-1; k++;
+      if (j>0) {
+        v[k]=hb;
+        col[k].i = i; col[k].j=j-1; k++;
       }
 
       /* Bottom right */
-      if (j>0 && i < mx -1){
-	v[k]=hbr;
-	col[k].i = i+1; col[k].j = j-1; k++;
+      if (j>0 && i < mx -1) {
+        v[k]=hbr;
+        col[k].i = i+1; col[k].j = j-1; k++;
       }
 
       /* left */
-      if (i>0){
-	v[k]= hl;
-	col[k].i = i-1; col[k].j = j; k++;
+      if (i>0) {
+        v[k]= hl;
+        col[k].i = i-1; col[k].j = j; k++;
       }
 
       /* Centre */
       v[k]= hc; col[k].i= row.i; col[k].j = row.j; k++;
 
       /* Right */
-      if (i < mx-1 ){
-	v[k]= hr;
-	col[k].i= i+1; col[k].j = j;k++;
+      if (i < mx-1) {
+        v[k]= hr;
+        col[k].i= i+1; col[k].j = j;k++;
       }
 
       /* Top left */
-      if (i>0 && j < my-1 ){
-	v[k]= htl;
-	col[k].i = i-1;col[k].j = j+1; k++;
+      if (i>0 && j < my-1) {
+        v[k]= htl;
+        col[k].i = i-1;col[k].j = j+1; k++;
       }
 
       /* Top */
-      if (j < my-1 ){
-	v[k]= ht;
-	col[k].i = i; col[k].j = j+1; k++;
+      if (j < my-1) {
+        v[k]= ht;
+        col[k].i = i; col[k].j = j+1; k++;
       }
 
       ierr = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -513,51 +513,51 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
 
   hx= (r-l)/(mx+1.0); hy=(t-b)/(my+1.0);
 
-  for (j=0; j<4; j++){
-    if (j==0){
+  for (j=0; j<4; j++) {
+    if (j==0) {
       yt=b;
       xt=l;
       limit=bsize;
       boundary=user->bottom;
-    } else if (j==1){
+    } else if (j==1) {
       yt=t;
       xt=l;
       limit=tsize;
       boundary=user->top;
-    } else if (j==2){
+    } else if (j==2) {
       yt=b;
       xt=l;
       limit=lsize;
       boundary=user->left;
-    } else { // if  (j==3)
+    } else { /* if  (j==3) */
       yt=b;
       xt=r;
       limit=rsize;
       boundary=user->right;
     }
 
-    for (i=0; i<limit; i++){
+    for (i=0; i<limit; i++) {
       u1=xt;
       u2=-yt;
-      for (k=0; k<maxits; k++){
-	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=PetscRealPart(sqrt(nf1*nf1+nf2*nf2));
-	if (fnorm <= tol) break;
-	njac11=one+u2*u2-u1*u1;
-	njac12=two*u1*u2;
-	njac21=-two*u1*u2;
-	njac22=-one - u1*u1 + u2*u2;
-	det = njac11*njac22-njac21*njac12;
-	u1 = u1-(njac22*nf1-njac12*nf2)/det;
-	u2 = u2-(njac11*nf2-njac21*nf1)/det;
+      for (k=0; k<maxits; k++) {
+        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm=PetscRealPart(sqrt(nf1*nf1+nf2*nf2));
+        if (fnorm <= tol) break;
+        njac11=one+u2*u2-u1*u1;
+        njac12=two*u1*u2;
+        njac21=-two*u1*u2;
+        njac22=-one - u1*u1 + u2*u2;
+        det = njac11*njac22-njac21*njac12;
+        u1 = u1-(njac22*nf1-njac12*nf2)/det;
+        u2 = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
-	xt=xt+hx;
-      } else { // if (j==2 || j==3)
-	yt=yt+hy;
+        xt=xt+hx;
+      } else { /* if (j==2 || j==3) */
+        yt=yt+hy;
       }
     }
   }
@@ -613,9 +613,9 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   /* Perform local computations */
-  for (j=ys; j<ys+ym; j++){
-    for (i=xs; i< xs+xm; i++){
-      x[j][i] = ( ((j+1.0)*user->bottom[i+1]+(my-j+1.0)*user->top[i+1])/(my+2.0)+((i+1.0)*user->left[j+1]+(mx-i+1.0)*user->right[j+1])/(mx+2.0))/2.0;
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i< xs+xm; i++) {
+      x[j][i] = (((j+1.0)*user->bottom[i+1]+(my-j+1.0)*user->top[i+1])/(my+2.0)+((i+1.0)*user->left[j+1]+(mx-i+1.0)*user->right[j+1])/(mx+2.0))/2.0;
     }
   }
   /* Restore vectors */

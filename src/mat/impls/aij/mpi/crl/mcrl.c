@@ -33,7 +33,7 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
   }
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName( (PetscObject)A, MATMPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A, MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

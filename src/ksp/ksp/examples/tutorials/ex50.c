@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
   user.uu = 1.0;
   user.tt = 1.0;
-  bc   = (PetscInt)NEUMANN; // Use Neumann Boundary Conditions
+  bc   = (PetscInt)NEUMANN; /* Use Neumann Boundary Conditions */
   user.bcType = (BCType)bc;
 
 
@@ -90,11 +90,11 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr); // Fine grid
-  //printf(" M N: %d %d; xm ym: %d %d; xs ys: %d %d\n",M,N,xm,ym,xs,ys);
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr); /* Fine grid */
+  /* printf(" M N: %d %d; xm ym: %d %d; xs ys: %d %d\n",M,N,xm,ym,xs,ys); */
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++){
-    for (i=xs; i<xs+xm; i++){
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
       array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
@@ -133,14 +133,14 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++){
-    for (i=xs; i<xs+xm; i++){
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
 
       if (i==0 || j==0 || i==M-1 || j==N-1) {
-        if (user->bcType == DIRICHLET){
+        if (user->bcType == DIRICHLET) {
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
-        } else if (user->bcType == NEUMANN){
+        } else if (user->bcType == NEUMANN) {
           num=0; numi=0; numj=0;
           if (j!=0) {
             v[num] = -HxdHy;              col[num].i = i;   col[num].j = j-1;
@@ -158,7 +158,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
             v[num] = -HxdHy;              col[num].i = i;   col[num].j = j+1;
             num++; numj++;
           }
-          v[num] = ( (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx ); col[num].i = i;   col[num].j = j;
+          v[num] = ((PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx); col[num].i = i;   col[num].j = j;
           num++;
           ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }

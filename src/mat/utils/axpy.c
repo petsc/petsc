@@ -73,7 +73,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
-	val[j] = a*vals[j];
+        val[j] = a*vals[j];
       }
       ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
-	val[j] = a*vals[j];
+        val[j] = a*vals[j];
       }
       ierr = MatSetValues(B,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
@@ -363,20 +363,20 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
   PetscFunctionBegin;
   ierr = PetscMalloc(xi[m]*sizeof(PetscInt),&x2y);CHKERRQ(ierr);
   i = 0;
-  for (row=0; row<m; row++){
+  for (row=0; row<m; row++) {
     nz = xi[1] - xi[0];
     jy = 0;
-    for (jx=0; jx<nz; jx++,jy++){
-      if (xgarray && ygarray){
+    for (jx=0; jx<nz; jx++,jy++) {
+      if (xgarray && ygarray) {
         xcol = xgarray[xj[*xi + jx]];
         ycol = ygarray[yj[*yi + jy]];
       } else {
         xcol = xj[*xi + jx];
         ycol = yj[*yi + jy];  /* col index for y */
       }
-      while ( ycol < xcol ) {
+      while (ycol < xcol) {
         jy++;
-        if (ygarray){
+        if (ygarray) {
           ycol = ygarray[yj[*yi + jy]];
         } else {
           ycol = yj[*yi + jy];

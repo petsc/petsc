@@ -8,7 +8,8 @@ static char help[] = "Test MatMatMult(), MatTranspose(), MatTransposeMatMult() f
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B,C,D;
   PetscInt       i,M=10,N=5,j,nrows,ncols;
   PetscErrorCode ierr;
@@ -58,7 +59,7 @@ int main(int argc,char **argv) {
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
 
   ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr); /* D = B*A = A^T*A */
-  for (i=0; i<2; i++){
+  for (i=0; i<2; i++) {
     /* Repeat the numeric product to test reuse of the previous symbolic product */
     ierr = MatMatMultNumeric(B,A,D);CHKERRQ(ierr);
   }
@@ -68,7 +69,7 @@ int main(int argc,char **argv) {
 
   /* Test MatTransposeMatMult() */
   ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
-  if (!iselemental){
+  if (!iselemental) {
     ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
     ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");

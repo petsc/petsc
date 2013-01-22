@@ -187,7 +187,8 @@ PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 
   Level: developer
 @*/
-PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
+PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx)
+{
   PetscErrorCode ierr;
   PetscInt i;
 
@@ -212,10 +213,10 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
   spanned by lc, uc, this should be checked with ADDAHCiterStartup.
 
   Use this code as follows:
-  if ( ADDAHCiterStartup(dim, lc, uc, idx) ) {
+  if (ADDAHCiterStartup(dim, lc, uc, idx)) {
     do {
       ...
-    } while( ADDAHCiter(dim, lc, uc, idx) );
+    } while (ADDAHCiter(dim, lc, uc, idx));
   }
 
   Input Parameters:
@@ -228,11 +229,12 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
 
   Level: developer
 @*/
-PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
+PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx)
+{
   PetscInt i;
   for (i=dim-1; i>=0; i--) {
     idx[i] += 1;
-    if( uc[i] > idx[i] ) {
+    if (uc[i] > idx[i]) {
       return PETSC_TRUE;
     } else {
       idx[i] -= uc[i] - lc[i];
@@ -286,7 +288,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if ( comm_size == 1 ) {
+  if (comm_size == 1) {
     ierr = DMADDAGetMatrixNS(dmc, dmf, MATSEQAIJ, rest);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*rest, max_agg_size, PETSC_NULL);CHKERRQ(ierr);
   } else {
@@ -313,7 +315,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 
   /* loop over all coarse nodes */
   ierr = PetscMemcpy(iter_c.x, lcs_c, sizeof(PetscInt)*dim);CHKERRQ(ierr);
-  if ( ADDAHCiterStartup(dim, lcs_c, lce_c, iter_c.x) ) {
+  if (ADDAHCiterStartup(dim, lcs_c, lce_c, iter_c.x)) {
     do {
       /* find corresponding fine grid nodes */
       for (i=0; i<dim; i++) {
@@ -328,7 +330,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
         /* we now know the "box" of all the fine grid nodes that are mapped to one coarse grid node */
         fn_idx = 0;
         /* loop over those corresponding fine grid nodes */
-        if ( ADDAHCiterStartup(dim, fgs, fge, iter_f.x) ) {
+        if (ADDAHCiterStartup(dim, fgs, fge, iter_f.x)) {
           do {
             /* loop over all corresponding fine grid dof */
             for (iter_f.d=fgdofs; iter_f.d<fgdofe; iter_f.d++) {
@@ -336,12 +338,12 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
               fine_nodes[fn_idx].d = iter_f.d;
               fn_idx++;
             }
-          } while( ADDAHCiter(dim, fgs, fge, iter_f.x) );
+          } while (ADDAHCiter(dim, fgs, fge, iter_f.x));
         }
         /* add all these points to one aggregate */
         ierr = DMADDAMatSetValues(*rest, dmc, 1, &iter_c, dmf, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
       }
-    } while( ADDAHCiter(dim, lcs_c, lce_c, iter_c.x) );
+    } while (ADDAHCiter(dim, lcs_c, lce_c, iter_c.x));
   }
 
   /* free memory */
@@ -536,16 +538,16 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
     x = idxm[i].x; d = idxm[i].d;
     idx = 0;
     for (j=ddm->dim-1; j>=0; j--) {
-      if ( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-        if ( ddm->periodic[j] ) { /* periodic wraps around */
+      if (x[j] < 0) { /* "left", "below", etc. of boundary */
+        if (ddm->periodic[j]) { /* periodic wraps around */
           x[j] += ddm->nodes[j];
         } else { /* non-periodic get discarded */
           matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
           goto endofloop_m;
         }
       }
-      if ( x[j] >= ddm->nodes[j] ) { /* "right", "above", etc. of boundary */
-        if ( ddm->periodic[j] ) { /* periodic wraps around */
+      if (x[j] >= ddm->nodes[j]) { /* "right", "above", etc. of boundary */
+        if (ddm->periodic[j]) { /* periodic wraps around */
           x[j] -= ddm->nodes[j];
         } else { /* non-periodic get discarded */
           matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
@@ -572,16 +574,16 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
     x = idxn[i].x; d = idxn[i].d;
     idx = 0;
     for (j=ddn->dim-1; j>=0; j--) {
-      if ( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-        if ( ddn->periodic[j] ) { /* periodic wraps around */
+      if (x[j] < 0) { /* "left", "below", etc. of boundary */
+        if (ddn->periodic[j]) { /* periodic wraps around */
           x[j] += ddn->nodes[j];
         } else { /* non-periodic get discarded */
           matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
           goto endofloop_n;
         }
       }
-      if ( x[j] >= ddn->nodes[j] ) { /* "right", "above", etc. of boundary */
-        if ( ddn->periodic[j] ) { /* periodic wraps around */
+      if (x[j] >= ddn->nodes[j]) { /* "right", "above", etc. of boundary */
+        if (ddn->periodic[j]) { /* periodic wraps around */
           x[j] -= ddn->nodes[j];
         } else { /* non-periodic get discarded */
           matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
@@ -646,11 +648,9 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
         /* calculate best partition */
         procs[i] = (PetscInt)(((double) nodes[i])*pow(((double) procsleft)/((double) nodesleft),1./((double)(dim-i)))+0.5);
         if (procs[i]<1) procs[i]=1;
-        while( procs[i] > 0 ) {
-          if ( procsleft % procs[i] )
-            procs[i]--;
-          else
-            break;
+        while (procs[i] > 0) {
+          if (procsleft % procs[i]) procs[i]--;
+          else break;
         }
         nodesleft /= nodes[i];
         procsleft /= procs[i];
@@ -710,7 +710,7 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
     /* these are all nodes that come before our region */
     rpq = ranki / procsdimi;
     dd->lcs[i] = rpq * (nodes[i]/procs[i]);
-    if ( rpq + 1 < procs[i] ) {
+    if (rpq + 1 < procs[i]) {
       dd->lce[i] = (rpq + 1) * (nodes[i]/procs[i]);
     } else {
       /* last one gets all the rest */
@@ -730,7 +730,7 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lgs));CHKERRQ(ierr);
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lge));CHKERRQ(ierr);
   for (i=0; i<dim; i++) {
-    if ( periodic[i] ) {
+    if (periodic[i]) {
       dd->lgs[i] = dd->lcs[i] - s;
       dd->lge[i] = dd->lce[i] + s;
     } else {

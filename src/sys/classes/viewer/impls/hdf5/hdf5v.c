@@ -39,7 +39,7 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
  PetscFunctionBegin;
  ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
  if (hdf5->groups) {
-   while(hdf5->groups) {
+   while (hdf5->groups) {
      GroupList *tmp = hdf5->groups->next;
 
      ierr = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
@@ -384,7 +384,6 @@ PetscErrorCode  PetscViewerHDF5WriteSDS(PetscViewer viewer, float *xf, int d, in
  int32                 sds_id,zero32[3],dims32[3];
 
  PetscFunctionBegin;
-
  for (i = 0; i < d; i++) {
    zero32[i] = 0;
    dims32[i] = dims[i];

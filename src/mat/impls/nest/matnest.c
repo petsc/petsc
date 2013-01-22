@@ -185,7 +185,7 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
       for (j=0; j<vs->nc; j++) {
         ierr = MatDestroy(&vs->m[i][j]);CHKERRQ(ierr);
       }
-      ierr = PetscFree( vs->m[i] );CHKERRQ(ierr);
+      ierr = PetscFree(vs->m[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(vs->m);CHKERRQ(ierr);
   }
@@ -527,7 +527,7 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
   comm = ((PetscObject)A)->comm;
   if (right) {
     /* allocate R */
-    ierr = PetscMalloc( sizeof(Vec) * bA->nc, &R );CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(Vec) * bA->nc, &R);CHKERRQ(ierr);
     /* Create the right vectors */
     for (j=0; j<bA->nc; j++) {
       for (i=0; i<bA->nr; i++) {
@@ -538,7 +538,7 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
       }
       if (i==bA->nr) {
         /* have an empty column */
-        SETERRQ( ((PetscObject)A)->comm, PETSC_ERR_ARG_WRONG, "Mat(Nest) contains a null column.");
+        SETERRQ(((PetscObject)A)->comm, PETSC_ERR_ARG_WRONG, "Mat(Nest) contains a null column.");
       }
     }
     ierr = VecCreateNest(comm,bA->nc,bA->isglobal.col,R,right);CHKERRQ(ierr);
@@ -551,7 +551,7 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
 
   if (left) {
     /* allocate L */
-    ierr = PetscMalloc( sizeof(Vec) * bA->nr, &L );CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(Vec) * bA->nr, &L);CHKERRQ(ierr);
     /* Create the left vectors */
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
@@ -562,7 +562,7 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
       }
       if (j==bA->nc) {
         /* have an empty row */
-        SETERRQ( ((PetscObject)A)->comm, PETSC_ERR_ARG_WRONG, "Mat(Nest) contains a null row.");
+        SETERRQ(((PetscObject)A)->comm, PETSC_ERR_ARG_WRONG, "Mat(Nest) contains a null row.");
       }
     }
 
@@ -589,11 +589,11 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
 
-    PetscViewerASCIIPrintf(viewer,"Matrix object: \n" );
-    PetscViewerASCIIPushTab( viewer );    /* push0 */
-    PetscViewerASCIIPrintf( viewer, "type=nest, rows=%d, cols=%d \n",bA->nr,bA->nc);
+    PetscViewerASCIIPrintf(viewer,"Matrix object: \n");
+    PetscViewerASCIIPushTab(viewer);    /* push0 */
+    PetscViewerASCIIPrintf(viewer, "type=nest, rows=%d, cols=%d \n",bA->nr,bA->nc);
 
-    PetscViewerASCIIPrintf(viewer,"MatNest structure: \n" );
+    PetscViewerASCIIPrintf(viewer,"MatNest structure: \n");
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
         MatType  type;
@@ -602,11 +602,11 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
         PetscBool isNest = PETSC_FALSE;
 
         if (!bA->m[i][j]) {
-          PetscViewerASCIIPrintf( viewer, "(%D,%D) : PETSC_NULL \n",i,j);
+          PetscViewerASCIIPrintf(viewer, "(%D,%D) : PETSC_NULL \n",i,j);
           continue;
         }
         ierr = MatGetSize(bA->m[i][j],&NR,&NC);CHKERRQ(ierr);
-        ierr = MatGetType( bA->m[i][j], &type );CHKERRQ(ierr);
+        ierr = MatGetType(bA->m[i][j], &type);CHKERRQ(ierr);
         if (((PetscObject)bA->m[i][j])->name) {ierr = PetscSNPrintf(name,sizeof(name),"name=\"%s\", ",((PetscObject)bA->m[i][j])->name);CHKERRQ(ierr);}
         if (((PetscObject)bA->m[i][j])->prefix) {ierr = PetscSNPrintf(prefix,sizeof(prefix),"prefix=\"%s\", ",((PetscObject)bA->m[i][j])->prefix);CHKERRQ(ierr);}
         ierr = PetscObjectTypeCompare((PetscObject)bA->m[i][j],MATNEST,&isNest);CHKERRQ(ierr);
@@ -1166,22 +1166,22 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
 /* If an IS was provided, there is nothing Nest needs to do, otherwise Nest will build a strided IS */
 /*
   nprocessors = NP
-  Nest x^T = ( (g_0,g_1,...g_nprocs-1), (h_0,h_1,...h_NP-1) )
+  Nest x^T = ((g_0,g_1,...g_nprocs-1), (h_0,h_1,...h_NP-1))
        proc 0: => (g_0,h_0,)
        proc 1: => (g_1,h_1,)
        ...
        proc nprocs-1: => (g_NP-1,h_NP-1,)
 
             proc 0:                      proc 1:                    proc nprocs-1:
-    is[0] = ( 0,1,2,...,nlocal(g_0)-1 )  ( 0,1,...,nlocal(g_1)-1 )  ( 0,1,...,nlocal(g_NP-1) )
+    is[0] = (0,1,2,...,nlocal(g_0)-1)  (0,1,...,nlocal(g_1)-1)  (0,1,...,nlocal(g_NP-1))
 
             proc 0:
-    is[1] = ( nlocal(g_0),nlocal(g_0)+1,...,nlocal(g_0)+nlocal(h_0)-1 )
+    is[1] = (nlocal(g_0),nlocal(g_0)+1,...,nlocal(g_0)+nlocal(h_0)-1)
             proc 1:
-    is[1] = ( nlocal(g_1),nlocal(g_1)+1,...,nlocal(g_1)+nlocal(h_1)-1 )
+    is[1] = (nlocal(g_1),nlocal(g_1)+1,...,nlocal(g_1)+nlocal(h_1)-1)
 
             proc NP-1:
-    is[1] = ( nlocal(g_NP-1),nlocal(g_NP-1)+1,...,nlocal(g_NP-1)+nlocal(h_NP-1)-1 )
+    is[1] = (nlocal(g_NP-1),nlocal(g_NP-1)+1,...,nlocal(g_NP-1)+nlocal(h_NP-1)-1)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUp_NestIS_Private"

@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
-  if (pc->setupcalled != 0){
+  if (pc->setupcalled != 0) {
     try {
       delete sa->SACUSP;
     } catch(char* ex) {
@@ -79,7 +79,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 #else
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
 #else
     mat = (CUSPMATRIX*)gpustruct->mat;
@@ -119,10 +119,10 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
 #else
   sac->SACUSP->solve(*barray,*yarray,monitor);
   *outits = monitor.iteration_count();
-  if (monitor.converged()){
+  if (monitor.converged()) {
     /* how to discern between converging from RTOL or ATOL?*/
     *reason = PCRICHARDSON_CONVERGED_RTOL;
-  } else{
+  } else {
     *reason = PCRICHARDSON_CONVERGED_ITS;
   }
 #endif

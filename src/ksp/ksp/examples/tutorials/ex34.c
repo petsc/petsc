@@ -88,9 +88,9 @@ int main(int argc,char **argv)
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, x, &array);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i<xs+xm; i++){
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
         array[k][j][i] -=
           PetscCosScalar(2*PETSC_PI*(((PetscReal)i+0.5)*Hx))*
           PetscCosScalar(2*PETSC_PI*(((PetscReal)j+0.5)*Hy))*
@@ -135,9 +135,9 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   Hz   = 1.0 / (PetscReal)(mz);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
-  for (k=zs; k<zs+zm; k++){
-    for (j=ys; j<ys+ym; j++){
-      for (i=xs; i<xs+xm; i++){
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
         array[k][j][i] = 12*PETSC_PI*PETSC_PI
           *PetscCosScalar(2*PETSC_PI*(((PetscReal)i+0.5)*Hx))
           *PetscCosScalar(2*PETSC_PI*(((PetscReal)j+0.5)*Hy))
@@ -184,92 +184,77 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
   HxHzdHy = Hx*Hz/Hy;
   HxHydHz = Hx*Hy/Hz;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  for (k=zs; k<zs+zm; k++)
-    {
-      for (j=ys; j<ys+ym; j++)
-        {
-          for (i=xs; i<xs+xm; i++)
-            {
-              row.i = i; row.j = j; row.k = k;
-              if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1)
-                {
-                  if (user->bcType == DIRICHLET)
-                  {
-                    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
-                    v[0] = 2.0*(HyHzdHx + HxHzdHy + HxHydHz);
-                    ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
-                  }
-                  else if (user->bcType == NEUMANN)
-                    {
-                      num = 0; numi=0; numj=0; numk=0;
-                      if (k!=0)
-                        {
-                          v[num] = -HxHydHz;
-                          col[num].i = i;
-                          col[num].j = j;
-                          col[num].k = k-1;
-                          num++; numk++;
-                        }
-                      if (j!=0)
-                        {
-                          v[num] = -HxHzdHy;
-                          col[num].i = i;
-                          col[num].j = j-1;
-                          col[num].k = k;
-                          num++; numj++;
-                        }
-                      if (i!=0)
-                        {
-                          v[num] = -HyHzdHx;
-                          col[num].i = i-1;
-                          col[num].j = j;
-                          col[num].k = k;
-                          num++; numi++;
-                        }
-                      if (i!=mx-1)
-                        {
-                          v[num] = -HyHzdHx;
-                          col[num].i = i+1;
-                          col[num].j = j;
-                          col[num].k = k;
-                          num++; numi++;
-                        }
-                      if (j!=my-1)
-                        {
-                          v[num] = -HxHzdHy;
-                          col[num].i = i;
-                          col[num].j = j+1;
-                          col[num].k = k;
-                          num++; numj++;
-                        }
-                      if (k!=mz-1)
-                        {
-                          v[num] = -HxHydHz;
-                          col[num].i = i;
-                          col[num].j = j;
-                          col[num].k = k+1;
-                          num++; numk++;
-                        }
-                      v[num]   = (PetscReal)(numk)*HxHydHz + (PetscReal)(numj)*HxHzdHy + (PetscReal)(numi)*HyHzdHx;
-                      col[num].i = i;   col[num].j = j;   col[num].k = k;
-                      num++;
-                      ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
-                    }
-                }
-              else
-                {
-                  v[0] = -HxHydHz;                          col[0].i = i;   col[0].j = j;   col[0].k = k-1;
-                  v[1] = -HxHzdHy;                          col[1].i = i;   col[1].j = j-1; col[1].k = k;
-                  v[2] = -HyHzdHx;                          col[2].i = i-1; col[2].j = j;   col[2].k = k;
-                  v[3] = 2.0*(HyHzdHx + HxHzdHy + HxHydHz); col[3].i = i;   col[3].j = j;   col[3].k = k;
-                  v[4] = -HyHzdHx;                          col[4].i = i+1; col[4].j = j;   col[4].k = k;
-                  v[5] = -HxHzdHy;                          col[5].i = i;   col[5].j = j+1; col[5].k = k;
-                  v[6] = -HxHydHz;                          col[6].i = i;   col[6].j = j;   col[6].k = k+1;
-                  ierr = MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
-                }
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        row.i = i; row.j = j; row.k = k;
+        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) {
+          if (user->bcType == DIRICHLET) {
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
+            v[0] = 2.0*(HyHzdHx + HxHzdHy + HxHydHz);
+            ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+          } else if (user->bcType == NEUMANN) {
+            num = 0; numi=0; numj=0; numk=0;
+            if (k!=0) {
+              v[num] = -HxHydHz;
+              col[num].i = i;
+              col[num].j = j;
+              col[num].k = k-1;
+              num++; numk++;
             }
+            if (j!=0) {
+              v[num] = -HxHzdHy;
+              col[num].i = i;
+              col[num].j = j-1;
+              col[num].k = k;
+              num++; numj++;
+            }
+            if (i!=0) {
+              v[num] = -HyHzdHx;
+              col[num].i = i-1;
+              col[num].j = j;
+              col[num].k = k;
+              num++; numi++;
+            }
+            if (i!=mx-1) {
+              v[num] = -HyHzdHx;
+              col[num].i = i+1;
+              col[num].j = j;
+              col[num].k = k;
+              num++; numi++;
+            }
+            if (j!=my-1) {
+              v[num] = -HxHzdHy;
+              col[num].i = i;
+              col[num].j = j+1;
+              col[num].k = k;
+              num++; numj++;
+            }
+            if (k!=mz-1) {
+              v[num] = -HxHydHz;
+              col[num].i = i;
+              col[num].j = j;
+              col[num].k = k+1;
+              num++; numk++;
+            }
+            v[num]   = (PetscReal)(numk)*HxHydHz + (PetscReal)(numj)*HxHzdHy + (PetscReal)(numi)*HyHzdHx;
+            col[num].i = i;   col[num].j = j;   col[num].k = k;
+            num++;
+            ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          }
+        } else {
+          v[0] = -HxHydHz;                          col[0].i = i;   col[0].j = j;   col[0].k = k-1;
+          v[1] = -HxHzdHy;                          col[1].i = i;   col[1].j = j-1; col[1].k = k;
+          v[2] = -HyHzdHx;                          col[2].i = i-1; col[2].j = j;   col[2].k = k;
+          v[3] = 2.0*(HyHzdHx + HxHzdHy + HxHydHz); col[3].i = i;   col[3].j = j;   col[3].k = k;
+          v[4] = -HyHzdHx;                          col[4].i = i+1; col[4].j = j;   col[4].k = k;
+          v[5] = -HxHzdHy;                          col[5].i = i;   col[5].j = j+1; col[5].k = k;
+          v[6] = -HxHydHz;                          col[6].i = i;   col[6].j = j;   col[6].k = k+1;
+          ierr = MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
+      }
     }
+  }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (user->bcType == NEUMANN) {

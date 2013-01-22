@@ -57,7 +57,7 @@ PetscErrorCode MatSolve_SeqBSTRM_4(Mat A,Vec bb,Vec xx)
   }
 
   /* backward solve the upper triangular */
-  for (i=n-1;i>=0;i--){
+  for (i=n-1;i>=0;i--) {
     idx  = 4*i;
     s1 = x[idx  ];
     s2 = x[idx+1];
@@ -143,7 +143,7 @@ PetscErrorCode MatSolve_SeqBSTRM_5(Mat A,Vec bb,Vec xx)
   }
 
   /* backward solve the upper triangular */
-  for (i=n-1;i>=0;i--){
+  for (i=n-1;i>=0;i--) {
     idx  = 5*i;
     s1 = x[idx  ];
     s2 = x[idx+1];
@@ -199,7 +199,7 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
 
   PetscFunctionBegin;
   /*ierr = (*bstrm ->MatLUFactorNumeric)(F,A,info);CHKERRQ(ierr); */
-  switch (bs){
+  switch (bs) {
     case 4:
        ierr = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(F,A,info);CHKERRQ(ierr);
        break;

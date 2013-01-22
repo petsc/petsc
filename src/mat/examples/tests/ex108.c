@@ -4,7 +4,8 @@ static char help[] = "Testing MatCreateSeqBAIJWithArrays() and MatCreateSeqSBAIJ
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B,As;
   const PetscInt *ai,*aj;
   PetscInt       i,j,k,nz,n,asi[]={0,2,3,4,6,7};
@@ -27,11 +28,11 @@ int main(int argc,char **argv) {
   k = 0;
   for (i=0; i<5; i++) {
     nz = asi[i+1] - asi[i];  /* length of i_th row of A */
-    for (j=0; j<nz; j++){
+    for (j=0; j<nz; j++) {
       ierr = PetscRandomGetValue(rctx,&asa[k]);CHKERRQ(ierr);
       ierr = MatSetValues(A,1,&i,1,&asj[k],&asa[k],INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(A,1,&i,1,&asj[k],&asa[k],INSERT_VALUES);CHKERRQ(ierr);
-      if (i != asj[k]){ /* insert symmetric entry */
+      if (i != asj[k]) { /* insert symmetric entry */
         ierr = MatSetValues(A,1,&asj[k],1,&i,&asa[k],INSERT_VALUES);CHKERRQ(ierr);
       }
       k++;

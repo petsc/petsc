@@ -192,14 +192,14 @@ PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  while(size > classLog->maxClasses) {
+  while (size > classLog->maxClasses) {
     ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(PetscClassPerfInfo), &classInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(PetscClassPerfInfo));CHKERRQ(ierr);
     ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
     classLog->classInfo   = classInfo;
     classLog->maxClasses *= 2;
   }
-  while(classLog->numClasses < size) {
+  while (classLog->numClasses < size) {
     ierr = ClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

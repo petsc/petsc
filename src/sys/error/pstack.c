@@ -31,7 +31,7 @@ PetscErrorCode  PetscStackDepublish(void)
 PetscErrorCode PetscStackCreate_kernel(PetscInt trank)
 {
   PetscStack *petscstack_in;
-  if(PetscStackActive) return 0;
+  if (PetscStackActive) return 0;
 
   petscstack_in = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
@@ -91,7 +91,7 @@ PetscErrorCode  PetscStackView(PetscViewer viewer)
 
 PetscErrorCode PetscStackDestroy_kernel(PetscInt trank)
 {
-  if(PetscStackActive) {
+  if (PetscStackActive) {
     PetscStack *petscstack_in;
     petscstack_in = (PetscStack*)PetscThreadLocalGetValue(petscstack);
     free(petscstack_in);

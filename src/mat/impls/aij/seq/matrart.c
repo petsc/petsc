@@ -412,7 +412,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
   ierr = MatDenseGetArray(RAB,&d);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c = work; c2 = c + am; c3 = c2 + am; c4 = c3 + am;
-  for (col=0; col<cn-4; col += 4){  /* over columns of C */
+  for (col=0; col<cn-4; col += 4) {  /* over columns of C */
     for (i=0; i<am; i++) {        /* over rows of A in those columns */
       r1 = r2 = r3 = r4 = 0.0;
       n   = ai[i+1] - ai[i];
@@ -453,7 +453,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
       d[colrm + rm3 + i] = r4;
     }
   }
-  for (;col<cn; col++){     /* over extra columns of C */
+  for (;col<cn; col++) {     /* over extra columns of C */
     for (i=0; i<am; i++) {  /* over rows of A in those columns */
       r1 = 0.0;
       n   = a->i[i+1] - a->i[i];
@@ -537,7 +537,7 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C);CHKERRQ(ierr);
   }
   ierr = MatRARtNumeric_SeqAIJ_SeqAIJ(A,R,*C);CHKERRQ(ierr);

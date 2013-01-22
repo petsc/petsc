@@ -6,7 +6,7 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 
 #undef __FUNCT__
 #define __FUNCT__ "test1_DAInjection3d"
-PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
+PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 {
   PetscErrorCode   ierr;
   DM               dac,daf;
@@ -41,8 +41,8 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
 
   ierr = DMCoarsen(daf,MPI_COMM_NULL,&dac);CHKERRQ(ierr);
 
-  ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
 
   {
     DM         cdaf,cdac;
@@ -111,9 +111,9 @@ int main(int argc,char **argv)
   mx = 2;
   my = 2;
   mz = 2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0 );CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0 );CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0 );CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0);CHKERRQ(ierr);
 
   ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
 

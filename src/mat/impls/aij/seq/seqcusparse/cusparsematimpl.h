@@ -1,4 +1,4 @@
-#ifndef __CUSPARSEMATIMPL
+#if !defined(__CUSPARSEMATIMPL)
 #define __CUSPARSEMATIMPL
 
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
@@ -14,7 +14,7 @@
 #include <thrust/sort.h>
 #include <thrust/fill.h>
 
-// Single instance of the cusparse handle for the class.
+/* Single instance of the cusparse handle for the class. */
 cusparseHandle_t MAT_cusparseHandle=0;
 
 MatCUSPARSEStorageFormat cusparseMatSolveStorageFormat=MAT_CUSPARSE_CSR;
@@ -34,7 +34,7 @@ struct Mat_SeqAIJCUSPARSE {
 };
 
 extern PetscErrorCode MatCUSPARSECopyToGPU(Mat);
-//extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
-//extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *);
-//extern PetscErrorCode MatCUSPARSECopyFromGPU(Mat, CUSPMATRIX *);
+/* extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*); */
+/* extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *); */
+/* extern PetscErrorCode MatCUSPARSECopyFromGPU(Mat, CUSPMATRIX *); */
 #endif

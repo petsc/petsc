@@ -350,11 +350,11 @@ PetscErrorCode DPsi(AppCtx* user)
 
   for (i=0;i<n;i++)
   {
-    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*( Evf + kBT*(logcv_p[i] - logcvi_p[i]) ) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
+    DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
 
-    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*( Eif + kBT*(logci_p[i] - logcvi_p[i]) ) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
+    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
 
-    DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*( Evf*cv_p[i] + Eif*ci_p[i] + kBT*( cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i] ) ) + 2.0*eta_p[i]*A*( (cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
+    DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*(Evf*cv_p[i] + Eif*ci_p[i] + kBT*(cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i])) + 2.0*eta_p[i]*A*((cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
 
 
   }
@@ -391,8 +391,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   for (i=0;i<n;i++) {
     if (x[i] < 1.0e-12) {
       y[i] = log(1.0e-12);
-    }
-    else {
+    } else {
       y[i] = log(x[i]);
     }
   }
@@ -407,7 +406,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
   PetscErrorCode    ierr;
   PetscInt          n,i;
-  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p;
+  PetscScalar       *xx,*cv_p,*ci_p,*wv_p,*wi_p;
   PetscViewer       view;
   PetscScalar       initv = .00069;
 
@@ -473,12 +472,10 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
 
-    if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
+    if (eta_p[i]>=0.8 || w1[i]>user->P_casc) {
       Pv_p[i]=0;
 
-    }
-    else
-    {
+    } else {
       Pv_p[i]=w2[i]*user->VG;
       count=count+1;
     }
@@ -632,7 +629,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     nodes[j*(Mda+1)+Mda] = j*Mda;
   }
 
-  for (i=0;i < Mda;i++){
+  for (i=0;i < Mda;i++) {
     nodes[Nda*(Mda+1)+i] = i;
   }
 
@@ -699,8 +696,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
       ierr = MatSetValues(M_0,1,&row_M_0,3,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
 
-      //cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-      //ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+      /* cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT); */
+      /* ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT); */
       cv_sum = .0000069*user->Dv/user->kBT;
       ci_sum = .0000069*user->Di/user->kBT;
 
@@ -763,9 +760,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
 
 
-      }
-
-      else {
+      } else {
 
 
         row = 5*idx[r];
@@ -876,7 +871,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     }
     nodes[j*(Mda+1)+Mda] = j*Mda;
   }
-  for (i=0;i < Mda;i++){
+  for (i=0;i < Mda;i++) {
     nodes[Nda*(Mda+1)+i]=i;
   }
   nodes[Nda*(Mda+1)+Mda]=0;
@@ -950,8 +945,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
       for (r=0;r<3;r++) {
 
-        // cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-        //ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+        /* cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT); */
+        /* ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT); */
         cv_sum = .0000069*user->Dv/(user->kBT);
         ci_sum = .0000069*user->Di/user->kBT;
 
@@ -973,9 +968,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
                 ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
-            }
-
-            else {
+            } else {
                 row = 5*idx[r];
                 cols[0] = 5*idx[0];     vals[0] = dt*eM_2_even[r][0]*cv_sum;
                 cols[1] = 5*idx[1];     vals[1] = dt*eM_2_even[r][1]*cv_sum;

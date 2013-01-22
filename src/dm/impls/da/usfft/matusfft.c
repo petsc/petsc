@@ -39,16 +39,16 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
   ierr = VecGetArray(usfft->resample,&r_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
-  if (!*plan){ /* create a plan then execute it*/
+  if (!*plan) { /* create a plan then execute it*/
     if (usfft->dof == 1) {
-#ifdef PETSC_DEBUG_USFFT
+#if defined(PETSC_DEBUG_USFFT)
       ierr = PetscPrintf(((PetscObject)A)->comm, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
       for (int ii = 0; ii < usfft->ndim; ++ii) {
         ierr = PetscPrintf(((PetscObject)A)->comm, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
       }
 #endif
 
-      switch (usfft->dim){
+      switch (usfft->dim) {
       case 1:
         *plan = fftw_plan_dft_1d(usfft->outdim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);
         break;
@@ -232,7 +232,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
   /* CONTINUE: recalculate matrix sizes based on the connectivity "Sieve" */
   /* mat sizes */
   m = 1; n = 1;
-  for (i=0; i<usfft->ndim; i++){
+  for (i=0; i<usfft->ndim; i++) {
     if (usfft->indim[i] <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"indim[%d]=%d must be > 0",i,usfft->indim[i]);
     if (usfft->outdim[i] <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"outdim[%d]=%d must be > 0",i,usfft->outdim[i]);
     n *= usfft->indim[i];

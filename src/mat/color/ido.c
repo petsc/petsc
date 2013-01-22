@@ -105,16 +105,16 @@ PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,const PetscInt * indrow,const
 
     maxinc = 0;
     for (jp = *n; jp >= 1; --jp) {
-	ic = iwa4[jp];
-	iwa1[*n - jp] = 0;
-	iwa2[ic] = 0;
-	iwa3[ic] = iwa1[0];
-	if (iwa1[0] > 0) {
-	    iwa2[iwa1[0]] = ic;
-	}
-	iwa1[0] = ic;
-	iwa4[jp] = 0;
-	list[jp] = 0;
+        ic = iwa4[jp];
+        iwa1[*n - jp] = 0;
+        iwa2[ic] = 0;
+        iwa3[ic] = iwa1[0];
+        if (iwa1[0] > 0) {
+            iwa2[iwa1[0]] = ic;
+        }
+        iwa1[0] = ic;
+        iwa4[jp] = 0;
+        list[jp] = 0;
     }
 
 /*     Determine the maximal search length for the list */
@@ -124,8 +124,8 @@ PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,const PetscInt * indrow,const
     i__1 = *m;
     for (ir = 1; ir <= i__1; ++ir) {
 /* Computing 2nd power */
-	i__2 = ipntr[ir + 1] - ipntr[ir];
-	maxlst += i__2 * i__2;
+        i__2 = ipntr[ir + 1] - ipntr[ir];
+        maxlst += i__2 * i__2;
     }
     maxlst /= *n;
     *maxclq = 0;
@@ -141,7 +141,7 @@ L30:
 L40:
     jp = iwa1[maxinc];
     if (jp > 0) {
-	goto L50;
+        goto L50;
     }
     --maxinc;
     goto L40;
@@ -149,14 +149,14 @@ L50:
     numwgt = -1;
     i__1 = maxlst;
     for (numlst = 1; numlst <= i__1; ++numlst) {
-	if (ndeg[jp] > numwgt) {
-	    numwgt = ndeg[jp];
-	    jcol = jp;
-	}
-	jp = iwa3[jp];
-	if (jp <= 0) {
-	    goto L70;
-	}
+        if (ndeg[jp] > numwgt) {
+            numwgt = ndeg[jp];
+            jcol = jp;
+        }
+        jp = iwa3[jp];
+        if (jp <= 0) {
+            goto L70;
+        }
     }
 L70:
     list[jcol] = numord;
@@ -165,29 +165,29 @@ L70:
 /*        found during the ordering. */
 
     if (!maxinc) {
-	ncomp = 0;
+        ncomp = 0;
     }
     ++ncomp;
     if (maxinc + 1 == ncomp) {
-	*maxclq = PetscMax(*maxclq,ncomp);
+        *maxclq = PetscMax(*maxclq,ncomp);
     }
 
 /*        Termination test. */
 
     ++numord;
     if (numord > *n) {
-	goto L100;
+        goto L100;
     }
 
 /*        Delete column jcol from the maxinc list. */
 
     if (!iwa2[jcol]) {
-	iwa1[maxinc] = iwa3[jcol];
+        iwa1[maxinc] = iwa3[jcol];
     } else {
-	iwa3[iwa2[jcol]] = iwa3[jcol];
+        iwa3[iwa2[jcol]] = iwa3[jcol];
     }
     if (iwa3[jcol] > 0) {
-	iwa2[iwa3[jcol]] = iwa2[jcol];
+        iwa2[iwa3[jcol]] = iwa2[jcol];
     }
 
 /*        Find all columns adjacent to column jcol. */
@@ -199,50 +199,50 @@ L70:
 
     i__1 = jpntr[jcol + 1] - 1;
     for (jp = jpntr[jcol]; jp <= i__1; ++jp) {
-	ir = indrow[jp];
+        ir = indrow[jp];
 
 /*           For each row ir, determine all positions (ir,ic) */
 /*           which correspond to non-zeroes in the matrix. */
 
-	i__2 = ipntr[ir + 1] - 1;
-	for (ip = ipntr[ir]; ip <= i__2; ++ip) {
-	    ic = indcol[ip];
+        i__2 = ipntr[ir + 1] - 1;
+        for (ip = ipntr[ir]; ip <= i__2; ++ip) {
+            ic = indcol[ip];
 
 /*              Array iwa4 marks columns which are adjacent to */
 /*              column jcol. */
 
-	    if (iwa4[ic] < numord) {
-		iwa4[ic] = numord;
+            if (iwa4[ic] < numord) {
+                iwa4[ic] = numord;
 
 /*                 Update the pointers to the current incidence lists. */
 
-		numinc = list[ic];
-		++list[ic];
+                numinc = list[ic];
+                ++list[ic];
 /* Computing MAX */
-		i__3 = maxinc, i__4 = list[ic];
-		maxinc = PetscMax(i__3,i__4);
+                i__3 = maxinc, i__4 = list[ic];
+                maxinc = PetscMax(i__3,i__4);
 
 /*                 Delete column ic from the numinc list. */
 
-		if (!iwa2[ic]) {
-		    iwa1[numinc] = iwa3[ic];
-		} else {
-		    iwa3[iwa2[ic]] = iwa3[ic];
-		}
-		if (iwa3[ic] > 0) {
-		    iwa2[iwa3[ic]] = iwa2[ic];
-		}
+                if (!iwa2[ic]) {
+                    iwa1[numinc] = iwa3[ic];
+                } else {
+                    iwa3[iwa2[ic]] = iwa3[ic];
+                }
+                if (iwa3[ic] > 0) {
+                    iwa2[iwa3[ic]] = iwa2[ic];
+                }
 
 /*                 Add column ic to the numinc+1 list. */
 
-		iwa2[ic] = 0;
-		iwa3[ic] = iwa1[numinc + 1];
-		if (iwa1[numinc + 1] > 0) {
-		    iwa2[iwa1[numinc + 1]] = ic;
-		}
-		iwa1[numinc + 1] = ic;
-	    }
-	}
+                iwa2[ic] = 0;
+                iwa3[ic] = iwa1[numinc + 1];
+                if (iwa1[numinc + 1] > 0) {
+                    iwa2[iwa1[numinc + 1]] = ic;
+                }
+                iwa1[numinc + 1] = ic;
+            }
+        }
     }
 
 /*        End of iteration loop. */
@@ -254,11 +254,11 @@ L100:
 
     i__1 = *n;
     for (jcol = 1; jcol <= i__1; ++jcol) {
-	iwa2[list[jcol]] = jcol;
+        iwa2[list[jcol]] = jcol;
     }
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
-	list[jp] = iwa2[jp];
+        list[jp] = iwa2[jp];
     }
     PetscFunctionReturn(0);
 }

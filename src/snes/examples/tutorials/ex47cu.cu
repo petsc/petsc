@@ -49,21 +49,21 @@ int main(int argc,char **argv)
 
 struct ApplyStencil
 {
-	template <typename Tuple>
-	__host__ __device__
-	void operator()(Tuple t)
-	{
-		/* f = (2*x_i - x_(i+1) - x_(i-1))/h - h*exp(x_i) */
-	     thrust::get<0>(t) = 1;
-		if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t)-1)) {
-		  thrust::get<0>(t) = (2.0*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
-		} else if (thrust::get<4>(t) == 0) {
-		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
-		} else if (thrust::get<4>(t) == thrust::get<5>(t)-1) {
-		  thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
-		}
-		
-	}
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    /* f = (2*x_i - x_(i+1) - x_(i-1))/h - h*exp(x_i) */
+       thrust::get<0>(t) = 1;
+    if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t)-1)) {
+      thrust::get<0>(t) = (2.0*thrust::get<1>(t) - thrust::get<2>(t) - thrust::get<3>(t)) / (thrust::get<6>(t)) - (thrust::get<6>(t))*exp(thrust::get<1>(t));
+    } else if (thrust::get<4>(t) == 0) {
+      thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
+    } else if (thrust::get<4>(t) == thrust::get<5>(t)-1) {
+      thrust::get<0>(t) = thrust::get<1>(t) / (thrust::get<6>(t));
+    }
+    
+  }
 };
 
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
@@ -94,27 +94,27 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     ierr = VecGetOwnershipRange(f,&fstart,PETSC_NULL);CHKERRQ(ierr);
     try {
       thrust::for_each(
-		       thrust::make_zip_iterator(
-						 thrust::make_tuple(
-								    farray->begin(),
-								    xarray->begin()+xstartshift,
-								    xarray->begin()+xstartshift + 1,
-								    xarray->begin()+xstartshift - 1,
-								    thrust::counting_iterator<int>(fstart),
-								    thrust::constant_iterator<int>(Mx),
-								    thrust::constant_iterator<PetscScalar>(hx))),
-		       thrust::make_zip_iterator(
-						 thrust::make_tuple(
-								    farray->end(),
-								    xarray->end()-xendshift,
-								    xarray->end()-xendshift + 1,
-								    xarray->end()-xendshift - 1,
-								    thrust::counting_iterator<int>(fstart) + x->map->n,
-								    thrust::constant_iterator<int>(Mx),
-								    thrust::constant_iterator<PetscScalar>(hx))),
-		       ApplyStencil());
+           thrust::make_zip_iterator(
+             thrust::make_tuple(
+                    farray->begin(),
+                    xarray->begin()+xstartshift,
+                    xarray->begin()+xstartshift + 1,
+                    xarray->begin()+xstartshift - 1,
+                    thrust::counting_iterator<int>(fstart),
+                    thrust::constant_iterator<int>(Mx),
+                    thrust::constant_iterator<PetscScalar>(hx))),
+           thrust::make_zip_iterator(
+             thrust::make_tuple(
+                    farray->end(),
+                    xarray->end()-xendshift,
+                    xarray->end()-xendshift + 1,
+                    xarray->end()-xendshift - 1,
+                    thrust::counting_iterator<int>(fstart) + x->map->n,
+                    thrust::constant_iterator<int>(Mx),
+                    thrust::constant_iterator<PetscScalar>(hx))),
+           ApplyStencil());
     }
-    catch(char* all){
+    catch(char* all) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Thrust is not working\n");CHKERRQ(ierr);
     }
     ierr = VecCUSPRestoreArrayRead(xlocal,&xarray);CHKERRQ(ierr);

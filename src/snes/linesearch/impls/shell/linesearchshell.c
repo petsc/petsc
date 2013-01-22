@@ -25,7 +25,8 @@ typedef struct {
 
    Usage:
 
-$  PetscErrorCode shellfunc(SNESLineSearch linesearch, void * ctx) {
+$  PetscErrorCode shellfunc(SNESLineSearch linesearch, void * ctx)
+$  {
 $     Vec  X, Y, F, W, G;
 $     SNES snes;
 $     PetscFunctionBegin;
@@ -108,7 +109,6 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-
   /* apply the user function */
   if (shell->func) {
     ierr = (*shell->func)(linesearch, shell->ctx);CHKERRQ(ierr);

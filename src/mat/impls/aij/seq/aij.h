@@ -7,7 +7,7 @@
 /*
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
-#define SEQAIJHEADER(datatype)	\
+#define SEQAIJHEADER(datatype)        \
   PetscBool         roworiented;      /* if true, row-oriented input, default */\
   PetscInt          nonew;            /* 1 don't add new nonzeros, -1 generate error on new */\
   PetscInt          nounused;         /* -1 generate error on unused space */\
@@ -90,9 +90,9 @@ extern PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat,MatAssemblyType);
 extern PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
 extern PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
-extern PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscBool );
+extern PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscBool);
 extern PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat*);
-extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool );
+extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
 extern PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat,Mat,const MatFactorInfo*);
 extern PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat,const MatFactorInfo*);
 
@@ -138,7 +138,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
 */
 #define MatSeqXAIJReallocateAIJ(Amat,AM,BS2,NROW,ROW,COL,RMAX,AA,AI,AJ,RP,AP,AIMAX,NONEW,datatype) \
   if (NROW >= RMAX) {\
-	Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data;\
+        Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data;\
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt   CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
         datatype   *new_a; \
@@ -159,7 +159,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
         /* free up old matrix storage */ \
         ierr = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr);\
         AA = new_a; \
-        Ain->a = (MatScalar*) new_a;		   \
+        Ain->a = (MatScalar*) new_a;                   \
         AI = Ain->i = new_i; AJ = Ain->j = new_j;  \
         Ain->singlemalloc = PETSC_TRUE; \
  \
@@ -276,8 +276,8 @@ extern PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
 extern PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
 extern PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat);
-extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );
-extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
+extern PetscErrorCode Mat_CheckInode(Mat,PetscBool);
+extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool);
 
 extern PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
@@ -313,7 +313,7 @@ extern PetscErrorCode  MatDestroy_SeqAIJ(Mat);
 .seealso: PetscSparseDensePlusDot()
 
 */
-#ifdef PETSC_KERNEL_USE_UNROLL_4
+#if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
 if (nnz > 0) {\
 switch (nnz & 0x3) {\
@@ -323,7 +323,7 @@ case 1: sum -= *xv++ * r[*xi++];\
 nnz -= 4;}\
 while (nnz > 0) {\
 sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] -\
-	xv[2] * r[xi[2]] - xv[3] * r[xi[3]];\
+        xv[2] * r[xi[2]] - xv[3] * r[xi[3]];\
 xv  += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
@@ -360,7 +360,7 @@ for (__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 .seealso: PetscSparseDenseMinusDot()
 
 */
-#ifdef PETSC_KERNEL_USE_UNROLL_4
+#if defined(PETSC_KERNEL_USE_UNROLL_4)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
 if (nnz > 0) {\
 switch (nnz & 0x3) {\
@@ -370,7 +370,7 @@ case 1: sum += *xv++ * r[*xi++];\
 nnz -= 4;}\
 while (nnz > 0) {\
 sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] +\
-	xv[2] * r[xi[2]] + xv[3] * r[xi[3]];\
+        xv[2] * r[xi[2]] + xv[3] * r[xi[3]];\
 xv  += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)

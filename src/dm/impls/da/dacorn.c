@@ -36,7 +36,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
     ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
     /* every Mth value in ld matters */
       ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
-      for(i = 0; i < N; ++i) {
+      for (i = 0; i < N; ++i) {
         ld[i] = ld[M*i];
       }
       if (bx == DMDA_BOUNDARY_MIRROR || by == DMDA_BOUNDARY_MIRROR) {
@@ -56,11 +56,11 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
     ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
     /* every Mth value in ld matters */
     ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
-    for(i = 0; i < N; ++i) {
+    for (i = 0; i < N; ++i) {
       ld[i] = ld[M*i];
     }
     ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
-    for(i = 0; i < P; ++i) {
+    for (i = 0; i < P; ++i) {
       le[i] = le[M*N*i];
     }
     ierr = DMDACreate3d(((PetscObject)dm)->comm,bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,cdm);CHKERRQ(ierr);

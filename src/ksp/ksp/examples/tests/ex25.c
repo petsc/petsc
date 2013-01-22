@@ -52,13 +52,13 @@ int main(int argc,char **args)
 
   /* Setup and solve for system */
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  for (k=0; k<3; k++){
-    if (k == 0){                              /* CG  */
+  for (k=0; k<3; k++) {
+    if (k == 0) {                              /* CG  */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
-    } else if (k == 1){                       /* MINRES */
+    } else if (k == 1) {                       /* MINRES */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPMINRES);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

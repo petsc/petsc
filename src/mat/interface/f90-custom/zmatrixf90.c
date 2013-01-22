@@ -2,7 +2,7 @@
 #include <petscmat.h>
 #include <../src/sys/f90-src/f90impl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matdensegetarrayf90_       MATDENSEGETARRAYF90
 #define matdenserestorearrayf90_        MATDENSERESTOREARRAYF90
 #define matseqaijgetarrayf90_       MATSEQAIJGETARRAYF90

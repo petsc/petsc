@@ -269,8 +269,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    *x;
 
-  mx	 = user->mx;
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
 
   hx    = 1.0 / (PetscReal)(mx-1);
@@ -325,8 +325,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
   PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
-  mx	 = user->mx;
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
   hx     = one / (PetscReal)(mx-1);
   hy     = one / (PetscReal)(my-1);
@@ -393,8 +393,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
   PetscReal      hx,hy,hxdhy,hydhx;
 
-  mx	 = user->mx;
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
   hx     = 1.0 / (PetscReal)(mx-1);
   hy     = 1.0 / (PetscReal)(my-1);

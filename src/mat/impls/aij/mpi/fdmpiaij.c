@@ -64,7 +64,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       c->columns[i]  = 0;
     }
 
-    if (ctype == IS_COLORING_GLOBAL){
+    if (ctype == IS_COLORING_GLOBAL) {
       /* Determine the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
       ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_GHOSTED){
+    } else if (ctype == IS_COLORING_GHOSTED) {
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         } else {
 #if defined (PETSC_USE_CTABLE)
           ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
-	  colb --;
+          colb --;
 #else
           colb = aij->colmap[col] - 1;
 #endif
@@ -186,7 +186,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         fm    = M; /* fm points to first entry in linked list */
         for (k=0; k<m; k++) {
           currentcol = *rows++;
-	  /* is it already in the list? */
+          /* is it already in the list? */
           do {
             mfm  = fm;
             fm   = rowhit[fm];

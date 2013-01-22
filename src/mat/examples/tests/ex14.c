@@ -38,9 +38,9 @@ int main(int argc,char **args)
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++){
+  for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
-    if (!rank){
+    if (!rank) {
       for (j=0; j<nz; j++) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"%D %G ",idx[j],PetscRealPart(values[j]));CHKERRQ(ierr);
       }

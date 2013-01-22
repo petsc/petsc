@@ -85,7 +85,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscsnes"

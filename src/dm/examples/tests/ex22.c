@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   idy[0].i = 1;   idy[0].j = 2; idy[0].k = 0;
   idy[1].i = 2;   idy[1].j = 2; idy[1].k = 0;
   ierr = PetscMalloc(2*2*w*w*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-  for ( i=0; i<2*2*w*w; i++ ) values[i] = i;
+  for (i=0; i<2*2*w*w; i++) values[i] = i;
   ierr = MatSetValuesBlockedStencil(mat,2,idx,2,idy,values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

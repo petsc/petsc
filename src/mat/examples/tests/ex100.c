@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(MA,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(MA,&M,&N);CHKERRQ(ierr);
 
-  if (size == 1){
+  if (size == 1) {
     ierr = MatConvert(MA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   } else {
     ierr = MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
@@ -45,24 +45,24 @@ int main(int argc,char **args)
 
   /* Test MatMult() */
   ierr = MatMultEqual(MA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMul() for MAIJ matrix");
   }
   /* Test MatMultAdd() */
   ierr = MatMultAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
   }
 
   /* Test MatMultTranspose() */
   ierr = MatMultTransposeEqual(MA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
   }
 
   /* Test MatMultTransposeAdd() */
    ierr = MatMultTransposeAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg){
+  if (!flg) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulTransposeAdd() for MAIJ matrix");
   }
 

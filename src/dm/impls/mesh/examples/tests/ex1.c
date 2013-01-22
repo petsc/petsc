@@ -156,7 +156,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     ret = fgets(line, 1023, fp);
     if (!ret) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);
     ierr = PetscStrncmp(line, "FEAP", 4, &match);CHKERRQ(ierr);
-  } while(!match);
+  } while (!match);
   // Read sizes
   ret = fgets(line, 256, fp);
   if (6 != sscanf(line, "%d %d %d %d %d %d", &numNodes, &numElems, &nmat, &ndm, &numDof, &numCorners)) {
@@ -176,7 +176,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     ret = fgets(line, 1023, fp);
     if (!ret) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);
     ierr = PetscStrncmp(line, "coor", 4, &match);CHKERRQ(ierr);
-  } while(!match);
+  } while (!match);
   // Rank 0 determines the length of a coordinate line and broadcasts it
   if (!rank) {
     ret = fgets(line, 1023, fp);
@@ -196,7 +196,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   ierr = VecGetArray(*coordinates, &coords);CHKERRQ(ierr);
   //ierr = PetscBinarySeek(fd, firstNode*coordLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
   fseek(fp, firstNode*coordLineSize, SEEK_CUR);
-  for(PetscInt n = 0; n < numLocalNodes; ++n) {
+  for (PetscInt n = 0; n < numLocalNodes; ++n) {
     PetscInt num, id;
 
     ret = fgets(line, 1023, fp);
@@ -214,7 +214,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     ret = fgets(line, 1023, fp);
     if (!ret) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Input file %s is not in FEAP format", filename);
     ierr = PetscStrncmp(line, "elem", 4, &match);CHKERRQ(ierr);
-  } while(!match);
+  } while (!match);
   // Rank 0 determines the length of a coordinate line and broadcasts it
   if (!rank) {
     ret = fgets(line, 1023, fp);
@@ -234,14 +234,14 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   ierr = VecGetArray(*elements, &elem);CHKERRQ(ierr);
   //ierr = PetscBinarySeek(fd, firstElem*elemLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
   fseek(fp, firstElem*elemLineSize, SEEK_CUR);
-  for(PetscInt n = 0; n < numLocalElems; ++n) {
+  for (PetscInt n = 0; n < numLocalElems; ++n) {
     //         1         0     1         1         2         6         5       145       146       150       149
     PetscInt num, id, matid;
     PetscInt e[8];
 
     ret = fgets(line, 1023, fp);
     if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad element line in FEAP file");
-    switch(numCorners) {
+    switch (numCorners) {
     case 8:
       if (3+8 != sscanf(line, "%d %d %d %d %d %d %d %d %d %d %d", &num, &id, &matid, &e[0], &e[1], &e[2], &e[3], &e[4], &e[5], &e[6], &e[7])) {
         SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Malformed element line in FEAP file");
@@ -250,7 +250,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     default:
       SETERRQ1(comm, PETSC_ERR_SUP, "We do not support %d nodes per element", numCorners);
     }
-    for(PetscInt c = 0; c < numCorners; ++c) {
+    for (PetscInt c = 0; c < numCorners; ++c) {
       elem[n*numCorners+c] = e[c]-1;
     }
   }
@@ -284,7 +284,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
     numTotalCells /= numCorners;
     ierr = PetscMalloc(numCells*numCorners * sizeof(PetscInt), &cells);CHKERRQ(ierr);
     ierr = VecGetArray(elements,    &elems);CHKERRQ(ierr);
-    for(PetscInt c = 0; c < numCells*numCorners; ++c) {
+    for (PetscInt c = 0; c < numCells*numCorners; ++c) {
       cells[c] = elems[c];
     }
     ierr = VecRestoreArray(elements,    &elems);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
 
     // Renumber vertices
     for (PetscInt c = 0; c < numCells; ++c) {
-      for(PetscInt v = 0; v < numCorners; ++v) {
+      for (PetscInt v = 0; v < numCorners; ++v) {
         PetscInt vertex = cells[c*numCorners+v]+numTotalCells;
 
         if (renumbering.find(vertex) == renumbering.end()) {
@@ -304,7 +304,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
     }
     ierr = PetscMalloc(newV*dim * sizeof(PetscInt), &idx);CHKERRQ(ierr);
     for (PetscInt c = 0; c < numCells; ++c) {
-      for(PetscInt v = 0; v < numCorners; ++v) {
+      for (PetscInt v = 0; v < numCorners; ++v) {
         PetscInt vertex = cells[c*numCorners+v]+numTotalCells;
 
         idx[renumbering[vertex] - numCells] = vertex;
@@ -321,11 +321,11 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
     sieve->allocate();
     // Fill up cones
     ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
-    for(PetscInt v = 0; v < numCorners; ++v) {
+    for (PetscInt v = 0; v < numCorners; ++v) {
       coneO[v] = 1;
     }
-    for(PetscInt c = 0; c < numCells; ++c) {
-      for(PetscInt v = 0; v < numCorners; ++v) {
+    for (PetscInt c = 0; c < numCells; ++c) {
+      for (PetscInt v = 0; v < numCorners; ++v) {
         cone[v] = renumbering[cells[c*numCorners+v]+numTotalCells];
       }
       sieve->setCone(cone, c);

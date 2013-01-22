@@ -14,7 +14,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionBegin;
   ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(dm->defaultSection, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
+  for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof;
 
     ierr = PetscSectionGetDof(dm->defaultSection, p, &dof);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   ierr = PetscSectionGetChart(dm->defaultSection, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
+  for (p = pStart; p < pEnd; ++p) {
     PetscInt dof;
 
     ierr = PetscSectionGetDof(dm->defaultSection, p, &dof);CHKERRQ(ierr);

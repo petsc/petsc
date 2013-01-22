@@ -3,7 +3,7 @@
    systems of nonlinear equations
  */
 
-#ifndef __SNES_LS_H
+#if !defined(__SNES_LS_H)
 #define __SNES_LS_H
 #include <petsc-private/snesimpl.h>
 

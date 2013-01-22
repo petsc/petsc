@@ -111,7 +111,7 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
     numRemoteRanks = 0;
   }
   ierr = PetscMalloc(numRemoteRanks * sizeof(PetscSFNode), &remoteRanks);CHKERRQ(ierr);
-  for(p = 0; p < numRemoteRanks; ++p) {
+  for (p = 0; p < numRemoteRanks; ++p) {
     remoteRanks[p].rank  = p;
     remoteRanks[p].index = 0;
   }

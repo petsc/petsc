@@ -321,7 +321,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscFunctionBegin;
   PetscValidPointer(newpc,1);
   *newpc = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PCInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
@@ -1653,7 +1653,6 @@ PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-
   ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PCList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1768,7 +1767,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
 
 .seealso: MatSetNearNullSpace
 @*/
-PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords )
+PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal *coords)
 {
   PetscErrorCode ierr;
 

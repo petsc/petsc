@@ -398,7 +398,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   PetscValidLogicalCollectiveInt(boundary,dim,2);
   ierr = DMSetType(boundary, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(boundary, dim-1);CHKERRQ(ierr);
-  switch(dim) {
+  switch (dim) {
   case 2:
   {
     PetscReal lower[2] = {0.0, 0.0};
@@ -427,7 +427,8 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateHexBoxMesh"
-PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm) {
+PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -436,7 +437,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   PetscValidLogicalCollectiveInt(*dm,dim,2);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
-  switch(dim) {
+  switch (dim) {
   case 2:
   {
     PetscReal lower[2] = {0.0, 0.0};
@@ -564,14 +565,14 @@ PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->subpointMap      = PETSC_NULL;
 
-  for(unit = 0; unit < NUM_PETSC_UNITS; ++unit) {
+  for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) {
     mesh->scale[unit]    = 1.0;
   }
 
   mesh->labels               = PETSC_NULL;
   mesh->globalVertexNumbers  = PETSC_NULL;
   mesh->globalCellNumbers    = PETSC_NULL;
-  for(d = 0; d < 8; ++d) {
+  for (d = 0; d < 8; ++d) {
     mesh->hybridPointMax[d]  = PETSC_DETERMINE;
   }
   mesh->vtkCellHeight        = 0;

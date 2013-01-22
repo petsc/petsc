@@ -103,7 +103,7 @@ PetscErrorCode DMView_Cartesian(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
   ierr = DMCartesianGetMesh(dm, m);CHKERRQ(ierr);
-  if (iascii){
+  if (iascii) {
     ierr = DMView_Cartesian_Ascii(m, viewer);CHKERRQ(ierr);
   } else if (isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
   else if (isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
@@ -140,14 +140,14 @@ PetscErrorCode DMCreateInterpolation_Cartesian(DM fineMesh, DM coarseMesh, Mat *
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
-  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+  for (ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
     const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(coords);
 
     coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
-    for(int d = 0; d < dim; ++d) {
+    for (int d = 0; d < dim; ++d) {
       refCoords[d] = 0.0;
-      for(int e = 0; e < dim; ++e) {
+      for (int e = 0; e < dim; ++e) {
         refCoords[d] += invJ[d*dim+e]*(coords[e] - v0[e]);
       }
       refCoords[d] -= 1.0;

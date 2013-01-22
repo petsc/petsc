@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   /* check final residual */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){
+  if (flg) {
     Vec            b1;
     PetscReal      norm;
     ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);

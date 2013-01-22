@@ -7,7 +7,7 @@
 
 #include "petsc-private/pcimpl.h"          /*I "petscpc.h" I*/
 
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
 #define DBL_CMPLX
 #else
 #define DBL
@@ -55,7 +55,6 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscMPIInt       rank, npro;
 
   PetscFunctionBegin;
-
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
   ierr = PCGetOperators(pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
   MPI_Comm_size(((PetscObject)pmat)->comm,&npro);
@@ -153,12 +152,12 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_PCCreate(&parms->pc,parms->A);
 
   /* Transfer options from PC to pARMS */
-  switch(parms->global) {
+  switch (parms->global) {
     case 0: parms_PCSetType(parms->pc, PCRAS); break;
     case 1: parms_PCSetType(parms->pc, PCSCHUR); break;
     case 2: parms_PCSetType(parms->pc, PCBJ); break;
   }
-  switch(parms->local) {
+  switch (parms->local) {
     case 0: parms_PCSetILUType(parms->pc, PCILU0); break;
     case 1: parms_PCSetILUType(parms->pc, PCILUK); break;
     case 2: parms_PCSetILUType(parms->pc, PCILUT); break;
@@ -469,7 +468,6 @@ PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxi
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
   PetscFunctionBegin;
-
   if (tol != parms->solvetol) {
     parms->solvetol = tol;
     pc->setupcalled = 0;
@@ -525,12 +523,10 @@ PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
   PetscFunctionBegin;
-
   if (restart != parms->maxdim) {
     parms->maxdim = restart;
     pc->setupcalled = 0;
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

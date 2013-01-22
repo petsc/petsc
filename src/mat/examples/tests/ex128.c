@@ -73,7 +73,7 @@ int main(int argc,char **args)
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
   ierr = PetscOptionsHasName(PETSC_NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
-  if (CHOLESKY){
+  if (CHOLESKY) {
     printf("Test CHOLESKY...\n");
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
@@ -86,16 +86,16 @@ int main(int argc,char **args)
   ierr = MatCholeskyFactorNumeric(sA,sC,&info);CHKERRQ(ierr);
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
-  if (CHOLESKY){
+  if (CHOLESKY) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
-    if (TRIANGULAR){
+    if (TRIANGULAR) {
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(sA,b,ytmp);CHKERRQ(ierr);
       printf("Test MatBackwardSolve...\n");
       ierr = MatBackwardSolve(sA,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (norm2 > 1.e-14){
+      if (norm2 > 1.e-14) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr);
       }
     }
@@ -106,7 +106,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&sA);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  if (lf == -1 && norm2 > 1.e-14){
+  if (lf == -1 && norm2 > 1.e-14) {
     PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
   }
 

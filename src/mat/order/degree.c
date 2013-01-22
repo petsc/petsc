@@ -59,44 +59,44 @@ L100:
 /*       AND AT THE SAME TIME, GENERATE THE NEXT LEVEL.*/
     i__1 = lvlend;
     for (i = lbegin; i <= i__1; ++i) {
-	node = ls[i];
-	jstrt = -xadj[node];
-	jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
-	ideg = 0;
-	if (jstop < jstrt) {
-	    goto L300;
-	}
-	i__2 = jstop;
-	for (j = jstrt; j <= i__2; ++j) {
-	    nbr = adjncy[j];
-	    if (!mask[nbr]) {
-		goto L200;
-	    }
-	    ++ideg;
-	    if (xadj[nbr] < 0) {
-		goto L200;
-	    }
-	    xadj[nbr] = -xadj[nbr];
-	    ++(*ccsize);
-	    ls[*ccsize] = nbr;
+        node = ls[i];
+        jstrt = -xadj[node];
+        jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
+        ideg = 0;
+        if (jstop < jstrt) {
+            goto L300;
+        }
+        i__2 = jstop;
+        for (j = jstrt; j <= i__2; ++j) {
+            nbr = adjncy[j];
+            if (!mask[nbr]) {
+                goto L200;
+            }
+            ++ideg;
+            if (xadj[nbr] < 0) {
+                goto L200;
+            }
+            xadj[nbr] = -xadj[nbr];
+            ++(*ccsize);
+            ls[*ccsize] = nbr;
 L200:
-	    ;
-	}
+            ;
+        }
 L300:
-	deg[node] = ideg;
+        deg[node] = ideg;
     }
 /*       COMPUTE THE CURRENT LEVEL WIDTH. */
 /*       IF IT IS NONZERO, GENERATE ANOTHER LEVEL.*/
     lvsize = *ccsize - lvlend;
     if (lvsize > 0) {
-	goto L100;
+        goto L100;
     }
 /*       RESET XADJ TO ITS CORRECT SIGN AND RETURN. */
 /*       ------------------------------------------*/
     i__1 = *ccsize;
     for (i = 1; i <= i__1; ++i) {
-	node = ls[i];
-	xadj[node] = -xadj[node];
+        node = ls[i];
+        xadj[node] = -xadj[node];
     }
     PetscFunctionReturn(0);
 }

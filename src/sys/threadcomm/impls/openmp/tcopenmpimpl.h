@@ -1,5 +1,5 @@
 
-#ifndef __TCOPENMPIMPLH
+#if !defined(__TCOPENMPIMPLH)
 #define __TCOPENMPIMPLH
 
 #include <petsc-private/threadcommimpl.h>

@@ -26,7 +26,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)ao)->comm,&rank);CHKERRQ(ierr);
-  if (!rank){
+  if (!rank) {
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-    if (ia[i] >= 0 && ia[i] < N ) {
+    if (ia[i] >= 0 && ia[i] < N) {
       ia[i] = aobasic->app[ia[i]];
     } else {
       ia[i] = -1;
@@ -227,7 +227,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ao->n = N;
 
   /* If mypetsc is 0 then use "natural" numbering */
-  if (napp){
+  if (napp) {
     if (!ispetsc) {
       start = disp[rank];
       ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
@@ -290,8 +290,8 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   }
 
   ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
-  if (napp){
-    if (ispetsc){
+  if (napp) {
+    if (ispetsc) {
       ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
     } else {
       ierr = PetscFree(petsc);CHKERRQ(ierr);
@@ -335,14 +335,14 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
 
   PetscFunctionBegin;
   ierr = ISCreateGeneral(comm,napp,app,PETSC_USE_POINTER,&isapp);CHKERRQ(ierr);
-  if (mypetsc){
+  if (mypetsc) {
     ierr = ISCreateGeneral(comm,napp,petsc,PETSC_USE_POINTER,&ispetsc);CHKERRQ(ierr);
   } else {
     ispetsc = PETSC_NULL;
   }
   ierr = AOCreateBasicIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
   ierr = ISDestroy(&isapp);CHKERRQ(ierr);
-  if (mypetsc){
+  if (mypetsc) {
     ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

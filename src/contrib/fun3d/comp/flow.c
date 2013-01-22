@@ -516,10 +516,8 @@ int Update(SNES snes, void *ctx)
     fptr = fopen("history.out", "w");
     fprintf(fptr, "VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");
  }
- if (PreLoadFlag)
-  max_steps = 1;
- else
-  max_steps = tsCtx->max_steps;
+ if (PreLoadFlag) max_steps = 1;
+ else max_steps = tsCtx->max_steps;
  max_time = tsCtx->max_time;
  fratio = 1.0;
  tsCtx->ptime = 0.0;
@@ -529,13 +527,13 @@ int Update(SNES snes, void *ctx)
  ierr = VecCopy(grid->qnode, tsCtx->qold);CHKERRQ(ierr);
  ierr = PetscGetTime(&time1);
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
- /*if (!PreLoadFlag) {
+ /* if (!PreLoadFlag) {
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
   if ((gen_start = start_counters(event0,event1)) < 0)
    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Error in start_counters\n");
- }*/
+ } */
 #endif
  /*cpu_ini = PetscGetCPUTime();*/
  for (i = 0; ((i < max_steps) && ((!Converged) || (!SecondOrder)));
@@ -557,10 +555,10 @@ int Update(SNES snes, void *ctx)
    tsCtx->cfl = tsCtx->cfl_ini;
    fratio = 1.0;
    /* Write Tecplot solution file */
-   /*if (print_flag) {
+   /* if (print_flag) {
     FieldOutput(grid, i);
     WriteRestartFile(grid,i);
-   }*/
+   } */
   }
   ierr = ComputeTimeStep(snes,i,user);CHKERRQ(ierr);
   if (cfl_damp_flag) {
@@ -648,7 +646,7 @@ int Update(SNES snes, void *ctx)
   int eve0, eve1;
   FILE *cfp0, *cfp1;
   char str[256];
-  /*if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
+  /* if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
    SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter\n");
   ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
   if (gen_read != gen_start) {
@@ -669,7 +667,7 @@ int Update(SNES snes, void *ctx)
  PetscPrintf(MPI_COMM_WORLD, "clift = %g cdrag = %g cmom = %g\n",
              clift, cdrag, cmom);
  /*PetscPrintf(MPI_COMM_WORLD, "Total cpu time needed %g seconds\n", cpu_time);*/
- /*if (!PreLoadFlag) {
+ /* if (!PreLoadFlag) {
      FieldOutput(grid, i);
      WriteRestartFile(grid,i);
  }*/
@@ -714,21 +712,19 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
   fnorm = tsCtx->fnorm;
   if (!SecondOrder)
    inc = 2.0;
-  /*if (iter == 0) {*/
+  /* if (iter == 0) {*/
   if (tsCtx->fnorm_ini == 0.0) {
     /* first time through so compute initial function norm */
     tsCtx->fnorm_ini = fnorm;
     tsCtx->cfl = tsCtx->cfl_ini;
-  }
-  else {
+  } else {
      newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/fnorm;
      tsCtx->cfl = PetscMin(newcfl, tsCtx->cfl_max);
   }
 
-  /*if (iramp < 0) {
+  /* if (iramp < 0) {
    newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/fnorm;
-  }
-  else {
+  } else {
    if (tsCtx->dt < 0 && iramp > 0)
     if (iter > iramp) newcfl = tsCtx->cfl_max;
     else newcfl = tsCtx->cfl_ini + (tsCtx->cfl_max - tsCtx->cfl_ini)*
@@ -828,8 +824,7 @@ int GetLocalOrdering(GRID *grid)
   if (!rank) {
     if (CommSize == 1) {
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
-    }
-    else {
+    } else {
       char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool  exists;
 
@@ -864,7 +859,7 @@ int GetLocalOrdering(GRID *grid)
   ierr = MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
   rstart -= nnodesLoc;
   ICALLOC(nnodesLoc, &pordering);
-  for ( i=0; i < nnodesLoc; i++ ) {
+  for (i=0; i < nnodesLoc; i++) {
     pordering[i] = rstart + i;
   }
   ierr = AOCreateBasic(MPI_COMM_WORLD,nnodesLoc,l2a,pordering,&grid->ao);CHKERRQ(ierr);
@@ -980,7 +975,7 @@ int GetLocalOrdering(GRID *grid)
    grid->eptr[i] = tmp[eperm[i]] + 1;
    grid->eptr[nedgeLoc+i] = tmp[nedgeLoc+eperm[i]] + 1;
 #endif
-    /*if (node1 > node2)
+    /* if (node1 > node2)
      printf("On processor %d, for edge %d node1 = %d, node2 = %d\n",
             rank,i,node1,node2);CHKERRQ(ierr);*/
     if ((node1 <= cross_node) && (node2 > cross_node)) {
@@ -1807,20 +1802,20 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 #if defined(INTERLACING)
 #if defined(BLOCKING)
    ICALLOC(nvertices, &svertices);
-   for ( i=0; i < nvertices; i++ )
+   for (i=0; i < nvertices; i++)
        svertices[i] = loc2pet[i];
    ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nvertices, &svertices);
-   for ( i = 0; i < nvertices; i++ )
-     for ( j = 0; j < bs; j++ )
+   for (i = 0; i < nvertices; i++)
+     for (j = 0; j < bs; j++)
        svertices[j+bs*i] = j + bs*loc2pet[i];
    ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
 #else
    ICALLOC(bs*nvertices, &svertices);
-   for ( j = 0; j < bs; j++ )
-    for ( i = 0; i < nvertices; i++ )
+   for (j = 0; j < bs; j++)
+    for (i = 0; i < nvertices; i++)
        svertices[j*nvertices+i] = j*nvertices + loc2pet[i];
    ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
@@ -1835,20 +1830,20 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 #if defined(INTERLACING)
 #if defined(BLOCKING)
    ICALLOC(nvertices, &svertices);
-   for ( i=0; i < nvertices; i++ )
+   for (i=0; i < nvertices; i++)
        svertices[i] = 3*loc2pet[i];
    ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(3*bs*nvertices, &svertices);
-   for ( i = 0; i < nvertices; i++ )
-     for ( j = 0; j < 3*bs; j++ )
+   for (i = 0; i < nvertices; i++)
+     for (j = 0; j < 3*bs; j++)
        svertices[j+3*bs*i] = j + 3*bs*loc2pet[i];
    ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
 #else
    ICALLOC(3*bs*nvertices, &svertices);
-   for ( j = 0; j < 3*bs; j++ )
-    for ( i = 0; i < nvertices; i++ )
+   for (j = 0; j < 3*bs; j++)
+    for (i = 0; i < nvertices; i++)
        svertices[j*nvertices+i] = j*nvertices + loc2pet[i];
    ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
@@ -1869,10 +1864,11 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     val_diag[i] = nbrs_diag;
     val_offd[i] = nbrs_offd;
@@ -1889,10 +1885,11 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
     nbrs_diag = 0;
     nbrs_offd = 0;
     for (j = jstart; j < jend; j++) {
-      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc)))
+      if ((grid->ja[j] >= rstart) && (grid->ja[j] < (rstart+nnodesLoc))) {
          nbrs_diag++;
-      else
+      } else {
          nbrs_offd++;
+      }
     }
     for (j = 0; j < bs; j++) {
       row = bs*i + j;
@@ -1908,7 +1905,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ierr = PetscFree(val_offd);CHKERRQ(ierr);
 
 #else
-   if (CommSize > 1 )
+   if (CommSize > 1)
      SETERRQ(PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case\n");
    ICALLOC(nnodes*bs, &val_diag);
    ICALLOC(nnodes*bs, &val_offd);
@@ -1942,8 +1939,8 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 #if defined(INTERLACING)
    ICALLOC(bs*nvertices, &svertices);
    k = 0;
-   for ( i=0; i < nvertices; i++ )
-     for ( j=0; j < bs; j++ )
+   for (i=0; i < nvertices; i++)
+     for (j=0; j < bs; j++)
        svertices[k++] = (bs*loc2pet[i] + j);
    /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
@@ -2005,18 +2002,17 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = PetscBinaryRead(fdes, isnode, nsnode, PETSC_INT);CHKERRQ(ierr);
     ierr = PetscBinarySeek(fdes, 3*nsnode*PETSC_BINARY_SCALAR_SIZE, PETSC_BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
     ICALLOC(nsnode, &isnodePet);
-    for (i = 0; i < nsnode; i++ )
+    for (i = 0; i < nsnode; i++)
        isnodePet[i] = isnode[i] - 1;
     ierr = AOApplicationToPetsc(grid->ao,nsnode,isnodePet);CHKERRQ(ierr);
     /* Create Scatter between the local and global vectors */
     ierr = VecCreateSeq(MPI_COMM_SELF,bs*nsnode,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs*nsnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nsnode, &svertices);
-    for (i = 0; i < nsnode; i++ )
+    for (i = 0; i < nsnode; i++)
        svertices[i] = isnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nsnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
@@ -2044,13 +2040,12 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = VecCreateSeq(MPI_COMM_SELF,3*nsnode,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3*nsnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nsnode, &svertices);
-    for (i = 0; i < nsnode; i++ )
+    for (i = 0; i < nsnode; i++)
        svertices[i] = isnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nsnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(isnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
@@ -2116,18 +2111,17 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = PetscBinaryRead(fdes, ivnode, nvnode, PETSC_INT);CHKERRQ(ierr);
     ierr = PetscBinarySeek(fdes, 3*nvnode*PETSC_BINARY_SCALAR_SIZE, PETSC_BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
     ICALLOC(nvnode, &ivnodePet);
-    for (i = 0; i < nvnode; i++ )
+    for (i = 0; i < nvnode; i++)
        ivnodePet[i] = ivnode[i] - 1;
     ierr = AOApplicationToPetsc(grid->ao,nvnode,ivnodePet);CHKERRQ(ierr);
     /* Create Scatter between the local and global vectors */
     ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvnode,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs*nvnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nvnode, &svertices);
-    for (i = 0; i < nvnode; i++ )
+    for (i = 0; i < nvnode; i++)
        svertices[i] = ivnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
@@ -2145,13 +2139,12 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = VecCreateSeq(MPI_COMM_SELF,3*nvnode,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3*nvnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nvnode, &svertices);
-    for (i = 0; i < nvnode; i++ )
+    for (i = 0; i < nvnode; i++)
        svertices[i] = ivnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nvnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ivnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
@@ -2217,21 +2210,20 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = PetscBinaryRead(fdes, ifnode, nfnode, PETSC_INT);CHKERRQ(ierr);
     ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);
     ICALLOC(nfnode, &ifnodePet);
-    for (i = 0; i < nfnode; i++ )
+    for (i = 0; i < nfnode; i++)
        ifnodePet[i] = ifnode[i] - 1;
     ierr = AOApplicationToPetsc(grid->ao,nfnode,ifnodePet);CHKERRQ(ierr);
     /* Create Scatter between the local and global vectors */
     ierr = VecCreateSeq(MPI_COMM_SELF,bs*nfnode,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs*nfnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nfnode, &svertices);
-    for (i = 0; i < nfnode; i++ ) {
+    for (i = 0; i < nfnode; i++) {
        /*assert((ifnode[i] >= 0) && (ifnode[i] < nnodes));
        assert((ifnodePet[i] >= 0) && (ifnodePet[i] < nnodes));*/
        svertices[i] = ifnodePet[i];
     }
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,bs,&qnodeLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,bs,0,1,&islocal);CHKERRQ(ierr);
@@ -2249,13 +2241,12 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = VecCreateSeq(MPI_COMM_SELF,3*nfnode,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3*nfnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nfnode, &svertices);
-    for (i = 0; i < nfnode; i++ )
+    for (i = 0; i < nfnode; i++)
        svertices[i] = ifnodePet[i];
     ierr = ISCreateBlock(MPI_COMM_SELF,3,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
     ierr = PetscFree(ifnodePet);CHKERRQ(ierr);
     ierr = PetscFree(svertices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     int one = 1;
     ierr = VecCreateSeq(MPI_COMM_SELF,3,&xyzLoc);
     ierr = ISCreateStride(MPI_COMM_SELF,3,0,1,&islocal);CHKERRQ(ierr);
@@ -2350,15 +2341,15 @@ int WriteRestartFile(GRID *grid, int timeStep)
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nnodesLoc,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #else
    ICALLOC(bs*nnodesLoc, &svertices);
-   for ( i = 0; i < nnodesLoc; i++ )
-     for ( j = 0; j < bs; j++ )
+   for (i = 0; i < nnodesLoc; i++)
+     for (j = 0; j < bs; j++)
        svertices[j+bs*i] = j + bs*loc2pet[i];
    ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nnodesLoc,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
 #else
    ICALLOC(bs*nnodesLoc, &svertices);
-   for ( j = 0; j < bs; j++ )
-    for ( i = 0; i < nnodesLoc; i++ )
+   for (j = 0; j < bs; j++)
+    for (i = 0; i < nnodesLoc; i++)
        svertices[j*nnodesLoc+i] = j*nnodesLoc + loc2pet[i];
    ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nnodesLoc,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
 #endif
@@ -2375,14 +2366,10 @@ int WriteRestartFile(GRID *grid, int timeStep)
   ierr = PetscOptionsHasName(PETSC_NULL,"-par_io",&flgIO);CHKERRQ(ierr);
   if (flgIO) {
    /* All processors write the output to the same file at appropriate positions */
-   if (timeStep < 10 )
-     sprintf(fileName,"flow000%d.bin",timeStep);
-   else if (timeStep < 100 )
-     sprintf(fileName,"flow00%d.bin",timeStep);
-   else if (timeStep < 1000 )
-     sprintf(fileName,"flow0%d.bin",timeStep);
-   else
-     sprintf(fileName,"flow%d.bin",timeStep);
+   if (timeStep < 10)        sprintf(fileName,"flow000%d.bin",timeStep);
+   else if (timeStep < 100)  sprintf(fileName,"flow00%d.bin",timeStep);
+   else if (timeStep < 1000) sprintf(fileName,"flow0%d.bin",timeStep);
+   else                       sprintf(fileName,"flow%d.bin",timeStep);
    /*printf("Restart file name is %s\n", fileName);*/
    ierr = VecGetArray(qnodeLoc, &qnode);CHKERRQ(ierr);
    printf("On Processor %d, qnode[%d] = %g\n",rank,rstart,qnode[0]);
@@ -2395,34 +2382,25 @@ int WriteRestartFile(GRID *grid, int timeStep)
    PetscPrintf(MPI_COMM_WORLD,"Restart file written to %s\n", fileName);
    ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);
    ierr = VecRestoreArray(qnodeLoc, &qnode);CHKERRQ(ierr);
-  }
-  else {
+  } else {
   /* Processor 0 writes the output to a file; others just send their
      pieces to it */
   if (rank == 0) {
    ierr = VecGetArray(qnodeLoc, &qnode);
-   if (timeStep < 10 )
-     sprintf(fileName,"flow000%d.bin",timeStep);
-   else if (timeStep < 100 )
-     sprintf(fileName,"flow00%d.bin",timeStep);
-   else if (timeStep < 1000 )
-     sprintf(fileName,"flow0%d.bin",timeStep);
-   else
-     sprintf(fileName,"flow%d.bin",timeStep);
+   if (timeStep < 10)        sprintf(fileName,"flow000%d.bin",timeStep);
+   else if (timeStep < 100)  sprintf(fileName,"flow00%d.bin",timeStep);
+   else if (timeStep < 1000) sprintf(fileName,"flow0%d.bin",timeStep);
+   else                      sprintf(fileName,"flow%d.bin",timeStep);
    printf("Restart file name is %s\n", fileName);
    ierr = PetscBinaryOpen(fileName,FILE_MODE_WRITE,&fdes);CHKERRQ(ierr);
    ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
    /* Write the solution vector in vtk (Visualization Toolkit) format*/
    ierr = PetscOptionsHasName(PETSC_NULL,"-vtk",&flg_vtk);CHKERRQ(ierr);
    if (flg_vtk) {
-    if (timeStep < 10 )
-      sprintf(fileName,"flow000%d.vtk",timeStep);
-    else if (timeStep < 100 )
-      sprintf(fileName,"flow00%d.vtk",timeStep);
-    else if (timeStep < 1000 )
-      sprintf(fileName,"flow0%d.vtk",timeStep);
-    else
-      sprintf(fileName,"flow%d.vtk",timeStep);
+    if (timeStep < 10)        sprintf(fileName,"flow000%d.vtk",timeStep);
+    else if (timeStep < 100)  sprintf(fileName,"flow00%d.vtk",timeStep);
+    else if (timeStep < 1000) sprintf(fileName,"flow0%d.vtk",timeStep);
+    else                      sprintf(fileName,"flow%d.vtk",timeStep);
     sprintf(command, "cp mesh.vtk %s", fileName);
     if ((status = system(command)) < 0)
       printf("Error in opening the file mesh.dat\n");
@@ -2754,8 +2732,8 @@ int set_up_grid(GRID *grid)
    * If using GMRES (nsrch>0) allocate memory
    */
   /* NoEq = 0;
-   *  if(nsrch > 0)NoEq = 4*nnodes;
-   *  if(nsrch < 0)NoEq = nnodes;
+   *  if (nsrch > 0)NoEq = 4*nnodes;
+   *  if (nsrch < 0)NoEq = nnodes;
    *  FCALLOC(NoEq,           &grid->AP);
    *  FCALLOC(NoEq,           &grid->Xgm);
    *  FCALLOC(NoEq,           &grid->temr);
@@ -2802,7 +2780,7 @@ int write_fine_grid(GRID *grid)
 /* open file for output      */
 /* call the output frame.out */
 
-   if (!(output = fopen("frame.out","a"))){
+   if (!(output = fopen("frame.out","a"))) {
       SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n");

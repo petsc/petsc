@@ -401,7 +401,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  if (norm_2 > 1.e-2){
+  if (norm_2 > 1.e-2) {
     printf("Timestep %d: step size = %G, time = %G, 2-norm error = %G, max norm error = %G\n",
          (int)step,dt,crtime,norm_2,norm_max);
   }
@@ -483,7 +483,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
      matrix one row at a time.
   */
   v[0] = sone; v[1] = stwo; v[2] = sone;
-  for ( i=mstart; i<mend; i++ ) {
+  for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }

@@ -1,6 +1,6 @@
 
 /*
-*	IEEE error handler for all machines. Since each machine has
+*   IEEE error handler for all machines. Since each machine has
 *   enough slight differences we have completely separate codes for each one.
 *
 */
@@ -12,7 +12,7 @@
   check PETSC_HAVE_FENV_H, and only define _GNU_SOURCE in that case, but such
   shenanigans ought to be unnecessary.
 */
-#ifndef _GNU_SOURCE
+#if !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
 #endif
 
@@ -91,13 +91,13 @@ PetscErrorCode ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sig
 EXTERN_C_END
 
 static struct { int code_no; char *name; } error_codes[] = {
-           { FPE_INTDIV_TRAP	,"integer divide" },
-	   { FPE_FLTOPERR_TRAP	,"IEEE operand error" },
-	   { FPE_FLTOVF_TRAP	,"floating point overflow" },
-	   { FPE_FLTUND_TRAP	,"floating point underflow" },
-	   { FPE_FLTDIV_TRAP	,"floating pointing divide" },
-	   { FPE_FLTINEX_TRAP	,"inexact floating point result" },
-	   { 0			,"unknown error" }
+           { FPE_INTDIV_TRAP    ,"integer divide" },
+           { FPE_FLTOPERR_TRAP  ,"IEEE operand error" },
+           { FPE_FLTOVF_TRAP    ,"floating point overflow" },
+           { FPE_FLTUND_TRAP    ,"floating point underflow" },
+           { FPE_FLTDIV_TRAP    ,"floating pointing divide" },
+           { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
+           { 0                  ,"unknown error" }
 } ;
 #define SIGPC(scp) (scp->sc_pc)
 
@@ -268,12 +268,12 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   PetscFunctionBegin;
   code = exception[0];
   err_ind = -1 ;
-  for (j = 0 ; error_codes[j].code_no ; j++){
+  for (j = 0 ; error_codes[j].code_no ; j++) {
     if (error_codes[j].code_no == code) err_ind = j;
   }
-  if (err_ind >= 0){
+  if (err_ind >= 0) {
     (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
-  } else{
+  } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);
   }
   PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
@@ -308,12 +308,12 @@ struct sigcontext;
 #define FPE_FLTINEX_TRAP  (fptrap_t)(0x02000000)
 
 static struct { int code_no; char *name; } error_codes[] = {
-           {FPE_FLTOPERR_TRAP	,"IEEE operand error" },
-	   { FPE_FLTOVF_TRAP	,"floating point overflow" },
-	   { FPE_FLTUND_TRAP	,"floating point underflow" },
-	   { FPE_FLTDIV_TRAP	,"floating point divide" },
-	   { FPE_FLTINEX_TRAP	,"inexact floating point result" },
-	   { 0			,"unknown error" }
+           {FPE_FLTOPERR_TRAP   ,"IEEE operand error" },
+           { FPE_FLTOVF_TRAP    ,"floating point overflow" },
+           { FPE_FLTUND_TRAP    ,"floating point underflow" },
+           { FPE_FLTDIV_TRAP    ,"floating point divide" },
+           { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
+           { 0                  ,"unknown error" }
 } ;
 #define SIGPC(scp) (0) /* Info MIGHT be in scp->sc_jmpbuf.jmp_context.iar */
 /*
@@ -338,9 +338,9 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
     if (error_codes[j].code_no == flt_context.trap) err_ind = j;
   }
 
-  if (err_ind >= 0){
+  if (err_ind >= 0) {
     (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
-  } else{
+  } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
   }
   ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");

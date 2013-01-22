@@ -5,7 +5,8 @@ static char help[] = "Testing MatCreateMPIAIJWithSplitArrays().\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
+int main(int argc,char **argv)
+{
   Mat            A,B;
   PetscInt       i,j,column;
   PetscInt       *di,*dj,*oi,*oj;
@@ -30,7 +31,7 @@ int main(int argc,char **argv) {
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 
   for (i=5*rank; i<5*rank+5; i++) {
-    for (j=0; j<5*size; j++){
+    for (j=0; j<5*size; j++) {
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
       column = (PetscInt) (5*size*PetscRealPart(value));
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-#ifndef __CUSPVECIMPL
+#if !defined(__CUSPVECIMPL)
 #define __CUSPVECIMPL
 
 #include <petsc-private/vecimpl.h>
@@ -54,12 +54,12 @@ extern PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
 extern PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 #include "tx_vector_interface.h"
 #endif
 
 struct  _p_PetscCUSPIndices {
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   GPU_Indices<PetscInt, PetscScalar> * sendIndices;
   GPU_Indices<PetscInt, PetscScalar> * recvIndices;
 #else
@@ -71,7 +71,7 @@ struct  _p_PetscCUSPIndices {
 #endif
 };
 
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
 extern PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec, PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndices);
 #endif
@@ -84,7 +84,7 @@ extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndic
 
 struct Vec_CUSP {
   CUSPARRAY*       GPUarray;  /* this always holds the GPU data */
-#ifdef PETSC_HAVE_TXPETSCGPU
+#if defined(PETSC_HAVE_TXPETSCGPU)
   GPU_Vector<PetscInt, PetscScalar> * GPUvector; /* this always holds the GPU data */
 #endif
 };

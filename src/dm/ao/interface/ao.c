@@ -453,7 +453,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
     ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = AOSetType(ao,type);CHKERRQ(ierr);
-    } else if (!((PetscObject)ao)->type_name){
+    } else if (!((PetscObject)ao)->type_name) {
       ierr = AOSetType(ao,def);CHKERRQ(ierr);
     }
 
@@ -491,7 +491,7 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ispetsc){
+  if (ispetsc) {
     PetscInt       napp,npetsc;
     ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
     ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
@@ -534,7 +534,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
   *ao = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 

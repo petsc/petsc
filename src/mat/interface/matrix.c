@@ -431,7 +431,7 @@ PetscErrorCode  MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *c
 @*/
 PetscErrorCode  MatConjugate(Mat mat)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1593,12 +1593,12 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     }
     for (i=0; i<m; i++) {
       for (j=0; j<bs; j++) {
-	iidxm[i*bs+j] = bs*idxm[i] + j;
+        iidxm[i*bs+j] = bs*idxm[i] + j;
       }
     }
     for (i=0; i<n; i++) {
       for (j=0; j<bs; j++) {
-	iidxn[i*bs+j] = bs*idxn[i] + j;
+        iidxn[i*bs+j] = bs*idxn[i] + j;
       }
     }
     ierr = MatSetValues(mat,m*bs,iidxm,n*bs,iidxn,v,addv);CHKERRQ(ierr);
@@ -2141,7 +2141,7 @@ PetscErrorCode  MatMult(Mat mat,Vec x,Vec y)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (x == y) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
-#ifndef PETSC_HAVE_CONSTRAINTS
+#if !defined(PETSC_HAVE_CONSTRAINTS)
   if (mat->cmap->N != x->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
   if (mat->rmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->rmap->N,y->map->N);
   if (mat->rmap->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %D %D",mat->rmap->n,y->map->n);
@@ -2197,7 +2197,7 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (x == y) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
-#ifndef PETSC_HAVE_CONSTRAINTS
+#if !defined(PETSC_HAVE_CONSTRAINTS)
   if (mat->rmap->N != x->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->rmap->N,x->map->N);
   if (mat->cmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->cmap->N,y->map->N);
 #endif
@@ -2255,7 +2255,7 @@ PetscErrorCode  MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (x == y) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
-#ifndef PETSC_HAVE_CONSTRAINTS
+#if !defined(PETSC_HAVE_CONSTRAINTS)
   if (mat->rmap->N != x->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->rmap->N,x->map->N);
   if (mat->cmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->cmap->N,y->map->N);
 #endif
@@ -4926,7 +4926,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
       ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
     }
 
-    if (mat->checksymmetryonassembly){
+    if (mat->checksymmetryonassembly) {
       ierr = MatIsSymmetric(mat,mat->checksymmetrytol,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscPrintf(((PetscObject)mat)->comm,"Matrix is symmetric (tolerance %G)\n",mat->checksymmetrytol);CHKERRQ(ierr);
@@ -6349,13 +6349,13 @@ PetscErrorCode  MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ic
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
       if (eq) {
-	if (mat->symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->hermitian) {
-	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->structurally_symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	}
+        if (mat->symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->hermitian) {
+          ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->structurally_symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -6396,13 +6396,13 @@ PetscErrorCode  MatGetSubMatricesParallel(Mat mat,PetscInt n,const IS irow[],con
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
       if (eq) {
-	if (mat->symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->hermitian) {
-	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-	} else if (mat->structurally_symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-	}
+        if (mat->symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->hermitian) {
+          ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+        } else if (mat->structurally_symmetric) {
+          ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -7765,8 +7765,8 @@ PetscErrorCode  MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
       A->symmetric_set = PETSC_TRUE;
       A->symmetric = *flg;
       if (A->symmetric) {
-	A->structurally_symmetric_set = PETSC_TRUE;
-	A->structurally_symmetric     = PETSC_TRUE;
+        A->structurally_symmetric_set = PETSC_TRUE;
+        A->structurally_symmetric     = PETSC_TRUE;
       }
     }
   } else if (A->symmetric) {
@@ -7824,8 +7824,8 @@ PetscErrorCode  MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
       A->hermitian_set = PETSC_TRUE;
       A->hermitian = *flg;
       if (A->hermitian) {
-	A->structurally_symmetric_set = PETSC_TRUE;
-	A->structurally_symmetric     = PETSC_TRUE;
+        A->structurally_symmetric_set = PETSC_TRUE;
+        A->structurally_symmetric     = PETSC_TRUE;
       }
     }
   } else if (A->hermitian) {
@@ -8125,10 +8125,10 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
-    if (viatranspose || viamatmatmatmult){
+    if (viatranspose || viamatmatmatmult) {
       Mat Pt;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-      if (viamatmatmatmult){
+      if (viamatmatmatmult) {
         ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
       } else {
         Mat AP;
@@ -8168,7 +8168,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (viatranspose || viamatmatmatmult) {
     Mat Pt;
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    if (viamatmatmatmult){
+    if (viamatmatmatmult) {
       ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
       ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
     } else {

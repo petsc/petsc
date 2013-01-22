@@ -391,9 +391,9 @@ PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const
       ierr = PetscDLLibraryOpen(comm,libname,&list);CHKERRQ(ierr);
       ierr = PetscInfo1(0,"Appending %s to dynamic library search path\n",libname);CHKERRQ(ierr);
       if (!*outlist) {
-	*outlist   = list;
+        *outlist   = list;
       } else {
-	prev->next = list;
+        prev->next = list;
       }
     }
     ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
@@ -470,11 +470,11 @@ PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,cons
     while (list) {
       ierr = PetscStrcmp(list->libname,libname,&match);CHKERRQ(ierr);
       if (match) {
-	ierr = PetscInfo1(0,"Moving %s to begin of dynamic library search path\n",libname);CHKERRQ(ierr);
-	if (prev) prev->next = list->next;
-	if (prev) list->next = *outlist;
-	*outlist = list;
-	break;
+        ierr = PetscInfo1(0,"Moving %s to begin of dynamic library search path\n",libname);CHKERRQ(ierr);
+        if (prev) prev->next = list->next;
+        if (prev) list->next = *outlist;
+        *outlist = list;
+        break;
       }
       prev = list;
       list = list->next;

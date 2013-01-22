@@ -43,7 +43,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if((t > ctx->tf) && (t < ctx->tcl)) {
+  if ((t > ctx->tf) && (t < ctx->tcl)) {
     V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
   } else {
     V = ctx->V;
@@ -71,7 +71,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionBegin;
   ierr    = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
-  if((t > ctx->tf) && (t < ctx->tcl)) V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
+  if ((t > ctx->tf) && (t < ctx->tcl)) V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
   else V = ctx->V;
   J[0][0] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[0][1] = -ctx->E*V*PetscCosScalar(u[1])/ctx->X;
   J[1][0] = -1.0;                                 J[1][1] = a;

@@ -10,7 +10,8 @@
 
 EXTERN_C_BEGIN
 void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,CHAR text PETSC_MIXED_LEN(len),
-               PetscErrorCode *ierr PETSC_END_LEN(len)){
+               PetscErrorCode *ierr PETSC_END_LEN(len))
+{
   char *t;
   FIXCHAR(text,len,t);
   *ierr = PetscDrawSetType(*ctx,t);

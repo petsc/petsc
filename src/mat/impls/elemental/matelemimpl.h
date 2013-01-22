@@ -1,4 +1,4 @@
-#ifndef _matelemimpl_h
+#if !defined(_matelemimpl_h)
 #define _matelemimpl_h
 
 #include <elemental.hpp>
@@ -29,7 +29,8 @@ typedef struct {
   PetscInt   grid_refct;
 } Mat_Elemental_Grid;
 
-PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset) {
+PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset)
+{
   Mat_Elemental *a = (Mat_Elemental*)A->data;
   PetscInt critical = a->m[rc]*a->mr[rc];
   if (p < critical) {
@@ -40,7 +41,8 @@ PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscI
     *offset = (p - critical) % (a->m[rc] - 1);
   }
 }
-PETSC_STATIC_INLINE void RO2P(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,PetscInt *p) {
+PETSC_STATIC_INLINE void RO2P(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,PetscInt *p)
+{
   Mat_Elemental *a = (Mat_Elemental*)A->data;
   if (rank < a->mr[rc]) {
     *p = rank*a->m[rc] + offset;
@@ -49,12 +51,14 @@ PETSC_STATIC_INLINE void RO2P(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,Pe
   }
 }
 
-PETSC_STATIC_INLINE void E2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset) {
+PETSC_STATIC_INLINE void E2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset)
+{
   Mat_Elemental *a = (Mat_Elemental*)A->data;
   *rank = p % a->commsize;
   *offset = p / a->commsize;
 }
-PETSC_STATIC_INLINE void RO2E(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,PetscInt *e) {
+PETSC_STATIC_INLINE void RO2E(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,PetscInt *e)
+{
   Mat_Elemental *a = (Mat_Elemental*)A->data;
   *e = offset * a->commsize + rank;
 }
