@@ -82,9 +82,9 @@ class Installer(script.Script):
     self.rootShareDir      = os.path.join(self.rootDir, 'share')
     self.destShareDir      = os.path.join(self.destDir, 'share')
 
-    self.make      = self.makesys.make+' '+self.makesys.flags
-    self.ranlib    = self.compilers.RANLIB
-    self.libSuffix = self.compilers.AR_LIB_SUFFIX
+    self.make        = self.makesys.make+' '+self.makesys.flags
+    self.ranlib      = self.compilers.RANLIB
+    self.arLibSuffix = self.compilers.AR_LIB_SUFFIX
     return
 
   def checkPrefix(self):
@@ -194,14 +194,13 @@ class Installer(script.Script):
 
   def fixConf(self):
     import shutil
-    # copy standard rules and variables file so that we can change them in place
-    for file in ['rules', 'variables']:
-      shutil.copy2(os.path.join(self.rootConfDir,file),os.path.join(self.archConfDir,file))
     for file in ['rules', 'variables','petscrules', 'petscvariables']:
-      self.fixConfFile(os.path.join(self.archConfDir,file))
+      self.fixConfFile(os.path.join(self.destConfDir,file))
+    self.fixConfFile(os.path.join(self.destLibDir,'pkgconfig','PETSc.pc'))
+    return
 
   def createUninstaller(self):
-    uninstallscript = os.path.join(self.archConfDir, 'uninstall.py')
+    uninstallscript = os.path.join(self.destConfDir, 'uninstall.py')
     f = open(uninstallscript, 'w')
     # Could use the Python AST to do this
     f.write('#!'+sys.executable+'\n')
@@ -225,6 +224,7 @@ for src, dst in copies:
   def installConf(self):
     self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir))
     self.copies.extend(self.copytree(self.archConfDir, self.destConfDir))
+    return
 
   def installBin(self):
     self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir))
@@ -240,7 +240,7 @@ for src, dst in copies:
     # Do not install object files
     if not os.path.splitext(src)[1] == '.o':
       shutil.copy2(src, dst)
-    if os.path.splitext(dst)[1] == '.'+self.libSuffix:
+    if os.path.splitext(dst)[1] == '.'+self.arLibSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
       installName = re.sub(self.destDir, self.installDir, dst)
@@ -264,14 +264,12 @@ make PETSC_DIR=%s test
 ''' % (self.installDir,self.installDir)
     return
 
-  def runfix(self):
+  def runsetup(self):
     self.setup()
     self.setupDirectories()
     self.checkPrefix()
     self.checkDestdir()
-    self.createUninstaller()
-    self.fixConf()
-
+    return
 
   def runcopy(self):
     print '*** Installing PETSc at',self.destDir, ' ***'
@@ -288,13 +286,23 @@ make PETSC_DIR=%s test
     self.installBin()
     self.installLib()
     self.installShare()
-    self.outputDone()
+    return
 
+  def runfix(self):
+    self.fixConf()
+    return
+
+  def rundone(self):
+    self.createUninstaller()
+    self.outputDone()
     return
 
   def run(self):
-    self.runfix()
+    self.runsetup()
     self.runcopy()
+    self.runfix()
+    self.rundone()
+    return
 
 if __name__ == '__main__':
   Installer(sys.argv[1:]).run()
