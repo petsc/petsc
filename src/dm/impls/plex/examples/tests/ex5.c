@@ -24,15 +24,15 @@ Two triangles sharing a face
 
 should become two triangles separated by a zero-volume cell with 6 vertices
 
-        5--16--8
-      / |      | \
-    11  |      |  12
-    /   |      |   \
-   3  0 10  2 14 1  6
-    \   |      |   /
-     9  |      |  13
-      \ |      | /
-        4--15--7
+        5--16--8              4--12--6 3
+      / |      | \          / |      | | \
+    11  |      |  12       9  |      | |  4
+    /   |      |   \      /   |      | |   \
+   3  0 10  2 14 1  6    2  0 8  1  10 6 0  1
+    \   |      |   /      \   |      | |   /
+     9  |      |  13       7  |      | |  5
+      \ |      | /          \ |      | | /
+        4--15--7              3--11--5 2
 */
 
 typedef struct {
@@ -151,6 +151,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
     PetscInt numPoints[3] = {0, 0, 0};
 
     ierr = CreateTopology(dm, depth, numPoints, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -187,6 +188,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMPlexGetLabel(*dm, "fault", &label);CHKERRQ(ierr);
     ierr = DMLabelCohesiveComplete(*dm, label);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMPlexConstructCohesiveCells(*dm, "fault", &hybridMesh);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
