@@ -105,6 +105,7 @@ struct _p_DM {
   Vec                     localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
   Vec                     globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
   DMNamedVecLink          namedglobal;
+  DMNamedVecLink          namedlocal;
   DMWorkLink              workin,workout;
   void                    *ctx;    /* a user context */
   PetscErrorCode          (*ctxdestroy)(void**);

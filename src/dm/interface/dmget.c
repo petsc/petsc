@@ -335,3 +335,97 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
   SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNamedLocalVector"
+/*@C
+   DMGetNamedLocalVector - get access to a named, persistent local vector
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to hold named vectors
+-  name - unique name for Vec
+
+   Output Arguments:
+.  X - named Vec
+
+   Level: developer
+
+   Note: If a Vec with the given name does not exist, it is created.
+
+.seealso: DMGetNamedGlobalVector(),DMRestoreNamedLocalVector()
+@*/
+PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
+{
+  PetscErrorCode ierr;
+  DMNamedVecLink link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(X,3);
+  for (link=dm->namedlocal; link; link=link->next) {
+    PetscBool match;
+    ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
+    if (match) {
+      if (link->status != DMVEC_STATUS_IN) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
+      goto found;
+    }
+  }
+
+  /* Create the Vec */
+  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dm,&link->X);CHKERRQ(ierr);
+  link->next = dm->namedlocal;
+  dm->namedlocal = link;
+
+  found:
+  *X = link->X;
+  link->status = DMVEC_STATUS_OUT;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRestoreNamedLocalVector"
+/*@C
+   DMRestoreNamedLocalVector - restore access to a named, persistent local vector
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM on which the vector was gotten
+.  name - name under which the vector was gotten
+-  X - Vec to restore
+
+   Output Arguments:
+
+   Level: developer
+
+.seealso: DMRestoreNamedGlobalVector(),DMGetNamedLocalVector()
+@*/
+PetscErrorCode DMRestoreNamedLocalVector(DM dm,const char *name,Vec *X)
+{
+  PetscErrorCode ierr;
+  DMNamedVecLink link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(X,3);
+  PetscValidHeaderSpecific(*X,VEC_CLASSID,3);
+  for (link=dm->namedlocal; link; link=link->next) {
+    PetscBool match;
+    ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
+    if (match) {
+      if (link->status != DMVEC_STATUS_OUT) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
+      if (link->X != *X) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
+      link->status = DMVEC_STATUS_IN;
+      *X = PETSC_NULL;
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
+  PetscFunctionReturn(0);
+}

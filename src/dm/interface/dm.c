@@ -322,6 +322,12 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = VecGetDM((*dm)->x, &obj);CHKERRQ(ierr);
     if (obj == *dm) cnt++;
   }
+  for (nlink=(*dm)->namedlocal; nlink; nlink=nlink->next) cnt++;
+  if ((*dm)->x) {
+    DM obj;
+    ierr = VecGetDM((*dm)->x, &obj);CHKERRQ(ierr);
+    if (obj == *dm) cnt++;
+  }
 
   if (--((PetscObject)(*dm))->refct - cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
   /*
@@ -343,6 +349,15 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = PetscFree(nlink);CHKERRQ(ierr);
   }
   (*dm)->namedglobal = PETSC_NULL;
+
+  for (nlink=(*dm)->namedlocal; nlink; nlink=nnext) { /* Destroy the named local vectors */
+    nnext = nlink->next;
+    if (nlink->status != DMVEC_STATUS_IN) SETERRQ1(((PetscObject)*dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"DM still has Vec named '%s' checked out",nlink->name);
+    ierr = PetscFree(nlink->name);CHKERRQ(ierr);
+    ierr = VecDestroy(&nlink->X);CHKERRQ(ierr);
+    ierr = PetscFree(nlink);CHKERRQ(ierr);
+  }
+  (*dm)->namedlocal = PETSC_NULL;
 
   /* Destroy the list of hooks */
   {
