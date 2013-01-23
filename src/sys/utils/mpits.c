@@ -27,6 +27,7 @@ static PetscErrorCode PetscBuildTwoSidedGetType(BuildTwoSidedType *twosided)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *twosided = BUILDTWOSIDED_NOTSET;
   if (_twosided_type == BUILDTWOSIDED_NOTSET) {
 #if defined(PETSC_HAVE_MPI_IBARRIER)
     _twosided_type = BUILDTWOSIDED_IBARRIER;
