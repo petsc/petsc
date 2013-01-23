@@ -6,8 +6,8 @@ See ~petsc/matrices/indefinite/readme \n\n";
 
 #include <petscksp.h>
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         C;

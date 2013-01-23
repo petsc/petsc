@@ -178,8 +178,8 @@ instead of
 \item The first line of the executable statments must be PetscFunctionBegin;
 \item The following text should be before each function
 \begin{tabbing}
-\#undef \_\_FUNC\_\_\\
-\#define \_\_FUNC\_\_ ``FunctionName''
+\#undef \_\_FUNCT\_\_\\
+\#define \_\_FUNCT\_\_ ``FunctionName''
 \end{tabbing}
 this is used by various macros (for example the error handlers) to always know
 what function the process is in.
@@ -345,7 +345,7 @@ The simplified C/C++ macro-based interface consists of the following two calls
 
 The macro SETERRQ() is given by
 \begin{tabbing}
-return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,error code,error type,\\
+return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNCT\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,error code,error type,\\
 \> ''Error message'');
 \end{tabbing}
 It calls the error handler with the current function name and location: line number,

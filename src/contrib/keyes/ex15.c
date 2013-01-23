@@ -70,8 +70,8 @@ extern int FormInterpolation(AppCtx *,GridCtx*,GridCtx*);
 /*
       Mm_ratio - ration of grid lines between grid levels
 */
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES          snes;
@@ -221,8 +221,8 @@ int main(int argc, char **argv)
   return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
@@ -260,8 +260,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 /*
        This ONLY works on the finest grid
 */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
@@ -440,8 +440,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /*
       This works on ANY grid
 */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian_Grid"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 {
   Mat     jac = *J;
@@ -764,8 +764,8 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 /*
       This evaluates the Jacobian on all of the grids
 */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
@@ -803,8 +803,8 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   PetscFunctionReturn(0);;
 }
 
-#undef __FUNC__
-#define __FUNC__ "FormInterpolation"
+#undef __FUNCT__
+#define __FUNCT__ "FormInterpolation"
 /*
       Forms the interpolation (and restriction) operator from a coarse grid g_c to a fine grid g_f
 */

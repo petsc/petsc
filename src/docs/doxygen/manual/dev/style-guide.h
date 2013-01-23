@@ -64,8 +64,8 @@ instead of
   - The first line of the executable statments must be PetscFunctionBegin;
   - The following text should be before each function
 \code
-#undef __FUNC__
-#define __FUNC__ ``FunctionName''
+#undef __FUNCT__
+#define __FUNCT__ ``FunctionName''
 \endcode
 this is used by various macros (for example the error handlers) to always know
 what function one is in.

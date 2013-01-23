@@ -43,8 +43,8 @@ Mark
 
 typedef enum NdStTAG{SELECTED=0,DELETED,UNKNOWN}NodeState;
 
-#undef __FUNC__
-#define __FUNC__ "NUMR_GRID::ColorVertices"
+#undef __FUNCT__
+#define __FUNCT__ "NUMR_GRID::ColorVertices"
 /* NUMR_GRID::ColorVertices ************************************************
  *
  *  - colors nodes with colors 1,..,ncolors
@@ -215,8 +215,8 @@ int NUMR_GRID::ColorVertices(const int tag, int &ncolors)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "NUMR_GRID::receiveState"
+#undef __FUNCT__
+#define __FUNCT__ "NUMR_GRID::receiveState"
 /* NUMR_GRID::receiveState ********************************************
  *
  *  INPUT:
