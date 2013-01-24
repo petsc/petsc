@@ -4128,10 +4128,6 @@ PetscErrorCode DMPlexConstructCohesiveCells_Private(DM dm, const char labelName[
     ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
   }
-  if (label) {
-    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
-    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-  }
   /* Step 7: Stratify */
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
   /* Step 8: Coordinates */
@@ -4190,6 +4186,10 @@ PetscErrorCode DMPlexConstructCohesiveCells_Private(DM dm, const char labelName[
     }
     ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
+  }
+  if (label) {
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
   }
   if (svIS) {ierr = ISRestoreIndices(svIS, &splitVertices);CHKERRQ(ierr);}
   if (seIS) {ierr = ISRestoreIndices(seIS, &splitEdges);CHKERRQ(ierr);}
