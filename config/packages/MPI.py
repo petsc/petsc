@@ -196,13 +196,19 @@ class Configure(config.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'int count=2; int blocklens[2]={0,1}; MPI_Aint indices[2]={0,1}; MPI_Datatype old_types[2]={0,1}; MPI_Datatype *newtype = 0;\n \
                                              if (MPI_Type_create_struct(count, blocklens, indices, old_types, newtype));\n'):
       self.haveTypeCreateStruct = 1
-      self.addDefine('HAVE_MPI_TYPE_CREATE_STRUCT', 1)
+    else:
+      self.haveTypeCreateStruct = 0
+      self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
     if self.checkLink('#include <mpi.h>\n', 'MPI_Comm_errhandler_fn * p_err_fun = 0; MPI_Errhandler * p_errhandler = 0; if (MPI_Comm_create_errhandler(p_err_fun,p_errhandler));\n'):
       self.haveCommCreateErrhandler = 1
-      self.addDefine('HAVE_MPI_COMM_CREATE_ERRHANDLER', 1)
+    else:
+      self.haveCommCreateErrhandler = 0
+      self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN));\n'):
       self.haveCommSetErrhandler = 1
-      self.addDefine('HAVE_MPI_COMM_SET_ERRHANDLER', 1)
+    else:
+      self.haveCommSetErrhandler = 0
+      self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
@@ -297,6 +303,9 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
+    self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
+    self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
     if not self.argDB['with-mpiuni-fortran-binding']:
       self.framework.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
       self.usingMPIUniFortranBinding = 0
