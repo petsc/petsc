@@ -255,52 +255,83 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
           ierr = TSARKIMEXRegister(TSARKIMEXA2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
   }
   {
-    const PetscReal us2 = 1.0-1.0/PetscSqrtReal((PetscReal)2.0);
+    /* const PetscReal us2 = 1.0-1.0/PetscSqrtReal((PetscReal)2.0);    Direct evaluation: 0.2928932188134524755992. Used below to ensure all values are available at compile time   */
     const PetscReal
       A[2][2] = {{0.0,0.0},
                  {1.0,0.0}},
-      At[2][2] = {{us2,0.0},
-                  {1.0-2.0*us2,us2}},
-        b[2] = {0.5,0.5},
-          bembedt[2] = {0.0,1.0},
-            binterpt[2][2] = {{(us2-1.0)/(2.0*us2-1.0),-1/(2.0*(1.0-2.0*us2))},{1-(us2-1.0)/(2.0*us2-1.0),-1/(2.0*(1.0-2.0*us2))}},
-              binterp[2][2] = {{1.0,-0.5},{0.0,0.5}};
-              ierr = TSARKIMEXRegister(TSARKIMEXL2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,2,binterpt[0],binterp[0]);CHKERRQ(ierr);
+      /*At[2][2] = {{us2,0.0},
+                  {1.0-2.0*us2,us2}},*/
+      At[2][2] = {{0.2928932188134524755992,0.0},
+                  {1.0-2.0*0.2928932188134524755992,0.2928932188134524755992}},
+      b[2] = {0.5,0.5},
+      bembedt[2] = {0.0,1.0},
+      /*binterpt[2][2] = {{(us2-1.0)/(2.0*us2-1.0),-1/(2.0*(1.0-2.0*us2))},{1-(us2-1.0)/(2.0*us2-1.0),-1/(2.0*(1.0-2.0*us2))}},*/
+      binterpt[2][2] = {{  (0.2928932188134524755992-1.0)/(2.0*0.2928932188134524755992-1.0),-1/(2.0*(1.0-2.0*0.2928932188134524755992))},
+                        {1-(0.2928932188134524755992-1.0)/(2.0*0.2928932188134524755992-1.0),-1/(2.0*(1.0-2.0*0.2928932188134524755992))}},
+      binterp[2][2] = {{1.0,-0.5},{0.0,0.5}};
+    ierr = TSARKIMEXRegister(TSARKIMEXL2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,2,binterpt[0],binterp[0]);CHKERRQ(ierr);
   }
   {
-    const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
+    /* const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),  Direct evaluation: 1.414213562373095048802. Used below to ensure all values are available at compile time   */
+    const PetscReal
       A[3][3] = {{0,0,0},
-                 {2-s2,0,0},
+                 {2-1.414213562373095048802,0,0},
                  {0.5,0.5,0}},
-      At[3][3] = {{0,0,0},
+      /*At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
-                  {1/(2*s2),1/(2*s2),1-1/s2}},
-        bembedt[3] = {(4.-s2)/8.,(4.-s2)/8.,1/(2.*s2)},
-        binterpt[3][2] = {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};
+                  {1/(2*s2),1/(2*s2),1-1/s2}},*/
+      At[3][3] = {{0,0,0},
+                  {1-1/1.414213562373095048802,1-1/1.414213562373095048802,0},
+                  {1/(2*1.414213562373095048802),1/(2*1.414213562373095048802),1-1/1.414213562373095048802}},
+      /*bembedt[3] = {(4.-s2)/8.,(4.-s2)/8.,1/(2.*s2)}, */
+      bembedt[3] = {(4.-1.414213562373095048802)/8.,(4.-1.414213562373095048802)/8.,1/(2.*1.414213562373095048802)},
+      /*binterpt[3][2] = {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};*/
+      binterpt[3][2] = {{1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
+                        {1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
+                        {1.0-1.414213562373095048802,1.0/1.414213562373095048802}};
     ierr = TSARKIMEXRegister(TSARKIMEX2C,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {
-    const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
+    /* const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),  Direct evaluation: 1.414213562373095048802. Used below to ensure all values are available at compile time   */
+    const PetscReal
       A[3][3] = {{0,0,0},
-                 {2-s2,0,0},
+                 {2-1.414213562373095048802,0,0},
                  {0.75,0.25,0}},
-      At[3][3] = {{0,0,0},
+      /*At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
-                  {1/(2*s2),1/(2*s2),1-1/s2}},
-      bembedt[3] = {(4.-s2)/8.,(4.-s2)/8.,1/(2.*s2)},
-      binterpt[3][2] =  {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};
-      ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+                  {1/(2*s2),1/(2*s2),1-1/s2}},*/
+      At[3][3] = {{0,0,0},
+                  {1-1/1.414213562373095048802,1-1/1.414213562373095048802,0},
+                  {1/(2*1.414213562373095048802),1/(2*1.414213562373095048802),1-1/1.414213562373095048802}},
+      /*bembedt[3] = {(4.-s2)/8.,(4.-s2)/8.,1/(2.*s2)},*/
+      bembedt[3] = {(4.-1.414213562373095048802)/8.,(4.-1.414213562373095048802)/8.,1/(2.*1.414213562373095048802)},
+      /*binterpt[3][2] =  {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};*/
+      binterpt[3][2] =  {{1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
+                         {1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
+                         {1.0-1.414213562373095048802,1.0/1.414213562373095048802}};
+    ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */
-    const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
-      A[3][3] = {{0,0,0},
+    /* const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),  Direct evaluation: 1.414213562373095048802. Used below to ensure all values are available at compile time   */
+    const PetscReal
+      /*A[3][3] = {{0,0,0},
                  {2-s2,0,0},
-                 {(3-2*s2)/6,(3+2*s2)/6,0}},
-      At[3][3] = {{0,0,0},
+                 {(3-2*s2)/6,(3+2*s2)/6,0}},*/
+      A[3][3] = {{0,0,0},
+                 {2-1.414213562373095048802,0,0},
+                 {(3-2*1.414213562373095048802)/6,(3+2*1.414213562373095048802)/6,0}},
+      /*At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
-                  {1/(2*s2),1/(2*s2),1-1/s2}},
-      bembedt[3] = {(4.-s2)/8.,(4.-s2)/8.,1/(2.*s2)},
-      binterpt[3][2] =  {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};
+                  {1/(2*s2),1/(2*s2),1-1/s2}},*/
+      At[3][3] = {{0,0,0},
+                  {1-1/1.414213562373095048802,1-1/1.414213562373095048802,0},
+                  {1/(2*1.414213562373095048802),1/(2*1.414213562373095048802),1-1/1.414213562373095048802}},
+      /*bembedt[3] = {(4.-s2)/8.,(4.-s2)/8.,1/(2.*s2)},*/
+      bembedt[3] = {(4.-1.414213562373095048802)/8.,(4.-1.414213562373095048802)/8.,1/(2.*1.414213562373095048802)},
+      /*binterpt[3][2] =  {{1.0/s2,-1.0/(2.0*s2)},{1.0/s2,-1.0/(2.0*s2)},{1.0-s2,1.0/s2}};*/
+      binterpt[3][2] =  {{1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
+                         {1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
+                         {1.0-1.414213562373095048802,1.0/1.414213562373095048802}};
     ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */

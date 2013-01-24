@@ -228,6 +228,8 @@ PetscErrorCode DMPatchSolve(DM dm)
         lower.i = i; lower.j = j; lower.k = k;
         upper.i = i + patchSize.i; upper.j = j + patchSize.j; upper.k = k + patchSize.k;
         ierr = DMPatchZoom(dmc, XC, lower, upper, commp, &dmz, &sfz, &sfzr);CHKERRQ(ierr);
+        lower.c = 0; /* initialize member, otherwise compiler issues warnings */
+        upper.c = 0; /* initialize member, otherwise compiler issues warnings */
         /* Debug */
         ierr = PetscPrintf(comm, "Patch %d: (%d, %d, %d)--(%d, %d, %d)\n", p, lower.i, lower.j, lower.k, upper.i, upper.j, upper.k);CHKERRQ(ierr);
         if (dmz) {ierr = DMView(dmz, PETSC_VIEWER_STDOUT_(commz));CHKERRQ(ierr);}

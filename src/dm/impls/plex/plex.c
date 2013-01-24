@@ -8441,17 +8441,26 @@ PetscErrorCode DMPlexLocatePoint_General_3D(DM dm, const PetscScalar point[], Pe
   for (f = 0; f < 6; ++f) {
     /* Check the point is under plane */
     /*   Get face normal */
-    PetscReal v_i[3]    = {PetscRealPart(coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0]),
-                           PetscRealPart(coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1]),
-                           PetscRealPart(coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2])};
-    PetscReal v_j[3]    = {PetscRealPart(coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0]),
-                           PetscRealPart(coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1]),
-                           PetscRealPart(coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2])};
-    PetscReal normal[3] = {v_i[1]*v_j[2] - v_i[2]*v_j[1], v_i[2]*v_j[0] - v_i[0]*v_j[2], v_i[0]*v_j[1] - v_i[1]*v_j[0]};
-    PetscReal pp[3]     = {PetscRealPart(coords[faces[f*4+0]*3+0] - point[0]),
-                           PetscRealPart(coords[faces[f*4+0]*3+1] - point[1]),
-                           PetscRealPart(coords[faces[f*4+0]*3+2] - point[2])};
-    PetscReal dot       = normal[0]*pp[0] + normal[1]*pp[1] + normal[2]*pp[2];
+    PetscReal v_i[3];
+    PetscReal v_j[3];
+    PetscReal normal[3];
+    PetscReal pp[3];
+    PetscReal dot;
+    
+    v_i[0]    = PetscRealPart(coords[faces[f*4+3]*3+0]-coords[faces[f*4+0]*3+0]);
+    v_i[1]    = PetscRealPart(coords[faces[f*4+3]*3+1]-coords[faces[f*4+0]*3+1]);
+    v_i[2]    = PetscRealPart(coords[faces[f*4+3]*3+2]-coords[faces[f*4+0]*3+2]);
+    v_j[0]    = PetscRealPart(coords[faces[f*4+1]*3+0]-coords[faces[f*4+0]*3+0]);
+    v_j[1]    = PetscRealPart(coords[faces[f*4+1]*3+1]-coords[faces[f*4+0]*3+1]);
+    v_j[2]    = PetscRealPart(coords[faces[f*4+1]*3+2]-coords[faces[f*4+0]*3+2]);
+    normal[0] = v_i[1]*v_j[2] - v_i[2]*v_j[1];
+    normal[1] = v_i[2]*v_j[0] - v_i[0]*v_j[2];
+    normal[2] = v_i[0]*v_j[1] - v_i[1]*v_j[0];
+    pp[0]     = PetscRealPart(coords[faces[f*4+0]*3+0] - point[0]);
+    pp[1]     = PetscRealPart(coords[faces[f*4+0]*3+1] - point[1]);
+    pp[2]     = PetscRealPart(coords[faces[f*4+0]*3+2] - point[2]);
+    dot       = normal[0]*pp[0] + normal[1]*pp[1] + normal[2]*pp[2];
+    
     /* Check that projected point is in face (2D location problem) */
     if (dot < 0.0) {
       found = PETSC_FALSE;

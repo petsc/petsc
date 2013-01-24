@@ -85,9 +85,10 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
   PetscFunctionBeginUser;
   ierr = VecSet(b, -3.0);CHKERRQ(ierr);
   for (row = 0; row < constraintSize; ++row) {
-    PetscInt    cols[2] = {row, row + N - constraintSize};
     PetscScalar vals[2] = {1.0, 1.0};
-
+    PetscInt    cols[2];
+    
+    cols[0] = row; cols[1] = row + N - constraintSize;
     ierr = MatSetValues(A, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
   }
   for (row = constraintSize; row < N - constraintSize; ++row) {

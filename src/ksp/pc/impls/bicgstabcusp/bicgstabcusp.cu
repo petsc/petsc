@@ -149,7 +149,7 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
   PetscErrorCode  ierr;
   PetscBool       flg1,flg2;
-  CUSPARRAY       *xarray,*yarray;
+  CUSPARRAY       *xarray=PETSC_NULL,*yarray=PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);

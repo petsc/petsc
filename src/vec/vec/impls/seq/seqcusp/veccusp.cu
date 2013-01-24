@@ -634,7 +634,7 @@ struct VecCUSPPointwiseDivide
 #define __FUNCT__ "VecPointwiseDivide_SeqCUSP"
 PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec win, Vec xin, Vec yin)
 {
-  CUSPARRAY      *warray,*xarray,*yarray;
+  CUSPARRAY      *warray=PETSC_NULL,*xarray=PETSC_NULL,*yarray=PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -700,7 +700,7 @@ struct VecCUSPDiff
 #define __FUNCT__ "VecWAXPY_SeqCUSP"
 PetscErrorCode VecWAXPY_SeqCUSP(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
-  CUSPARRAY      *xarray,*yarray,*warray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL,*warray=PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1288,7 +1288,7 @@ PetscErrorCode VecMDot_SeqCUSPOld(Vec xin,PetscInt nv,const Vec yin[],PetscScala
 #define __FUNCT__ "VecSet_SeqCUSP"
 PetscErrorCode VecSet_SeqCUSP(Vec xin,PetscScalar alpha)
 {
-  CUSPARRAY      *xarray;
+  CUSPARRAY      *xarray=PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -492,7 +492,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   PetscInt       i,j,k,Mx,My,xs,ys,xm,ym,its,tot_its,sweeps,l;
   PetscErrorCode ierr;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar    **x,**b,bij,F,F0,J,u,un,us,ue,eu,uw,uxx,uyy,y;
+  PetscScalar    **x,**b,bij,F,F0=0,J,u,un,us,ue,eu,uw,uxx,uyy,y;
   PetscReal      atol,rtol,stol;
   DM             da;
   AppCtx         *user;

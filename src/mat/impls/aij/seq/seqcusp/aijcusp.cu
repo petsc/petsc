@@ -357,7 +357,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
 #if !defined(PETSC_HAVE_TXPETSCGPU)
   PetscBool      usecprow    = a->compressedrow.use;
 #endif
-  CUSPARRAY      *xarray,*yarray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
@@ -410,7 +410,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *)A->spptr;
-  CUSPARRAY      *xarray,*yarray,*zarray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL,*zarray=PETSC_NULL;
   
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP

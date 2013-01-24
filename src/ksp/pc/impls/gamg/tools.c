@@ -99,7 +99,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGFilterGraph"
-PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm,PetscInt verbose)
+PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const PetscBool symm,const PetscInt verbose)
 {
   PetscErrorCode    ierr;
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
@@ -185,7 +185,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm,Pe
       ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",mype,__FUNCT__,
                   100.*(double)nnz1/(double)nnz0,vfilter,(double)nnz0/(double)nloc,MM);CHKERRQ(ierr);
     } else {
-      PetscInt nnz[2] = {nnz0,nnz1},out[2];
+      PetscInt nnz[2],out[2];
+      nnz[0] = nnz0; nnz[1] = nnz1;
       ierr = MPI_Allreduce(nnz, out, 2, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr);
       ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",mype,__FUNCT__,
                   100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);CHKERRQ(ierr);
@@ -210,7 +211,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm,Pe
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGetDataWithGhosts"
-PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,const PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
+PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,const PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
   PetscErrorCode ierr;
   PetscMPIInt    mype,npe;

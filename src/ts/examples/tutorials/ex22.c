@@ -248,8 +248,10 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
     const PetscReal *k = user->k;
-    PetscScalar v[2][2] = {{a + k[0], -k[1]},
-                           {-k[0], a+k[1]}};
+    PetscScalar v[2][2];
+    
+    v[0][0] = a + k[0]; v[0][1] =  -k[1];
+    v[1][0] =    -k[0]; v[1][1] = a+k[1];
     ierr = MatSetValuesBlocked(*Jpre,1,&i,1,&i,&v[0][0],INSERT_VALUES);CHKERRQ(ierr);
   }
 
