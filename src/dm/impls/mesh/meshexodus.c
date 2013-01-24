@@ -151,7 +151,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 
   // Build cell blocks
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellBlocks = mesh->createLabel("CellBlocks");
-  if (rank == 0) {
+  if (!rank) {
     for (int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
       for (int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {
         mesh->setValue(cellBlocks, k, eb_ids[eb]);
@@ -175,7 +175,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 
   // Build vertex sets
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = mesh->createLabel("VertexSets");
-  if (rank == 0) {
+  if (!rank) {
     for (int ns = 0; ns < num_node_sets; ++ns) {
       for (int n = 0; n < num_nodes_in_set[ns]; ++n) {
         mesh->addValue(vertexSets, node_list[ns][n]+num_elem-1, ns_ids[ns]);
@@ -310,7 +310,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
     Open EXODUS II file and read basic informations on rank 0,
     then broadcast to all processors
   */
-  if (rank == 0) {
+  if (!rank) {
     ierr = ex_get_init(exoid,title,&num_dim,&num_vertices,&num_cell,&num_cs,&num_vs,&num_fs);CHKERRQ(ierr);
     if (num_cs == 0) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
@@ -330,7 +330,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
     Read cell sets information then broadcast them
   */
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellSets = mesh->createLabel("Cell Sets");
-  if (rank == 0) {
+  if (!rank) {
     /*
       Get cell sets IDs
     */
@@ -383,7 +383,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
   */
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = mesh->createLabel("Vertex Sets");
   if (num_vs >0) {
-    if (rank == 0) {
+    if (!rank) {
       /*
         Get vertex set ids
       */
@@ -408,7 +408,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
                         num_vertices,PetscReal,&y,
                         num_vertices,PetscReal,&z,
                         num_dim*num_vertices,PetscReal,&coords);CHKERRQ(ierr);
-  if (rank == 0) {
+  if (!rank) {
     ierr = ex_get_coord(exoid,x,y,z);CHKERRQ(ierr);
     ierr = PetscMalloc(num_dim*num_vertices * sizeof(PetscReal), &coords);CHKERRQ(ierr);
     if (num_dim > 0) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+0] = x[v];}}
@@ -416,12 +416,12 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
     if (num_dim > 2) {for (v = 0; v < num_vertices; ++v) {coords[v*num_dim+2] = z[v];}}
   }
   ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh,num_dim,coords);
-  if (rank == 0) {
+  if (!rank) {
     ierr = PetscFree4(x,y,z,coords);CHKERRQ(ierr);
   }
 
   /*
-  if (rank == 0) {
+  if (!rank) {
     ierr = ex_close(exoid);CHKERRQ(ierr);
   }
   */
@@ -810,7 +810,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   ierr = ISGetSize(is_zero,&setsize_zero);CHKERRQ(ierr);
   ierr = PetscMalloc(setsize_local*sizeof(PetscInt),&setvertices_localtozero);CHKERRQ(ierr);
 
-  if (rank == 0)  {
+  if (!rank)  {
     ierr = ISGetIndices(is_zero,(const PetscInt**)&setvertices_zero);
   } else {
     ierr = PetscMalloc(setsize_zero*sizeof(PetscInt),&setvertices_zero);CHKERRQ(ierr);
@@ -837,7 +837,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
     istart = (k+1)%setsize_zero;
   }
   ierr = ISRestoreIndices(is_local,&setvertices_local);
-  if (rank == 0) {
+  if (!rank) {
     ierr = ISRestoreIndices(is_zero,(const PetscInt**)&setvertices_zero);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(setvertices_zero);CHKERRQ(ierr);
@@ -1008,7 +1008,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
   ierr = ISGetSize(is_zero,&setsize_zero);CHKERRQ(ierr);
   ierr = PetscMalloc(setsize_local*sizeof(PetscInt),&setcells_localtozero);CHKERRQ(ierr);
 
-  if (rank == 0)  {
+  if (!rank)  {
     ierr = ISGetIndices(is_zero,(const PetscInt**)&setcells_zero);
   } else {
     ierr = PetscMalloc(setsize_zero*sizeof(PetscInt),&setcells_zero);CHKERRQ(ierr);
@@ -1034,7 +1034,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
     istart = (k+1)%setsize_zero;
   }
   ierr = ISRestoreIndices(is_local,&setcells_local);
-  if (rank == 0) {
+  if (!rank) {
     ierr = ISRestoreIndices(is_zero,(const PetscInt**)&setcells_zero);CHKERRQ(ierr);
   } else {
     ierr = PetscFree(setcells_zero);CHKERRQ(ierr);
@@ -1145,7 +1145,7 @@ PetscErrorCode VecViewExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
       ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
       ierr = VecScatterEnd(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
-      if (rank == 0) {
+      if (!rank) {
         ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
         ierr = ex_put_nodal_var(exoid,step,exofield+c,num_vertices_zero,vdof_array);
         ierr = VecRestoreArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
@@ -1244,7 +1244,7 @@ PetscErrorCode VecLoadExodusVertex(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,Pets
     ierr = VecSetFromOptions(vzero);CHKERRQ(ierr);
 
     for (c = 0; c < num_dof; c++) {
-      if (rank == 0) {
+      if (!rank) {
         ierr = VecGetArray(vzero,&vdof_array);CHKERRQ(ierr);
         ierr = ex_get_nodal_var(exoid,step,exofield+c,num_vertices_global,vdof_array);
         ierr = VecRestoreArray(vzero,&vdof_array);CHKERRQ(ierr);
@@ -1341,11 +1341,11 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
       Build the scatter sending one dof towards cpu 0
     */
     ierr = DMMeshGetStratumIS(dm,"Vertex Sets",vsID,&vsIS);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_node_set_param(exoid,vsID,&num_vertices_zero,&junk1);
     }
     ierr = PetscMalloc(num_vertices_zero*sizeof(PetscInt),&vs_vertices_zero);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_node_set(exoid,vsID,vs_vertices_zero);
       ierr = ex_get_init(exoid,junk,&junk1,&junk2,&num_cells_zero,&junk3,&junk4,&junk5);CHKERRQ(ierr);
       for (i = 0; i < num_vertices_zero; i++) {
@@ -1364,7 +1364,7 @@ PetscErrorCode VecViewExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
       ierr = VecScatterBegin(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
       ierr = VecScatterEnd(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
 
-      if (rank == 0) {
+      if (!rank) {
         ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
         ierr = ex_put_nset_var(exoid,step,exofield+c,vsID,num_vertices_zero,vdof_array);
         if (ierr != 0) {
@@ -1459,11 +1459,11 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
       Build the scatter sending one dof towards cpu 0
     */
     ierr = DMMeshGetStratumIS(dm,"Vertex Sets",vsID,&vsIS);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_node_set_param(exoid,vsID,&num_vertices_zero,&junk1);
     }
     ierr = PetscMalloc(num_vertices_zero*sizeof(PetscInt),&vs_vertices_zero);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_node_set(exoid,vsID,vs_vertices_zero);
       ierr = ex_get_init(exoid,junk,&junk1,&junk2,&num_cells_zero,&junk3,&junk4,&junk5);CHKERRQ(ierr);
       for (i = 0; i < num_vertices_zero; i++) {
@@ -1478,7 +1478,7 @@ PetscErrorCode VecLoadExodusVertexSet(DM dm,Vec v,PetscInt vsID,MPI_Comm comm,Pe
     ierr = VecCreateSeq(PETSC_COMM_SELF,num_vertices_zero*(rank == 0),&vdof_zero);CHKERRQ(ierr);
 
     for (c = 0; c < num_dof; c++) {
-      if (rank == 0) {
+      if (!rank) {
         ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
         ierr = ex_get_nset_var(exoid,step,exofield+c,vsID,num_vertices_zero,vdof_array);
         if (ierr != 0) {
@@ -1603,12 +1603,12 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       Get the number of blocks and the list of ID directly from  the file. This is easier
       than trying to reconstruct the global lists from all individual IS
     */
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_init(exoid,junk,&junk1,&junk2,&junk3,&num_cs_zero,&junk4,&junk5);
     }
     ierr = MPI_Bcast(&num_cs_zero,1,MPIU_INT,0,dmcomm);CHKERRQ(ierr);
     ierr = PetscMalloc(num_cs_zero * sizeof(PetscInt),&setsID_zero);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_elem_blk_ids(exoid,setsID_zero);
     }
     ierr = MPI_Bcast(setsID_zero,num_cs_zero,MPIU_INT,0,dmcomm);
@@ -1618,7 +1618,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       /*
         Get the size of the size of the set on cpu 0 and create a Vec to receive values
       */
-      if (rank == 0) {
+      if (!rank) {
         ierr = ex_get_elem_block(exoid,setsID_zero[set],junk,&num_cells_zero,&junk1,&junk2);
       }
       ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_zero,&vdof_set_zero);CHKERRQ(ierr);
@@ -1656,7 +1656,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
         /*
           Write array to disk
         */
-        if (rank == 0) {
+        if (!rank) {
           ierr = VecGetArray(vdof_set_zero,&vdof_set_array);CHKERRQ(ierr);
           ierr = ex_put_elem_var(exoid,step,exofield+c,setsID_zero[set],num_cells_zero,vdof_set_array);
           ierr = VecRestoreArray(vdof_set_zero,&vdof_set_array);CHKERRQ(ierr);
@@ -1782,12 +1782,12 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       Get the number of blocks and the list of ID directly from  the file. This is easier
       than trying to reconstruct the global lists from all individual IS
     */
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_init(exoid,junk,&junk1,&junk2,&junk3,&num_cs_zero,&junk4,&junk5);
     }
     ierr = MPI_Bcast(&num_cs_zero,1,MPIU_INT,0,dmcomm);
     ierr = PetscMalloc(num_cs_zero * sizeof(PetscInt),&setsID_zero);CHKERRQ(ierr);
-    if (rank == 0) {
+    if (!rank) {
       ierr = ex_get_elem_blk_ids(exoid,setsID_zero);
     }
     ierr = MPI_Bcast(setsID_zero,num_cs_zero,MPIU_INT,0,dmcomm);
@@ -1819,7 +1819,7 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
         /*
           Read array from disk
         */
-        if (rank == 0) {
+        if (!rank) {
           ierr = VecGetArray(vdof_set_zero,&vdof_set_array);CHKERRQ(ierr);
           ierr = ex_get_elem_var(exoid,step,exofield+c,setsID_zero[set],num_cells_zero,vdof_set_array);
           ierr = VecRestoreArray(vdof_set_zero,&vdof_set_array);CHKERRQ(ierr);
@@ -1933,7 +1933,7 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
       (which depends on the order on the file) so we need to seek the cell set in the file and
       accumulate offsets...
     */
-    if (rank == 0) {
+    if (!rank) {
       istart = 0;
       ierr = ex_get_init(exoid,junk,&junk1,&junk2,&junk3,&num_cs_global,&junk4,&junk5);
       ierr = PetscMalloc(num_cs_global * sizeof(PetscInt),&csIDs);CHKERRQ(ierr);
@@ -1959,7 +1959,7 @@ PetscErrorCode VecViewExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
       ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
       ierr = VecScatterEnd(scatter,vdof,vdof_zero,INSERT_VALUES,SCATTER_FORWARD);
-      if (rank == 0) {
+      if (!rank) {
         ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
         ierr = ex_put_elem_var(exoid,step,exofield+c,csID,num_cells_zero,vdof_array);
         ierr = VecRestoreArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
@@ -2052,7 +2052,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
       (which depends on the order on the file) so we need to seek the cell set in the file and
       accumulate offsets...
     */
-    if (rank == 0) {
+    if (!rank) {
       istart = 0;
       ierr = ex_get_init(exoid,junk,&junk1,&junk2,&junk3,&num_cs_global,&junk4,&junk5);
       ierr = PetscMalloc(num_cs_global * sizeof(PetscInt),&csIDs);CHKERRQ(ierr);
@@ -2075,7 +2075,7 @@ PetscErrorCode VecLoadExodusCellSet(DM dm,Vec v,PetscInt csID,MPI_Comm comm,Pets
     ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_zero,&vdof_zero);CHKERRQ(ierr);
 
     for (c = 0; c < num_dof; c++) {
-      if (rank == 0) {
+      if (!rank) {
         ierr = VecGetArray(vdof_zero,&vdof_array);CHKERRQ(ierr);
         ierr = ex_get_elem_var(exoid,step,exofield+c,csID,num_cells_zero,vdof_array);
         ierr = VecRestoreArray(vdof_zero,&vdof_array);CHKERRQ(ierr);

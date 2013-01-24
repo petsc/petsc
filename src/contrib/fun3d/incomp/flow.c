@@ -1122,7 +1122,7 @@ int GetLocalOrdering(GRID *grid)
      ICALLOC(nnodes, &loc2glo_glo);
      MPI_Gatherv(grid->loc2glo,nnodesLoc,MPI_INT,loc2glo_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
      MPI_Gatherv(partv_loc,nnodesLoc,MPI_INT,partv_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
-     if (rank == 0) {
+     if (!rank) {
        ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo);CHKERRQ(ierr);
        sprintf(part_file,"hyb_part_vec.%d",2*size);
        fp = fopen(part_file,"w");
@@ -2694,7 +2694,7 @@ int set_up_grid(GRID *grid)
 /* end of stuff */
 
 
-   /* if (ileast == 0) lnodes = 1;
+   /* if (!ileast) lnodes = 1;
      printf("In set_up_grid->jvisc = %d\n",grid->jvisc);
 
    if (grid->jvisc != 2 && grid->jvisc != 4 && grid->jvisc != 6)vface = 1;
@@ -2931,7 +2931,7 @@ int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncle,int *counte)
      n2 = e2n[i+nedge];
      tagcount = tag[n1]+tag[n2];
      /* If tagcount = 0 then this edge belongs in this color */
-     if (tagcount == 0) {
+     if (!tagcount) {
        tag[n1] = 1;
        tag[n2] = 1;
        e2n[i] = e2n[iedg];

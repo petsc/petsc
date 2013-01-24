@@ -1322,7 +1322,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
-          if (use_gp_coords == PETSC_TRUE) {
+          if (use_gp_coords) {
             coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
             coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }
@@ -1353,7 +1353,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
-          if (use_gp_coords == PETSC_TRUE) {
+          if (use_gp_coords) {
             coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
             coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }
@@ -1384,7 +1384,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
-          if (use_gp_coords == PETSC_TRUE) {
+          if (use_gp_coords) {
             coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
             coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }
@@ -1429,7 +1429,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
-          if (use_gp_coords == PETSC_TRUE) {
+          if (use_gp_coords) {
             coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
             coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }

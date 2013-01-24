@@ -165,7 +165,7 @@ int main(int argc,char **args)
     for (i=0; i<nd; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
       if (!flg) {
-        if (rank == 0) {
+        if (!rank) {
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
           /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
           ierr = ISSort(is2[i]);CHKERRQ(ierr);

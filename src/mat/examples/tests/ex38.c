@@ -73,7 +73,7 @@ int main(int argc,char **args)
   }
 
   /* Set unowned matrix entries - add subdiagonals and diagonals from proc[0] */
-  if (rank == 0) {
+  if (!rank) {
     PetscInt M,N,cols[2];
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
     for (i=0; i<M; i++) {

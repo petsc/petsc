@@ -49,7 +49,7 @@ int main(int argc,char **args)
   if (!loadA) { /* Matrix A is copied from slepc-3.0.0-p6/src/examples/ex13.c. */
     ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,&flag);CHKERRQ(ierr);
-    if (flag==PETSC_FALSE) m=n;
+    if (!flag) m=n;
     N = n*m;
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);

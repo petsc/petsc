@@ -311,7 +311,7 @@ namespace ALE {
         throw ALE::Exception(txt.str().c_str());
       }
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
-      if (fgets(buf, 2048, f) == NULL) {
+      if (!fgets(buf, 2048, f)) {
         throw ALE::Exception("Invalid connectivity file: Missing number of elements");
       }
       const char *sizes = strtok(buf, " ");

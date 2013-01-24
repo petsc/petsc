@@ -21,7 +21,7 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       // Read header
-      if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+      if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
       // Number of vertices
       const char *x = strtok(buf, " ");
       numVertices = atoi(x);
@@ -31,7 +31,7 @@ namespace ALE {
       ierr = PetscMalloc(numVertices*(dim+1) * sizeof(PetscReal), &coords);CHKERRXX(ierr);
       ierr = PetscMalloc(numVertices*(dim+1) * sizeof(PetscReal), &normals);CHKERRXX(ierr);
       for (PetscInt i = 0; i < numVertices; ++i) {
-        if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+        if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
         for (int c = 0; c < dim+1; c++) {
           coords[i*(dim+1)+c] = atof(x);
@@ -52,7 +52,7 @@ namespace ALE {
       *faceNormals = normals;
       ierr = PetscMalloc(numElements*numCorners * sizeof(PetscInt), &verts);CHKERRXX(ierr);
       for (PetscInt i = 0; i < numElements; ++i) {
-        if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+        if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
         for (int c = 0; c < numCorners; c++) {
           verts[i*numCorners+c] = atoi(x) - 1;

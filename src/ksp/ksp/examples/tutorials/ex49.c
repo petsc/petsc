@@ -947,7 +947,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
-          if (use_gp_coords == PETSC_TRUE) {
+          if (use_gp_coords) {
             coord_x = element_props[j][i].gp_coords[2*p];
             coord_y = element_props[j][i].gp_coords[2*p+1];
           }
@@ -1070,7 +1070,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_nonsymbc",&use_nonsymbc,&flg);CHKERRQ(ierr);
   /* solve */
-  if (use_nonsymbc == PETSC_FALSE) {
+  if (!use_nonsymbc) {
     Mat AA;
     Vec ff,XX;
     IS is;

@@ -15,5 +15,5 @@
 find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
  | grep -v 'ftn-auto' \
- | xargs grep "==\s*0)\|(v\s*==\s*PETSC_NULL)\|==\s*PETSC_TRUE)\|==\s*PETSC_FALSE)"
+ | xargs grep "rank ==\s*0)\|\s*==\s*NULL)\|==\s*PETSC_TRUE)\|==\s*PETSC_FALSE)"
 

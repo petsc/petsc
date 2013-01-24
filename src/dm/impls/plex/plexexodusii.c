@@ -167,7 +167,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (rank == 0) {
+  if (!rank) {
     float *x, *y, *z;
 
     ierr = PetscMalloc3(numVertices,float,&x,numVertices,float,&y,numVertices,float,&z);CHKERRQ(ierr);

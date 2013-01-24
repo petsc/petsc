@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = VecSet(x,result);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xend);CHKERRQ(ierr);
   result=0.5;
-  if (rank == 0) {
+  if (!rank) {
     i=0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   } else if (rank == nproc) {

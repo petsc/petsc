@@ -928,7 +928,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig)
   ierr = PetscMalloc(n * sizeof(PetscBLASInt), &select);CHKERRQ(ierr);
   ierr = PetscMemzero(select, n * sizeof(PetscBLASInt));CHKERRQ(ierr);
 
-  if (dgmres->GreatestEig == PETSC_FALSE)
+  if (!dgmres->GreatestEig)
   {
     for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
   } else {
@@ -1159,7 +1159,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
   /* Select the eigenvalues to reorder */
   ierr = PetscMalloc(N * sizeof(PetscBLASInt), &select);CHKERRQ(ierr);
   ierr = PetscMemzero(select, N * sizeof(PetscBLASInt));CHKERRQ(ierr);
-  if (dgmres->GreatestEig == PETSC_FALSE)
+  if (!dgmres->GreatestEig)
   {
     for (j = 0; j < NbrEig; j++)
       select[perm[j]] = 1;

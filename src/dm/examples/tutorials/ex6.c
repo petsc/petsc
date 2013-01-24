@@ -210,7 +210,7 @@ PetscErrorCode FACreate(FA *infa)
   /* Test case with different communicators */
   /* Normally one would use MPI_Comm routines to build MPI communicators on which you wish to partition the DMDAs*/
   /*
-  if (rank == 0) {
+  if (!rank) {
     fa->comm[0] = PETSC_COMM_SELF;
     fa->comm[1] = 0;
     fa->comm[2] = 0;

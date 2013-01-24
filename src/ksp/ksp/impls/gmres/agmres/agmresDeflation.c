@@ -169,7 +169,7 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
   }
   /* Reorder the Schur decomposition so that the cluster of smallest/largest eigenvalues appears in the leading diagonal blocks of A (and B)*/
   ierr = PetscMemzero(select, N*sizeof(PetscInt));CHKERRQ(ierr);
-  if (agmres->GreatestEig == PETSC_FALSE) {
+  if (!agmres->GreatestEig) {
     for (j = 0; j < r; j++) select[perm[j]] = 1;
   } else {
     for (j = 0; j < r; j++) select[perm[KspSize-j-1]] = 1;

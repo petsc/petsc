@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Aher\n");CHKERRQ(ierr);
   ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Aher);CHKERRQ(ierr);
   ierr = MatAXPY(Aher,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Aher = A + A^T */
-  if (rank == 0) { /* add 100.0 to diagonals of Aher to make it spd */
+  if (!rank) { /* add 100.0 to diagonals of Aher to make it spd */
     PetscInt M,N;
     ierr = MatGetSize(Aher,&M,&N);CHKERRQ(ierr);
     for (i=0; i<M; i++) {

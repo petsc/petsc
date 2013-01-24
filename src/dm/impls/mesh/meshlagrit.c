@@ -69,7 +69,7 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRXX(ierr);
       ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRXX(ierr);
       // Read header
-      if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+      if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
       // Number of vertices
       const char *x = strtok(buf, " ");
       numVertices = atoi(x);
@@ -84,7 +84,7 @@ namespace ALE {
       x = strtok(NULL, " ");
       ierr = PetscMalloc(numVertices*dim * sizeof(PetscReal), &coords);CHKERRXX(ierr);
       for (PetscInt i = 0; i < numVertices; ++i) {
-        if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+        if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
         // Ignore vertex number
         x = strtok(NULL, " ");
@@ -96,7 +96,7 @@ namespace ALE {
       *coordinates = coords;
       ierr = PetscMalloc(numElements*numCorners * sizeof(PetscInt), &verts);CHKERRXX(ierr);
       for (PetscInt i = 0; i < numElements; ++i) {
-        if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+        if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");
         // Ignore element number
         x = strtok(NULL, " ");
@@ -157,7 +157,7 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRXX(ierr);
       ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRXX(ierr);
       // Read header
-      if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+      if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
       // Check file type
       const char *x = strtok(buf, " ");
       std::string fileType("pset");
@@ -168,7 +168,7 @@ namespace ALE {
       x = strtok(NULL, " ");
       numPsets = atoi(x);
       for (PetscInt p = 0; p < numPsets; ++p) {
-        if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+        if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
         // Read name
         x = strtok(buf, " ");
         const Obj<Mesh::int_section_type>& fault = mesh->getIntSection(x);
@@ -181,7 +181,7 @@ namespace ALE {
 
         for (PetscInt v = 0; v < totalVerts; ++v) {
           if (v%vertsPerLine == 0) {
-            if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+            if (!fgets(buf, 2048, f)) throw ALE::Exception("File ended prematurely");
             x = strtok(buf, " ");
           } else {
             x = strtok(NULL, " ");

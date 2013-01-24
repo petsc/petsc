@@ -159,7 +159,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
     Open EXODUS II file and read basic informations on rank 0,
     then broadcast to all nodes
   */
-  if (rank == 0) {
+  if (!rank) {
     exoid = ex_open(filename,EX_READ,&CPU_word_size,&IO_word_size,&version);CHKERRQ(!exoid);
     ierr = ex_get_init(exoid,title,&num_dim,&num_nodes,&num_elem,&num_eb,&num_ns,&num_ss);CHKERRQ(ierr);
     if (num_eb == 0) {
@@ -197,7 +197,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
     num_attr[eb] = 0;
     ierr = PetscMalloc2(MAX_STR_LENGTH+1,char,&eb_name[eb],MAX_STR_LENGTH+1,char,&eb_elemtype[eb]);CHKERRQ(ierr);
   }
-  if (rank == 0) {
+  if (!rank) {
     /*
       Get EB names
     */
@@ -319,7 +319,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   }
 #endif
   /* Done reading EXO,closing file */
-  if (rank == 0) {
+  if (!rank) {
     ierr = ex_close(exoid);CHKERRQ(ierr);
   }
 
@@ -355,7 +355,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
     that all elements in the mesh are of the same type.
   */
   int numCorners = 0;
-  if (rank == 0) {
+  if (!rank) {
     numCorners = num_nodes_per_elem[0];
   }
 
