@@ -17,8 +17,6 @@
 #define kspmonitorlgresidualnorm_      KSPMONITORLGRESIDUALNORM
 #define kspmonitorlgtrueresidualnorm_  KSPMONITORLGTRUERESIDUALNORM
 #define kspmonitorsingularvalue_   KSPMONITORSINGULARVALUE
-#define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
-#define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #define kspsetcomputerhs_              KSPSETCOMPUTERHS
 #define kspsetcomputeinitialguess_     KSPSETCOMPUTEINITIALGUESS
 #define kspsetcomputeoperators_        KSPSETCOMPUTEOPERATORS
@@ -40,8 +38,6 @@
 #define kspmonitorsolution_            kspmonitorsolution
 #define kspmonitorlgresidualnorm_      kspmonitorlgresidualnorm
 #define kspmonitorlgtrueresidualnorm_  kspmonitorlgtrueresidualnorm
-#define kspfgmresmodifypcksp_          kspfgmresmodifypcksp
-#define kspfgmresmodifypcnochange_     kspfgmresmodifypcnochange
 #define kspsetcomputerhs_              kspsetcomputerhs
 #define kspsetcomputeinitialguess_     kspsetcomputeinitialguess
 #define kspsetcomputeoperators_        kspsetcomputeoperators
