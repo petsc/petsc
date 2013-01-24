@@ -674,4 +674,6 @@ namespace ALE { namespace Coarsener {
     }
     return angle;
   }
-} }
+  
+}
+}

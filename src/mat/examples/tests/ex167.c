@@ -59,13 +59,17 @@ int main(int argc,char **args)
       row = j*4+i;
       v = -1.0;
       if (i>0) {
-        col =  row-1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col =  row-1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
       if (i<3) {
-        col = row+1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col = row+1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
       if (j>0) {
-        col = row-4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col = row-4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
       if (j<3) {
-        col = row+4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);}
+        col = row+4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+      }
       v = 4.0;
       ierr = MatSetValues(A,1,&row,1,&row,&v,INSERT_VALUES);CHKERRQ(ierr);
     }

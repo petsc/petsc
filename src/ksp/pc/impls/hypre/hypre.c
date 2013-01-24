@@ -142,7 +142,8 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
    hypre_ParVector *par_vector   = (hypre_ParVector *)hypre_IJVectorObject(((hypre_IJVector*)b));\
    hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector);\
    savedvalue         = local_vector->data;\
-   local_vector->data = newvalue;}
+   local_vector->data = newvalue;          \
+   }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_HYPRE"

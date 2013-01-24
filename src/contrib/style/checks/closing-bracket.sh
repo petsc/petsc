@@ -35,5 +35,22 @@ find src/ -name *.[ch] -or -name *.cu \
  | grep -v '},' \
  | grep -v -F "__LINE__" \
  | grep -v -F "#define" \
- | grep -v -F '${PETSC_DIR}' 
+ | grep -v -F '${PETSC_DIR}' \
+ | grep -v -F 'if (' \
+ | grep -v -F 'for (' \
+ | grep -v -F 'while (' \
+ | grep -v -F 'struct {' \
+ | grep -v '{\s*;\s*}' \
+ | grep -v ':\s*/\*' \
+ | grep -v '}\s*\*/' \
+ | grep -v -F ' catch' \
+ | grep -v -F ':$' \
+ | grep -v ') {\s*return.*}' \
+ | grep -v '}\s*//' \
+ | grep -v '{.*}' \
+ | grep -v ':}.*;' \
+ | grep -v '//\s*}' \
+ | grep -v 'break;}' \
+ | grep -v -F '"}"' \
+
 

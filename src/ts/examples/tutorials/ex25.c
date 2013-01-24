@@ -61,7 +61,8 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options",""); {
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options","");
+  {
     user.A      = 1;
     user.B      = 3;
     user.alpha  = 0.02;
@@ -76,7 +77,8 @@ int main(int argc,char **argv)
     ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright,&user.uright,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft,&user.vleft,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright,&user.vright,PETSC_NULL);CHKERRQ(ierr);
-  } ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

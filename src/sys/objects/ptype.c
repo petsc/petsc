@@ -115,7 +115,8 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_BIT_LOGICAL_SIZE = sizeof(char),
               PETSC_ENUM_SIZE = sizeof(PetscBool), PETSC_BOOL_SIZE = sizeof(PetscBool),
-              PETSC___FLOAT128_SIZE = sizeof(long double)} PetscDataTypeSize;
+              PETSC___FLOAT128_SIZE = sizeof(long double)
+             } PetscDataTypeSize;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDataTypeGetSize"

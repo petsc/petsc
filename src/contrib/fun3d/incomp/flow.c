@@ -2783,51 +2783,51 @@ PetscPrintf(PETSC_COMM_WORLD," nbface= %d\n",nbface);*/
  * Allocate memory for MG transfer
  */
 /*
- * ICALLOC(mgzero*nsface,   &grid->isford);
- * ICALLOC(mgzero*nvface,   &grid->ivford);
- * ICALLOC(mgzero*nfface,   &grid->ifford);
- * ICALLOC(mgzero*nnodes,   &grid->nflag);
- * ICALLOC(mgzero*nnodes,   &grid->nnext);
- * ICALLOC(mgzero*nnodes,   &grid->nneigh);
- * ICALLOC(mgzero*ncell,    &grid->ctag);
- * ICALLOC(mgzero*ncell,    &grid->csearch);
- * ICALLOC(valloc*ncell*4,  &grid->c2n);
- * ICALLOC(valloc*ncell*6,  &grid->c2e);
- * grid->c2c = (int*)grid->dfp;
- * ICALLOC(ncell*4,  &grid->c2c);
- * ICALLOC(nnodes,   &grid->cenc);
- * if (grid->iup == 1) {
- *    ICALLOC(mgzero*nnodes*3, &grid->icoefup);
- *    FCALLOC(mgzero*nnodes*3, &grid->rcoefup);
- * }
- * if (grid->idown == 1) {
- *    ICALLOC(mgzero*nnodes*3, &grid->icoefdn);
- *    FCALLOC(mgzero*nnodes*3, &grid->rcoefdn);
- * }
- * FCALLOC(nnodes*4, &grid->ff);
- * FCALLOC(tnode,    &grid->turbff);
+  ICALLOC(mgzero*nsface,   &grid->isford);
+  ICALLOC(mgzero*nvface,   &grid->ivford);
+  ICALLOC(mgzero*nfface,   &grid->ifford);
+  ICALLOC(mgzero*nnodes,   &grid->nflag);
+  ICALLOC(mgzero*nnodes,   &grid->nnext);
+  ICALLOC(mgzero*nnodes,   &grid->nneigh);
+  ICALLOC(mgzero*ncell,    &grid->ctag);
+  ICALLOC(mgzero*ncell,    &grid->csearch);
+  ICALLOC(valloc*ncell*4,  &grid->c2n);
+  ICALLOC(valloc*ncell*6,  &grid->c2e);
+  grid->c2c = (int*)grid->dfp;
+  ICALLOC(ncell*4,  &grid->c2c);
+  ICALLOC(nnodes,   &grid->cenc);
+  if (grid->iup == 1) {
+     ICALLOC(mgzero*nnodes*3, &grid->icoefup);
+     FCALLOC(mgzero*nnodes*3, &grid->rcoefup);
+  }
+  if (grid->idown == 1) {
+     ICALLOC(mgzero*nnodes*3, &grid->icoefdn);
+     FCALLOC(mgzero*nnodes*3, &grid->rcoefdn);
+  }
+  FCALLOC(nnodes*4, &grid->ff);
+  FCALLOC(tnode,    &grid->turbff);
  */
 /*
  * If using GMRES (nsrch>0) allocate memory
  */
 /* NoEq = 0;
-*  if (nsrch > 0)NoEq = 4*nnodes;
-*  if (nsrch < 0)NoEq = nnodes;
-*  FCALLOC(NoEq,          &grid->AP);
-*  FCALLOC(NoEq,          &grid->Xgm);
-*  FCALLOC(NoEq,          &grid->temr);
-*  FCALLOC((abs(nsrch)+1)*NoEq,&grid->Fgm);
+  if (nsrch > 0)NoEq = 4*nnodes;
+  if (nsrch < 0)NoEq = nnodes;
+  FCALLOC(NoEq,          &grid->AP);
+  FCALLOC(NoEq,          &grid->Xgm);
+  FCALLOC(NoEq,          &grid->temr);
+  FCALLOC((abs(nsrch)+1)*NoEq,&grid->Fgm);
 */
 /*
  * stuff to read in dave's grids
  */
 /*
- * ICALLOC(nnbound,  &grid->ncolorn);
- * ICALLOC(nnbound*100,&grid->countn);
- * ICALLOC(nvbound,  &grid->ncolorv);
- * ICALLOC(nvbound*100,&grid->countv);
- * ICALLOC(nfbound,  &grid->ncolorf);
- * ICALLOC(nfbound*100,&grid->countf);
+  ICALLOC(nnbound,  &grid->ncolorn);
+  ICALLOC(nnbound*100,&grid->countn);
+  ICALLOC(nvbound,  &grid->ncolorv);
+  ICALLOC(nvbound*100,&grid->countv);
+  ICALLOC(nfbound,  &grid->ncolorf);
+  ICALLOC(nfbound*100,&grid->countf);
  */
    /*ICALLOC(nnbound,  &grid->nntet);
    ICALLOC(nnbound,  &grid->nnpts);

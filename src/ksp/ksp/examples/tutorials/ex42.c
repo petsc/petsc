@@ -1563,17 +1563,20 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   for (i=0; i<pM; i++) {
     olx[i] = sum;
     sum = sum + lx[i];
-  } olx[pM] = sum;
+  }
+  olx[pM] = sum;
   sum = 0;
   for (i=0; i<pN; i++) {
     oly[i] = sum;
     sum = sum + ly[i];
-  } oly[pN] = sum;
+  }
+  oly[pN] = sum;
   sum = 0;
   for (i=0; i<pP; i++) {
     olz[i] = sum;
     sum = sum + lz[i];
-  } olz[pP] = sum;
+  } 
+  olz[pP] = sum;
   ierr = PetscMalloc(sizeof(PetscInt)*(pM),&osx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*(pN),&osy);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*(pP),&osz);CHKERRQ(ierr);

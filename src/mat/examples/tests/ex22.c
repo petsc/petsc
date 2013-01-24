@@ -106,7 +106,8 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,I
     for (i=0; i<n; i++) ii[i] = n-i-1; /* replace your index here */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,icol);CHKERRQ(ierr);
-  } SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatRestoreRowIJ fails!");
+  } 
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatRestoreRowIJ fails!");
   ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
   ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
 

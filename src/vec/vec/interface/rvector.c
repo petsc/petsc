@@ -2077,7 +2077,7 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
    For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
    obtained from the corner indices obtained from DMDAGetGhostCorners() while for
    DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
-   the arguments from DMDAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
+   the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
 
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 

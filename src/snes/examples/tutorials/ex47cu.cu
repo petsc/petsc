@@ -166,5 +166,6 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   *flag = SAME_NONZERO_PATTERN;
   ierr = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
-  return 0;}
+  return 0;
+}
 

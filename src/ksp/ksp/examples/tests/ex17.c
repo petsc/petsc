@@ -161,13 +161,17 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     for (Ii=Istart; Ii<Iend; Ii++) {
       *val = -1.0; i = Ii/n; j = Ii - i*n;
       if (i>0) {
-        J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       if (i<n-1) {
-        J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       if (j>0) {
-        J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       if (j<n-1) {
-        J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);
       *val = 4.0 - sigma1*h2 + sigma2*h2;
       ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);
@@ -190,13 +194,17 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     for (Ii=Istart; Ii<Iend; Ii++) {
       *val = -1.0; i = Ii/n; j = Ii - i*n;
       if (i>0) {
-        J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       if (i<n-1) {
-        J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       if (j>0) {
-        J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       if (j<n-1) {
-        J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);
+      }
       *val = 4.0 - sigma1*h2;
       if (!((Ii+1)%n)) *val += alpha_h;
       ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);

@@ -8,7 +8,8 @@ const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","S
 
 typedef enum {SNES_QN_LBFGS      = 0,
               SNES_QN_BROYDEN    = 1,
-              SNES_QN_BADBROYDEN = 2} SNESQNType;
+              SNES_QN_BADBROYDEN = 2
+             } SNESQNType;
 
 typedef struct {
   Vec                   *U;               /* Stored past states (vary from method to method) */

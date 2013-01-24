@@ -5,7 +5,8 @@ typedef enum {BUILDTWOSIDED_NOTSET = -1,
 #if defined(PETSC_HAVE_MPI_IBARRIER)
               BUILDTWOSIDED_IBARRIER,
 #endif
-              BUILDTWOSIDED_ALLREDUCE} BuildTwoSidedType;
+              BUILDTWOSIDED_ALLREDUCE
+             } BuildTwoSidedType;
 
 static const char *const BuildTwoSidedTypes[] = {
 #if defined(PETSC_HAVE_MPI_IBARRIER)

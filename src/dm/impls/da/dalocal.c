@@ -264,7 +264,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
     if (numCellDof)   {numCellTotDof    += numCellDof[f];}
     if (numFaceDof)   {numFaceTotDof[0] += numFaceDof[f*dim+0];
                        numFaceTotDof[1] += dim > 1 ? numFaceDof[f*dim+1] : 0;
-                       numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;}
+                       numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
+                      }
   }
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &dm->defaultSection);CHKERRQ(ierr);
   if (numFields > 1) {
