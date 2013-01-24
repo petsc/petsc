@@ -53,6 +53,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
         self.dir = dir.replace('\n','')
       except RuntimeError:
         pass
+    self.version  = 'Unknown'
     versionHeader = os.path.join(self.dir, 'include', 'petscversion.h')
     versionInfo = []
     if os.path.exists(versionHeader):
@@ -63,6 +64,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
       f.close()
     else:
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+'. Could not locate '+versionHeader)
+    self.version = '.'.join([line.split(' ')[-1] for line in versionInfo[1:4]])
     self.logPrint('Version Information:')
     for line in versionInfo:
       self.logPrint(line)
