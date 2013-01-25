@@ -86,99 +86,99 @@ static double mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 static const char     *label[4] = {"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
 
 static double   bytes[4] = {
-   2 * sizeof(double) * N,
-   2 * sizeof(double) * N,
-   3 * sizeof(double) * N,
-   3 * sizeof(double) * N
-   };
+  2 * sizeof(double) * N,
+  2 * sizeof(double) * N,
+  3 * sizeof(double) * N,
+  3 * sizeof(double) * N
+};
 
 extern double second();
 
 
 int main(int argc,char **args)
-   {
-   int           checktick();
-   register int j, k;
-   double       scalar, t, times[4][NTIMES],irate[4];
+{
+  int           checktick();
+  register int j, k;
+  double       scalar, t, times[4][NTIMES],irate[4];
 
-   /* --- SETUP --- determine precision and check timing --- */
+  /* --- SETUP --- determine precision and check timing --- */
 
-   for (j=0; j<N; j++) {
-        a[j] = 1.0;
-        b[j] = 2.0;
-        c[j] = 0.0;
-        }
+  for (j=0; j<N; j++) {
+    a[j] = 1.0;
+    b[j] = 2.0;
+    c[j] = 0.0;
+  }
 
-   t = second();
-   for (j = 0; j < N; j++)
-        a[j] = 2.0E0 * a[j];
-   t = 1.0E6 * (second() - t);
+  t = second();
+  for (j = 0; j < N; j++)
+    a[j] = 2.0E0 * a[j];
+  t = 1.0E6 * (second() - t);
 
-      /*   --- MAIN LOOP --- repeat test cases NTIMES times --- */
+    /*   --- MAIN LOOP --- repeat test cases NTIMES times --- */
 
-   scalar = 3.0;
-   for (k=0; k<NTIMES; k++)
-        {
+  scalar = 3.0;
+  for (k=0; k<NTIMES; k++)
+  {
 
-        times[0][k] = second();
-   /* should all these barriers be pulled outside of the time call? */
+    times[0][k] = second();
+/* should all these barriers be pulled outside of the time call? */
 
-        for (j=0; j<N; j++)
-            c[j] = a[j];
-        times[0][k] = second() - times[0][k];
+    for (j=0; j<N; j++)
+        c[j] = a[j];
+    times[0][k] = second() - times[0][k];
 
-        times[1][k] = second();
+    times[1][k] = second();
 
-        for (j=0; j<N; j++)
-            b[j] = scalar*c[j];
-        times[1][k] = second() - times[1][k];
+    for (j=0; j<N; j++)
+        b[j] = scalar*c[j];
+    times[1][k] = second() - times[1][k];
 
-        times[2][k] = second();
-        for (j=0; j<N; j++)
-            c[j] = a[j]+b[j];
-        times[2][k] = second() - times[2][k];
+    times[2][k] = second();
+    for (j=0; j<N; j++)
+        c[j] = a[j]+b[j];
+    times[2][k] = second() - times[2][k];
 
-        times[3][k] = second();
-        for (j=0; j<N; j++)
-            a[j] = b[j]+scalar*c[j];
-        times[3][k] = second() - times[3][k];
-     }
+    times[3][k] = second();
+    for (j=0; j<N; j++)
+        a[j] = b[j]+scalar*c[j];
+    times[3][k] = second() - times[3][k];
+  }
 
-   /*   --- SUMMARY --- */
+  /*   --- SUMMARY --- */
 
-   for (k=0; k<NTIMES; k++) {
-        for (j=0; j<4; j++) {
-           mintime[j] = MIN(mintime[j], times[j][k]);
-        }
-      }
+  for (k=0; k<NTIMES; k++) {
+    for (j=0; j<4; j++) {
+        mintime[j] = MIN(mintime[j], times[j][k]);
+    }
+  }
 
-   for (j=0; j<4; j++) {
-     irate[j] = 1.0E-06 * bytes[j]/mintime[j];
-   }
+  for (j=0; j<4; j++) {
+    irate[j] = 1.0E-06 * bytes[j]/mintime[j];
+  }
 
-   printf("Function      Rate (MB/s) \n");
-   for (j=0; j<4; j++) {
-      printf("%s%11.4f\n", label[j],irate[j]);
-   }
-   return 0;
+  printf("Function      Rate (MB/s) \n");
+  for (j=0; j<4; j++) {
+    printf("%s%11.4f\n", label[j],irate[j]);
+  }
+  return 0;
 }
 
 # define        M        20
 
 int
 checktick()
-   {
-   int           i, minDelta, Delta;
-   double        t1, t2, timesfound[M];
+{
+  int           i, minDelta, Delta;
+  double        t1, t2, timesfound[M];
 
 /*  Collect a sequence of M unique time values from the system. */
 
-   for (i = 0; i < M; i++) {
-        t1 = second();
-        while (((t2=second()) - t1) < 1.0E-6)
-            ;
-        timesfound[i] = t1 = t2;
-        }
+  for (i = 0; i < M; i++) {
+    t1 = second();
+    while (((t2=second()) - t1) < 1.0E-6)
+        ;
+    timesfound[i] = t1 = t2;
+  }
 
 /*
 * Determine the minimum difference between these M values.
@@ -186,12 +186,12 @@ checktick()
 * clock granularity.
 */
 
-   minDelta = 1000000;
-   for (i = 1; i < M; i++) {
-        Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
-        minDelta = MIN(minDelta, MAX(Delta,0));
-        }
+  minDelta = 1000000;
+  for (i = 1; i < M; i++) {
+    Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
+    minDelta = MIN(minDelta, MAX(Delta,0));
+  }
 
-   return(minDelta);
-   }
+  return(minDelta);
+}
 

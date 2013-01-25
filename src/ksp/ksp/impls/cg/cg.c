@@ -178,106 +178,106 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
   i = 0;
   do {
-     ksp->its = i+1;
-     if (beta == 0.0) {
-       ksp->reason = KSP_CONVERGED_ATOL;
-       ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
-       break;
+    ksp->its = i+1;
+    if (beta == 0.0) {
+      ksp->reason = KSP_CONVERGED_ATOL;
+      ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
+      break;
 #if !defined(PETSC_USE_COMPLEX)
-     } else if ((i > 0) && (beta*betaold < 0.0)) {
-       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-       ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
-       break;
+    } else if ((i > 0) && (beta*betaold < 0.0)) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
+      break;
 #endif
-     }
-     if (!i) {
-       ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
-       b = 0.0;
-     } else {
-       b = beta/betaold;
-       if (eigs) {
-         if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-         e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
-       }
-       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
-     }
-     dpiold = dpi;
-     if (!cg->singlereduction || !i) {
-       ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Ap         */
-       ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
-     } else {
-        ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Ap         */
-        dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
-     }
-     betaold = beta;
-     if (PetscIsInfOrNanScalar(dpi)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    }
+    if (!i) {
+      ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
+      b = 0.0;
+    } else {
+      b = beta/betaold;
+      if (eigs) {
+        if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+        e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
+      }
+      ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
+    }
+    dpiold = dpi;
+    if (!cg->singlereduction || !i) {
+      ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Ap         */
+      ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
+    } else {
+      ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Ap         */
+      dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
+    }
+    betaold = beta;
+    if (PetscIsInfOrNanScalar(dpi)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
-     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
-       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-       ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
-       break;
-     }
-     a = beta/dpi;                                 /*     a = beta/p'w   */
-     if (eigs) {
-       d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
-     }
-     ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ierr = VecAXPY(R,-a,W);CHKERRQ(ierr);                      /*     r <- r - aw    */
-     if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
-       if (cg->singlereduction) {
-         ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
-       }
-       ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
-     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i+2) {
-       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
-     } else if (ksp->normtype == KSP_NORM_NATURAL) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
-       if (cg->singlereduction) {
-         PetscScalar tmp[2];
-         Vec         vecs[2];
-         vecs[0] = S; vecs[1] = R;
-         ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
-         /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
-           ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
-         ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
-         delta = tmp[0]; beta = tmp[1];
-       } else {
-         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
-       }
-       if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
-       dp = PetscSqrtReal(PetscAbsScalar(beta));
-     } else {
-       dp = 0.0;
-     }
-     ksp->rnorm = dp;
-     KSPLogResidualHistory(ksp,dp);
-     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-     if (ksp->reason) break;
+    if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
+      ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
+      break;
+    }
+    a = beta/dpi;                                 /*     a = beta/p'w   */
+    if (eigs) {
+      d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
+    }
+    ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
+    ierr = VecAXPY(R,-a,W);CHKERRQ(ierr);                      /*     r <- r - aw    */
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
+      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
+      if (cg->singlereduction) {
+        ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
+      }
+      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
+    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i+2) {
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
+    } else if (ksp->normtype == KSP_NORM_NATURAL) {
+      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
+      if (cg->singlereduction) {
+        PetscScalar tmp[2];
+        Vec         vecs[2];
+        vecs[0] = S; vecs[1] = R;
+        ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
+        /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+          ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
+        ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+        delta = tmp[0]; beta = tmp[1];
+      } else {
+        ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
+      }
+      if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+      dp = PetscSqrtReal(PetscAbsScalar(beta));
+    } else {
+      dp = 0.0;
+    }
+    ksp->rnorm = dp;
+    KSPLogResidualHistory(ksp,dp);
+    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
 
-     if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i+2)) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
-       if (cg->singlereduction) {
-         ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
-       }
-     }
-     if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)) {
-       if (cg->singlereduction) {
-         PetscScalar tmp[2];
-         Vec         vecs[2];
-         vecs[0] = S; vecs[1] = R;
-         /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
-         /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
-         ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
-         delta = tmp[0]; beta = tmp[1];
-       } else {
-         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
-       }
-       if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
-     }
+    if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i+2)) {
+      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
+      if (cg->singlereduction) {
+        ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
+      }
+    }
+    if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)) {
+      if (cg->singlereduction) {
+        PetscScalar tmp[2];
+        Vec         vecs[2];
+        vecs[0] = S; vecs[1] = R;
+        /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
+        /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
+        ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+        delta = tmp[0]; beta = tmp[1];
+      } else {
+        ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
+      }
+      if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    }
 
-     i++;
+    i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;

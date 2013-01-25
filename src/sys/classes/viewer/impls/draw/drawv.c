@@ -78,23 +78,23 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt  windownumber
   if (windownumber < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   windownumber += vdraw->draw_base;
   if (windownumber >= vdraw->draw_max) {
-     /* allocate twice as many slots as needed */
-     PetscInt      draw_max = vdraw->draw_max;
-     PetscDraw     *tdraw = vdraw->draw;
-     PetscDrawLG   *drawlg = vdraw->drawlg;
-     PetscDrawAxis *drawaxis = vdraw->drawaxis;
+    /* allocate twice as many slots as needed */
+    PetscInt      draw_max = vdraw->draw_max;
+    PetscDraw     *tdraw = vdraw->draw;
+    PetscDrawLG   *drawlg = vdraw->drawlg;
+    PetscDrawAxis *drawaxis = vdraw->drawaxis;
 
-     vdraw->draw_max = 2*windownumber;
-     ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
-     ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
-     ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
-     ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
+    vdraw->draw_max = 2*windownumber;
+    ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
+    ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
+    ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
+    ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
 
-     ierr = PetscMemcpy(vdraw->draw,tdraw,draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
-     ierr = PetscMemcpy(vdraw->drawlg,drawlg,draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
-     ierr = PetscMemcpy(vdraw->drawaxis,drawaxis,draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
+    ierr = PetscMemcpy(vdraw->draw,tdraw,draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
+    ierr = PetscMemcpy(vdraw->drawlg,drawlg,draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
+    ierr = PetscMemcpy(vdraw->drawaxis,drawaxis,draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
 
-     ierr = PetscFree3(tdraw,drawlg,drawaxis);CHKERRQ(ierr);
+    ierr = PetscFree3(tdraw,drawlg,drawaxis);CHKERRQ(ierr);
   }
 
   if (!vdraw->draw[windownumber]) {

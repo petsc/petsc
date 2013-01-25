@@ -195,7 +195,7 @@ PetscErrorCode PetscShellGraphAddEdge(PetscShellGraph graph, PetscInt row, Petsc
   ++(graph->indegree[col]);
   ++(graph->nz);
 
- we_are_done:
+we_are_done:
   PetscFunctionReturn(0);
 }/* PetscShellGraphAddEdge() */
 
@@ -373,7 +373,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellCall_NONE"
 PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message)
- {
+{
   PetscShellCallFunction    call = PETSC_NULL;
   PetscShellMessageFunction msg = PETSC_NULL;
   PetscErrorCode            ierr;
@@ -428,9 +428,9 @@ PetscErrorCode PetscShellCall(PetscShell shell, const char* message)
     break;
   case PETSC_SHELL_VTABLE_SO:
     ierr = PetscShellCall_SO(shell,
-                           ((struct _n_PetscShellVTable_SO*)shell->vtable)->path,
-                           ((struct _n_PetscShellVTable_SO*)shell->vtable)->name,
-                           message);CHKERRQ(ierr);
+                             ((struct _n_PetscShellVTable_SO*)shell->vtable)->path,
+                             ((struct _n_PetscShellVTable_SO*)shell->vtable)->name,
+                             message);CHKERRQ(ierr);
     break;
   case PETSC_SHELL_VTABLE_PY:
     PETSC_SHELL_CALL_PYTHON(shell, message);
@@ -467,11 +467,11 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
   /* Make sure it's not the ":/" of the "://" separator */
   if (!n[0] || n[0] == '/') {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
-           "Could not locate component name within the URL.\n"
-           "Must have url = [<path/><library>:]<name>.\n"
-           "Instead got %s\n"
-           "Remember that URL is always truncated to the max allowed length of %d",
-           inurl, nlen);
+             "Could not locate component name within the URL.\n"
+             "Must have url = [<path/><library>:]<name>.\n"
+             "Instead got %s\n"
+             "Remember that URL is always truncated to the max allowed length of %d",
+             inurl, nlen);
   }
   /* Copy n to name */
   ierr = PetscStrcpy(name, n);CHKERRQ(ierr);

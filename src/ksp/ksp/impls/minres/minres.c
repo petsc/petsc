@@ -104,82 +104,82 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   i = 0;
   do {
-     ksp->its = i+1;
+    ksp->its = i+1;
 
 /*   Lanczos  */
 
-     ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*      r <- A*u   */
-     ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- r'*u  */
-     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
+    ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*      r <- A*u   */
+    ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- r'*u  */
+    ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
 
-     ierr = VecAXPY(R,-alpha,V);CHKERRQ(ierr);     /*  r <- r - alpha v     */
-     ierr = VecAXPY(Z,-alpha,U);CHKERRQ(ierr);     /*  z <- z - alpha u     */
-     ierr = VecAXPY(R,-beta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
-     ierr = VecAXPY(Z,-beta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
+    ierr = VecAXPY(R,-alpha,V);CHKERRQ(ierr);     /*  r <- r - alpha v     */
+    ierr = VecAXPY(Z,-alpha,U);CHKERRQ(ierr);     /*  z <- z - alpha u     */
+    ierr = VecAXPY(R,-beta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
+    ierr = VecAXPY(Z,-beta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
 
-     betaold = beta;
+    betaold = beta;
 
-     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
-     if (PetscAbsScalar(dp) < minres->haptol) {
-       ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
-       dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
-     }
+    ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
+    if (PetscAbsScalar(dp) < minres->haptol) {
+      ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
+      dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
+    }
 
 #if !defined(PETSC_USE_COMPLEX)
-     if (dp < 0.0) {
-       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-       break;
-     }
+    if (dp < 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      break;
+    }
 #endif
-     beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
+    beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 
 /*    QR factorisation    */
 
-     coold = cold; cold = c; soold = sold; sold = s;
+    coold = cold; cold = c; soold = sold; sold = s;
 
-     rho0 = cold * alpha - coold * sold * betaold;
-     rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);
-     rho2 = sold * alpha + coold * cold * betaold;
-     rho3 = soold * betaold;
+    rho0 = cold * alpha - coold * sold * betaold;
+    rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);
+    rho2 = sold * alpha + coold * cold * betaold;
+    rho3 = soold * betaold;
 
 /*     Givens rotation    */
 
-     c = rho0 / rho1;
-     s = beta / rho1;
+    c = rho0 / rho1;
+    s = beta / rho1;
 
 /*    Update    */
 
-     ierr = VecCopy(WOLD,WOOLD);CHKERRQ(ierr);     /*  w_oold <- w_old      */
-     ierr = VecCopy(W,WOLD);CHKERRQ(ierr);         /*  w_old  <- w          */
+    ierr = VecCopy(WOLD,WOOLD);CHKERRQ(ierr);     /*  w_oold <- w_old      */
+    ierr = VecCopy(W,WOLD);CHKERRQ(ierr);         /*  w_old  <- w          */
 
-     ierr = VecCopy(U,W);CHKERRQ(ierr);            /*  w      <- u          */
-     mrho2 = - rho2;
-     ierr = VecAXPY(W,mrho2,WOLD);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
-     mrho3 = - rho3;
-     ierr = VecAXPY(W,mrho3,WOOLD);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
-     irho1 = 1.0 / rho1;
-     ierr = VecScale(W,irho1);CHKERRQ(ierr);      /*  w <- w / rho1        */
+    ierr = VecCopy(U,W);CHKERRQ(ierr);            /*  w      <- u          */
+    mrho2 = - rho2;
+    ierr = VecAXPY(W,mrho2,WOLD);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
+    mrho3 = - rho3;
+    ierr = VecAXPY(W,mrho3,WOOLD);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
+    irho1 = 1.0 / rho1;
+    ierr = VecScale(W,irho1);CHKERRQ(ierr);      /*  w <- w / rho1        */
 
-     ceta = c * eta;
-     ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */
-     eta = - s * eta;
+    ceta = c * eta;
+    ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */
+    eta = - s * eta;
 
-     ierr = VecCopy(V,VOLD);CHKERRQ(ierr);
-     ierr = VecCopy(U,UOLD);CHKERRQ(ierr);
-     ierr = VecCopy(R,V);CHKERRQ(ierr);
-     ierr = VecCopy(Z,U);CHKERRQ(ierr);
-     ibeta = 1.0 / beta;
-     ierr = VecScale(V,ibeta);CHKERRQ(ierr);      /*  v <- r / beta       */
-     ierr = VecScale(U,ibeta);CHKERRQ(ierr);      /*  u <- z / beta       */
+    ierr = VecCopy(V,VOLD);CHKERRQ(ierr);
+    ierr = VecCopy(U,UOLD);CHKERRQ(ierr);
+    ierr = VecCopy(R,V);CHKERRQ(ierr);
+    ierr = VecCopy(Z,U);CHKERRQ(ierr);
+    ibeta = 1.0 / beta;
+    ierr = VecScale(V,ibeta);CHKERRQ(ierr);      /*  v <- r / beta       */
+    ierr = VecScale(U,ibeta);CHKERRQ(ierr);      /*  u <- z / beta       */
 
-     np = ksp->rnorm * PetscAbsScalar(s);
+    np = ksp->rnorm * PetscAbsScalar(s);
 
-     ksp->rnorm = np;
-     KSPLogResidualHistory(ksp,np);
-     ierr = KSPMonitor(ksp,i+1,np);CHKERRQ(ierr);
-     ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
-     if (ksp->reason) break;
-     i++;
+    ksp->rnorm = np;
+    KSPLogResidualHistory(ksp,np);
+    ierr = KSPMonitor(ksp,i+1,np);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+    if (ksp->reason) break;
+    i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;

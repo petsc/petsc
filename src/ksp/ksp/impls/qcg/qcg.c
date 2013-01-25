@@ -183,82 +183,76 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
     if (ptasp <= dzero) {
 
       /* Scaled negative curvature direction:  Compute a step so that
-         ||w + step*p|| = delta and QS(w + step*p) is least */
+        ||w + step*p|| = delta and QS(w + step*p) is least */
 
-       if (!i) {
-         ierr = VecCopy(P,X);CHKERRQ(ierr);
-         ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);
-         scal = pcgP->delta / xnorm;
-         ierr = VecScale(X,scal);CHKERRQ(ierr);
-       } else {
-         /* Compute roots of quadratic */
-         ierr = KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2);CHKERRQ(ierr);
-         ierr = VecDotRealPart(W,ASP,&wtasp);CHKERRQ(ierr);
-         ierr = VecDotRealPart(BS,P,&bstp);CHKERRQ(ierr);
-         ierr = VecCopy(W,X);CHKERRQ(ierr);
-         q1 = step1*(bstp + wtasp + .5*step1*ptasp);
-         q2 = step2*(bstp + wtasp + .5*step2*ptasp);
-         if (q1 <= q2) {ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);}
-         else          {ierr = VecAXPY(X,step2,P);CHKERRQ(ierr);}
-       }
-       pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
-       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
-       if (!i) {
-         ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
-       } else {
-         ierr = PetscInfo3(ksp,"negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
-       }
+      if (!i) {
+        ierr = VecCopy(P,X);CHKERRQ(ierr);
+        ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);
+        scal = pcgP->delta / xnorm;
+        ierr = VecScale(X,scal);CHKERRQ(ierr);
+      } else {
+        /* Compute roots of quadratic */
+        ierr = KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2);CHKERRQ(ierr);
+        ierr = VecDotRealPart(W,ASP,&wtasp);CHKERRQ(ierr);
+        ierr = VecDotRealPart(BS,P,&bstp);CHKERRQ(ierr);
+        ierr = VecCopy(W,X);CHKERRQ(ierr);
+        q1 = step1*(bstp + wtasp + .5*step1*ptasp);
+        q2 = step2*(bstp + wtasp + .5*step2*ptasp);
+        if (q1 <= q2) {ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);}
+        else          {ierr = VecAXPY(X,step2,P);CHKERRQ(ierr);}
+      }
+      pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
+      ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
+      if (!i) {
+        ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
+      } else {
+        ierr = PetscInfo3(ksp,"negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
+      }
 
     } else {
+      /* Compute step along p */
+      step = rtr/ptasp;
+      ierr = VecCopy(W,X);CHKERRQ(ierr);        /*  x = w  */
+      ierr = VecAXPY(X,step,P);CHKERRQ(ierr);   /*  x <- step*p + x  */
+      ierr = VecNorm(X,NORM_2,&pcgP->ltsnrm);CHKERRQ(ierr);
 
-       /* Compute step along p */
-
-       step = rtr/ptasp;
-       ierr = VecCopy(W,X);CHKERRQ(ierr);        /*  x = w  */
-       ierr = VecAXPY(X,step,P);CHKERRQ(ierr);   /*  x <- step*p + x  */
-       ierr = VecNorm(X,NORM_2,&pcgP->ltsnrm);CHKERRQ(ierr);
-
-       if (pcgP->ltsnrm > pcgP->delta) {
-
-         /* Since the trial iterate is outside the trust region,
-             evaluate a constrained step along p so that
+      if (pcgP->ltsnrm > pcgP->delta) {
+          /* Since the trial iterate is outside the trust region,
+              evaluate a constrained step along p so that
                       ||w + step*p|| = delta
             The positive step is always better in this case. */
+        if (!i) {
+          scal = pcgP->delta / pcgP->ltsnrm;
+          ierr = VecScale(X,scal);CHKERRQ(ierr);
+        } else {
+          /* Compute roots of quadratic */
+          ierr = KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2);CHKERRQ(ierr);
+          ierr = VecCopy(W,X);CHKERRQ(ierr);
+          ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);  /*  x <- step1*p + x  */
+        }
+        pcgP->ltsnrm = pcgP->delta;
+        ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
+        if (!i) {
+          ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
+        } else {
+          ierr = PetscInfo3(ksp,"constrained step: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
+        }
 
-         if (!i) {
-           scal = pcgP->delta / pcgP->ltsnrm;
-           ierr = VecScale(X,scal);CHKERRQ(ierr);
-         } else {
-           /* Compute roots of quadratic */
-           ierr = KSPQCGQuadraticRoots(W,P,pcgP->delta,&step1,&step2);CHKERRQ(ierr);
-           ierr = VecCopy(W,X);CHKERRQ(ierr);
-           ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);  /*  x <- step1*p + x  */
-         }
-         pcgP->ltsnrm = pcgP->delta;
-         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
-         if (!i) {
-           ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
-         } else {
-           ierr = PetscInfo3(ksp,"constrained step: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
-         }
+      } else {
+        /* Evaluate the current step */
+        ierr = VecCopy(X,W);CHKERRQ(ierr);  /* update interior iterate */
+        ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
+        ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
-       } else {
-
-         /* Evaluate the current step */
-
-         ierr = VecCopy(X,W);CHKERRQ(ierr);  /* update interior iterate */
-         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
-         ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
-
-         ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-         ksp->rnorm                                    = rnrm;
-         ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-         KSPLogResidualHistory(ksp,rnrm);
-         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
-         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-         if (ksp->reason) {                 /* convergence for */
-           ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
-         }
+        ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+        ksp->rnorm                                    = rnrm;
+        ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+        KSPLogResidualHistory(ksp,rnrm);
+        ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
+        ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+        if (ksp->reason) {                 /* convergence for */
+          ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
+        }
       }
     }
     if (ksp->reason) break;  /* Convergence has been attained */

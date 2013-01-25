@@ -116,17 +116,17 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
   i = 0;
   do {
-     ksp->its = i+1;
-     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
-     if (beta == 0.0) {
-       ksp->reason = KSP_CONVERGED_ATOL;
-       ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
-       break;
+    ksp->its = i+1;
+    ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
+    if (beta == 0.0) {
+      ksp->reason = KSP_CONVERGED_ATOL;
+      ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
+      break;
 #if !defined(PETSC_USE_COMPLEX)
-     } else if (beta < 0.0) {
-       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-       ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
-       break;
+    } else if (beta < 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
+      break;
 #endif
      }
      if (!i) {

@@ -16,7 +16,11 @@ do
  if [ -n "$isvalid" ]; then
    #echo "$f"
    output=`gcc -fpreprocessed -dD -E -w -x c++ $f | grep "^\s\(\s\s\)*[^ ]"`
-   if [ -n "$output" ]; then echo "$f: $output"; fi;
+   if [ -n "$output" ]; then
+     #numlines=`echo "$output" | wc -l`
+     #echo "$f: $numlines";
+     echo "$f: $output";
+   fi
  fi
 done
 

@@ -73,10 +73,9 @@ namespace Hierarchy {
 
   PetscErrorCode HierarchyBuilder::GetLocalInterpolation(double * coeffs, point_type v, point_type e)
   {
-   // TEST FOR BUILDING THE RESTRICT (INTERPOLATE) OPERATOR.
-   double * v0, * J, * invJ, detJ;
-   mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
-
+    // TEST FOR BUILDING THE RESTRICT (INTERPOLATE) OPERATOR.
+    double * v0, * J, * invJ, detJ;
+    mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
   }
 
   HierarchyBuilder::HierarchyBuilder(Obj<ALE::Mesh> m, int dimensions, int levels, double C)
@@ -615,8 +614,8 @@ namespace Hierarchy {
                   if (topology->getPatch(curLevel+1)->support(*parts_iter)->size() == 1) {
                     if (PointInEdgeRegion(part_coords, p_coords, factor*p_space/2) && topology->getValue(boundary, *p_iter) == 0) p_is_ok = false;
                   } else if (topology->getValue(traversal, *parts_iter) != 1 && PointMidpointCollide(part_coords, p_coords, factor*p_space)) {
-                     compare_list.push_back(*parts_iter);
-                     topology->setValue(traversal, *parts_iter, 1);
+                    compare_list.push_back(*parts_iter);
+                    topology->setValue(traversal, *parts_iter, 1);
                   }
 
                 }
@@ -641,8 +640,8 @@ namespace Hierarchy {
                 while (es_iter != es_iter_end) {
                   int travvalue = topology->getValue(traversal, *es_iter);
                   if (travvalue != 1) {
-                     topology->setValue(traversal, *es_iter, 1);
-                     compare_list.push_back(*es_iter);
+                    topology->setValue(traversal, *es_iter, 1);
+                    compare_list.push_back(*es_iter);
                 }
                 es_iter++;
               }
@@ -890,147 +889,147 @@ namespace Hierarchy {
     v_iter_end = verts->end();
 
     //DO THIS BY TANDEM TRAVERSALS
-   while (v_iter != v_iter_end) {
-     topology->setValue(location, *v_iter, -2);
-     v_iter++;
-   }
-   v_iter = verts->begin();
-   while (v_iter != v_iter_end) {
-     std::list<point_type> pQueue;
-     std::list<point_type> triQueue;
-     if (topology->getPatch(C_levels)->capContains(*v_iter)) {
-       topology->setValue(location, *v_iter, -1);
-       //v_iter++;
-     } else if (topology->getValue(location, *v_iter) == -2) {
-       printf("Starting from point %d in element ", *v_iter);
-       //naively find the first point, and traverse outward from its neighbors.
-       label_sequence::iterator t_iter = triangles->begin();
-       label_sequence::iterator t_iter_end = triangles->end();
-       bool point_located = false;
-       //point_type containingTri;
-       double tri_points[dim*(dim+1)];
-       while (t_iter != t_iter_end && !point_located) {
-         ElementCorners(tri_points, C_levels, *t_iter);
-         if (PointIsInTriangle(tri_points, (double *)coordinates->restrict(patch, *v_iter))) {
-           point_located = true;
-           topology->setValue(location, *v_iter, *t_iter);
-           pQueue.push_front(*v_iter);
-           triQueue.push_front(*t_iter);
-           printf("%d.\n", *t_iter);
-         }
-         t_iter++;
-       }
-       //traverse through the neighbors of our first located point
-       while (!pQueue.empty()) {
-         point_type curPoint = *pQueue.begin();
-         double pq_coords[dim];
-         const double * tmpCoords = coordinates->restrict(patch, curPoint);
-         for (int i = 0; i < dim; i++) {
-           pq_coords[i] = tmpCoords[i];
-         }
-         point_type curTri = *triQueue.begin();
-         pQueue.pop_front();
-         triQueue.pop_front();
-         //printf("%d: ", curPoint);
-         Obj<coneSet> neighbors = topology->getPatch(patch)->cone(topology->getPatch(patch)->support(curPoint));
-         coneSet::iterator n_iter = neighbors->begin();
-         coneSet::iterator n_iter_end = neighbors->end();
-         while (n_iter != n_iter_end) {
-           if (topology->getValue(location, *n_iter) == -2) {  //it's an interior point that hasn't yet been updated.
-             double n_coords[dim];
-             tmpCoords = coordinates->restrict(patch, *n_iter);
-             for (int i = 0; i < dim; i++) {
-               n_coords[i] = tmpCoords[i];
-             }
-             //locate this point, trying the triangle its neighbor was located in first;
-             printf("locating point %d - ", *n_iter);
-             std::list<point_type> curTriQueue;
-             curTriQueue.push_front(curTri);
-             topology->setValue(traversal, curTri, 1);
-             while (!curTriQueue.empty()) {
-               point_type compTri = *curTriQueue.begin();
-               curTriQueue.pop_front();
-               ElementCorners(tri_points, C_levels, compTri);
-               if (PointIsInTriangle(tri_points, n_coords)) {
-                 printf("located in %d.\n", compTri);
-                 topology->setValue(location, *n_iter, compTri);
-                 pQueue.push_back(*n_iter);
-                 triQueue.push_back(compTri);
-                 curTriQueue.clear();
-               } else { //add the neighbors of the triangle to the comparison queue.
-                 Obj<supportSet> tri_neighbors = topology->getPatch(C_levels)->support(topology->getPatch(C_levels)->cone(compTri));
-                 supportSet::iterator tn_iter = tri_neighbors->begin();
-                 supportSet::iterator tn_iter_end = tri_neighbors->end();
-                 while (tn_iter != tn_iter_end) {
-                   if (topology->getValue(traversal, *tn_iter) != 1) {
-                     curTriQueue.push_back(*tn_iter);
-                     topology->setValue(traversal, *tn_iter, 1);
-                   }
-                   tn_iter++;
-                 }
-               }
-             } //end of triangle traversal
-             //clean up the traversal label
-             Obj<label_sequence> visited_triangles_label = topology->getLabelStratum(C_levels, "traversal", 1);
-             label_sequence::iterator vtl_iter = visited_triangles_label->begin();
-             label_sequence::iterator vtl_iter_end = visited_triangles_label->end();
-             std::list<point_type> visited_triangles;
-             while (vtl_iter != vtl_iter_end) {
-              visited_triangles.push_front(*vtl_iter);
-              vtl_iter++;
-             }
-             while (!visited_triangles.empty()) {
-               point_type cur_vis_tri = *visited_triangles.begin();
-               visited_triangles.pop_front();
-               topology->setValue(traversal, cur_vis_tri, 0); //reset so we can retraverse
-             }
-           }  //end of if determining if the neighbors are already evaluated
-           n_iter++;
-         } //end of while over neighbors of last point reachable from v_iter
-       } //end of while over points reachable from last v_iter
-     } //end of if testing for overall unvisitedness
-     v_iter++;
-   }
-   printf("done\n");
-   /*
-    printf("Starting loop\n");
     while (v_iter != v_iter_end) {
+      topology->setValue(location, *v_iter, -2);
+      v_iter++;
+    }
+    v_iter = verts->begin();
+    while (v_iter != v_iter_end) {
+      std::list<point_type> pQueue;
+      std::list<point_type> triQueue;
       if (topology->getPatch(C_levels)->capContains(*v_iter)) {
         topology->setValue(location, *v_iter, -1);
-      } else {
-        bool not_located = true;
-        PetscMemcpy(v_coords, coordinates->restrict(patch, *v_iter), sizeof(double)*dim);
+        //v_iter++;
+      } else if (topology->getValue(location, *v_iter) == -2) {
+        printf("Starting from point %d in element ", *v_iter);
+        //naively find the first point, and traverse outward from its neighbors.
         label_sequence::iterator t_iter = triangles->begin();
         label_sequence::iterator t_iter_end = triangles->end();
-
-        while (t_iter != t_iter_end && not_located) {
-          Obj<coneSet> triPoints = topology->getPatch(C_levels)->closure(*t_iter); //make iterative for compatibility with 3D.
-          //printf("%d\n", triPoints->size());
-          coneSet::iterator po_iter = triPoints->begin();
-          coneSet::iterator po_iter_end = triPoints->end();
-          int index = 0;
-          while (po_iter != po_iter_end) {
-            if (topology->depth(C_levels, *po_iter) == 0) {
-              const double * tmpCoords = coordinates->restrict(patch, *po_iter);
-              for (int i = 0; i < dim; i++) {
-                t_coords[dim*index + i] = tmpCoords[i];
-              }
-              index++;
-            }
-            po_iter++;
-          }
-          if (PointIsInTriangle(t_coords, v_coords)) {
-            not_located = false;
+        bool point_located = false;
+        //point_type containingTri;
+        double tri_points[dim*(dim+1)];
+        while (t_iter != t_iter_end && !point_located) {
+          ElementCorners(tri_points, C_levels, *t_iter);
+          if (PointIsInTriangle(tri_points, (double *)coordinates->restrict(patch, *v_iter))) {
+            point_located = true;
             topology->setValue(location, *v_iter, *t_iter);
-            //printf("Point %d is in triangle %d\n", *v_iter, *t_iter);
+            pQueue.push_front(*v_iter);
+            triQueue.push_front(*t_iter);
+            printf("%d.\n", *t_iter);
           }
           t_iter++;
         }
-        if (not_located) printf("ERROR: Couldn't find triangle in which %d was located.\n", *v_iter);
-      }
+        //traverse through the neighbors of our first located point
+        while (!pQueue.empty()) {
+          point_type curPoint = *pQueue.begin();
+          double pq_coords[dim];
+          const double * tmpCoords = coordinates->restrict(patch, curPoint);
+          for (int i = 0; i < dim; i++) {
+            pq_coords[i] = tmpCoords[i];
+          }
+          point_type curTri = *triQueue.begin();
+          pQueue.pop_front();
+          triQueue.pop_front();
+          //printf("%d: ", curPoint);
+          Obj<coneSet> neighbors = topology->getPatch(patch)->cone(topology->getPatch(patch)->support(curPoint));
+          coneSet::iterator n_iter = neighbors->begin();
+          coneSet::iterator n_iter_end = neighbors->end();
+          while (n_iter != n_iter_end) {
+            if (topology->getValue(location, *n_iter) == -2) {  //it's an interior point that hasn't yet been updated.
+              double n_coords[dim];
+              tmpCoords = coordinates->restrict(patch, *n_iter);
+              for (int i = 0; i < dim; i++) {
+                n_coords[i] = tmpCoords[i];
+              }
+              //locate this point, trying the triangle its neighbor was located in first;
+              printf("locating point %d - ", *n_iter);
+              std::list<point_type> curTriQueue;
+              curTriQueue.push_front(curTri);
+              topology->setValue(traversal, curTri, 1);
+              while (!curTriQueue.empty()) {
+                point_type compTri = *curTriQueue.begin();
+                curTriQueue.pop_front();
+                ElementCorners(tri_points, C_levels, compTri);
+                if (PointIsInTriangle(tri_points, n_coords)) {
+                  printf("located in %d.\n", compTri);
+                  topology->setValue(location, *n_iter, compTri);
+                  pQueue.push_back(*n_iter);
+                  triQueue.push_back(compTri);
+                  curTriQueue.clear();
+                } else { //add the neighbors of the triangle to the comparison queue.
+                  Obj<supportSet> tri_neighbors = topology->getPatch(C_levels)->support(topology->getPatch(C_levels)->cone(compTri));
+                  supportSet::iterator tn_iter = tri_neighbors->begin();
+                  supportSet::iterator tn_iter_end = tri_neighbors->end();
+                  while (tn_iter != tn_iter_end) {
+                    if (topology->getValue(traversal, *tn_iter) != 1) {
+                      curTriQueue.push_back(*tn_iter);
+                      topology->setValue(traversal, *tn_iter, 1);
+                    }
+                    tn_iter++;
+                  }
+                }
+              } //end of triangle traversal
+              //clean up the traversal label
+              Obj<label_sequence> visited_triangles_label = topology->getLabelStratum(C_levels, "traversal", 1);
+              label_sequence::iterator vtl_iter = visited_triangles_label->begin();
+              label_sequence::iterator vtl_iter_end = visited_triangles_label->end();
+              std::list<point_type> visited_triangles;
+              while (vtl_iter != vtl_iter_end) {
+                visited_triangles.push_front(*vtl_iter);
+                vtl_iter++;
+              }
+              while (!visited_triangles.empty()) {
+                point_type cur_vis_tri = *visited_triangles.begin();
+                visited_triangles.pop_front();
+                topology->setValue(traversal, cur_vis_tri, 0); //reset so we can retraverse
+              }
+            }  //end of if determining if the neighbors are already evaluated
+            n_iter++;
+          } //end of while over neighbors of last point reachable from v_iter
+        } //end of while over points reachable from last v_iter
+      } //end of if testing for overall unvisitedness
       v_iter++;
     }
-   */
+    printf("done\n");
+    /*
+      printf("Starting loop\n");
+      while (v_iter != v_iter_end) {
+        if (topology->getPatch(C_levels)->capContains(*v_iter)) {
+          topology->setValue(location, *v_iter, -1);
+        } else {
+          bool not_located = true;
+          PetscMemcpy(v_coords, coordinates->restrict(patch, *v_iter), sizeof(double)*dim);
+          label_sequence::iterator t_iter = triangles->begin();
+          label_sequence::iterator t_iter_end = triangles->end();
+
+          while (t_iter != t_iter_end && not_located) {
+            Obj<coneSet> triPoints = topology->getPatch(C_levels)->closure(*t_iter); //make iterative for compatibility with 3D.
+            //printf("%d\n", triPoints->size());
+            coneSet::iterator po_iter = triPoints->begin();
+            coneSet::iterator po_iter_end = triPoints->end();
+            int index = 0;
+            while (po_iter != po_iter_end) {
+              if (topology->depth(C_levels, *po_iter) == 0) {
+                const double * tmpCoords = coordinates->restrict(patch, *po_iter);
+                for (int i = 0; i < dim; i++) {
+                  t_coords[dim*index + i] = tmpCoords[i];
+                }
+                index++;
+              }
+              po_iter++;
+            }
+            if (PointIsInTriangle(t_coords, v_coords)) {
+              not_located = false;
+              topology->setValue(location, *v_iter, *t_iter);
+              //printf("Point %d is in triangle %d\n", *v_iter, *t_iter);
+            }
+            t_iter++;
+          }
+          if (not_located) printf("ERROR: Couldn't find triangle in which %d was located.\n", *v_iter);
+        }
+        v_iter++;
+      }
+    */
     PetscFunctionReturn(0);
   }
 

@@ -757,33 +757,33 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         break;
       case 3: /* logarithmic + double well */
         len   = .5*PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-         if (len < 0.) {
-           ydown += len;
-         } else {
-           yup += len;
-         }
-         if (ctx->truncation==2) { /* quadratic */
-           if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
-             len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
-           } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
-             len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
-           } else {
-             len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
-           }
-         } else { /* cubic */
-           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
-           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-           if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
-             len2 = PetscRealPart(.5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
-           } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
-             len2 = PetscRealPart(.5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
-           } else {
-             len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
-           }
-         }
-         y2 = len < 0 ? ydown : yup;
-         ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
-         break;
+        if (len < 0.) {
+          ydown += len;
+        } else {
+          yup += len;
+        }
+        if (ctx->truncation==2) { /* quadratic */
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+          } else {
+            len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
+          }
+        } else { /* cubic */
+          a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+          b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            len2 = PetscRealPart(.5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            len2 = PetscRealPart(.5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
+          } else {
+            len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
+          }
+        }
+        y2 = len < 0 ? ydown : yup;
+        ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
+        break;
       case 4: /* logarithmic + double obstacle */
         len   = -.5*theta_c*PetscRealPart(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
         if (len < 0.) {

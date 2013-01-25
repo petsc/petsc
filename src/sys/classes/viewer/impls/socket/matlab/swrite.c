@@ -28,7 +28,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   cnt = mxGetNumberOfElements(prhs[1]);
   dt  = (PetscDataType) mxGetScalar(prhs[2]);
 
-   if (dt == PETSC_DOUBLE) {
+  if (dt == PETSC_DOUBLE) {
     ierr = PetscBinaryWrite(fd,mxGetPr(prhs[1]),cnt,(PetscDataType)dt,PETSC_FALSE);if (ierr) PETSC_MEX_ERROR("Unable to send double items.");
   } else if (dt == PETSC_INT) {
     int *tmp = (int*) mxMalloc((cnt+5)*sizeof(int));

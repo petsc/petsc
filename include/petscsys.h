@@ -2352,6 +2352,29 @@ PETSC_EXTERN PetscErrorCode PetscPostIrecvInt(MPI_Comm,PetscMPIInt,PetscMPIInt,c
 PETSC_EXTERN PetscErrorCode PetscPostIrecvScalar(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscMPIInt[],const PetscMPIInt[],PetscScalar***,MPI_Request**);
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSided(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscInt,const PetscMPIInt*,const void*,PetscInt*,PetscMPIInt**,void*) PetscAttrMPIPointerWithType(6,3);
 
+/*E
+    PetscBuildTwoSidedType - algorithm for setting up two-sided communication
+
+$  PETSC_BUILDTWOSIDED_ALLREDUCE - classical algorithm using an MPI_Allreduce with
+$      a buffer of length equal to the communicator size. Not memory-scalable due to
+$      the large reduction size. Requires only MPI-1.
+$  PETSC_BUILDTWOSIDED_IBARRIER - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
+$      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires MPI-3.
+
+   Level: developer
+
+.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedSetType(), PetscCommBuildTwoSidedGetType()
+E*/
+typedef enum {
+  PETSC_BUILDTWOSIDED_NOTSET = -1,
+  PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
+  PETSC_BUILDTWOSIDED_IBARRIER = 1
+  /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
+} PetscBuildTwoSidedType;
+PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm,PetscBuildTwoSidedType*);
+
 PETSC_EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm,PetscBool  *,PetscBool  *);
 
 /*E

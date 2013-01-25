@@ -1,40 +1,84 @@
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
 #include <stddef.h>
 
-typedef enum {BUILDTWOSIDED_NOTSET = -1,
-#if defined(PETSC_HAVE_MPI_IBARRIER)
-              BUILDTWOSIDED_IBARRIER,
-#endif
-              BUILDTWOSIDED_ALLREDUCE
-             } BuildTwoSidedType;
-
-static const char *const BuildTwoSidedTypes[] = {
-#if defined(PETSC_HAVE_MPI_IBARRIER)
-  "IBARRIER",
-#endif
+const char *const PetscBuildTwoSidedTypes[] = {
   "ALLREDUCE",
-  "BuildTwoSidedType",
-  "BUILDTWOSIDED_",
+  "IBARRIER",
+  "PetscBuildTwoSidedType",
+  "PETSC_BUILDTWOSIDED_",
   0
 };
 
-static BuildTwoSidedType _twosided_type = BUILDTWOSIDED_NOTSET;
+static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscBuildTwoSidedGetType"
-static PetscErrorCode PetscBuildTwoSidedGetType(BuildTwoSidedType *twosided)
+#define __FUNCT__ "PetscCommBuildTwoSidedSetType"
+/*@
+   PetscCommBuildTwoSidedSetType - set algorithm to use when building two-sided communication
+
+   Logically Collective
+
+   Input Arguments:
++  comm - PETSC_COMM_WORLD
+-  twosided - algorithm to use in subsequent calls to PetscCommBuildTwoSided()
+
+   Level: developer
+
+   Note:
+   This option is currently global, but could be made per-communicator.
+
+.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedGetType()
+@*/
+PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedType twosided)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {                             /* We don't have a PetscObject so can't use PetscValidLogicalCollectiveEnum */
+    PetscMPIInt ierr;
+    PetscMPIInt b1[2],b2[2];
+    b1[0] = -(PetscMPIInt)twosided;
+    b1[1] = (PetscMPIInt)twosided;
+    ierr = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    if (-b2[0] != b2[1]) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
+  }
+#endif
+  _twosided_type = twosided;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCommBuildTwoSidedGetType"
+/*@
+   PetscCommBuildTwoSidedGetType - set algorithm to use when building two-sided communication
+
+   Logically Collective
+
+   Output Arguments:
++  comm - communicator on which to query algorithm
+-  twosided - algorithm to use for PetscCommBuildTwoSided()
+
+   Level: developer
+
+.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedSetType()
+@*/
+PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedType *twosided)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *twosided = BUILDTWOSIDED_NOTSET;
-  if (_twosided_type == BUILDTWOSIDED_NOTSET) {
+  *twosided = PETSC_BUILDTWOSIDED_NOTSET;
+  if (_twosided_type == PETSC_BUILDTWOSIDED_NOTSET) {
 #if defined(PETSC_HAVE_MPI_IBARRIER)
-    _twosided_type = BUILDTWOSIDED_IBARRIER;
+#  if defined(PETSC_HAVE_MPICH_CH3_SOCK) && !defined(PETSC_HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS)
+    /* Deadlock in Ibarrier: http://trac.mpich.org/projects/mpich/ticket/1785 */
+    _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE;
+#  else
+    _twosided_type = PETSC_BUILDTWOSIDED_IBARRIER;
+#  endif
 #else
-    _twosided_type = BUILDTWOSIDED_ALLREDUCE;
+    _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE;
 #endif
-    ierr = PetscOptionsGetEnum(PETSC_NULL,"-build_twosided",BuildTwoSidedTypes,(PetscEnum*)&_twosided_type,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(PETSC_NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,PETSC_NULL);CHKERRQ(ierr);
   }
   *twosided = _twosided_type;
   PetscFunctionReturn(0);
@@ -156,8 +200,8 @@ static PetscErrorCode SegArrayExtract(SegArray *seg,void *contiguous)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "BuildTwoSided_Ibarrier"
-static PetscErrorCode BuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+#define __FUNCT__ "PetscCommBuildTwoSided_Ibarrier"
+static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
   PetscMPIInt    nrecvs,tag,unitbytes,done;
@@ -213,8 +257,8 @@ static PetscErrorCode BuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "BuildTwoSided_Allreduce"
-static PetscErrorCode BuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+#define __FUNCT__ "PetscCommBuildTwoSided_Allreduce"
+static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,*iflags,nrecvs,tag,unitbytes,*franks;
@@ -293,18 +337,20 @@ static PetscErrorCode BuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MP
 PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
-  BuildTwoSidedType buildtype = BUILDTWOSIDED_NOTSET;
+  PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
 
   PetscFunctionBegin;
-  ierr = PetscBuildTwoSidedGetType(&buildtype);CHKERRQ(ierr);
+  ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
+  case PETSC_BUILDTWOSIDED_IBARRIER:
 #if defined(PETSC_HAVE_MPI_IBARRIER)
-  case BUILDTWOSIDED_IBARRIER:
-    ierr = BuildTwoSided_Ibarrier(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
-    break;
+    ierr = PetscCommBuildTwoSided_Ibarrier(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
+#else
+    SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
 #endif
-  case BUILDTWOSIDED_ALLREDUCE:
-    ierr = BuildTwoSided_Allreduce(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
+    break;
+  case PETSC_BUILDTWOSIDED_ALLREDUCE:
+    ierr = PetscCommBuildTwoSided_Allreduce(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
     break;
   default: SETERRQ(comm,PETSC_ERR_PLIB,"Unknown method for building two-sided communication");
   }

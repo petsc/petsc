@@ -2,10 +2,10 @@
 #include <petscsys.h>
 
 struct _n_PetscViewers {
-   MPI_Comm    comm;
-   PetscViewer *viewer;
-   int         n;
-} ;
+  MPI_Comm    comm;
+  PetscViewer *viewer;
+  int         n;
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewersDestroy"
