@@ -2606,11 +2606,12 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     ierr = DMPlexGetAdjacencySingleLevel_Private(dm, cell, PETSC_TRUE, tmpClosure, &numNeighbors, neighborCells);CHKERRQ(ierr);
     /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
     for (n = 0; n < numNeighbors; ++n) {
-      PetscInt        cellPair[2] = {cell, neighborCells[n]};
+      PetscInt        cellPair[2];
       PetscBool       found       = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
       PetscInt        meetSize    = 0;
       const PetscInt *meet        = PETSC_NULL;
 
+      cellPair[0] = cell; cellPair[1] = neighborCells[n];
       if (cellPair[0] == cellPair[1]) continue;
       if (!found) {
         ierr = DMPlexGetMeet(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
@@ -2645,11 +2646,12 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
       ierr = DMPlexGetAdjacencySingleLevel_Private(dm, cell, PETSC_TRUE, tmpClosure, &numNeighbors, neighborCells);CHKERRQ(ierr);
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
       for (n = 0; n < numNeighbors; ++n) {
-        PetscInt        cellPair[2] = {cell, neighborCells[n]};
+        PetscInt        cellPair[2];
         PetscBool       found       = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
         PetscInt        meetSize    = 0;
         const PetscInt *meet        = PETSC_NULL;
 
+        cellPair[0] = cell; cellPair[1] = neighborCells[n];
         if (cellPair[0] == cellPair[1]) continue;
         if (!found) {
           ierr = DMPlexGetMeet(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
@@ -4461,9 +4463,10 @@ PetscErrorCode DMPlexInterpolate_2D(DM dm, DM *dmInt)
     if (faceSize != 2) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
     for (cf = 0; cf < numCellFaces; ++cf) {
 #if 1
-      PetscHashIJKey key = {PetscMin(cellFaces[cf*faceSize+0], cellFaces[cf*faceSize+1]),
-                            PetscMax(cellFaces[cf*faceSize+0], cellFaces[cf*faceSize+1])};
-
+      PetscHashIJKey key;
+      
+      key.i = PetscMin(cellFaces[cf*faceSize+0], cellFaces[cf*faceSize+1]);
+      key.j = PetscMax(cellFaces[cf*faceSize+0], cellFaces[cf*faceSize+1]);
       ierr = PetscHashIJGet(edgeTable, key, &e);CHKERRQ(ierr);
       if (e < 0) {
         ierr = DMPlexSetCone(idm, edge, &cellFaces[cf*faceSize]);CHKERRQ(ierr);

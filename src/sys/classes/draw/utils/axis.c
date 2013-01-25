@@ -82,7 +82,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
   if (PetscAbsReal(val)/sep <  1.e-4) {
     buf[0] = '0'; buf[1] = 0;
   } else {
-    sprintf(buf,"%0.1le",(double)val);
+    sprintf(buf,"%0.1e",(double)val);
     ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
     ierr = PetscStripe0(buf);CHKERRQ(ierr);
     ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
