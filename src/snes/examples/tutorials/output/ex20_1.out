@@ -5,11 +5,18 @@
   4 SNES Function norm 1.9631e-06 
   5 SNES Function norm < 1.e-11
 SNES Object: 4 MPI processes
-  type: ls
+  type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=16
   total number of function evaluations=6
+  SNESLineSearch Object:   4 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
   KSP Object:   4 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -42,6 +49,7 @@ SNES Object: 4 MPI processes
           type: lu
             LU: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot
             matrix ordering: nd
             factor fill ratio given 5, needed 1.19825
               Factored matrix follows:
@@ -69,9 +77,9 @@ SNES Object: 4 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       4 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.136088, max = 1.49697
+          Chebyshev: eigenvalue estimates:  min = 0.133812, max = 1.47193
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:           4 MPI processes
+          KSP Object:          (mg_levels_1_est_)           4 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -110,13 +118,6 @@ SNES Object: 4 MPI processes
       rows=125, cols=125
       total: nonzeros=725, allocated nonzeros=725
       total number of mallocs used during MatSetValues calls =0
-  SNESLineSearch Object:   4 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40
 Number of SNES iterations = 5
 Number of Linear iterations = 16
 Average Linear its / SNES = 3.200000e+00

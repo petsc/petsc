@@ -766,7 +766,7 @@ runex19_cusp:
 	   else  echo  ${PWD} "\nPossible problem with with ex19_cusp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19.tmp
 runex20:
-	-@${MPIEXEC} -n 4 ./ex20 -snes_view -snes_monitor_short -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin  > ex20_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex20 -snes_monitor_short -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin  > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex20_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex20_1.tmp
@@ -776,7 +776,7 @@ runex21:
 	   else  echo  ${PWD} "\nPossible problem with with ex21_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex21_1.tmp
 runex22:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_monitor_short -ksp_monitor_short -snes_view > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_converged_reason -ksp_converged_reason -snes_view > ex22_1.tmp 2>&1; \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex22_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex22_1.tmp

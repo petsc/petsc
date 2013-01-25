@@ -45,12 +45,19 @@ Level 0 domain size (m)    8e+04 x    8e+04 x    1e+03, num elements   4 x   4 x
   Linear solve converged due to CONVERGED_RTOL iterations 6
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 SNES Object: 6 MPI processes
-  type: ls
+  type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-12
   total number of linear solver iterations=21
   total number of function evaluations=6
   total number of grid sequence refinements=3
+  SNESLineSearch Object:   6 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
   KSP Object:   6 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -84,6 +91,7 @@ SNES Object: 6 MPI processes
           type: lu
             LU: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot
             matrix ordering: nd
             factor fill ratio given 5, needed 1.41667
               Factored matrix follows:
@@ -259,13 +267,6 @@ SNES Object: 6 MPI processes
       rows=2048, cols=2048, bs=2
       total: nonzeros=48128, allocated nonzeros=48128
       total number of mallocs used during MatSetValues calls =0
-  SNESLineSearch Object:   6 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40
 Solution statistics after solve: Full
 CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 21
 |X|_2 564267   -187.04 <= u <=  23814.8   -979.938 <= v <=  5720.23   3.24766 <= c <=  23904.5 
