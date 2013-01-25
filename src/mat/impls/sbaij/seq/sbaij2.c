@@ -1211,9 +1211,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       }
     }
     ierr = PetscFree3(sum,il,jl);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
   PetscFunctionReturn(0);
 }
 

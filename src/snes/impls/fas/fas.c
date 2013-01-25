@@ -457,8 +457,6 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
           curfas = PETSC_NULL;
         }
       }
-    } else {
-      SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for SNESFAS",((PetscObject)viewer)->type_name);
     }
   }
   PetscFunctionReturn(0);

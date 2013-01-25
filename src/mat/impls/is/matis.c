@@ -208,9 +208,7 @@ PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscIn
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
-  if (m > 2048 || n > 2048) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
-  }
+  if (m > 2048 || n > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
 #endif
   ierr = ISG2LMapApply(is->mapping,m,rows,rows_l);CHKERRQ(ierr);
   ierr = ISG2LMapApply(is->mapping,n,cols,cols_l);CHKERRQ(ierr);
@@ -377,9 +375,7 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
   if (is->A) {
     ierr = MatGetSize(is->A,&orows,&ocols);CHKERRQ(ierr);
     ierr = MatGetSize(local,&nrows,&ncols);CHKERRQ(ierr);
-    if (orows != nrows || ocols != ncols) {
-      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %dx%d (you passed a %dx%d matrix)\n",orows,ocols,nrows,ncols);
-    }
+    if (orows != nrows || ocols != ncols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %dx%d (you passed a %dx%d matrix)\n",orows,ocols,nrows,ncols);
   }
   ierr = PetscObjectReference((PetscObject)local);CHKERRQ(ierr);
   ierr = MatDestroy(&is->A);CHKERRQ(ierr);

@@ -962,9 +962,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
       bmat->imax[i] = nnz[i];
       nz           += nnz[i];
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently requires block row by row preallocation");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently requires block row by row preallocation");
 
   /* bmat->ilen will count nonzeros in each row so far. */
   for (i=0; i<bmat->mbs; i++) { bmat->ilen[i] = 0;}

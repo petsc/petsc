@@ -167,8 +167,6 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer
     if (party->recursive) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using recursive bipartitioning\n");CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Party partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

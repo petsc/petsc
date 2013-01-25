@@ -43,9 +43,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       pivot_i = val_i[L];
       abs_pivot = PetscSqrtReal(pivot_r * pivot_r + pivot_i * pivot_i);
       ipivot = perm[L];
-      if (i == DEPTH - 1) {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
-      }
+      if (i == DEPTH - 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
       while (L < R) {
         abs_val = PetscSqrtReal(val_r[R] * val_r[R] + val_i[R] * val_i[R]);
         while (abs_val >= abs_pivot && L < R) {
@@ -77,9 +75,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       fin[i+1] = fin[i];
       fin[i] = L;
       i += 1;
-      if (i == DEPTH - 1) {
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
-      }
+      if (i == DEPTH - 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
     } else i--;
   }
   PetscFunctionReturn(0);
@@ -178,9 +174,7 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
   LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info);
-  if (info == 1) {
-    SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
-  }
+  if (info == 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
   /*Extract the Schur vectors associated to the r smallest eigenvalues */
   ierr = PetscMemzero(Sr,(N+1)*r*sizeof(PetscScalar));CHKERRQ(ierr);

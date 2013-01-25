@@ -847,9 +847,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
           PetscPrintf(wcomm,"[%d]%s worst metric for coarse grid = %e\n",mype,__FUNCT__,metric);
         }
       }
-    } else {
-      SETERRQ(wcomm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");
-    }
+    } else SETERRQ(wcomm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");
     { /* create next coords - output */
       PetscReal *crs_crds;
       ierr = PetscMalloc(dim*nLocalSelected*sizeof(PetscReal), &crs_crds);CHKERRQ(ierr);

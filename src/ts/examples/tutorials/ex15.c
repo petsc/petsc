@@ -77,9 +77,7 @@ int main(int argc,char **argv)
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   } else if (user.nstencilpts == 9) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
-  }
+  } else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
   user.da = da;
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

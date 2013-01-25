@@ -560,8 +560,6 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP Chebyshev",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -293,9 +293,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
       }
       ierr = PetscLogFlops(16.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -438,9 +436,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
       }
       ierr = PetscLogFlops(25.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);

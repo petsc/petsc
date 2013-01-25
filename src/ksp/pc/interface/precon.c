@@ -1231,9 +1231,7 @@ PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
   PetscValidPointer(mat,2);
   if (pc->ops->getfactoredmatrix) {
     ierr = (*pc->ops->getfactoredmatrix)(pc,mat);CHKERRQ(ierr);
-  } else {
-    SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC type does not support getting factor matrix");
-  }
+  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC type does not support getting factor matrix");
   PetscFunctionReturn(0);
 }
 

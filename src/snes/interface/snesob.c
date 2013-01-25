@@ -107,6 +107,7 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
   PetscErrorCode ierr;
   DM             dm;
   DMSNES         sdm;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -115,9 +116,7 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computeobjective) {
     ierr = (sdm->ops->computeobjective)(snes,X,ob,sdm->objectivectx);CHKERRQ(ierr);
-  } else {
-    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
-  }
+  } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
   PetscFunctionReturn(0);
 }
 

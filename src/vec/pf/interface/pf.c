@@ -298,8 +298,6 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
       ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -424,9 +424,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
           for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++);
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
-            if (idx == h1) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
-            }
+            if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
           }
         }
 #else
@@ -434,9 +432,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
           for (idx=h1; (idx<size) && (HT[idx]!=key); idx++);
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++);
-            if (idx == h1) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
-            }
+            if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
           }
         }
 #endif
@@ -508,9 +504,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
           for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++);
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
-            if (idx == h1) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
-            }
+            if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
           }
         }
 #else
@@ -518,9 +512,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
           for (idx=h1; (idx<size) && (HT[idx]!=key); idx++);
           if (idx == size) {
             for (idx=0; (idx<h1) && (HT[idx]!=key); idx++);
-            if (idx == h1) {
-              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
-            }
+            if (idx == h1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"(%D,%D) has no entry in the hash table", row, col);
           }
         }
 #endif
@@ -615,9 +607,7 @@ PetscErrorCode MatGetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pet
           }
         }
       }
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local values currently supported");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local values currently supported");
   }
  PetscFunctionReturn(0);
 }
@@ -1266,8 +1256,6 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
     ierr = MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by MPIBAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1573,9 +1561,7 @@ PetscErrorCode MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
-  } else {
-    SETERRQ1(((PetscObject)matin)->comm,PETSC_ERR_ARG_WRONG,"Unknown MatInfoType argument %d",(int)flag);
-  }
+  } else SETERRQ1(((PetscObject)matin)->comm,PETSC_ERR_ARG_WRONG,"Unknown MatInfoType argument %d",(int)flag);
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -2348,9 +2334,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
       nctot = n;
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
       ierr = PetscMemcpy(cols,is,n*sizeof(PetscInt));CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
     /*
        Mark all rows affect by these columns
@@ -2460,9 +2444,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
             rowhit[currentcol]        = fm;
             fm                        = currentcol;
             /* fm points to present position in list since we know the columns are sorted */
-          } else {
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
-          }
+          } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
         }
       }
       c->nrows[i]         = nrows;
@@ -4128,9 +4110,7 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
 
 
   PetscFunctionBegin;
-  if (i[0]) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
-  }
+  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);

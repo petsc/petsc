@@ -107,9 +107,7 @@ int main(int argc, char **argv)
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
 
   info = SNESGetConvergedReason(snes,&reason);CHKERRQ(info);
-  if (reason <= 0) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The SNESVI solver did not converge, adjust some parameters, or check the function evaluation routines\n");
-  }
+  if (reason <= 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The SNESVI solver did not converge, adjust some parameters, or check the function evaluation routines\n");
 
   /* Free memory */
   info = VecDestroy(&x);CHKERRQ(info);

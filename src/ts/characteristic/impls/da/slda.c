@@ -16,8 +16,6 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  DMDA: dummy=%D\n", da->dummy);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"dummy %D", da->dummy);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for Characteristic DMDA", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -62,9 +60,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   c->queueSize = 0;
 
   /* Allocate communication structures */
-  if (c->numNeighbors <= 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
-  }
+  if (c->numNeighbors <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
   ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->needCount);CHKERRQ(ierr);
   ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->localOffsets);CHKERRQ(ierr);
   ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->fillCount);CHKERRQ(ierr);

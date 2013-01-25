@@ -140,9 +140,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 
 #if defined(PETSC_USE_DEBUG)
       for (i=0; i<n; i++) {
-        if (((PetscInt)colors[i]) >= nc) {
-          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
-        }
+        if (((PetscInt)colors[i]) >= nc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
       }
 #endif
 
@@ -170,9 +168,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
         for (i=0; i<n; i++) {
           ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
         }
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
 
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {

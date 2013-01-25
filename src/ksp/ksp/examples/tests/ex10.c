@@ -335,9 +335,7 @@ PetscErrorCode paulsetup20(void)
     w[2] = 0.652145154862546;
     w[3] = 0.347854845137454;
   }
-  else {
-    SETERRQ(PETSC_COMM_SELF,1,"Unknown value for n_int");
-  }
+  else SETERRQ(PETSC_COMM_SELF,1,"Unknown value for n_int");
 
   /* rst[][i] contains the location of the i-th integration point
       in the canonical (r,s,t) coordinate system.  weight[i] contains

@@ -49,8 +49,6 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -111,9 +111,7 @@ PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
     }
     ierr = ISCreateBlock(PETSC_COMM_SELF,is->bs,n,ii,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No inversion written yet for block IS");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No inversion written yet for block IS");
   PetscFunctionReturn(0);
 }
 

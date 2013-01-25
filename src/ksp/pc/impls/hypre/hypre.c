@@ -496,9 +496,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     if (n == 2) {
       indx =  (int)PetscAbsReal(twodbl[1]);
       PetscStackCallStandard(HYPRE_BoomerAMGSetLevelRelaxWt,(jac->hsolver,twodbl[0],indx));
-    } else {
-      SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %d",n);
-    }
+    } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %d",n);
   }
 
   /* Outer relaxation Weight */
@@ -515,9 +513,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     if (n == 2) {
       indx =  (int)PetscAbsReal(twodbl[1]);
       PetscStackCallStandard(HYPRE_BoomerAMGSetLevelOuterWt,(jac->hsolver, twodbl[0], indx));
-    } else {
-      SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %d",n);
-    }
+    } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %d",n);
   }
 
   /* the Relax Order */
@@ -734,9 +730,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
       symt = "SPD matrix and preconditioner";
     } else if (jac->symt == 2) {
       symt = "nonsymmetric matrix but SPD preconditioner";
-    } else {
-      SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Unknown HYPRE ParaSails symmetric option %d",jac->symt);
-    }
+    } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Unknown HYPRE ParaSails symmetric option %d",jac->symt);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: %s\n",symt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

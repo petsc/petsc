@@ -144,9 +144,7 @@ PetscErrorCode MatIJMap(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
   }
   if (insize == PETSC_DETERMINE) {
     inidxi = PETSC_NULL;
-  } else if (insize < 0) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
-  }
+  } else if (insize < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
   if (outidxi) {
     if (!*outidxi) {
       ierr = PetscMalloc(sizeof(PetscInt)*outsize_, outidxi);CHKERRQ(ierr);
@@ -259,9 +257,7 @@ PetscErrorCode MatIJBin(Mat A, MatIJIndexType intype, PetscInt insize, const Pet
   if (insize == PETSC_DETERMINE) {
     insize = pg->m;
     inidxi = PETSC_NULL;
-  } else if (insize < 0) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
-  }
+  } else if (insize < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
   if (outidxi) {
     if (!*outidxi) {
       ierr = PetscMalloc(sizeof(PetscInt)*outsize_,outidxi);CHKERRQ(ierr);
@@ -432,9 +428,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
   if (insize == PETSC_DETERMINE) {
     insize = pga->m;
     inidxi = PETSC_NULL;
-  } else if (insize < 0) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
-  }
+  } else if (insize < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
   if (outidxi) {
     if (!*outidxi) {
       ierr = PetscMalloc(sizeof(PetscInt)*outsize_, outidxi);CHKERRQ(ierr);
@@ -487,8 +481,7 @@ PetscErrorCode MatIJBinMap(Mat A, Mat B, MatIJIndexType intype, PetscInt insize,
         continue;
       }
     }
-    if (pga->ijlen[indi] != pgb->ijlen[indi])
-      SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Image sizes different for local index %D = indi: %D and %D", indi, pga->ijlen[indi], pgb->ijlen[indi]);
+    if (pga->ijlen[indi] != pgb->ijlen[indi]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Image sizes different for local index %D = indi: %D and %D", indi, pga->ijlen[indi], pgb->ijlen[indi]);
     for (k = pga->ijlen[indi]; k < pga->ijlen[indi+1]; ++k) {
       ++(pga->binoffsets[pga->ij[k]+1]);
     }
@@ -782,8 +775,7 @@ PetscErrorCode MatIJSetEdges(Mat A, PetscInt len, const PetscInt *ixidx, const P
   if (len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Negative edge array length: %D", len);
 
   if (!ixidx) {
-    if (len != A->rmap->n)
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty source array %D must equal the local row size %D", len, A->rmap->n);
+    if (len != A->rmap->n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty source array %D must equal the local row size %D", len, A->rmap->n);
     ierr = PetscMalloc(len*sizeof(PetscInt), &iixidx);CHKERRQ(ierr);
     for (k = 0; k < len; ++k) {
       iixidx[k] = A->rmap->rstart + k;
@@ -791,8 +783,7 @@ PetscErrorCode MatIJSetEdges(Mat A, PetscInt len, const PetscInt *ixidx, const P
     ixidx = iixidx;
   }
   if (!iyidx) {
-    if (len != A->cmap->n)
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty target array %D must equal the local column size %D", len, A->cmap->n);
+    if (len != A->cmap->n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The length of an empty target array %D must equal the local column size %D", len, A->cmap->n);
     for (k = 0; k < len; ++k) {
       iiyidx[k] = A->cmap->rstart + k;
     }
@@ -1036,9 +1027,7 @@ static PetscErrorCode MatIJLocalizeImage_Private(Mat A)
   }
   totalnij = 0;
   PetscHashIMapArray(himage,pg->ijlen[pg->m],pg->ij,totalnij,pg->ij);CHKERRQ(ierr);
-  if (totalnij!=pg->ijlen[pg->m]) {
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of image indices before %D and after %D localization do not match", pg->ijlen[pg->m],totalnij);
-  }
+  if (totalnij!=pg->ijlen[pg->m]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of image indices before %D and after %D localization do not match", pg->ijlen[pg->m],totalnij);
   /* Store the newly computed image array. */
   pg->image = image;
   /* Clean up. */
@@ -1618,9 +1607,7 @@ PetscErrorCode MatIJBinRenumberLocal_Private(Mat A, MatIJIndexType intype, Petsc
   if (insize == PETSC_DETERMINE) {
     insize = pg->m;
     inidxi = PETSC_NULL;
-  } else if (insize < 0) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
-  }
+  } else if (insize < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid input array size: %D", insize);
   if (_outidxi) {
     if (!*_outidxi) {
       ierr = PetscMalloc(sizeof(PetscInt)*outsize, _outidxi);CHKERRQ(ierr);
@@ -1784,8 +1771,7 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
   {
     PetscInt k,blen = 0;
     for (k = 0; k < pg->n; ++k) blen += bsizes[k];
-  if (len != blen)
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of edges in the original pseudograph %D and the renumbering pseudograph %D do not match", len, blen);
+  if (len != blen) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of edges in the original pseudograph %D and the renumbering pseudograph %D do not match", len, blen);
   }
 #endif
   ierr = MatCreate(((PetscObject)A)->comm, B);CHKERRQ(ierr);
@@ -2008,9 +1994,7 @@ PetscErrorCode MatView_IJ(Mat A, PetscViewer v)
   if (!isij) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix not of type MATIJ: %s", ((PetscObject)A)->type);
   MatIJCheckAssembled(A,PETSC_TRUE,1);
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)v)->type_name);
-  }
+  if (!isascii) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)v)->type_name);
   if (!pg->hsupp) {
     i = A->rmap->rstart;
   } else {

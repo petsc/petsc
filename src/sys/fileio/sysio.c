@@ -566,9 +566,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
     iwhence = SEEK_CUR;
   } else if (whence == PETSC_BINARY_SEEK_END) {
     iwhence = SEEK_END;
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
 #if defined(PETSC_HAVE_LSEEK)
   *offset = lseek(fd,off,iwhence);
 #elif defined(PETSC_HAVE__LSEEK)

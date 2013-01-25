@@ -207,9 +207,7 @@ PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -311,9 +309,7 @@ PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(4.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -422,9 +418,7 @@ PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(9.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -540,9 +534,7 @@ PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(16.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -665,9 +657,7 @@ PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(25.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -797,9 +787,7 @@ PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(36.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -936,9 +924,7 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(49.0*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1086,9 +1072,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
       }
       ierr = PetscLogFlops(1.0*bs2*(a->nz));CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2428,9 +2412,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
   if (info->levels != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only levels = 0 supported for in-place ILU");
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
-  if (!row_identity || !col_identity) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for in-place ILU");
-  }
+  if (!row_identity || !col_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for in-place ILU");
 
   outA            = inA;
   inA->factortype = MAT_FACTOR_LU;

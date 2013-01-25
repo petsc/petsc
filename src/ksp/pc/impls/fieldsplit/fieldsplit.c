@@ -408,8 +408,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = ISDestroy(&zerodiags);CHKERRQ(ierr);
         ierr = ISDestroy(&rest);CHKERRQ(ierr);
       } else {
-        if (jac->reset)
-          SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
+        if (jac->reset) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
         if (!fieldsplit_default) {
           /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
            then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
@@ -1059,9 +1058,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PetscOptionsString("-pc_fieldsplit_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = DMCreateFieldDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
-      if (!ddm) {
-        SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown field decomposition name %s", ddm_name);
-      }
+      if (!ddm) SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown field decomposition name %s", ddm_name);
       ierr = PetscInfo(pc,"Using field decomposition DM defined using options database\n");CHKERRQ(ierr);
       ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
     }

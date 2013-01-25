@@ -38,9 +38,7 @@ int main(int argc,char **args)
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size>2) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.\n");
-  }
+  if (size>2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.\n");
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (size > 1) {

@@ -130,8 +130,6 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

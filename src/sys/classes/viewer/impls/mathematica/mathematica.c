@@ -214,9 +214,7 @@ PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkM
     *mode = MATHEMATICA_LINK_CONNECT;
   } else if (isLaunch) {
     *mode = MATHEMATICA_LINK_LAUNCH;
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
   PetscFunctionReturn(0);
 }
 

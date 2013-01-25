@@ -194,9 +194,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
     /* All points */
     if (pStart) {*pStart = 0;}
     if (pEnd)   {*pEnd   = nC+nV+nXF+nYF+nZF;}
-  } else {
-    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
-  }
+  } else SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
   PetscFunctionReturn(0);
 }
 

@@ -44,8 +44,6 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

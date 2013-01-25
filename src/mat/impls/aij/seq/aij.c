@@ -1818,9 +1818,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for two norm");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for two norm");
   PetscFunctionReturn(0);
 }
 
@@ -2206,9 +2204,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       c = (Mat_SeqAIJ *)((*B)->data);
       if ((*B)->rmap->n  != nrows || (*B)->cmap->n != ncols) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       ierr = PetscMemcmp(c->ilen,lens,(*B)->rmap->n*sizeof(PetscInt),&equal);CHKERRQ(ierr);
-      if (!equal) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
-      }
+      if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
       ierr = PetscMemzero(c->ilen,(*B)->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
       C = *B;
     } else {
@@ -3239,9 +3235,7 @@ PetscErrorCode  MatStoreValues_SeqAIJ(Mat mat)
   size_t         nz = aij->i[mat->rmap->n];
 
   PetscFunctionBegin;
-  if (aij->nonew != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
-  }
+  if (aij->nonew != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
@@ -3326,12 +3320,8 @@ PetscErrorCode  MatRetrieveValues_SeqAIJ(Mat mat)
   PetscInt       nz = aij->i[mat->rmap->n];
 
   PetscFunctionBegin;
-  if (aij->nonew != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
-  }
-  if (!aij->saved_values) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
-  }
+  if (aij->nonew != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+  if (!aij->saved_values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   /* copy values over */
   ierr = PetscMemcpy(aij->a,aij->saved_values,nz*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4253,9 +4243,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 #endif
 
   PetscFunctionBegin;
-  if (i[0]) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
-  }
+  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   /* ierr = MatSetBlockSizes(*mat,,);CHKERRQ(ierr); */

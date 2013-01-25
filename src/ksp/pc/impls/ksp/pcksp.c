@@ -134,8 +134,6 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"KSP and PC on KSP preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);

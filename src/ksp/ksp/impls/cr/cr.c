@@ -111,9 +111,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
       ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
       ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
-    } else {
-      SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
-    }
+    } else SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
     if (PetscAbsScalar(btop) < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite PC\n");CHKERRQ(ierr);

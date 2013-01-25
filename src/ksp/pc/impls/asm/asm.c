@@ -210,9 +210,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscOptionsString("-pc_asm_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
         if (flg) {
           ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
-          if (!ddm) {
-            SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
-          }
+          if (!ddm) SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
           ierr = PetscInfo(pc,"Using domain decomposition DM defined using options database\n");CHKERRQ(ierr);
           ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
         }
@@ -625,8 +623,7 @@ PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local
 
   PetscFunctionBegin;
   if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more blocks, n = %D",n);
-  if (pc->setupcalled && (n != osm->n_local_true || is))
-    SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
+  if (pc->setupcalled && (n != osm->n_local_true || is)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
 
   if (!pc->setupcalled) {
     if (is) {

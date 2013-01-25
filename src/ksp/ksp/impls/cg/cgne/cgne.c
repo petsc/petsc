@@ -135,9 +135,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      } else {
        b = beta/betaold;
        if (eigs) {
-         if (ksp->max_it != stored_max_it) {
-           SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-         }
+         if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
          e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */

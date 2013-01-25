@@ -607,12 +607,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = PetscMalloc(pc_gamg->data_sz*sizeof(PetscReal), &pc_gamg->data);CHKERRQ(ierr);
       for (qq=0;qq<pc_gamg->data_sz;qq++) pc_gamg->data[qq] = pc_gamg->orig_data[qq];
     } else {
-      if (!pc_gamg->createdefaultdata) {
-        SETERRQ(wcomm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
-      }
-      if (stokes) {
-        SETERRQ(wcomm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
-      }
+      if (!pc_gamg->createdefaultdata) SETERRQ(wcomm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
+      if (stokes) SETERRQ(wcomm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
       ierr = pc_gamg->createdefaultdata(pc, kktMatsArr[0].A11);CHKERRQ(ierr);
     }
   }

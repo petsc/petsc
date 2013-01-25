@@ -912,9 +912,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (ix[i] < 0) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      }
+      if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
 #endif
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] = y[i];
@@ -929,9 +927,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (ix[i] < 0) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      }
+      if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
 #endif
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] += y[i];

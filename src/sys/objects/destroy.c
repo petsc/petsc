@@ -104,9 +104,7 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
   PetscFunctionReturn(0);
 }
 

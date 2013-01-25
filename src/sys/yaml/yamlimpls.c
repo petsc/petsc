@@ -760,16 +760,12 @@ PetscErrorCode PetscOptionsInsertFile_YAML(MPI_Comm comm, const char file[], Pet
               ierr = PetscStrcat(vstring," ");CHKERRQ(ierr);
             }
           }
-        } else {
-          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid number of arguments (%s: %s)",options_list.options[i].group,options_list.options[i].name);
-        }
+        } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid number of arguments (%s: %s)",options_list.options[i].group,options_list.options[i].name);
       }
       options_list_delete(&options_list);
       ierr = PetscStrlen(vstring,&len);CHKERRQ(ierr);
       cnt  = PetscMPIIntCast(len);CHKERRQ(ierr);
-    } else if (require) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to process YAML Options File %s",fname);
-    }
+    } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to process YAML Options File %s",fname);
   }
 
   ierr = MPI_Bcast(&cnt,1,MPI_INT,0,comm);CHKERRQ(ierr);

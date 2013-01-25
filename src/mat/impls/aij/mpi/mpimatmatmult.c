@@ -810,9 +810,7 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
       Pt   = ptap->Pt;
       ierr = MatTranspose(P,scall,&Pt);CHKERRQ(ierr);
       ierr = MatMatMult(Pt,A,scall,fill,C);CHKERRQ(ierr);
-    } else {
-      SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not supported");
-    }
+    } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not supported");
     PetscFunctionReturn(0);
   }
 

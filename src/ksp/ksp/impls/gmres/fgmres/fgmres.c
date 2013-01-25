@@ -219,15 +219,12 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
-      if (!ksp->reason) {
-        SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated.");
-      }
+      if (!ksp->reason) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated.");
       break;
     }
   }
   /* END OF ITERATION LOOP */
-
-  KSPLogResidualHistory(ksp,res_norm);
+  ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
 
   /*
      Monitor if we know that we will not return for a restart */

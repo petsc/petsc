@@ -285,13 +285,9 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     bytes = PetscVTKIntCast(size*n);
 
     count = fwrite(&bytes,sizeof(int),1,fp);
-    if (count != 1) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
-    }
+    if (count != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
     count = fwrite(data,size,(size_t)n,fp);
-    if ((PetscInt)count != n) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
-    }
+    if ((PetscInt)count != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
   }
   PetscFunctionReturn(0);
 }

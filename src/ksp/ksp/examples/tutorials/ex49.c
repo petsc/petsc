@@ -341,7 +341,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
 {
   DM             cda;
   Vec            coords;
-  DMDACoor2d       **_coords;
+  DMDACoor2d     **_coords;
   PetscInt       si,sj,nx,ny,i,j;
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN];
@@ -352,10 +352,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
-  if (fp == PETSC_NULL) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
-  }
-
+  if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -383,7 +380,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
 {
   DM             cda;
   Vec            coords,local_fields;
-  DMDACoor2d       **_coords;
+  DMDACoor2d     **_coords;
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN];
   const char     *field_name;
@@ -397,9 +394,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
-  if (fp == PETSC_NULL) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
-  }
+  if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
@@ -1029,9 +1024,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
           }
         }
 
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
     }
   }
   ierr = DMDAVecRestoreArray(prop_cda,prop_coords,&_prop_coords);CHKERRQ(ierr);

@@ -461,10 +461,7 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
     if (part->vertex_weights) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
   }
-
   if (part->ops->view) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*part->ops->view)(part,viewer);CHKERRQ(ierr);

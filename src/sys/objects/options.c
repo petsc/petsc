@@ -446,9 +446,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
             ierr = PetscStrcat(astring," ");CHKERRQ(ierr);
             ierr = PetscStrcat(astring,third);CHKERRQ(ierr);
             ierr = PetscStrcat(astring," ");CHKERRQ(ierr);
-          } else {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
-          }
+          } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
         destroy:
         ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
@@ -459,9 +457,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       acnt = PetscMPIIntCast(len);CHKERRQ(ierr);
       ierr = PetscStrlen(vstring,&len);CHKERRQ(ierr);
       cnt  = PetscMPIIntCast(len);CHKERRQ(ierr);
-    } else if (require) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open Options File %s",fname);
-    }
+    } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }
 
   ierr = MPI_Bcast(&acnt,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -971,9 +967,8 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
       break;
     }
   }
-  if (N >= MAXOPTIONS) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in option table, limit %d recompile \n src/sys/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
-  }
+  if (N >= MAXOPTIONS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in option table, limit %d recompile \n src/sys/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
+
   /* shift remaining values down 1 */
   for (i=N; i>n; i--) {
     options->names[i]  = options->names[i-1];
@@ -1275,11 +1270,8 @@ PetscErrorCode  PetscOptionsReject(const char name[],const char mess[])
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (mess) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s with %s",name,mess);
-    } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s",name);
-    }
+    if (mess) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s with %s",name,mess);
+    else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s",name);
   }
   PetscFunctionReturn(0);
 }

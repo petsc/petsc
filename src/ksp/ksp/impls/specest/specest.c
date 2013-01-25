@@ -85,7 +85,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
 #define __FUNCT__ "KSPView_SpecEst"
 static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
 {
-  KSP_SpecEst *spec = (KSP_SpecEst*)ksp->data;
+  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
@@ -102,8 +102,6 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = KSPView(spec->kspcheap,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

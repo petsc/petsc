@@ -701,9 +701,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     }
     ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-    if ((bs < 1) || (bs > 3)) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
-    }
+    if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
     if (format == PETSC_VIEWER_ASCII_VTK) {
       if (outputState == 0) {
         outputState = 1;
@@ -767,9 +765,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     PetscInt bs, b;
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-    if ((bs < 1) || (bs > 3)) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
-    }
+    if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
     for (i=0; i<n/bs; i++) {
       for (b=0; b<bs; b++) {
         if (b > 0) {
@@ -788,9 +784,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     PetscInt bs, b;
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-    if ((bs < 1) || (bs > 3)) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
-    }
+    if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
     for (i=0; i<n/bs; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", i+1);CHKERRQ(ierr);

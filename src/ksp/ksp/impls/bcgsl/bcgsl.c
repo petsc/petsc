@@ -494,8 +494,6 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  BCGSL: Ell = %D\n", bcgsl->ell);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  BCGSL: Delta = %lg\n", bcgsl->delta);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for KSP BCGSL", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

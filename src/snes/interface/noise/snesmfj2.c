@@ -64,8 +64,6 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
      if (ctx->compute_err) {
        ierr = PetscViewerASCIIPrintf(viewer,"    freq_err=%D (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
      }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

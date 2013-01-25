@@ -172,8 +172,6 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
   if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"  LCD: restart=%d\n",lcd->restart);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  LCD: happy breakdown tolerance %g\n",lcd->haptol);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LCD",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

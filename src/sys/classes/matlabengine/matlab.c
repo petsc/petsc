@@ -133,9 +133,7 @@ PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char s
   /*
      Check for error in MATLAB: indicated by ? as first character in engine->buffer
   */
-  if (mengine->buffer[4] == '?') {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in evaluating MATLAB command:%s\n%s",string,mengine->buffer);
-  }
+  if (mengine->buffer[4] == '?') SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in evaluating MATLAB command:%s\n%s",string,mengine->buffer);
 
   ierr = PetscInfo1(0,"Done evaluating Matlab string: %s\n",buffer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

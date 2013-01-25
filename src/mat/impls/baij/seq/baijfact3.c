@@ -201,8 +201,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscFunctionBegin;
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   if (bs>1) {  /* check shifttype */
-    if (info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE)
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
+    if (info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
   }
 
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);

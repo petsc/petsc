@@ -355,9 +355,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     }
 
     for (i=0;i<l;i++) {
-      if (PetscIsInfOrNanScalar(beta[i])) {
-        SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD generated inconsistent output");
-      }
+      if (PetscIsInfOrNanScalar(beta[i])) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD generated inconsistent output: NaN or Inf");
     }
 
     alph_total = 0.;

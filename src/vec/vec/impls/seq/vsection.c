@@ -172,9 +172,7 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (numFields <= 0) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %d must be positive", numFields);
-  }
+  if (numFields <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %d must be positive", numFields);
   s->numFields = numFields;
   ierr = PetscMalloc(s->numFields * sizeof(PetscInt), &s->numFieldComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(char *), &s->fieldNames);CHKERRQ(ierr);
@@ -212,9 +210,7 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
 {
   PetscFunctionBegin;
   PetscValidPointer(fieldName,2);
-  if ((field < 0) || (field >= s->numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
-  }
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   *fieldName = s->fieldNames[field];
   PetscFunctionReturn(0);
 }
@@ -241,9 +237,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 
   PetscFunctionBegin;
   PetscValidCharPointer(fieldName,3);
-  if ((field < 0) || (field >= s->numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
-  }
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   ierr = PetscFree(s->fieldNames[field]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(fieldName, (char **) &s->fieldNames[field]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -271,9 +265,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 {
   PetscFunctionBegin;
   PetscValidPointer(numComp,2);
-  if ((field < 0) || (field >= s->numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
-  }
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   *numComp = s->numFieldComponents[field];
   PetscFunctionReturn(0);
 }
@@ -297,9 +289,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
 {
   PetscFunctionBegin;
-  if ((field < 0) || (field >= s->numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
-  }
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   s->numFieldComponents[field] = numComp;
   PetscFunctionReturn(0);
 }
@@ -1381,8 +1371,6 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "PetscSection\n");CHKERRQ(ierr);
       ierr = PetscSectionView_ASCII(s, viewer);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported by this section object", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1477,8 +1465,6 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", name);CHKERRQ(ierr);
       ierr = PetscSectionVecView_ASCII(s, v, viewer);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported by this section object", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

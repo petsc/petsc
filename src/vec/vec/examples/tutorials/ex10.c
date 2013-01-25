@@ -63,9 +63,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 option\n");
-  }
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 option\n");
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

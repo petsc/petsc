@@ -370,8 +370,6 @@ static PetscErrorCode TSGLViewTable_Private(PetscViewer viewer,PetscInt m,PetscI
       ierr = PetscViewerASCIIPrintf(viewer,"]\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

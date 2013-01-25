@@ -192,9 +192,7 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
       ierr = ISComplement(blocks->is, nmin, nmax, &is2);CHKERRQ(ierr);
       ierr = SNESMultiblockSetIS(snes, "1", is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least two sets of fields to SNES multiblock");
-    }
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least two sets of fields to SNES multiblock");
   }
   if (mb->numBlocks < 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled case, must have at least two blocks");
   PetscFunctionReturn(0);
@@ -589,9 +587,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
           blocks = blocks->next;
         }
       }
-    } else {
-      SETERRQ1(((PetscObject) snes)->comm, PETSC_ERR_SUP, "Unsupported or unknown composition", (int) mb->type);
-    }
+    } else SETERRQ1(((PetscObject) snes)->comm, PETSC_ERR_SUP, "Unsupported or unknown composition", (int) mb->type);
     CHKMEMQ;
     /* Compute F(X^{new}) */
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);

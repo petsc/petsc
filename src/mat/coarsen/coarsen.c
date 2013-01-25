@@ -442,13 +442,9 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
-
-  if (!coarser->agg_lists) {
-    SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
-  }
+  if (!coarser->agg_lists) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   *llist = coarser->agg_lists;
   coarser->agg_lists = 0; /* giving up ownership */
-
   PetscFunctionReturn(0);
 }
 

@@ -1320,9 +1320,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
         ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",tnow,dt,0.5/ctx->cfl_idt);CHKERRQ(ierr);
-      } else {
-        SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",dt,ctx->cfl/ctx->cfl_idt);
-      }
+      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",dt,ctx->cfl/ctx->cfl_idt);
     }
   }
   PetscFunctionReturn(0);
@@ -1448,9 +1446,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
     ierr = VecSum(X,&sum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %d and %d, mean %8.5f, ||x||_TV %8.5f\n",xmin,xmax,imin,imax,sum/Mx,tvgsum/Mx);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
 

@@ -529,11 +529,8 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
-  }
-  else {
-    if (is->total != *indices) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
-    }
+  } else {
+    if (is->total != *indices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
   PetscFunctionReturn(0);
 }
@@ -612,9 +609,7 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  if (is->nonlocal != *indices) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
-  }
+  if (is->nonlocal != *indices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   PetscFunctionReturn(0);
 }
 
@@ -695,13 +690,9 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
-  if (*complement != is->complement) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
-  }
+  if (*complement != is->complement) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
   ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt);CHKERRQ(ierr);
-  if (refcnt <= 1) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
-  }
+  if (refcnt <= 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
   ierr = PetscObjectDereference((PetscObject)(is->complement));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

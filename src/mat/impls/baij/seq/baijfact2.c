@@ -6197,10 +6197,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
         fm      = fill[fm];
       }
       /* make sure row has diagonal entry */
-      if (ajnew[ainew[prow]+dloc[prow]] != prow) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
-    try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",prow);
-      }
+      if (ajnew[ainew[prow]+dloc[prow]] != prow) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+                                                          try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",prow);
     }
     ierr = PetscFree(ajfill);CHKERRQ(ierr);
     ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);

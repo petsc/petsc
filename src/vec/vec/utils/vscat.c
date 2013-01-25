@@ -984,9 +984,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISCreateStride(comm,Ntmp,0,1,&ix);CHKERRQ(ierr);
     }
     tix  = ix;
-  } else if (!ix) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ix not given, but not Seq or MPI vector");
-  }
+  } else if (!ix) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ix not given, but not Seq or MPI vector");
 
   if (!iy && yin_type == VEC_SEQ_ID) {
     ierr = ISCreateStride(comm,ctx->to_n,0,1,&iy);CHKERRQ(ierr);
@@ -1003,9 +1001,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISCreateStride(comm,Ntmp,0,1,&iy);CHKERRQ(ierr);
     }
     tiy  = iy;
-  } else if (!iy) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
-  }
+  } else if (!iy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
 
   /*
      Determine types of index sets

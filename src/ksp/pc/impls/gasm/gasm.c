@@ -238,8 +238,6 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
       ierr = MPI_Barrier(((PetscObject)pc)->comm);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCGASM",((PetscObject)viewer)->type_name);
   }
   ierr = PetscFree2(permutation,numbering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -303,9 +301,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         ierr = PetscOptionsString("-pc_gasm_decomposition","Name of the DM defining the decomposition", "PCSetDM",ddm_name,ddm_name,1024,&flg);CHKERRQ(ierr);
         if (flg) {
           ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
-          if (!ddm) {
-            SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
-          }
+          if (!ddm) SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
           ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
           ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
         }
@@ -780,8 +776,7 @@ PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create
   if (N < 1) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Total number of subdomains must be > 0, N = %D",N);
   ierr = MPI_Allreduce(&N,&Nmin,1,MPIU_INT,MPIU_MIN,((PetscObject)pc)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&N,&Nmax,1,MPIU_INT,MPIU_MAX,((PetscObject)pc)->comm);CHKERRQ(ierr);
-  if (Nmin != Nmax)
-    SETERRQ2(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONG, "All processors must use the same number of subdomains.  min(N) = %D != %D = max(N)", Nmin, Nmax);
+  if (Nmin != Nmax) SETERRQ2(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONG, "All processors must use the same number of subdomains.  min(N) = %D != %D = max(N)", Nmin, Nmax);
 
   osm->create_local = create_local;
   /*
@@ -1732,8 +1727,7 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match);CHKERRQ(ierr);
-  if (!match)
-    SETERRQ2(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONG, "Incorrect object type: expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
+  if (!match) SETERRQ2(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONG, "Incorrect object type: expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
   osm = (PC_GASM*)pc->data;
   if (n)  *n  = osm->n;
   if (iis) {

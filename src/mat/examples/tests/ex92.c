@@ -90,9 +90,7 @@ int main(int argc,char **args)
   ierr = MatEqual(A, Atrans, &flg);
   if (flg) {
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
 
   /* create a SeqSBAIJ matrix sA (= A) */

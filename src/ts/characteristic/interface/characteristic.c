@@ -585,9 +585,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
 PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D *point)
 {
   PetscFunctionBegin;
-  if (c->queueSize >= c->queueMax) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeeded maximum queue size %d", c->queueMax);
-  }
+  if (c->queueSize >= c->queueMax) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeeded maximum queue size %d", c->queueMax);
   c->queue[c->queueSize++] = *point;
   PetscFunctionReturn(0);
 }
@@ -664,9 +662,7 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
 #if 0
   ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
-    if (c->neighbors[c->queueRemote[n].proc] == rank) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is fucked up, n = %d proc = %d", n, c->queueRemote[n].proc);
-    }
+    if (c->neighbors[c->queueRemote[n].proc] == rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is messed up, n = %d proc = %d", n, c->queueRemote[n].proc);
   }
 #endif
   PetscFunctionReturn(0);

@@ -795,9 +795,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   agg_object->cheap_minimizing_energy   = (int)pc_ml->EnergyMinimizationCheap;
 
   if (pc_ml->Aux) {
-    if (!pc_ml->dim) {
-      SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
-    }
+    if (!pc_ml->dim) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
     ml_object->Amat[0].aux_data->threshold = pc_ml->AuxThreshold;
     ml_object->Amat[0].aux_data->enable = 1;
     ml_object->Amat[0].aux_data->max_level = 10;
@@ -845,9 +843,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     if (!pc_ml->RepartitionType) {
       PetscInt i;
 
-      if (!pc_ml->dim) {
-        SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
-      }
+      if (!pc_ml->dim) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
       ML_Repartition_Set_Partitioner(ml_object,ML_USEZOLTAN);
       ML_Aggregate_Set_Dimensions(agg_object, pc_ml->dim);
 
@@ -1113,9 +1109,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 #else
     partindx = 1;
     ierr = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,PETSC_NULL);CHKERRQ(ierr);
-    if (!partindx) {
-      SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
-    }
+    if (!partindx) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
 #endif
     ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_ml_AuxThreshold","Auxiliary smoother drop tol","None",pc_ml->AuxThreshold,&pc_ml->AuxThreshold,PETSC_NULL);CHKERRQ(ierr);

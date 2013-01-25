@@ -29,9 +29,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRQ(ierr);
-  if (!(file = fopen(finname,"r"))) {
-    SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
-  }
+  if (!(file = fopen(finname,"r"))) SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
   fscanf(file,"%d\n",&n);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

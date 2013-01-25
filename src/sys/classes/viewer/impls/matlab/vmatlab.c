@@ -163,9 +163,7 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
       vmatlab->ep = matOpen(name,"r");
     } else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) {
       vmatlab->ep = matOpen(name,"w");
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
   }
   PetscFunctionReturn(0);
 }

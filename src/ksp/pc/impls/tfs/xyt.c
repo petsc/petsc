@@ -669,20 +669,20 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
     /* initial separator set obtained from the symm. shared case  */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"shared dof separator determination not ready ... see hmt!!!\n");
     for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1) {
-      
+
       /* set rsh of hc, fire, and collect lhs responses */
       (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
       PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
-    
+
       /* set lsh of hc, fire, and collect rhs responses */
       (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
       PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
-    
+
       for (i=0;i<n;i++) {
-        if (id< mask) {                
+        if (id< mask) {
           if (lhs[i]!=0.0) { lhs[i]=1.0; }
         }
-        if (id>=mask) {                
+        if (id>=mask) {
           if (rhs[i]!=0.0) { rhs[i]=1.0; }
         }
       }

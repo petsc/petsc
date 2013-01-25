@@ -1131,8 +1131,6 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = MatView_SeqDense_Draw(A,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by dense matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

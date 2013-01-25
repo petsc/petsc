@@ -210,9 +210,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
           &lu->mem_usage, &lu->stat, &sinfo);
 #endif
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!sinfo || sinfo == lu->A.ncol+1) {
     if (lu->options.PivotGrowth)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
@@ -222,9 +220,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
     if (lu->lwork == -1) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
-  } else { /* sinfo < 0 */
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo);
-  }
+  } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo);
 
   if (lu->options.PrintStat) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");
@@ -391,9 +387,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
            &lu->mem_usage, &lu->stat, &info);
 #endif
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!lu->options.Equil) {
     ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
   }
@@ -412,9 +406,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
     }
-  } else if (info < 0) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
-  }
+  } else if (info < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
 
   if (lu->options.PrintStat) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve__SuperLU():\n");

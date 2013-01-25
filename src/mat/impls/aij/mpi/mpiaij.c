@@ -621,9 +621,7 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pets
           }
         }
       }
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local values currently supported");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local values currently supported");
   }
   PetscFunctionReturn(0);
 }
@@ -1542,9 +1540,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       PetscBool  flg = PETSC_FALSE;
 
       ierr = PetscOptionsGetBool(((PetscObject) mat)->prefix, "-mat_ascii_output_large", &flg,PETSC_NULL);CHKERRQ(ierr);
-      if (!flg) {
-        SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 1024 rows, use binary format instead.\nYou can override this restriction using -mat_ascii_output_large.");
-      }
+      if (!flg) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 1024 rows, use binary format instead.\nYou can override this restriction using -mat_ascii_output_large.");
     }
 
     ierr = MatCreate(((PetscObject)mat)->comm,&A);CHKERRQ(ierr);
@@ -1616,8 +1612,6 @@ PetscErrorCode MatView_MPIAIJ(Mat mat,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket);CHKERRQ(ierr);
   if (iascii || isdraw || isbinary || issocket) {
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by MPIAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -2445,9 +2439,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, c
   if (info->levels != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only levels = 0 supported for parallel ilu");
   ierr = ISIdentity(isrow, &row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol, &col_identity);CHKERRQ(ierr);
-  if (!row_identity || !col_identity) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for parallel ILU");
-  }
+  if (!row_identity || !col_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for parallel ILU");
 
   process_group_type pg;
   typedef graph_dist::ilu_default::ilu_level_graph_type  lgraph_type;
@@ -5419,9 +5411,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
     bufa     = *bufa_ptr;
     b_oth    = (Mat_SeqAIJ*)(*B_oth)->data;
     b_otha   = b_oth->a;
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
 
   /* a-array */
   /*---------*/
@@ -5834,9 +5824,7 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
     mat->insertmode = addv;
   }
 #if defined(PETSC_USE_DEBUG)
-  else if (mat->insertmode != addv) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  }
+  else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
 #endif
   {
   PetscInt        i,j,rstart = mat->rmap->rstart,rend = mat->rmap->rend;

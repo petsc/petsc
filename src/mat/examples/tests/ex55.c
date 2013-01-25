@@ -99,9 +99,7 @@ int main(int argc,char **args)
     ierr = MatEqual(C, Ctrans, &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"C must be symmetric for this example");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"C must be symmetric for this example");
     ierr = MatDestroy(&Ctrans);CHKERRQ(ierr);
   }
   /*ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/

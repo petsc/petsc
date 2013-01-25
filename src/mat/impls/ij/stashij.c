@@ -134,8 +134,7 @@ PetscErrorCode MatStashSeqIJSetPreallocation_Private(MatStashSeqIJ stash, PetscI
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscHashIJKeySize(stash->h,&s);CHKERRQ(ierr);
-  if (size < (PetscInt) s)
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot resize stash of size %D down to %D", s, size);
+  if (size < (PetscInt) s) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot resize stash of size %D down to %D", s, size);
   ierr = PetscHashIJResize(stash->h,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

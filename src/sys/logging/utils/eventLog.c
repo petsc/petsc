@@ -633,9 +633,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   eventLog->eventInfo[event].depth--;
   if (eventLog->eventInfo[event].depth > 0) {
     PetscFunctionReturn(0);
-  } else if (eventLog->eventInfo[event].depth < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
-  }
+  } else if (eventLog->eventInfo[event].depth < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   /* Log performance info */
   PetscTimeAdd(eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time  += eventLog->eventInfo[event].timeTmp;
@@ -764,9 +762,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
   eventPerfLog->eventInfo[event].depth--;
   if (eventPerfLog->eventInfo[event].depth > 0) {
     PetscFunctionReturn(0);
-  } else if (eventPerfLog->eventInfo[event].depth < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
-  }
+  } else if (eventPerfLog->eventInfo[event].depth < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   /* Log the performance info */
   eventPerfLog->eventInfo[event].count++;
   eventPerfLog->eventInfo[event].time          += curTime;

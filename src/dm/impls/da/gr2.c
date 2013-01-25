@@ -522,9 +522,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
-    }
+    } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
   } else if (isvtk) {           /* Duplicate the Vec and hold a reference to the DM */
     Vec Y;
     ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);

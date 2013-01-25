@@ -95,8 +95,6 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Galerkin PC\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"KSP on Galerkin follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCGalerkin",((PetscObject)viewer)->type_name);
   }
   ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -197,8 +197,6 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
     ierr = PetscViewerASCIIPrintf(viewer,"  Eigensolver: %s\n",MPChacoEigenTypes[chaco->eigen_method]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Tolerance for eigensolver: %g\n",chaco->eigtol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of eigenvectors: %d\n",chaco->eignum);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Chaco partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

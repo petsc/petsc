@@ -35,8 +35,7 @@ PetscInt main(PetscInt argc,char **args)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  alloc_local=fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD,
-                                              &local_n0, &local_0_start);
+  alloc_local=fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD,&local_n0, &local_0_start);
 
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
