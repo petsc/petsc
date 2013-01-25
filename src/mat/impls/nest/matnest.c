@@ -692,7 +692,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSubMat"
-/*@C
+/*@
  MatNestGetSubMat - Returns a single, sub-matrix from a nest matrix.
 
  Not collective
@@ -747,7 +747,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetSubMat"
-/*@C
+/*@
  MatNestSetSubMat - Set a single submatrix in the nest matrix.
 
  Logically collective on the submatrix communicator
@@ -838,7 +838,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSize"
-/*@C
+/*@
  MatNestGetSize - Returns the size of the nest matrix.
 
  Not collective
