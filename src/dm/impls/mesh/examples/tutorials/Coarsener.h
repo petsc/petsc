@@ -238,9 +238,9 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
 
   int index = 0;
   while (c_iter != c_iter_end) {
-     PetscMemcpy(input->pointlist + dim*index, coords->restrict(originalPatch, *c_iter), dim*sizeof(double));
-     c_iter++;
-     index++;
+    PetscMemcpy(input->pointlist + dim*index, coords->restrict(originalPatch, *c_iter), dim*sizeof(double));
+    c_iter++;
+    index++;
   }
 
   //ierr = PetscPrintf(srcMesh->comm(), "copy is ok\n");

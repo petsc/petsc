@@ -161,23 +161,23 @@ static PetscErrorCode InitializeShader(void)
                                   attribute vec3 color; \
                                   varying vec4 vColor;\
                                   void main(void)\
-                                 {\
-                                   vColor = vec4(color,0.50);\
-                                   gl_Position = vec4(position,0.0,1.0);\
-                                 }\n";
+                                  {\
+                                    vColor = vec4(color,0.50);\
+                                    gl_Position = vec4(position,0.0,1.0);\
+                                  }\n";
 #if defined(PETSC_HAVE_GLUT)
-  const char    *fragmentsource = "varying vec4 vColor;\
-                                   void main (void)\
-                                   {\
-                                     gl_FragColor = vColor; \
-                                   }\n";
+  const char    *fragmentsource =  "varying vec4 vColor;\
+                                    void main (void)\
+                                    {\
+                                      gl_FragColor = vColor; \
+                                    }\n";
 #else
-  const char    *fragmentsource = "precision mediump float;\
-                                   varying vec4 vColor;\
-                                   void main (void)\
-                                   {\
-                                     gl_FragColor = vColor; \
-                                   }\n";
+  const char    *fragmentsource =  "precision mediump float;\
+                                    varying vec4 vColor;\
+                                    void main (void)\
+                                    {\
+                                      gl_FragColor = vColor; \
+                                    }\n";
 #endif
   int           isCompiled_VS, isCompiled_FS;
   int           isLinked;
@@ -1023,39 +1023,39 @@ static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
 
 
 static struct _PetscDrawOps DvOps = { 0,
-                                 PetscDrawFlush_OpenGL,
-                                 PetscDrawLine_OpenGL,
-                                 0,
-                                 0,
-                                 PetscDrawPoint_OpenGL,
-                                 0,
-                                 PetscDrawString_OpenGL,
-                                 PetscDrawStringVertical_OpenGL,
-                                 0, /* PetscDrawStringSetSize_OpenGL,*/
-                                 PetscDrawStringGetSize_OpenGL,
-                                 0, /* PetscDrawSetViewport_OpenGL,*/
-                                 PetscDrawClear_OpenGL,
-                                 PetscDrawSynchronizedFlush_OpenGL,
-                                 PetscDrawRectangle_OpenGL,
-                                 PetscDrawTriangle_OpenGL,
-                                 0, /* PetscDrawEllipse_OpenGL,*/
-                                 PetscDrawGetMouseButton_OpenGL,
-                                 PetscDrawPause_OpenGL,
-                                 PetscDrawSynchronizedClear_OpenGL,
-                                 0,
-                                 0,
-                                 PetscDrawGetPopup_OpenGL,
-                                 PetscDrawSetTitle_OpenGL,
-                                 PetscDrawCheckResizedWindow_OpenGL,
-                                 PetscDrawResizeWindow_OpenGL,
-                                 PetscDrawDestroy_OpenGL,
-                                 0,
-                                 0, /* PetscDrawGetSingleton_OpenGL,*/
-                                 0, /* PetscDrawRestoreSingleton_OpenGL,*/
-                                 0,
-                                 0,
-                                 0,
-                                 PetscDrawLine_OpenGL};
+                                      PetscDrawFlush_OpenGL,
+                                      PetscDrawLine_OpenGL,
+                                      0,
+                                      0,
+                                      PetscDrawPoint_OpenGL,
+                                      0,
+                                      PetscDrawString_OpenGL,
+                                      PetscDrawStringVertical_OpenGL,
+                                      0, /* PetscDrawStringSetSize_OpenGL,*/
+                                      PetscDrawStringGetSize_OpenGL,
+                                      0, /* PetscDrawSetViewport_OpenGL,*/
+                                      PetscDrawClear_OpenGL,
+                                      PetscDrawSynchronizedFlush_OpenGL,
+                                      PetscDrawRectangle_OpenGL,
+                                      PetscDrawTriangle_OpenGL,
+                                      0, /* PetscDrawEllipse_OpenGL,*/
+                                      PetscDrawGetMouseButton_OpenGL,
+                                      PetscDrawPause_OpenGL,
+                                      PetscDrawSynchronizedClear_OpenGL,
+                                      0,
+                                      0,
+                                      PetscDrawGetPopup_OpenGL,
+                                      PetscDrawSetTitle_OpenGL,
+                                      PetscDrawCheckResizedWindow_OpenGL,
+                                      PetscDrawResizeWindow_OpenGL,
+                                      PetscDrawDestroy_OpenGL,
+                                      0,
+                                      0, /* PetscDrawGetSingleton_OpenGL,*/
+                                      0, /* PetscDrawRestoreSingleton_OpenGL,*/
+                                      0,
+                                      0,
+                                      0,
+                                      PetscDrawLine_OpenGL};
 
 #if defined(PETSC_HAVE_GLUT)
 /* callbacks required by GLUT */
@@ -1108,23 +1108,23 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
   if (h == PETSC_DECIDE) h = draw->h = 300;
   switch (w) {
     case PETSC_DRAW_FULL_SIZE: w = draw->w = xmax - 10;
-                         break;
+                        break;
     case PETSC_DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2;
-                         break;
+                        break;
     case PETSC_DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3;
-                         break;
+                        break;
     case PETSC_DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4;
-                         break;
+                        break;
   }
   switch (h) {
     case PETSC_DRAW_FULL_SIZE: h = draw->h = ymax - 10;
-                         break;
+                        break;
     case PETSC_DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2;
-                         break;
+                        break;
     case PETSC_DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3;
-                         break;
+                        break;
     case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4;
-                         break;
+                        break;
   }
 
   /* allow user to set location and size of window */

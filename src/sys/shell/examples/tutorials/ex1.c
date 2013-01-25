@@ -1,17 +1,17 @@
 
 static char help[] = "Sets up two PetscShell objects -- Field and Viz -- and attaches their backends to them.\n\
- * Field's backend is implemented in Python (field.py); in response to an \"init\" call\n\
-  it sets up a DMDA and a Vec over that DMDA that needs to be plotted.\n\
- * Viz's backend is implemented in Python (viz1.py).  It does nothing in response to \"init\"\n\
-  and in response to \"viewRho\" it looks for composed PetscObjects \"mesh\" and \"rho\" \n\
-  and then plots z-slices of \"rho\" (\"mesh\" is assumed to be a 3D DMDA).\n\
- * The code below makes sure that after Field has been initialized, the DMDA and the Vec\n\
-  are extracted out of it and composed with Viz under the respective names \"mesh\" and \n\
-  \"rho\", before \"viewRho\" is called on it. \n\
-  See ex2 for an automated management of dependencies between PetscShells.\n\
+  * Field's backend is implemented in Python (field.py); in response to an \"init\" call\n\
+    it sets up a DMDA and a Vec over that DMDA that needs to be plotted.\n\
+  * Viz's backend is implemented in Python (viz1.py).  It does nothing in response to \"init\"\n\
+    and in response to \"viewRho\" it looks for composed PetscObjects \"mesh\" and \"rho\" \n\
+    and then plots z-slices of \"rho\" (\"mesh\" is assumed to be a 3D DMDA).\n\
+  * The code below makes sure that after Field has been initialized, the DMDA and the Vec\n\
+    are extracted out of it and composed with Viz under the respective names \"mesh\" and \n\
+    \"rho\", before \"viewRho\" is called on it. \n\
+    See ex2 for an automated management of dependencies between PetscShells.\n\
 \n\
- The main idea here is to facilitate passing of named PetscObjects across library (and language)\n\
- boundaries without the need for specialized glue code.\n\
+  The main idea here is to facilitate passing of named PetscObjects across library (and language)\n\
+  boundaries without the need for specialized glue code.\n\
 \n\n";
 
 /*T

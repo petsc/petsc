@@ -12,7 +12,7 @@
 
 EXTERN_C_BEGIN
 void PETSC_STDCALL petscdrawgettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN(len),
-                                 PetscErrorCode *ierr PETSC_END_LEN(len))
+                                      PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c3,*t;
   int  len3;
@@ -23,7 +23,7 @@ void PETSC_STDCALL petscdrawgettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN
 }
 
 void PETSC_STDCALL petscdrawsettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN(len),
-                                 PetscErrorCode *ierr PETSC_END_LEN(len))
+                                      PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(title,len,t1);
@@ -32,7 +32,7 @@ void PETSC_STDCALL petscdrawsettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN
 }
 
 void PETSC_STDCALL petscdrawappendtitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN(len),
-                                    PetscErrorCode *ierr PETSC_END_LEN(len))
+                                         PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(title,len,t1);

@@ -47,10 +47,10 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {
-       col = *j++ + shiftin;
-       if (col > row) { break;}
-       if (col != row) ia[row+1]++;
-       ia[col+1]++;
+      col = *j++ + shiftin;
+      if (col > row) { break;}
+      if (col != row) ia[row+1]++;
+      ia[col+1]++;
     }
   }
 

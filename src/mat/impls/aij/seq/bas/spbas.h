@@ -42,21 +42,21 @@
 #define NEGATIVE_DIAGONAL (-42)
 
 typedef struct {
- PetscInt    nrows;
- PetscInt    ncols;
- PetscInt    nnz;
- PetscInt    col_idx_type;
+  PetscInt    nrows;
+  PetscInt    ncols;
+  PetscInt    nnz;
+  PetscInt    col_idx_type;
 
- PetscInt    *row_nnz;
- PetscInt    *icol0;
- PetscInt    **icols;
- PetscScalar **values;
+  PetscInt    *row_nnz;
+  PetscInt    *icol0;
+  PetscInt    **icols;
+  PetscScalar **values;
 
- PetscBool   block_data;
- PetscInt    n_alloc_icol;
- PetscInt    n_alloc_val;
- PetscInt    *alloc_icol;
- PetscScalar *alloc_val;
+  PetscBool   block_data;
+  PetscInt    n_alloc_icol;
+  PetscInt    n_alloc_val;
+  PetscInt    *alloc_icol;
+  PetscScalar *alloc_val;
 } spbas_matrix ;
 
 

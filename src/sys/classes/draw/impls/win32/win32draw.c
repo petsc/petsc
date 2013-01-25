@@ -23,13 +23,13 @@
 #endif
 
 #define XTRANS(draw,win,x) \
-   (int)(((win)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*\
-                                   ((draw)->port_xr - (draw)->port_xl))/\
-                                   ((draw)->coor_xr - (draw)->coor_xl))))
+    (int)(((win)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*         \
+                            ((draw)->port_xr - (draw)->port_xl))/        \
+                            ((draw)->coor_xr - (draw)->coor_xl))))
 #define YTRANS(draw,win,y) \
-   (int)(((win)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*\
-                                   ((draw)->port_yr - (draw)->port_yl))/\
-                                   ((draw)->coor_yr - (draw)->coor_yl))))
+    (int)(((win)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*     \
+                                ((draw)->port_yr - (draw)->port_yl))/    \
+                                ((draw)->coor_yr - (draw)->coor_yl))))
 
 HINSTANCE     hInst;
 HANDLE        g_hWindowListMutex = NULL;
@@ -65,12 +65,8 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_Win32(PetscDraw draw)
   /* Fill background of second buffer */
   ExtFloodFill(windraw->node->DoubleBuffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
   /* Copy current buffer into seconf buffer and set window data as double buffered */
-  BitBlt(windraw->node->DoubleBuffer,
-         0,0,
-         windraw->w,windraw->h,
-         windraw->node->Buffer,
-         0,0,
-         SRCCOPY);
+  BitBlt(windraw->node->DoubleBuffer,0,0,windraw->w,windraw->h,
+         windraw->node->Buffer,0,0, SRCCOPY);
 
   windraw->node->DoubleBuffered = PETSC_TRUE;
   ReleaseDC(windraw->hWnd,hdc);
@@ -86,19 +82,11 @@ static PetscErrorCode PetscDrawFlush_Win32(PetscDraw draw)
 
   PetscFunctionBegin;
   /* flush double buffer into primary buffer */
-  BitBlt(windraw->node->Buffer,
-         0,0,
-         windraw->w,windraw->h,
-         windraw->node->DoubleBuffer,
-         0,0,
-         SRCCOPY);
+  BitBlt(windraw->node->Buffer,0,0,windraw->w,windraw->h,
+         windraw->node->DoubleBuffer,0,0,SRCCOPY);
   /* flush double buffer into window */
-  BitBlt(hdc,
-         0,0,
-         windraw->w,windraw->h,
-         windraw->node->DoubleBuffer,
-         0,0,
-         SRCCOPY);
+  BitBlt(hdc,0,0,windraw->w,windraw->h,
+         windraw->node->DoubleBuffer, 0,0,SRCCOPY);
   ReleaseDC(windraw->hWnd,hdc);
   PetscFunctionReturn(0);
 }
@@ -767,36 +755,36 @@ void MessageLoopThread_Win32(PetscDraw draw)
 
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_Win32,
-                                 PetscDrawFlush_Win32,
-                                 PetscDrawLine_Win32,
-                                 PetscDrawLineSetWidth_Win32,
-                                 PetscDrawLineGetWidth_Win32,
-                                 PetscDrawPoint_Win32,
-                                 PetscDrawPointSetSize_Win32,
-                                 PetscDrawString_Win32,
-                                 PetscDrawStringVertical_Win32,
-                                 PetscDrawStringSetSize_Win32,
-                                 PetscDrawStringGetSize_Win32,
-                                 0,
-                                 PetscDrawClear_Win32,
-                                 PetscDrawSynchronizedFlush_Win32,
-                                 PetscDrawRectangle_Win32,
-                                 PetscDrawTriangle_Win32,
-                                 0,
-                                 PetscDrawGetMouseButton_Win32,
-                                 PetscDrawPause_Win32,
-                                 PetscDrawSynchronizedClear_Win32,
-                                 0,
-                                 0,
-                                 PetscDrawGetPopup_Win32,
-                                 PetscDrawSetTitle_Win32,
-                                 PetscDrawCheckResizedWindow_Win32,
-                                 PetscDrawResizeWindow_Win32,
-                                 PetscDrawDestroy_Win32,
-                                 0,
-                                 0,
-                                 0,
-                                 0};
+                                      PetscDrawFlush_Win32,
+                                      PetscDrawLine_Win32,
+                                      PetscDrawLineSetWidth_Win32,
+                                      PetscDrawLineGetWidth_Win32,
+                                      PetscDrawPoint_Win32,
+                                      PetscDrawPointSetSize_Win32,
+                                      PetscDrawString_Win32,
+                                      PetscDrawStringVertical_Win32,
+                                      PetscDrawStringSetSize_Win32,
+                                      PetscDrawStringGetSize_Win32,
+                                      0,
+                                      PetscDrawClear_Win32,
+                                      PetscDrawSynchronizedFlush_Win32,
+                                      PetscDrawRectangle_Win32,
+                                      PetscDrawTriangle_Win32,
+                                      0,
+                                      PetscDrawGetMouseButton_Win32,
+                                      PetscDrawPause_Win32,
+                                      PetscDrawSynchronizedClear_Win32,
+                                      0,
+                                      0,
+                                      PetscDrawGetPopup_Win32,
+                                      PetscDrawSetTitle_Win32,
+                                      PetscDrawCheckResizedWindow_Win32,
+                                      PetscDrawResizeWindow_Win32,
+                                      PetscDrawDestroy_Win32,
+                                      0,
+                                      0,
+                                      0,
+                                      0};
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetPopup_Win32"
@@ -868,7 +856,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   WindowNode      newnode;
 
   PetscFunctionBegin;
@@ -988,22 +976,11 @@ static void OnPaint_Win32(HWND hWnd)
   while (current != NULL) {
     if (current->hWnd == hWnd) {
       /* flushes primary buffer to window */
-      BitBlt(hdc,
-             0,0,
-             GetDeviceCaps(hdc,HORZRES),
-             GetDeviceCaps(hdc,VERTRES),
-             current->Buffer,
-             0,0,
-             SRCCOPY);
+      BitBlt(hdc,0,0,GetDeviceCaps(hdc,HORZRES),GetDeviceCaps(hdc,VERTRES),
+             current->Buffer,0,0,SRCCOPY);
 
-      /* StretchBlt(hdc,
-        0,0,
-        w,h,
-        current->Buffer,
-        0,0,
-        current->bitwidth,
-        current->bitheight,
-        SRCCOPY); */
+      /* StretchBlt(hdc,0,0,w,h,
+        current->Buffer,0,0,current->bitwidth,current->bitheight,SRCCOPY); */
       break;
     }
     current = current->wnext;

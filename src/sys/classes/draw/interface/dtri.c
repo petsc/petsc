@@ -24,7 +24,7 @@
 
 @*/
 PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,
-                 int c1,int c2,int c3)
+                                  int c1,int c2,int c3)
 {
   PetscErrorCode ierr;
   PetscBool      isnull;

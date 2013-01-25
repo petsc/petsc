@@ -102,24 +102,24 @@ typedef struct {
 
 /* Struct for visualization */
 typedef struct {
-   PetscBool   drawcontours;   /* flag - 1 indicates drawing contours */
-   PetscViewer drawviewer;
+  PetscBool   drawcontours;   /* flag - 1 indicates drawing contours */
+  PetscViewer drawviewer;
 } MonitorCtx;
 
 
 /* Inputs read in from text file */
 struct in {
-    PetscScalar Ts;     /* surface temperature  */
-    PetscScalar Td;     /* dewpoint temperature */
-    PetscScalar Tc;     /* temperature of cloud base */
-    PetscScalar fr;     /* fraction of sky covered by clouds */
-    PetscScalar wnd;    /* wind speed */
-    PetscScalar Ta;     /* air temperature */
-    PetscScalar pwt;    /* precipitable water */
-    PetscScalar wndDir; /* wind direction */
-    PetscScalar lat;    /* latitude */
-    PetscReal   time;   /* time in hours */
-    PetscScalar init;
+  PetscScalar Ts;     /* surface temperature  */
+  PetscScalar Td;     /* dewpoint temperature */
+  PetscScalar Tc;     /* temperature of cloud base */
+  PetscScalar fr;     /* fraction of sky covered by clouds */
+  PetscScalar wnd;    /* wind speed */
+  PetscScalar Ta;     /* air temperature */
+  PetscScalar pwt;    /* precipitable water */
+  PetscScalar wndDir; /* wind direction */
+  PetscScalar lat;    /* latitude */
+  PetscReal   time;   /* time in hours */
+  PetscScalar init;
 };
 
 /* functions */
@@ -190,27 +190,27 @@ int main(int argc,char **argv)
   emma = emission(pwat);           /* accounts for radiative effects of water vapor */
 
  /* Converts from Fahrenheit to Celsuis */
-    sfctemp = fahr_to_cel(sfctemp);
-    airtemp = fahr_to_cel(airtemp);
-    dewtemp = fahr_to_cel(dewtemp);
-    cloudTemp = fahr_to_cel(cloudTemp);
-    deep_grnd_temp = fahr_to_cel(deep_grnd_temp);
+  sfctemp = fahr_to_cel(sfctemp);
+  airtemp = fahr_to_cel(airtemp);
+  dewtemp = fahr_to_cel(dewtemp);
+  cloudTemp = fahr_to_cel(cloudTemp);
+  deep_grnd_temp = fahr_to_cel(deep_grnd_temp);
 
  /* Converts from Celsius to Kelvin */
-    sfctemp +=273;
-    airtemp +=273;
-    dewtemp +=273;
-    cloudTemp +=273;
-    deep_grnd_temp +=273;
+  sfctemp +=273;
+  airtemp +=273;
+  dewtemp +=273;
+  cloudTemp +=273;
+  deep_grnd_temp +=273;
 
  /* Calculates initial relative humidity */
-    x = calcmixingr(dewtemp,pressure1);
-    mixratio = calcmixingr(sfctemp,pressure1);
-    rh = (x/mixratio)*100;
+  x = calcmixingr(dewtemp,pressure1);
+  mixratio = calcmixingr(sfctemp,pressure1);
+  rh = (x/mixratio)*100;
 
-    if (!rank) {printf("Initial RH = %.1f percent\n\n",rh);}   /* prints initial relative humidity */
+  if (!rank) {printf("Initial RH = %.1f percent\n\n",rh);}   /* prints initial relative humidity */
 
-    time = 3600*put.time;                         /* sets amount of timesteps to run model */
+  time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
   /* Configure PETSc TS solver */
   /*------------------------------------------*/
@@ -330,7 +330,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "calcfluxs"
 PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar* flux)
 {
- PetscFunctionBeginUser;
+  PetscFunctionBeginUser;
   *flux = SIG*((EMMSFC*emma*pow(airtemp,4)) + (EMMSFC*fract*(1 - emma)*pow(cloudTemp,4)) - (EMMSFC*pow(sfctemp,4)));   /* calculates flux using Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
@@ -339,202 +339,202 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 #define __FUNCT__ "calcfluxa"
 PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar* flux)   /* this function is not currently called upon */
 {
-    PetscScalar emm = 0.001;
-    PetscFunctionBeginUser;
-    *flux = SIG*(- emm*(pow(airtemp,4)));     /* calculates flux usinge Stefan-Boltzmann relation */
-    PetscFunctionReturn(0);
+  PetscScalar emm = 0.001;
+  PetscFunctionBeginUser;
+  *flux = SIG*(- emm*(pow(airtemp,4)));     /* calculates flux usinge Stefan-Boltzmann relation */
+  PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "sensibleflux"
 PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar* sheat)
 {
-      PetscScalar density = 1; /* air density */
-      PetscScalar Cp = 1005;   /* heat capicity for dry air */
-      PetscScalar wndmix;      /* temperature change from wind mixing: wind*Ch */
+  PetscScalar density = 1; /* air density */
+  PetscScalar Cp = 1005;   /* heat capicity for dry air */
+  PetscScalar wndmix;      /* temperature change from wind mixing: wind*Ch */
 
-      PetscFunctionBeginUser;
+  PetscFunctionBeginUser;
 
-      wndmix = 0.0025 + 0.0042*wind;                               /* regression equation valid for neutral and stable BL */
-      *sheat = density*Cp*wndmix*(airtemp - sfctemp);              /* calculates sensible heat flux */
+  wndmix = 0.0025 + 0.0042*wind;                               /* regression equation valid for neutral and stable BL */
+  *sheat = density*Cp*wndmix*(airtemp - sfctemp);              /* calculates sensible heat flux */
 
-      PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "latentflux"
 PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar* latentheat)
 {
-      PetscScalar density = 1;   /* density of dry air */
-      PetscScalar q;             /* actual specific humitity */
-      PetscScalar qs;            /* saturation specific humidity */
-      PetscScalar wndmix;        /* temperature change from wind mixing: wind*Ch */
-      PetscScalar beta = .4;     /* moisture availability */
-      PetscScalar mr      ;      /* mixing ratio */
-      PetscScalar lhcnst;        /* latent heat of vaporization constant = 2501000 J/kg at 0c */
-                                 /* latent heat of saturation const = 2834000 J/kg */
-                                 /* latent heat of fusion const = 333700 J/kg */
-      PetscFunctionBeginUser;
+  PetscScalar density = 1;   /* density of dry air */
+  PetscScalar q;             /* actual specific humitity */
+  PetscScalar qs;            /* saturation specific humidity */
+  PetscScalar wndmix;        /* temperature change from wind mixing: wind*Ch */
+  PetscScalar beta = .4;     /* moisture availability */
+  PetscScalar mr      ;      /* mixing ratio */
+  PetscScalar lhcnst;        /* latent heat of vaporization constant = 2501000 J/kg at 0c */
+                              /* latent heat of saturation const = 2834000 J/kg */
+                              /* latent heat of fusion const = 333700 J/kg */
+  PetscFunctionBeginUser;
 
-      wind = mph2mpers(wind);              /* converts wind from mph to meters per second */
-      wndmix = 0.0025 + 0.0042*wind;       /* regression equation valid for neutral BL */
-      lhcnst = Lconst(sfctemp);            /* calculates latent heat of evaporation */
-      mr  = calcmixingr(sfctemp,pressure1);/* calculates saturation mixing ratio */
-      qs = calc_q(mr);                     /* calculates saturation specific humidty */
-      mr = calcmixingr(dewtemp,pressure1); /* calculates mixing ratio */
-      q = calc_q(mr);                      /* calculates specific humidty */
+  wind = mph2mpers(wind);              /* converts wind from mph to meters per second */
+  wndmix = 0.0025 + 0.0042*wind;       /* regression equation valid for neutral BL */
+  lhcnst = Lconst(sfctemp);            /* calculates latent heat of evaporation */
+  mr  = calcmixingr(sfctemp,pressure1);/* calculates saturation mixing ratio */
+  qs = calc_q(mr);                     /* calculates saturation specific humidty */
+  mr = calcmixingr(dewtemp,pressure1); /* calculates mixing ratio */
+  q = calc_q(mr);                      /* calculates specific humidty */
 
-     *latentheat = density*wndmix*beta*lhcnst*(q - qs); /* calculates latent heat flux */
-     PetscFunctionReturn(0);
+  *latentheat = density*wndmix*beta*lhcnst*(q - qs); /* calculates latent heat flux */
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "potential_temperature"
 PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar* pottemp)
 {
-     PetscScalar kdry;    /* poisson constant for dry atmosphere */
-     PetscScalar kmoist;  /* poisson constant for moist atmosphere */
-     PetscScalar pavg;    /* average atmospheric pressure */
-     PetscScalar mixratio;/* mixing ratio */
+  PetscScalar kdry;    /* poisson constant for dry atmosphere */
+  PetscScalar kmoist;  /* poisson constant for moist atmosphere */
+  PetscScalar pavg;    /* average atmospheric pressure */
+  PetscScalar mixratio;/* mixing ratio */
 
-     PetscFunctionBeginUser;
-     mixratio = calcmixingr(sfctemp,pressure1);
+  PetscFunctionBeginUser;
+  mixratio = calcmixingr(sfctemp,pressure1);
 
-   /* initialize poisson constant */
-     kdry = 0.2854;
-     kmoist = 0.2854*(1 - 0.24*mixratio);
+/* initialize poisson constant */
+  kdry = 0.2854;
+  kmoist = 0.2854*(1 - 0.24*mixratio);
 
-     pavg = ((0.7*pressure1)+pressure2)/2;         /* calculates simple average press */
-     *pottemp = temp*(pow((pressure1/pavg),kdry)); /* calculates potential temperature */
+  pavg = ((0.7*pressure1)+pressure2)/2;         /* calculates simple average press */
+  *pottemp = temp*(pow((pressure1/pavg),kdry)); /* calculates potential temperature */
 
-     PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
 {
-     PetscScalar e;        /* vapor pressure */
-     PetscScalar mixratio; /* mixing ratio */
+  PetscScalar e;        /* vapor pressure */
+  PetscScalar mixratio; /* mixing ratio */
 
-     dtemp = dtemp - 273;                              /* converts from Kelvin to Celsuis */
-     e = 6.11*(pow(10,((7.5*dtemp)/(237.7+dtemp))));   /* converts from dew point temp to vapor pressure */
-     e = e*100;                                        /* converts from hPa to Pa */
-     mixratio = (0.622*e)/(pressure1 - e);             /* computes mixing ratio */
-     mixratio = mixratio*1;                            /* convert to g/Kg */
+  dtemp = dtemp - 273;                              /* converts from Kelvin to Celsuis */
+  e = 6.11*(pow(10,((7.5*dtemp)/(237.7+dtemp))));   /* converts from dew point temp to vapor pressure */
+  e = e*100;                                        /* converts from hPa to Pa */
+  mixratio = (0.622*e)/(pressure1 - e);             /* computes mixing ratio */
+  mixratio = mixratio*1;                            /* convert to g/Kg */
 
-     return mixratio;
+  return mixratio;
 }
 extern PetscScalar calc_q(PetscScalar rv)
 {
-     PetscScalar specific_humidity;        /* define specific humidity variable */
-     specific_humidity = rv/(1 + rv);      /* calculates specific humidity */
-     return specific_humidity;
+  PetscScalar specific_humidity;        /* define specific humidity variable */
+  specific_humidity = rv/(1 + rv);      /* calculates specific humidity */
+  return specific_humidity;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "calc_gflux"
 PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar* Gflux)
 {
-      PetscScalar k;                       /* thermal conductivity parameter */
-      PetscScalar n = 0.38;                /* value of soil porosity */
-      PetscScalar dz = 1;                  /* depth of layer between soil surface and deep soil layer */
-      PetscScalar unit_soil_weight = 2700; /* unit soil weight in kg/m^3 */
+  PetscScalar k;                       /* thermal conductivity parameter */
+  PetscScalar n = 0.38;                /* value of soil porosity */
+  PetscScalar dz = 1;                  /* depth of layer between soil surface and deep soil layer */
+  PetscScalar unit_soil_weight = 2700; /* unit soil weight in kg/m^3 */
 
-      PetscFunctionBeginUser;
+  PetscFunctionBeginUser;
 
-      k = ((0.135*(1-n)*unit_soil_weight) + 64.7)/(unit_soil_weight - (0.947*(1-n)*unit_soil_weight));  /* dry soil conductivity */
-      *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   /* calculates flux from deep ground layer */
-      PetscFunctionReturn(0);
+  k = ((0.135*(1-n)*unit_soil_weight) + 64.7)/(unit_soil_weight - (0.947*(1-n)*unit_soil_weight));  /* dry soil conductivity */
+  *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   /* calculates flux from deep ground layer */
+  PetscFunctionReturn(0);
 }
 /* #undef __FUNCT__ */
 /* #define __FUNCT__ "emission" */
 extern PetscScalar emission(PetscScalar pwat)
 {
-    PetscScalar emma;
+  PetscScalar emma;
 
-    emma = 0.725 + 0.17*log10(pwat);
+  emma = 0.725 + 0.17*log10(pwat);
 
-    return emma;
+  return emma;
 }
 extern PetscScalar cloud(PetscScalar fract)
 {
-    PetscScalar emma = 0;
+  PetscScalar emma = 0;
 
-    /* modifies radiative balance depending on cloud cover */
-    if (fract >= 0.9)                     emma = 1;
-    else if (0.9 > fract && fract >= 0.8) emma = 0.9;
-    else if (0.8 > fract && fract >= 0.7) emma = 0.85;
-    else if (0.7 > fract && fract >= 0.6) emma = 0.75;
-    else if (0.6 > fract && fract >= 0.5) emma = 0.65;
-    else if (0.4 > fract && fract >= 0.3) emma = emma*1.086956;
-    return emma;
+  /* modifies radiative balance depending on cloud cover */
+  if (fract >= 0.9)                     emma = 1;
+  else if (0.9 > fract && fract >= 0.8) emma = 0.9;
+  else if (0.8 > fract && fract >= 0.7) emma = 0.85;
+  else if (0.7 > fract && fract >= 0.6) emma = 0.75;
+  else if (0.6 > fract && fract >= 0.5) emma = 0.65;
+  else if (0.4 > fract && fract >= 0.3) emma = emma*1.086956;
+  return emma;
 }
 extern PetscScalar Lconst(PetscScalar sfctemp)
 {
-      PetscScalar Lheat;
-      sfctemp -=273;                              /* converts from kelvin to celsius */
-      Lheat = 4186.8*(597.31 - 0.5625*sfctemp);   /* calculates latent heat constant */
-      return Lheat;
+  PetscScalar Lheat;
+  sfctemp -=273;                              /* converts from kelvin to celsius */
+  Lheat = 4186.8*(597.31 - 0.5625*sfctemp);   /* calculates latent heat constant */
+  return Lheat;
 }
 extern PetscScalar mph2mpers(PetscScalar wind)
 {
-     wind = ((wind*1.6*1000)/3600);                 /* converts wind from mph to meters per second */
-     return wind;
+  wind = ((wind*1.6*1000)/3600);                 /* converts wind from mph to meters per second */
+  return wind;
 }
 extern PetscScalar fahr_to_cel(PetscScalar temp)
 {
-   temp = (5*(temp-32))/9; /* converts from farhrenheit to celsuis */
-   return temp;
+  temp = (5*(temp-32))/9; /* converts from farhrenheit to celsuis */
+  return temp;
 }
 extern PetscScalar cel_to_fahr(PetscScalar temp)
 {
-   temp = ((temp*9)/5) + 32; /* converts from celsuis to farhrenheit */
-   return temp;
+  temp = ((temp*9)/5) + 32; /* converts from celsuis to farhrenheit */
+  return temp;
 }
 void readinput(struct in *put)
 {
-        int i;
-        char x;
-        FILE *ifp;
+  int i;
+  char x;
+  FILE *ifp;
 
-        ifp = fopen("ex5_control.txt", "r");
+  ifp = fopen("ex5_control.txt", "r");
 
-        for (i=0;i<110;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->Ts);
+  for (i=0;i<110;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->Ts);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->Td);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->Td);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->Ta);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->Ta);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->Tc);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->Tc);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->fr);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->fr);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->wnd);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->wnd);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->pwt);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->pwt);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->wndDir);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->wndDir);
 
-        for (i=0;i<43;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->time);
+  for (i=0;i<43;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->time);
 
-        for (i=0;i<63;i++)
-                fscanf(ifp, "%c", &x);
-        fscanf(ifp, "%lf", &put->init);
+  for (i=0;i<63;i++)
+    fscanf(ifp, "%c", &x);
+  fscanf(ifp, "%lf", &put->init);
 }
 
 /* ------------------------------------------------------------------- */
@@ -573,25 +573,25 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   if (user->init == 1) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
-          X[j][i].Ts = user->Ts - i*0.0001;
-          X[j][i].Ta = X[j][i].Ts - 5;
-          X[j][i].u  = 0;
-          X[j][i].v  = 0;
-          X[j][i].p  = 1.25;
-          if ((j == 5 || j == 6) && (i == 4 || i == 5)) X[j][i].p  += 0.00001;
-          if ((j == 5 || j == 6) && (i == 12 || i == 13)) X[j][i].p  += 0.00001;
-       }
+        X[j][i].Ts = user->Ts - i*0.0001;
+        X[j][i].Ta = X[j][i].Ts - 5;
+        X[j][i].u  = 0;
+        X[j][i].v  = 0;
+        X[j][i].p  = 1.25;
+        if ((j == 5 || j == 6) && (i == 4 || i == 5)) X[j][i].p  += 0.00001;
+        if ((j == 5 || j == 6) && (i == 12 || i == 13)) X[j][i].p  += 0.00001;
+      }
     }
   }
 
   else {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
-          X[j][i].Ts = user->Ts;
-          X[j][i].Ta = X[j][i].Ts - 5;
-          X[j][i].u  = 0;
-          X[j][i].v  = 0;
-          X[j][i].p  = 1.25;
+        X[j][i].Ts = user->Ts;
+        X[j][i].Ta = X[j][i].Ts - 5;
+        X[j][i].u  = 0;
+        X[j][i].v  = 0;
+        X[j][i].p  = 1.25;
       }
     }
   }

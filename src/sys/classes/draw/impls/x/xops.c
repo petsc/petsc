@@ -69,11 +69,11 @@ PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRe
   XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x1,y_1,x2,y2);
   if (x1 == x2 && PetscAbs(y_1 - y2) > 7) {
     if (y2 > y_1) {
-       XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2-3);
-       XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2-3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2-3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2-3);
     } else {
-       XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2+3);
-       XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2+3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2+3);
+      XDrawLine(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2+3);
     }
   }
   PetscFunctionReturn(0);
@@ -601,46 +601,46 @@ PetscErrorCode PetscDrawSave_X(PetscDraw);
 PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char*);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
-                                 PetscDrawFlush_X,
-                                 PetscDrawLine_X,
-                                 0,
-                                 0,
-                                 PetscDrawPoint_X,
-                                 0,
-                                 PetscDrawString_X,
-                                 PetscDrawStringVertical_X,
-                                 PetscDrawStringSetSize_X,
-                                 PetscDrawStringGetSize_X,
-                                 PetscDrawSetViewport_X,
-                                 PetscDrawClear_X,
-                                 PetscDrawSynchronizedFlush_X,
-                                 PetscDrawRectangle_X,
-                                 PetscDrawTriangle_X,
-                                 PetscDrawEllipse_X,
-                                 PetscDrawGetMouseButton_X,
-                                 PetscDrawPause_X,
-                                 PetscDrawSynchronizedClear_X,
-                                 0,
-                                 0,
-                                 PetscDrawGetPopup_X,
-                                 PetscDrawSetTitle_X,
-                                 PetscDrawCheckResizedWindow_X,
-                                 PetscDrawResizeWindow_X,
-                                 PetscDrawDestroy_X,
-                                 0,
-                                 PetscDrawGetSingleton_X,
-                                 PetscDrawRestoreSingleton_X,
+                                      PetscDrawFlush_X,
+                                      PetscDrawLine_X,
+                                      0,
+                                      0,
+                                      PetscDrawPoint_X,
+                                      0,
+                                      PetscDrawString_X,
+                                      PetscDrawStringVertical_X,
+                                      PetscDrawStringSetSize_X,
+                                      PetscDrawStringGetSize_X,
+                                      PetscDrawSetViewport_X,
+                                      PetscDrawClear_X,
+                                      PetscDrawSynchronizedFlush_X,
+                                      PetscDrawRectangle_X,
+                                      PetscDrawTriangle_X,
+                                      PetscDrawEllipse_X,
+                                      PetscDrawGetMouseButton_X,
+                                      PetscDrawPause_X,
+                                      PetscDrawSynchronizedClear_X,
+                                      0,
+                                      0,
+                                      PetscDrawGetPopup_X,
+                                      PetscDrawSetTitle_X,
+                                      PetscDrawCheckResizedWindow_X,
+                                      PetscDrawResizeWindow_X,
+                                      PetscDrawDestroy_X,
+                                      0,
+                                      PetscDrawGetSingleton_X,
+                                      PetscDrawRestoreSingleton_X,
 #if defined(PETSC_HAVE_AFTERIMAGE)
-                                 PetscDrawSave_X,
+                                      PetscDrawSave_X,
 #else
-                                 0,
+                                      0,
 #endif
-                                 PetscDrawSetSave_X,
-                                 0,
-                                 PetscDrawArrow_X,
-                                 PetscDrawCoordinateToPixel_X,
-                                 PetscDrawPixelToCoordinate_X,
-                                 PetscDrawPointPixel_X};
+                                      PetscDrawSetSave_X,
+                                      0,
+                                      PetscDrawArrow_X,
+                                      PetscDrawCoordinateToPixel_X,
+                                      PetscDrawPixelToCoordinate_X,
+                                      PetscDrawPointPixel_X};
 
 
 extern PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);
@@ -758,23 +758,23 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
   if (h == PETSC_DECIDE) h = draw->h = 300;
   switch (w) {
     case PETSC_DRAW_FULL_SIZE: w = draw->w = xmax - 10;
-                         break;
+                        break;
     case PETSC_DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2;
-                         break;
+                        break;
     case PETSC_DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3;
-                         break;
+                        break;
     case PETSC_DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4;
-                         break;
+                        break;
   }
   switch (h) {
     case PETSC_DRAW_FULL_SIZE: h = draw->h = ymax - 10;
-                         break;
+                        break;
     case PETSC_DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2;
-                         break;
+                        break;
     case PETSC_DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3;
-                         break;
+                        break;
     case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4;
-                         break;
+                        break;
   }
 
   /* allow user to set location and size of window */
@@ -846,7 +846,7 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
   Xwin->y      = y;
   Xwin->w      = w;
   Xwin->h      = h;
-  draw->data    = (void*)Xwin;
+  draw->data   = (void*)Xwin;
 
   /*
     Need barrier here so processor 0 does not destroy the window before other

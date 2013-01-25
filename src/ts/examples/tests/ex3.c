@@ -267,27 +267,27 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
 PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 {
-   PetscErrorCode  ierr;
-   KSP             ksp;
-   PC              pc;
+  PetscErrorCode  ierr;
+  KSP             ksp;
+  PC              pc;
 
-   /*create the ksp context and set the operators,that is, associate the system matrix with it*/
-   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-   ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  /*create the ksp context and set the operators,that is, associate the system matrix with it*/
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-   /*get the preconditioner context, set its type and the tolerances*/
-   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  /*get the preconditioner context, set its type and the tolerances*/
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-   /*get the command line options if there are any and set them*/
-   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  /*get the command line options if there are any and set them*/
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-   /*get the linear system (ksp) solve*/
-   ierr = KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol);CHKERRQ(ierr);
+  /*get the linear system (ksp) solve*/
+  ierr = KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol);CHKERRQ(ierr);
 
-   KSPDestroy(&ksp);
-   return 0;
+  KSPDestroy(&ksp);
+  return 0;
 }
 
 /***********************************************************************
@@ -429,15 +429,14 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
 
   /*  initializing everything  */
 
-  for (i=0; i < nz; i++)
-  {
-     nli[i][0] = 0;
-     nli[i][1] = 0;
-     indx[i] = 0;
-     rquad[i][0] = 0.0;
-     rquad[i][1] = 0.0;
-     rquad[i][2] = 0.0;
-     dlen[i] = 0.0;
+  for (i=0; i < nz; i++) {
+    nli[i][0] = 0;
+    nli[i][1] = 0;
+    indx[i] = 0;
+    rquad[i][0] = 0.0;
+    rquad[i][1] = 0.0;
+    rquad[i][2] = 0.0;
+    dlen[i] = 0.0;
   }/*end for (i)*/
 
   /*  quadrature weights  */
@@ -448,17 +447,14 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
   /* 1st and last nodes have Dirichlet boundary condition -
      set indices there to -1 */
 
-  for (i=0; i < nz-1; i++)
-  {
-     indx[i]=i-1;
-
+  for (i=0; i < nz-1; i++) {
+    indx[i]=i-1;
   }/*end for (i)*/
   indx[nz-1]=-1;
 
   ipq = 0;
 
-  for (il=0; il < nz-1; il++)
-  {
+  for (il=0; il < nz-1; il++) {
      ip = ipq;
      ipq = ip+1;
      zip = z[ip];

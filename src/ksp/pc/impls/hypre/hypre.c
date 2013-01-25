@@ -396,13 +396,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     PetscStackCallStandard(HYPRE_BoomerAMGSetTruncFactor,(jac->hsolver,jac->truncfactor));
   }
 
- ierr = PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator (0=unlimited)","None",jac->pmax,&jac->pmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator (0=unlimited)","None",jac->pmax,&jac->pmax,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->pmax < 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"P_max %G must be greater than or equal to zero",jac->pmax);
     PetscStackCallStandard(HYPRE_BoomerAMGSetPMaxElmts,(jac->hsolver,jac->pmax));
   }
 
- ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_nl","Number of levels of aggressive coarsening","None",jac->agg_nl,&jac->agg_nl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_nl","Number of levels of aggressive coarsening","None",jac->agg_nl,&jac->agg_nl,&flg);CHKERRQ(ierr);
   if (flg) {
      if (jac->agg_nl < 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %G must be greater than or equal to zero",jac->agg_nl);
 
@@ -410,7 +410,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   }
 
 
- ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_num_paths","Number of paths for aggressive coarsening","None",jac->agg_num_paths,&jac->agg_num_paths,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_num_paths","Number of paths for aggressive coarsening","None",jac->agg_num_paths,&jac->agg_num_paths,&flg);CHKERRQ(ierr);
   if (flg) {
      if (jac->agg_num_paths < 1) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of paths %G must be greater than or equal to 1",jac->agg_num_paths);
 
@@ -1374,57 +1374,57 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   /* copy x values over to hypre for variable ordering */
   if (ordering) {
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
-     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-     for (i= 0; i< nvars; i++) {
-       PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,ilower,iupper,i,xx+(size*i)));
-     }
-     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-     PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
-     PetscStackCallStandard(HYPRE_SStructMatrixMatvec,(1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x));
-     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
+    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    for (i= 0; i< nvars; i++) {
+      PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,ilower,iupper,i,xx+(size*i)));
+    }
+    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
+    PetscStackCallStandard(HYPRE_SStructMatrixMatvec,(1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x));
+    PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
 
-     /* copy solution values back to PETSc */
-     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-     for (i= 0; i< nvars; i++) {
-       PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,ilower,iupper,i,yy+(size*i)));
-     }
-     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+    /* copy solution values back to PETSc */
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    for (i= 0; i< nvars; i++) {
+      PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,ilower,iupper,i,yy+(size*i)));
+    }
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   } else {      /* nodal ordering must be mapped to variable ordering for sys_pfmg */
-     PetscScalar     *z;
-     PetscInt         j, k;
+    PetscScalar     *z;
+    PetscInt         j, k;
 
-     ierr = PetscMalloc(nvars*size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
-     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
-     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    ierr = PetscMalloc(nvars*size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
+    PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
+    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
 
-     /* transform nodal to hypre's variable ordering for sys_pfmg */
-     for (i= 0; i< size; i++) {
-        k= i*nvars;
-        for (j= 0; j< nvars; j++) {
-           z[j*size+i]= xx[k+j];
-        }
-     }
-     for (i= 0; i< nvars; i++) {
-       PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,ilower,iupper,i,z+(size*i)));
-     }
-     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-     PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
-     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
+    /* transform nodal to hypre's variable ordering for sys_pfmg */
+    for (i= 0; i< size; i++) {
+      k= i*nvars;
+      for (j= 0; j< nvars; j++) {
+          z[j*size+i]= xx[k+j];
+      }
+    }
+    for (i= 0; i< nvars; i++) {
+      PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,ilower,iupper,i,z+(size*i)));
+    }
+    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
+    PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
 
-     /* copy solution values back to PETSc */
-     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-     for (i= 0; i< nvars; i++) {
-       PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,ilower,iupper,i,z+(size*i)));
-     }
-     /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
-     for (i= 0; i< size; i++) {
-        k= i*nvars;
-        for (j= 0; j< nvars; j++) {
-           yy[k+j]= z[j*size+i];
-        }
-     }
-     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-     ierr = PetscFree(z);CHKERRQ(ierr);
+    /* copy solution values back to PETSc */
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    for (i= 0; i< nvars; i++) {
+      PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,(mx->ss_x,part,ilower,iupper,i,z+(size*i)));
+    }
+    /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
+    for (i= 0; i< size; i++) {
+      k= i*nvars;
+      for (j= 0; j< nvars; j++) {
+          yy[k+j]= z[j*size+i];
+      }
+    }
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+    ierr = PetscFree(z);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

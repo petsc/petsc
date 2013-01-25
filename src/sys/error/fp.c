@@ -91,14 +91,14 @@ PetscErrorCode ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sig
 EXTERN_C_END
 
 static struct { int code_no; char *name; } error_codes[] = {
-           { FPE_INTDIV_TRAP    ,"integer divide" },
-           { FPE_FLTOPERR_TRAP  ,"IEEE operand error" },
-           { FPE_FLTOVF_TRAP    ,"floating point overflow" },
-           { FPE_FLTUND_TRAP    ,"floating point underflow" },
-           { FPE_FLTDIV_TRAP    ,"floating pointing divide" },
-           { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
-           { 0                  ,"unknown error" }
-} ;
+  { FPE_INTDIV_TRAP    ,"integer divide" },
+  { FPE_FLTOPERR_TRAP  ,"IEEE operand error" },
+  { FPE_FLTOVF_TRAP    ,"floating point overflow" },
+  { FPE_FLTUND_TRAP    ,"floating point underflow" },
+  { FPE_FLTDIV_TRAP    ,"floating pointing divide" },
+  { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
+  { 0                  ,"unknown error" }
+};
 #define SIGPC(scp) (scp->sc_pc)
 
 #undef __FUNCT__
@@ -195,12 +195,12 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 #include <ucontext.h>
 
 static struct { int code_no; char *name; } error_codes[] = {
-  {  FPE_FLTINV,"invalid floating point operand"},
-  {  FPE_FLTRES,"inexact floating point result"},
-  {  FPE_FLTDIV,"division-by-zero"},
-  {  FPE_FLTUND,"floating point underflow"},
-  {  FPE_FLTOVF,"floating point overflow"},
-  {  0,         "unknown error"}
+  { FPE_FLTINV,"invalid floating point operand"},
+  { FPE_FLTRES,"inexact floating point result"},
+  { FPE_FLTDIV,"division-by-zero"},
+  { FPE_FLTUND,"floating point underflow"},
+  { FPE_FLTOVF,"floating point overflow"},
+  { 0,         "unknown error"}
 };
 #define SIGPC(scp) (scp->si_addr)
 
@@ -253,11 +253,11 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 #elif defined (PETSC_HAVE_IRIX_STYLE_FPTRAP)
 #include <sigfpe.h>
 static struct { int code_no; char *name; } error_codes[] = {
-       { _INVALID   ,"IEEE operand error" },
-       { _OVERFL    ,"floating point overflow" },
-       { _UNDERFL   ,"floating point underflow" },
-       { _DIVZERO   ,"floating point divide" },
-       { 0          ,"unknown error" }
+  { _INVALID   ,"IEEE operand error" },
+  { _OVERFL    ,"floating point overflow" },
+  { _UNDERFL   ,"floating point underflow" },
+  { _DIVZERO   ,"floating point divide" },
+  { 0          ,"unknown error" }
 } ;
 #undef __FUNCT__
 #define __FUNCT__ "PetscDefaultFPTrap"
@@ -308,12 +308,12 @@ struct sigcontext;
 #define FPE_FLTINEX_TRAP  (fptrap_t)(0x02000000)
 
 static struct { int code_no; char *name; } error_codes[] = {
-           {FPE_FLTOPERR_TRAP   ,"IEEE operand error" },
-           { FPE_FLTOVF_TRAP    ,"floating point overflow" },
-           { FPE_FLTUND_TRAP    ,"floating point underflow" },
-           { FPE_FLTDIV_TRAP    ,"floating point divide" },
-           { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
-           { 0                  ,"unknown error" }
+  {FPE_FLTOPERR_TRAP   ,"IEEE operand error" },
+  { FPE_FLTOVF_TRAP    ,"floating point overflow" },
+  { FPE_FLTUND_TRAP    ,"floating point underflow" },
+  { FPE_FLTDIV_TRAP    ,"floating point divide" },
+  { FPE_FLTINEX_TRAP   ,"inexact floating point result" },
+  { 0                  ,"unknown error" }
 } ;
 #define SIGPC(scp) (0) /* Info MIGHT be in scp->sc_jmpbuf.jmp_context.iar */
 /*
@@ -387,12 +387,12 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 #include <fenv.h>
 typedef struct {int code; const char *name;} FPNode;
 static const FPNode error_codes[] = {
-    {FE_DIVBYZERO,"divide by zero"},
-    {FE_INEXACT,  "inexact floating point result"},
-    {FE_INVALID,  "invalid floating point arguments (domain error)"},
-    {FE_OVERFLOW, "floating point overflow"},
-    {FE_UNDERFLOW,"floating point underflow"},
-    {0           ,"unknown error"}
+  {FE_DIVBYZERO,"divide by zero"},
+  {FE_INEXACT,  "inexact floating point result"},
+  {FE_INVALID,  "invalid floating point arguments (domain error)"},
+  {FE_OVERFLOW, "floating point overflow"},
+  {FE_UNDERFLOW,"floating point underflow"},
+  {0           ,"unknown error"}
 };
 EXTERN_C_BEGIN
 #undef __FUNCT__

@@ -116,70 +116,70 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
   i = 0;
   do {
-     ksp->its = i+1;
-     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
-     if (beta == 0.0) {
-       ksp->reason = KSP_CONVERGED_ATOL;
-       ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
-       break;
+    ksp->its = i+1;
+    ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
+    if (beta == 0.0) {
+      ksp->reason = KSP_CONVERGED_ATOL;
+      ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
+      break;
 #if !defined(PETSC_USE_COMPLEX)
-     } else if (beta < 0.0) {
-       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-       ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
-       break;
+    } else if (beta < 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
+      break;
 #endif
-     }
-     if (!i) {
-       ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
-       b = 0.0;
-     } else {
-       b = beta/betaold;
-       if (eigs) {
-         if (ksp->max_it != stored_max_it) {
-           SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-         }
-         e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
-       }
-       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
-     }
-     betaold = beta;
-     ierr = MatMult(Amat,P,T);CHKERRQ(ierr);
-     ierr = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
-     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
-     a = beta/dpi;                                 /*     a = beta/p'z    */
-     if (eigs) {
-       d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
-     }
-     ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
-     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-       ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
-       if (transpose_pc) {
-         ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
-       } else {
-         ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
-       }
-       ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
-     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-     } else if (ksp->normtype == KSP_NORM_NATURAL) {
-       dp = PetscSqrtReal(PetscAbsScalar(beta));
-     } else {
-       dp = 0.0;
-     }
-     ksp->rnorm = dp;
-     KSPLogResidualHistory(ksp,dp);
-     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-     if (ksp->reason) break;
-     if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
-       if (transpose_pc) {
-         ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
-       } else {
-         ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
-       }
-     }
-     i++;
+    }
+    if (!i) {
+      ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
+      b = 0.0;
+    } else {
+      b = beta/betaold;
+      if (eigs) {
+        if (ksp->max_it != stored_max_it) {
+          SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+        }
+        e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
+      }
+      ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
+    }
+    betaold = beta;
+    ierr = MatMult(Amat,P,T);CHKERRQ(ierr);
+    ierr = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
+    ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
+    a = beta/dpi;                                 /*     a = beta/p'z    */
+    if (eigs) {
+      d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
+    }
+    ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
+    ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
+      ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
+      if (transpose_pc) {
+        ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+      } else {
+        ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+      }
+      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
+    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    } else if (ksp->normtype == KSP_NORM_NATURAL) {
+      dp = PetscSqrtReal(PetscAbsScalar(beta));
+    } else {
+      dp = 0.0;
+    }
+    ksp->rnorm = dp;
+    KSPLogResidualHistory(ksp,dp);
+    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
+    if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
+      if (transpose_pc) {
+        ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+      } else {
+        ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+      }
+    }
+    i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;

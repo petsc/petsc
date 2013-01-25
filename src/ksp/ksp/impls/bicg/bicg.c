@@ -71,59 +71,59 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
   i = 0;
   do {
-     ierr = VecDot(Zr,Rl,&beta);CHKERRQ(ierr);       /*     beta <- r'z     */
-     if (!i) {
-       if (beta == 0.0) {
-         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-         PetscFunctionReturn(0);
-       }
-       ierr = VecCopy(Zr,Pr);CHKERRQ(ierr);       /*     p <- z          */
-       ierr = VecCopy(Zl,Pl);CHKERRQ(ierr);
-     } else {
-       b = beta/betaold;
-       ierr = VecAYPX(Pr,b,Zr);CHKERRQ(ierr);  /*     p <- z + b* p   */
-       b = PetscConj(b);
-       ierr = VecAYPX(Pl,b,Zl);CHKERRQ(ierr);
-     }
-     betaold = beta;
-     ierr = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */
-     ierr = VecConjugate(Pl);CHKERRQ(ierr);
-     ierr = KSP_MatMultTranspose(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
-     ierr = VecConjugate(Pl);CHKERRQ(ierr);
-     ierr = VecConjugate(Zl);CHKERRQ(ierr);
-     ierr = VecDot(Zr,Pl,&dpi);CHKERRQ(ierr);               /*     dpi <- z'p      */
-     a = beta/dpi;                                 /*     a = beta/p'z    */
-     ierr = VecAXPY(X,a,Pr);CHKERRQ(ierr);       /*     x <- x + ap     */
-     ma = -a;
-     ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr);
-     ma = PetscConj(ma);
-     ierr = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
-     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-       ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
-       ierr = VecConjugate(Rl);CHKERRQ(ierr);
-       ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
-       ierr = VecConjugate(Rl);CHKERRQ(ierr);
-       ierr = VecConjugate(Zl);CHKERRQ(ierr);
-       ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
-     } else {
-       ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
-     }
-     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-     ksp->its   = i+1;
-     ksp->rnorm = dp;
-     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-     KSPLogResidualHistory(ksp,dp);
-     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-     if (ksp->reason) break;
-     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-       ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
-       ierr = VecConjugate(Rl);CHKERRQ(ierr);
-       ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
-       ierr = VecConjugate(Rl);CHKERRQ(ierr);
-       ierr = VecConjugate(Zl);CHKERRQ(ierr);
-     }
-     i++;
+    ierr = VecDot(Zr,Rl,&beta);CHKERRQ(ierr);       /*     beta <- r'z     */
+    if (!i) {
+      if (beta == 0.0) {
+        ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
+        PetscFunctionReturn(0);
+      }
+      ierr = VecCopy(Zr,Pr);CHKERRQ(ierr);       /*     p <- z          */
+      ierr = VecCopy(Zl,Pl);CHKERRQ(ierr);
+    } else {
+      b = beta/betaold;
+      ierr = VecAYPX(Pr,b,Zr);CHKERRQ(ierr);  /*     p <- z + b* p   */
+      b = PetscConj(b);
+      ierr = VecAYPX(Pl,b,Zl);CHKERRQ(ierr);
+    }
+    betaold = beta;
+    ierr = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */
+    ierr = VecConjugate(Pl);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
+    ierr = VecConjugate(Pl);CHKERRQ(ierr);
+    ierr = VecConjugate(Zl);CHKERRQ(ierr);
+    ierr = VecDot(Zr,Pl,&dpi);CHKERRQ(ierr);               /*     dpi <- z'p      */
+    a = beta/dpi;                                 /*     a = beta/p'z    */
+    ierr = VecAXPY(X,a,Pr);CHKERRQ(ierr);       /*     x <- x + ap     */
+    ma = -a;
+    ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr);
+    ma = PetscConj(ma);
+    ierr = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
+      ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
+      ierr = VecConjugate(Rl);CHKERRQ(ierr);
+      ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
+      ierr = VecConjugate(Rl);CHKERRQ(ierr);
+      ierr = VecConjugate(Zl);CHKERRQ(ierr);
+      ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
+    } else {
+      ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
+    }
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ksp->its   = i+1;
+    ksp->rnorm = dp;
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    KSPLogResidualHistory(ksp,dp);
+    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
+    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+      ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
+      ierr = VecConjugate(Rl);CHKERRQ(ierr);
+      ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
+      ierr = VecConjugate(Rl);CHKERRQ(ierr);
+      ierr = VecConjugate(Zl);CHKERRQ(ierr);
+    }
+    i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;

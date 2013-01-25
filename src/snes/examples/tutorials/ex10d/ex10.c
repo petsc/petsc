@@ -59,18 +59,18 @@ T*/
   Application-defined context for problem specific data
 */
 typedef struct {
-      PetscInt    Nvglobal,Nvlocal;             /* global and local number of vertices */
-      PetscInt    Neglobal,Nelocal;             /* global and local number of vertices */
-      PetscInt    AdjM[MAX_VERT][50];           /* adjacency list of a vertex */
-      PetscInt    itot[MAX_VERT];               /* total number of neighbors for a vertex */
-      PetscInt    icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
-      PetscInt    v2p[MAX_VERT];                /* processor number for a vertex */
-      PetscInt    *locInd,*gloInd;              /* local and global orderings for a node */
-      Vec         localX,localF;                /* local solution (u) and f(u) vectors */
-      PetscReal   non_lin_param;                /* nonlinear parameter for the PDE */
-      PetscReal   lin_param;                    /* linear parameter for the PDE */
-      VecScatter  scatter;                      /* scatter context for the local and
-                                                    distributed vectors */
+  PetscInt    Nvglobal,Nvlocal;             /* global and local number of vertices */
+  PetscInt    Neglobal,Nelocal;             /* global and local number of vertices */
+  PetscInt    AdjM[MAX_VERT][50];           /* adjacency list of a vertex */
+  PetscInt    itot[MAX_VERT];               /* total number of neighbors for a vertex */
+  PetscInt    icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
+  PetscInt    v2p[MAX_VERT];                /* processor number for a vertex */
+  PetscInt    *locInd,*gloInd;              /* local and global orderings for a node */
+  Vec         localX,localF;                /* local solution (u) and f(u) vectors */
+  PetscReal   non_lin_param;                /* nonlinear parameter for the PDE */
+  PetscReal   lin_param;                    /* linear parameter for the PDE */
+  VecScatter  scatter;                      /* scatter context for the local and
+                                               distributed vectors */
 } AppCtx;
 
 /*
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
         ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
         user.Nvlocal++;
      }
-   }
+  }
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Total # of Local Vertices is %D \n",user.Nvlocal);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -235,19 +235,19 @@ int main(int argc,char **argv)
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Before AOApplicationToPetsc, local indices are : \n");CHKERRQ(ierr);
   for (i=0; i < user.Nvlocal; i++) {
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1," %D ",user.gloInd[i]);CHKERRQ(ierr);
-   user.locInd[i] = user.gloInd[i];
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1," %D ",user.gloInd[i]);CHKERRQ(ierr);
+    user.locInd[i] = user.gloInd[i];
   }
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
   jstart = 0;
   for (i=0; i < user.Nvlocal; i++) {
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are : ",user.gloInd[i]);CHKERRQ(ierr);
-   for (j=0; j < user.itot[i]; j++) {
-    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]);CHKERRQ(ierr);
-    tmp[j + jstart] = user.AdjM[i][j];
-   }
-   jstart += user.itot[i];
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are : ",user.gloInd[i]);CHKERRQ(ierr);
+    for (j=0; j < user.itot[i]; j++) {
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]);CHKERRQ(ierr);
+      tmp[j + jstart] = user.AdjM[i][j];
+    }
+    jstart += user.itot[i];
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
   }
 
   /*
@@ -259,19 +259,19 @@ int main(int argc,char **argv)
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"After AOApplicationToPetsc, local indices are : \n");CHKERRQ(ierr);
   for (i=0; i < user.Nvlocal; i++) {
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1," %D ",user.locInd[i]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1," %D ",user.locInd[i]);CHKERRQ(ierr);
   }
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
 
   jstart = 0;
   for (i=0; i < user.Nvlocal; i++) {
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are : ",user.locInd[i]);CHKERRQ(ierr);
-   for (j=0; j < user.itot[i]; j++) {
-    user.AdjM[i][j] = tmp[j+jstart];
-    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]);CHKERRQ(ierr);
-   }
-   jstart += user.itot[i];
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Neghbors of local vertex %D are : ",user.locInd[i]);CHKERRQ(ierr);
+    for (j=0; j < user.itot[i]; j++) {
+      user.AdjM[i][j] = tmp[j+jstart];
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]);CHKERRQ(ierr);
+    }
+    jstart += user.itot[i];
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -322,8 +322,8 @@ int main(int argc,char **argv)
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"The array vertices is :\n");CHKERRQ(ierr);
   for (i=0; i < nvertices; i++) {
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",vertices[i]);CHKERRQ(ierr);
-   }
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",vertices[i]);CHKERRQ(ierr);
+  }
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
 
   /*
@@ -339,7 +339,7 @@ int main(int argc,char **argv)
       user.AdjM[i][j] = verticesmask[nb] - 1;
       ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",user.AdjM[i][j]);CHKERRQ(ierr);
     }
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
   }
 
   N = user.Nvglobal;
@@ -457,7 +457,7 @@ int main(int argc,char **argv)
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvlocal; inode++)
-   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Solution at node %D is %f \n",inode,xx[inode]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Solution at node %D is %f \n",inode,xx[inode]);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   fclose(fptr1);
   ierr = PetscPrintf(MPI_COMM_WORLD,"number of SNES iterations = %D, ",its);CHKERRQ(ierr);
