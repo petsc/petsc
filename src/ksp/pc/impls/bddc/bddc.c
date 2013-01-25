@@ -408,7 +408,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   } else if (copymode == PETSC_OWN_POINTER) {
     mat_graph->xadj = (PetscInt*)xadj;
     mat_graph->adjncy = (PetscInt*)adjncy;
-  } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d\n",copymode);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d\n",copymode);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1776,7 +1776,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx)
   ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
   if (pcbddc->dbg_flag && (PetscInt)scalar_value != fetidpmat_ctx->n_lambda) {
-    SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%d!=%d)\n",(PetscInt)scalar_value,fetidpmat_ctx->n_lambda);
+    SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%d!=%d)\n",(PetscInt)scalar_value,fetidpmat_ctx->n_lambda);
   }
 
   /* Fill pcis->vec1_global with cumulative function for global numbering */
@@ -2280,11 +2280,11 @@ static PetscErrorCode PCBDDCSetupLocalAdjacencyGraph(PC pc)
   if (!mat_graph->xadj) {
     ierr = MatConvert(matis->A,MATMPIADJ,MAT_INITIAL_MATRIX,&mat_adj);CHKERRQ(ierr);
     ierr = MatGetRowIJ(mat_adj,0,symmetrize_rowij,compressed_rowij,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
-    if (!flg_row) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatGetRowIJ()\n");
+    if (!flg_row) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatGetRowIJ()\n");
     /* Get adjacency into BDDC workspace */
     ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRowIJ(mat_adj,0,symmetrize_rowij,compressed_rowij,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
-    if (!flg_row) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatRestoreRowIJ()\n");
+    if (!flg_row) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatRestoreRowIJ()\n");
     ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
