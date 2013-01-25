@@ -27,6 +27,7 @@ static PetscErrorCode PetscBuildTwoSidedGetType(BuildTwoSidedType *twosided)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *twosided = BUILDTWOSIDED_NOTSET;
   if (_twosided_type == BUILDTWOSIDED_NOTSET) {
 #if defined(PETSC_HAVE_MPI_IBARRIER)
     _twosided_type = BUILDTWOSIDED_IBARRIER;
@@ -292,7 +293,7 @@ static PetscErrorCode BuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MP
 PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
-  BuildTwoSidedType buildtype;
+  BuildTwoSidedType buildtype = BUILDTWOSIDED_NOTSET;
 
   PetscFunctionBegin;
   ierr = PetscBuildTwoSidedGetType(&buildtype);CHKERRQ(ierr);

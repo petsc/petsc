@@ -130,8 +130,11 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
       PetscInt v         = cy*nVx + cx +  vStart;
       PetscInt xf        = cy*nxF + cx + xfStart;
       PetscInt yf        = c + yfStart;
-      PetscInt points[9] = {p, yf, xf+1, yf+nyF, xf+0, v+0, v+1, v+nVx+1, v+nVx+0};
-
+      PetscInt points[9];
+      
+      /* Note: initializer list is not computable at compile time, hence we fill the array manually */
+      points[0] = p; points[1] = yf; points[2] = xf+1; points[3] = yf+nyF; points[4] = xf+0; points[5] = v+0; points[6]= v+1; points[7] = v+nVx+1; points[8] = v+nVx+0;
+      
       ierr = GetPointArray_Private(dm,9,points,n,closure);CHKERRQ(ierr);
     } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
   } else if ((p >= vStart) || (p < vEnd)) {
@@ -143,8 +146,9 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
     else if (dim == 2) {
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f         = p - xfStart;
-      PetscInt points[3] = {p, f, f+nVx};
-
+      PetscInt points[3];
+      
+      points[0] = p; points[1] = f; points[2] = f+nVx;
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
       ierr = GetPointArray_Private(dm,3,points,n,closure);CHKERRQ(ierr);
     } else if (dim == 3) {
@@ -157,8 +161,9 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
     else if (dim == 2) {
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f         = p - yfStart;
-      PetscInt points[3] = {p, f, f+1};
-
+      PetscInt points[3];
+      
+      points[0] = p; points[1] = f; points[2]= f+1;
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
       ierr = GetPointArray_Private(dm, 3, points, n, closure);CHKERRQ(ierr);
     } else if (dim == 3) {
@@ -238,8 +243,9 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
       PetscInt v         = cy*nVx + cx +  vStart;
       PetscInt xf        = cy*nxF + cx + xfStart;
       PetscInt yf        = c + yfStart;
-      PetscInt points[9] = {p, yf, xf+1, yf+nyF, xf+0, v+0, v+1, v+nVx+1, v+nVx+0};
-
+      PetscInt points[9];
+      
+      points[0] = p; points[1] = yf; points[2] = xf+1; points[3] = yf+nyF; points[4] = xf+0; points[5] = v+0; points[6] = v+1; points[7] = v+nVx+1; points[8] = v+nVx+0;
       ierr = FillClosureArray_Private(dm, section, 9, points, vArray, values);CHKERRQ(ierr);
     } else {
       /* 6 faces, 8 vertices
@@ -260,8 +266,11 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
            7-----8
       */
       PetscInt c          = p - cStart;
-      PetscInt points[15] = {p, c+zfStart, c+zfStart+nzF, c+yfStart, c+xfStart+nxF, c+yfStart+nyF, c+xfStart,
-                             c+vStart+0, c+vStart+1, c+vStart+nVx+1, c+vStart+nVx+0, c+vStart+nVx*nVy+0, c+vStart+nVx*nVy+1, c+vStart+nVx*nVy+nVx+1, c+vStart+nVx*nVy+nVx+0};
+      PetscInt points[15];
+      
+      points[0] = p; points[1] = c+zfStart; points[2] = c+zfStart+nzF; points[3] = c+yfStart; points[4] = c+xfStart+nxF; points[5] = c+yfStart+nyF; points[6] = c+xfStart;
+      points[7] = c+vStart+0; points[8] = c+vStart+1; points[9] = c+vStart+nVx+1; points[10] = c+vStart+nVx+0; points[11] = c+vStart+nVx*nVy+0;
+      points[12] = c+vStart+nVx*nVy+1; points[13] = c+vStart+nVx*nVy+nVx+1; points[14] = c+vStart+nVx*nVy+nVx+0;
 
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
       ierr = FillClosureArray_Private(dm, section, 15, points, vArray, values);CHKERRQ(ierr);
@@ -275,8 +284,9 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
     else if (dim == 2) {
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f         = p - xfStart;
-      PetscInt points[3] = {p, f, f+nVx};
-
+      PetscInt points[3];
+      
+      points[0] = p; points[1] = f; points[2] = f+nVx;
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
       ierr = FillClosureArray_Private(dm, section, 3, points, vArray, values);CHKERRQ(ierr);
     } else if (dim == 3) {
@@ -289,8 +299,9 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
     else if (dim == 2) {
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f         = p - yfStart;
-      PetscInt points[3] = {p, f, f+1};
-
+      PetscInt points[3];
+      
+      points[0] = p; points[1] = f; points[2] = f+1;
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
       ierr = FillClosureArray_Private(dm, section, 3, points, vArray, values);CHKERRQ(ierr);
     } else if (dim == 3) {
@@ -398,8 +409,10 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
            5--1--6
       */
       PetscInt c         = p - cStart;
-      PetscInt points[9] = {p, c+yfStart, c+xfStart+1, c+yfStart+nyF, c+xfStart+0, c+vStart+0, c+vStart+1, c+vStart+nVx+1, c+vStart+nVx+0};
-
+      PetscInt points[9];
+      
+      points[0] = p; points[1] = c+yfStart; points[2] = c+xfStart+1; points[3] = c+yfStart+nyF; points[4] = c+xfStart+0; points[5] = c+vStart+0;
+      points[6] = c+vStart+1; points[7] = c+vStart+nVx+1; points[8] = c+vStart+nVx+0;
       ierr = FillClosureVec_Private(dm, section, 9, points, vArray, values, mode);CHKERRQ(ierr);
     } else {
       /* 6 faces, 8 vertices
@@ -420,9 +433,11 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
            7-----8
       */
       PetscInt c          = p - cStart;
-      PetscInt points[15] = {p, c+zfStart, c+zfStart+nzF, c+yfStart, c+xfStart+nxF, c+yfStart+nyF, c+xfStart,
-                             c+vStart+0, c+vStart+1, c+vStart+nVx+1, c+vStart+nVx+0, c+vStart+nVx*nVy+0, c+vStart+nVx*nVy+1, c+vStart+nVx*nVy+nVx+1, c+vStart+nVx*nVy+nVx+0};
-
+      PetscInt points[15];
+      
+      points[0] = p; points[1] = c+zfStart; points[2] = c+zfStart+nzF; points[3] = c+yfStart; points[4] = c+xfStart+nxF; points[5] = c+yfStart+nyF; points[6] = c+xfStart;
+      points[7] = c+vStart+0; points[8] = c+vStart+1; points[9] = c+vStart+nVx+1; points[10] = c+vStart+nVx+0; points[11] = c+vStart+nVx*nVy+0; points[12] = c+vStart+nVx*nVy+1;
+      points[13] = c+vStart+nVx*nVy+nVx+1; points[14] = c+vStart+nVx*nVy+nVx+0;
       ierr = FillClosureVec_Private(dm, section, 15, points, vArray, values, mode);CHKERRQ(ierr);
     }
   } else if ((p >= vStart) || (p < vEnd)) {
@@ -434,8 +449,9 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
     else if (dim == 2) {
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f         = p - xfStart;
-      PetscInt points[3] = {p, f, f+nVx};
-
+      PetscInt points[3];
+      
+      points[0] = p; points[1] = f; points[2] = f+nVx;
       ierr = FillClosureVec_Private(dm, section, 3, points, vArray, values, mode);CHKERRQ(ierr);
     } else if (dim == 3) {
       /* 4 vertices */
@@ -447,8 +463,9 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
     else if (dim == 2) {
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f         = p - yfStart;
-      PetscInt points[3] = {p, f, f+1};
-
+      PetscInt points[3];
+      
+      points[0] = p; points[1] = f; points[2] = f+1;
       ierr = FillClosureVec_Private(dm, section, 3, points, vArray, values, mode);CHKERRQ(ierr);
     } else if (dim == 3) {
       /* 4 vertices */

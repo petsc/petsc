@@ -382,10 +382,12 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
 
     if (i == 0) {               /* Left boundary condition */
       PetscScalar D_R,bcTheta = rd->bcmidpoint ? Theta : 1.;
-      RDNode n = {(1.-bcTheta)*x0[0].E + bcTheta*x[0].E,
-          (1.-bcTheta)*x0[0].T + bcTheta*x[0].T},
-          nx = {((1.-bcTheta)*(x0[1].E-x0[0].E) + bcTheta*(x[1].E-x[0].E))/hx,
-              ((1.-bcTheta)*(x0[1].T-x0[0].T) + bcTheta*(x[1].T-x[0].T))/hx};
+      RDNode n, nx;
+      
+      n.E  =  (1.-bcTheta)*x0[0].E + bcTheta*x[0].E;
+      n.T  =  (1.-bcTheta)*x0[0].T + bcTheta*x[0].T;
+      nx.E = ((1.-bcTheta)*(x0[1].E-x0[0].E) + bcTheta*(x[1].E-x[0].E))/hx;
+      nx.T = ((1.-bcTheta)*(x0[1].T-x0[0].T) + bcTheta*(x[1].T-x[0].T))/hx;
       switch (rd->leftbc) {
       case BC_ROBIN:
         RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R,0,0);
@@ -431,30 +433,33 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscInt col[3];
     PetscReal rho = rd->rho;
-    PetscScalar Em_t,rad,K[2][6];
+    PetscScalar /*Em_t,rad,*/ K[2][6];
     RDNode dEm_t,drad;
 
-    rad = (1.-Theta)*RDRadiation(rd,&x0[i],0) + Theta*RDRadiation(rd,&x[i],&drad);
+    /*rad = (1.-Theta)* */RDRadiation(rd,&x0[i],0); /* + Theta* */RDRadiation(rd,&x[i],&drad);
 
     if (rd->endpoint) {
       PetscScalar Em0,Em1;
       RDNode      dEm1;
       RDMaterialEnergy(rd,&x0[i],&Em0,PETSC_NULL);
       RDMaterialEnergy(rd,&x[i],&Em1,&dEm1);
-      Em_t = (Em1 - Em0) / (Theta*dt);
+      /*Em_t = (Em1 - Em0) / (Theta*dt);*/
       dEm_t.E = dEm1.E / (Theta*dt);
       dEm_t.T = dEm1.T / (Theta*dt);
     } else {
       const PetscScalar epsilon = x[i].T * PETSC_SQRT_MACHINE_EPSILON;
-      const RDNode n1 = {x[i].E,x[i].T+epsilon};
+      RDNode n1;
       RDNode dEm,dEm1;
       PetscScalar Em_TT;
+      
+      n1.E = x[i].E;
+      n1.T = x[i].T+epsilon;
       RDMaterialEnergy(rd,&x[i],PETSC_NULL,&dEm);
       RDMaterialEnergy(rd,&n1,PETSC_NULL,&dEm1);
       /* The Jacobian needs another derivative.  We finite difference here instead of
        * propagating second derivatives through the ionization model. */
       Em_TT = (dEm1.T - dEm.T) / epsilon;
-      Em_t = dEm.E * xdot[i].E + dEm.T * xdot[i].T;
+      /*Em_t = dEm.E * xdot[i].E + dEm.T * xdot[i].T;*/
       dEm_t.E = dEm.E * a;
       dEm_t.T = dEm.T * a + Em_TT * xdot[i].T;
     }
@@ -463,11 +468,13 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     /* Residuals are multiplied by the volume element (hx).  */
     if (i == 0) {
       PetscScalar D,bcTheta = rd->bcmidpoint ? Theta : 1.;
-      RDNode n = {(1.-bcTheta)*x0[0].E + bcTheta*x[0].E,
-                  (1.-bcTheta)*x0[0].T + bcTheta*x[0].T},
-            nx = {((1.-bcTheta)*(x0[1].E-x0[0].E) + bcTheta*(x[1].E-x[0].E))/hx,
-                  ((1.-bcTheta)*(x0[1].T-x0[0].T) + bcTheta*(x[1].T-x[0].T))/hx};
+      RDNode n, nx;
       RDNode dD,dxD;
+      
+      n.E  = (1.-bcTheta)*x0[0].E + bcTheta*x[0].E;
+      n.T  = (1.-bcTheta)*x0[0].T + bcTheta*x[0].T;
+      nx.E = ((1.-bcTheta)*(x0[1].E-x0[0].E) + bcTheta*(x[1].E-x[0].E))/hx;
+      nx.T = ((1.-bcTheta)*(x0[1].T-x0[0].T) + bcTheta*(x[1].T-x[0].T))/hx;
       switch (rd->leftbc) {
       case BC_ROBIN:
         RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,&dD,&dxD);
@@ -485,9 +492,9 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
       K[0][0*2+0] = -1./Theta;
       K[0][1*2+0] = 1./Theta;
     } else {
-      PetscScalar diff;
+      /*PetscScalar diff;*/
       RDNode      ddiff[3];
-      diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i,0) + Theta*RDDiffusion(rd,hx,x,i,ddiff);
+      /*diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i,0) + Theta* */RDDiffusion(rd,hx,x,i,ddiff);
       K[0][0*2+0] = -hx*ddiff[0].E;
       K[0][0*2+1] = -hx*ddiff[0].T;
       K[0][1*2+0] = hx*(a - ddiff[1].E - drad.E);
@@ -645,8 +652,12 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
     case BC_ROBIN: {
       PetscScalar D_R,D_R_bc;
       PetscReal   ratio,bcTheta = rd->bcmidpoint ? Theta : 1.;
-      RDNode n = {(1-bcTheta)*x0[0].E + bcTheta*x[0].E,(1-bcTheta)*x0[0].T + bcTheta*x[0].T},
-          nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
+      RDNode n, nx;
+
+      n.E  = (1-bcTheta)*x0[0].E + bcTheta*x[0].E;
+      n.T  = (1-bcTheta)*x0[0].T + bcTheta*x[0].T;
+      nx.E = (x[1].E-x[0].E)/hx;
+      nx.T = (x[1].T-x[0].T)/hx;
       RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
       RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
       ratio = PetscRealPart(D_R/D_R_bc);
@@ -681,7 +692,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   RDNode         *x,*x0,*xdot;
   Vec            X0loc,Xloc,Xloc_t;
   PetscReal      hx,Theta,dt,weight[5],interp[5][2],deriv[5][2];
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   PetscInt       i,j,k,q,nq;
   PetscScalar    K[4][4];
 
@@ -693,7 +704,9 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   ierr = RDGetQuadrature(rd,hx,&nq,weight,interp,deriv);CHKERRQ(ierr);
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   for (i=info.xs; i<PetscMin(info.xs+info.xm,info.mx-1); i++) {
-    const PetscInt rc[2] = {i,i+1};
+    const PetscInt rc[2];
+    
+    rc[0] = i; rc[1] = i+1;
     ierr = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
     for (q=0; q<nq; q++) {
       PetscScalar D_R,PETSC_UNUSED rad;
@@ -721,8 +734,12 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     case BC_ROBIN: {
       PetscScalar D_R,D_R_bc;
       PetscReal   ratio;
-      RDNode n = {(1-Theta)*x0[0].E + Theta*x[0].E,(1-Theta)*x0[0].T + Theta*x[0].T},
-          nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
+      RDNode n, nx;
+      
+      n.E = (1-Theta)*x0[0].E + Theta*x[0].E;
+      n.T = (1-Theta)*x0[0].T + Theta*x[0].T;
+      nx.E = (x[1].E-x[0].E)/hx;
+      nx.T = (x[1].T-x[0].T)/hx;
       RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
       RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
       ratio = PetscRealPart(D_R/D_R_bc);

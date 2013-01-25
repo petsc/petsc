@@ -1,0 +1,5 @@
+This folder contains a summary generator for the PETSc nightly tests.
+The script runhtml.sh should be run from $PETSC_DIR.
+It grabs the latest logs from the web, places them into the subfolder currentlogs/, and then processes them.
+A summary HTML file is generated in subfolder html/
+

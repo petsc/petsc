@@ -396,10 +396,10 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
   for (i=xs; i<xs+xm; i++) {
     row.i = i;
     if (ctx->degenerate) {
-      PetscScalar c,r,l;
+      /*PetscScalar c,r,l;
       c = (1. - x[i]*x[i])*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
       r = (1. - x[i+1]*x[i+1])*(x[i] + x[i+2] - 2.0*x[i+1])*sx;
-      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx;
+      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx; */
     } else {
       cols[0].i = i - 2; vals[0] = -ctx->kappa*sx*sx;
       cols[1].i = i - 1; vals[1] =  4.0*ctx->kappa*sx*sx;

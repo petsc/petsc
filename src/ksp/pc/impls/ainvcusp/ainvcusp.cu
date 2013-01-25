@@ -117,7 +117,7 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
   PC_AINVCUSP     *ainv = (PC_AINVCUSP*)pc->data;
   PetscErrorCode  ierr;
   PetscBool       flg1,flg2;
-  CUSPARRAY       *xarray,*yarray;
+  CUSPARRAY       *xarray=PETSC_NULL,*yarray=PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);

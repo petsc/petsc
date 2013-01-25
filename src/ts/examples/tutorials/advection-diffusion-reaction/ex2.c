@@ -94,7 +94,7 @@ static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecCopy(ctx->initialsolution,U);
+  ierr = VecCopy(ctx->initialsolution,U);CHKERRQ(ierr);
   if (t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Solution not given");
   PetscFunctionReturn(0);
 }

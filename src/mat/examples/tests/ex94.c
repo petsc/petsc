@@ -206,6 +206,8 @@ int main(int argc,char **args)
   /*----------------------*/
   if (Test_MatPtAP) {
     PetscInt PN;
+    Mat      Cdup;
+    
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -247,7 +249,6 @@ int main(int argc,char **args)
     }
 
     /* Test MatDuplicate() */
-    Mat Cdup;
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
 

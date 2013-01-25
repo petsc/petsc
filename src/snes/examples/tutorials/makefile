@@ -963,3 +963,4 @@ TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc ru
 TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm
 
 include ${PETSC_DIR}/conf/test
+

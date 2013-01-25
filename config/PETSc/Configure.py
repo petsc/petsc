@@ -138,7 +138,7 @@ class Configure(config.base.Configure):
     fd.write('\n')
     fd.write('Name: PETSc\n')
     fd.write('Description: Library to solve ODEs and algebraic equations\n')
-    fd.write('Version: 3.3\n')  # should figure this out from petscversion.h file
+    fd.write('Version: %s\n' % self.petscdir.version)
 
     fd.write('Cflags: '+self.allincludes+'\n')
 
@@ -146,6 +146,39 @@ class Configure(config.base.Configure):
       fd.write('Libs: '+self.alllibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
     else:
       fd.write('Libs: '+self.alllibs+'\n')
+    fd.close()
+    return
+
+  def DumpModule(self):
+    ''' Create a module file '''
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules'))
+    if self.framework.argDB['prefix']:
+      installdir  = self.framework.argDB['prefix']
+      installarch = ''
+      installpath = os.path.join(installdir,'bin')
+    else:
+      installdir  = self.petscdir.dir
+      installarch = self.arch.arch
+      installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version+'-'+self.arch.arch),'w')
+    fd.write('''\
+#%%Module
+
+proc ModulesHelp { } {
+    puts stderr "This module sets the path and environment variables for petsc-%s"
+    puts stderr "     see http://www.mcs.anl.gov/petsc/ for more information      "
+    puts stderr ""
+}
+module-whatis "PETSc - Portable, Extensible Toolkit for Scientific Computation"
+
+set petsc_dir   %s
+set petsc_arch  %s
+
+setenv PETSC_ARCH $petsc_arch
+setenv PETSC_DIR $petsc_dir
+prepend-path PATH %s
+''' % (self.petscdir.version, installdir, installarch, installpath))
     fd.close()
     return
 
@@ -902,6 +935,7 @@ class Configure(config.base.Configure):
     self.dumpCMakeLists()
     self.cmakeBoot()
     self.DumpPkgconfig()
+    self.DumpModule()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

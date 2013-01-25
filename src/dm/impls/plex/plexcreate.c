@@ -74,8 +74,9 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
       for (ey = 0; ey < edges[1]; ey++) {
         PetscInt edge    = vx*edges[1] + ey + edges[0]*(edges[1]+1);
         PetscInt vertex  = ey*(edges[0]+1) + vx + numEdges;
-        PetscInt cone[2] = {vertex, vertex+edges[0]+1};
-
+        PetscInt cone[2];
+        
+        cone[0] = vertex; cone[1] = vertex+edges[0]+1;
         ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vx == edges[0]) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
@@ -96,8 +97,9 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
       for (ex = 0; ex < edges[0]; ex++) {
         PetscInt edge    = vy*edges[0]     + ex;
         PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
-        PetscInt cone[2] = {vertex, vertex+1};
-
+        PetscInt cone[2];
+        
+        cone[0] = vertex; cone[1] = vertex+1;
         ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vy == edges[1]) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
@@ -183,27 +185,33 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
       ierr = DMPlexSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
     { /* Side 0 (Front) */
-      PetscInt cone[4] = {numFaces+4, numFaces+5, numFaces+7, numFaces+6};
+      PetscInt cone[4];
+      cone[0] = numFaces+4; cone[1] = numFaces+5; cone[2] = numFaces+7; cone[3] = numFaces+6;
       ierr = DMPlexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
     { /* Side 1 (Back) */
-      PetscInt cone[4] = {numFaces+1, numFaces+0, numFaces+2, numFaces+3};
+      PetscInt cone[4];
+      cone[0] = numFaces+1; cone[1] = numFaces+0; cone[2] = numFaces+2; cone[3] = numFaces+3;
       ierr = DMPlexSetCone(dm, 1, cone);CHKERRQ(ierr);
     }
     { /* Side 2 (Bottom) */
-      PetscInt cone[4] = {numFaces+0, numFaces+1, numFaces+5, numFaces+4};
+      PetscInt cone[4];
+      cone[0] = numFaces+0; cone[1] = numFaces+1; cone[2] = numFaces+5; cone[3] = numFaces+4;
       ierr = DMPlexSetCone(dm, 2, cone);CHKERRQ(ierr);
     }
     { /* Side 3 (Top) */
-      PetscInt cone[4] = {numFaces+6, numFaces+7, numFaces+3, numFaces+2};
+      PetscInt cone[4];
+      cone[0] = numFaces+6; cone[1] = numFaces+7; cone[2] = numFaces+3; cone[3] = numFaces+2;
       ierr = DMPlexSetCone(dm, 3, cone);CHKERRQ(ierr);
     }
     { /* Side 4 (Left) */
-      PetscInt cone[4] = {numFaces+0, numFaces+4, numFaces+6, numFaces+2};
+      PetscInt cone[4];
+      cone[0] = numFaces+0; cone[1] = numFaces+4; cone[2] = numFaces+6; cone[3] = numFaces+2;
       ierr = DMPlexSetCone(dm, 4, cone);CHKERRQ(ierr);
     }
     { /* Side 5 (Right) */
-      PetscInt cone[4] = {numFaces+5, numFaces+1, numFaces+3, numFaces+7};
+      PetscInt cone[4];
+      cone[0] = numFaces+5; cone[1] = numFaces+1; cone[2] = numFaces+3; cone[3] = numFaces+7;
       ierr = DMPlexSetCone(dm, 5, cone);CHKERRQ(ierr);
     }
   }
@@ -305,9 +313,10 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
         const PetscInt face    = fy*numXEdges + fx;
         const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
         const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
-        const PetscInt cone[4] = {edgeB, edgeL+numYEdges, edgeB+numXEdges, edgeL};
         const PetscInt ornt[4] = {0,     0,               -2,              -2};
-
+        PetscInt cone[4];
+        
+        cone[0] = edgeB; cone[1] = edgeL+numYEdges; cone[2] = edgeB+numXEdges; cone[3] = edgeL;
         ierr = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
       }
@@ -317,8 +326,9 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
       for (ey = 0; ey < numYEdges; ey++) {
         const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
         const PetscInt vertex  = firstVertex + ey*numXVertices + vx;
-        const PetscInt cone[2] = {vertex, vertex+numXVertices};
-
+        PetscInt cone[2];
+        
+        cone[0] = vertex; cone[1] = vertex+numXVertices;
         ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vx == numXVertices-1) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
@@ -340,8 +350,9 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
       for (ex = 0; ex < numXEdges; ex++) {
         const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
         const PetscInt vertex  = firstVertex + vy*numXVertices + ex;
-        const PetscInt cone[2] = {vertex, vertex+1};
-
+        PetscInt cone[2];
+        
+        cone[0] = vertex; cone[1] = vertex+1;
         ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vy == numYVertices-1) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);

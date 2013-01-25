@@ -141,7 +141,7 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
   PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
-  CUSPARRAY      *xarray,*yarray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
 
   PetscFunctionBegin;
   /*how to apply a certain fixed number of iterations?*/

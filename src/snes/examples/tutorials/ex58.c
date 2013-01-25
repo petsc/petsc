@@ -296,7 +296,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscInt        i,j,k;
   PetscInt        mx, my;
   MatStencil      row,col[7];
-  PetscScalar     hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
+  PetscScalar     hx, hy, hydhx, hxdhy;
   PetscScalar     f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
   PetscScalar     hl,hr,ht,hb,hc,htl,hbr;
   PetscScalar     **x, v[7];

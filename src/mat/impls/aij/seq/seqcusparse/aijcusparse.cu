@@ -387,7 +387,7 @@ PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  CUSPARRAY      *xGPU, *bGPU;
+  CUSPARRAY      *xGPU=PETSC_NULL, *bGPU=PETSC_NULL;
   cusparseStatus_t stat;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors  = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   GPU_Matrix_Ifc *cusparseMatLo  = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
@@ -421,7 +421,7 @@ PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
-  CUSPARRAY         *xGPU, *bGPU;
+  CUSPARRAY         *xGPU=PETSC_NULL, *bGPU=PETSC_NULL;
   cusparseStatus_t stat;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors  = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   GPU_Matrix_Ifc *cusparseMatLo  = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
@@ -560,7 +560,7 @@ PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE *)A->spptr;
-  CUSPARRAY      *xarray,*yarray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
@@ -589,7 +589,7 @@ PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE *)A->spptr;
-  CUSPARRAY      *xarray,*yarray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
@@ -621,7 +621,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE *)A->spptr;
-  CUSPARRAY      *xarray,*yarray,*zarray;
+  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL,*zarray=PETSC_NULL;
   
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE

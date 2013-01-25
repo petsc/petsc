@@ -392,7 +392,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   PetscScalar    dfvdv;
   PetscScalar    dfodu, dfodv, dfodo;
   PetscScalar    dftdu, dftdv, dftdt;
-  PetscScalar    yu, yv, yo, yt;
+  PetscScalar    yu=0, yv=0, yo=0, yt=0;
   PetscScalar    bjiu, bjiv, bjiomega, bjitemp;
   PetscBool      ptconverged;
   PetscReal      pfnorm,pfnorm0,pynorm,pxnorm;
