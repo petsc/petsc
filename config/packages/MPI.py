@@ -768,6 +768,11 @@ class Configure(config.package.Package):
     for f in funcs:
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
+    if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
+      self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
+    if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
+      # Indicates that this bug was fixed: http://trac.mpich.org/projects/mpich/ticket/1785
+      self.addDefine('HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS', 1)
 
 if __name__ == '__main__':
   import config.framework
