@@ -154,10 +154,14 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules'))
     if self.framework.argDB['prefix']:
-      installdir = self.framework.argDB['prefix']
+      installdir  = self.framework.argDB['prefix']
+      installarch = ''
+      installpath = os.path.join(installdir,'bin')
     else:
-      installdir = self.petscdir.dir
-    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules','PETSc.mod'),'w')
+      installdir  = self.petscdir.dir
+      installarch = self.arch.arch
+      installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version+'-'+self.arch.arch),'w')
     fd.write('''\
 #%%Module
 
@@ -173,8 +177,8 @@ set petsc_arch  %s
 
 setenv PETSC_ARCH $petsc_arch
 setenv PETSC_DIR $petsc_dir
-prepend-path PATH $petsc_dir/$petsc_arch/bin
-''' % (self.petscdir.version, installdir, self.arch.arch))
+prepend-path PATH %s
+''' % (self.petscdir.version, installdir, installarch, installpath))
     fd.close()
     return
 
