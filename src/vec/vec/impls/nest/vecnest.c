@@ -892,7 +892,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSubVec"
-/*@C
+/*@
  VecNestGetSubVec - Returns a single, sub-vector from a nest vector.
 
  Not collective
@@ -940,15 +940,17 @@ EXTERN_C_END
  Not collective
 
  Input Parameters:
- .  X  - nest vector
+.  X  - nest vector
 
  Output Parameter:
- .  N - number of nested vecs
- .  sx - array of vectors
++  N - number of nested vecs
+-  sx - array of vectors
 
  Notes:
-
  The user should not free the array sx.
+
+ Fortran Notes:
+ The caller must allocate the array to hold the subvectors.
 
  Level: developer
 
@@ -1050,24 +1052,23 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestSetSubVec"
-/*@C
+/*@
    VecNestSetSubVec - Set a single component vector in a nest vector at specified index.
 
    Not collective
 
    Input Parameters:
-.  X  - nest vector
++  X  - nest vector
 .  idxm - index of the vector within the nest vector
-.  sx - vector at index idxm within the nest vector
+-  sx - vector at index idxm within the nest vector
 
    Notes:
-
    The new vector sx does not have to be of same size as X[idxm]. Arbitrary vector layouts are allowed.
 
    Level: developer
 
 .seealso: VecNestSetSubVecs(), VecNestGetSubVec()
- @*/
+@*/
 PetscErrorCode  VecNestSetSubVec(Vec X,PetscInt idxm,Vec sx)
 {
   PetscErrorCode ierr;
@@ -1102,20 +1103,19 @@ EXTERN_C_END
    Not collective
 
    Input Parameters:
-.  X  - nest vector
++  X  - nest vector
 .  N - number of component vecs in sx
 .  idxm - indices of component vecs that are to be replaced
-.  sx - array of vectors
+-  sx - array of vectors
 
    Notes:
-
    The components in the vector array sx do not have to be of the same size as corresponding
    components in X. The user can also free the array "sx" after the call.
 
    Level: developer
 
 .seealso: VecNestGetSize(), VecNestGetSubVec()
- @*/
+@*/
 PetscErrorCode  VecNestSetSubVecs(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
 {
   PetscErrorCode ierr;
@@ -1140,7 +1140,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSize"
-/*@C
+/*@
  VecNestGetSize - Returns the size of the nest vector.
 
  Not collective
