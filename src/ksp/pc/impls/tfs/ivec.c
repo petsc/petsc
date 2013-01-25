@@ -183,7 +183,6 @@ PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2,  PetscInt 
 /***********************************ivec.c*************************************/
 vfp PCTFS_ivec_fct_addr(PetscInt type)
 {
-  PetscFunctionBegin;
   if (type == NON_UNIFORM)   { return((PetscErrorCode (*)(void*, void *, PetscInt, ...))&PCTFS_ivec_non_uniform); }
   else if (type == GL_MAX)   { return((PetscErrorCode (*)(void*, void *, PetscInt, ...))&PCTFS_ivec_max); }
   else if (type == GL_MIN)   { return((PetscErrorCode (*)(void*, void *, PetscInt, ...))&PCTFS_ivec_min); }

@@ -132,11 +132,11 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   ierr = PetscBarrier((PetscObject)pc);CHKERRQ(ierr);
   if (A->symmetric) {
     tfs->xxt       = XXT_new();
-    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(void*)PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XXT;
   } else {
     tfs->xyt       = XYT_new();
-    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(void*)PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XYT;
   }
 

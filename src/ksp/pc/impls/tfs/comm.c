@@ -92,9 +92,10 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
   if ((type=oprs[0])==NON_UNIFORM) {oprs++;}
 
   /* major league hack */
-  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop() :: Could not retrieve function pointer!\n");
+    /* The following does not seem to trigger, results in a warning and may result in weird behavior anyway. Hence, replaced by SETERRQ(...) above
     ierr = PetscInfo(0,"PCTFS_giop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
-    fp = (vfp) oprs;
+    fp = (vfp) oprs; */
   }
 
   /* all msgs will be of the same length */
@@ -169,9 +170,10 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM) {oprs++;}
 
-  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop() :: Could not retrieve function pointer!\n");
+    /* The following does not seem to trigger, results in a warning and may result in weird behavior anyway. Hence, replaced by SETERRQ(...) above
     ierr = PetscInfo(0,"PCTFS_grop() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
-    fp = (vfp) oprs;
+    fp = (vfp) oprs;*/
   }
 
   /* all msgs will be of the same length */
@@ -253,9 +255,10 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM) {oprs++;}
 
-  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: Could not retrieve function pointer!\n");
+    /* The following does not seem to trigger, results in a warning and may result in weird behavior anyway. Hence, replaced by SETERRQ(...) above
     ierr = PetscInfo(0,"PCTFS_grop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
-    fp = (vfp) oprs;
+    fp = (vfp) oprs;*/
   }
 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1) {
@@ -364,9 +367,10 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM) { oprs++; }
 
-  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) {
+  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: Could not retrieve function pointer!\n");
+    /* The following does not seem to trigger, results in a warning and may result in weird behavior anyway. Hence, replaced by SETERRQ(...) above
     ierr = PetscInfo(0,"PCTFS_giop_hc() :: hope you passed in a rbfp!\n");CHKERRQ(ierr);
-    fp = (vfp) oprs;
+    fp = (vfp) oprs;*/    
   }
 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1) {

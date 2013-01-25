@@ -58,7 +58,7 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle);
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
 static PetscInt xxt_generate(xxt_ADT xxt_handle);
 static PetscInt do_xxt_factor(xxt_ADT xxt_handle);
-static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *matvec, void *grid_data);
+static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info*,PetscScalar*,PetscScalar*), void *grid_data);
 
 /**************************************xxt.c***********************************/
 xxt_ADT XXT_new(void)
@@ -79,7 +79,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
            PetscInt *local2global,      /* global column mapping       */
            PetscInt n,                  /* local num rows              */
            PetscInt m,                  /* local num cols              */
-           void *matvec,                /* b_loc=A_local.x_loc         */
+           PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*),                /* b_loc=A_local.x_loc         */
            void *grid_data)             /* grid data for matvec        */
 {
   PCTFS_comm_init();
@@ -92,7 +92,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
   xxt_handle->info = (xxt_info*)malloc(sizeof(xxt_info));
 
   /* set up matvec handles */
-  xxt_handle->mvi  = set_mvi(local2global, n, m, matvec, grid_data);
+  xxt_handle->mvi  = set_mvi(local2global, n, m, (PetscErrorCode (*)(mv_info*,PetscScalar*,PetscScalar*))matvec, grid_data);
 
   /* matrix is assumed to be of full rank */
   /* LATER we can reset to indicate rank def. */
@@ -771,7 +771,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 }
 
 /**************************************xxt.c***********************************/
-static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *matvec, void *grid_data)
+static mv_info *set_mvi(PetscInt *local2global,PetscInt n,PetscInt m,PetscErrorCode (*matvec)(mv_info*,PetscScalar*,PetscScalar*),void *grid_data)
 {
   mv_info *mvi;
 
@@ -784,7 +784,7 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *ma
   mvi->local2global=(PetscInt*)malloc((m+1)*sizeof(PetscInt));
   PCTFS_ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
-  mvi->matvec=(PetscErrorCode (*)(mv_info*,PetscScalar*,PetscScalar*))matvec;
+  mvi->matvec=matvec;
   mvi->grid_data=grid_data;
 
   /* set xxt communication handle to perform restricted matvec */

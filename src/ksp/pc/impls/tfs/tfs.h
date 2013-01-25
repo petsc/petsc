@@ -235,11 +235,11 @@ Last Modification:
 ************************************gs.h**************************************/
 
 typedef struct gather_scatter_id *PCTFS_gs_ADT;
-typedef PetscErrorCode (*Rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
+/*typedef PetscErrorCode (*Rbfp)(PetscScalar *, PetscScalar *, PetscInt len);*/
 
 extern PCTFS_gs_ADT PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level);
 extern PetscErrorCode   PCTFS_gs_gop_vec(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt step);
-extern PetscErrorCode   PCTFS_gs_gop_binary(PCTFS_gs_ADT gs, PetscScalar *vals, Rbfp fct);
+/*extern PetscErrorCode   PCTFS_gs_gop_binary(PCTFS_gs_ADT gs, PetscScalar *vals, Rbfp fct);*/
 extern PetscErrorCode   PCTFS_gs_gop_hc(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt dim);
 extern PetscErrorCode   PCTFS_gs_free(PCTFS_gs_ADT PCTFS_gs_handle);
 extern PetscErrorCode   PCTFS_gs_init_msg_buf_sz(PetscInt buf_size);
@@ -320,7 +320,7 @@ extern PetscInt XXT_factor(xxt_ADT xxt_handle,   /* prev. allocated xxt  handle 
                       PetscInt *local2global,    /* global column mapping       */
                       PetscInt n,                /* local num rows              */
                       PetscInt m,                /* local num cols              */
-                      void *mylocmatvec,         /* b_loc=A_local.x_loc         */
+                      PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*),         /* b_loc=A_local.x_loc         */
                       void *grid_data);          /* grid data for matvec        */
 
 
@@ -434,7 +434,7 @@ extern PetscInt XYT_factor(xyt_ADT xyt_handle,   /* prev. allocated xyt  handle 
                       PetscInt *local2global,    /* global column mapping       */
                       PetscInt n,                /* local num rows              */
                       PetscInt m,                /* local num cols              */
-                      void *mylocmatvec,         /* b_loc=A_local.x_loc         */
+                      PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*),         /* b_loc=A_local.x_loc         */
                       void *grid_data);          /* grid data for matvec        */
 
 
