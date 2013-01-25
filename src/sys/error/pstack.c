@@ -52,38 +52,27 @@ PetscErrorCode  PetscStackCreate(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackView"
-PetscErrorCode  PetscStackView(PetscViewer viewer)
+PetscErrorCode  PetscStackView(FILE *file)
 {
-  PetscErrorCode ierr;
-  int  i;
-  FILE *file;
-  PetscStack* petscstackp;
+  int            i;
+  PetscStack     *petscstackp;
 
   petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  ierr = PetscViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
+  if (!file) file = PETSC_STDOUT;
 
   if (file == PETSC_STDOUT) {
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
     for (i=petscstackp->currentsize-1; i>=0; i--) {
-      (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                                   petscstackp->function[i],
-                                                   petscstackp->line[i],
-                                                   petscstackp->directory[i],
-                                                   petscstackp->file[i]);
+      (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
     }
   } else {
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
     for (i=petscstackp->currentsize-1; i>=0; i--) {
-      fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                            petscstackp->function[i],
-                                            petscstackp->line[i],
-                                            petscstackp->directory[i],
-                                            petscstackp->file[i]);
+      fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
     }
   }
   return 0;
@@ -172,7 +161,7 @@ PetscErrorCode  PetscStackCreate(void)
 }
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackView"
-PetscErrorCode  PetscStackView(PetscViewer viewer)
+PetscErrorCode  PetscStackView(FILE *file)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -230,10 +230,11 @@ EXTERN_C_END
 @*/
 PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
 {
-  PetscErrorCode ierr;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  *fc = 256;
+  *fc = vbinary->flowcontrol;
   ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetFlowControl_C",(PetscViewer,PetscInt *),(viewer,fc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -255,13 +256,13 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinarySetFlowControl"
 /*@C
-    PetscViewerBinarySetFlowControl - Returns how many messages are allowed to outstanding at the same time during parallel IO reads/writes
+    PetscViewerBinarySetFlowControl - Sets how many messages are allowed to outstanding at the same time during parallel IO reads/writes
 
     Not Collective
 
     Input Parameter:
 +   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
--   fc - the number of messages, defaults to 256
+-   fc - the number of messages, defaults to 256 if this function was not called
 
     Level: advanced
 

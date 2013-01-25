@@ -370,6 +370,50 @@ PETSC_EXTERN PetscErrorCode PetscDefaultSignalHandler(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 
+
+/*MC
+    PetscErrorPrintf - Prints error messages.
+
+   Synopsis:
+    #include "petscsys.h"
+     PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
+
+    Not Collective
+
+    Input Parameters:
+.   format - the usual printf() format string
+
+   Options Database Keys:
++    -error_output_stdout - cause error messages to be printed to stdout instead of the
+         (default) stderr
+-    -error_output_none to turn off all printing of error messages (does not change the way the
+          error is handled.)
+
+   Notes: Use
+$     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the
+$                        error is handled.) and
+$     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
+$        of you can use your own function
+
+          Use
+     PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file.
+     PETSC_STDOUT = FILE* obtained from a file open etc. to have stdout printed to the file.
+
+          Use
+      PetscPushErrorHandler() to provide your own error handler that determines what kind of messages to print
+
+   Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+    Concepts: error messages^printing
+    Concepts: printing^error messages
+
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscErrorHandlerPush(), PetscVFPrintf(), PetscHelpPrintf()
+M*/
+PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...);
+
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
 PETSC_EXTERN PetscErrorCode PetscSetFPTrap(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPush(PetscFPTrap);
@@ -689,7 +733,7 @@ M*/
   } while (0)
 
 PETSC_EXTERN PetscErrorCode PetscStackCreate(void);
-PETSC_EXTERN PetscErrorCode PetscStackView(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscStackView(FILE*);
 PETSC_EXTERN PetscErrorCode PetscStackDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscStackPublish(void);
 PETSC_EXTERN PetscErrorCode PetscStackDepublish(void);

@@ -158,7 +158,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
     PetscStackPop;
     (*PetscErrorPrintf)("likely location of problem given in stack below\n");
     (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
-    PetscStackView(PETSC_VIEWER_STDOUT_SELF);
+    PetscStackView(PETSC_STDOUT);
   }
 #endif
 #if !defined(PETSC_USE_DEBUG)

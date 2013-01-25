@@ -1243,9 +1243,10 @@ typedef struct _n_PetscOpFunctionList *PetscOpFunctionList;
 .seealso: PetscViewerFileSetMode()
 E*/
 typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
-
-#include <petscviewer.h>
-#include <petscoptions.h>
+/*
+    Defines PETSc error handling.
+*/
+#include <petscerror.h>
 
 #define PETSC_SMALLEST_CLASSID  1211211
 PETSC_EXTERN PetscClassId PETSC_LARGEST_CLASSID;
@@ -1258,7 +1259,6 @@ PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[],PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMemorySetGetMaximumUsage(void);
-PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscInfoAllow(PetscBool ,const char []);
 PETSC_EXTERN PetscErrorCode PetscGetTime(PetscLogDouble*);
@@ -1345,7 +1345,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetPrecision(PetscObject,PetscPrecision);
 PETSC_EXTERN PetscErrorCode PetscObjectGetType(PetscObject,const char *[]);
 PETSC_EXTERN PetscErrorCode PetscObjectSetName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectGetName(PetscObject,const char*[]);
-PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectSetTabLevel(PetscObject,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscObjectGetTabLevel(PetscObject,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt);
@@ -1353,7 +1352,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectReference(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectGetReference(PetscObject,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectDereference(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
-PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject,const char[],PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject *);
@@ -1365,6 +1363,13 @@ PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,PetscErrorC
 PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
+
+#include <petscviewer.h>
+#include <petscoptions.h>
+
+PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object.
@@ -1431,10 +1436,6 @@ extern PetscErrorCode  PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
 extern PetscErrorCode  PetscDLClose(PetscDLHandle *);
 extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
 
-/*
-    Defines PETSc error handling.
-*/
-#include <petscerror.h>
 
 #if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);
@@ -1549,49 +1550,6 @@ $     PetscBool  flag = PetscNot(a)
 */
 #include <petsc-private/petscimpl.h>
 
-
-/*MC
-    PetscErrorPrintf - Prints error messages.
-
-   Synopsis:
-    #include "petscsys.h"
-     PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
-
-    Not Collective
-
-    Input Parameters:
-.   format - the usual printf() format string
-
-   Options Database Keys:
-+    -error_output_stdout - cause error messages to be printed to stdout instead of the
-         (default) stderr
--    -error_output_none to turn off all printing of error messages (does not change the way the
-          error is handled.)
-
-   Notes: Use
-$     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the
-$                        error is handled.) and
-$     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
-$        of you can use your own function
-
-          Use
-     PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file.
-     PETSC_STDOUT = FILE* obtained from a file open etc. to have stdout printed to the file.
-
-          Use
-      PetscPushErrorHandler() to provide your own error handler that determines what kind of messages to print
-
-   Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-    Concepts: error messages^printing
-    Concepts: printing^error messages
-
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscErrorHandlerPush(), PetscVFPrintf(), PetscHelpPrintf()
-M*/
-PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 
 /*MC
     PetscHelpPrintf - Prints help messages.

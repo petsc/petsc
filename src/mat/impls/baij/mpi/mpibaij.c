@@ -1118,7 +1118,7 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
     ierr = PetscBinaryWrite(fd,row_lens,bs*rlen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
       rlen = (range[i+1] - range[i])/bs;
-      ierr = PetscViewerFlowControlStepMaster(viewer,i,message_count,flowcontrolcount);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlStepMaster(viewer,i,&message_count,flowcontrolcount);CHKERRQ(ierr);
       ierr = MPI_Recv(crow_lens,rlen,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       for (k=0; k<rlen; k++) {
         for (j=0; j<bs; j++) {
@@ -1127,12 +1127,12 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
       }
       ierr = PetscBinaryWrite(fd,row_lens,bs*rlen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
     ierr = PetscFree(row_lens);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
     ierr = MPI_Send(crow_lens,mat->rmap->n/bs,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
-    ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(crow_lens);CHKERRQ(ierr);
 
@@ -1175,17 +1175,17 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
-      ierr = PetscViewerFlowControlStepMaster(viewer,i,message_count,flowcontrolcount);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlStepMaster(viewer,i,&message_count,flowcontrolcount);CHKERRQ(ierr);
       ierr = MPI_Recv(&cnt,1,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Recv(column_indices,cnt,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fd,column_indices,cnt,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
     ierr = MPI_Send(&cnt,1,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
     ierr = MPI_Send(column_indices,cnt,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
-    ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(column_indices);CHKERRQ(ierr);
 
@@ -1229,17 +1229,17 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
-      ierr = PetscViewerFlowControlStepMaster(viewer,i,message_count,flowcontrolcount);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlStepMaster(viewer,i,&message_count,flowcontrolcount);CHKERRQ(ierr);
       ierr = MPI_Recv(&cnt,1,MPIU_INT,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Recv(column_values,cnt,MPIU_SCALAR,i,tag,((PetscObject)mat)->comm,&status);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fd,column_values,cnt,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
     ierr = MPI_Send(&nz,1,MPIU_INT,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
     ierr = MPI_Send(column_values,nz,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
-    ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
+    ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(column_values);CHKERRQ(ierr);
 

@@ -221,9 +221,13 @@ PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMa
 {
   PetscInt       i,Nmax = mapping->n;
   const PetscInt *idx = mapping->indices;
+
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
-    if (in[i] < 0) {out[i] = in[i]; continue;}
+    if (in[i] < 0) {
+      out[i] = in[i];
+      continue;
+    }
     if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
     out[i] = idx[in[i]];
   }

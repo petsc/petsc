@@ -645,7 +645,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
-    if (((PetscObject)snes)->type_name) { deft = ((PetscObject)snes)->type_name; }
+    if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
     ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESSetType(snes,type);CHKERRQ(ierr);
