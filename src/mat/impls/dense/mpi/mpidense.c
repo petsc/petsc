@@ -755,7 +755,7 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
     ierr = MatView_MPIDense_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by MPI dense matrix",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

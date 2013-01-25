@@ -108,7 +108,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = DMView_DA_Matlab(da,viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DMDA 1d",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

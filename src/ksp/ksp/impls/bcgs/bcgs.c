@@ -14,19 +14,6 @@ PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPView_BCGS"
-PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  PetscBool      iascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_BCGS"
 PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 {
@@ -239,7 +226,6 @@ PetscErrorCode  KSPCreate_BCGS(KSP ksp)
   ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
-  ksp->ops->view            = KSPView_BCGS;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);

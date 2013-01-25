@@ -309,7 +309,7 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = ISView_General_Binary(is,viewer);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

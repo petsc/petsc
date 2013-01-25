@@ -388,7 +388,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
     }
-  } else SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LSQR",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

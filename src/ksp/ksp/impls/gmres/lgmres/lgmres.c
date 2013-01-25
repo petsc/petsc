@@ -699,7 +699,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: approx. space size was kept constant.\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: number of matvecs=%D\n",lgmres->matvecs);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 

@@ -698,7 +698,7 @@ PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
     ierr=PetscViewerASCIIPrintf (viewer, " AGMRES: Maximum relaxation parameter for the adaptive strategy(bgv)  = %g\n", agmres->bgv);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,agmres->max_k);CHKERRQ(ierr);
-  } else { SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP AGMRES",((PetscObject)viewer)->type_name); }
+  }
   PetscFunctionReturn(0);
 }
 

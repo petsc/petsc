@@ -153,15 +153,14 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   PetscBool      iascii,view_subdomains=PETSC_FALSE;
   PetscViewer    sviewer;
   PetscInt       count, l, gcount, *numbering, *permutation;
-  char overlap[256]     = "user-defined overlap";
-  char gsubdomains[256] = "unknown total number of subdomains";
-  char lsubdomains[256] = "unknown number of local  subdomains";
-  char msubdomains[256] = "unknown max number of local subdomains";
+  char           overlap[256]     = "user-defined overlap";
+  char           gsubdomains[256] = "unknown total number of subdomains";
+  char           lsubdomains[256] = "unknown number of local  subdomains";
+  char           msubdomains[256] = "unknown max number of local subdomains";
+
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank);CHKERRQ(ierr);
-
-
   ierr = PetscMalloc2(osm->n, PetscInt, &permutation, osm->n, PetscInt, &numbering);CHKERRQ(ierr);
   for (i = 0; i < osm->n; ++i) permutation[i] = i;
   ierr = PetscObjectsGetGlobalNumbering(((PetscObject)pc)->comm, osm->n, (PetscObject*)osm->ois, &gcount, numbering);CHKERRQ(ierr);

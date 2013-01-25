@@ -372,7 +372,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MIS coarsener",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

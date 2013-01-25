@@ -1182,7 +1182,7 @@ PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] HEM aggregator\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this HEM coarsener",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

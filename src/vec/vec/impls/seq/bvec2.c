@@ -1022,7 +1022,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -152,7 +152,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = KSPView(jac->kspL,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for LSC",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

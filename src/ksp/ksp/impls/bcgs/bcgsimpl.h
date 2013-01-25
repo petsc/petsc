@@ -13,7 +13,6 @@ typedef struct {
 } KSP_BCGS;
 
 extern PetscErrorCode KSPSetFromOptions_BCGS(KSP);
-extern PetscErrorCode KSPView_BCGS(KSP,PetscViewer);
 extern PetscErrorCode KSPSetUp_BCGS(KSP);
 extern PetscErrorCode KSPSolve_BCGS(KSP);
 extern PetscErrorCode KSPBuildSolution_BCGS(KSP,Vec,Vec*);

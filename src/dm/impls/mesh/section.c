@@ -30,12 +30,6 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
     ierr = SectionRealGetBundle(section, b);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
-  } else if (isbinary) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
-  } else if (isdraw) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1212,13 +1206,11 @@ PetscErrorCode DMMeshCreateGlobalRealVector(DM dm, SectionReal section, Vec *gve
 #define __FUNCT__ "SectionIntView_Sieve"
 PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 {
-  PetscBool      iascii, isbinary, isdraw;
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii) {
     ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
@@ -1229,12 +1221,6 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
     ierr = SectionIntGetBundle(section, b);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
-  } else if (isbinary) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
-  } else if (isdraw) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

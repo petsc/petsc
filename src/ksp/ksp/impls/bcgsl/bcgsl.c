@@ -485,11 +485,10 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
   KSP_BCGSL       *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode  ierr;
-  PetscBool       isascii, isstring;
+  PetscBool       isascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring);CHKERRQ(ierr);
 
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  BCGSL: Ell = %D\n", bcgsl->ell);CHKERRQ(ierr);

@@ -302,7 +302,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
       ierr = VecView(ctx->current_f, viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for matrix-free matrix",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

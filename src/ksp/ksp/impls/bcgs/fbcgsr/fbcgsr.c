@@ -224,7 +224,6 @@ PetscErrorCode  KSPCreate_FBCGSR(KSP ksp)
   ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
-  ksp->ops->view            = KSPView_BCGS;
   ksp->pc_side              = PC_RIGHT; /* set default PC side */
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

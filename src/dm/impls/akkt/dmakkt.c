@@ -587,57 +587,58 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_SUP, "No support for non-ASCII viewers");
-  ierr = PetscObjectGetTabLevel((PetscObject)dm, &tab);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &name);CHKERRQ(ierr);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIUseTabs(v,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIGetTab(v,&vtab);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(v,tab);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(v, "DM Algebraic KKT, name: %s, prefix: %s\n", ((PetscObject)dm)->name, ((PetscObject)dm)->prefix);CHKERRQ(ierr);
-  if (kkt->dm) {
-    ierr = PetscViewerASCIIPrintf(v, "DM:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-    ierr = DMView(kkt->dm,v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
-  }
-  if (kkt->Aff) {
-    ierr = PetscViewerASCIIPrintf(v, "Aff:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-    ierr = MatView(kkt->Aff,v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
-  }
-  if (kkt->dname) {
-    ierr = PetscViewerASCIIPrintf(v, "Decomposition, name %s:\n");CHKERRQ(ierr);
-  }
-  for (i = 0; i < 2; ++i) {
-    const char* label;
-    if (!i == 0) label = "Primal";
-    else         label = "Dual";
+  if (isascii) {
+    ierr = PetscObjectGetTabLevel((PetscObject)dm, &tab);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)dm, &name);CHKERRQ(ierr);
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(v,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetTab(v,&vtab);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetTab(v,tab);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v, "DM Algebraic KKT, name: %s, prefix: %s\n", ((PetscObject)dm)->name, ((PetscObject)dm)->prefix);CHKERRQ(ierr);
+    if (kkt->dm) {
+      ierr = PetscViewerASCIIPrintf(v, "DM:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = DMView(kkt->dm,v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    if (kkt->Aff) {
+      ierr = PetscViewerASCIIPrintf(v, "Aff:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+      ierr = MatView(kkt->Aff,v);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+    }
+    if (kkt->dname) {
+      ierr = PetscViewerASCIIPrintf(v, "Decomposition, name %s:\n");CHKERRQ(ierr);
+    }
+    for (i = 0; i < 2; ++i) {
+      const char* label;
+      if (!i == 0) label = "Primal";
+      else         label = "Dual";
 
-    if (kkt->names[i]) {
-      ierr = PetscViewerASCIIPrintf(v, "%s, name %s:\n", label, kkt->names[i]);CHKERRQ(ierr);
+      if (kkt->names[i]) {
+        ierr = PetscViewerASCIIPrintf(v, "%s, name %s:\n", label, kkt->names[i]);CHKERRQ(ierr);
+      }
+      if (kkt->isf[i]) {
+        ierr = PetscViewerASCIIPrintf(v, "%s, IS:\n",label);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+        ierr = ISView(kkt->isf[i],v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+      }
+      if (kkt->dmf[i]) {
+        ierr = PetscViewerASCIIPrintf(v, "%s, DM:\n", label);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+        ierr = DMView(kkt->dmf[i],v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+      }
     }
-    if (kkt->isf[i]) {
-      ierr = PetscViewerASCIIPrintf(v, "%s, IS:\n",label);CHKERRQ(ierr);
+    if (kkt->Pfc) {
+      ierr = PetscViewerASCIIPrintf(v, "Prolongation:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = ISView(kkt->isf[i],v);CHKERRQ(ierr);
+      ierr = MatView(kkt->Pfc,v);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
     }
-    if (kkt->dmf[i]) {
-      ierr = PetscViewerASCIIPrintf(v, "%s, DM:\n", label);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-      ierr = DMView(kkt->dmf[i],v);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerASCIISetTab(v,vtab);CHKERRQ(ierr);
   }
-  if (kkt->Pfc) {
-    ierr = PetscViewerASCIIPrintf(v, "Prolongation:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
-    ierr = MatView(kkt->Pfc,v);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIISetTab(v,vtab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

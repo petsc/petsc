@@ -322,9 +322,6 @@ PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer)
     } else if (isbinary) {
       ierr = DMMeshView_Mesh_Binary(dm, viewer);CHKERRQ(ierr);
 #endif
-    } else {
-      SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
-    }
   } else {
     ierr = DMMeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
   }

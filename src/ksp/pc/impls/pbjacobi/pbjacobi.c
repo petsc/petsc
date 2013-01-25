@@ -268,7 +268,7 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  point-block Jacobi: block size %D\n",jac->bs);CHKERRQ(ierr);
-  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for point-block Jacobi",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
