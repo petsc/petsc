@@ -30,7 +30,7 @@ typedef struct {
   SNESLineSearch   additive_linesearch; /* Line search for the additive variant */
 
   /* Selection constants */
-  PetscBool    anderson;       /* use anderson-mixing approach */
+  PetscBool    candidate;       /* use candidate storage approach */
   PetscBool    singlereduction;/* use a single reduction (with more local work) for tolerance selection */
   PetscReal    gammaA;         /* Criterion A residual tolerance */
   PetscReal    epsilonB;       /* Criterion B difference tolerance */
@@ -57,5 +57,12 @@ typedef struct {
 
 #define H(i,j)  ngmres->h[i*ngmres->msize + j]
 #define Q(i,j)  ngmres->q[i*ngmres->msize + j]
+
+/* private functions that are shared components of the methods */
+PETSC_EXTERN PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES,PetscInt,PetscInt,Vec,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES,PetscInt,Vec,Vec,PetscReal,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESNGMRESCalculateDifferences_Private(SNES,PetscInt,Vec,Vec,Vec,Vec,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode SNESNGMRESSelect_Private(SNES,PetscInt,Vec,Vec,PetscReal,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscReal,Vec,Vec,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode SNESNGMRESSelectRestart_Private(SNES,PetscReal,PetscReal,PetscReal,PetscReal,PetscBool*);
 
 #endif

@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snesngmres.c
+SOURCEC  = snesngmres.c ngmresfunc.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsnes
