@@ -225,7 +225,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
       PetscInt    coneSize[23]         = {4, 4, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2};
       PetscInt    cones[47]            = {7, 8, 9, 10,  11, 12, 13, 10,  15, 17, 14,  16, 18, 15,  14, 19, 16,  17, 18, 19,  17, 21, 20,  18, 22, 21,  22, 19, 20,   2, 3,  2, 4,  2, 5,  3, 4,  4, 5,  5, 3,  3, 6,  4, 6,  5, 6};
       PetscInt    coneOrientations[47] = {0, 0, 0,  0,   0,  0,  0, -3,   0, -2, -2,   0, -2, -2,   0, -2, -2,   0,  0,  0,   0,  0, -2,   0,  0, -2,  -2,  0,  0,   0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
-      PetscScalar vertexCoords[15]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 1.0};
+      PetscScalar vertexCoords[15]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
       PetscInt    markerPoints[20]     = {2, 1, 3, 1, 4, 1, 5, 1, 14, 1, 15, 1, 16, 1, 17, 1, 18, 1, 19, 1};
       PetscInt    faultPoints[14]      = {10, 2, 17, 1, 18, 1, 19, 1, 3, 0, 4, 0, 5, 0};
 
@@ -330,7 +330,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM      hybridMesh = PETSC_NULL;
     DMLabel label;
 
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+    //ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "fault", &label);CHKERRQ(ierr);
     ierr = DMLabelCohesiveComplete(*dm, label);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
