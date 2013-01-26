@@ -43,6 +43,7 @@ typedef const char* SNESType;
 #define SNESFAS          "fas"
 #define SNESMS           "ms"
 #define SNESNASM         "nasm"
+#define SNESANDERSON     "anderson"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;

@@ -17,6 +17,7 @@ extern PetscErrorCode  SNESCreate_NCG(SNES);
 extern PetscErrorCode  SNESCreate_FAS(SNES);
 extern PetscErrorCode  SNESCreate_MS(SNES);
 extern PetscErrorCode  SNESCreate_NASM(SNES);
+extern PetscErrorCode  SNESCreate_Anderson(SNES);
 EXTERN_C_END
 
 const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
@@ -70,5 +71,6 @@ PetscErrorCode  SNESRegisterAll(const char path[])
   ierr = SNESRegisterDynamic(SNESFAS,          path,"SNESCreate_FAS",          SNESCreate_FAS);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESMS,           path,"SNESCreate_MS",           SNESCreate_MS);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESNASM,         path,"SNESCreate_NASM",         SNESCreate_NASM);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESANDERSON,     path,"SNESCreate_Anderson",     SNESCreate_Anderson);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

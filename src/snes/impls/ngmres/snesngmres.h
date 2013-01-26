@@ -37,6 +37,8 @@ typedef struct {
   PetscReal    deltaB;         /* Criterion B residual tolerance */
   PetscReal    gammaC;         /* Restart residual tolerance */
 
+  PetscReal    andersonBeta;   /* Relaxation parameter for Anderson Mixing */
+
   /* Least squares minimization solve context */
   PetscScalar  *q;             /* the matrix formed as q_ij = (rdot_i, rdot_j) */
   PetscBLASInt m;              /* matrix dimension */
