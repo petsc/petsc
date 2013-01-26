@@ -1623,7 +1623,6 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
   }
   ksp->res_hist_len    = 0;
   ksp->res_hist_reset  = reset;
-
   PetscFunctionReturn(0);
 }
 

@@ -173,7 +173,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->u,&u);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -262,7 +261,6 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -414,6 +412,5 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = VecDuplicate(user->u,&user->work1);CHKERRQ(ierr);
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

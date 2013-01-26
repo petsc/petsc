@@ -404,7 +404,6 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
 
   pavg = ((0.7*pressure1)+pressure2)/2;         /* calculates simple average press */
   *pottemp = temp*(pow((pressure1/pavg),kdry)); /* calculates potential temperature */
-
   PetscFunctionReturn(0);
 }
 extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)

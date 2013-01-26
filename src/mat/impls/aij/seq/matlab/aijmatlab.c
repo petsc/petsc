@@ -27,7 +27,6 @@ mxArray *MatSeqAIJToMatlab(Mat B)
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
   ii = mxGetJc(mat);
   for (i=0; i<B->rmap->n+1; i++) ii[i] = aij->i[i];
-
   PetscFunctionReturn(mat);
 }
 EXTERN_C_END

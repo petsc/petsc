@@ -466,7 +466,6 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
     ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

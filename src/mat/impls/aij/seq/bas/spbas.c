@@ -390,7 +390,7 @@ PetscErrorCode spbas_delete(spbas_matrix matrix)
   ierr=PetscFree(matrix.icols);CHKERRQ(ierr);
   if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) {ierr=PetscFree(matrix.icol0);CHKERRQ(ierr);}
   ierr=PetscFree(matrix.values);CHKERRQ(ierr);
-   PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -687,7 +687,6 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   if (do_values) { matrix_A->values  = vals; }
   matrix_A->icols   = icols;
   matrix_A->row_nnz = row_nnz;
-
   PetscFunctionReturn(0);
 }
 

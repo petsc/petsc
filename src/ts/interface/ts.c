@@ -96,175 +96,175 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-    /* Handle TS type options */
-    ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
+  /* Handle TS type options */
+  ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
-    /* Handle generic TS options */
-    ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
+  /* Handle generic TS options */
+  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = TSSetExactFinalTime(ts,eftopt);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections before step fails","TSSetMaxStepRejections",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
+
+  /* Monitor options */
+  ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
+
+  ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsName("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsName("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGSNESIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsName("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGKSPIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsName("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorSPEigCtx ctx;
+    PetscInt          howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsName("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorDrawCtx ctx;
+    PetscInt         howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsName("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorDrawCtx ctx;
+    PetscInt         howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsString("-ts_monitor_draw_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer ctx;
+    if (monfilename[0]) {
+      ierr = PetscViewerBinaryOpen(((PetscObject)ts)->comm,monfilename,FILE_MODE_WRITE,&ctx);CHKERRQ(ierr);
+    } else {
+      ctx = PETSC_VIEWER_BINARY_(((PetscObject)ts)->comm);
     }
-    ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSSetExactFinalTime(ts,eftopt);CHKERRQ(ierr);}
-    ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections before step fails","TSSetMaxStepRejections",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
-
-    /* Monitor options */
-    ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsString("-ts_monitor_draw_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    const char *ptr,*ptr2;
+    char *filetemplate;
+    if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    /* Do some cursory validation of the input. */
+    ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
+    if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    for (ptr++ ; ptr && *ptr; ptr++) {
+      ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
+      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_draw_solution_vtk, should look like filename-%%03D.vts");
+      if (ptr2) break;
     }
-    ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
+    ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
+  }
 
-    ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorLGCtx ctx;
-      PetscInt       howoften = 1;
+  ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
+  if (flg) {
+    TSMonitorDMDARayCtx *rayctx;
+    int                 ray = 0;
+    DMDADirection       ddir;
+    DM                  da;
+    PetscMPIInt         rank;
 
-      ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    if (dir[1] != '=') SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
+    if (dir[0] == 'x') ddir = DMDA_X;
+    else if (dir[0] == 'y') ddir = DMDA_Y;
+    else SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
+    sscanf(dir+2,"%d",&ray);
+
+    ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
+    ierr = PetscNew(TSMonitorDMDARayCtx,&rayctx);CHKERRQ(ierr);
+    ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+    ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorLGCtx ctx;
-      PetscInt       howoften = 1;
+    ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
+  }
 
-      ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorLGCtx ctx;
-      PetscInt       howoften = 1;
+  ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
-      ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorLGCtx ctx;
-      PetscInt       howoften = 1;
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
-      ierr = PetscOptionsInt("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorLGSNESIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorLGCtx ctx;
-      PetscInt       howoften = 1;
+  /* Handle specific TS options */
+  if (ts->ops->setfromoptions) {
+    ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
+  }
 
-      ierr = PetscOptionsInt("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorLGKSPIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorSPEigCtx ctx;
-      PetscInt          howoften = 1;
-
-      ierr = PetscOptionsInt("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
-    }
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsName("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorDrawCtx ctx;
-      PetscInt         howoften = 1;
-
-      ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorDrawCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
-    }
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsName("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",&opt);CHKERRQ(ierr);
-    if (opt) {
-      TSMonitorDrawCtx ctx;
-      PetscInt         howoften = 1;
-
-      ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorDrawCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
-    }
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsString("-ts_monitor_draw_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer ctx;
-      if (monfilename[0]) {
-        ierr = PetscViewerBinaryOpen(((PetscObject)ts)->comm,monfilename,FILE_MODE_WRITE,&ctx);CHKERRQ(ierr);
-      } else {
-        ctx = PETSC_VIEWER_BINARY_(((PetscObject)ts)->comm);
-      }
-      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-    }
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsString("-ts_monitor_draw_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {
-      const char *ptr,*ptr2;
-      char *filetemplate;
-      if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
-      /* Do some cursory validation of the input. */
-      ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
-      if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
-      for (ptr++ ; ptr && *ptr; ptr++) {
-        ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
-        if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_draw_solution_vtk, should look like filename-%%03D.vts");
-        if (ptr2) break;
-      }
-      ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
-    }
-
-    ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
-    if (flg) {
-      TSMonitorDMDARayCtx *rayctx;
-      int                 ray = 0;
-      DMDADirection       ddir;
-      DM                  da;
-      PetscMPIInt         rank;
-
-      if (dir[1] != '=') SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
-      if (dir[0] == 'x') ddir = DMDA_X;
-      else if (dir[0] == 'y') ddir = DMDA_Y;
-      else SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
-      sscanf(dir+2,"%d",&ray);
-
-      ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
-      ierr = PetscNew(TSMonitorDMDARayCtx,&rayctx);CHKERRQ(ierr);
-      ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-      ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
-      if (!rank) {
-        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
-      }
-      ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
-    }
-
-    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
-
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
-
-    /* Handle specific TS options */
-    if (ts->ops->setfromoptions) {
-      ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
-    }
-
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -919,7 +919,6 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   }
   ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(&resalloc);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -2320,7 +2319,6 @@ PetscErrorCode  TSStep(TS ts)
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
-
   PetscFunctionReturn(0);
 }
 

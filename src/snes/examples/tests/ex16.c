@@ -598,7 +598,6 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   if (flg) {
     info = VecScale(Left, scl);CHKERRQ(info);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -660,7 +659,6 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     info = VecRestoreArray(user->Top,&top);CHKERRQ(info);
     info = VecRestoreArray(user->Bottom,&bottom);CHKERRQ(info);
     info = VecRestoreArray(user->Right,&right);CHKERRQ(info);
-
   }
   PetscFunctionReturn(0);
 }
@@ -717,6 +715,5 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
   }
 
   info = DMDAVecRestoreArray(user->da,XL,&xl);CHKERRQ(info);
-
   PetscFunctionReturn(0);
 }

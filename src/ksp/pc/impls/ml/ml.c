@@ -495,7 +495,6 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt 
       pc_ml->coords[ii*nloc + kk] =  coords[kk*ndm + ii];
     }
   }
-
   PetscFunctionReturn(0);
 }
 

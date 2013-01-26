@@ -610,7 +610,6 @@ PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
   ierr = PetscMemcpy(array, mArray, mSize * sizeof(double));CHKERRQ(ierr);
   MLDisownRealList(link, mArray, mSize);
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -690,7 +689,6 @@ PetscErrorCode  PetscViewerMathematicaPutMatrix(PetscViewer viewer, int m, int n
   ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
-
   PetscFunctionReturn(0);
 }
 
@@ -756,7 +754,6 @@ PetscErrorCode  PetscViewerMathematicaPutCSRMatrix(PetscViewer viewer, int m, in
   MLDisownSymbol(link, symbol);
   /* Skip ReturnPacket */
   MLNewPacket(link);
-
   PetscFunctionReturn(0);
 }
 

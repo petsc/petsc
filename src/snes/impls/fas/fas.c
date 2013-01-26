@@ -90,7 +90,6 @@ PETSC_EXTERN_C PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->eventsmoothsolve       = PETSC_FALSE;
   fas->eventresidual          = PETSC_FALSE;
   fas->eventinterprestrict    = PETSC_FALSE;
-
   PetscFunctionReturn(0);
 }
 
@@ -109,7 +108,6 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
   if (fas->next)      ierr = SNESReset(fas->next);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -125,7 +123,6 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
   ierr = SNESReset(snes);CHKERRQ(ierr);
   if (fas->next)         ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
   ierr = PetscFree(fas);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -358,7 +355,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     flg = PETSC_FALSE;
     monflg = PETSC_TRUE;
     ierr = PetscOptionsBool("-snes_fas_log","Log times for each FAS level","SNESFASSetLog",monflg,&monflg,&flg);CHKERRQ(ierr);
-    if (flg){ierr = SNESFASSetLog(snes,monflg);CHKERRQ(ierr);}
+    if (flg) {ierr = SNESFASSetLog(snes,monflg);CHKERRQ(ierr);}
   }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);

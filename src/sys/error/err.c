@@ -165,7 +165,6 @@ PetscErrorCode  PetscPopErrorHandler(void)
   tmp  = eh;
   eh   = eh->previous;
   ierr = PetscFree(tmp);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -156,8 +156,6 @@ PetscErrorCode testBiGraphDiv2()
 
   // View
   bg->view(std::cout, "bigraph/2 after excluding [0,5[ from base");
-
-
   PetscFunctionReturn(0);
 }/* testBiGraphDiv2() */
 

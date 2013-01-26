@@ -234,7 +234,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecSqrtAbs(SE);CHKERRQ(ierr);
     ierr = VecScale(SE,tmp);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

@@ -190,7 +190,6 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-
   PetscFunctionReturn(0);
 }
 

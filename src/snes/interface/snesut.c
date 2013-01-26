@@ -36,7 +36,6 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void
     viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -74,7 +73,6 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void
     viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -112,7 +110,6 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
     viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

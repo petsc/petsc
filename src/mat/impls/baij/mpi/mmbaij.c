@@ -271,7 +271,6 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   }
   ierr = PetscFree(r_rmapo);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nt*bs,&uglyoo);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -322,7 +321,6 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
   ierr = VecRestoreArray(uglyoo,&o);CHKERRQ(ierr);
   /* column scale "off-diagonal" portion of local matrix */
   ierr = MatDiagonalScale(a->B,PETSC_NULL,uglyoo);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

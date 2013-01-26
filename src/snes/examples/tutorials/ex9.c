@@ -203,7 +203,6 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
   ierr = DMDAVecRestoreArray(da, U0, &u0);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da, user->uexact, &uexact);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -797,7 +797,6 @@ PetscErrorCode  MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
   } else {
     *f = (((void(**)(void))mat->ops)[op]);
   }
-
   PetscFunctionReturn(0);
 }
 

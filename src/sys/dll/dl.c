@@ -196,7 +196,6 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   (*entry)->next   = 0;
   (*entry)->handle = handle;
   ierr = PetscStrcpy((*entry)->libname,libname);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

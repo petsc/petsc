@@ -345,7 +345,6 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
       va_end(Argp);
     }
   }
-
   PetscFunctionReturn(0);
 }
 

@@ -884,7 +884,6 @@ PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
   if (format != PETSC_VIEWER_DRAW_LG) {
     ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1170,7 +1169,6 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
   (*V)->ops->view = win->ops->view;
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
-
   PetscFunctionReturn(0);
 }
 

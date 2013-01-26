@@ -262,7 +262,6 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
     snes->max_its   = 10000;
     snes->stol      = 1e-20;
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

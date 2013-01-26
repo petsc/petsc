@@ -212,7 +212,6 @@ PetscErrorCode  MatSetFromOptions(Mat B)
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)B);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

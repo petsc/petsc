@@ -805,7 +805,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   da->ops->view = DMView_DA_2d;
   dd->ltol = PETSC_NULL;
   dd->ao   = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 

@@ -99,7 +99,6 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -596,7 +595,7 @@ PetscErrorCode VecAYPX_SeqCUSP(Vec yin, PetscScalar alpha, Vec xin)
     ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
-   }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -712,72 +711,72 @@ PetscErrorCode VecWAXPY_SeqCUSP(Vec win,PetscScalar alpha,Vec xin, Vec yin)
     if (alpha == 0.0) {
     ierr = VecCopy_SeqCUSP(yin,win);CHKERRQ(ierr);
   } else {
-      ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-      ierr = VecCUSPGetArrayRead(yin,&yarray);CHKERRQ(ierr);
-      ierr = VecCUSPGetArrayWrite(win,&warray);CHKERRQ(ierr);
-      if (alpha == 1.0) {
-        try {
-          thrust::for_each(
-            thrust::make_zip_iterator(
-              thrust::make_tuple(
-                warray->begin(),
-                yarray->begin(),
-                xarray->begin())),
-            thrust::make_zip_iterator(
-              thrust::make_tuple(
-                warray->end(),
-                yarray->end(),
-                xarray->end())),
-            VecCUSPSum());
-        } catch(char* ex) {
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-        }
-        ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
-      } else if (alpha == -1.0) {
-        try {
-          thrust::for_each(
-            thrust::make_zip_iterator(
-              thrust::make_tuple(
-                warray->begin(),
-                yarray->begin(),
-                xarray->begin())),
-            thrust::make_zip_iterator(
-              thrust::make_tuple(
-                warray->end(),
-                yarray->end(),
-                xarray->end())),
-            VecCUSPDiff());
-        } catch(char* ex) {
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-        }
-        ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
-      } else {
-        try {
-          thrust::for_each(
-            thrust::make_zip_iterator(
-              thrust::make_tuple(
-                warray->begin(),
-                yarray->begin(),
-                thrust::make_constant_iterator(alpha),
-                xarray->begin())),
-            thrust::make_zip_iterator(
-              thrust::make_tuple(
-                warray->end(),
-                yarray->end(),
-                thrust::make_constant_iterator(alpha),
-                xarray->end())),
-            VecCUSPWAXPY());
-        } catch(char* ex) {
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-        }
-        ierr = PetscLogFlops(2*win->map->n);CHKERRQ(ierr);
+    ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecCUSPGetArrayRead(yin,&yarray);CHKERRQ(ierr);
+    ierr = VecCUSPGetArrayWrite(win,&warray);CHKERRQ(ierr);
+    if (alpha == 1.0) {
+      try {
+        thrust::for_each(
+          thrust::make_zip_iterator(
+            thrust::make_tuple(
+              warray->begin(),
+              yarray->begin(),
+              xarray->begin())),
+          thrust::make_zip_iterator(
+            thrust::make_tuple(
+              warray->end(),
+              yarray->end(),
+              xarray->end())),
+          VecCUSPSum());
+      } catch(char* ex) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
       }
-      ierr = WaitForGPU();CHKERRCUSP(ierr);
-      ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-      ierr = VecCUSPRestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
-      ierr = VecCUSPRestoreArrayWrite(win,&warray);CHKERRQ(ierr);
+      ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+    } else if (alpha == -1.0) {
+      try {
+        thrust::for_each(
+          thrust::make_zip_iterator(
+            thrust::make_tuple(
+              warray->begin(),
+              yarray->begin(),
+              xarray->begin())),
+          thrust::make_zip_iterator(
+            thrust::make_tuple(
+              warray->end(),
+              yarray->end(),
+              xarray->end())),
+          VecCUSPDiff());
+      } catch(char* ex) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+      }
+      ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+    } else {
+      try {
+        thrust::for_each(
+          thrust::make_zip_iterator(
+            thrust::make_tuple(
+              warray->begin(),
+              yarray->begin(),
+              thrust::make_constant_iterator(alpha),
+              xarray->begin())),
+          thrust::make_zip_iterator(
+            thrust::make_tuple(
+              warray->end(),
+              yarray->end(),
+              thrust::make_constant_iterator(alpha),
+              xarray->end())),
+          VecCUSPWAXPY());
+      } catch(char* ex) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+      }
+      ierr = PetscLogFlops(2*win->map->n);CHKERRQ(ierr);
     }
-    PetscFunctionReturn(0);
+    ierr = WaitForGPU();CHKERRCUSP(ierr);
+    ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecCUSPRestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
+    ierr = VecCUSPRestoreArrayWrite(win,&warray);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 /* These functions are for the CUSP implementation of MAXPY with the loop unrolled on the CPU */

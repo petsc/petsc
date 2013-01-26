@@ -271,7 +271,6 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool  symmet
 
   ierr = PetscFree(*ia);CHKERRQ(ierr);
   ierr = PetscFree(*ja);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +443,6 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   if (file) {
     fprintf(file,"-matload_block_size %d\n",(int)A->rmap->bs);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -3184,7 +3182,6 @@ PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
   for (i=0; i<n; i++) {
     aij->ilen[i] = aij->imax[i];
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

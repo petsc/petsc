@@ -108,7 +108,6 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   ierr = PetscFree(leafidx);CHKERRQ(ierr);
   ierr = PetscFree(natidx);CHKERRQ(ierr);
   ierr = PetscFree(pnatidx);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +180,6 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
   ierr = DMDASetOffset(da,xo,yo,zo,info.mx,info.my,info.mz);CHKERRQ(ierr);
 
   *dddm = da;
-
   PetscFunctionReturn(0);
 }
 
@@ -318,7 +316,6 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
   upper.j = subinfo.ys+subinfo.ym;
   upper.k = subinfo.zs+subinfo.zm;
   ierr = DMDACreatePatchIS(dm,&lower,&upper,ois);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

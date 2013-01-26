@@ -217,8 +217,6 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
 /*.........................................................
   F->ops->solve          = MatSolve_SeqBSTRM_5;
   .........................................................*/
-
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -464,7 +464,6 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
     ierr = PetscFree(send_statuses);CHKERRQ(ierr);
   }
   ierr = PetscFree(sindices);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

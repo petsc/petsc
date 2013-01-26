@@ -48,7 +48,6 @@ PetscErrorCode SNESLineSearchRegisterAll(const char path[])
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHL2,                path,"SNESLineSearchCreate_L2",                SNESLineSearchCreate_L2);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHBT,                path,"SNESLineSearchCreate_BT",                SNESLineSearchCreate_BT);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHCP,                path,"SNESLineSearchCreate_CP",                SNESLineSearchCreate_CP);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

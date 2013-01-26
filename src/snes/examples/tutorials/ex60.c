@@ -309,7 +309,6 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -817,8 +816,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = DMDARestoreElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 
@@ -979,8 +976,6 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 

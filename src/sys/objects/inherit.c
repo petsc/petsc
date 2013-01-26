@@ -68,7 +68,6 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
   PetscObjects                        = newPetscObjects;
   PetscObjects[PetscObjectsMaxCounts] = h;
   PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
-
   PetscFunctionReturn(0);
 }
 

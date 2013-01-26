@@ -1241,7 +1241,6 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
     ilink->previous = next;
   }
   jac->nsplits++;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

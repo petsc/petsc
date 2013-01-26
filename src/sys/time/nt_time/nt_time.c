@@ -53,7 +53,6 @@ PetscLogDouble  nt_time(void)
   dTime = dHigh*(double)FACTOR + (double)CurTime.u.LowPart - (double)StartTime.u.LowPart;
   */
   ptime = (double)SecInTick*dTime;
-
   PetscFunctionReturn(ptime);
 }
 

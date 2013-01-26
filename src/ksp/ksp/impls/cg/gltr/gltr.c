@@ -762,7 +762,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
     /* There is no radius.  Therefore, we cannot move along the boundary.    */
     /*************************************************************************/
-
     PetscFunctionReturn(0);
   }
 
@@ -772,7 +771,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* the trust-region without encountering a direction of negative         */
     /* curvature or the iteration limit was reached.                         */
     /*************************************************************************/
-
     PetscFunctionReturn(0);
   }
 

@@ -160,7 +160,6 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   /* Set the thread ownership ranges */
   ierr = PetscThreadCommGetOwnershipRanges(map->comm,map->n,&map->trstarts);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }
 

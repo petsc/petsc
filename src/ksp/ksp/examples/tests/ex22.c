@@ -112,7 +112,6 @@ PetscErrorCode test_solve(void)
   ierr = VecDestroy(& h);CHKERRQ(ierr);
 
   ierr = MatDestroy(& A);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

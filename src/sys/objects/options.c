@@ -653,7 +653,6 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
 
   /* insert command line options again because they take precedence over arguments in petscrc/environment */
   if (argc && args && *argc) {ierr = PetscOptionsInsertArgs_Private(*argc,*args);CHKERRQ(ierr);}
-
   PetscFunctionReturn(0);
 }
 
@@ -2156,7 +2155,6 @@ PetscErrorCode  PetscOptionsCreate(void)
 
   PetscOptionsObject.prefix = PETSC_NULL;
   PetscOptionsObject.title  = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 

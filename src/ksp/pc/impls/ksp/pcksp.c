@@ -315,7 +315,6 @@ PetscErrorCode  PCCreate_KSP(PC pc)
                     PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",
                     PCKSPGetKSP_KSP);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

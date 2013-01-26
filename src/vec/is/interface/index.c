@@ -451,7 +451,6 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
   is->local_offset = offsets[rank];
   ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

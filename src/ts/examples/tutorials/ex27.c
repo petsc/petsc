@@ -120,7 +120,6 @@ PetscErrorCode SetFromOptions(AppCtx * ctx)
   ierr = PetscOptionsGetRealArray(PETSC_NULL,"-sp_0",ctx->x_0.sp,&as,PETSC_NULL);CHKERRQ(ierr);
   as = N_SPECIES;
   ierr = PetscOptionsGetRealArray(PETSC_NULL,"-stoich",ctx->stoichiometry,&as,PETSC_NULL);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +166,6 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
   PetscFunctionReturn(0);
 }
 

@@ -804,7 +804,6 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
   petsc_tracespace[2*petsc_tracelevel] = 0;
   err = fflush(petsc_tracefile);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
-
   PetscFunctionReturn(0);
 }
 

@@ -92,7 +92,6 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
   (*v)->map->bs    = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
-
   PetscFunctionReturn(0);
 }
 

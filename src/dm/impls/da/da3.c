@@ -1413,7 +1413,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   da->ops->view = DMView_DA_3d;
   dd->ltol = PETSC_NULL;
   dd->ao   = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 

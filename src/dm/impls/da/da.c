@@ -240,7 +240,6 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Pets
   if (da->coordinateDM) {
     ierr = DMDASetOffset(da->coordinateDM,xo,yo,zo,Mo,No,Po);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

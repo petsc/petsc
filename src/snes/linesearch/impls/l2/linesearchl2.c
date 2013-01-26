@@ -224,6 +224,5 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
   linesearch->ops->setup          = PETSC_NULL;
 
   linesearch->max_its             = 1;
-
   PetscFunctionReturn(0);
 }

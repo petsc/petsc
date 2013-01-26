@@ -1130,7 +1130,6 @@ static PetscErrorCode MatIJSetEdgesLocal_Private(Mat A, const PetscInt len, Pets
   pg->ijlen    = ijlen;
   pg->minijlen = minnij;
   pg->maxijlen = maxnij;
-
   PetscFunctionReturn(0);
 }
 
@@ -1152,7 +1151,6 @@ PetscErrorCode MatAssemblyBegin_IJ(Mat A, MatAssemblyType type)
     ierr = MatIJClear_Private(A);CHKERRQ(ierr);
     ierr = MatIJSetEdgesLocal_Private(A, len, ixidx, iyidx);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

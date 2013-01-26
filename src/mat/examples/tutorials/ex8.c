@@ -64,7 +64,6 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
                                              "MatScaleUserImpl_SeqAIJ",
                                              MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

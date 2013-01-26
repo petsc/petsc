@@ -1883,6 +1883,5 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
   */
   scat->from_n = -1;
   scat->to_n   = -1;
-
   PetscFunctionReturn(0);
 }

@@ -42,6 +42,5 @@ PetscErrorCode  VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
     values[i] = (PetscReal)PETSC_DRAW_BASIC_COLORS + scale*(values[i] - vmin);
   }
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

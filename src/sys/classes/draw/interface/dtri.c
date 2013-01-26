@@ -203,7 +203,6 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
 
   if (!xin) {ierr = PetscFree(ctx.x);CHKERRQ(ierr);}
   if (!yin) {ierr = PetscFree(ctx.y);CHKERRQ(ierr);}
-
   PetscFunctionReturn(0);
 }
 
@@ -256,6 +255,5 @@ PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal
       ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }

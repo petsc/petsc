@@ -1130,7 +1130,6 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
   ierr = VecAXPY(U,1.0,ros->VecSolPrev);CHKERRQ(ierr);
 
   ierr = PetscFree(bt);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1200,7 +1199,6 @@ static PetscErrorCode TSRosWGetVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot,Vec *Ystage,
       ierr = DMGetNamedGlobalVector(dm,"TSRosW_Zstage",Zstage);CHKERRQ(ierr);
     } else *Zstage = rw->Zstage;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1239,7 +1237,6 @@ static PetscErrorCode TSRosWRestoreVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot, Vec *Ys
 #define __FUNCT__ "DMCoarsenHook_TSRosW"
 static PetscErrorCode DMCoarsenHook_TSRosW(DM fine,DM coarse,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -1274,7 +1271,6 @@ static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat i
 #define __FUNCT__ "DMSubDomainHook_TSRosW"
 static PetscErrorCode DMSubDomainHook_TSRosW(DM fine,DM coarse,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

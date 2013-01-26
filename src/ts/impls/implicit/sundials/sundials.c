@@ -238,7 +238,6 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
   N_VSetArrayPointer((realtype *)x_data,y);
   ierr = CVodeGetDky(cvode->mem,t,0,y);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x_data);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1036,7 +1035,6 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",
                     "TSSundialsMonitorInternalSteps_Sundials",
                      TSSundialsMonitorInternalSteps_Sundials);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

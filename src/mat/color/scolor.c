@@ -43,7 +43,6 @@ PetscErrorCode MatColoringRegisterAll(const char path[])
   ierr = MatColoringRegisterDynamic(MATCOLORINGSL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
   ierr = MatColoringRegisterDynamic(MATCOLORINGLF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
   ierr = MatColoringRegisterDynamic(MATCOLORINGID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

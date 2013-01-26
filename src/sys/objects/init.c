@@ -626,7 +626,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cusp_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) PetscCUSPSynchronize = PETSC_TRUE;
 #endif
-
   PetscFunctionReturn(0);
 }
 

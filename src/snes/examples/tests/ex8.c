@@ -531,7 +531,6 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
 

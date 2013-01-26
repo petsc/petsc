@@ -346,7 +346,6 @@ PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis)
     if (n) permute[kk++] = ii;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, kk, permute, PETSC_OWN_POINTER, a_mis);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 /* PetscCDGetMat

@@ -539,7 +539,6 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
     }
     if (nout) *nout = nf;
   }
-
   PetscFunctionReturn(0);
 }
 

@@ -309,7 +309,6 @@ static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
   if (!lu->PetscMatOrdering) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n",UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

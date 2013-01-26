@@ -290,7 +290,6 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -394,10 +393,7 @@ PetscErrorCode DPsi(AppCtx* user)
   ierr = VecGetArray(user->logcv2,&logcv2_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->DPsiv,&DPsiv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->DPsieta,&DPsieta_p);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
-
 }
 
 
@@ -602,7 +598,6 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
   ierr = VecScale(user->Pi,0.9);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->Piv,user->Pi,user->Pv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 
@@ -719,9 +714,8 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsInt("-maxevents","Maximum random events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-da_refine","da refine \n","None",user->darefine,&user->darefine,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-da_grid_x","da grid x\n","None",user->dagrid,&user->dagrid,&flg);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
- }
+}
 
 
 #undef __FUNCT__
@@ -819,8 +813,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = DMDARestoreElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 
@@ -1067,9 +1059,7 @@ PetscErrorCode Phi(AppCtx* user)
 
   /*ierr = VecView(user->Phi2D_V,view);CHKERRQ(ierr);*/
   /*ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);*/
-
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__

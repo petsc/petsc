@@ -80,7 +80,6 @@ PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p)
   doublet->addCone(cone,p);
   cone.clear(); cone.insert(ALE::Point(0,4)); cone.insert(ALE::Point(0,5)); cone.insert(ALE::Point(0,6)); p = ALE::Point(0,1);
   doublet->addCone(cone,p);
-
   PetscFunctionReturn(0);
 }/* createDoubletSieveBottomUp() */
 
@@ -102,7 +101,6 @@ PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p)
   cone.clear(); cone.insert(ALE::Point(0,8)); cone.insert(ALE::Point(0,9));  p = ALE::Point(0,4); doublet->addCone(cone,p);
   cone.clear(); cone.insert(ALE::Point(0,8)); cone.insert(ALE::Point(0,10)); p = ALE::Point(0,5); doublet->addCone(cone,p);
   cone.clear(); cone.insert(ALE::Point(0,9)); cone.insert(ALE::Point(0,10)); p = ALE::Point(0,6); doublet->addCone(cone,p);
-
   PetscFunctionReturn(0);
 }/* createDoubletSieveTopDown() */
 
@@ -133,6 +131,5 @@ PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
     ierr = PetscPrintf(sieve->getComm(), "Height stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();
   }
-
   PetscFunctionReturn(0);
 }/* viewStrata() */

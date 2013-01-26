@@ -38,7 +38,6 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
   pf->ops->apply       = apply;
   pf->ops->applyvec    = applyvec;
   pf->ops->view        = view;
-
   PetscFunctionReturn(0);
 }
 
@@ -488,7 +487,6 @@ PetscErrorCode  PFSetFromOptions(PF pf)
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)pf);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

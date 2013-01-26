@@ -77,7 +77,6 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
-
   PetscFunctionReturn(0);
 }
 

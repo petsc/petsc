@@ -165,7 +165,6 @@ PetscErrorCode ComputeB(AppCtx* user)
   /* Restore vectors */
   info = DMDAVecRestoreArray(user->da,user->B,&b);CHKERRQ(info);
   info = PetscLogFlops(5*xm*ym+3*xm);CHKERRQ(info);
-
   PetscFunctionReturn(0);
 }
 
@@ -266,7 +265,6 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
 
   info = PetscLogFlops((91 + 10*ym) * xm);CHKERRQ(info);
   PetscFunctionReturn(0);
-
 }
 
 
@@ -372,6 +370,5 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   info = MatSetOption(hes,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(info);
 
   info = PetscLogFlops(9*xm*ym+49*xm);CHKERRQ(info);
-
   PetscFunctionReturn(0);
 }

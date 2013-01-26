@@ -489,10 +489,9 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
   linesearch->ops->setup          = PETSC_NULL;
 
   ierr = PetscNewLog(linesearch, SNESLineSearch_BT, &bt);CHKERRQ(ierr);
-  linesearch->data = (void *)bt;
+  linesearch->data    = (void *)bt;
   linesearch->max_its = 40;
-  linesearch->order = SNES_LINESEARCH_ORDER_CUBIC;
-  bt->alpha = 1e-4;
-
+  linesearch->order   = SNES_LINESEARCH_ORDER_CUBIC;
+  bt->alpha           = 1e-4;
   PetscFunctionReturn(0);
 }

@@ -117,6 +117,5 @@ PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,
     ierr = PetscDrawString(draw,left + tw,top - (1.5 + i)*th,sc,array[i]);CHKERRQ(ierr);
   }
   ierr = PetscStrToArrayDestroy(cnt,array);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

@@ -197,7 +197,6 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
                             &flag);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -225,7 +224,6 @@ PetscErrorCode PCDestroy_AGG(PC pc)
 
   /* call base class */
   ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -304,7 +302,6 @@ PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   }
 
   pc_gamg->data_sz = arrsz;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -654,7 +651,6 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
 
   ierr = PetscFree(lid_parent_gid);CHKERRQ(ierr);
   ierr = PetscFree(lid_state);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -906,7 +902,6 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
   if (llev==1) fclose(file);
 #endif
   ierr = GAMGTableDestroy(&fgid_flid);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1085,7 +1080,6 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,
   if (verbose > 2) {
     PetscPrintf(wcomm,"[%d]%s PCGAMGCoarsen_AGG done\n",rank,__FUNCT__);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1373,7 +1367,6 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,
   ierr = PetscLogEventEnd(PC_GAMGOptprol_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
   *a_P = Prol;
-
   PetscFunctionReturn(0);
 }
 
@@ -1492,7 +1485,6 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,
   ierr = PetscLogEventEnd(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
   *a_P22 = Prol22;
-
   PetscFunctionReturn(0);
 }
 

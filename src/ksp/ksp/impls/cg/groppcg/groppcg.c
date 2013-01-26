@@ -179,6 +179,5 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-
   PetscFunctionReturn(0);
 }

@@ -254,6 +254,5 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig)
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&x_1);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

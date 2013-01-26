@@ -911,7 +911,6 @@ PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
                                      PetscViewerFileGetMode_ASCII);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_ASCII",
                                      PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

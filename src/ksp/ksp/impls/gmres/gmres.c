@@ -204,7 +204,6 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
    */
   /* Form the solution (or the solution so far) */
   ierr = KSPGMRESBuildSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-1);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -543,7 +542,6 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
 
   x      = VEC_VV(gmres->it+1);
   ierr   = VecView(x,viewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

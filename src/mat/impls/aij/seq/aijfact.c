@@ -1311,7 +1311,6 @@ PetscErrorCode MatSolveAdd_SeqAIJ_inplace(Mat A,Vec bb,Vec yy,Vec xx)
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1368,7 +1367,6 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

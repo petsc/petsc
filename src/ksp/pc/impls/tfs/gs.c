@@ -1395,7 +1395,6 @@ static PetscErrorCode PCTFS_gs_gop_pairwise_plus_hc(PCTFS_gs_id *gs,  PetscScala
     }
     msg_list++;
   }
-
   PetscFunctionReturn(0);
 }
 

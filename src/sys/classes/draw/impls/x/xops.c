@@ -200,7 +200,6 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,
     ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   }
   ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -859,7 +858,6 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
   if (flg) {
      ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

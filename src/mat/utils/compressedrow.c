@@ -69,6 +69,5 @@ PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pets
     compressedrow->i      = cpi;
     compressedrow->rindex = ridx;
   }
-
   PetscFunctionReturn(0);
 }

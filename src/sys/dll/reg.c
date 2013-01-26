@@ -124,7 +124,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

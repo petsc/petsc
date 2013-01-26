@@ -126,6 +126,5 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
   y->map->N = y->map->n; /* this tricks the silly error checking in MatMult() */
   ierr = MatMult(Vlocal,work2,y);CHKERRQ(ierr);/* note in this call y is treated as a sequential vector  */
   y->map->N = Nsave;
-
   PetscFunctionReturn(0);
 }

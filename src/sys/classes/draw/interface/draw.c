@@ -390,7 +390,6 @@ PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   draw->port_xl = 0.0;  draw->port_xr = 1.0;
   draw->port_yl = 0.0;  draw->port_yr = 1.0;
   draw->popup   = 0;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

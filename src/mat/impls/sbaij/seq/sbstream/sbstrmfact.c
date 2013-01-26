@@ -103,7 +103,7 @@ PetscErrorCode MatSolve_SeqSBSTRM_4_inplace(Mat A,Vec bb,Vec xx)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*bs2*a->nz - (bs+2.0*bs2)*mbs);CHKERRQ(ierr);
-   PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -639,7 +639,6 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
   }
 
   ierr = SeqSBSTRM_convertFact_sbstrm(F);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 /*=========================================================*/

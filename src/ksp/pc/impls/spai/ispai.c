@@ -109,7 +109,6 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   /* free the SPAI matrices */
   sp_free_matrix(ispai->B);
   sp_free_matrix(ispai->M);
-
   PetscFunctionReturn(0);
 }
 
@@ -667,7 +666,6 @@ PetscErrorCode  PCCreate_SPAI(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetSp_C",
                     "PCSPAISetSp_SPAI",
                      PCSPAISetSp_SPAI);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -837,9 +835,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
   order_pointers(M);
   M->maxnz = calc_maxnz(M);
-
   *B = M;
-
   PetscFunctionReturn(0);
 }
 
@@ -905,7 +901,6 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 
   ierr = MatAssemblyBegin(*PB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*PB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

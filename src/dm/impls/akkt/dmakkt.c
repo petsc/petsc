@@ -23,7 +23,6 @@ PetscErrorCode DMAKKTSetDM(DM dm, DM ddm)
   ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
   ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
-
   PetscFunctionReturn(0);
 }
 
@@ -668,6 +667,5 @@ PetscErrorCode DMCreate_AKKT(DM dm)
   dm->ops->view                = DMView_AKKT;
   dm->ops->setfromoptions      = DMSetFromOptions_AKKT;
   dm->ops->setup               = DMSetUp_AKKT;
-
   PetscFunctionReturn(0);
 }

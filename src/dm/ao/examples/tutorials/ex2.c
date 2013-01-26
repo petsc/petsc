@@ -396,7 +396,6 @@ PetscErrorCode DataRead(GridData *gdata)
 
   gdata->ia          = ia;
   gdata->ja          = ja;
-
   PetscFunctionReturn(0);
 }
 
@@ -449,8 +448,6 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
       Free the adjacency graph data structures
   */
   ierr = MatDestroy(&Adj);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 
@@ -554,7 +551,6 @@ PetscErrorCode DataMoveElements(GridData *gdata)
                             gdata->ele[3*i+2]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -673,7 +669,6 @@ PetscErrorCode DataPartitionVertices(GridData *gdata)
   PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number vertices assigned %d\n",rank,nlocal);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = PetscIntView(nlocal,localvert,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -763,7 +758,6 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"(%g,%g)\n",gdata->vert[2*i],gdata->vert[2*i+1]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

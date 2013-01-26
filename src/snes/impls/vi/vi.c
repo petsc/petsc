@@ -444,7 +444,6 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Distribution of lower bound, upper bound and the solution vector should be identical across all the processors.");
     }
   }
-
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

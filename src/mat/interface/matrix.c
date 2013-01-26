@@ -2475,7 +2475,6 @@ PetscErrorCode  MatMultConstrained(Mat mat,Vec x,Vec y)
   ierr = (*mat->ops->multconstrained)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -2521,7 +2520,6 @@ PetscErrorCode  MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
   ierr = (*mat->ops->multtransposeconstrained)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

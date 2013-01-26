@@ -596,7 +596,6 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       break;
     }
   }
-
   PetscFunctionReturn(0);
 #endif
 }

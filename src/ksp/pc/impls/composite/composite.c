@@ -612,7 +612,6 @@ PetscErrorCode  PCCreate_Composite(PC pc)
                     PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSpecialSetAlpha_C","PCCompositeSpecialSetAlpha_Composite",
                     PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

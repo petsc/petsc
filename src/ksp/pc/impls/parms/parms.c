@@ -245,7 +245,6 @@ static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance for schur complement at each level: %g\n",parms->droptol[4]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance for ILUT in last level schur complement: %g\n",parms->droptol[5]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -476,7 +475,6 @@ PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxi
     parms->maxits = maxits;
     pc->setupcalled = 0;
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -759,7 +757,6 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveRestart_C","PCPARMSSetSolveRestart_PARMS",PCPARMSSetSolveRestart_PARMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetNonsymPerm_C","PCPARMSSetNonsymPerm_PARMS",PCPARMSSetNonsymPerm_PARMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetFill_C","PCPARMSSetFill_PARMS",PCPARMSSetFill_PARMS);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

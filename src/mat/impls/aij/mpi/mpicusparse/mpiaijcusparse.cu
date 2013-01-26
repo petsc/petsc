@@ -244,7 +244,6 @@ PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
   A->ops->destroy        = MatDestroy_MPIAIJCUSPARSE;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_MPIAIJCUSPARSE", MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

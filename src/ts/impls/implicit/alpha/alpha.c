@@ -364,7 +364,6 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","TSAlphaSetRadius_Alpha",TSAlphaSetRadius_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","TSAlphaSetParams_Alpha",TSAlphaSetParams_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaGetParams_C","TSAlphaGetParams_Alpha",TSAlphaGetParams_Alpha);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

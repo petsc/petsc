@@ -243,7 +243,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void* ctx)
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,F,&f);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -339,6 +338,5 @@ PetscErrorCode Parameter_settings(AppCtx* user)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

@@ -463,7 +463,6 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 #endif
   *local_mat = temp_local_mat;
   ierr = MatDestroy(&elem_mat_DBC);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -896,7 +895,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   *ksp = temp_ksp;
   ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
   ierr = ISDestroy(&neumannIS);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

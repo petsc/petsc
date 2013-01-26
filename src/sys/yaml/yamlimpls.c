@@ -709,7 +709,6 @@ PetscErrorCode file_to_string(char* filename, char** str)
 
   ierr = PetscFree(line);CHKERRQ(ierr);
   if (fh) fclose(fh);
-
   PetscFunctionReturn(0);
 }
 

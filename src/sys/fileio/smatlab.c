@@ -62,7 +62,6 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,machine,"xterm -display ${DISPLAY} -e matlab -nosplash","r",fp);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }
 

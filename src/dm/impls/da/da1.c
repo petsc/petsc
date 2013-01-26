@@ -309,7 +309,6 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   dd->idx = idx;
   dd->Nl  = nn;
-
   PetscFunctionReturn(0);
 }
 

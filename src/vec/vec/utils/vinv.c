@@ -277,7 +277,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -361,7 +360,6 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
-
   PetscFunctionReturn(0);
 }
 

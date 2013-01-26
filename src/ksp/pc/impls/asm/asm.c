@@ -397,7 +397,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -557,7 +556,6 @@ static PetscErrorCode PCReset_ASM(PC pc)
   ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
   osm->is       = 0;
   osm->is_local = 0;
-
   PetscFunctionReturn(0);
 }
 
@@ -1304,7 +1302,6 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
     ierr = ISDestroy(&ispart);CHKERRQ(ierr);
 
   }
-
   PetscFunctionReturn(0);
 }
 

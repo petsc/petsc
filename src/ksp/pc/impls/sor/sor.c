@@ -337,7 +337,6 @@ PetscErrorCode  PCCreate_SOR(PC pc)
                     PCSORSetOmega_SOR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",
                     PCSORSetIterations_SOR);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

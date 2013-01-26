@@ -168,7 +168,6 @@ PetscErrorCode SaveSolution(TS ts)
   ierr = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user->stepnum++;
-
   PetscFunctionReturn(0);
 }
 
@@ -255,7 +254,6 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx* user)
   /* ierr = VecView(Xgen,0);CHKERRQ(ierr); */
   ierr = DMCompositeGather(user->dmpgrid,X,INSERT_VALUES,Xgen,Xnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -376,7 +374,6 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx* user)
   ierr = DMCompositeGather(user->dmpgrid,F,INSERT_VALUES,Fgen,Fnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Fgen,&Fnet);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -409,7 +406,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx* use
   }
   ierr = VecRestoreArray(F,&f);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -440,7 +436,6 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void* ctx)
     f[9*i+8] = 0;
   }
   ierr = VecRestoreArray(F,&f);
-
   PetscFunctionReturn(0);
 }
 
@@ -489,7 +484,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   ierr = MatSeqAIJSetPreallocation(J,PETSC_NULL,d_nnz);CHKERRQ(ierr);
 
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -786,7 +780,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
   }
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

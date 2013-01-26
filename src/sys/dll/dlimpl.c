@@ -192,7 +192,6 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 #endif
 
   *handle = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 

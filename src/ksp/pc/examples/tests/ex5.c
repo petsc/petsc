@@ -366,7 +366,6 @@ PetscErrorCode CalculateRhs(Vec u)
     x += h; uu = 2.0*h*h;
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */

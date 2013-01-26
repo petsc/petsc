@@ -427,7 +427,6 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
 
   ierr = KSPPGMRESBuildSoln(pgmres->nrs,ksp->vec_sol,ptr,ksp,pgmres->it);CHKERRQ(ierr);
   if (result) *result = ptr;
-
   PetscFunctionReturn(0);
 }
 

@@ -127,7 +127,6 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -258,7 +258,6 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetPeriod_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDResetHHistory_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDAddNullSpace_C","",PETSC_NULL);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

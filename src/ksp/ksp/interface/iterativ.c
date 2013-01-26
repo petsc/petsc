@@ -155,7 +155,6 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
     viewer = PETSC_VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -455,7 +454,6 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   }
 
   /* todo: dynamic tolerance may apply to other types of pc too */
-
   PetscFunctionReturn(0);
 }
 

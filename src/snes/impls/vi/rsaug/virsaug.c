@@ -1005,7 +1005,6 @@ PetscErrorCode SNESVICreateSubVectors(SNES snes,PetscInt n,Vec* newv)
   ierr = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   *newv = v;
-
   PetscFunctionReturn(0);
 }
 
@@ -2538,7 +2537,6 @@ PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_VI",SNESLineSearchSetType_VIRSAUG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

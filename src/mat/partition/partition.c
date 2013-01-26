@@ -467,7 +467,6 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
     ierr = (*part->ops->view)(part,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

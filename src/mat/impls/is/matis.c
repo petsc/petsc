@@ -53,7 +53,6 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
   ierr = VecSet(y,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -290,7 +289,6 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     ierr = MatAssemblyEnd  (is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecRestoreArray(is->x,&array);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -380,7 +378,6 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
   ierr = PetscObjectReference((PetscObject)local);CHKERRQ(ierr);
   ierr = MatDestroy(&is->A);CHKERRQ(ierr);
   is->A = local;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -584,7 +581,6 @@ PetscErrorCode  MatCreate_IS(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISSetLocalMat_C","MatISSetLocalMat_IS",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

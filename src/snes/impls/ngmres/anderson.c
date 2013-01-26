@@ -212,7 +212,6 @@ PetscErrorCode SNESCreate_Anderson(SNES snes)
   ngmres->epsilonB   = 0.1;
 
   ngmres->andersonBeta = 1.0;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -186,7 +186,6 @@ PetscErrorCode PrintResNorm(Mat A, Vec x, Vec b, Vec r)
   if (destroyr) {
     ierr = VecDestroy(&r);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -880,7 +879,6 @@ PetscErrorCode PCSmoothProlongator_ASA(PC_ASA_level *asa_lev)
   /* step 2: shift and scale to get I_{l+1}^l = P_{l+1}^l - 4/(3/rho) A_l P_{l+1}^l */
   ierr = MatAYPX(asa_lev->smP, -4./(3.*(asa_lev->spec_rad)), asa_lev->P, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatAYPX(asa_lev->smPt, -4./(3.*(asa_lev->spec_rad)), asa_lev->Pt, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1728,7 +1726,6 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
   ierr = VecDestroy(&(asa->b));CHKERRQ(ierr);
   asa_lev->x = PETSC_NULL;
   asa_lev->b = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 

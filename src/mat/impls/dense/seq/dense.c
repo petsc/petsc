@@ -877,7 +877,6 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
   }
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

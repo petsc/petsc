@@ -95,7 +95,6 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symm
     }
     *ia = a->i; *ja = a->j;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -116,7 +115,6 @@ static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  
     for (i=0; i<nz; i++) a->j[i]--;
     for (i=0; i<n+1; i++) a->i[i]--;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -764,7 +762,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
     }
     ailen[row] = nrow;
   }
-   PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -931,33 +929,33 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,Petsc
   PetscBool  flg;
 
   PetscFunctionBegin;
-   for (i=0,j=0; i<n; j++) {
-     row = idx[i];
-     if (row%bs!=0) { /* Not the begining of a block */
-       sizes[j] = 1;
-       i++;
-     } else if (i+bs > n) { /* Beginning of a block, but complete block doesn't exist (at idx end) */
-       sizes[j] = 1;         /* Also makes sure atleast 'bs' values exist for next else */
-       i++;
-     } else { /* Begining of the block, so check if the complete block exists */
-       flg = PETSC_TRUE;
-       for (k=1; k<bs; k++) {
-         if (row+k != idx[i+k]) { /* break in the block */
-           flg = PETSC_FALSE;
-           break;
-         }
-       }
-       if (flg) { /* No break in the bs */
-         sizes[j] = bs;
-         i+= bs;
-       } else {
-         sizes[j] = 1;
-         i++;
-       }
-     }
-   }
-   *bs_max = j;
-   PetscFunctionReturn(0);
+  for (i=0,j=0; i<n; j++) {
+    row = idx[i];
+    if (row%bs!=0) { /* Not the begining of a block */
+      sizes[j] = 1;
+      i++;
+    } else if (i+bs > n) { /* Beginning of a block, but complete block doesn't exist (at idx end) */
+      sizes[j] = 1;         /* Also makes sure atleast 'bs' values exist for next else */
+      i++;
+    } else { /* Begining of the block, so check if the complete block exists */
+      flg = PETSC_TRUE;
+      for (k=1; k<bs; k++) {
+        if (row+k != idx[i+k]) { /* break in the block */
+          flg = PETSC_FALSE;
+          break;
+        }
+      }
+      if (flg) { /* No break in the bs */
+        sizes[j] = bs;
+        i+= bs;
+      } else {
+        sizes[j] = 1;
+        i++;
+      }
+    }
+  }
+  *bs_max = j;
+  PetscFunctionReturn(0);
 }
 
 
@@ -1270,19 +1268,19 @@ PetscErrorCode MatIsSymmetric_SeqSBAIJ(Mat A,PetscReal tol,PetscBool  *flg)
 #define __FUNCT__ "MatIsStructurallySymmetric_SeqSBAIJ"
 PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A,PetscBool  *flg)
 {
-   PetscFunctionBegin;
-   *flg = PETSC_TRUE;
-   PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIsHermitian_SeqSBAIJ"
 PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscReal tol,PetscBool  *flg)
- {
-   PetscFunctionBegin;
-   *flg = PETSC_FALSE;
-   PetscFunctionReturn(0);
- }
+{
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRealPart_SeqSBAIJ"
@@ -1984,7 +1982,6 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

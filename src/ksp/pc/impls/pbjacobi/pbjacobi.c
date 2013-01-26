@@ -238,7 +238,6 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
     default:
       SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
   }
-
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

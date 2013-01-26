@@ -243,7 +243,6 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
-
   PetscFunctionReturn(0);
 }
 

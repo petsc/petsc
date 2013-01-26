@@ -183,7 +183,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -319,7 +318,6 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +442,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -457,6 +454,5 @@ PetscErrorCode Monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void* mctx)
   PetscFunctionBeginUser;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution vector at t = %5.4f\n",time,steps);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

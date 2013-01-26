@@ -364,7 +364,6 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -454,7 +453,6 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -510,10 +508,7 @@ PetscErrorCode DPsi(AppCtx* user)
   ierr = VecRestoreArray(user->DPsiv,&DPsiv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->DPsii,&DPsii_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->DPsieta,&DPsieta_p);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
-
 }
 
 
@@ -537,7 +532,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
       y[i] = log(x[i]);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -661,7 +655,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -724,7 +717,6 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
   ierr = VecScale(user->Pi,0.9);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->Piv,user->Pi,user->Pv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__
@@ -753,6 +745,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "SetVariableBounds"
 PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
@@ -875,7 +868,7 @@ PetscErrorCode GetParams(AppCtx* user)
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
- }
+}
 
 
 #undef __FUNCT__
@@ -1053,8 +1046,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = DMDARestoreElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 
@@ -1215,8 +1206,6 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 
@@ -1397,9 +1386,7 @@ PetscErrorCode Phi(AppCtx* user)
   /*  ierr = VecNorm(user->Phi2D_V,NORM_INFINITY,&max1);CHKERRQ(ierr);*/
   /*ierr = VecMin(user->Phi2D_V,&loc1,&min1);CHKERRQ(ierr);*/
   /*printf("norm phi = %f, min phi = %f\n",max1,min1);*/
-
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__

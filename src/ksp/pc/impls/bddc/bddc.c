@@ -2187,7 +2187,6 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx)
   /* final cleanup */
   ierr = PetscFree(vertex_indices);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda_global);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -3704,7 +3703,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = ISDestroy(&is_V_local);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&is_R_local);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -4817,7 +4815,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
   }
   if (dbg_flag) { ierr = PetscViewerFlush(viewer);CHKERRQ(ierr); }
-
   PetscFunctionReturn(0);
 }
 
@@ -5554,6 +5551,5 @@ static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph graph, PetscInt 
     graph->where_ncmps[n] = ncmps_pid;
   }
   graph->ncmps = ncmps;
-
   PetscFunctionReturn(0);
 }

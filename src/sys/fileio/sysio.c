@@ -327,7 +327,6 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
     *(void**)p = PETSC_NULL;
 #endif
   }
-
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */

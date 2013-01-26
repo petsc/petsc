@@ -2437,7 +2437,6 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
     ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric(outA,inA,info);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

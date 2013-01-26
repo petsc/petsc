@@ -117,7 +117,6 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   }
   if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   ierr = VecCopy(X,ksp->vec_sol);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 /*
@@ -260,7 +259,6 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   ksp->ops->setfromoptions       = KSPSetFromOptions_LCD;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -427,7 +427,6 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscThreadComm type %s",ttype);
   ierr = (*r)(tcomm);CHKERRQ(ierr);
   ierr = PetscStrcmp(NOTHREAD,tcomm->type,&tcomm->isnothread);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -557,7 +556,6 @@ PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, Petsc
   if (val1) *val1 = &job->scalars[0];
   if (val2) *val2 = &job->scalars[1];
   if (val3) *val3 = &job->scalars[2];
-
   PetscFunctionReturn(0);
 }
 
@@ -609,7 +607,6 @@ PetscErrorCode PetscThreadCommGetInts(MPI_Comm comm,PetscInt **val1, PetscInt **
   if (val1) *val1 = &job->ints[0];
   if (val2) *val2 = &job->ints[1];
   if (val3) *val3 = &job->ints[2];
-
   PetscFunctionReturn(0);
 }
 
@@ -1281,7 +1278,6 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   }
 
   *trstarts = trstarts_out;
-
   PetscFunctionReturn(0);
 }
 

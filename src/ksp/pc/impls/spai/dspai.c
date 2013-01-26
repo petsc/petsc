@@ -32,7 +32,6 @@ PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
     }
     ierr     = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -49,6 +48,5 @@ PetscErrorCode  VecDumpSPAI(Vec b,FILE *file)
   for (i=0; i<n; i++) {
     fprintf(file,"%d %16.14e\n",i+1,array[i]);
   }
-
   PetscFunctionReturn(0);
 }

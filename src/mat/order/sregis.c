@@ -55,7 +55,6 @@ PetscErrorCode  MatOrderingRegisterAll(const char path[])
 #if defined(PETSC_HAVE_UMFPACK)
   ierr = MatOrderingRegisterDynamic(MATORDERINGAMD,      path,"MatGetOrdering_AMD",MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }
 

@@ -104,6 +104,5 @@ PetscErrorCode CalculateRhs(Vec u)
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

@@ -102,6 +102,5 @@ PetscErrorCode  PetscFixFilename(const char filein[],char fileout[])
     else fileout[i] = filein[i];
   }
   fileout[n] = 0;
-
   PetscFunctionReturn(0);
 }

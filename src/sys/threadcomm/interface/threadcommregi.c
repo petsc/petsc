@@ -39,6 +39,5 @@ PetscErrorCode PetscThreadCommRegisterAll(const char path[])
 #if defined(PETSC_HAVE_OPENMP)
   ierr = PetscThreadCommRegisterDynamic(OPENMP,         path,"PetscThreadCommCreate_OpenMP",         PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }

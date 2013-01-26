@@ -378,7 +378,6 @@ PetscErrorCode SNESCreate_GS(SNES snes)
   gs->max_its = 50;
 
   snes->data = (void*) gs;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

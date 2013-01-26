@@ -137,7 +137,6 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   }
   ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

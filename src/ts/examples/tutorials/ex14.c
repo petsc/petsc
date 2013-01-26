@@ -991,7 +991,6 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
 
   ierr = DMRestoreLocalVector(da3,&F3);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da2,&F2);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

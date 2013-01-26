@@ -142,7 +142,6 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
 
   viewer->formats[viewer->iformat++]  = viewer->format;
   viewer->format                      = format;
-
   PetscFunctionReturn(0);
 }
 

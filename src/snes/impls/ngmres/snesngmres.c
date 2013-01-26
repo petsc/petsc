@@ -516,7 +516,6 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNGMRESSetSelectType_C","SNESNGMRESSetSelectType_NGMRES",SNESNGMRESSetSelectType_NGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNGMRESSetRestartType_C","SNESNGMRESSetRestartType_NGMRES",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

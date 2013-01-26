@@ -33,7 +33,6 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneig,PetscInt *nzero,Pets
   if (nneig) *nneig = nneig_tmp;
   if (npos)  *npos  = npos_tmp;
   if (nzero) *nzero = mbs - nneig_tmp - npos_tmp;
-
   PetscFunctionReturn(0);
 }
 

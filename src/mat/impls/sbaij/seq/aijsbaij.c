@@ -325,7 +325,6 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   } else {
     *newmat = B;
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

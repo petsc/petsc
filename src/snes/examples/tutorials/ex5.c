@@ -237,7 +237,6 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
      Restore vector
   */
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

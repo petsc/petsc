@@ -1068,7 +1068,6 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
     if (max_its < 0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",max_its);
     linesearch->max_its = max_its;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1355,7 +1354,6 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch,Vec *X,Vec *F, Ve
     PetscValidPointer(G, 6);
     *G = linesearch->vec_func_new;
   }
-
   PetscFunctionReturn(0);
 }
 

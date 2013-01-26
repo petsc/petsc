@@ -167,7 +167,6 @@ PetscErrorCode test_vec_ops(void)
 
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);
-
   PetscFunctionReturn(0);
 }
 #endif
@@ -197,7 +196,6 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
 
   *_v = v;
-
   PetscFunctionReturn(0);
 }
 
@@ -286,7 +284,6 @@ PetscErrorCode test_axpy_dot_max(void)
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -73,7 +73,6 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   assert(pc_gamg->data[arrsz] == -99.);
 
   pc_gamg->data_sz = arrsz;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -443,7 +442,6 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   free(mid.trianglelist);
   free(mid.neighborlist);
   ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 #else
   SETERRQ(((PetscObject)a_Prol)->comm,PETSC_ERR_PLIB,"configure with TRIANGLE to use geometric MG");
@@ -557,7 +555,6 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
     ierr = VecDestroy(&locState);CHKERRQ(ierr);
   }
   *a_crsGID = crsGID; /* output */
-
   PetscFunctionReturn(0);
 }
 
@@ -904,6 +901,5 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
                                             "PCSetCoordinates_C",
                                             "PCSetCoordinates_GEO",
                                             PCSetCoordinates_GEO);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

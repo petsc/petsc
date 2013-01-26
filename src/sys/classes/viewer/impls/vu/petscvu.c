@@ -133,7 +133,6 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject) viewer, "File: %s", name);
 #endif
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -169,7 +168,6 @@ PetscErrorCode  PetscViewerCreate_VU(PetscViewer viewer)
                                            PetscViewerFileSetName_VU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerFileGetName_C", "PetscViewerFileGetName_VU",
                                            PetscViewerFileGetName_VU);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

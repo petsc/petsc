@@ -161,7 +161,6 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
   }
   ierr = PetscFree(job_lockfree.my_job_status);CHKERRQ(ierr);
   ierr = PetscFree(job_lockfree.data);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

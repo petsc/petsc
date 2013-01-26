@@ -302,7 +302,6 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscFunctionBegin;
   ierr = SNESDefaultGetWork(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

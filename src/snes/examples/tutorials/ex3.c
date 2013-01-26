@@ -304,7 +304,6 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&ctx.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -318,12 +317,12 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormInitialGuess(Vec x)
 {
-   PetscErrorCode ierr;
-   PetscScalar    pfive = .50;
+  PetscErrorCode ierr;
+  PetscScalar    pfive = .50;
 
-   PetscFunctionBeginUser;
-   ierr = VecSet(x,pfive);CHKERRQ(ierr);
-   PetscFunctionReturn(0);
+  PetscFunctionBeginUser;
+  ierr = VecSet(x,pfive);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

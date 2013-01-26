@@ -661,7 +661,6 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   * max speed is 3*a for the basic initial conditions (-1 <= u <= 2)
   * */
   if (r == PhysicsRiemann_Traffic_LxF) user->lxf_speed = 3*user->a;
-
   PetscFunctionReturn(0);
 }
 

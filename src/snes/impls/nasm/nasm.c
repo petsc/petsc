@@ -49,7 +49,6 @@ PetscErrorCode SNESReset_NASM(SNES snes)
   if (nasm->oscatter) {ierr = PetscFree(nasm->oscatter);CHKERRQ(ierr);}
   if (nasm->iscatter) {ierr = PetscFree(nasm->iscatter);CHKERRQ(ierr);}
   if (nasm->gscatter) {ierr = PetscFree(nasm->gscatter);CHKERRQ(ierr);}
-
   PetscFunctionReturn(0);
 }
 
@@ -135,7 +134,6 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     ierr = DMCreateLocalVector(subdm,&nasm->xl[i]);CHKERRQ(ierr);
     ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,PETSC_NULL,nasm->xl[i]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -305,7 +303,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
   ierr = VecAXPY(X,1.0,Y);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -462,9 +459,8 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
     snes->max_funcs           = 10000;
   }
 
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",
-                    SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",
+                  SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

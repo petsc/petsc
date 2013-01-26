@@ -91,7 +91,6 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscFree(cidx);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -497,7 +496,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -605,7 +603,6 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc,Vec x,Vec y)
     ierr = VecScatterBegin(osm->gorestriction,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
     ierr = VecScatterEnd(osm->gorestriction,osm->gy,y,ADD_VALUES,reverse);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1788,6 +1785,5 @@ PetscErrorCode  PCGASMGetSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   osm = (PC_GASM*)pc->data;
   if (n)   *n   = osm->n;
   if (mat) *mat = osm->pmat;
-
   PetscFunctionReturn(0);
 }

@@ -408,7 +408,6 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   ierr = DMGetRefineLevel(da,&rl);CHKERRQ(ierr);
   (*nda)->levelup = rl;
   (*nda)->leveldown = cl;
-
   PetscFunctionReturn(0);
 }
 

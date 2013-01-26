@@ -193,7 +193,6 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
     }
   }
   ierr = VecRestoreArray(Gcoords,&XX);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -251,7 +250,6 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
     }
   }
   ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +282,6 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
 
   ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -326,7 +323,6 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
 
   ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,Gcoords,&XX);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -418,7 +414,6 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   ierr = DMDestroy(&daf);CHKERRQ(ierr);
   ierr = VecDestroy(&ac);CHKERRQ(ierr);
   ierr = VecDestroy(&af);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -519,7 +514,6 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   ierr = DMDestroy(&daf);CHKERRQ(ierr);
   ierr = VecDestroy(&ac);CHKERRQ(ierr);
   ierr = VecDestroy(&af);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -624,7 +618,6 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   ierr = DMDestroy(&daf);CHKERRQ(ierr);
   ierr = VecDestroy(&ac);CHKERRQ(ierr);
   ierr = VecDestroy(&af);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

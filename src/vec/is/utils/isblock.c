@@ -160,7 +160,6 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
     ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
   }
   ierr = PetscFree(nidx);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

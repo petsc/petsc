@@ -206,7 +206,6 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
   PetscValidPointer(iscoloring,1);
 
   /* currently nothing is done here */
-
   PetscFunctionReturn(0);
 }
 

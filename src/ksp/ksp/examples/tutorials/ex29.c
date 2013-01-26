@@ -210,6 +210,5 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
     ierr = MatSetNullSpace(jac,nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }

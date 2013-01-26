@@ -48,7 +48,6 @@ PetscErrorCode PCReset_GAMG(PC pc)
   if (pc_gamg->orig_data) {
     ierr = PetscFree(pc_gamg->orig_data);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -103,7 +102,6 @@ static PetscErrorCode GAMGKKTMatDestroy(GAMGKKTMat *mat)
 
   ierr = ISDestroy(&mat->prim_is);CHKERRQ(ierr);
   ierr = ISDestroy(&mat->constr_is);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -509,7 +507,6 @@ static PetscErrorCode createLevel(const PC pc,
     ierr = MatView(Cmat, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -588,7 +585,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
       /* PCSetUp_MG seems to insists on setting this to GMRES */
       ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr);
-
       PetscFunctionReturn(0);
     }
   }
@@ -991,7 +987,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = KSPSetType(smoother, KSPPREONLY);CHKERRQ(ierr);
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1448,7 +1443,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                            &flag);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

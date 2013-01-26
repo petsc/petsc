@@ -207,7 +207,6 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   /* Only the main thread updates counter->refcount */
   ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
   if (!trank) counter->refcount++; /* number of references to this comm */
-
   PetscFunctionReturn(0);
 }
 
@@ -344,6 +343,5 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
     ierr = MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm);CHKERRQ(ierr);
     if (!srank) ++roots;
   }
-
   PetscFunctionReturn(0);
 }

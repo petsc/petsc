@@ -222,7 +222,6 @@ static PetscErrorCode DMDAGetElementCorners(DM da,
   }
 
   DMDAGetLocalElementSize(da,mx,my,mz);
-
   PetscFunctionReturn(0);
 }
 
@@ -333,7 +332,6 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
 
   ierr = VecDestroy(&vlx);CHKERRQ(ierr);
   ierr = VecDestroy(&vly);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1048,7 +1046,6 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
 
   *_da = da;
   *_X  = X;
-
   PetscFunctionReturn(0);
 }
 
@@ -1599,7 +1596,6 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   ierr = VecDestroy(&properties);CHKERRQ(ierr);
   ierr = VecDestroy(&l_properties);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

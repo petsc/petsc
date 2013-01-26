@@ -172,6 +172,7 @@ static PetscErrorCode assembled_system(void)
   ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
@@ -300,6 +301,7 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian2"
@@ -517,9 +519,9 @@ static int block_system(void)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1_block"
@@ -556,9 +558,9 @@ static PetscErrorCode FormFunction1_block(SNES snes,Vec x,Vec f,void *dummy)
 
   ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian1_block"
@@ -609,7 +611,6 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat *jac,Mat *B,MatStr
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction2_block"
@@ -642,6 +643,7 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian2_block"

@@ -321,7 +321,6 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     ierr = VecDestroy(&ghostState);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&locState);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -386,7 +385,6 @@ PetscErrorCode MatCoarsenDestroy_MIS (MatCoarsen coarse)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   ierr = PetscFree(MIS);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -609,7 +609,7 @@ PetscErrorCode MatGetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pet
       }
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local values currently supported");
   }
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1707,7 +1707,6 @@ PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
     ierr = VecScatterEnd(baij->Mvctx,rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = (*b->ops->diagonalscale)(b,PETSC_NULL,baij->lvec);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1876,7 +1875,6 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
   ierr = PetscFree(svalues);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -2166,7 +2164,6 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
     ierr = PetscObjectCompose((PetscObject)M,"SubMatrix",(PetscObject)Mreuse);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)Mreuse);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -3590,7 +3587,6 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   ierr = PetscLogObjectParent(mat,a->B);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)matin)->qlist,&((PetscObject)mat)->qlist);CHKERRQ(ierr);
   *newmat = mat;
-
   PetscFunctionReturn(0);
 }
 
@@ -3851,7 +3847,6 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   ierr = PetscFree3(mask,masked1,masked2);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

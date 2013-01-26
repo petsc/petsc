@@ -293,7 +293,6 @@ static PetscErrorCode VecReciprocal_Nest(Vec x)
   for (i=0; i<nr; i++) {
     ierr = VecReciprocal(bx->v[i]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -854,7 +853,6 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->dotnorm2                = VecDotNorm2_Nest;
   ops->getsubvector            = VecGetSubVector_Nest;
   ops->restoresubvector        = VecRestoreSubVector_Nest;
-
   PetscFunctionReturn(0);
 }
 
@@ -1033,7 +1031,6 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   }
 
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1090,7 +1087,6 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
   for (i=0; i<N; i++) {
     ierr = VecNestSetSubVec_Private(X,idxm[i],sx[i]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

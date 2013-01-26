@@ -95,7 +95,6 @@ PetscErrorCode SaveSolution(TS ts)
   ierr = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user->stepnum++;
-
   PetscFunctionReturn(0);
 }
 

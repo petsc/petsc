@@ -91,7 +91,6 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   /* nothing good found */
   ierr = PetscMemzero(pythonlib,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Python dynamic library not found\n");CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -165,7 +164,6 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   if (!Py_InitializeEx)  SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_Finalize)      SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   ierr = PetscInfo(0,"Python: all required symbols loaded from Python dynamic library\n");CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

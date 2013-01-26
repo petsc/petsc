@@ -402,7 +402,6 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,rev_rwaits+i);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }
 

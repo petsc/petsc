@@ -256,7 +256,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = DMDAVecRestoreArrayDOF(da,U,&u);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

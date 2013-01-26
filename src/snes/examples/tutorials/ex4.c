@@ -251,7 +251,6 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
      Restore vector
   */
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

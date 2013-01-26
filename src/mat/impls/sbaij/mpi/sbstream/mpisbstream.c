@@ -111,7 +111,6 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
   ierr = PetscFree(bsp);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -290,6 +290,5 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

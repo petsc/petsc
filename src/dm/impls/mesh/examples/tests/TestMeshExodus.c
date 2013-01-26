@@ -577,6 +577,5 @@ PetscErrorCode EXOGetElemType(const char *name,EXO_ELEM_TYPE *elem_type)
   if (elem_sig) {
     *elem_type = EXO_HEX;
   }
-
   PetscFunctionReturn(0);
 }

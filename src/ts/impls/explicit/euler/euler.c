@@ -130,7 +130,6 @@ PetscErrorCode  TSCreate_Euler(TS ts)
 
   ierr = PetscNewLog(ts,TS_Euler,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

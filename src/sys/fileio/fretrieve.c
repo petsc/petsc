@@ -463,6 +463,5 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
       ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }

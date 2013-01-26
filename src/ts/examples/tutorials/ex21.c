@@ -332,7 +332,6 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx* 
   }
   ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
   ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -52,7 +52,6 @@ PetscErrorCode  VecCreate_Shared(Vec vv)
 
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -161,7 +160,6 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to access shared memory allocated");
   }
   *result = (void*) (value + shift);
-
   PetscFunctionReturn(0);
 }
 

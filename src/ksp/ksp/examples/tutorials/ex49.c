@@ -221,7 +221,6 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
       *mzl = p-1;
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -258,7 +257,6 @@ static PetscErrorCode DMDAGetElementCorners(DM da,
   }
 
   ierr = DMDAGetLocalElementSize(da,mx,my,mz);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -331,7 +329,6 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
 
   ierr = VecDestroy(&vlx);CHKERRQ(ierr);
   ierr = VecDestroy(&vly);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -617,7 +614,6 @@ static PetscErrorCode DMDAGetElementEqnums_u(MatStencil s_u[],PetscInt i,PetscIn
   /* node 3 */
   s_u[6].i = i+1;s_u[6].j = j;s_u[6].c = 0;        /* Ux3 */
   s_u[7].i = i+1;s_u[7].j = j;s_u[7].c = 1;        /* Uy3 */
-
   PetscFunctionReturn(0);
 }
 
@@ -631,7 +627,6 @@ static PetscErrorCode GetElementCoords(DMDACoor2d **_coords,PetscInt ei,PetscInt
   el_coords[NSD*1+0] = _coords[ej+1][ei  ].x;  el_coords[NSD*1+1] = _coords[ej+1][ei  ].y;
   el_coords[NSD*2+0] = _coords[ej+1][ei+1].x;  el_coords[NSD*2+1] = _coords[ej+1][ei+1].y;
   el_coords[NSD*3+0] = _coords[ej  ][ei+1].x;  el_coords[NSD*3+1] = _coords[ej  ][ei+1].y;
-
   PetscFunctionReturn(0);
 }
 
@@ -692,7 +687,6 @@ static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec
 
   ierr = DMDAVecRestoreArray(properties_da,local_properties,&props);CHKERRQ(ierr);
   ierr = VecDestroy(&local_properties);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1110,7 +1104,6 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
   ierr = VecDestroy(&properties);CHKERRQ(ierr);
   ierr = VecDestroy(&l_properties);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

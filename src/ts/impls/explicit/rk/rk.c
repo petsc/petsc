@@ -234,7 +234,6 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   ierr = VecDuplicate(rk->y1,&rk->tmp);CHKERRQ(ierr);
   ierr = VecDuplicate(rk->y1,&rk->tmp_y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(rk->y1,rk->s,&rk->k);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -493,7 +492,6 @@ PetscErrorCode  TSCreate_RK(TS ts)
   ts->data = (void*)rk;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

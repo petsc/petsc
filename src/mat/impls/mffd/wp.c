@@ -233,7 +233,6 @@ PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_WP;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C","MatMFFDWPSetComputeNormU_P",MatMFFDWPSetComputeNormU_P);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

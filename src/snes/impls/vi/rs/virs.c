@@ -280,7 +280,6 @@ PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes,PetscInt n,Vec* newv)
   ierr = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   *newv = v;
-
   PetscFunctionReturn(0);
 }
 

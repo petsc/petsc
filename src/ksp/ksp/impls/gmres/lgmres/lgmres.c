@@ -504,7 +504,6 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
   /* put updated solution into vdest.*/
   ierr = VecCopy(vguess,vdest);CHKERRQ(ierr);
   ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -677,7 +676,6 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
 
   ierr = KSPLGMRESBuildSoln(lgmres->nrs,ksp->vec_sol,ptr,ksp,lgmres->it);CHKERRQ(ierr);
   if (result) *result = ptr;
-
   PetscFunctionReturn(0);
 }
 
@@ -872,7 +870,6 @@ PetscErrorCode  KSPCreate_LGMRES(KSP ksp)
   lgmres->aug_ct              = 0; /* start with no aug vectors */
   lgmres->approx_constant     = 0;
   lgmres->matvecs             = 0;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

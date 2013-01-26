@@ -677,7 +677,6 @@ PetscErrorCode  PCCreate_BJacobi(PC pc)
                     PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetLocalBlocks_C","PCBJacobiGetLocalBlocks_BJacobi",
                     PCBJacobiGetLocalBlocks_BJacobi);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

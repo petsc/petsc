@@ -463,7 +463,6 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
   ierr = PetscFree(svalues);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1284,7 +1283,6 @@ PetscErrorCode  MatCreate_MPIDense(Mat mat)
                                            "MatMatMultNumeric_MPIAIJ_MPIDense",
                                             MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

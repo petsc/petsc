@@ -70,7 +70,6 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
 
   ierr = DMCoarsenHookAdd(dmc,CoefficientCoarsenHook,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDestroy(&cdmc);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -234,7 +233,6 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
   }
 
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 
 }
@@ -301,6 +299,5 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
 
   ierr = DMDAVecRestoreArray(cdm,C,&c);CHKERRQ(ierr);
   ierr = DMRestoreNamedLocalVector(cdm,"coefficient",&C);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

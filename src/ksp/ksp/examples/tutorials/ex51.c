@@ -269,7 +269,6 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,double* gqn,
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
 

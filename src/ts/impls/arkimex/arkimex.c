@@ -443,7 +443,6 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                         {-6511271360970./6095937251113.  ,  5843115559534./2180450260947.   , -5289405421727./3760307252460. }};
     ierr = TSARKIMEXRegister(TSARKIMEX5,5,8,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,3,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1022,7 +1021,6 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
 #define __FUNCT__ "DMCoarsenHook_TSARKIMEX"
 static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine,DM coarse,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -1050,7 +1048,6 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Ma
 #define __FUNCT__ "DMSubDomainHook_TSARKIMEX"
 static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm,DM subdm,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

@@ -743,7 +743,6 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
     }
   }
   ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 #endif
@@ -1335,7 +1334,6 @@ PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -1018,7 +1018,6 @@ PetscErrorCode  MatCreate_BlockMat(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatBlockMatSetPreallocation_C",
                                      "MatBlockMatSetPreallocation_BlockMat",
                                       MatBlockMatSetPreallocation_BlockMat);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

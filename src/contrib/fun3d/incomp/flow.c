@@ -437,7 +437,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&res);CHKERRQ(ierr);
   ierr = VecRestoreArray(localGrad,&grad);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -621,7 +620,6 @@ int Update(SNES snes,void *ctx)
     tsCtx->fnorm_ini = 0.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1846,7 +1844,6 @@ int GetLocalOrdering(GRID *grid)
 /* Free the temporary arrays */
   ierr = PetscFree(a2l);CHKERRQ(ierr);
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -2614,7 +2611,6 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 #endif
   ierr = PetscFree(svertices);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }
 

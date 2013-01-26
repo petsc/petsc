@@ -454,7 +454,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     ierr = PetscFree(odata2_ptr[k]);CHKERRQ(ierr);
   }
   ierr = PetscFree(odata2_ptr);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -577,7 +576,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,PetscInt *data,Pet
     nidx[1+i] = isz; /* size of new is[i] */
   } /* for each is */
   ierr = PetscBTDestroy(&table0);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -615,7 +615,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       break;
     }
   }
-
   PetscFunctionReturn(0);
 #endif
 }

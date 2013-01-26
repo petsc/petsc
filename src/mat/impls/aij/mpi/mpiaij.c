@@ -1097,7 +1097,6 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
   ierr = PetscFree(svalues);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1217,7 +1216,7 @@ PetscErrorCode  MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   ierr = ISDestroy(&Me);CHKERRQ(ierr);
   ierr = ISDestroy(&Notme);CHKERRQ(ierr);
   ierr = PetscFree(notme);CHKERRQ(ierr);
-   PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
@@ -1454,7 +1453,6 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   if (file) {
     fprintf(file,"-matload_block_size %d\n",(int)mat->rmap->bs);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -2207,7 +2205,6 @@ PetscErrorCode MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
     ierr = VecScatterEnd(aij->Mvctx,rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = (*b->ops->diagonalscale)(b,0,aij->lvec);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -2517,7 +2514,6 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
                                                  vector_x(ref_x.begin(), get(boost::vertex_index, graph));
 
   ilu_set_solve(*lgraph_p, vector_b, vector_x);
-
   PetscFunctionReturn(0);
 }
 #endif
@@ -3615,7 +3611,6 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   ierr = PetscFree(rowners);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -3777,7 +3772,6 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
     ierr = PetscObjectCompose((PetscObject)M,"SubMatrix",(PetscObject)Mreuse);CHKERRQ(ierr);
     ierr = MatDestroy(&Mreuse);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -4385,7 +4379,6 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support ISColoringType %d",(int)coloring->ctype);
-
   PetscFunctionReturn(0);
 }
 

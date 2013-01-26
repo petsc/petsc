@@ -37,10 +37,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm)
   r_factor = 0;
   debug = 0;
   ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", debug, &debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", "ex_coarsen", baseFile, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-coarsen", "The coarsening factor", "ex_coarsen.c", c_factor, &c_factor, PETSC_NULL);
-    ierr = PetscOptionsReal("-generate", "Generate the mesh with refinement limit placed after this.", "ex_coarsen.c", r_factor, &r_factor, PETSC_NULL);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", debug, &debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", "ex_coarsen", baseFile, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-coarsen", "The coarsening factor", "ex_coarsen.c", c_factor, &c_factor, PETSC_NULL);
+  ierr = PetscOptionsReal("-generate", "Generate the mesh with refinement limit placed after this.", "ex_coarsen.c", r_factor, &r_factor, PETSC_NULL);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -185,7 +185,6 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
     coordinates->update(patch, *v_iter, src->pointlist+2*(*v_iter-src->numberoftriangles));
     v_iter++;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -265,9 +264,7 @@ PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim
   //printf("\n");
 
   TriangleToMesh(mesh, output, 0);
-
   PetscFunctionReturn(0);
-
 }
 
 //identify the boundary points and edges on an interpolated mesh by looking for the number of elements covered by edges (or faces in 3D).
@@ -276,8 +273,7 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
 {
 
   PetscFunctionBegin;
-  if (dim == 2)
-  {
+  if (dim == 2) {
     ALE::Mesh::section_type::patch_type patch = 0;
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
@@ -322,7 +318,7 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
       }
       e_iter++;
     }
-  printf("Boundary Edges: %d, Boundary Vertices: %d\n", boundEdges, boundVerts);
+    printf("Boundary Edges: %d, Boundary Vertices: %d\n", boundEdges, boundVerts);
   }
   PetscFunctionReturn(0);
 }
