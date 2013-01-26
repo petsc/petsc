@@ -22,10 +22,10 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   PetscReal      *realpart = gmres->Dsvd;
 
   PetscFunctionBegin;
-  bn = PetscBLASIntCast(n);
-  bN = PetscBLASIntCast(N);
-  lwork = PetscBLASIntCast(5*N);
-  idummy = PetscBLASIntCast(N);
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&idummy);CHKERRQ(ierr);
   if (n <= 0) {
     *emax = *emin = 1.0;
     PetscFunctionReturn(0);
@@ -71,10 +71,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscBLASInt   zero = 0,bn,bN,idummy,lwork;
 
   PetscFunctionBegin;
-  bn = PetscBLASIntCast(n);
-  bN = PetscBLASIntCast(N);
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
   idummy = -1;                  /* unused */
-  lwork = PetscBLASIntCast(5*N);
+  ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
   if (nmax < n) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
@@ -133,10 +133,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscScalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
 
   PetscFunctionBegin;
-  bn = PetscBLASIntCast(n);
-  bN = PetscBLASIntCast(N);
-  lwork = PetscBLASIntCast(5*N);
-  idummy = PetscBLASIntCast(N);
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&idummy);CHKERRQ(ierr);
   if (nmax < n) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
@@ -166,10 +166,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscBLASInt   bn,bN,lwork,idummy,lierr;
 
   PetscFunctionBegin;
-  bn = PetscBLASIntCast(n);
-  bN = PetscBLASIntCast(N);
-  lwork = PetscBLASIntCast(5*N);
-  idummy = PetscBLASIntCast(N);
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&idummy);CHKERRQ(ierr);
   if (nmax < n) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 

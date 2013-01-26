@@ -1192,7 +1192,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
     ierr = MPI_Wait(ids_in, &status);CHKERRQ(ierr);
     ids_in++;
     while (*iptr >= 0) {
-      dstep = PetscBLASIntCast(step);
+      ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
       BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
       in2+=step;
       iptr++;
@@ -1218,10 +1218,12 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
 /******************************************************************************/
 static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *vals,  PetscInt step)
 {
-  PetscInt size, *in, *out;
-  PetscScalar *buf, *work;
-  PetscInt op[] = {GL_ADD,0};
-  PetscBLASInt i1 = 1;
+  PetscInt       size, *in, *out;
+  PetscScalar    *buf, *work;
+  PetscInt       op[] = {GL_ADD,0};
+  PetscBLASInt   i1 = 1;
+  PetscErrorCode ierr;
+  PetscBLASInt   dstep;
 
   PetscFunctionBegin;
   /* copy over to local variables */
@@ -1237,7 +1239,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *
 
   /* copy over my contributions */
   while (*in >= 0) {
-    PetscBLASInt dstep = PetscBLASIntCast(step);
+    ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
     BLAScopy_(&dstep,vals + *in++*step,&i1,buf + *out++*step,&i1);
   }
 
@@ -1251,7 +1253,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *
 
   /* get the portion of the results I need */
   while (*in >= 0) {
-    PetscBLASInt dstep = PetscBLASIntCast(step);
+    ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
     BLAScopy_(&dstep,buf + *out++*step,&i1,vals + *in++*step,&i1);
   }
   PetscFunctionReturn(0);

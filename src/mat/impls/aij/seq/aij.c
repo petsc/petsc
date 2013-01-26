@@ -2315,9 +2315,10 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
   PetscScalar    oalpha = alpha;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,bnz = PetscBLASIntCast(a->nz);
+  PetscBLASInt   one = 1,bnz;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
   BLASscal_(&bnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
@@ -2667,9 +2668,10 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscErrorCode ierr;
   PetscInt       i;
   Mat_SeqAIJ     *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
-  PetscBLASInt   one=1,bnz = PetscBLASIntCast(x->nz);
+  PetscBLASInt   one=1,bnz;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);

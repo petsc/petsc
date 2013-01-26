@@ -491,7 +491,7 @@ PetscErrorCode VecSwap_kernel(PetscInt thread_id,Vec xin,Vec yin)
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
   n     = end-start;
-  bn    = PetscBLASIntCast(n);
+  ierr  = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   BLASswap_(&bn,xa+start,&one,ya+start,&one);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
@@ -518,10 +518,11 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 {
   PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
+  PetscBLASInt   one = 1,bn;
 
   PetscFunctionBegin;
   if (xin != yin) {
+    ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
     BLASswap_(&bn,xa,&one,ya,&one);
@@ -547,7 +548,7 @@ PetscErrorCode VecNorm_kernel(PetscInt thread_id,Vec xin,NormType* type_p,PetscT
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
   n     = end - start;
-  bn    = PetscBLASIntCast(n);
+  ierr  = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     z_loc = PetscRealPart(BLASdot_(&bn,xx+start,&one,xx+start,&one));
@@ -605,9 +606,10 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   const PetscScalar *xx;
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n;
-  PetscBLASInt      one = 1, bn = PetscBLASIntCast(n);
+  PetscBLASInt      one = 1, bn;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     *z = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));

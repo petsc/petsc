@@ -20,13 +20,13 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
 {
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
-  PetscMPIInt    mype, npe;
+  PetscMPIInt    rank, size;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
   Mat            Gmat;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetSize(Amat, &MM, &NN);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 {
   PetscErrorCode    ierr;
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
-  PetscMPIInt       mype, npe;
+  PetscMPIInt       rank, size;
   Mat               Gmat = *a_Gmat, tGmat, matTrans;
   MPI_Comm          wcomm = ((PetscObject)Gmat)->comm;
   const PetscScalar *vals;
@@ -112,8 +112,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   Vec               diag;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
   nloc = Iend - Istart;
   ierr = MatGetSize(Gmat, &MM, &NN);CHKERRQ(ierr);
@@ -182,13 +182,13 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 
   if (verbose) {
     if (verbose == 1) {
-      ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",mype,__FUNCT__,
+      ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
                   100.*(double)nnz1/(double)nnz0,vfilter,(double)nnz0/(double)nloc,MM);CHKERRQ(ierr);
     } else {
       PetscInt nnz[2],out[2];
       nnz[0] = nnz0; nnz[1] = nnz1;
       ierr = MPI_Allreduce(nnz, out, 2, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr);
-      ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",mype,__FUNCT__,
+      ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
                   100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);CHKERRQ(ierr);
     }
   }
@@ -214,7 +214,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,const PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    mype,npe;
+  PetscMPIInt    rank,size;
   MPI_Comm       wcomm = ((PetscObject)Gmat)->comm;
   Vec            tmp_crds;
   Mat_MPIAIJ    *mpimat = (Mat_MPIAIJ*)Gmat->data;
@@ -225,8 +225,8 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &my0, &Iend);CHKERRQ(ierr);
   nloc = Iend - my0;
   ierr = VecGetLocalSize(mpimat->lvec, &num_ghosts);CHKERRQ(ierr);

@@ -10,7 +10,8 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   AO             ao;
-  PetscInt       *localvert=PETSC_NULL, nlocal, rank;
+  PetscInt       *localvert=PETSC_NULL, nlocal;
+  PetscMPIInt    rank;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

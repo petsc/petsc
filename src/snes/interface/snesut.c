@@ -181,7 +181,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   /* compute the spectrum directly */
   ierr = MatConvert(dJ,MATSEQDENSE,MAT_INITIAL_MATRIX,&dJdense);CHKERRQ(ierr);
   ierr = MatGetSize(dJ,&n,PETSC_NULL);CHKERRQ(ierr);
-  nb    = PetscBLASIntCast(n);
+  ierr = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 3*nb;
   ierr = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);

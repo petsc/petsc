@@ -1425,10 +1425,11 @@ PetscErrorCode VecCopy_SeqCUSP(Vec xin,Vec yin)
 PetscErrorCode VecSwap_SeqCUSP(Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
+  PetscBLASInt   one = 1,bn;
   CUSPARRAY      *xarray,*yarray;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
   if (xin != yin) {
     ierr = VecCUSPGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
@@ -1645,10 +1646,11 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal* z)
   const PetscScalar *xx;
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n;
-  PetscBLASInt      one = 1, bn = PetscBLASIntCast(n);
+  PetscBLASInt      one = 1, bn;
   CUSPARRAY         *xarray;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     try {

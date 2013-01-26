@@ -2587,8 +2587,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     ierr = PetscMalloc(5*max_n*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
     ierr = PetscMalloc(max_n*sizeof(PetscBLASInt),&ifail);CHKERRQ(ierr);
     /* now we evaluate the optimal workspace using query with lwork=-1 */
-    Bt = PetscBLASIntCast(max_n);
-    lwork=-1;
+    ierr  = PetscBLASIntCast(max_n,&Bt);CHKERRQ(ierr);
+    lwork =-1;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     abs_tol=1.e-8;
@@ -2613,9 +2613,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     ierr = PetscMalloc(5*min_n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
 #endif
     /* now we evaluate the optimal workspace using query with lwork=-1 */
-    lwork=-1;
-    Bs = PetscBLASIntCast(max_n);
-    Bt = PetscBLASIntCast(min_n);
+    lwork =-1;
+    ierr  = PetscBLASIntCast(max_n,&Bs);CHKERRQ(ierr);
+    ierr  = PetscBLASIntCast(min_n,&Bt);CHKERRQ(ierr);
     dummy_int = Bs;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
@@ -2629,7 +2629,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
     /* Allocate optimal workspace */
-    lwork = PetscBLASIntCast((PetscInt)PetscRealPart(temp_work));
+    ierr = PetscBLASIntCast((PetscInt)PetscRealPart(temp_work),&lwork);CHKERRQ(ierr);
     total_counts = (PetscInt)lwork;
     ierr = PetscMalloc(total_counts*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
@@ -2712,7 +2712,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       ierr = VecRestoreArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
       quad_value = 1.0;
       if (use_nnsp_true) { /* check if array is null on the connected component in case use_nnsp_true has been requested */
-        Bs = PetscBLASIntCast(size_of_constraint);
+        ierr       = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
         quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone);
       }
       if (quad_value > 0.0) { /* keep indices and values */
@@ -2725,9 +2725,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     ierr = ISRestoreIndices(*used_IS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     /* perform SVD on the constraint if use_nnsp_true has not be requested by the user */
     if (!use_nnsp_true) {
-
-      Bs = PetscBLASIntCast(size_of_constraint);
-      Bt = PetscBLASIntCast(temp_constraints);
+      ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(temp_constraints,&Bt);CHKERRQ(ierr);
 
 #if defined(PETSC_MISSING_LAPACK_GESVD)
       ierr = PetscMemzero(correlation_mat,Bt*Bt*sizeof(PetscScalar));CHKERRQ(ierr);

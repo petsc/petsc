@@ -1380,13 +1380,13 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
-    xa = (Mat_SeqSBAIJ *)xx->A->data;
-    ya = (Mat_SeqSBAIJ *)yy->A->data;
-    bnz = PetscBLASIntCast(xa->nz);
+    xa   = (Mat_SeqSBAIJ *)xx->A->data;
+    ya   = (Mat_SeqSBAIJ *)yy->A->data;
+    ierr = PetscBLASIntCast(xa->nz,&bnz);CHKERRQ(ierr);
     BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one);
-    xb = (Mat_SeqBAIJ *)xx->B->data;
-    yb = (Mat_SeqBAIJ *)yy->B->data;
-    bnz = PetscBLASIntCast(xb->nz);
+    xb   = (Mat_SeqBAIJ *)xx->B->data;
+    yb   = (Mat_SeqBAIJ *)yy->B->data;
+    ierr = PetscBLASIntCast(xb->nz,&bnz);CHKERRQ(ierr);
     BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one);
   } else {
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);

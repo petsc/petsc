@@ -690,8 +690,8 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
 
        CHKMEMQ;
        /* orthogonalize b_submat_tp using the QR algorithm from LAPACK */
-       b1 = PetscBLASIntCast(*(cand_vec_length+a));
-       b2 = PetscBLASIntCast(*(new_loc_agg_dofs+a));
+       ierr = PetscBLASIntCast(*(cand_vec_length+a),&b1);CHKERRQ(ierr);
+       ierr = PetscBLASIntCast(*(new_loc_agg_dofs+a),&b2);CHKERRQ(ierr);
 
        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_MISSING_LAPACK_GEQRF)

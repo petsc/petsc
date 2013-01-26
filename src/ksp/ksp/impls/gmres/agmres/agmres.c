@@ -456,11 +456,11 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
   PetscBLASInt        info, nrhs = 1;
 
   PetscFunctionBegin;
-  KspSize = PetscBLASIntCast(KSPSIZE);
-  lwork = PetscBLASIntCast(4 * (KspSize+1));
-  lC = PetscBLASIntCast(KspSize+1);
-  N = PetscBLASIntCast(MAXKSPSIZE + 1);
-  ldH = PetscBLASIntCast(N + 1);
+  ierr = PetscBLASIntCast(KSPSIZE,&KspSize);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(4 * (KspSize+1),&lwork);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(KspSize+1,&lC);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(MAXKSPSIZE + 1,&N);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N + 1,&ldH);CHKERRQ(ierr);
   /* Save a copy of the Hessenberg matrix */
   for (j = 0; j < N-1; j++) {
     for (i = 0; i < N; i++) {

@@ -1121,9 +1121,10 @@ PetscErrorCode MatScale_SeqSBAIJ(Mat inA,PetscScalar alpha)
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inA->data;
   PetscScalar    oalpha = alpha;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,totalnz = PetscBLASIntCast(a->bs2*a->nz);
+  PetscBLASInt   one = 1,totalnz;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(a->bs2*a->nz,&totalnz);CHKERRQ(ierr);
   BLASscal_(&totalnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(totalnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);

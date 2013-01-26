@@ -168,15 +168,15 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   PetscInt             jj,tid,tt,idx,nselected_2;
   struct triangulateio in,mid;
   const PetscInt      *selected_idx_2;
-  PetscMPIInt          mype,npe;
+  PetscMPIInt          rank,size;
   PetscInt             Istart,Iend,nFineLoc,myFine0;
   int                  kk,nPlotPts,sid;
   MPI_Comm             wcomm = ((PetscObject)a_Prol)->comm;
   PetscReal            tm;
   
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = ISGetSize(selected_2, &nselected_2);CHKERRQ(ierr);
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
@@ -251,7 +251,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       static int level = 1;
       FILE *file; char fname[32];
 
-      sprintf(fname,"C%d_%d.poly",level,mype); file = fopen(fname, "w");
+      sprintf(fname,"C%d_%d.poly",level,rank); file = fopen(fname, "w");
       /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
       fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
       /*Following lines: <vertex #> <x> <y> */
@@ -269,7 +269,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       fclose(file);
 
       /* elems */
-      sprintf(fname,"C%d_%d.ele",level,mype); file = fopen(fname, "w");
+      sprintf(fname,"C%d_%d.ele",level,rank); file = fopen(fname, "w");
       /* First line: <# of triangles> <nodes per triangle> <# of attributes> */
       fprintf(file, "%d %d %d\n",mid.numberoftriangles,3,0);
       /* Remaining lines: <triangle #> <node> <node> <node> ... [attributes] */
@@ -278,7 +278,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       }
       fclose(file);
 
-      sprintf(fname,"C%d_%d.node",level,mype); file = fopen(fname, "w");
+      sprintf(fname,"C%d_%d.node",level,rank); file = fopen(fname, "w");
       /* First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)> */
       /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */
       fprintf(file, "%d  %d  %d  %d\n",nPlotPts,2,0,0);
@@ -472,17 +472,17 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,
                                             PetscInt **a_crsGID)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    mype,npe;
+  PetscMPIInt    rank,size;
   PetscInt       *crsGID, kk,my0,Iend,nloc;
   MPI_Comm       wcomm = ((PetscObject)Gmat1)->comm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat1,&my0,&Iend);CHKERRQ(ierr); /* AIJ */
   nloc = Iend - my0; /* this does not change */
 
-  if (npe == 1) { /* not much to do in serial */
+  if (size == 1) { /* not much to do in serial */
     ierr = PetscMalloc(nselected_1*sizeof(PetscInt), &crsGID);CHKERRQ(ierr);
     for (kk=0;kk<nselected_1;kk++) crsGID[kk] = kk;
     *a_Gmat_2 = 0;
@@ -582,7 +582,7 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   const PetscInt verbose = pc_gamg->verbose;
   const PetscReal vfilter = pc_gamg->threshold;
-  PetscMPIInt    mype,npe;
+  PetscMPIInt    rank,size;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
   Mat            Gmat;
   PetscBool  set,flg,symm;
@@ -591,8 +591,8 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
 
   ierr = MatIsSymmetricKnown(Amat, &set, &flg);CHKERRQ(ierr);
   symm = (PetscBool)!(set && flg);
@@ -627,7 +627,7 @@ PetscErrorCode PCGAMGcoarsen_GEO(PC a_pc,
   PC_MG          *mg = (PC_MG*)a_pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscInt       Istart,Iend,nloc,kk,Ii,ncols;
-  PetscMPIInt    mype,npe;
+  PetscMPIInt    rank,size;
   IS             perm;
   GAMGNode *gnodes;
   PetscInt *permute;
@@ -639,8 +639,8 @@ PetscErrorCode PCGAMGcoarsen_GEO(PC a_pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
   nloc = (Iend-Istart);
 
@@ -734,7 +734,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,nloc,my0,jj,kk,ncols,nLocalSelected,bs,*clid_flid;
   Mat            Prol;
-  PetscMPIInt    mype, npe;
+  PetscMPIInt    rank, size;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
   IS             selected_2,selected_1;
   const PetscInt *selected_idx;
@@ -743,8 +743,8 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGProlongator_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
@@ -786,7 +786,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
   ierr =  MatGetSize(Prol, &kk, &jj);CHKERRQ(ierr);
   if (jj==0) {
     if (verbose) {
-      PetscPrintf(wcomm,"[%d]%s ERROE: no selected points on coarse grid\n",mype,__FUNCT__);
+      PetscPrintf(wcomm,"[%d]%s ERROE: no selected points on coarse grid\n",rank,__FUNCT__);
     }
     ierr = PetscFree(clid_flid);CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
@@ -812,7 +812,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* create global vector of coorindates in 'coords' */
-    if (npe > 1) {
+    if (size > 1) {
       ierr = PCGAMGGetDataWithGhosts(Gmat2, dim, pc_gamg->data, &data_stride, &coords);CHKERRQ(ierr);
     } else {
       coords = (PetscReal*)pc_gamg->data;
@@ -833,18 +833,18 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,
       ierr = PetscFree(crsGID);CHKERRQ(ierr);
 
       /* clean up and create coordinates for coarse grid (output) */
-      if (npe > 1) ierr = PetscFree(coords);CHKERRQ(ierr);
+      if (size > 1) ierr = PetscFree(coords);CHKERRQ(ierr);
 
       ierr = MPI_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, wcomm);CHKERRQ(ierr);
       if (tm > 1.) { /* needs to be globalized - should not happen */
         if (verbose) {
-          PetscPrintf(wcomm,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,tm);
+          PetscPrintf(wcomm,"[%d]%s failed metric for coarse grid %e\n",rank,__FUNCT__,tm);
         }
         ierr = MatDestroy(&Prol);CHKERRQ(ierr);
         Prol = PETSC_NULL;
       } else if (metric > .0) {
         if (verbose) {
-          PetscPrintf(wcomm,"[%d]%s worst metric for coarse grid = %e\n",mype,__FUNCT__,metric);
+          PetscPrintf(wcomm,"[%d]%s worst metric for coarse grid = %e\n",rank,__FUNCT__,metric);
         }
       }
     } else SETERRQ(wcomm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");

@@ -177,7 +177,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     PetscScalar  sdummy,*cwork;
     PetscReal    *work,*realpart;
     PetscBLASInt clen,idummy,lwork,bn,zero = 0;
-    PetscInt *perm;
+    PetscInt     *perm;
 
 #if !defined(PETSC_USE_COMPLEX)
     clen = n;
@@ -186,7 +186,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 #endif
     ierr   = PetscMalloc(clen*sizeof(PetscScalar),&cwork);CHKERRQ(ierr);
     idummy = -1;                /* unused */
-    bn = PetscBLASIntCast(n);
+    ierr   = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
     lwork  = 5*n;
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
@@ -242,7 +242,9 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     {
       PetscBLASInt lierr;
       PetscScalar sdummy;
-      PetscBLASInt bn = PetscBLASIntCast(n);
+      PetscBLASInt bn;
+
+      ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
@@ -278,7 +280,8 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     {
       PetscBLASInt lierr;
       PetscScalar  sdummy;
-      PetscBLASInt nb = PetscBLASIntCast(n);
+      PetscBLASInt nb;
+      ierr = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);

@@ -765,11 +765,11 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   }
 
   dgmres->r += neig;
-  r=dgmres->r;
-  nr = PetscBLASIntCast(r);
+  r    = dgmres->r;
+  ierr = PetscBLASIntCast(r,&nr);CHKERRQ(ierr);
   /*LU Factorize T with Lapack xgetrf routine */
 
-  bmax = PetscBLASIntCast(max_neig);
+  ierr = PetscBLASIntCast(max_neig,&bmax);CHKERRQ(ierr);
   if (!TTF) {
     ierr = PetscMalloc(bmax*bmax*sizeof(PetscReal), &TTF);CHKERRQ(ierr);
   }
@@ -834,11 +834,11 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 #endif
 
   PetscFunctionBegin;
-  bn=PetscBLASIntCast(n);
-  bN=PetscBLASIntCast(N);
-  ihi = ldQ = bn;
-  ldA=bN;
-  lwork = PetscBLASIntCast(5*N);
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
+  ihi  = ldQ = bn;
+  ldA  = bN;
+  ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)ksp)->comm, -1, "NO SUPPORT FOR COMPLEX VALUES AT THIS TIME");
@@ -970,8 +970,8 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 #endif
 
   PetscFunctionBegin;
-  br = PetscBLASIntCast(r);
-  bmax = PetscBLASIntCast(max_neig);
+  ierr = PetscBLASIntCast(r,&br);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(max_neig,&bmax);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(KSP_DGMRESApplyDeflation, ksp, 0, 0, 0);CHKERRQ(ierr);
   if (!r) {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
@@ -1094,8 +1094,8 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   }
 
   /* Computation of the eigenvectors */
-  ldA = PetscBLASIntCast(aug1);
-  N = PetscBLASIntCast(aug);
+  ierr  = PetscBLASIntCast(aug1,&ldA);CHKERRQ(ierr);
+  ierr  = PetscBLASIntCast(aug,&N);CHKERRQ(ierr);
   lwork = 8 * N + 20; /* sizeof the working space */
   ierr = PetscMalloc(N*sizeof(PetscReal), &wr);CHKERRQ(ierr);
   ierr = PetscMalloc(N*sizeof(PetscReal), &wi);CHKERRQ(ierr);
@@ -1186,8 +1186,8 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   }
   /* Factorize T */
   ierr = PetscMemcpy(TTF, TT, bmax*r*sizeof (PetscReal));CHKERRQ(ierr);
-  nr = PetscBLASIntCast(r);
-  bm = PetscBLASIntCast(bmax);
+  ierr = PetscBLASIntCast(r,&nr);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(bmax,&bm);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GETRF)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else

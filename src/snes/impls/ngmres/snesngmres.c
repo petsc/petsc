@@ -313,44 +313,21 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 #if defined(PETSC_MISSING_LAPACK_GELSS)
       SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine.");
 #else
-    ngmres->m = PetscBLASIntCast(l);
-    ngmres->n = PetscBLASIntCast(l);
-    ngmres->info = PetscBLASIntCast(0);
-    ngmres->rcond = -1.;
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(l,&ngmres->m);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(l,&ngmres->n);CHKERRQ(ierr);
+      ngmres->info =   0;
+      ngmres->rcond = -1.;
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    LAPACKgelss_(&ngmres->m,
-                 &ngmres->n,
-                 &ngmres->nrhs,
-                 ngmres->h,
-                 &ngmres->lda,
-                 ngmres->beta,
-                 &ngmres->ldb,
-                 ngmres->s,
-                 &ngmres->rcond,
-                 &ngmres->rank,
-                 ngmres->work,
-                 &ngmres->lwork,
-                 ngmres->rwork,
-                 &ngmres->info);
+      LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,
+                   &ngmres->rank,ngmres->work,&ngmres->lwork,ngmres->rwork,&ngmres->info);
 #else
-    LAPACKgelss_(&ngmres->m,
-                 &ngmres->n,
-                 &ngmres->nrhs,
-                 ngmres->h,
-                 &ngmres->lda,
-                 ngmres->beta,
-                 &ngmres->ldb,
-                 ngmres->s,
-                 &ngmres->rcond,
-                 &ngmres->rank,
-                 ngmres->work,
-                 &ngmres->lwork,
-                 &ngmres->info);
+      LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,
+                   &ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info);
 #endif
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    if (ngmres->info < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"Bad argument to GELSS");
-    if (ngmres->info > 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD failed to converge");
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      if (ngmres->info < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"Bad argument to GELSS");
+      if (ngmres->info > 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD failed to converge");
 #endif
     }
 

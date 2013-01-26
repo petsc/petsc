@@ -2318,13 +2318,13 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
-    x = (Mat_SeqAIJ *)xx->A->data;
-    y = (Mat_SeqAIJ *)yy->A->data;
-    bnz = PetscBLASIntCast(x->nz);
+    x    = (Mat_SeqAIJ *)xx->A->data;
+    ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
+    y    = (Mat_SeqAIJ *)yy->A->data;
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
-    x = (Mat_SeqAIJ *)xx->B->data;
-    y = (Mat_SeqAIJ *)yy->B->data;
-    bnz = PetscBLASIntCast(x->nz);
+    x    = (Mat_SeqAIJ *)xx->B->data;
+    y    = (Mat_SeqAIJ *)yy->B->data;
+    ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {
     ierr = MatAXPY_SeqAIJ(yy->A,a,xx->A,str);CHKERRQ(ierr);

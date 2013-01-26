@@ -65,8 +65,8 @@ PetscInt main(PetscInt argc,char **args)
   /* Convert aij matrix to MatSeqDense for LAPACK */
   ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);
 
-  lwork = PetscBLASIntCast(8*n);
-  bn    = PetscBLASIntCast(n);
+  ierr = PetscBLASIntCast(8*n,&lwork);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
   ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
@@ -75,10 +75,12 @@ PetscInt main(PetscInt argc,char **args)
     printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,&lierr);
     evecs_array = arrayA;
-    nevs = PetscBLASIntCast(m);
-    il=1; iu=PetscBLASIntCast(m);
+    ierr = PetscBLASIntCast(m,&nevs);CHKERRQ(ierr);
+    il   = 1;
+    ierr = PetscBLASIntCast(m,&iu);CHKERRQ(ierr);
   } else { /* test syevx()  */
-    il = 1; iu=PetscBLASIntCast((0.2*m)); /* request 1 to 20%m evalues */
+    il   = 1;
+    ierr = PetscBLASIntCast((0.2*m,&iu));CHKERRQ(ierr);
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
     ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);

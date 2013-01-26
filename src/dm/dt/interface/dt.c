@@ -34,7 +34,7 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
   maxdegree = degrees[ndegree-1];
   for (i=0; i<npoints; i++) {
     PetscReal pm1,pm2,pd1,pd2,pdd1,pdd2,x;
-    PetscInt j,k;
+    PetscInt  j,k;
     x = points[i];
     pm2 = 0;
     pm1 = 1;
@@ -96,10 +96,10 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
 PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,PetscReal *x,PetscReal *w)
 {
   PetscErrorCode ierr;
-  PetscInt i;
-  PetscReal *work;
-  PetscScalar *Z;
-  PetscBLASInt N,LDZ,info;
+  PetscInt       i;
+  PetscReal      *work;
+  PetscScalar    *Z;
+  PetscBLASInt   N,LDZ,info;
 
   PetscFunctionBegin;
   /* Set up the Golub-Welsch system */
@@ -109,7 +109,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   }
   ierr = PetscRealView(npoints-1,w,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscMalloc2(npoints*npoints,PetscScalar,&Z,PetscMax(1,2*npoints-2),PetscReal,&work);CHKERRQ(ierr);
-  N = PetscBLASIntCast(npoints);
+  ierr = PetscBLASIntCast(npoints,&N);CHKERRQ(ierr);
   LDZ = N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKsteqr_("I",&N,x,w,Z,&LDZ,work,&info);

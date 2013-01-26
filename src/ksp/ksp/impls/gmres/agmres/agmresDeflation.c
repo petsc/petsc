@@ -124,9 +124,10 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
   ijob   = 2;
   wantQ  = 1;
   wantZ  = 1;
-  lwork  = PetscBLASIntCast(PetscMax(8*N+16,4*neig*(N-neig)));
-  liwork = PetscBLASIntCast(2*N*neig);
-  ilo    = 1; ihi = PetscBLASIntCast(KspSize);
+  ierr   = PetscBLASIntCast(PetscMax(8*N+16,4*neig*(N-neig)),&lwork);CHKERRQ(ierr);
+  ierr   = PetscBLASIntCast(2*N*neig,&liwork);CHKERRQ(ierr);
+  ilo    = 1;
+  ierr   = PetscBLASIntCast(KspSize,&ihi);CHKERRQ(ierr);
   N      = MAXKSPSIZE;
 
   /* Compute the Schur form */

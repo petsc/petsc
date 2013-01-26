@@ -43,7 +43,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   bcgsl->vvR   = ksp->work+vi; vi += ell+1;
   bcgsl->vvU   = ksp->work+vi; vi += ell+1;
   bcgsl->vXr   = ksp->work[vi]; vi++;
-  ldMZ = PetscBLASIntCast(ell+1);
+  ierr = PetscBLASIntCast(ell+1,&ldMZ);CHKERRQ(ierr);
 
   /* Prime the iterative solver */
   ierr = KSPInitialResidual(ksp, VX, VTM, VB, VVR[0], ksp->vec_rhs);CHKERRQ(ierr);
@@ -157,7 +157,8 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     ierr = PetscMemcpy(MZb,MZa,ldMZ*ldMZ*sizeof(PetscScalar));CHKERRQ(ierr);
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
-      PetscBLASInt ione = 1,bell = PetscBLASIntCast(bcgsl->ell);
+      PetscBLASInt ione = 1,bell;
+      ierr = PetscBLASIntCast(bcgsl->ell,&bell);CHKERRQ(ierr);
 
       AY0c[0] = -1;
       if (bcgsl->pinv) {
@@ -211,8 +212,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     } else {
       PetscBLASInt ione = 1;
-      PetscScalar aone = 1.0, azero = 0.0;
-      PetscBLASInt neqs = PetscBLASIntCast(bcgsl->ell-1);
+      PetscScalar  aone = 1.0, azero = 0.0;
+      PetscBLASInt neqs;
+      ierr = PetscBLASIntCast(bcgsl->ell-1,&neqs);CHKERRQ(ierr);
 
 #if defined(PETSC_MISSING_LAPACK_POTRF)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
@@ -554,7 +556,7 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
   ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
-  bcgsl->lwork = PetscBLASIntCast(5*ell);
+  ierr = PetscBLASIntCast(5*ell,&bcgsl->lwork);CHKERRQ(ierr);
   ierr  = PetscMalloc5(bcgsl->lwork,PetscScalar,&bcgsl->work,ell,PetscReal,&bcgsl->s,ell*ell,PetscScalar,&bcgsl->u,ell*ell,PetscScalar,&bcgsl->v,5*ell,PetscReal,&bcgsl->realwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

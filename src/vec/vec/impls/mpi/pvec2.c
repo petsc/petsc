@@ -52,9 +52,10 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   const PetscScalar *xx;
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n;
-  PetscBLASInt      one = 1,bn = PetscBLASIntCast(n);
+  PetscBLASInt      one = 1,bn;
 
   PetscFunctionBegin;
+  ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     work = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));

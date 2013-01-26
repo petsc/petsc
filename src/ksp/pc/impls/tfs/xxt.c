@@ -348,9 +348,9 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
     x_ptr=x;
     iptr = col_indices;
     for (k=0; k<i; k++) {
-      off = *iptr++;
-      len = *iptr++;
-      dlen = PetscBLASIntCast(len);
+      off   = *iptr++;
+      len   = *iptr++;
+      ierr  = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
       uu[k] = BLASdot_(&dlen,u+off,&i1,x_ptr,&i1);
       x_ptr+=len;
     }
@@ -364,16 +364,16 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
     x_ptr=x;
     iptr = col_indices;
     for (k=0; k<i; k++) {
-      off = *iptr++;
-      len = *iptr++;
-      dlen = PetscBLASIntCast(len);
+      off  = *iptr++;
+      len  = *iptr++;
+      ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
       BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1);
       x_ptr+=len;
     }
 
     /* compute v_l = v_l - z */
     PCTFS_rvec_zero(v+a_n,a_m-a_n);
-    dlen = PetscBLASIntCast(n);
+    ierr = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
     BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1);
 
     /* compute u_l = A.v_l */
@@ -382,7 +382,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
     do_matvec(xxt_handle->mvi,v,u);
 
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - local portion */
-    dlen = PetscBLASIntCast(n);
+    ierr  = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
     alpha = BLASdot_(&dlen,u,&i1,v,&i1);
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - comm portion */
     PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
@@ -477,17 +477,18 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 /**************************************xxt.c***********************************/
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 {
-  PetscInt off, len, *iptr;
-  PetscInt level       =xxt_handle->level;
-  PetscInt n           =xxt_handle->info->n;
-  PetscInt m           =xxt_handle->info->m;
-  PetscInt *stages     =xxt_handle->info->stages;
-  PetscInt *col_indices=xxt_handle->info->col_indices;
-  PetscScalar *x_ptr, *uu_ptr;
-  PetscScalar *solve_uu=xxt_handle->info->solve_uu;
-  PetscScalar *solve_w =xxt_handle->info->solve_w;
-  PetscScalar *x       =xxt_handle->info->x;
-  PetscBLASInt i1 = 1,dlen;
+  PetscInt       off, len, *iptr;
+  PetscInt       level       =xxt_handle->level;
+  PetscInt       n           =xxt_handle->info->n;
+  PetscInt       m           =xxt_handle->info->m;
+  PetscInt       *stages     =xxt_handle->info->stages;
+  PetscInt       *col_indices=xxt_handle->info->col_indices;
+  PetscScalar    *x_ptr, *uu_ptr;
+  PetscScalar    *solve_uu=xxt_handle->info->solve_uu;
+  PetscScalar    *solve_w =xxt_handle->info->solve_w;
+  PetscScalar    *x       =xxt_handle->info->x;
+  PetscBLASInt   i1 = 1,dlen;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   uu_ptr=solve_uu;
@@ -496,8 +497,9 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   /* x  = X.Y^T.b */
   /* uu = Y^T.b */
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len) {
-    off=*iptr++; len=*iptr++;
-    dlen = PetscBLASIntCast(len);
+    off       =*iptr++;
+    len       =*iptr++;
+    ierr      = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
     *uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,x_ptr,&i1);
   }
 
@@ -509,8 +511,9 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 
   /* x = X.uu */
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len) {
-    off=*iptr++; len=*iptr++;
-    dlen = PetscBLASIntCast(len);
+    off  =*iptr++;
+    len  =*iptr++;
+    ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
     BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1);
   }
   PetscFunctionReturn(0);

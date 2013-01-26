@@ -66,14 +66,14 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
   }
-  ierr = MatGetSize(pc->pmat,&n,PETSC_NULL);CHKERRQ(ierr);
-  nb    = PetscBLASIntCast(n);
+  ierr  = MatGetSize(pc->pmat,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
-  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr);
-  ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr);
+  ierr   = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr   = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr);
+  ierr   = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr);
+  ierr   = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr);
+  ierr   = VecGetArray(jac->diag,&d);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;

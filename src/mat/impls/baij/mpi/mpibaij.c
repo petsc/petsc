@@ -1957,13 +1957,13 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
-    x = (Mat_SeqBAIJ *)xx->A->data;
-    y = (Mat_SeqBAIJ *)yy->A->data;
-    bnz = PetscBLASIntCast(x->nz);
+    x    = (Mat_SeqBAIJ *)xx->A->data;
+    y    = (Mat_SeqBAIJ *)yy->A->data;
+    ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
-    x = (Mat_SeqBAIJ *)xx->B->data;
-    y = (Mat_SeqBAIJ *)yy->B->data;
-    bnz = PetscBLASIntCast(x->nz);
+    x    = (Mat_SeqBAIJ *)xx->B->data;
+    y    = (Mat_SeqBAIJ *)yy->B->data;
+    ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);

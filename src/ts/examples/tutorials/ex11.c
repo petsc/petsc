@@ -1014,10 +1014,10 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  M = PetscBLASIntCast(m);
-  N = PetscBLASIntCast(n);
-  lda = PetscBLASIntCast(mstride);
-  ldwork = PetscBLASIntCast(worksize);
+  ierr = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(n,&N);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -1089,12 +1089,12 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
     for (i=0; i<maxmn; i++) Brhs[i + j*maxmn] = 1.0*(i == j);
   }
 
-  M = PetscBLASIntCast(m);
-  N = PetscBLASIntCast(n);
+  ierr = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(n,&N);CHKERRQ(ierr);
   nrhs = M;
-  lda = PetscBLASIntCast(mstride);
-  ldb = PetscBLASIntCast(maxmn);
-  ldwork = PetscBLASIntCast(worksize);
+  ierr = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(maxmn,&ldb);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   rcond = -1;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb,tau,&rcond,&irank,tmpwork,&ldwork,&info);

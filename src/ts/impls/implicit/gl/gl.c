@@ -184,8 +184,8 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
       scheme->alpha[i] = 1./Factorial(p+1-i);
       for (j=0; j<s; j++) scheme->alpha[i] -= b[i*s+j]*CPowF(c[j],p);
     }
-    m = PetscBLASIntCast(r-1);
-    n = PetscBLASIntCast(r);
+    ierr = PetscBLASIntCast(r-1,&m);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(r,&n);CHKERRQ(ierr);
     LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info);
     if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
     if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
@@ -264,9 +264,9 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     bmat[0+0*ss] = 1.;  bmat[0+1*ss] = 0.;  bmat[0+2*ss] = 0.;
     bmat[1+0*ss] = 1.;  bmat[1+1*ss] = 1.;  bmat[1+2*ss] = 0.;
     bmat[2+0*ss] = 0.;  bmat[2+1*ss] = 0.;  bmat[2+2*ss] = -1.;
-    m = 3;
-    n = PetscBLASIntCast(s);
-    ldb = PetscBLASIntCast(ss);
+    m     = 3;
+    ierr  = PetscBLASIntCast(s,&n);CHKERRQ(ierr);
+    ierr  = PetscBLASIntCast(ss,&ldb);CHKERRQ(ierr);
     rcond = 1e-12;
 #if defined(PETSC_MISSING_LAPACK_GELSS)
   /* ESSL does not have this routine */

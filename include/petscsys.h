@@ -199,10 +199,7 @@ typedef int PetscInt;
            standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
            (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the note below).
 
-    PetscBLASIntCheck(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it generates a
-      PETSC_ERR_ARG_OUTOFRANGE error.
-
-    PetscBLASInt b = PetscBLASIntCast(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it
+    PetscErrorCode PetscBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscBLASInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error
 
     Installation Notes: The 64bit versions of MATLAB ship with BLAS and LAPACK that use 64 bit integers for sizes etc,
@@ -1715,7 +1712,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 .seealso: PetscMemmove()
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode  PetscMemcpy(void *a,const void *b,size_t n)
+PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
 #if defined(PETSC_USE_DEBUG)
   unsigned long al = (unsigned long) a,bl = (unsigned long) b;
@@ -1736,7 +1733,9 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemcpy(void *a,const void *b,size_t n)
    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       size_t len = n/sizeof(PetscScalar);
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
-      PetscBLASInt one = 1,blen = PetscBLASIntCast(len);
+      PetscBLASInt   one = 1,blen;
+      PetscErrorCode ierr;
+      ierr = PetscBLASIntCast(len,&blen);CHKERRQ(ierr);
       BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a);
@@ -2021,9 +2020,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
-#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
 #define PetscMPIIntCast(a) (PetscMPIInt)(a);PetscMPIIntCheck(a)
-#define PetscBLASIntCast(a) (PetscBLASInt)(a);PetscBLASIntCheck(a)
 
 #if (PETSC_SIZEOF_SIZE_T == 4)
 #define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
@@ -2035,12 +2032,23 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 
 #else
 #define PetscMPIIntCheck(a)
-#define PetscBLASIntCheck(a)
 #define PetscHDF5IntCheck(a)
 #define PetscMPIIntCast(a) a
-#define PetscBLASIntCast(a) a
 #define PetscHDF5IntCast(a) a
 #endif
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBLASIntCast"
+PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_HAVE_64BIT_BLAS_INDICES)
+  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK");
+#endif
+  *b =  (PetscBLASInt)(a);
+  PetscFunctionReturn(0);
+}
+
 
 /*
      The IBM include files define hz, here we hide it so that it may be used as a regular user variable.
