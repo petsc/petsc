@@ -5,21 +5,21 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscLogDouble  x,y;
-  double      value;
-  void        *arr[1000],*dummy;
-  int         ierr,i,rand1[1000],rand2[1000];
-  PetscRandom r;
-  PetscBool   flg;
+  PetscLogDouble x,y;
+  double         value;
+  void           *arr[1000],*dummy;
+  int            ierr,i,rand1[1000],rand2[1000];
+  PetscRandom    r;
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv,0,0);
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   for (i=0; i<1000; i++) {
-    ierr    = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    ierr     = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
     rand1[i] = (int)(value* 144327);
-    ierr    = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    ierr     = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
     rand2[i] = (int)(value* 144327);
   }
 
@@ -29,8 +29,8 @@ int main(int argc,char **argv)
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
 
   /* Do all mallocs */
-  for (i=0 ; i< 1000; i++) {
-    ierr = PetscMalloc(rand1[i],& arr[i]);CHKERRQ(ierr);
+  for (i=0; i< 1000; i++) {
+    ierr = PetscMalloc(rand1[i],&arr[i]);CHKERRQ(ierr);
   }
 
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   /* Do some mallocs */
   for (i=0; i< 1000; i+=2) {
     ierr = PetscMalloc(rand2[i],&arr[i]);CHKERRQ(ierr);
- }
+  }
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
 
   for (i=0; i< 1000; i++) {

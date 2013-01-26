@@ -10,9 +10,9 @@ double second()
 struct timezone { int tz_minuteswest;
                   int tz_dsttime; }; */
 
-  struct timeval tp;
+  struct timeval  tp;
   struct timezone tzp;
-  int i;
+  int             i;
 
   i = gettimeofday(&tp,&tzp);
   return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
@@ -70,10 +70,10 @@ struct timezone { int tz_minuteswest;
 # define HLINE "-------------------------------------------------------------\n"
 
 # ifndef MIN
-# define MIN(x,y) ((x)<(y)?(x):(y))
+# define MIN(x,y) ((x)<(y) ? (x) : (y))
 # endif
 # ifndef MAX
-# define MAX(x,y) ((x)>(y)?(x):(y))
+# define MAX(x,y) ((x)>(y) ? (x) : (y))
 # endif
 
 static double a[N+OFFSET],
@@ -83,9 +83,9 @@ static double a[N+OFFSET],
 
 static double mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
-static const char     *label[4] = {"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
+static const char *label[4] = {"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
 
-static double   bytes[4] = {
+static double bytes[4] = {
   2 * sizeof(double) * N,
   2 * sizeof(double) * N,
   3 * sizeof(double) * N,
@@ -106,7 +106,7 @@ int main(int argc,char **args)
   MPI_Init(&argc,&args);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (!rank)   printf("Number of MPI processes %d\n",size);
+  if (!rank) printf("Number of MPI processes %d\n",size);
 
   /* --- SETUP --- determine precision and check timing --- */
 
@@ -131,13 +131,12 @@ int main(int argc,char **args)
   }
 
   if (!rank) {
-    if  ((quantum = checktick()) >= 1) ;/* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
-    else ;/* printf("Your clock granularity appears to be less than one microsecond.\n");*/
+    if  ((quantum = checktick()) >= 1) ; /* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
+    else ; /* printf("Your clock granularity appears to be less than one microsecond.\n");*/
   }
 
   t = second();
-  for (j = 0; j < N; j++)
-    a[j] = 2.0E0 * a[j];
+  for (j = 0; j < N; j++) a[j] = 2.0E0 * a[j];
   t = 1.0E6 * (second() - t);
 
   if (!rank) {
@@ -156,53 +155,42 @@ int main(int argc,char **args)
   {
     MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = second();
-  /* should all these barriers be pulled outside of the time call? */
+    /* should all these barriers be pulled outside of the time call? */
     MPI_Barrier(MPI_COMM_WORLD);
-    for (j=0; j<N; j++)
-        c[j] = a[j];
+    for (j=0; j<N; j++) c[j] = a[j];
     MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = second() - times[0][k];
 
     times[1][k] = second();
     MPI_Barrier(MPI_COMM_WORLD);
-    for (j=0; j<N; j++)
-        b[j] = scalar*c[j];
+    for (j=0; j<N; j++) b[j] = scalar*c[j];
     MPI_Barrier(MPI_COMM_WORLD);
     times[1][k] = second() - times[1][k];
 
     times[2][k] = second();
     MPI_Barrier(MPI_COMM_WORLD);
-    for (j=0; j<N; j++)
-        c[j] = a[j]+b[j];
+    for (j=0; j<N; j++) c[j] = a[j]+b[j];
     MPI_Barrier(MPI_COMM_WORLD);
     times[2][k] = second() - times[2][k];
 
     times[3][k] = second();
     MPI_Barrier(MPI_COMM_WORLD);
-    for (j=0; j<N; j++)
-        a[j] = b[j]+scalar*c[j];
+    for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
     MPI_Barrier(MPI_COMM_WORLD);
     times[3][k] = second() - times[3][k];
   }
 
   /*   --- SUMMARY --- */
 
-  for (k=0; k<NTIMES; k++) {
-    for (j=0; j<4; j++) {
-      mintime[j] = MIN(mintime[j], times[j][k]);
-    }
-  }
+  for (k=0; k<NTIMES; k++)
+    for (j=0; j<4; j++) mintime[j] = MIN(mintime[j], times[j][k]);
 
-  for (j=0; j<4; j++) {
-    irate[j] = 1.0E-06 * bytes[j]/mintime[j];
-  }
+  for (j=0; j<4; j++) irate[j] = 1.0E-06 * bytes[j]/mintime[j];
   MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 
   if (!rank) {
     printf("Function      Rate (MB/s) \n");
-    for (j=0; j<4; j++) {
-      printf("%s%11.4f\n", label[j],rate[j]);
-    }
+    for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);
   }
   MPI_Finalize();
   return 0;
@@ -210,18 +198,16 @@ int main(int argc,char **args)
 
 # define        M        20
 
-int
-checktick()
+int checktick()
 {
-  int           i, minDelta, Delta;
-  double        t1, t2, timesfound[M];
+  int    i, minDelta, Delta;
+  double t1, t2, timesfound[M];
 
 /*  Collect a sequence of M unique time values from the system. */
 
   for (i = 0; i < M; i++) {
     t1 = second();
-    while (((t2=second()) - t1) < 1.0E-6)
-        ;
+    while (((t2=second()) - t1) < 1.0E-6) ;
     timesfound[i] = t1 = t2;
   }
 
@@ -233,7 +219,7 @@ checktick()
 
   minDelta = 1000000;
   for (i = 1; i < M; i++) {
-    Delta = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
+    Delta    = (int)(1.0E6 * (timesfound[i]-timesfound[i-1]));
     minDelta = MIN(minDelta, MAX(Delta,0));
   }
 

@@ -24,11 +24,11 @@ int main(int argc,char **argv)
 #define __FUNCT__ "test1"
 int test1(void)
 {
-  PetscLogDouble  t1,t2;
-  double      value;
-  int         i,ierr,*z,*zi,intval;
-  PetscScalar *x,*y;
-  PetscRandom r;
+  PetscLogDouble t1,t2;
+  double         value;
+  int            i,ierr,*z,*zi,intval;
+  PetscScalar    *x,*y;
+  PetscRandom    r;
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int test1(void)
   /* Take care of paging effects */
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
 
-   /* Form the random set of integers */
+  /* Form the random set of integers */
   for (i=0; i<2000; i++) {
     ierr   = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
     intval = (int)(value*20000.0);
@@ -51,16 +51,16 @@ int test1(void)
   }
 
   for (i=0; i<2000; i++) {
-    ierr    = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
-    intval  = (int)(value*20000.0);
-    zi[i]   = intval;
+    ierr   = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    intval = (int)(value*20000.0);
+    zi[i]  = intval;
   }
   /* fprintf(stdout,"Done setup\n"); */
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  x[i] = y[i]; }
+  for (i=0; i<2000; i++) x[i] = y[i];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[i] = y[i]",(t2-t1)/2000.0);
 
@@ -79,7 +79,7 @@ int test1(void)
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr)
-  for (i=0; i<2000; i++) {  x[i] = y[z[i]]; }
+  for (i=0; i<2000; i++) x[i] = y[z[i]];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
 
@@ -93,14 +93,14 @@ int test1(void)
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  x[z[i]] = y[i]; }
+  for (i=0; i<2000; i++) x[z[i]] = y[i];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/2000.0);
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  x[z[i]] = y[zi[i]]; }
+  for (i=0; i<2000; i++) x[z[i]] = y[zi[i]];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
 
@@ -118,11 +118,11 @@ int test1(void)
 #define __FUNCT__ "test2"
 int test2(void)
 {
-  PetscLogDouble   t1,t2;
-  double       value;
-  int          i,ierr,z[20000],zi[20000],intval,tmp;
-  PetscScalar  x[20000],y[20000];
-  PetscRandom  r;
+  PetscLogDouble t1,t2;
+  double         value;
+  int            i,ierr,z[20000],zi[20000],intval,tmp;
+  PetscScalar    x[20000],y[20000];
+  PetscRandom    r;
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -137,20 +137,20 @@ int test2(void)
     zi[i] = i;
   }
 
-   /* Form the random set of integers */
+  /* Form the random set of integers */
   for (i=0; i<20000; i++) {
-    ierr   = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
-    intval = (int)(value*20000.0);
-    tmp    = z[i];
-    z[i]   = z[intval];
+    ierr      = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    intval    = (int)(value*20000.0);
+    tmp       = z[i];
+    z[i]      = z[intval];
     z[intval] = tmp;
   }
 
   for (i=0; i<20000; i++) {
-    ierr   = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
-    intval = (int)(value*20000.0);
-    tmp    = zi[i];
-    zi[i]  = zi[intval];
+    ierr       = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    intval     = (int)(value*20000.0);
+    tmp        = zi[i];
+    zi[i]      = zi[intval];
     zi[intval] = tmp;
   }
   /* fprintf(stdout,"Done setup\n"); */
@@ -158,28 +158,28 @@ int test2(void)
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  x[i] = y[i]; }
+  for (i=0; i<2000; i++) x[i] = y[i];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[i] = y[i]",(t2-t1)/2000.0);
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  y[i] = x[z[i]]; }
+  for (i=0; i<2000; i++) y[i] = x[z[i]];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  x[z[i]] = y[i]; }
+  for (i=0; i<2000; i++) x[z[i]] = y[i];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/2000.0);
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<2000; i++) {  y[z[i]] = x[zi[i]]; }
+  for (i=0; i<2000; i++) y[z[i]] = x[zi[i]];
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
 
@@ -192,14 +192,14 @@ int test2(void)
 #define __FUNCT__ "BlastCache"
 int BlastCache(void)
 {
-  int    i,ierr,n = 1000000;
+  int         i,ierr,n = 1000000;
   PetscScalar *x,*y,*z,*a,*b;
 
   ierr = PetscMalloc(5*n*sizeof(PetscScalar),&x);CHKERRQ(ierr);
-  y = x + n;
-  z = y + n;
-  a = z + n;
-  b = a + n;
+  y    = x + n;
+  z    = y + n;
+  a    = z + n;
+  b    = a + n;
 
   for (i=0; i<n; i++) {
     a[i] = (PetscScalar) i;
@@ -209,15 +209,9 @@ int BlastCache(void)
     x[i] = (PetscScalar) i;
   }
 
-  for (i=0; i<n; i++) {
-    a[i] = 3.0*x[i] + 2.0*y[i] + 3.3*z[i] - 25.*b[i];
-  }
-  for (i=0; i<n; i++) {
-    b[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
-  }
-  for (i=0; i<n; i++) {
-    z[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
-  }
+  for (i=0; i<n; i++) a[i] = 3.0*x[i] + 2.0*y[i] + 3.3*z[i] - 25.*b[i];
+  for (i=0; i<n; i++) b[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
+  for (i=0; i<n; i++) z[i] = 3.0*x[i] + 2.0*y[i] + 3.3*a[i] - 25.*b[i];
   ierr = PetscFree(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
