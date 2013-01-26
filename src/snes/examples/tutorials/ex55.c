@@ -380,7 +380,6 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   PetscInt       j,i;
 
   PetscFunctionBeginUser;
-
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
@@ -409,7 +408,6 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;

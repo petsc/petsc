@@ -303,7 +303,6 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscInt       n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(user->work2,&w2);CHKERRQ(ierr);
@@ -353,7 +352,6 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -367,7 +365,6 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscInt        n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetLocalSize(user->cv,&n);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
@@ -413,7 +410,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
@@ -425,7 +421,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
       y[i] = log(x[i]);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -447,7 +442,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscScalar       xwidth = user->xmax - user->xmin, ywidth = user->ymax - user->ymin;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   if (!user->radiation) {
@@ -677,7 +671,6 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->xmin  = 0.0; user->xmax = 128.0;
   user->ymin  = 0.0; user->ymax = 128.0;
@@ -748,8 +741,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
 
   PetscFunctionBeginUser;
-
-
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -914,7 +905,6 @@ PetscErrorCode Phi(AppCtx* user)
   /*PetscViewer        view;*/
 
   PetscFunctionBeginUser;
-
   ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
@@ -1092,7 +1082,6 @@ PetscErrorCode Phi_read(AppCtx* user)
   PetscInt           power;
 
   PetscFunctionBeginUser;
-
   power = user->darefine + (PetscInt)(PetscLogScalar(user->dagrid)/PetscLogScalar(2.0));
   switch (power) {
   case 6:

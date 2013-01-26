@@ -366,7 +366,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscScalar    lambda,v[7],hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc,***x;
 
   PetscFunctionBeginUser;
-
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);

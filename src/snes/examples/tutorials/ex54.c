@@ -246,7 +246,6 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->tsmonitor = PETSC_FALSE;
   user->xmin = 0.0; user->xmax = 1.0;

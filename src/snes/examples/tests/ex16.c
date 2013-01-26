@@ -501,7 +501,6 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscBool       flg;
 
   PetscFunctionBeginUser;
-
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
   bsize=xm+2; lsize=ym+2; rsize=ym+2; tsize=xm+2;

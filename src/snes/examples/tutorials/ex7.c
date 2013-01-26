@@ -377,7 +377,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppC
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-
   /* Naive Jacobian calculation:
 
      J = / 1/hx  0   \ J^{-1} = / hx   0 \  1/|J| = hx*hy = |J^{-1}|

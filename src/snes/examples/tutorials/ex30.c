@@ -1385,7 +1385,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscInt       is,ie,js,je,ibound; /* ,ivisc */
 
   PetscFunctionBeginUser;
-
   /* Define global and local grid parameters */
   mx   = info->mx;     mz   = info->my;
   ilim = mx-1;         jlim = mz-1;

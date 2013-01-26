@@ -243,7 +243,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
 
 
- ierr = VecMax(user->cv,&pv1,&maxv);CHKERRQ(ierr);
+  ierr = VecMax(user->cv,&pv1,&maxv);CHKERRQ(ierr);
   ierr = VecMax(user->ci,&pi1,&maxi);CHKERRQ(ierr);
   ierr = VecMax(user->eta,&peta1,&maxeta);CHKERRQ(ierr);
   ierr = VecMin(user->cv,&pv2,&minv);CHKERRQ(ierr);
@@ -286,7 +286,6 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscScalar    norm1;
 
   PetscFunctionBeginUser;
-
   ierr = VecPointwiseMult(user->Riv,user->eta,user->eta);CHKERRQ(ierr);
   ierr = VecScale(user->Riv,user->Rsurf);CHKERRQ(ierr);
   ierr = VecShift(user->Riv,user->Rbulk);CHKERRQ(ierr);
@@ -351,7 +350,6 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscInt        n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetLocalSize(user->cv,&n);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
@@ -408,7 +406,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
@@ -444,7 +441,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscScalar       xwidth = user->xmax - user->xmin;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   if (user->voidgrowth) {
@@ -683,7 +679,6 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 128.0;
   user->Dv = 1.0; user->Di=1.0;
@@ -709,8 +704,8 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
- ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
-ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
  }
@@ -736,7 +731,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   Vec               cvlocal,cilocal;
 
   PetscFunctionBeginUser;
-
   /* new stuff */
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->da2,&cilocal);CHKERRQ(ierr);
@@ -875,7 +869,6 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   Vec               cvlocal,cilocal;
 
   PetscFunctionBeginUser;
-
   /*new stuff */
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->da2,&cilocal);CHKERRQ(ierr);

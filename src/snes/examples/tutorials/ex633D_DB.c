@@ -271,7 +271,6 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   PetscInt       i,n;
   PetscScalar    *xx,*wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
 
-
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
 
@@ -309,7 +308,6 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscInt       i,n;
 
   PetscFunctionBeginUser;
-
   ierr = VecPointwiseMult(user->Riv,user->eta,user->eta);CHKERRQ(ierr); /* Riv = eta.^2                             */
   ierr = VecScale(user->Riv,user->Rsurf);CHKERRQ(ierr);                 /* Riv = Rsurf * eta.^2                     */
   ierr = VecShift(user->Riv,user->Rbulk);CHKERRQ(ierr);                 /* Riv = Rbulk + Rsurf * eta.^2             */
@@ -374,7 +372,6 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscInt        n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetLocalSize(user->cv,&n);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
@@ -431,7 +428,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
@@ -466,8 +462,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscViewer       view;
   PetscScalar       xwidth = user->xmax - user->xmin, ywidth = user->ymax - user->ymin, zwidth = user->zmax - user->zmin;
   
-  PetscFunctionBeginUser;
-  
+  PetscFunctionBeginUser;  
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   
   if (user->voidgrowth) {
@@ -701,7 +696,6 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 64.0;
   user->ymin = 0.0; user->ymax = 64.0;
@@ -755,7 +749,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   Vec               cvlocal,cilocal;
 
   PetscFunctionBeginUser;
-
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->da2,&cilocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(user->da2,user->cv,INSERT_VALUES,cvlocal);CHKERRQ(ierr);
@@ -989,7 +982,6 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   Vec               cvlocal,cilocal;
 
   PetscFunctionBeginUser;
-
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->da2,&cilocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(user->da2,user->cv,INSERT_VALUES,cvlocal);CHKERRQ(ierr);

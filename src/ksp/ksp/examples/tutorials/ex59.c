@@ -479,7 +479,6 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   PetscInt       xloc,yloc,zloc,xyloc,xyzloc;
 
   PetscFunctionBeginUser;
-
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
   ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->zGL);CHKERRQ(ierr);
   ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(PetscScalar));CHKERRQ(ierr);

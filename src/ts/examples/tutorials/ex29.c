@@ -253,7 +253,6 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
   DM             cdm;
 
   PetscFunctionBeginUser;
-
   ierr = PetscObjectQuery((PetscObject)info->da,"coefficientdm",(PetscObject *)&cdm);CHKERRQ(ierr);
   ierr = DMGetNamedLocalVector(cdm,"coefficient",&C);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cdm,C,&c);CHKERRQ(ierr);

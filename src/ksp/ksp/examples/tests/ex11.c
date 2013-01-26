@@ -53,7 +53,6 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-
   /* fetch test matrices and vectors */
   ierr = LSCLoadTestOperators(&Auu,&Aup,&Apu,&App,&f,&h);CHKERRQ(ierr);
 

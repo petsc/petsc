@@ -775,7 +775,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
-
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);

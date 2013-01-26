@@ -146,7 +146,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-
   D      = user->D;
   K      = user->K;
   hx     = 1.0/(PetscReal)(info->mx-1);
