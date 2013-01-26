@@ -322,8 +322,9 @@ PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer)
     } else if (isbinary) {
       ierr = DMMeshView_Mesh_Binary(dm, viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    ierr = DMMeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMMeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
