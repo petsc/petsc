@@ -256,7 +256,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscScalar    u,ue,uw,un,us,uxx,uyy;
 
   PetscFunctionBeginUser;
-
   lambda = user->param;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
@@ -305,6 +304,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc,lobj=0;
   PetscScalar    u,ue,uw,un,us,uxux,uyuy;
   MPI_Comm       comm;
+  
   PetscFunctionBeginUser;
   *obj = 0;
   comm = ((PetscObject)info->da)->comm;

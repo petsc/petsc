@@ -247,7 +247,6 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -260,7 +259,6 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscInt       i,n;
 
   PetscFunctionBeginUser;
-
   ierr = VecPointwiseMult(user->Rr,user->eta,user->eta);CHKERRQ(ierr);
   ierr = VecScale(user->Rr,user->Rsurf);CHKERRQ(ierr);
   ierr = VecShift(user->Rr,user->Rbulk);CHKERRQ(ierr);
@@ -325,7 +323,6 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscInt        n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetLocalSize(user->cv,&n);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
@@ -368,10 +365,7 @@ PetscErrorCode DPsi(AppCtx* user)
   ierr = VecRestoreArray(user->DPsiv,&DPsiv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->DPsii,&DPsii_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->DPsieta,&DPsieta_p);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
-
 }
 
 
@@ -384,7 +378,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
@@ -395,7 +388,6 @@ PetscErrorCode Llog(Vec X, Vec Y)
       y[i] = log(x[i]);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -411,7 +403,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscScalar       initv = .00069;
 
   PetscFunctionBeginUser;
-
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
@@ -448,7 +439,6 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -460,9 +450,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   PetscInt       i,n,count=0;
   PetscScalar    *w1,*w2,*Pv_p,*eta_p;
 
-
   PetscFunctionBeginUser;
-
   ierr = VecSetRandom(user->work1,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecSetRandom(user->work2,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
@@ -489,7 +477,6 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->Pv,&Pv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 
 }
@@ -564,7 +551,6 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;
@@ -584,8 +570,6 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-P_casc",&user->P_casc,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
  }
 
@@ -608,7 +592,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       *cv_p,*ci_p;
 
   PetscFunctionBeginUser;
-
   /*  ierr = MatSetOption(M,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
    ierr = MatSetOption(M_0,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);*/
 
@@ -852,8 +835,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   PetscScalar       eM_2_odd[3][3],eM_2_even[3][3],h,dt=user->dt;
   Mat               M=user->M;
   PetscScalar       *cv_p,*ci_p,cv_sum,ci_sum;
+  
   PetscFunctionBeginUser;
-
   /* Create the mass matrix M_0 */
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);

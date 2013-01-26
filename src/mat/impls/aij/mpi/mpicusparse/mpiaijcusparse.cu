@@ -174,6 +174,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A)
   MatCUSPARSEStorageFormat format;
   PetscErrorCode     ierr;
   PetscBool      flg;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsHead("MPIAIJCUSPARSE options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);

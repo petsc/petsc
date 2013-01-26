@@ -90,6 +90,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
 PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*v,MATLABENGINE_CLASSID,1);

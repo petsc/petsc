@@ -49,6 +49,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);

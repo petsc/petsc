@@ -407,6 +407,7 @@ PetscErrorCode ISListToMap(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis
   PetscErrorCode ierr;
   PetscInt ncolors, *colors,i, leni,len,*xinds, *yinds,k,j;
   const PetscInt *indsi;
+  
   PetscFunctionBegin;
   ierr = PetscMalloc(listlen*sizeof(PetscInt), &colors);CHKERRQ(ierr);
   ierr = PetscObjectsGetGlobalNumbering(comm, listlen, (PetscObject*)islist,&ncolors, colors);CHKERRQ(ierr);
@@ -470,6 +471,7 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscMPIInt rank, size, llow, lhigh, low, high,color,subsize;
   const PetscInt *ccolors, *cinds;
   MPI_Comm comm, subcomm;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(xis, IS_CLASSID, 1);
   PetscValidHeaderSpecific(yis, IS_CLASSID, 2);
@@ -599,11 +601,11 @@ PetscErrorCode ISMapFactorRight(IS a, IS b, PetscBool drop, IS *c)
   ISGlobalToLocalMappingType gtoltype = IS_GTOLM_DROP;
   PetscInt                   alen, clen, *cindices, *cindices2;
   const PetscInt             *aindices;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a, IS_CLASSID, 1);
   PetscValidHeaderSpecific(b, IS_CLASSID, 2);
   PetscValidPointer(c,4);
-  PetscFunctionBegin;
   ierr = ISLocalToGlobalMappingCreateIS(b, &ltog);CHKERRQ(ierr);
   ierr = ISGetLocalSize(a, &alen);CHKERRQ(ierr);
   ierr = ISGetIndices(a, &aindices);CHKERRQ(ierr);

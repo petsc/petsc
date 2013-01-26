@@ -682,6 +682,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatNestGetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat *mat)
 {
   Mat_Nest *bA = (Mat_Nest*)A->data;
+  
   PetscFunctionBegin;
   if (idxm >= bA->nr) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",idxm,bA->nr-1);
   if (jdxm >= bA->nc) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Col too large: row %D max %D",jdxm,bA->nc-1);
@@ -782,6 +783,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 {
   Mat_Nest *bA = (Mat_Nest*)A->data;
+  
   PetscFunctionBegin;
   if (M)   { *M   = bA->nr; }
   if (N)   { *N   = bA->nc; }

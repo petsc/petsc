@@ -97,6 +97,7 @@ PetscErrorCode  PetscDrawInitializePackage(const char path[])
 PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (draw->ops->resizewindow) {
     ierr = (*draw->ops->resizewindow)(draw,w,h);CHKERRQ(ierr);
@@ -122,6 +123,7 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
 PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (draw->ops->checkresizedwindow) {
     ierr = (*draw->ops->checkresizedwindow)(draw);CHKERRQ(ierr);
@@ -177,6 +179,7 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
 PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(title,2);
@@ -253,6 +256,7 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!*draw) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*draw,PETSC_DRAW_CLASSID,1);
@@ -295,6 +299,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(popup,2);

@@ -116,6 +116,7 @@ PetscErrorCode FARestoreGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
 PetscErrorCode FAGetGlobalVector(FA fa,Vec *v)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBeginUser;
   ierr = VecDuplicate(fa->g,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -124,6 +125,7 @@ PetscErrorCode FAGetGlobalVector(FA fa,Vec *v)
 PetscErrorCode FAGetLocalVector(FA fa,Vec *v)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBeginUser;
   ierr = VecDuplicate(fa->l,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -132,6 +134,7 @@ PetscErrorCode FAGetLocalVector(FA fa,Vec *v)
 PetscErrorCode FAGlobalToLocal(FA fa,Vec g,Vec l)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBeginUser;
   ierr = VecScatterBegin(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

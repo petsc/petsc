@@ -38,6 +38,7 @@ PetscClassId  PETSC_RANDOM_CLASSID;
 PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!*r) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);

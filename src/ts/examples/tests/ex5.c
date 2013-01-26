@@ -340,6 +340,7 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar* flux)   /* this function is not currently called upon */
 {
   PetscScalar emm = 0.001;
+  
   PetscFunctionBeginUser;
   *flux = SIG*(- emm*(pow(airtemp,4)));     /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
@@ -353,10 +354,8 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
   PetscScalar wndmix;      /* temperature change from wind mixing: wind*Ch */
 
   PetscFunctionBeginUser;
-
   wndmix = 0.0025 + 0.0042*wind;                               /* regression equation valid for neutral and stable BL */
   *sheat = density*Cp*wndmix*(airtemp - sfctemp);              /* calculates sensible heat flux */
-
   PetscFunctionReturn(0);
 }
 
@@ -373,8 +372,8 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
   PetscScalar lhcnst;        /* latent heat of vaporization constant = 2501000 J/kg at 0c */
                               /* latent heat of saturation const = 2834000 J/kg */
                               /* latent heat of fusion const = 333700 J/kg */
+                              
   PetscFunctionBeginUser;
-
   wind = mph2mpers(wind);              /* converts wind from mph to meters per second */
   wndmix = 0.0025 + 0.0042*wind;       /* regression equation valid for neutral BL */
   lhcnst = Lconst(sfctemp);            /* calculates latent heat of evaporation */
@@ -438,7 +437,6 @@ PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, Petsc
   PetscScalar unit_soil_weight = 2700; /* unit soil weight in kg/m^3 */
 
   PetscFunctionBeginUser;
-
   k = ((0.135*(1-n)*unit_soil_weight) + 64.7)/(unit_soil_weight - (0.947*(1-n)*unit_soil_weight));  /* dry soil conductivity */
   *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   /* calculates flux from deep ground layer */
   PetscFunctionReturn(0);

@@ -151,6 +151,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
   MatCUSPStorageFormat format;
   PetscErrorCode     ierr;
   PetscBool      flg;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsHead("MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
@@ -185,6 +186,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
   Mat_MPIAIJ *a  = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
 #endif
+  
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_TXPETSCGPU)
   try {
@@ -208,6 +210,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   Mat_MPIAIJ *a;
   Mat_MPIAIJCUSP * cuspStruct;
 #endif
+  
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIAIJSetPreallocation_C",

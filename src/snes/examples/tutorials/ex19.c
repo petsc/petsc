@@ -101,9 +101,9 @@ int main(int argc,char **argv)
   Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
+  
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
-
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
 
   /*

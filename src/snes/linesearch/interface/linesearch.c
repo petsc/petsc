@@ -320,6 +320,7 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscError
 PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   *changed = PETSC_FALSE;
   if (linesearch->ops->precheck) {
@@ -1547,8 +1548,8 @@ PetscErrorCode  SNESLineSearchGetSuccess(SNESLineSearch linesearch, PetscBool *s
 @*/
 PetscErrorCode  SNESLineSearchSetSuccess(SNESLineSearch linesearch, PetscBool success)
 {
-  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   linesearch->success = success;
   PetscFunctionReturn(0);
 }

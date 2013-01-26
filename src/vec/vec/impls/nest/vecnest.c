@@ -91,7 +91,6 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
   PetscInt       i;
   PetscErrorCode ierr;
 
-
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(Vec)*bx->nb,&sub);CHKERRQ(ierr);
   for (i=0; i<bx->nb; i++) {
@@ -925,6 +924,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
 {
   Vec_Nest  *b = (Vec_Nest*)X->data;
+  
   PetscFunctionBegin;
   if (N) {  *N  = b->nb; }
   if (sx) { *sx = b->v;  }

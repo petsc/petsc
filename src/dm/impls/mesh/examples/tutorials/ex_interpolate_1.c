@@ -143,6 +143,7 @@ int main(int argc, char * argv[])
   }
   MPI_Comm comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *)0, help);
   comm = PETSC_COMM_WORLD;

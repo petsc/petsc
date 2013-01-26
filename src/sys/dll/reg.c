@@ -624,6 +624,7 @@ PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionLis
 PetscErrorCode  PetscFunctionListConcat(const char path[],const char name[],char fullname[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (path) {
     ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);

@@ -41,6 +41,7 @@ extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecStashGetInfo_Private(&vec->stash,nstash,reallocs);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&vec->bstash,bnstash,breallocs);CHKERRQ(ierr);
@@ -1292,6 +1293,7 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 PetscErrorCode  VecZeroEntries(Vec vec)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecSet(vec,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1486,6 +1488,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidIntPointer(bs,2);

@@ -14,8 +14,8 @@ int main(int argc,char **argv)
   PetscScalar     ***vglobal;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  
   PetscFunctionBeginUser;
-
   ierr = PetscOptionsGetInt(0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
 

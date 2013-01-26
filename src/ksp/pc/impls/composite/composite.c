@@ -296,6 +296,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
+  
   PetscFunctionBegin;
   jac->alpha = alpha;
   PetscFunctionReturn(0);

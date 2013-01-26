@@ -138,6 +138,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt M,PetscScalar *p1,AppCtx* user)
 {
   /*  PetscScalar v1,v2,v3,v4,v5,s1,s2,s3; */
+  
   PetscFunctionBegin;
   /*  if (i > 2 && i < M-2) {
     v1 = user->ws*(y-1.0)*(p[j][i-2] - p[j][i-3])/user->dx;
@@ -162,6 +163,7 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
 PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt N,PetscScalar *p2,AppCtx* user)
 {
   /*  PetscScalar v1,v2,v3,v4,v5,s1,s2,s3; */
+  
   PetscFunctionBegin;
   /*  if (j > 2 && j < N-2) {
     v1 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j-2][i] - p[j-3][i])/user->dy;
@@ -186,8 +188,8 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscScalar *p_diff,AppCtx* user)
 {
   PetscScalar disper_coe;
+  
   PetscFunctionBeginUser;
-
   disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
   *p_diff = disper_coe*((p[j-1][i] - 2*p[j][i] + p[j+1][i])/(user->dy*user->dy));
   PetscFunctionReturn(0);
@@ -309,7 +311,6 @@ PetscErrorCode Parameter_settings(AppCtx* user)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-
   /* Set default parameters */
   user->ws = 1.0;     
   user->H = 5.0;      user->Pmax = 2.1;

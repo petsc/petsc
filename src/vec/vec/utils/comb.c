@@ -24,6 +24,7 @@
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {
   PETSC_UNUSED PetscErrorCode ierr;
+  
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE)
   ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);

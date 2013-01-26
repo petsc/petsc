@@ -730,6 +730,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
+  
   PetscFunctionBegin;
   lgmres->approx_constant = 1;
   PetscFunctionReturn(0);

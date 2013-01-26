@@ -150,7 +150,6 @@ PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2,  PetscInt 
 {
   PetscInt i, j, type;
 
-
   PetscFunctionBegin;
   /* LATER: if we're really motivated we can sort and then unsort */
   for (i=0;i<n;) {
@@ -384,11 +383,11 @@ PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar,  PetscInt *ar2,  PetscInt
 /******************************************************************************/
 PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar,  PetscInt **ar2, PetscInt size)
 {
-   PetscInt *pi, *pj, temp, *ptr;
-   PetscInt **top_a = (PetscInt **)offset_stack;
-   PetscInt *top_s = size_stack, *bottom_s = size_stack;
-   PetscInt **pi2, **pj2;
-   PetscInt mid;
+  PetscInt *pi, *pj, temp, *ptr;
+  PetscInt **top_a = (PetscInt **)offset_stack;
+  PetscInt *top_s = size_stack, *bottom_s = size_stack;
+  PetscInt **pi2, **pj2;
+  PetscInt mid;
 
   PetscFunctionBegin;
   /* we're really interested in the offset of the last element */
@@ -502,6 +501,7 @@ PetscErrorCode PCTFS_SMI_sort(void *ar1, void *ar2, PetscInt size, PetscInt type
 PetscInt PCTFS_ivec_linear_search(PetscInt item,  PetscInt *list,  PetscInt n)
 {
   PetscInt tmp = n-1;
+  
   PetscFunctionBegin;
   while (n--)  { if (*list++ == item) { return(tmp-n); } }
   return(-1);

@@ -78,6 +78,7 @@ PetscErrorCode SetFromOptions(AppCtx * ctx)
 {
   PetscErrorCode ierr;
   PetscInt i,j;
+  
   PetscFunctionBeginUser;
   ctx->dispersivity = 0.5;
   ctx->porosity = 0.25;
@@ -219,7 +220,6 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
   PetscScalar    rate;
 
   PetscFunctionBeginUser;
-
   hx     = ctx->length[0]/((PetscReal)(info->mx-1));
   hy     = ctx->length[1]/((PetscReal)(info->my-1));
 

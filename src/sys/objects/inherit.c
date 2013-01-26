@@ -904,6 +904,7 @@ PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
 PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!*obj) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);

@@ -46,6 +46,7 @@ extern PetscBool  KSPRegisterAllCalled;
 PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
@@ -79,6 +80,7 @@ PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
@@ -111,6 +113,7 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscObjectGetTabLevel((PetscObject)ksp, tab);CHKERRQ(ierr);
@@ -141,6 +144,7 @@ PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
 PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscObjectSetTabLevel((PetscObject)ksp, tab);CHKERRQ(ierr);
@@ -174,6 +178,7 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
 PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,model,2);
@@ -212,6 +217,7 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
@@ -272,6 +278,7 @@ PetscErrorCode  KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
 PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);

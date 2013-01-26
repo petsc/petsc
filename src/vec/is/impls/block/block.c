@@ -231,7 +231,6 @@ static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *
 #define __FUNCT__ "ISSetBlockSize_Block"
 static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
 {
-
   PetscFunctionBegin;
   if (is->bs != bs) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"Cannot change block size for ISBLOCK from %D to %D",is->bs,bs);
   PetscFunctionReturn(0);
@@ -291,6 +290,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscUseMethod(is,"ISBlockSetIndices_C",(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode),(is,bs,n,idx,mode));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -434,6 +434,7 @@ EXTERN_C_END
 PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscUseMethod(is,"ISBlockGetIndices_C",(IS,const PetscInt*[]),(is,idx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -463,6 +464,7 @@ PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
 PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscUseMethod(is,"ISBlockRestoreIndices_C",(IS,const PetscInt*[]),(is,idx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -491,6 +493,7 @@ PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 PetscErrorCode  ISBlockGetLocalSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscUseMethod(is,"ISBlockGetLocalSize_C",(IS,PetscInt*),(is,size));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -532,6 +535,7 @@ EXTERN_C_END
 PetscErrorCode  ISBlockGetSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscUseMethod(is,"ISBlockGetSize_C",(IS,PetscInt*),(is,size));CHKERRQ(ierr);
   PetscFunctionReturn(0);

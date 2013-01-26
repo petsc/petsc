@@ -503,6 +503,7 @@ PETSC_STATIC_INLINE void Pack_1(PetscInt n,const PetscInt *indicesx,const PetscS
 PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
+  
   PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
@@ -538,6 +539,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,cons
 PETSC_STATIC_INLINE PetscErrorCode Scatter_1(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
+  
   PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:

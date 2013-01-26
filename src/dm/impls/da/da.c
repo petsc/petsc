@@ -496,6 +496,7 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
 PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 {
   DM_DA *dd = (DM_DA*)da->data;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   *ranks = dd->neighbors;

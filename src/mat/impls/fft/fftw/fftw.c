@@ -822,6 +822,7 @@ EXTERN_C_END
 PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscTryMethod(A,"VecScatterFFTWToPetsc_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);

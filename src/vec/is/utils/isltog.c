@@ -323,6 +323,7 @@ PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping inmap,Petsc
 PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!*mapping) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
@@ -1035,7 +1036,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);
@@ -1060,7 +1060,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);

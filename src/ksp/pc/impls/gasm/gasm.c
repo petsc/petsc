@@ -770,6 +770,7 @@ PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create
   PetscMPIInt    rank,size;
   PetscInt       n;
   PetscInt       Nmin, Nmax;
+  
   PetscFunctionBegin;
   if (!create_local) SETERRQ(((PetscObject)pc)->comm, PETSC_ERR_SUP, "No suppor for autocreation of nonlocal subdomains.");
   if (N < 1) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Total number of subdomains must be > 0, N = %D",N);
@@ -1457,6 +1458,7 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS iis[], IS ois[])
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(0);
   if (iis) {
@@ -1723,6 +1725,7 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
   PetscErrorCode ierr;
   PetscBool      match;
   PetscInt       i;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match);CHKERRQ(ierr);

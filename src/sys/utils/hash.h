@@ -669,6 +669,7 @@ typedef IJNode              *PetscHashIJValIter;
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h)
 {
   PetscErrorCode _15_ierr;
+  
   PetscFunctionBegin;
   PetscValidPointer(h,1);
   _15_ierr = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
@@ -756,6 +757,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashI
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))) {ierr = PetscHashIJIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -811,6 +813,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i
   IJNode   *_11_ijnode;
   IJVal    *_11_ijval;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   _11_hi = kh_put(HASHIJ,(h)->ht,(i),&_11_r);
   _11_ijval = &(kh_val((h)->ht,_11_hi));
@@ -850,6 +853,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJK
   PetscHashIJKey _12_key;
   PetscInt n;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   n = 0;
   ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
@@ -873,6 +877,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt
   PetscHashIJValIter _12_vi;
   PetscHashIJKey _12_key;
   PetscInt n = 0;
+  
   PetscFunctionBegin;
   ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
   while (!PetscHashIJIterAtEnd((h),_12_hi)) {
@@ -899,6 +904,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHash
   PetscHashIJKey   _14_key;
   PetscInt         _14_val;
   PetscErrorCode   ierr;
+  
   PetscFunctionBegin;
   ierr = PetscHashIJCreate((hd));CHKERRQ(ierr);
   ierr = PetscHashIJIterBegin((h),&_14_hi);CHKERRQ(ierr);
@@ -921,6 +927,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHash
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if ((h) && (h)->ht) {
     PetscHashIJIter _15_hi;
@@ -946,6 +953,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h)
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscHashIJClearValues((h));CHKERRQ(ierr);
   kh_clear(HASHIJ,(h)->ht);

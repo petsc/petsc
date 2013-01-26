@@ -21,6 +21,7 @@ PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar *x,Pets
 PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecSet(y,*((PetscScalar*)value));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -48,6 +49,7 @@ PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 PetscErrorCode PFDestroy_Constant(void *value)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -121,6 +123,7 @@ PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar *x,Pets
 PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -144,6 +147,7 @@ PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 PetscErrorCode PFDestroy_Identity(void *value)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(value);CHKERRQ(ierr);
   PetscFunctionReturn(0);

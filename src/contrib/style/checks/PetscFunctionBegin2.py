@@ -22,11 +22,8 @@ for arg in sys.argv[1:]:
     filestring = inputfile.read()
     inputfile.close()
 
-    if re.search("\s*PetscFunctionBegin;\s*\n\s*\n", filestring):
+    if re.search("(\n [^\n]*; *\n *PetscFunctionBegin)", filestring):
         print arg
 
-    if re.search("\n\s*[^ ]\s*\n\s*PetscFunctionBegin", filestring):
-        print arg
-
-
-
+    #for match in re.finditer("(\n [^\n]*; *\n *PetscFunctionBegin)", filestring, re.S):
+    #  print arg + " " + match.group(1)

@@ -9,6 +9,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
   DM_DA          *da = (DM_DA*)dm->data;
   PetscInt       i,xs,xe,Xs,Xe;
   PetscInt       cnt=0;
+  
   PetscFunctionBegin;
   if (!da->e) {
     ierr = DMDAGetCorners(dm,&xs,0,0,&xe,0,0);CHKERRQ(ierr);
@@ -38,6 +39,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
   PetscInt       cnt=0, cell[4], ns=2, nn=3;
   PetscInt       c, split[] = {0,1,3,
                                2,3,1};
+                               
   PetscFunctionBegin;
   if (!da->e) {
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=2; nn=3;}
@@ -87,6 +89,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
                                1,2,7,6,
                                1,4,5,7,
                                1,5,6,7};
+                               
   PetscFunctionBegin;
   if (!da->e) {
     if (da->elementtype == DMDA_ELEMENT_P1) {ns=6; nn=4;}
@@ -181,6 +184,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 {
   DM_DA *dd = (DM_DA*)da->data;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(etype,2);
@@ -212,6 +216,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 {
   DM_DA          *da = (DM_DA*)dm->data;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (da->dim==-1) {
     *nel = 0; *nen = 0; *e = PETSC_NULL;

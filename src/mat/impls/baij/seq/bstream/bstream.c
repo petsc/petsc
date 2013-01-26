@@ -138,6 +138,7 @@ EXTERN_C_END
 PetscErrorCode MatCreateSeqBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
     ierr = MatCreate(comm,A);CHKERRQ(ierr);
     ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);

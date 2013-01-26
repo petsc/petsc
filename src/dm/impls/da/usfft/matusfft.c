@@ -126,6 +126,7 @@ PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   Mat_USFFT       *usfft = (Mat_USFFT*)A->data;
+  
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
   ierr = MatApply_USFFT_Private(usfft, &usfft->p_backward, FFTW_BACKWARD, x,y);CHKERRQ(ierr);

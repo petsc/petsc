@@ -83,6 +83,7 @@ PetscErrorCode PetscViewerDestroy_ASCII_Singleton(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
   ierr = PetscViewerRestoreSingleton(vascii->bviewer,&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -94,6 +95,7 @@ PetscErrorCode PetscViewerDestroy_ASCII_Subcomm(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscErrorCode    ierr;
+  
   PetscFunctionBegin;
   ierr = PetscViewerRestoreSubcomm(vascii->bviewer,((PetscObject)viewer)->comm,&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

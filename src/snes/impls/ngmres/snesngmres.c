@@ -15,7 +15,6 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->Fdot);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->Xdot);CHKERRQ(ierr);
   ierr = SNESLineSearchDestroy(&ngmres->additive_linesearch);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -582,6 +581,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscTryMethod(snes,"SNESNGMRESSetRestartType_C",(SNES,SNESNGMRESRestartType),(snes,rtype));CHKERRQ(ierr);
@@ -618,6 +618,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
 PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscTryMethod(snes,"SNESNGMRESSetSelectType_C",(SNES,SNESNGMRESSelectType),(snes,stype));CHKERRQ(ierr);
@@ -630,6 +631,7 @@ EXTERN_C_BEGIN
 PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+  
   PetscFunctionBegin;
   ngmres->select_type = stype;
   PetscFunctionReturn(0);
@@ -640,6 +642,7 @@ PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType st
 PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+  
   PetscFunctionBegin;
   ngmres->restart_type = rtype;
   PetscFunctionReturn(0);

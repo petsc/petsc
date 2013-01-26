@@ -82,8 +82,8 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
+  
   PetscFunctionBeginUser;
-
   ctx.noreactions     = PETSC_FALSE;
   ctx.nodissociations = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-noreactions",&ctx.noreactions);CHKERRQ(ierr);

@@ -337,6 +337,7 @@ PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
 PetscErrorCode MatTranspose_SeqSBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
@@ -1202,6 +1203,7 @@ PetscErrorCode MatSetUp_SeqSBAIJ(Mat A)
 PetscErrorCode MatSeqSBAIJGetArray_SeqSBAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  
   PetscFunctionBegin;
   *array = a->a;
   PetscFunctionReturn(0);

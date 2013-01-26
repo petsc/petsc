@@ -567,6 +567,7 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);

@@ -40,7 +40,6 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   PetscBool      iascii,isstring;
   PetscViewer    sviewer;
 
-
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
@@ -1333,6 +1332,7 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(0);
   if (is) {

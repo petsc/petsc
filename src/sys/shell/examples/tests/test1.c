@@ -7,6 +7,7 @@ PetscErrorCode  TestACall(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -18,6 +19,7 @@ PetscErrorCode  TestBInitialize(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: initializing\n", __FUNCT__);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -29,6 +31,7 @@ PetscErrorCode  TestBCall(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -40,6 +43,7 @@ PetscErrorCode  TestCInitialize(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: initializing\n", __FUNCT__);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -51,6 +55,7 @@ PetscErrorCode  TestCCall(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -63,6 +68,7 @@ PetscErrorCode main(int argc, char *argv[])
   PetscShell       shell, a = PETSC_NULL, b = PETSC_NULL;
   const char    *conf;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
   ierr = PetscShellCreate(PETSC_COMM_WORLD, &shell);CHKERRQ(ierr);

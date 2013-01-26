@@ -171,6 +171,7 @@ PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
   PetscErrorCode  ierr;
   PetscScalar     work[2],sum[2];
+  
   PetscFunctionBegin;
   ierr    = VecDotNorm2_SeqCUSP(s,t,work,work+1);CHKERRQ(ierr);
   ierr    = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
@@ -187,6 +188,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  VecCreate_MPICUSP(Vec vv)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUSP);CHKERRQ(ierr);

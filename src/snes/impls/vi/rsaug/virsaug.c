@@ -2559,6 +2559,7 @@ EXTERN_C_END
 PetscErrorCode SNESVIRSAUGGetInactiveSet(SNES snes,IS* inact)
 {
   SNES_VIRSAUG *vi = (SNES_VIRSAUG*)snes->data;
+  
   PetscFunctionBegin;
   *inact = vi->IS_inact_prev;
   PetscFunctionReturn(0);

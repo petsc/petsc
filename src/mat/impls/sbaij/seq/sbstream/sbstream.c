@@ -149,6 +149,7 @@ EXTERN_C_END
 PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
     ierr = MatCreate(comm,A);CHKERRQ(ierr);
     ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
@@ -265,7 +266,6 @@ PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
   PetscInt slen;
-
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
@@ -550,7 +550,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatSeqSBSTRMTransform(Mat A)
 {
   PetscFunctionBegin;
-    SeqSBSTRM_convert_sbstrm(A);
+  SeqSBSTRM_convert_sbstrm(A);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

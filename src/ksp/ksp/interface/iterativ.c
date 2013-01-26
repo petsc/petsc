@@ -467,6 +467,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
 PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(*dummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -826,6 +827,7 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 PetscErrorCode KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->pc) {

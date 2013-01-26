@@ -308,6 +308,7 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
   PetscErrorCode ierr;
   PetscInt i, roots, offset;
   PetscMPIInt size, rank;
+  
   PetscFunctionBegin;
   PetscValidPointer(objlist,3);
   PetscValidPointer(count,4);

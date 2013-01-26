@@ -209,6 +209,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
 PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScalar *u)
 {
   PetscInt i;
+  
   PetscFunctionBeginUser;
   for (i=0; i<n; i++) {
     u[2*i] = x[i]*x[i] - 1.25*x[i] + .25;

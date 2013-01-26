@@ -155,6 +155,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
 PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt * levels) 
 {
   SNES_FAS * fas = (SNES_FAS *)snes->data;
+  
   PetscFunctionBegin;
   *levels = fas->levels;
   PetscFunctionReturn(0);
@@ -511,6 +512,7 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -543,6 +545,7 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -576,6 +579,7 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -609,6 +613,7 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -638,6 +643,7 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -668,6 +674,7 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -698,6 +705,7 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -727,6 +735,7 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;
@@ -756,6 +765,7 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 {
   SNES_FAS       *fas;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   fas = (SNES_FAS*)snes->data;

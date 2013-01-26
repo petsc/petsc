@@ -23,6 +23,7 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   PetscScalar    *array;
   Vec_Seq        *s;
   PetscInt       n = v->map->n;
+  
   PetscFunctionBegin;
   s = (Vec_Seq*)v->data;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
@@ -109,6 +110,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 PetscErrorCode VecCUSPCopyToGPU(Vec v)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
@@ -173,6 +175,7 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 PetscErrorCode VecCUSPCopyFromGPU(Vec v)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
@@ -451,6 +454,7 @@ PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec v, PetscCUSPIndices ci)
 {
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU || v->valid_GPU_array == PETSC_CUSP_BOTH) {
@@ -491,6 +495,7 @@ PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec v, PetscCUSPIndices ci
 {
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU  || v->valid_GPU_array == PETSC_CUSP_BOTH) {
@@ -1709,6 +1714,7 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal* z)
 PetscErrorCode VecSetRandom_SeqCUSP(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecSetRandom_SeqCUSP_Private(xin,r);CHKERRQ(ierr);
   xin->valid_GPU_array = PETSC_CUSP_CPU;
@@ -1720,6 +1726,7 @@ PetscErrorCode VecSetRandom_SeqCUSP(Vec xin,PetscRandom r)
 PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecResetArray_SeqCUSP_Private(vin);CHKERRQ(ierr);
@@ -1732,6 +1739,7 @@ PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
 PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
@@ -1745,6 +1753,7 @@ PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 PetscErrorCode VecReplaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
@@ -1880,6 +1889,7 @@ PetscErrorCode VecDuplicate_SeqCUSP(Vec win,Vec *V)
 PetscErrorCode VecDestroy_SeqCUSP(Vec v)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   try {
     if (v->spptr) {

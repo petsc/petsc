@@ -610,6 +610,7 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
   SNES                next;
   Mat                 restrct, interpolate;
   SNES_FAS            *fasc;
+  
   PetscFunctionBegin;
   ierr = SNESFASCycleGetCorrection(snes, &next);CHKERRQ(ierr);
   if (next) {

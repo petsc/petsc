@@ -58,6 +58,7 @@ static void PetscSSEDisabledHandler(int sig)
 PetscErrorCode  PetscSSEOSEnabledTest_Linux(PetscBool  *flag)
 {
   int status, pid = 0;
+  
   PetscFunctionBegin;
   signal(SIGILL,PetscSSEDisabledHandler);
   pid = fork();

@@ -8,6 +8,7 @@ static char help[] = "Tests catching of floating point exceptions.\n\n";
 int CreateError(PetscReal x)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   x = 1.0/x;
   ierr = PetscPrintf(PETSC_COMM_SELF,"x = %G\n",x);CHKERRQ(ierr);

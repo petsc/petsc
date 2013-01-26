@@ -36,6 +36,7 @@ int main(int argc,char **args)
   PetscInt           numIter = 10, i;
   PetscObject        mesh, rho;
   PetscErrorCode     ierr;
+  
   PetscFunctionBegin;
   PetscInitialize(&argc,&args,(char *)0,help);
   /**/

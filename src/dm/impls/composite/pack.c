@@ -141,6 +141,7 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
 PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
 {
   DM_Composite *com = (DM_Composite*)dm->data;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *nDM = com->nDM;

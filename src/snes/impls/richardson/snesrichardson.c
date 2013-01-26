@@ -5,7 +5,6 @@
 #define __FUNCT__ "SNESReset_NRichardson"
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -62,6 +61,7 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -242,6 +242,7 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
 {
   PetscErrorCode          ierr;
   SNES_NRichardson        *neP;
+  
   PetscFunctionBegin;
   snes->ops->destroy         = SNESDestroy_NRichardson;
   snes->ops->setup           = SNESSetUp_NRichardson;

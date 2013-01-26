@@ -12,6 +12,7 @@ PetscErrorCode MatStashSeqIJCreate_Private(MatStashSeqIJ *_stash)
 {
   PetscErrorCode ierr;
   MatStashSeqIJ     stash;
+  
   PetscFunctionBegin;
   ierr = PetscNew(struct _MatStashSeqIJ, &stash);CHKERRQ(ierr);
   ierr = PetscHashIJCreate(&(stash->h));CHKERRQ(ierr);
@@ -33,6 +34,7 @@ PetscErrorCode MatStashSeqIJGetMultivalued_Private(MatStashSeqIJ stash, PetscBoo
 PetscErrorCode MatStashSeqIJSetMultivalued_Private(MatStashSeqIJ stash, PetscBool multivalued)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (stash->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot change multivaluedness of an non-empty MatStash");
   stash->multivalued = multivalued;
@@ -47,6 +49,7 @@ PetscErrorCode MatStashSeqIJExtend_Private(MatStashSeqIJ stash, PetscInt len, co
   PetscHashIJKey key;
   PetscInt       i;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   for (i = 0; i < len; ++i) {
     key.i = ixidx[i];
@@ -106,6 +109,7 @@ PetscErrorCode MatStashSeqIJGetIndices_Private(MatStashSeqIJ stash, PetscInt *_l
 PetscErrorCode MatStashSeqIJClear_Private(MatStashSeqIJ stash)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscHashIJClear(stash->h);CHKERRQ(ierr);
   stash->n = 0;
@@ -118,6 +122,7 @@ PetscErrorCode MatStashSeqIJDestroy_Private(MatStashSeqIJ *_stash)
 {
   PetscErrorCode ierr;
   MatStashSeqIJ     stash = *_stash;
+  
   PetscFunctionBegin;
   ierr = MatStashSeqIJClear_Private(stash);CHKERRQ(ierr);
   ierr = PetscHashIJDestroy(&(stash->h));CHKERRQ(ierr);
@@ -132,6 +137,7 @@ PetscErrorCode MatStashSeqIJSetPreallocation_Private(MatStashSeqIJ stash, PetscI
 {
   PetscInt       s;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscHashIJKeySize(stash->h,&s);CHKERRQ(ierr);
   if (size < (PetscInt) s) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot resize stash of size %D down to %D", s, size);
@@ -145,6 +151,7 @@ PetscErrorCode MatStashMPIIJCreate_Private(PetscLayout rmap, MatStashMPIIJ *_sta
 {
   PetscErrorCode ierr;
   MatStashMPIIJ     stash;
+  
   PetscFunctionBegin;
   ierr = PetscNew(struct _MatStashMPIIJ, &stash);CHKERRQ(ierr);
   stash->rmap = 0;
@@ -162,6 +169,7 @@ PetscErrorCode MatStashMPIIJDestroy_Private(MatStashMPIIJ *_stash)
 {
   PetscErrorCode ierr;
   MatStashMPIIJ     stash = *_stash;
+  
   PetscFunctionBegin;
   ierr = PetscLayoutDestroy(&(stash->rmap));CHKERRQ(ierr);
   ierr = MatStashSeqIJDestroy_Private(&(stash->astash));CHKERRQ(ierr);
@@ -176,6 +184,7 @@ PetscErrorCode MatStashMPIIJDestroy_Private(MatStashMPIIJ *_stash)
 PetscErrorCode MatStashMPIIJClear_Private(MatStashMPIIJ stash)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatStashSeqIJClear_Private(stash->astash);CHKERRQ(ierr);
   ierr = MatStashSeqIJClear_Private(stash->bstash);CHKERRQ(ierr);
@@ -187,6 +196,7 @@ PetscErrorCode MatStashMPIIJClear_Private(MatStashMPIIJ stash)
 PetscErrorCode MatStashMPIIJSetPreallocation_Private(MatStashMPIIJ stash, PetscInt asize, PetscInt bsize)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatStashSeqIJSetPreallocation_Private(stash->astash,asize);CHKERRQ(ierr);
   ierr = MatStashSeqIJSetPreallocation_Private(stash->bstash,bsize);CHKERRQ(ierr);
@@ -198,6 +208,7 @@ PetscErrorCode MatStashMPIIJSetPreallocation_Private(MatStashMPIIJ stash, PetscI
 PetscErrorCode MatStashMPIIJGetMultivalued_Private(MatStashMPIIJ stash, PetscBool *_multivalued)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatStashSeqIJGetMultivalued_Private(stash->astash, _multivalued);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -208,6 +219,7 @@ PetscErrorCode MatStashMPIIJGetMultivalued_Private(MatStashMPIIJ stash, PetscBoo
 PetscErrorCode MatStashMPIIJSetMultivalued_Private(MatStashMPIIJ stash, PetscBool multivalued)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatStashSeqIJSetMultivalued_Private(stash->astash, multivalued);CHKERRQ(ierr);
   ierr = MatStashSeqIJSetMultivalued_Private(stash->bstash, multivalued);CHKERRQ(ierr);
@@ -220,6 +232,7 @@ PetscErrorCode MatStashMPIIJExtend_Private(MatStashMPIIJ stash, PetscInt len, co
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  
   PetscFunctionBegin;
   for (i = 0; i < len; ++i) {
     if (ixidx[i] >= stash->rmap->rstart && ixidx[i] < stash->rmap->rend) {
@@ -237,6 +250,7 @@ PetscErrorCode MatStashMPIIJExtend_Private(MatStashMPIIJ stash, PetscInt len, co
 PetscErrorCode MatStashMPIIJGetIndices_Private(MatStashMPIIJ stash, PetscInt *_alen, PetscInt **_aixidx, PetscInt **_aiyidx, PetscInt *_blen, PetscInt **_bixidx, PetscInt **_biyidx)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!stash->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices requested from an unassembled stash");
   ierr = MatStashSeqIJGetIndices_Private(stash->astash, _alen,_aixidx, _aiyidx);CHKERRQ(ierr);

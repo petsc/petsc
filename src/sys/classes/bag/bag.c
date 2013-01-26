@@ -794,6 +794,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscStrncpy(bag->bagname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
   ierr = PetscStrncpy(bag->baghelp,help,PETSC_BAG_HELP_LENGTH-1);CHKERRQ(ierr);
@@ -877,6 +878,7 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (!pre) {
     ierr = PetscFree(bag->bagprefix);CHKERRQ(ierr);

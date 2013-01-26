@@ -229,6 +229,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscInt ierr;
+  
   PetscFunctionBegin;
   ierr = (MatILUFactorSymbolic_SeqBAIJ)(B,A,r,c,info);CHKERRQ(ierr);
   B->ops->lufactornumeric  = MatLUFactorNumeric_bstrm;
@@ -242,6 +243,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscInt ierr;
+  
   PetscFunctionBegin;
   /* ierr = (*bstrm ->MatLUFactorSymbolic)(B,A,r,c,info);CHKERRQ(ierr); */
   ierr = (MatLUFactorSymbolic_SeqBAIJ)(B,A,r,c,info);CHKERRQ(ierr);

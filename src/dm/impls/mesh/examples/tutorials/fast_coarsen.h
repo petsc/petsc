@@ -54,8 +54,8 @@ namespace ALE { namespace Coarsener {
   bool CompatibleWithEdge(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type, ALE::Mesh::point_type, ALE::Mesh::point_type, double);
   PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41)
   {
-    coarsen_CollectStats(1, 1);
     PetscFunctionBegin;
+    coarsen_CollectStats(1, 1);
     if (coarsen_stats.computeStats) {
       coarsen_stats.nMeshes = nMeshes;
       coarsen_stats.beta = beta;

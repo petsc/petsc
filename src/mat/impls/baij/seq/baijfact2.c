@@ -6260,6 +6260,7 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
   /* Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data; */
   /* int i,*AJ=a->j,nz=a->nz; */
+  
   PetscFunctionBegin;
   /* Undo Column scaling */
 /*    while (nz--) { */
@@ -6277,6 +6278,7 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data;
   PetscInt       *AJ=a->j,nz=a->nz;
   unsigned short *aj=(unsigned short *)AJ;
+  
   PetscFunctionBegin;
   /* Is this really necessary? */
   while (nz--) {

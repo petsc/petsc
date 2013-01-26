@@ -234,6 +234,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
 PetscErrorCode  VecFinalizePackage(void)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);

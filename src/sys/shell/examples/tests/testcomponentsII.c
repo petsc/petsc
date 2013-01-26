@@ -8,6 +8,7 @@ PetscErrorCode  TestIIACall(PetscShell component, const char* message)
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
   PetscBool  init;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   ierr = PetscStrcmp(message, "initialize", &init);CHKERRQ(ierr);
@@ -26,6 +27,7 @@ PetscErrorCode  TestIIBCall(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -37,6 +39,7 @@ PetscErrorCode  TestIICCall(PetscShell component, const char* message)
 {
   MPI_Comm comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);

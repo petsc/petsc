@@ -112,6 +112,7 @@ PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p)
 PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ostringstream txt;
 

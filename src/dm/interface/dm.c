@@ -2314,6 +2314,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,2);
@@ -2368,6 +2369,7 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 PetscErrorCode  DMSetVec(DM dm,Vec x)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (x) {
     if (!dm->x) {

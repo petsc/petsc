@@ -4245,6 +4245,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
                                                             PetscReal gamma,PetscReal alpha,PetscReal alpha2,PetscReal threshold)
 {
   SNESKSPEW *kctx;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   kctx = (SNESKSPEW*)snes->kspconvctx;
@@ -4304,6 +4305,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
 PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rtol_0,PetscReal *rtol_max,PetscReal *gamma,PetscReal *alpha,PetscReal *alpha2,PetscReal *threshold)
 {
   SNESKSPEW *kctx;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   kctx = (SNESKSPEW*)snes->kspconvctx;

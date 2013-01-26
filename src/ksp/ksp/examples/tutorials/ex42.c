@@ -328,6 +328,7 @@ static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,Pets
 static PetscErrorCode DMDAGetElementEqnums3D_up(MatStencil s_u[],MatStencil s_p[],PetscInt i,PetscInt j,PetscInt k)
 {
   PetscInt n;
+
   PetscFunctionBeginUser;
   /* velocity */
   n = 0;
@@ -851,7 +852,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
-
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
@@ -944,7 +944,6 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
-
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
@@ -1032,7 +1031,6 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
-
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);

@@ -523,6 +523,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt size;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
@@ -565,6 +566,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscErrorCode ierr;
   PetscMPIInt size;
   PetscInt n, N;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
@@ -605,7 +607,6 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 @*/
 PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);

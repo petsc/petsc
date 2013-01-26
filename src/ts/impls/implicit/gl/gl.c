@@ -62,6 +62,7 @@ static PetscErrorCode TSGLGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 static PetscErrorCode TSGLRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (Z) {
     if (dm && dm != ts->dm) {
@@ -81,7 +82,6 @@ static PetscErrorCode TSGLRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 #define __FUNCT__ "DMCoarsenHook_TSGL"
 static PetscErrorCode DMCoarsenHook_TSGL(DM fine,DM coarse,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -108,7 +108,6 @@ static PetscErrorCode DMRestrictHook_TSGL(DM fine,Mat restrct,Vec rscale,Mat inj
 #define __FUNCT__ "DMSubDomainHook_TSGL"
 static PetscErrorCode DMSubDomainHook_TSGL(DM dm,DM subdm,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -141,7 +140,6 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   TSGLScheme     scheme;
   PetscInt       j;
   PetscErrorCode ierr;
-
 
   PetscFunctionBegin;
   if (p < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scheme order must be positive");
@@ -1159,6 +1157,7 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
   PetscErrorCode  ierr;
   Vec             Z,Ydot;
   DM              dm,dmsave;
+  
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = TSGLGetVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);

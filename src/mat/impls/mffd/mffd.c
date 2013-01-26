@@ -520,6 +520,7 @@ PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
 PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
+  
   PetscFunctionBegin;
   shell->vshift += a;
   PetscFunctionReturn(0);
@@ -530,6 +531,7 @@ PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
+  
   PetscFunctionBegin;
   shell->vscale *= a;
   PetscFunctionReturn(0);
@@ -603,6 +605,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 {
   MatMFFD        mfctx = mat ? (MatMFFD)mat->data : (MatMFFD)PETSC_NULL;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);

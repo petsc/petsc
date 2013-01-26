@@ -75,6 +75,7 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunctio
 {
   PetscErrorCode ierr;
   DM             dm;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);

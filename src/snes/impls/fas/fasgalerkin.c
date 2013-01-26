@@ -20,6 +20,7 @@
 PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 {
   SNES_FAS * fas = (SNES_FAS *)snes->data;
+  
   PetscFunctionBegin;
   *flg = fas->galerkin;
   PetscFunctionReturn(0);
@@ -44,6 +45,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 {
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   fas->galerkin = flg;
   if (fas->next) {ierr = SNESFASSetGalerkin(fas->next, flg);CHKERRQ(ierr);}

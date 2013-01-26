@@ -20,7 +20,7 @@ for arg in sys.argv[1:]:
     filestring = inputfile.read()
     inputfile.close()
 
-    if re.search("\s*PetscFunctionBegin;\s*\n\s*\n", filestring):
+    if re.search("\n *PetscFunctionBegin[^\n]*\n\s*\n", filestring):
         print arg
 
 

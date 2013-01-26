@@ -733,6 +733,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A,const PetscInt
 PetscErrorCode spbas_apply_reordering(spbas_matrix *matrix_A, const PetscInt *permutation, const PetscInt * inv_perm)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = spbas_apply_reordering_rows(matrix_A, inv_perm);CHKERRQ(ierr);
   ierr = spbas_apply_reordering_cols(matrix_A, permutation);CHKERRQ(ierr);

@@ -1477,6 +1477,7 @@ static PetscErrorCode MatBlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar 
 {
   PetscErrorCode     ierr;
   PetscInt           i,j;
+  
   PetscFunctionBegin;
   ierr = PetscMemzero(absarray,(nbs+1)*sizeof(PetscReal));CHKERRQ(ierr);
   for (i=0; i<nbs; i++) {

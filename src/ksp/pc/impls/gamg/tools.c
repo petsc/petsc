@@ -286,6 +286,7 @@ PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
 PetscErrorCode GAMGTableDestroy(GAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = PetscFree(a_tab->table);CHKERRQ(ierr);
   ierr = PetscFree(a_tab->data);CHKERRQ(ierr);
