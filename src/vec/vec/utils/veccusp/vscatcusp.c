@@ -36,25 +36,24 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
 
   PetscFunctionBegin;
   if (mode & SCATTER_REVERSE) {
-    to   = (VecScatter_MPI_General*)inctx->fromdata;
-    from = (VecScatter_MPI_General*)inctx->todata;
-    rwaits   = from->rev_requests;
-    swaits   = to->rev_requests;
+    to     = (VecScatter_MPI_General*)inctx->fromdata;
+    from   = (VecScatter_MPI_General*)inctx->todata;
+    rwaits = from->rev_requests;
+    swaits = to->rev_requests;
   } else {
-    to   = (VecScatter_MPI_General*)inctx->todata;
-    from = (VecScatter_MPI_General*)inctx->fromdata;
-    rwaits   = from->requests;
-    swaits   = to->requests;
+    to     = (VecScatter_MPI_General*)inctx->todata;
+    from   = (VecScatter_MPI_General*)inctx->fromdata;
+    rwaits = from->requests;
+    swaits = to->requests;
   }
-  bs       = to->bs;
-  svalues  = to->values;
-  nrecvs   = from->n;
-  nsends   = to->n;
-  indices  = to->indices;
-  sstartsSends  = to->starts;
-  sstartsRecvs  = from->starts;
-  if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED && (nsends>0 || nrecvs>0))
-  {
+  bs           = to->bs;
+  svalues      = to->values;
+  nrecvs       = from->n;
+  nsends       = to->n;
+  indices      = to->indices;
+  sstartsSends = to->starts;
+  sstartsRecvs = from->starts;
+  if (x->valid_GPU_array != PETSC_CUSP_UNALLOCATED && (nsends>0 || nrecvs>0)) {
     if (!inctx->spptr) {
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];

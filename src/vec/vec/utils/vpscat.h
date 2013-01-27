@@ -21,22 +21,22 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
   PetscFunctionBegin;
   if (mode & SCATTER_REVERSE) {
-    to   = (VecScatter_MPI_General*)ctx->fromdata;
-    from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = from->rev_requests;
-    swaits   = to->rev_requests;
+    to     = (VecScatter_MPI_General*)ctx->fromdata;
+    from   = (VecScatter_MPI_General*)ctx->todata;
+    rwaits = from->rev_requests;
+    swaits = to->rev_requests;
   } else {
-    to   = (VecScatter_MPI_General*)ctx->todata;
-    from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = from->requests;
-    swaits   = to->requests;
+    to     = (VecScatter_MPI_General*)ctx->todata;
+    from   = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits = from->requests;
+    swaits = to->requests;
   }
-  bs       = to->bs;
-  svalues  = to->values;
-  nrecvs   = from->n;
-  nsends   = to->n;
-  indices  = to->indices;
-  sstarts  = to->starts;
+  bs      = to->bs;
+  svalues = to->values;
+  nrecvs  = from->n;
+  nsends  = to->n;
+  indices = to->indices;
+  sstarts = to->starts;
 #if defined(PETSC_HAVE_CUSP)
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
@@ -59,7 +59,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     }
   }
 #endif
-  xv   = *(PetscScalar**)xin->data;
+  xv = *(PetscScalar**)xin->data;
 
 #else
   if (!xin->map->n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
@@ -174,24 +174,24 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
-  to       = (VecScatter_MPI_General*)ctx->todata;
-  from     = (VecScatter_MPI_General*)ctx->fromdata;
-  rwaits   = from->requests;
-  swaits   = to->requests;
-  sstatus  = to->sstatus;   /* sstatus and rstatus are always stored in to */
-  rstatus  = to->rstatus;
+  to      = (VecScatter_MPI_General*)ctx->todata;
+  from    = (VecScatter_MPI_General*)ctx->fromdata;
+  rwaits  = from->requests;
+  swaits  = to->requests;
+  sstatus = to->sstatus;    /* sstatus and rstatus are always stored in to */
+  rstatus = to->rstatus;
   if (mode & SCATTER_REVERSE) {
-    to       = (VecScatter_MPI_General*)ctx->fromdata;
-    from     = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = from->rev_requests;
-    swaits   = to->rev_requests;
+    to     = (VecScatter_MPI_General*)ctx->fromdata;
+    from   = (VecScatter_MPI_General*)ctx->todata;
+    rwaits = from->rev_requests;
+    swaits = to->rev_requests;
   }
-  bs       = from->bs;
-  rvalues  = from->values;
-  nrecvs   = from->n;
-  nsends   = to->n;
-  indices  = from->indices;
-  rstarts  = from->starts;
+  bs      = from->bs;
+  rvalues = from->values;
+  nrecvs  = from->n;
+  nsends  = to->n;
+  indices = from->indices;
+  rstarts = from->starts;
 
   if (ctx->packtogether || (to->use_alltoallw && (addv != INSERT_VALUES)) || (to->use_alltoallv && !to->use_alltoallw) || to->use_window) {
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
@@ -206,7 +206,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     while (count) {
       if (ctx->reproduce) {
         imdex = count - 1;
-        ierr = MPI_Wait(rwaits+imdex,&xrstatus);CHKERRQ(ierr);
+        ierr  = MPI_Wait(rwaits+imdex,&xrstatus);CHKERRQ(ierr);
       } else {
         ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }

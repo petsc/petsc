@@ -13,7 +13,7 @@ extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
-  Vec_MPI        *w = (Vec_MPI *)win->data;
+  Vec_MPI        *w = (Vec_MPI*)win->data;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -33,7 +33,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
 
   (*v)->ops->duplicate = VecDuplicate_Shared;
-  (*v)->bstash.bs = win->bstash.bs;
+  (*v)->bstash.bs      = win->bstash.bs;
   PetscFunctionReturn(0);
 }
 
@@ -99,7 +99,7 @@ static PetscMPIInt Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.
 */
-static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void* attr_val,void* extra_state)
+static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
 

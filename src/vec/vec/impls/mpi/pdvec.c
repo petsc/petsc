@@ -121,11 +121,11 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         state 3: Output both, POINT_DATA last
         state 4: Output both, CELL_DATA last
       */
-      static PetscInt stateId = -1;
-      int outputState = 0;
-      PetscBool  hasState;
-      int doOutput = 0;
-      PetscInt bs, b;
+      static PetscInt stateId     = -1;
+      int             outputState = 0;
+      int             doOutput = 0;
+      PetscBool       hasState;
+      PetscInt        bs, b;
 
       if (stateId < 0) {
         ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   if (!skipHeader) {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = xin->map->N;
-    ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -443,9 +443,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Draw_LG"
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
-  PetscDraw         draw;
-  PetscBool         isnull;
-  PetscErrorCode    ierr;
+  PetscDraw      draw;
+  PetscBool      isnull;
+  PetscErrorCode ierr;
 
 #if defined(PETSC_USE_64BIT_INDICES)
   PetscFunctionBegin;
@@ -668,26 +668,26 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
    * chunkDims - holds the size of a single time step (required to
    * permit extending dataset).
    */
-  dim  = 0;
+  dim = 0;
   if (timestep >= 0) {
-    dims[dim]    = timestep+1;
-    maxDims[dim] = H5S_UNLIMITED;
+    dims[dim]      = timestep+1;
+    maxDims[dim]   = H5S_UNLIMITED;
     chunkDims[dim] = 1;
     ++dim;
   }
-  dims[dim]    = PetscHDF5IntCast(xin->map->N)/bs;
-  maxDims[dim] = dims[dim];
+  dims[dim]      = PetscHDF5IntCast(xin->map->N)/bs;
+  maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
   if (bs >= 1) {
-    dims[dim]    = bs;
-    maxDims[dim] = dims[dim];
+    dims[dim]      = bs;
+    maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
 #if defined(PETSC_USE_COMPLEX)
-  dims[dim]    = 2;
-  maxDims[dim] = dims[dim];
+  dims[dim]      = 2;
+  maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
 #endif
@@ -719,7 +719,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     status = H5Pclose(chunkspace);CHKERRQ(status);
   } else {
     dset_id = H5Dopen2(group, vecname, H5P_DEFAULT);
-    status = H5Dset_extent(dset_id, dims);CHKERRQ(status);
+    status  = H5Dset_extent(dset_id, dims);CHKERRQ(status);
   }
   status = H5Sclose(filespace);CHKERRQ(status);
 
@@ -750,7 +750,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  dim = 0;
+  dim  = 0;
   if (timestep >= 0) {
     offset[dim] = timestep;
     ++dim;
@@ -783,10 +783,10 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 #endif
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
-  ierr = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
+  ierr   = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
   status = H5Dwrite(dset_id, scalartype, memspace, filespace, plist_id, x);CHKERRQ(status);
   status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
-  ierr = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
+  ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
   if (group != file_id) {
@@ -796,7 +796,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
   status = H5Dclose(dset_id);CHKERRQ(status);
-  ierr = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
+  ierr   = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -895,9 +895,9 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank = xin->stash.rank;
+  PetscMPIInt    rank    = xin->stash.rank;
   PetscInt       *owners = xin->map->range,start = owners[rank];
-  PetscInt       end = owners[rank+1],i,row;
+  PetscInt       end     = owners[rank+1],i,row;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
@@ -947,7 +947,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 #define __FUNCT__ "VecSetValuesBlocked_MPI"
 PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode addv)
 {
-  PetscMPIInt    rank = xin->stash.rank;
+  PetscMPIInt    rank    = xin->stash.rank;
   PetscInt       *owners = xin->map->range,start = owners[rank];
   PetscErrorCode ierr;
   PetscInt       end = owners[rank+1],i,row,bs = xin->map->bs,j;
@@ -1019,7 +1019,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
 
-  bs = xin->map->bs;
+  bs   = xin->map->bs;
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
   if (!xin->bstash.bowners && xin->map->bs != -1) {
     ierr = PetscMalloc((size+1)*sizeof(PetscInt),&bowners);CHKERRQ(ierr);

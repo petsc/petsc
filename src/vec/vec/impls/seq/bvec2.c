@@ -202,7 +202,7 @@ PetscErrorCode VecPointwiseMult_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yi
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
     PetscInt start,n;
     start = trstarts[thread_id];
-    n = trstarts[thread_id+1] - trstarts[thread_id];
+    n     = trstarts[thread_id+1] - trstarts[thread_id];
     fortranxtimesy_(xx+start,yy+start,ww+start,&n);
   }
 #else
@@ -416,7 +416,7 @@ PetscErrorCode VecConjugate_Seq(Vec xin)
 #define __FUNCT__ "VecResetArray_Seq"
 PetscErrorCode VecResetArray_Seq(Vec vin)
 {
-  Vec_Seq *v = (Vec_Seq *)vin->data;
+  Vec_Seq *v = (Vec_Seq*)vin->data;
 
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
@@ -433,14 +433,14 @@ PetscErrorCode VecCopy_kernel(PetscInt thread_id,Vec xin,Vec yin)
   const PetscScalar *xa;
   PetscInt          start,end,n;
 
-  ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
-  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr  = VecGetArray(yin,&ya);CHKERRQ(ierr);
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
   n     = end-start;
-  ierr = PetscMemcpy(ya+start,xa+start,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  ierr  = PetscMemcpy(ya+start,xa+start,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   return 0;
 }
 
@@ -486,8 +486,8 @@ PetscErrorCode VecSwap_kernel(PetscInt thread_id,Vec xin,Vec yin)
   PetscBLASInt     one=1,bn;
   PetscScalar      *xa,*ya;
 
-  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
-  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  ierr  = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  ierr  = VecGetArray(yin,&ya);CHKERRQ(ierr);
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
   n     = end-start;
@@ -549,12 +549,12 @@ PetscErrorCode VecNorm_kernel(PetscInt thread_id,Vec xin,NormType* type_p,PetscT
   end   = trstarts[thread_id+1];
   n     = end - start;
   ierr  = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     z_loc = PetscRealPart(BLASdot_(&bn,xx+start,&one,xx+start,&one));
-    ierr = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
+    ierr  = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
-    PetscInt  i;
+    PetscInt i;
     PetscReal max=0.0,tmp;
     for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
       if ((tmp = PetscAbsScalar(xx[i])) > max) max = tmp;
@@ -582,7 +582,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
-    *z = PetscSqrtReal(*z);
+    *z   = PetscSqrtReal(*z);
   } else if (type == NORM_INFINITY) {
     ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_MAX,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNorm_Seq"
-PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
+PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
 {
   const PetscScalar *xx;
   PetscErrorCode    ierr;
@@ -612,13 +612,13 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    *z = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
-    *z = PetscSqrtReal(*z);
+    *z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
+    *z   = PetscSqrtReal(*z);
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
-    PetscInt     i;
-    PetscReal    max = 0.0,tmp;
+    PetscInt  i;
+    PetscReal max = 0.0,tmp;
 
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -631,7 +631,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    *z = BLASasum_(&bn,xx,&one);
+    *z   = BLASasum_(&bn,xx,&one);
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -1144,7 +1144,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOption_Seq"
-PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscBool  flag)
+PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscBool flag)
 {
   PetscFunctionBegin;
   if (op == VEC_IGNORE_NEGATIVE_INDICES) {
@@ -1173,66 +1173,65 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
 }
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
-            VecDuplicateVecs_Default,
-            VecDestroyVecs_Default,
-            VecDot_Seq,
-            VecMDot_Seq,
-            VecNorm_Seq,
-            VecTDot_Seq,
-            VecMTDot_Seq,
-            VecScale_Seq,
-            VecCopy_Seq, /* 10 */
-            VecSet_Seq,
-            VecSwap_Seq,
-            VecAXPY_Seq,
-            VecAXPBY_Seq,
-            VecMAXPY_Seq,
-            VecAYPX_Seq,
-            VecWAXPY_Seq,
-            VecAXPBYPCZ_Seq,
-            VecPointwiseMult_Seq,
-            VecPointwiseDivide_Seq,
-            VecSetValues_Seq, /* 20 */
-            0,0,
-            0,
-            VecGetSize_Seq,
-            VecGetSize_Seq,
-            0,
-            VecMax_Seq,
-            VecMin_Seq,
-            VecSetRandom_Seq,
-            VecSetOption_Seq, /* 30 */
-            VecSetValuesBlocked_Seq,
-            VecDestroy_Seq,
-            VecView_Seq,
-            VecPlaceArray_Seq,
-            VecReplaceArray_Seq,
-            VecDot_Seq,
-            VecTDot_Seq,
-            VecNorm_Seq,
-            VecMDot_Seq,
-            VecMTDot_Seq, /* 40 */
-            VecLoad_Default,
-            VecReciprocal_Default,
-            VecConjugate_Seq,
-            0,
-            0,
-            VecResetArray_Seq,
-            0,
-            VecMaxPointwiseDivide_Seq,
-            VecPointwiseMax_Seq,
-            VecPointwiseMaxAbs_Seq,
-            VecPointwiseMin_Seq,
-            VecGetValues_Seq,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            VecStrideGather_Default,
-            VecStrideScatter_Default
-          };
+                               VecDuplicateVecs_Default,
+                               VecDestroyVecs_Default,
+                               VecDot_Seq,
+                               VecMDot_Seq,
+                               VecNorm_Seq,
+                               VecTDot_Seq,
+                               VecMTDot_Seq,
+                               VecScale_Seq,
+                               VecCopy_Seq, /* 10 */
+                               VecSet_Seq,
+                               VecSwap_Seq,
+                               VecAXPY_Seq,
+                               VecAXPBY_Seq,
+                               VecMAXPY_Seq,
+                               VecAYPX_Seq,
+                               VecWAXPY_Seq,
+                               VecAXPBYPCZ_Seq,
+                               VecPointwiseMult_Seq,
+                               VecPointwiseDivide_Seq,
+                               VecSetValues_Seq, /* 20 */
+                               0,0,
+                               0,
+                               VecGetSize_Seq,
+                               VecGetSize_Seq,
+                               0,
+                               VecMax_Seq,
+                               VecMin_Seq,
+                               VecSetRandom_Seq,
+                               VecSetOption_Seq, /* 30 */
+                               VecSetValuesBlocked_Seq,
+                               VecDestroy_Seq,
+                               VecView_Seq,
+                               VecPlaceArray_Seq,
+                               VecReplaceArray_Seq,
+                               VecDot_Seq,
+                               VecTDot_Seq,
+                               VecNorm_Seq,
+                               VecMDot_Seq,
+                               VecMTDot_Seq, /* 40 */
+                               VecLoad_Default,
+                               VecReciprocal_Default,
+                               VecConjugate_Seq,
+                               0,
+                               0,
+                               VecResetArray_Seq,
+                               0,
+                               VecMaxPointwiseDivide_Seq,
+                               VecPointwiseMax_Seq,
+                               VecPointwiseMaxAbs_Seq,
+                               VecPointwiseMin_Seq,
+                               VecGetValues_Seq,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0,
+                               VecStrideGather_Default,
+                               VecStrideScatter_Default};
 
 
 /*

@@ -14,7 +14,7 @@ PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionBegin;
   ierr = VecDot_Seq(xin,yin,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
-  *z = sum;
+  *z   = sum;
   PetscFunctionReturn(0);
 }
 
@@ -41,12 +41,12 @@ EXTERN_C_END
 PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
-  Vec_MPI        *v = (Vec_MPI *)vin->data;
+  Vec_MPI        *v = (Vec_MPI*)vin->data;
 
   PetscFunctionBegin;
   if (v->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
-  v->array = (PetscScalar *)a;
+  v->array         = (PetscScalar*)a;
   if (v->localrep) {
     ierr = VecPlaceArray(v->localrep,a);CHKERRQ(ierr);
   }
@@ -60,7 +60,7 @@ extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScala
 static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
-  Vec_MPI        *vw,*w = (Vec_MPI *)win->data;
+  Vec_MPI        *vw,*w = (Vec_MPI*)win->data;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -68,7 +68,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
-  vw   = (Vec_MPI *)(*v)->data;
+  vw   = (Vec_MPI*)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
@@ -90,7 +90,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  (*v)->map->bs    = win->map->bs;
+  (*v)->map->bs   = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }
@@ -99,67 +99,66 @@ extern PetscErrorCode VecSetOption_MPI(Vec,VecOption,PetscBool);
 extern PetscErrorCode VecResetArray_MPI(Vec);
 
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
-            VecDuplicateVecs_Default,
-            VecDestroyVecs_Default,
-            VecDot_MPI,
-            VecMDot_MPI,
-            VecNorm_MPI,
-            VecTDot_MPI,
-            VecMTDot_MPI,
-            VecScale_Seq,
-            VecCopy_Seq, /* 10 */
-            VecSet_Seq,
-            VecSwap_Seq,
-            VecAXPY_Seq,
-            VecAXPBY_Seq,
-            VecMAXPY_Seq,
-            VecAYPX_Seq,
-            VecWAXPY_Seq,
-            VecAXPBYPCZ_Seq,
-            VecPointwiseMult_Seq,
-            VecPointwiseDivide_Seq,
-            VecSetValues_MPI, /* 20 */
-            VecAssemblyBegin_MPI,
-            VecAssemblyEnd_MPI,
-            0,
-            VecGetSize_MPI,
-            VecGetSize_Seq,
-            0,
-            VecMax_MPI,
-            VecMin_MPI,
-            VecSetRandom_Seq,
-            VecSetOption_MPI,
-            VecSetValuesBlocked_MPI,
-            VecDestroy_MPI,
-            VecView_MPI,
-            VecPlaceArray_MPI,
-            VecReplaceArray_Seq,
-            VecDot_Seq,
-            VecTDot_Seq,
-            VecNorm_Seq,
-            VecMDot_Seq,
-            VecMTDot_Seq,
-            VecLoad_Default,
-            VecReciprocal_Default,
-            VecConjugate_Seq,
-            0,
-            0,
-            VecResetArray_MPI,
-            0,
-            VecMaxPointwiseDivide_Seq,
-            VecPointwiseMax_Seq,
-            VecPointwiseMaxAbs_Seq,
-            VecPointwiseMin_Seq,
-            VecGetValues_MPI,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            VecStrideGather_Default,
-            VecStrideScatter_Default
-};
+                                VecDuplicateVecs_Default,
+                                VecDestroyVecs_Default,
+                                VecDot_MPI,
+                                VecMDot_MPI,
+                                VecNorm_MPI,
+                                VecTDot_MPI,
+                                VecMTDot_MPI,
+                                VecScale_Seq,
+                                VecCopy_Seq, /* 10 */
+                                VecSet_Seq,
+                                VecSwap_Seq,
+                                VecAXPY_Seq,
+                                VecAXPBY_Seq,
+                                VecMAXPY_Seq,
+                                VecAYPX_Seq,
+                                VecWAXPY_Seq,
+                                VecAXPBYPCZ_Seq,
+                                VecPointwiseMult_Seq,
+                                VecPointwiseDivide_Seq,
+                                VecSetValues_MPI, /* 20 */
+                                VecAssemblyBegin_MPI,
+                                VecAssemblyEnd_MPI,
+                                0,
+                                VecGetSize_MPI,
+                                VecGetSize_Seq,
+                                0,
+                                VecMax_MPI,
+                                VecMin_MPI,
+                                VecSetRandom_Seq,
+                                VecSetOption_MPI,
+                                VecSetValuesBlocked_MPI,
+                                VecDestroy_MPI,
+                                VecView_MPI,
+                                VecPlaceArray_MPI,
+                                VecReplaceArray_Seq,
+                                VecDot_Seq,
+                                VecTDot_Seq,
+                                VecNorm_Seq,
+                                VecMDot_Seq,
+                                VecMTDot_Seq,
+                                VecLoad_Default,
+                                VecReciprocal_Default,
+                                VecConjugate_Seq,
+                                0,
+                                0,
+                                VecResetArray_MPI,
+                                0,
+                                VecMaxPointwiseDivide_Seq,
+                                VecPointwiseMax_Seq,
+                                VecPointwiseMaxAbs_Seq,
+                                VecPointwiseMin_Seq,
+                                VecGetValues_MPI,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                VecStrideGather_Default,
+                                VecStrideScatter_Default};
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI_Private"
@@ -171,7 +170,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
     If alloc is true and array is PETSC_NULL then this routine allocates the space, otherwise
     no space is allocated.
 */
-PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,const PetscScalar array[])
+PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   Vec_MPI        *s;
   PetscErrorCode ierr;
@@ -184,10 +183,10 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   v->petscnative = PETSC_TRUE;
 
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
-  s->array           = (PetscScalar *)array;
+  s->array           = (PetscScalar*)array;
   s->array_allocated = 0;
   if (alloc && !array) {
-    PetscInt n         = v->map->n+nghost;
+    PetscInt n = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr               = PetscMemzero(s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -198,7 +197,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   s->localrep    = 0;
   s->localupdate = 0;
 
-  v->stash.insertmode  = NOT_SET_VALUES;
+  v->stash.insertmode = NOT_SET_VALUES;
   /* create the stashes. The block-size for bstash is set later when
      VecSetValuesBlocked is called.
   */
@@ -373,7 +372,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost,array);CHKERRQ(ierr);
-  w    = (Vec_MPI *)(*vv)->data;
+  w    = (Vec_MPI*)(*vv)->data;
   /* Create local representation */
   ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
@@ -495,12 +494,12 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     PetscInt               rstart,i,*indices;
     MPI_Comm               comm = ((PetscObject)vv)->comm;
 
-    n = vv->map->n;
-    N = vv->map->N;
+    n    = vv->map->n;
+    N    = vv->map->N;
     ierr = (*vv->ops->destroy)(vv);CHKERRQ(ierr);
     ierr = VecSetSizes(vv,n,N);CHKERRQ(ierr);
     ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,PETSC_NULL);CHKERRQ(ierr);
-    w    = (Vec_MPI *)(vv)->data;
+    w    = (Vec_MPI*)(vv)->data;
     /* Create local representation */
     ierr = VecGetArray(vv,&larray);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
@@ -596,7 +595,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost*bs,array);CHKERRQ(ierr);
-  w    = (Vec_MPI *)(*vv)->data;
+  w    = (Vec_MPI*)(*vv)->data;
   /* Create local representation */
   ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n+bs*nghost,larray,&w->localrep);CHKERRQ(ierr);
@@ -614,7 +613,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
   /* set local to global mapping for ghosted vector */
-  nb = n/bs;
+  nb   = n/bs;
   ierr = PetscMalloc((nb+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(*vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nb; i++) {

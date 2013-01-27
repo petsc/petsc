@@ -15,12 +15,12 @@ PetscErrorCode VecDestroy_MPICUSP(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  try{
+  try {
     if (v->spptr) {
       delete ((Vec_CUSP*)v->spptr)->GPUarray;
-      delete (Vec_CUSP *)v->spptr;
+      delete (Vec_CUSP*) v->spptr;
     }
-  } catch(char* ex) {
+  } catch(char * ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);
@@ -36,10 +36,10 @@ PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    ierr = VecNorm_SeqCUSP(xin,NORM_2,&work);
+    ierr  = VecNorm_SeqCUSP(xin,NORM_2,&work);
     work *= work;
-    ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
-    *z = PetscSqrtReal(sum);
+    ierr  = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    *z    = PetscSqrtReal(sum);
     //printf("VecNorm_MPICUSP : z=%1.5g\n",*z);
   } else if (type == NORM_1) {
     /* Find the local part */
@@ -72,7 +72,7 @@ PetscErrorCode VecDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionBegin;
   ierr = VecDot_SeqCUSP(xin,yin,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
-  *z = sum;
+  *z   = sum;
   PetscFunctionReturn(0);
 }
 
@@ -126,7 +126,7 @@ M*/
 PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
-  Vec_MPI        *vw,*w = (Vec_MPI *)win->data;
+  Vec_MPI        *vw,*w = (Vec_MPI*)win->data;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -134,7 +134,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0);CHKERRQ(ierr);
-  vw   = (Vec_MPI *)(*v)->data;
+  vw   = (Vec_MPI*)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
@@ -151,7 +151,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   }
 
   /* New vector should inherit stashing property of parent */
-  (*v)->stash.donotstash = win->stash.donotstash;
+  (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
   /* change type_name appropriately */
@@ -159,7 +159,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  (*v)->map->bs    = win->map->bs;
+  (*v)->map->bs   = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }
@@ -168,14 +168,14 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 #define __FUNCT__ "VecDotNorm2_MPICUSP"
 PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
-  PetscErrorCode  ierr;
-  PetscScalar     work[2],sum[2];
-  
+  PetscErrorCode ierr;
+  PetscScalar    work[2],sum[2];
+
   PetscFunctionBegin;
-  ierr    = VecDotNorm2_SeqCUSP(s,t,work,work+1);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
-  *dp     = sum[0];
-  *nm     = sum[1];
+  ierr = VecDotNorm2_SeqCUSP(s,t,work,work+1);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
+  *dp  = sum[0];
+  *nm  = sum[1];
   //printf("VecDotNorm2_MPICUSP=%1.5g,%1.5g\n",PetscRealPart(*dp),PetscImaginaryPart(*dp));
   //printf("VecDotNorm2_MPICUSP=%1.5g,%1.5g\n",PetscRealPart(*nm),PetscImaginaryPart(*nm));
   PetscFunctionReturn(0);
