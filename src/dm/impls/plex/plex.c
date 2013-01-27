@@ -163,9 +163,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscSectionGetChart(coordSection, &pStart, PETSC_NULL);CHKERRQ(ierr);
     if (pStart >= 0) {ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);}
     ierr = DMPlexGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
-    if (markers) {
-      ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);
-    }
+    ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);
     if (size > 1) {
       PetscSF sf;
 
@@ -2577,7 +2575,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
   }
   numCells = cEnd - cStart;
   /* Setup face recognition */
-  {
+  if (depth == 1) {
     PetscInt cornersSeen[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; /* Could use PetscBT */
 
     for (c = cStart; c < cEnd; ++c) {

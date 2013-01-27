@@ -28,13 +28,15 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", label->name);CHKERRQ(ierr);
-  for (v = 0; v < label->numStrata; ++v) {
-    const PetscInt value = label->stratumValues[v];
-    PetscInt       p;
+  if (label) {
+    ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", label->name);CHKERRQ(ierr);
+    for (v = 0; v < label->numStrata; ++v) {
+      const PetscInt value = label->stratumValues[v];
+      PetscInt       p;
 
-    for (p = label->stratumOffsets[v]; p < label->stratumOffsets[v]+label->stratumSizes[v]; ++p) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, label->points[p], value);CHKERRQ(ierr);
+      for (p = label->stratumOffsets[v]; p < label->stratumOffsets[v]+label->stratumSizes[v]; ++p) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, label->points[p], value);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
