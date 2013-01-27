@@ -135,6 +135,25 @@ cell  10-----37------9-----58------18----48------14 cell
    | 34   19     | 32          | 51    25    | 44
    |/            |/            |/            |/
    3-----31------4-----55------15----43------11
+
+In parallel,
+
+                         cell 2
+cell   9-----27------8-----40------13     8----20------4  cell
+0     /|            /|            /|     /|           /|     1
+    28 |   15      26|           34|   24 |  10      19|
+    /  |          /  |          /  |   /  |         /  |
+   6-----25------7-----39------12  |  7----18------3   |
+   |   |     18  |   |         |   |  |   |    13  |   |
+   |  32         |  31         |   36 |  26        |   22
+   |19 |         |17 |         |20 |  |14 |        |12 |
+  29   |  16    30   |        35   |  25  |  11   21   |
+   |   5-----23--|---4-----38--|---11 |   6----17--|---2
+   |  /          |  /          |  /   |  /         |  /
+   | 24   14     | 22          | 33   |23     9    | 16
+   |/            |/            |/     |/           |/
+   2-----21------3-----37------10     5----15------1
+
 */
 
 typedef struct {
@@ -387,7 +406,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
-    PetscInt numPoints[3] = {0, 0, 0};
+    PetscInt numPoints[4] = {0, 0, 0, 0};
 
     ierr = CreateTopology(dm, depth, numPoints, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
