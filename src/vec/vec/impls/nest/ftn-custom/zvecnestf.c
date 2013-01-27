@@ -11,8 +11,8 @@
 
 PETSC_EXTERN_C void PETSC_STDCALL vecnestgetsubvecs_(Vec *X,PetscInt *N,Vec *sx,PetscErrorCode *ierr)
 {
-  Vec *tsx;
-  PetscInt  i,n;
+  Vec      *tsx;
+  PetscInt i,n;
   CHKFORTRANNULLINTEGER(N);
   *ierr = VecNestGetSubVecs(*X,&n,&tsx); if (*ierr) return;
   if (N) *N = n;

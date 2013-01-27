@@ -12,7 +12,7 @@
 #define __FUNCT__ "VecScatterView_MPI"
 PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
-  VecScatter_MPI_General *to=(VecScatter_MPI_General*)ctx->todata;
+  VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
   PetscErrorCode         ierr;
   PetscInt               i;
@@ -286,11 +286,11 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   PetscInt               ny,bs = in_from->bs;
 
   PetscFunctionBegin;
-  out->begin     = in->begin;
-  out->end       = in->end;
-  out->copy      = in->copy;
-  out->destroy   = in->destroy;
-  out->view      = in->view;
+  out->begin   = in->begin;
+  out->end     = in->end;
+  out->copy    = in->copy;
+  out->destroy = in->destroy;
+  out->view    = in->view;
 
   /* allocate entire send scatter context */
   ierr = PetscNewLog(out,VecScatter_MPI_General,&out_to);CHKERRQ(ierr);
@@ -361,8 +361,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     rev_swaits = out_from->rev_requests;
 
     out_from->bs = out_to->bs = bs;
-    tag     = ((PetscObject)out)->tag;
-    comm    = ((PetscObject)out)->comm;
+    tag          = ((PetscObject)out)->tag;
+    comm         = ((PetscObject)out)->comm;
 
     /* Register the receives that you will use later (sends for scatter reverse) */
     for (i=0; i<out_from->n; i++) {
@@ -373,8 +373,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_rsend",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
-      out_to->use_readyreceiver    = PETSC_TRUE;
-      out_from->use_readyreceiver  = PETSC_TRUE;
+      out_to->use_readyreceiver   = PETSC_TRUE;
+      out_from->use_readyreceiver = PETSC_TRUE;
       for (i=0; i<out_to->n; i++) {
         ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       }
@@ -382,10 +382,10 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       ierr = PetscInfo(in,"Using VecScatter ready receiver mode\n");CHKERRQ(ierr);
     } else {
-      out_to->use_readyreceiver    = PETSC_FALSE;
-      out_from->use_readyreceiver  = PETSC_FALSE;
-      flg                          = PETSC_FALSE;
-      ierr                         = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_ssend",&flg,PETSC_NULL);CHKERRQ(ierr);
+      out_to->use_readyreceiver   = PETSC_FALSE;
+      out_from->use_readyreceiver = PETSC_FALSE;
+      flg                         = PETSC_FALSE;
+      ierr                        = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_ssend",&flg,PETSC_NULL);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscInfo(in,"Using VecScatter Ssend mode\n");CHKERRQ(ierr);
       }
@@ -439,8 +439,8 @@ PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
   ierr = PetscMemcpy(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->procs,in_to->procs,(out_to->n)*sizeof(PetscMPIInt));CHKERRQ(ierr);
 
-  out->todata       = (void*)out_to;
-  out_to->local.n   = in_to->local.n;
+  out->todata                        = (void*)out_to;
+  out_to->local.n                    = in_to->local.n;
   out_to->local.nonmatching_computed = PETSC_FALSE;
   out_to->local.n_nonmatching        = 0;
   out_to->local.slots_nonmatching    = 0;
@@ -502,7 +502,7 @@ PETSC_STATIC_INLINE void Pack_1(PetscInt n,const PetscInt *indicesx,const PetscS
 PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
-  
+
   PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
@@ -538,7 +538,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,cons
 PETSC_STATIC_INLINE PetscErrorCode Scatter_1(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
-  
+
   PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
@@ -569,16 +569,16 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_1(PetscInt n,const PetscInt *indicesx
   PetscFunctionReturn(0);
 }
 
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_2(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y    += 2;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y   += 2;
   }
 }
 
@@ -593,28 +593,28 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_2(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      x    += 2;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      x       += 2;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      x    += 2;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      x        += 2;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      x    += 2;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      x       += 2;
     }
 #else
   case MAX_VALUES:
@@ -638,10 +638,10 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_2(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
     }
     break;
   case ADD_VALUES:
@@ -649,17 +649,17 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_2(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
     }
 #else
   case MAX_VALUES:
@@ -671,17 +671,17 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_2(PetscInt n,const PetscInt *indicesx
   }
   PetscFunctionReturn(0);
 }
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_3(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y[2]  = x[idx+2];
-    y    += 3;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y[2] = x[idx+2];
+    y   += 3;
   }
 }
 #undef __FUNCT__
@@ -695,31 +695,31 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_3(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      y[idy+2]  = x[2];
-      x    += 3;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      y[idy+2] = x[2];
+      x       += 3;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      y[idy+2]  += x[2];
-      x    += 3;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      y[idy+2] += x[2];
+      x        += 3;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[2]);
-      x    += 3;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      y[idy+2] = PetscMax(y[idy+2],x[2]);
+      x       += 3;
     }
 #else
   case MAX_VALUES:
@@ -743,11 +743,11 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_3(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
-      y[idy+2]  = x[idx+2];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
+      y[idy+2] = x[idx+2];
     }
     break;
   case ADD_VALUES:
@@ -755,19 +755,19 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_3(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
-      y[idy+2]  += x[idx+2];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
+      y[idy+2] += x[idx+2];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
+      y[idy+2] = PetscMax(y[idy+2],x[idx+2]);
     }
 #else
   case MAX_VALUES:
@@ -779,18 +779,18 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_3(PetscInt n,const PetscInt *indicesx
   }
   PetscFunctionReturn(0);
 }
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_4(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y[2]  = x[idx+2];
-    y[3]  = x[idx+3];
-    y    += 4;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y[2] = x[idx+2];
+    y[3] = x[idx+3];
+    y   += 4;
   }
 }
 #undef __FUNCT__
@@ -804,34 +804,34 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_4(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      y[idy+2]  = x[2];
-      y[idy+3]  = x[3];
-      x    += 4;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      y[idy+2] = x[2];
+      y[idy+3] = x[3];
+      x       += 4;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      y[idy+2]  += x[2];
-      y[idy+3]  += x[3];
-      x    += 4;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      y[idy+2] += x[2];
+      y[idy+3] += x[3];
+      x        += 4;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[3]);
-      x    += 4;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      y[idy+2] = PetscMax(y[idy+2],x[2]);
+      y[idy+3] = PetscMax(y[idy+3],x[3]);
+      x       += 4;
     }
 #else
   case MAX_VALUES:
@@ -855,12 +855,12 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_4(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
-      y[idy+2]  = x[idx+2];
-      y[idy+3]  = x[idx+3];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
+      y[idy+2] = x[idx+2];
+      y[idy+3] = x[idx+3];
     }
     break;
   case ADD_VALUES:
@@ -868,21 +868,21 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_4(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
-      y[idy+2]  += x[idx+2];
-      y[idy+3]  += x[idx+3];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
+      y[idy+2] += x[idx+2];
+      y[idy+3] += x[idx+3];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
+      y[idy+2] = PetscMax(y[idy+2],x[idx+2]);
+      y[idy+3] = PetscMax(y[idy+3],x[idx+3]);
     }
 #else
   case MAX_VALUES:
@@ -894,19 +894,19 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_4(PetscInt n,const PetscInt *indicesx
   }
   PetscFunctionReturn(0);
 }
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_5(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y[2]  = x[idx+2];
-    y[3]  = x[idx+3];
-    y[4]  = x[idx+4];
-    y    += 5;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y[2] = x[idx+2];
+    y[3] = x[idx+3];
+    y[4] = x[idx+4];
+    y   += 5;
   }
 }
 
@@ -921,37 +921,37 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_5(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      y[idy+2]  = x[2];
-      y[idy+3]  = x[3];
-      y[idy+4]  = x[4];
-      x    += 5;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      y[idy+2] = x[2];
+      y[idy+3] = x[3];
+      y[idy+4] = x[4];
+      x       += 5;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      y[idy+2]  += x[2];
-      y[idy+3]  += x[3];
-      y[idy+4]  += x[4];
-      x    += 5;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      y[idy+2] += x[2];
+      y[idy+3] += x[3];
+      y[idy+4] += x[4];
+      x        += 5;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[4]);
-      x    += 5;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      y[idy+2] = PetscMax(y[idy+2],x[2]);
+      y[idy+3] = PetscMax(y[idy+3],x[3]);
+      y[idy+4] = PetscMax(y[idy+4],x[4]);
+      x       += 5;
     }
 #else
   case MAX_VALUES:
@@ -975,13 +975,13 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_5(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
-      y[idy+2]  = x[idx+2];
-      y[idy+3]  = x[idx+3];
-      y[idy+4]  = x[idx+4];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
+      y[idy+2] = x[idx+2];
+      y[idy+3] = x[idx+3];
+      y[idy+4] = x[idx+4];
     }
     break;
   case ADD_VALUES:
@@ -989,23 +989,23 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_5(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
-      y[idy+2]  += x[idx+2];
-      y[idy+3]  += x[idx+3];
-      y[idy+4]  += x[idx+4];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
+      y[idy+2] += x[idx+2];
+      y[idy+3] += x[idx+3];
+      y[idy+4] += x[idx+4];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[idx+4]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
+      y[idy+2] = PetscMax(y[idy+2],x[idx+2]);
+      y[idy+3] = PetscMax(y[idy+3],x[idx+3]);
+      y[idy+4] = PetscMax(y[idy+4],x[idx+4]);
     }
 #else
   case MAX_VALUES:
@@ -1017,20 +1017,20 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_5(PetscInt n,const PetscInt *indicesx
   }
   PetscFunctionReturn(0);
 }
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_6(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y[2]  = x[idx+2];
-    y[3]  = x[idx+3];
-    y[4]  = x[idx+4];
-    y[5]  = x[idx+5];
-    y    += 6;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y[2] = x[idx+2];
+    y[3] = x[idx+3];
+    y[4] = x[idx+4];
+    y[5] = x[idx+5];
+    y   += 6;
   }
 }
 
@@ -1045,40 +1045,40 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_6(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      y[idy+2]  = x[2];
-      y[idy+3]  = x[3];
-      y[idy+4]  = x[4];
-      y[idy+5]  = x[5];
-      x    += 6;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      y[idy+2] = x[2];
+      y[idy+3] = x[3];
+      y[idy+4] = x[4];
+      y[idy+5] = x[5];
+      x       += 6;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      y[idy+2]  += x[2];
-      y[idy+3]  += x[3];
-      y[idy+4]  += x[4];
-      y[idy+5]  += x[5];
-      x    += 6;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      y[idy+2] += x[2];
+      y[idy+3] += x[3];
+      y[idy+4] += x[4];
+      y[idy+5] += x[5];
+      x        += 6;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[4]);
-      y[idy+5]  = PetscMax(y[idy+5],x[5]);
-      x    += 6;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      y[idy+2] = PetscMax(y[idy+2],x[2]);
+      y[idy+3] = PetscMax(y[idy+3],x[3]);
+      y[idy+4] = PetscMax(y[idy+4],x[4]);
+      y[idy+5] = PetscMax(y[idy+5],x[5]);
+      x       += 6;
     }
 #else
   case MAX_VALUES:
@@ -1102,14 +1102,14 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_6(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
-      y[idy+2]  = x[idx+2];
-      y[idy+3]  = x[idx+3];
-      y[idy+4]  = x[idx+4];
-      y[idy+5]  = x[idx+5];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
+      y[idy+2] = x[idx+2];
+      y[idy+3] = x[idx+3];
+      y[idy+4] = x[idx+4];
+      y[idy+5] = x[idx+5];
     }
     break;
   case ADD_VALUES:
@@ -1117,25 +1117,25 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_6(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
-      y[idy+2]  += x[idx+2];
-      y[idy+3]  += x[idx+3];
-      y[idy+4]  += x[idx+4];
-      y[idy+5]  += x[idx+5];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
+      y[idy+2] += x[idx+2];
+      y[idy+3] += x[idx+3];
+      y[idy+4] += x[idx+4];
+      y[idy+5] += x[idx+5];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[idx+4]);
-      y[idy+5]  = PetscMax(y[idy+5],x[idx+5]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
+      y[idy+2] = PetscMax(y[idy+2],x[idx+2]);
+      y[idy+3] = PetscMax(y[idy+3],x[idx+3]);
+      y[idy+4] = PetscMax(y[idy+4],x[idx+4]);
+      y[idy+5] = PetscMax(y[idy+5],x[idx+5]);
     }
 #else
   case MAX_VALUES:
@@ -1147,21 +1147,21 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_6(PetscInt n,const PetscInt *indicesx
   }
   PetscFunctionReturn(0);
 }
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_7(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y[2]  = x[idx+2];
-    y[3]  = x[idx+3];
-    y[4]  = x[idx+4];
-    y[5]  = x[idx+5];
-    y[6]  = x[idx+6];
-    y    += 7;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y[2] = x[idx+2];
+    y[3] = x[idx+3];
+    y[4] = x[idx+4];
+    y[5] = x[idx+5];
+    y[6] = x[idx+6];
+    y   += 7;
   }
 }
 
@@ -1176,43 +1176,43 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_7(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      y[idy+2]  = x[2];
-      y[idy+3]  = x[3];
-      y[idy+4]  = x[4];
-      y[idy+5]  = x[5];
-      y[idy+6]  = x[6];
-      x    += 7;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      y[idy+2] = x[2];
+      y[idy+3] = x[3];
+      y[idy+4] = x[4];
+      y[idy+5] = x[5];
+      y[idy+6] = x[6];
+      x       += 7;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      y[idy+2]  += x[2];
-      y[idy+3]  += x[3];
-      y[idy+4]  += x[4];
-      y[idy+5]  += x[5];
-      y[idy+6]  += x[6];
-      x    += 7;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      y[idy+2] += x[2];
+      y[idy+3] += x[3];
+      y[idy+4] += x[4];
+      y[idy+5] += x[5];
+      y[idy+6] += x[6];
+      x        += 7;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[4]);
-      y[idy+5]  = PetscMax(y[idy+5],x[5]);
-      y[idy+6]  = PetscMax(y[idy+6],x[6]);
-      x    += 7;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      y[idy+2] = PetscMax(y[idy+2],x[2]);
+      y[idy+3] = PetscMax(y[idy+3],x[3]);
+      y[idy+4] = PetscMax(y[idy+4],x[4]);
+      y[idy+5] = PetscMax(y[idy+5],x[5]);
+      y[idy+6] = PetscMax(y[idy+6],x[6]);
+      x       += 7;
     }
 #else
   case MAX_VALUES:
@@ -1236,15 +1236,15 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_7(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
-      y[idy+2]  = x[idx+2];
-      y[idy+3]  = x[idx+3];
-      y[idy+4]  = x[idx+4];
-      y[idy+5]  = x[idx+5];
-      y[idy+6]  = x[idx+6];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
+      y[idy+2] = x[idx+2];
+      y[idy+3] = x[idx+3];
+      y[idy+4] = x[idx+4];
+      y[idy+5] = x[idx+5];
+      y[idy+6] = x[idx+6];
     }
     break;
   case ADD_VALUES:
@@ -1252,27 +1252,27 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_7(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
-      y[idy+2]  += x[idx+2];
-      y[idy+3]  += x[idx+3];
-      y[idy+4]  += x[idx+4];
-      y[idy+5]  += x[idx+5];
-      y[idy+6]  += x[idx+6];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
+      y[idy+2] += x[idx+2];
+      y[idy+3] += x[idx+3];
+      y[idy+4] += x[idx+4];
+      y[idy+5] += x[idx+5];
+      y[idy+6] += x[idx+6];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[idx+4]);
-      y[idy+5]  = PetscMax(y[idy+5],x[idx+5]);
-      y[idy+6]  = PetscMax(y[idy+6],x[idx+6]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
+      y[idy+2] = PetscMax(y[idy+2],x[idx+2]);
+      y[idy+3] = PetscMax(y[idy+3],x[idx+3]);
+      y[idy+4] = PetscMax(y[idy+4],x[idx+4]);
+      y[idy+5] = PetscMax(y[idy+5],x[idx+5]);
+      y[idy+6] = PetscMax(y[idy+6],x[idx+6]);
     }
 #else
   case MAX_VALUES:
@@ -1284,22 +1284,22 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_7(PetscInt n,const PetscInt *indicesx
   }
   PetscFunctionReturn(0);
 }
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_8(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
 
   for (i=0; i<n; i++) {
-    idx   = *indicesx++;
-    y[0]  = x[idx];
-    y[1]  = x[idx+1];
-    y[2]  = x[idx+2];
-    y[3]  = x[idx+3];
-    y[4]  = x[idx+4];
-    y[5]  = x[idx+5];
-    y[6]  = x[idx+6];
-    y[7]  = x[idx+7];
-    y    += 8;
+    idx  = *indicesx++;
+    y[0] = x[idx];
+    y[1] = x[idx+1];
+    y[2] = x[idx+2];
+    y[3] = x[idx+3];
+    y[4] = x[idx+4];
+    y[5] = x[idx+5];
+    y[6] = x[idx+6];
+    y[7] = x[idx+7];
+    y   += 8;
   }
 }
 
@@ -1314,46 +1314,46 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_8(PetscInt n,const PetscScalar *x,cons
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = x[0];
-      y[idy+1]  = x[1];
-      y[idy+2]  = x[2];
-      y[idy+3]  = x[3];
-      y[idy+4]  = x[4];
-      y[idy+5]  = x[5];
-      y[idy+6]  = x[6];
-      y[idy+7]  = x[7];
-      x    += 8;
+      idy      = *indicesy++;
+      y[idy]   = x[0];
+      y[idy+1] = x[1];
+      y[idy+2] = x[2];
+      y[idy+3] = x[3];
+      y[idy+4] = x[4];
+      y[idy+5] = x[5];
+      y[idy+6] = x[6];
+      y[idy+7] = x[7];
+      x       += 8;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
-      y[idy]    += x[0];
-      y[idy+1]  += x[1];
-      y[idy+2]  += x[2];
-      y[idy+3]  += x[3];
-      y[idy+4]  += x[4];
-      y[idy+5]  += x[5];
-      y[idy+6]  += x[6];
-      y[idy+7]  += x[7];
-      x    += 8;
+      y[idy]   += x[0];
+      y[idy+1] += x[1];
+      y[idy+2] += x[2];
+      y[idy+3] += x[3];
+      y[idy+4] += x[4];
+      y[idy+5] += x[5];
+      y[idy+6] += x[6];
+      y[idy+7] += x[7];
+      x        += 8;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[0]);
-      y[idy+1]  = PetscMax(y[idy+1],x[1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[4]);
-      y[idy+5]  = PetscMax(y[idy+5],x[5]);
-      y[idy+6]  = PetscMax(y[idy+6],x[6]);
-      y[idy+7]  = PetscMax(y[idy+7],x[7]);
-      x    += 8;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[0]);
+      y[idy+1] = PetscMax(y[idy+1],x[1]);
+      y[idy+2] = PetscMax(y[idy+2],x[2]);
+      y[idy+3] = PetscMax(y[idy+3],x[3]);
+      y[idy+4] = PetscMax(y[idy+4],x[4]);
+      y[idy+5] = PetscMax(y[idy+5],x[5]);
+      y[idy+6] = PetscMax(y[idy+6],x[6]);
+      y[idy+7] = PetscMax(y[idy+7],x[7]);
+      x       += 8;
     }
 #else
   case MAX_VALUES:
@@ -1377,16 +1377,16 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_8(PetscInt n,const PetscInt *indicesx
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = x[idx];
-      y[idy+1]  = x[idx+1];
-      y[idy+2]  = x[idx+2];
-      y[idy+3]  = x[idx+3];
-      y[idy+4]  = x[idx+4];
-      y[idy+5]  = x[idx+5];
-      y[idy+6]  = x[idx+6];
-      y[idy+7]  = x[idx+7];
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = x[idx];
+      y[idy+1] = x[idx+1];
+      y[idy+2] = x[idx+2];
+      y[idy+3] = x[idx+3];
+      y[idy+4] = x[idx+4];
+      y[idy+5] = x[idx+5];
+      y[idy+6] = x[idx+6];
+      y[idy+7] = x[idx+7];
     }
     break;
   case ADD_VALUES:
@@ -1394,29 +1394,29 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_8(PetscInt n,const PetscInt *indicesx
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
-      y[idy]    += x[idx];
-      y[idy+1]  += x[idx+1];
-      y[idy+2]  += x[idx+2];
-      y[idy+3]  += x[idx+3];
-      y[idy+4]  += x[idx+4];
-      y[idy+5]  += x[idx+5];
-      y[idy+6]  += x[idx+6];
-      y[idy+7]  += x[idx+7];
+      y[idy]   += x[idx];
+      y[idy+1] += x[idx+1];
+      y[idy+2] += x[idx+2];
+      y[idy+3] += x[idx+3];
+      y[idy+4] += x[idx+4];
+      y[idy+5] += x[idx+5];
+      y[idy+6] += x[idx+6];
+      y[idy+7] += x[idx+7];
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
   case MAX_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
-      y[idy]    = PetscMax(y[idy],x[idx]);
-      y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
-      y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
-      y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
-      y[idy+4]  = PetscMax(y[idy+4],x[idx+4]);
-      y[idy+5]  = PetscMax(y[idy+5],x[idx+5]);
-      y[idy+6]  = PetscMax(y[idy+6],x[idx+6]);
-      y[idy+7]  = PetscMax(y[idy+7],x[idx+7]);
+      idx      = *indicesx++;
+      idy      = *indicesy++;
+      y[idy]   = PetscMax(y[idy],x[idx]);
+      y[idy+1] = PetscMax(y[idy+1],x[idx+1]);
+      y[idy+2] = PetscMax(y[idy+2],x[idx+2]);
+      y[idy+3] = PetscMax(y[idy+3],x[idx+3]);
+      y[idy+4] = PetscMax(y[idy+4],x[idx+4]);
+      y[idy+5] = PetscMax(y[idy+5],x[idx+5]);
+      y[idy+6] = PetscMax(y[idy+6],x[idx+6]);
+      y[idy+7] = PetscMax(y[idy+7],x[idx+7]);
     }
 #else
   case MAX_VALUES:
@@ -1429,7 +1429,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_8(PetscInt n,const PetscInt *indicesx
   PetscFunctionReturn(0);
 }
 
-  /* ----------------------------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_12(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i,idx;
@@ -1476,13 +1476,13 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,con
       y[idy+9]  = x[9];
       y[idy+10] = x[10];
       y[idy+11] = x[11];
-      x    += 12;
+      x        += 12;
     }
     break;
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idy       = *indicesy++;
+      idy        = *indicesy++;
       y[idy]    += x[0];
       y[idy+1]  += x[1];
       y[idy+2]  += x[2];
@@ -1495,7 +1495,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,con
       y[idy+9]  += x[9];
       y[idy+10] += x[10];
       y[idy+11] += x[11];
-      x    += 12;
+      x         += 12;
     }
     break;
 #if !defined(PETSC_USE_COMPLEX)
@@ -1514,7 +1514,7 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,con
       y[idy+9]  = PetscMax(y[idy+9],x[9]);
       y[idy+10] = PetscMax(y[idy+10],x[10]);
       y[idy+11] = PetscMax(y[idy+11],x[11]);
-      x    += 12;
+      x        += 12;
     }
 #else
   case MAX_VALUES:
@@ -1557,8 +1557,8 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_12(PetscInt n,const PetscInt *indices
   case ADD_VALUES:
   case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
-      idx       = *indicesx++;
-      idy       = *indicesy++;
+      idx        = *indicesx++;
+      idy        = *indicesy++;
       y[idy]    += x[idx];
       y[idy+1]  += x[idx+1];
       y[idy+2]  += x[idx+2];
@@ -1626,7 +1626,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_12(PetscInt n,const PetscInt *indices
 
 /*              create parallel to sequential scatter context                           */
 
-PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_MPI_General *,VecScatter);
+PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateLocal"
@@ -1679,7 +1679,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
       to->indices[i] = sendIdx[i];
     }
   }
-  ctx->todata = (void *) to;
+  ctx->todata = (void*) to;
 
   /* allocate entire receive scatter context */
   ierr = PetscNewLog(ctx,VecScatter_MPI_General,&from);CHKERRQ(ierr);
@@ -1699,10 +1699,10 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   ctx->fromdata = (void *)from;
 
   /* No local scatter optimization */
-  from->local.n      = 0;
-  from->local.vslots = 0;
-  to->local.n        = 0;
-  to->local.vslots   = 0;
+  from->local.n                    = 0;
+  from->local.vslots               = 0;
+  to->local.n                      = 0;
+  to->local.vslots                 = 0;
   from->local.nonmatching_computed = PETSC_FALSE;
   from->local.n_nonmatching        = 0;
   from->local.slots_nonmatching    = 0;
@@ -1712,9 +1712,9 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 
   from->type = VEC_SCATTER_MPI_GENERAL;
   to->type   = VEC_SCATTER_MPI_GENERAL;
-  from->bs = bs;
-  to->bs   = bs;
-  ierr = VecScatterCreateCommon_PtoS(from, to, ctx);CHKERRQ(ierr);
+  from->bs   = bs;
+  to->bs     = bs;
+  ierr       = VecScatterCreateCommon_PtoS(from, to, ctx);CHKERRQ(ierr);
 
   /* mark lengths as negative so it won't check local vector lengths */
   ctx->from_n = ctx->to_n = -1;
@@ -1782,8 +1782,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
   /* post receives:   */
-  ierr = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
-  count  = 0;
+  ierr  = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
+  count = 0;
   for (i=0; i<nrecvs; i++) {
     ierr  = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
     count += olengths1[i];
@@ -1812,12 +1812,12 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   }
 
   /*  wait on receives */
-  count  = nrecvs;
-  slen   = 0;
+  count = nrecvs;
+  slen  = 0;
   while (count) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
-    ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
+    ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
     slen += n;
     count--;
   }
@@ -1918,8 +1918,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 
   from->type = VEC_SCATTER_MPI_GENERAL;
   to->type   = VEC_SCATTER_MPI_GENERAL;
-  from->bs = bs;
-  to->bs   = bs;
+  from->bs   = bs;
+  to->bs     = bs;
   ierr = VecScatterCreateCommon_PtoS(from,to,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2085,9 +2085,9 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 #endif
   } else {
     PetscBool   use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE;
-    PetscInt    *sstarts = to->starts,  *rstarts = from->starts;
-    PetscMPIInt *sprocs  = to->procs,   *rprocs  = from->procs;
-    MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
+    PetscInt    *sstarts  = to->starts,  *rstarts = from->starts;
+    PetscMPIInt *sprocs   = to->procs,   *rprocs  = from->procs;
+    MPI_Request *swaits   = to->requests,*rwaits  = from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
     PetscScalar *Ssvalues = to->values, *Srvalues = from->values;
 
@@ -2144,7 +2144,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     }
 
-    ctx->copy      = VecScatterCopy_PtoP_X;
+    ctx->copy = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
 
@@ -2156,45 +2156,45 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 
   switch (bs) {
   case 12:
-    ctx->begin     = VecScatterBegin_12;
-    ctx->end       = VecScatterEnd_12;
+    ctx->begin = VecScatterBegin_12;
+    ctx->end   = VecScatterEnd_12;
     break;
   case 8:
-    ctx->begin     = VecScatterBegin_8;
-    ctx->end       = VecScatterEnd_8;
+    ctx->begin = VecScatterBegin_8;
+    ctx->end   = VecScatterEnd_8;
     break;
   case 7:
-    ctx->begin     = VecScatterBegin_7;
-    ctx->end       = VecScatterEnd_7;
+    ctx->begin = VecScatterBegin_7;
+    ctx->end   = VecScatterEnd_7;
     break;
   case 6:
-    ctx->begin     = VecScatterBegin_6;
-    ctx->end       = VecScatterEnd_6;
+    ctx->begin = VecScatterBegin_6;
+    ctx->end   = VecScatterEnd_6;
     break;
   case 5:
-    ctx->begin     = VecScatterBegin_5;
-    ctx->end       = VecScatterEnd_5;
+    ctx->begin = VecScatterBegin_5;
+    ctx->end   = VecScatterEnd_5;
     break;
   case 4:
-    ctx->begin     = VecScatterBegin_4;
-    ctx->end       = VecScatterEnd_4;
+    ctx->begin = VecScatterBegin_4;
+    ctx->end   = VecScatterEnd_4;
     break;
   case 3:
-    ctx->begin     = VecScatterBegin_3;
-    ctx->end       = VecScatterEnd_3;
+    ctx->begin = VecScatterBegin_3;
+    ctx->end   = VecScatterEnd_3;
     break;
   case 2:
-    ctx->begin     = VecScatterBegin_2;
-    ctx->end       = VecScatterEnd_2;
+    ctx->begin = VecScatterBegin_2;
+    ctx->end   = VecScatterEnd_2;
     break;
   case 1:
-    ctx->begin     = VecScatterBegin_1;
-    ctx->end       = VecScatterEnd_1;
+    ctx->begin = VecScatterBegin_1;
+    ctx->end   = VecScatterEnd_1;
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Blocksize not supported");
   }
-  ctx->view      = VecScatterView_MPI;
+  ctx->view = VecScatterView_MPI;
   /* Check if the local scatter is actually a copy; important special case */
   if (to->local.n) {
     ierr = VecScatterLocalOptimizeCopy_Private(ctx,&to->local,&from->local,bs);CHKERRQ(ierr);
@@ -2345,7 +2345,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   while (count) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
-    ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
+    ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
     slen += n/2;
     count--;
   }
@@ -2356,7 +2356,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   count = 0;
   rsvalues = rvalues;
   for (i=0; i<nrecvs; i++) {
-    values = rsvalues;
+    values    = rsvalues;
     rsvalues += 2*olengths1[i];
     for (j=0; j<olengths1[i]; j++) {
       local_inidx[count]   = values[2*j] - base;
@@ -2375,7 +2375,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
 
 #if defined(do_it_slow)
   /* sort on the from index */
-  ierr = PetscSortIntWithArray(slen,local_inidx,local_inidy);CHKERRQ(ierr);
+  ierr  = PetscSortIntWithArray(slen,local_inidx,local_inidy);CHKERRQ(ierr);
   start = 0;
   while (start < slen) {
     count = start+1;

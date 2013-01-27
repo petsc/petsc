@@ -98,7 +98,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
     ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
   }
   if (vec->map->n < 0 && vec->map->N < 0) {
-     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
+    ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
   }
 
   /* If sizes and type already set,check if the vector global size is correct */
@@ -152,7 +152,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
   hid_t          file_id, group;
-  const char    *groupName = PETSC_NULL;
+  const char     *groupName = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -199,8 +199,8 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hsize_t        dims[4], count[4], offset[4];
   herr_t         status;
   PetscInt       n, N, bs = 1, bsInd, lenInd, low, timestep;
-  PetscScalar   *x;
-  const char    *vecname;
+  PetscScalar    *x;
+  const char     *vecname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -243,7 +243,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
 
   /* Set Vec sizes,blocksize,and type if not already set */
-  if ((xin)->map-> n < 0 && (xin)->map->N < 0) {
+  if ((xin)->map->n < 0 && (xin)->map->N < 0) {
     ierr = VecSetSizes(xin, PETSC_DECIDE, dims[lenInd]*bs);CHKERRQ(ierr);
   }
   /* If sizes and type already set,check if the vector global size is correct */
@@ -252,7 +252,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
-  dim = 0;
+  dim  = 0;
   if (timestep >= 0) {
     count[dim] = 1;
     ++dim;
@@ -272,7 +272,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  dim = 0;
+  dim  = 0;
   if (timestep >= 0) {
     offset[dim] = timestep;
     ++dim;
@@ -297,9 +297,9 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #endif
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
-  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
+  ierr   = VecGetArray(xin, &x);CHKERRQ(ierr);
   status = H5Dread(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
-  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+  ierr   = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
   if (group != file_id) {
@@ -366,7 +366,7 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 @*/
 PetscErrorCode VecChop(Vec v, PetscReal tol)
 {
-  PetscScalar   *a;
+  PetscScalar    *a;
   PetscInt       n, i;
   PetscErrorCode ierr;
 

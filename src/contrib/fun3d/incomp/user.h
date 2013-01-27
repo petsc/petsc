@@ -7,7 +7,7 @@
 
 #define REAL double
 
-typedef struct gxy{                           /* GRID STRUCTURE             */
+typedef struct gxy {                           /* GRID STRUCTURE             */
   int nnodes;                                 /* Global number of nodes     */
   int ncell;                                  /* Global number of cells     */
   int nedge;                                  /* Global number of edges     */
@@ -67,9 +67,9 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
   int *nlcount;                              /* How many edges in each colr*/
   int *lvface;                               /* Edges that influence a set */
 /* Back substitution for ILU */
-  int *nbcol;                                /* No of edge colors for sets */
-  int *nbcount;                              /* How many edges in each colr*/
-  int *lbface;                               /* Edges that influence a set */
+  int  *nbcol;                               /* No of edge colors for sets */
+  int  *nbcount;                             /* How many edges in each colr*/
+  int  *lbface;                              /* Edges that influence a set */
   REAL *xyz;                                 /* Node Coordinates           */
   REAL *area;                                /* Area of control volumes    */
   /*REAL *gradx, *grady, *gradz;*/           /* Gradients                  */
@@ -112,23 +112,23 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
   int *f2ntn,*f2ntv,*f2ntf;
 
 /* PETSc datastructures and other related info */
-  Vec qnode;                                 /* Global distributed solution vector*/
-  Vec qnodeLoc;                              /* Local sequential solution vector*/
-  Vec dq;                                    /* Delta Q                    */
-  Vec qold;                                  /* Global distributed solution vector*/
-  Vec res;                                   /* Residual                   */
-  Vec grad;                                  /* Gradient Vector            */
-  Vec gradLoc;                               /* Local Gradient Vector      */
-  Vec B;                                     /* Right hand side            */
-  Mat A;                                     /* Left hand side             */
+  Vec        qnode;                          /* Global distributed solution vector*/
+  Vec        qnodeLoc;                       /* Local sequential solution vector*/
+  Vec        dq;                             /* Delta Q                    */
+  Vec        qold;                           /* Global distributed solution vector*/
+  Vec        res;                            /* Residual                   */
+  Vec        grad;                           /* Gradient Vector            */
+  Vec        gradLoc;                        /* Local Gradient Vector      */
+  Vec        B;                              /* Right hand side            */
+  Mat        A;                              /* Left hand side             */
   VecScatter scatter, gradScatter;           /* Scatter between local and global vectors */
-  int *loc2pet;                              /* local to PETSc mapping     */
-  int *loc2glo;                              /* local to global mapping     */
-  int *v2p;                                  /* Vertex to processor mapping */
-  int *sface_bit, *vface_bit;
-  int nnodesLoc, nedgeLoc, nvertices;        /* nnodesLoc=number of owned nodes, nedgeLoc=number of edges touching owned nodes, nvertices=includes ghost nodes */
-  int nsnodeLoc, nvnodeLoc, nfnodeLoc;
-  int nnfacetLoc, nvfacetLoc, nffacetLoc;
+  int        *loc2pet;                       /* local to PETSc mapping     */
+  int        *loc2glo;                       /* local to global mapping     */
+  int        *v2p;                           /* Vertex to processor mapping */
+  int        *sface_bit, *vface_bit;
+  int        nnodesLoc, nedgeLoc, nvertices; /* nnodesLoc=number of owned nodes, nedgeLoc=number of edges touching owned nodes, nvertices=includes ghost nodes */
+  int        nsnodeLoc, nvnodeLoc, nfnodeLoc;
+  int        nnfacetLoc, nvfacetLoc, nffacetLoc;
 
   /* global arrays needed for post processing */
   /*int *indGlo, *isnodeGlo, *ivnodeGlo, *f2ntnGlo, *f2ntvGlo;
@@ -140,8 +140,8 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
 #if defined(HAVE_REDUNDANT_WORK)
   REAL *resd;
 #else
-  int nedgeAllThr;
-  int *part_thr,*nedge_thr,*edge_thr;
+  int  nedgeAllThr;
+  int  *part_thr,*nedge_thr,*edge_thr;
   REAL *xyzn_thr;
 #endif
 #endif
@@ -149,7 +149,7 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
                                              /*============================*/
 
                                              /*============================*/
-typedef struct{                              /* GENERAL INFORMATION        */
+typedef struct {                             /* GENERAL INFORMATION        */
   REAL title[20];                            /* Title line                 */
   REAL beta;                                 /* Artificial Compress. Param */
   REAL alpha;                                /* Angle of attack            */
@@ -158,9 +158,9 @@ typedef struct{                              /* GENERAL INFORMATION        */
   REAL tot;                                  /* total computer time        */
   REAL res0;                                 /* Begining residual          */
   REAL resc;                                 /* Current residual           */
-  int ntt;                                   /* A counter                  */
-  int mseq;                                  /* Mesh sequencing            */
-  int ivisc;                                 /* 0 = Euler                  */
+  int  ntt;                                  /* A counter                  */
+  int  mseq;                                 /* Mesh sequencing            */
+  int  ivisc;                                /* 0 = Euler                  */
                                              /* 1 = laminar no visc LHS    */
                                              /* 2 = laminar w/ visc LHS    */
                                              /* 3 = turb BB no visc LHS    */
@@ -180,29 +180,29 @@ typedef struct{                              /* GENERAL INFORMATION        */
 typedef struct {                             /* FLOW SOLVER VARIABLES      */
   REAL cfl1;                                 /* Starting CFL number        */
   REAL cfl2;                                 /* Ending   CFL number        */
-  int nsmoth;                                /* How many its for Res smooth*/
-  int iflim;                                 /* 1=use limiter 0=no limiter */
-  int itran;                                 /* 1=transition (spalart only)*/
-  int nbtran;                                /* No. of transition points   */
-  int jupdate;                               /* For freezing Jacobians */
-  int nstage;                                /* Number of subiterations    */
-  int ncyct;                                 /* Subiterations for turb mod */
-  int iramp;                                 /* Ramp CFL over iramp iters  */
-  int nitfo;                                 /* Iterations first order     */
+  int  nsmoth;                               /* How many its for Res smooth*/
+  int  iflim;                                /* 1=use limiter 0=no limiter */
+  int  itran;                                /* 1=transition (spalart only)*/
+  int  nbtran;                               /* No. of transition points   */
+  int  jupdate;                              /* For freezing Jacobians */
+  int  nstage;                               /* Number of subiterations    */
+  int  ncyct;                                /* Subiterations for turb mod */
+  int  iramp;                                /* Ramp CFL over iramp iters  */
+  int  nitfo;                                /* Iterations first order     */
 } CRUNGE;                                    /* COMMON RUNGE               */
                                              /*============================*/
 
-typedef struct{                              /*============================*/
-  REAL  gtol;                                /* linear system tolerence    */
-  int   icycle;                              /* Number of GMRES iterations */
-  int   nsrch;                               /* Dimension of Krylov        */
-  int   ilu0;                                /* 1 for ILU(0)               */
-  int   ifcn;                                /* 0=fcn2 1=fcneval(nwt Krlv) */
+typedef struct {                             /*============================*/
+  REAL gtol;                                 /* linear system tolerence    */
+  int  icycle;                               /* Number of GMRES iterations */
+  int  nsrch;                                /* Dimension of Krylov        */
+  int  ilu0;                                 /* 1 for ILU(0)               */
+  int  ifcn;                                 /* 0=fcn2 1=fcneval(nwt Krlv) */
 } CGMCOM;                                    /* COMMON GMCOM               */
                                              /*============================*/
 
-extern int  set_up_grid(GRID *);
-extern int  write_fine_grid(GRID *);
+extern int  set_up_grid(GRID*);
+extern int  write_fine_grid(GRID*);
 
 /* =================  Fortran routines called from C ======================= */
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -296,25 +296,24 @@ extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,int*
 extern void PETSC_STDCALL f77INIT(int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,int*);
 extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
 extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
-                      PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
-                      PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,
-                      PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,
+                                    int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                                    int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
+                                    PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
+                                    PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,
+                                    PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,
 #if defined(_OPENMP)
-                      int*,
+                                    int*,
 #if defined(HAVE_EDGE_COLORING)
-                      int*, int*,
+                                    int*, int*,
 #elif defined(HAVE_REDUNDANT_WORK)
-                      PetscScalar*,
+                                    PetscScalar*,
 #else
-                      int*,
-                      int*,int*,int*,PetscScalar*,
+                                    int*,
+                                    int*,int*,int*,PetscScalar*,
 #endif
 #endif
-                      int*,int*,int*);
-extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,PetscScalar*,
-                     PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
+                                    int*,int*,int*);
+extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,PetscScalar*,PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
 extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
 extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
 extern void PETSC_STDCALL f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* nvnode,

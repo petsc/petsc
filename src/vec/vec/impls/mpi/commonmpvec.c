@@ -85,7 +85,7 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
   ierr = PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
-    Vec_MPI *v  = (Vec_MPI*)g->data;
+    Vec_MPI *v = (Vec_MPI*)g->data;
     *l = v->localrep;
   } else if (isseq) {
     *l = g;
@@ -133,7 +133,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
   ierr = PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
-    Vec_MPI *v  = (Vec_MPI*)g->data;
+    Vec_MPI *v = (Vec_MPI*)g->data;
     if (l == v->localrep) *flg = PETSC_TRUE;
   } else if (isseq) {
     if (l == g) *flg = PETSC_TRUE;
@@ -226,7 +226,7 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
   ierr = PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
   if (ismpi) {
-    v  = (Vec_MPI*)g->data;
+    v = (Vec_MPI*)g->data;
     if (!v->localrep) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
     if (!v->localupdate) PetscFunctionReturn(0);
     if (scattermode == SCATTER_REVERSE) {
@@ -292,7 +292,7 @@ PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatte
   PetscValidHeaderSpecific(g,VEC_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
-    v  = (Vec_MPI*)g->data;
+    v = (Vec_MPI*)g->data;
     if (!v->localrep) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
     if (!v->localupdate) PetscFunctionReturn(0);
     if (scattermode == SCATTER_REVERSE) {
@@ -306,7 +306,7 @@ PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatte
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOption_MPI"
-PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool  flag)
+PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool flag)
 {
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
@@ -322,7 +322,7 @@ PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool  flag)
 #define __FUNCT__ "VecResetArray_MPI"
 PetscErrorCode VecResetArray_MPI(Vec vin)
 {
-  Vec_MPI        *v = (Vec_MPI *)vin->data;
+  Vec_MPI        *v = (Vec_MPI*)vin->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

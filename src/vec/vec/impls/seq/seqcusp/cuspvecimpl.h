@@ -20,31 +20,31 @@
 #define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
 #define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
 
-extern PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar *, PetscScalar *);
+extern PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar*, PetscScalar*);
 extern PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec,Vec,Vec);
 extern PetscErrorCode VecWAXPY_SeqCUSP(Vec,PetscScalar,Vec,Vec);
-extern PetscErrorCode VecMDot_SeqCUSP(Vec,PetscInt,const Vec[],PetscScalar *);
+extern PetscErrorCode VecMDot_SeqCUSP(Vec,PetscInt,const Vec[],PetscScalar*);
 extern PetscErrorCode VecSet_SeqCUSP(Vec,PetscScalar);
-extern PetscErrorCode VecMAXPY_SeqCUSP(Vec,PetscInt,const PetscScalar *,Vec *);
+extern PetscErrorCode VecMAXPY_SeqCUSP(Vec,PetscInt,const PetscScalar*,Vec*);
 extern PetscErrorCode VecAXPBYPCZ_SeqCUSP(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
 extern PetscErrorCode VecPointwiseMult_SeqCUSP(Vec,Vec,Vec);
-extern PetscErrorCode VecPlaceArray_SeqCUSP(Vec,const PetscScalar *);
+extern PetscErrorCode VecPlaceArray_SeqCUSP(Vec,const PetscScalar*);
 extern PetscErrorCode VecResetArray_SeqCUSP(Vec);
-extern PetscErrorCode VecReplaceArray_SeqCUSP(Vec,const PetscScalar *);
-extern PetscErrorCode VecDot_SeqCUSP(Vec,Vec,PetscScalar *);
-extern PetscErrorCode VecTDot_SeqCUSP(Vec,Vec,PetscScalar *);
+extern PetscErrorCode VecReplaceArray_SeqCUSP(Vec,const PetscScalar*);
+extern PetscErrorCode VecDot_SeqCUSP(Vec,Vec,PetscScalar*);
+extern PetscErrorCode VecTDot_SeqCUSP(Vec,Vec,PetscScalar*);
 extern PetscErrorCode VecScale_SeqCUSP(Vec,PetscScalar);
 extern PetscErrorCode VecCopy_SeqCUSP(Vec,Vec);
 extern PetscErrorCode VecSwap_SeqCUSP(Vec,Vec);
 extern PetscErrorCode VecAXPY_SeqCUSP(Vec,PetscScalar,Vec);
 extern PetscErrorCode VecAXPBY_SeqCUSP(Vec,PetscScalar,PetscScalar,Vec);
-extern PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec *);
+extern PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec*);
 extern PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
 extern PetscErrorCode VecCUSPCopyToGPU(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck(Vec);
 extern PetscErrorCode VecCUSPAllocateCheckHost(Vec);
 EXTERN_C_BEGIN
-extern PetscErrorCode  VecCreate_SeqCUSP(Vec);
+extern PetscErrorCode VecCreate_SeqCUSP(Vec);
 EXTERN_C_END
 extern PetscErrorCode VecView_Seq(Vec,PetscViewer);
 extern PetscErrorCode VecDestroy_SeqCUSP(Vec);
@@ -83,7 +83,7 @@ extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndic
 #define WaitForGPU() PetscCUSPSynchronize ? cudaThreadSynchronize() : 0
 
 struct Vec_CUSP {
-  CUSPARRAY*       GPUarray;  /* this always holds the GPU data */
+  CUSPARRAY       *GPUarray;  /* this always holds the GPU data */
 #if defined(PETSC_HAVE_TXPETSCGPU)
   GPU_Vector<PetscInt, PetscScalar> * GPUvector; /* this always holds the GPU data */
 #endif
@@ -92,20 +92,20 @@ struct Vec_CUSP {
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPGetArrayReadWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, CUSPARRAY** a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *a   = 0;
   ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
-  *a   = ((Vec_CUSP *)v->spptr)->GPUarray;
+  *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPRestoreArrayReadWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY** a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
 
@@ -117,7 +117,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPGetArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY** a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
 
@@ -130,7 +130,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY** a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPRestoreArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY** a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY **a)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -138,7 +138,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY** a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPGetArrayWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY** a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
 
@@ -150,7 +150,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY** a)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPRestoreArrayWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY** a)
+PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a)
 {
   PetscErrorCode ierr;
 

@@ -51,7 +51,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscReal         sum,work = 0.0;
   const PetscScalar *xx;
   PetscErrorCode    ierr;
-  PetscInt          n = xin->map->n;
+  PetscInt          n   = xin->map->n;
   PetscBLASInt      one = 1,bn;
 
   PetscFunctionBegin;
@@ -61,7 +61,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     work = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
-    *z = PetscSqrtReal(sum);
+    *z   = PetscSqrtReal(sum);
     ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
@@ -95,9 +95,9 @@ MPI_Op VecMin_Local_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_Local"
-void  MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
+  PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL) {
@@ -117,9 +117,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMin_Local"
-void  MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
+  PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL) {
@@ -153,12 +153,12 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
   } else {
     PetscReal work2[2],z2[2];
     PetscInt  rstart;
-    rstart = xin->map->rstart;
+    rstart   = xin->map->rstart;
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
-    *z   = z2[0];
-    *idx = (PetscInt)z2[1];
+    ierr     = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    *z       = z2[0];
+    *idx     = (PetscInt)z2[1];
   }
   PetscFunctionReturn(0);
 }

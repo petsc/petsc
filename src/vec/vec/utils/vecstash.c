@@ -57,18 +57,18 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
   stash->idx      = 0;
   stash->array    = 0;
 
-  stash->send_waits  = 0;
-  stash->recv_waits  = 0;
-  stash->send_status = 0;
-  stash->nsends      = 0;
-  stash->nrecvs      = 0;
-  stash->svalues     = 0;
-  stash->rvalues     = 0;
-  stash->rmax        = 0;
-  stash->nprocs      = 0;
-  stash->nprocessed  = 0;
-  stash->donotstash  = PETSC_FALSE;
-  stash->ignorenegidx  = PETSC_FALSE;
+  stash->send_waits   = 0;
+  stash->recv_waits   = 0;
+  stash->send_status  = 0;
+  stash->nsends       = 0;
+  stash->nrecvs       = 0;
+  stash->svalues      = 0;
+  stash->rvalues      = 0;
+  stash->rmax         = 0;
+  stash->nprocs       = 0;
+  stash->nprocessed   = 0;
+  stash->donotstash   = PETSC_FALSE;
+  stash->ignorenegidx = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -115,7 +115,7 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
      wastage of space is reduced the next time this stash is used.
      Also update the oldmax, only if it increases */
   if (stash->n) {
-    oldnmax  = ((PetscInt)(stash->n * 1.1) + 5)*stash->bs;
+    oldnmax = ((PetscInt)(stash->n * 1.1) + 5)*stash->bs;
     if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
   }
 
@@ -150,7 +150,7 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
 PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt *reallocs)
 {
   PetscFunctionBegin;
-  if (nstash)  *nstash   = stash->n*stash->bs;
+  if (nstash) *nstash = stash->n*stash->bs;
   if (reallocs) {
     if (stash->reallocs < 0) *reallocs = 0;
     else                     *reallocs = stash->reallocs;
@@ -208,13 +208,13 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
 
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
-  ierr  = PetscMalloc2(bs*newnmax,PetscScalar,&n_array,newnmax,PetscInt,&n_idx);CHKERRQ(ierr);
-  ierr  = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs*newnmax,PetscScalar,&n_array,newnmax,PetscInt,&n_idx);CHKERRQ(ierr);
+  ierr = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree2(stash->array,stash->idx);CHKERRQ(ierr);
-  stash->array   = n_array;
-  stash->idx     = n_idx;
-  stash->nmax    = newnmax;
+  stash->array = n_array;
+  stash->idx   = n_idx;
+  stash->nmax  = newnmax;
   stash->reallocs++;
   PetscFunctionReturn(0);
 }
@@ -247,9 +247,9 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 
   PetscFunctionBegin;
   /*  first count number of contributors to each processor */
-  ierr   = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
-  ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr   = PetscMalloc(stash->n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
+  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(stash->n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
 
   j       = 0;
   lastidx = -1;
@@ -263,7 +263,8 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
       }
     }
   }
-  nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];}
+  nsends = 0;
+  for (i=0; i<size; i++) nsends += nprocs[2*i+1];
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nreceives);CHKERRQ(ierr);
@@ -273,8 +274,8 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
      allocate the largest needed buffer for each receive. Potentially
      this is a lot of wasted space.
   */
-  ierr     = PetscMalloc2(nreceives*nmax*bs,PetscScalar,&rvalues,nreceives*nmax,PetscInt,&rindices);CHKERRQ(ierr);
-  ierr     = PetscMalloc(2*nreceives*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nreceives*nmax*bs,PetscScalar,&rvalues,nreceives*nmax,PetscInt,&rindices);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*nreceives*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
     ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
@@ -299,11 +300,12 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
     } else {
       ierr = PetscMemcpy(svalues+bs*start[j],stash->array+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    sindices[start[j]]  = stash->idx[i];
+    sindices[start[j]] = stash->idx[i];
     start[j]++;
   }
   start[0] = 0;
-  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];}
+  for (i=1; i<size; i++) start[i] = start[i-1] + nprocs[2*i-2];
+
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
       ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[2*i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
@@ -314,7 +316,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr = PetscFree(start);CHKERRQ(ierr);
   /* This memory is reused in scatter end  for a different purpose*/
   for (i=0; i<2*size; i++) nprocs[i] = -1;
-  stash->nprocs      = nprocs;
+  stash->nprocs     = nprocs;
 
   stash->svalues    = svalues;
   stash->sindices   = sindices;
@@ -360,7 +362,7 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   PetscFunctionBegin;
   *flg = 0; /* When a message is discovered this is reset to 1 */
   /* Return if no more messages to process */
-  if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); }
+  if (stash->nprocessed == stash->nrecvs) PetscFunctionReturn(0);
 
   flg_v = stash->nprocs;
   /* If a matching pair of receieves are found, process them, and return the data to
@@ -381,10 +383,10 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
     i1 = flg_v[2*recv_status.MPI_SOURCE];
     i2 = flg_v[2*recv_status.MPI_SOURCE+1];
     if (i1 != -1 && i2 != -1) {
-      *rows       = stash->rindices + i2*stash->rmax;
-      *vals       = stash->rvalues + i1*bs*stash->rmax;
-      *flg        = 1;
-      stash->nprocessed ++;
+      *rows = stash->rindices + i2*stash->rmax;
+      *vals = stash->rvalues + i1*bs*stash->rmax;
+      *flg  = 1;
+      stash->nprocessed++;
       match_found = PETSC_TRUE;
     }
   }
