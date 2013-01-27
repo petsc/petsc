@@ -763,7 +763,7 @@ PetscErrorCode PetscOptionsInsertFile_YAML(MPI_Comm comm, const char file[], Pet
       }
       options_list_delete(&options_list);
       ierr = PetscStrlen(vstring,&len);CHKERRQ(ierr);
-      cnt  = PetscMPIIntCast(len);CHKERRQ(ierr);
+      ierr = PetscMPIIntCast(len,&cnt);CHKERRQ(ierr);
     } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to process YAML Options File %s",fname);
   }
 

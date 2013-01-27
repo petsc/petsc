@@ -1283,8 +1283,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr  = PetscMalloc3(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count,size,PetscMPIInt,&displx);CHKERRQ(ierr);
         range = xin->map->range;
         for (i=0; i<size; i++) {
-          count[i]  = PetscMPIIntCast(range[i+1] - range[i]);
-          displx[i] = PetscMPIIntCast(range[i]);
+          ierr = PetscMPIIntCast(range[i+1] - range[i],count+i);CHKERRQ(ierr);
+          ierr = PetscMPIIntCast(range[i],displx+i);CHKERRQ(ierr);
         }
         sto->count        = count;
         sto->displx       = displx;
@@ -1343,8 +1343,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr  = PetscMalloc3(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count,size,PetscMPIInt,&displx);CHKERRQ(ierr);
         range = xin->map->range;
         for (i=0; i<size; i++) {
-          count[i] = PetscMPIIntCast(range[i+1] - range[i]);
-          displx[i] = PetscMPIIntCast(range[i]);
+          ierr = PetscMPIIntCast(range[i+1] - range[i],count+i);CHKERRQ(ierr);
+          ierr = PetscMPIIntCast(range[i],displx+i);CHKERRQ(ierr);
         }
         sto->count        = count;
         sto->displx       = displx;

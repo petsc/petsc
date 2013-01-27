@@ -15,7 +15,7 @@ PetscErrorCode MPIULong_Send(void *mess,PetscInt cnt, MPI_Datatype type,PetscMPI
   PetscFunctionBegin;
   numchunks = cnt/CHUNKSIZE + 1;
   for (i=0; i<numchunks; i++) {
-    icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
+    ierr = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE,&icnt);CHKERRQ(ierr);
     ierr = MPI_Send(mess,icnt,type,to,tag,comm);CHKERRQ(ierr);
     if (type == MPIU_INT) {
       mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
@@ -37,7 +37,7 @@ PetscErrorCode MPIULong_Recv(void *mess,PetscInt cnt, MPI_Datatype type,PetscMPI
   PetscFunctionBegin;
   numchunks = cnt/CHUNKSIZE + 1;
   for (i=0; i<numchunks; i++) {
-    icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
+    ierr = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE,&icnt);CHKERRQ(ierr);
     ierr = MPI_Recv(mess,icnt,type,from,tag,comm,&status);CHKERRQ(ierr);
     if (type == MPIU_INT) {
       mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);

@@ -2002,18 +2002,20 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     }
 #if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
     if (to->use_alltoallw) {
-      PetscMPIInt mpibs = PetscMPIIntCast(bs), mpilen;
+      PetscMPIInt mpibs, mpilen;
+
       ctx->packtogether = PETSC_FALSE;
-      ierr       = PetscMalloc3(size,PetscMPIInt,&to->wcounts,size,PetscMPIInt,&to->wdispls,size,MPI_Datatype,&to->types);CHKERRQ(ierr);
-      ierr       = PetscMemzero(to->wcounts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-      ierr       = PetscMemzero(to->wdispls,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+      ierr = PetscMPIIntCast(bs,&mpibs);CHKERRQ(ierr);
+      ierr = PetscMalloc3(size,PetscMPIInt,&to->wcounts,size,PetscMPIInt,&to->wdispls,size,MPI_Datatype,&to->types);CHKERRQ(ierr);
+      ierr = PetscMemzero(to->wcounts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+      ierr = PetscMemzero(to->wdispls,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
       for (i=0; i<size; i++) {
         to->types[i] = MPIU_SCALAR;
       }
 
       for (i=0; i<to->n; i++) {
         to->wcounts[to->procs[i]] = 1;
-        mpilen = PetscMPIIntCast(to->starts[i+1]-to->starts[i]);
+        ierr = PetscMPIIntCast(to->starts[i+1]-to->starts[i],&mpilen);CHKERRQ(ierr);
         ierr = MPI_Type_create_indexed_block(mpilen,mpibs,to->indices+to->starts[i],MPIU_SCALAR,to->types+to->procs[i]);CHKERRQ(ierr);
         ierr = MPI_Type_commit(to->types+to->procs[i]);CHKERRQ(ierr);
       }
@@ -2035,7 +2037,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       } else {
         for (i=0; i<from->n; i++) {
           from->wcounts[from->procs[i]] = 1;
-          mpilen = PetscMPIIntCast(from->starts[i+1]-from->starts[i]);
+          ierr = PetscMPIIntCast(from->starts[i+1]-from->starts[i],&mpilen);CHKERRQ(ierr);
           ierr = MPI_Type_create_indexed_block(mpilen,mpibs,from->indices+from->starts[i],MPIU_SCALAR,from->types+from->procs[i]);CHKERRQ(ierr);
           ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }

@@ -69,7 +69,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
 
-      nn   = PetscMPIIntCast(n);
+      ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
       ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       nctot = 0; for (j=0; j<size; j++) {nctot += ncolsonproc[j];}
       if (!nctot) {

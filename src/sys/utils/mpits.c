@@ -237,7 +237,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
       nrecvs++;
     }
     if (barrier == MPI_REQUEST_NULL) {
-      PetscMPIInt sent,nsends = PetscMPIIntCast(nto);
+      PetscMPIInt sent,nsends;
+      ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
       if (sent) {
         ierr = MPI_Ibarrier(comm,&barrier);CHKERRQ(ierr);

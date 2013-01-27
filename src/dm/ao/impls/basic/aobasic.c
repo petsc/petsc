@@ -210,7 +210,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
-  count = PetscMPIIntCast(napp);
+  ierr = PetscMPIIntCast(napp,&count);CHKERRQ(ierr);
 
   /* transmit all lengths to all processors */
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
@@ -220,8 +220,8 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ierr  = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for (i = 0; i < size; i++) {
-    disp[i] = PetscMPIIntCast(N); /* = sum(lens[j]), j< i */
-    N += lens[i];
+    ierr = PetscMPIIntCast(N,disp+i);CHKERRQ(ierr); /* = sum(lens[j]), j< i */
+    N   += lens[i];
   }
   ao->N = N;
   ao->n = N;

@@ -609,10 +609,12 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
 #define __FUNCT__ "PetscGetProc"
 PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
 {
-  PetscInt    nGlobalNd = proc_gnode[size];
-  PetscMPIInt fproc = PetscMPIIntCast((PetscInt)(((float)row * (float)size / (float)nGlobalNd + 0.5)));
+  PetscInt       nGlobalNd = proc_gnode[size];
+  PetscMPIInt    fproc;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscMPIIntCast((PetscInt)(((float)row * (float)size / (float)nGlobalNd + 0.5)),&fproc);CHKERRQ(ierr);
   if (fproc > size) fproc = size;
   while (row < proc_gnode[fproc] || row >= proc_gnode[fproc+1]) {
     if (row < proc_gnode[fproc]) fproc--;

@@ -1444,9 +1444,9 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = PetscViewerASCIIPrintf(viewer2,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,0,0,my-1,0,mx-1);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da3,range,range+1,range+2,range+3,range+4,range+5);CHKERRQ(ierr);
-  nn = PetscMPIIntCast(range[3]*range[4]*range[5]*dof);
+  ierr = PetscMPIIntCast(range[3]*range[4]*range[5]*dof,&nn);CHKERRQ(ierr);
   ierr = MPI_Reduce(&nn,&nmax,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
-  nn2 = PetscMPIIntCast(range[4]*range[5]*dof2);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(range[4]*range[5]*dof2,&nn2);CHKERRQ(ierr);
   ierr = MPI_Reduce(&nn2,&nmax2,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
   tag  = ((PetscObject)viewer3)->tag;
   ierr = VecGetArray(X3,&x);CHKERRQ(ierr);

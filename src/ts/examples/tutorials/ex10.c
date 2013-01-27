@@ -704,8 +704,8 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   ierr = RDGetQuadrature(rd,hx,&nq,weight,interp,deriv);CHKERRQ(ierr);
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   for (i=info.xs; i<PetscMin(info.xs+info.xm,info.mx-1); i++) {
-    const PetscInt rc[2];
-    
+    PetscInt rc[2];
+
     rc[0] = i; rc[1] = i+1;
     ierr = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
     for (q=0; q<nq; q++) {

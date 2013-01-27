@@ -450,7 +450,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
     lsizes[indices[i]]++;
   }
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
-  npp  = PetscMPIIntCast(len);
+  ierr = PetscMPIIntCast(len,&npp);CHKERRQ(ierr);
   ierr = MPI_Allreduce(lsizes,count,npp,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = PetscFree(lsizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -513,7 +513,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
   } else {
     ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
 
-    nn   = PetscMPIIntCast(n);
+    ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
     ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
     offsets[0] = 0;
     for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];

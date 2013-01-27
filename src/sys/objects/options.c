@@ -454,9 +454,9 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       ierr = PetscStrlen(astring,&len);CHKERRQ(ierr);
-      acnt = PetscMPIIntCast(len);CHKERRQ(ierr);
+      ierr = PetscMPIIntCast(len,&acnt);CHKERRQ(ierr);
       ierr = PetscStrlen(vstring,&len);CHKERRQ(ierr);
-      cnt  = PetscMPIIntCast(len);CHKERRQ(ierr);
+      ierr = PetscMPIIntCast(len,&cnt);CHKERRQ(ierr);
     } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }
 

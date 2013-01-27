@@ -335,7 +335,7 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  count = PetscMPIIntCast(dd->dim);
+  ierr = PetscMPIIntCast(dd->dim,&count);CHKERRQ(ierr);
   ierr = DMDAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
   if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPIU_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);}
   if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);}

@@ -353,7 +353,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   ierr = PetscSortIntWithArray(sf->nranks,ranks,rcount);CHKERRQ(ierr);
   sf->roffset[0] = 0;
   for (i=0; i<sf->nranks; i++) {
-    sf->ranks[i] = PetscMPIIntCast(ranks[i]);
+    ierr = PetscMPIIntCast(ranks[i],sf->ranks+i);CHKERRQ(ierr);
     sf->roffset[i+1] = sf->roffset[i] + rcount[i];
     rcount[i] = 0;
   }

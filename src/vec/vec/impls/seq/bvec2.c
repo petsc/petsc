@@ -925,8 +925,8 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
     PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
     MPI_Datatype view;
 
-    gsizes[0]  = PetscMPIIntCast(n);
-    lsizes[0]  = PetscMPIIntCast(n);
+    ierr       = PetscMPIIntCast(n,lsizes);CHKERRQ(ierr);
+    ierr       = PetscMPIIntCast(n,gsizes);CHKERRQ(ierr);
     lstarts[0] = 0;
     ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&view);CHKERRQ(ierr);

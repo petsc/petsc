@@ -3223,7 +3223,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       }
       for (p = 0; p < numLeaves; ++p) {
         lowners[p*2+0] = rank;
-        lowners[p*2+1] = PetscMPIIntCast(leaves ? leaves[p] : p);
+        ierr           = PetscMPIIntCast(leaves ? leaves[p] : p,lowners + 2*p + 1);CHKERRQ(ierr);
       }
       ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);

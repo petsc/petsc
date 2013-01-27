@@ -2249,7 +2249,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     mbs        = m/bs;
   }
   ierr       = PetscMalloc2(size+1,PetscMPIInt,&rowners,size+1,PetscMPIInt,&browners);CHKERRQ(ierr);
-  mmbs       = PetscMPIIntCast(mbs);
+  ierr       = PetscMPIIntCast(mbs,&mmbs);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&mmbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) rowners[i] += rowners[i-1];

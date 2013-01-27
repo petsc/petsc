@@ -445,7 +445,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
     PetscMPIInt rank,size,*sizes,Ntotal,*displs,NN;
     PetscInt    *array;
 
-    NN = PetscMPIIntCast(N);
+    ierr = PetscMPIIntCast(N,&NN);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -534,7 +534,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
     PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN;
     PetscReal   *array;
 
-    NN = PetscMPIIntCast(N);
+    ierr = PetscMPIIntCast(N,&NN);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -633,7 +633,7 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
     PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN;
     PetscScalar *array;
 
-    NN = PetscMPIIntCast(N);
+    ierr = PetscMPIIntCast(N,&NN);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 

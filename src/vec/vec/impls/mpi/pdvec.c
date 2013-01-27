@@ -136,7 +136,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       }
       ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
+      ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if (format == PETSC_VIEWER_ASCII_VTK) {
         if (outputState == 0) {
@@ -212,7 +212,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       PetscInt bs, b;
 
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
+      ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
@@ -249,7 +249,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       PetscInt bs, b, vertexCount = 1;
 
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
+      ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
@@ -387,7 +387,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       len = 0;
       for (j=1; j<size; j++) len = PetscMax(len,xin->map->range[j+1]-xin->map->range[j]);
       ierr = PetscMalloc(len*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-      mesgsize = PetscMPIIntCast(len);
+      ierr = PetscMPIIntCast(len,&mesgsize);CHKERRQ(ierr);
       /* receive and save messages */
       for (j=1; j<size; j++) {
         ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       ierr = PetscFree(values);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
-      mesgsize = PetscMPIIntCast(xin->map->n);
+      ierr = PetscMPIIntCast(xin->map->n,&mesgsize);CHKERRQ(ierr);
       ierr = MPI_Send((void*)xarray,mesgsize,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
       ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
     }
@@ -411,9 +411,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
     MPI_Datatype view;
 
-    gsizes[0]  = PetscMPIIntCast(xin->map->N);
-    lsizes[0]  = PetscMPIIntCast(n);
-    lstarts[0] = PetscMPIIntCast(xin->map->rstart);
+    ierr = PetscMPIIntCast(xin->map->N,gsizes);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(n,lsizes);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(xin->map->rstart,lstarts);CHKERRQ(ierr);
     ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
 

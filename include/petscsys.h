@@ -144,10 +144,7 @@ typedef int PetscClassId;
     Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
            standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
 
-    PetscMPIIntCheck(a) checks if the given PetscInt a will fit in a PetscMPIInt, if not it generates a
-      PETSC_ERR_ARG_OUTOFRANGE error.
-
-    PetscMPIInt b = PetscMPIIntCast(a) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
+    PetscMPIIntCast(a,&b) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error.
 
 .seealso: PetscBLASInt, PetscInt
@@ -2019,8 +2016,6 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 #define PETSC_HDF5_INT_MIN -2147483647
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
-#define PetscMPIIntCast(a) (PetscMPIInt)(a);PetscMPIIntCheck(a)
 
 #if (PETSC_SIZEOF_SIZE_T == 4)
 #define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
@@ -2031,9 +2026,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 #endif
 
 #else
-#define PetscMPIIntCheck(a)
 #define PetscHDF5IntCheck(a)
-#define PetscMPIIntCast(a) a
 #define PetscHDF5IntCast(a) a
 #endif
 
@@ -2046,6 +2039,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
   if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK");
 #endif
   *b =  (PetscBLASInt)(a);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscMPIIntCast"
+PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_64BIT_INDICES)
+  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for MPI");
+#endif
+  *b =  (PetscMPIInt)(a);
   PetscFunctionReturn(0);
 }
 

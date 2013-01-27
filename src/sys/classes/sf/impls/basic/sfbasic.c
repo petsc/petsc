@@ -338,7 +338,8 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
     ierr = MPI_Irecv(bas->irootloc+bas->ioffset[i],ilengths[i],MPIU_INT,bas->iranks[i],bas->tag,comm,&rootreqs[i]);CHKERRQ(ierr);
   }
   for (i=0; i<sf->nranks; i++) {
-    PetscMPIInt npoints = PetscMPIIntCast(sf->roffset[i+1] - sf->roffset[i]);
+    PetscMPIInt npoints;
+    ierr = PetscMPIIntCast(sf->roffset[i+1] - sf->roffset[i],&npoints);CHKERRQ(ierr);
     ierr = MPI_Isend(sf->rremote+sf->roffset[i],npoints,MPIU_INT,sf->ranks[i],bas->tag,comm,&leafreqs[i]);CHKERRQ(ierr);
   }
   ierr = MPI_Waitall(sf->nranks+bas->niranks,rootreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);

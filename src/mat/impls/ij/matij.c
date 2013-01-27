@@ -1738,11 +1738,8 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
   b = 0;
   blow = bhigh = 0;
   for (g = 0, b = 0; g < A->cmap->N; ++g) {
-    if (pg->image[b] == g) {
-      bsize = PetscMPIIntCast(bsizes[b]);
-    } else {
-      bsize = 0;
-    }
+    if (pg->image[b] == g) {ierr = PetscMPIIntCast(bsizes[b],&bsize);CHKERRQ(ierr);}
+    else {bsize = 0;}
     ierr = MPI_Scan(&bsize,&goffset,1,MPI_INT, MPI_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
     if (pg->image[b] == g) {
       blow = bhigh;
@@ -1750,11 +1747,11 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
       /* Shift the indices by the goffset. */
       for (j = blow; j < bhigh; ++j)  iyidx[j] += goffset;
       /* Compute the maximum partial global bin size, up to and including this proc's portion. */
-      NN = PetscMPIIntCast(PetscMax(NN,goffset + bsizes[b]));
+      ierr = PetscMPIIntCast(PetscMax(NN,goffset + bsizes[b]),&NN);CHKERRQ(ierr);
       ++b;
     } else {
       /* Compute the maximum partial global bin size, up to and including this proc's portion. */
-      NN = PetscMPIIntCast(PetscMax(NN,goffset));
+      ierr = PetscMPIIntCast(PetscMax(NN,goffset),&NN);CHKERRQ(ierr);
     }
   }/* Loop over the global bins. */
   if (b != pg->n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Traversed %D local bins, not the same as expected: %D", b, pg->n);

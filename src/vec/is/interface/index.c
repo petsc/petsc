@@ -439,7 +439,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
 
-  nn   = PetscMPIIntCast(n);
+  ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
   ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];

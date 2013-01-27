@@ -716,7 +716,7 @@ static PetscErrorCode PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,Petsc
   MPI_Aint           ul,dsize;
 
   PetscFunctionBegin;
-  cnt = PetscMPIIntCast(count);
+  ierr = PetscMPIIntCast(count,&cnt);CHKERRQ(ierr);
   ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);
   ierr = MPI_File_set_view(vbinary->mfdes,vbinary->moff,mdtype,mdtype,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
   if (write) {

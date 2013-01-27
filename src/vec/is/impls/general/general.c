@@ -248,7 +248,7 @@ PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
     ierr = PetscBinaryWrite(fdes,isa->idx,isa->n,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
     ierr = PetscMalloc(len*sizeof(PetscInt),&values);CHKERRQ(ierr);
-    mesgsize = PetscMPIIntCast(len);
+    ierr = PetscMPIIntCast(len,&mesgsize);CHKERRQ(ierr);
     /* receive and save messages */
     for (j=1; j<size; j++) {
       ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
@@ -260,7 +260,7 @@ PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
     ierr = PetscFree(values);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
-    mesgsize = PetscMPIIntCast(isa->n);
+    ierr = PetscMPIIntCast(isa->n,&mesgsize);CHKERRQ(ierr);
     ierr = MPI_Send(isa->idx,mesgsize,MPIU_INT,0,tag,((PetscObject)is)->comm);CHKERRQ(ierr);
     ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
   }

@@ -1548,8 +1548,8 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   }
 
   /* determine ownership of all rows */
-  if (newmat->rmap->n < 0) m          = PetscMPIIntCast(M/size + ((M % size) > rank));
-  else m = PetscMPIIntCast(newmat->rmap->n);
+  if (newmat->rmap->n < 0) {ierr = PetscMPIIntCast(M/size + ((M % size) > rank),&m);CHKERRQ(ierr);}
+  else {ierr = PetscMPIIntCast(newmat->rmap->n,&m);CHKERRQ(ierr);}
   ierr       = PetscMalloc((size+2)*sizeof(PetscMPIInt),&rowners);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;

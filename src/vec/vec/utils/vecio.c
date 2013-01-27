@@ -47,9 +47,9 @@ static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  gsizes[0]  = PetscMPIIntCast(vec->map->N);
-  lsizes[0]  = PetscMPIIntCast(vec->map->n);
-  lstarts[0] = PetscMPIIntCast(vec->map->rstart);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(vec->map->N,gsizes);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(vec->map->n,lsizes);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(vec->map->rstart,lstarts);CHKERRQ(ierr);
   ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
 
