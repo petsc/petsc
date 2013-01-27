@@ -66,6 +66,19 @@ should become two tetrahedrons separated by a zero-volume cell with 6 vertices
         4----31----8------
          cell 2
 
+In parallel,
+
+ cell   5 ___25____8      4______    cell
+ 0    / | \        |\     |\      \     0
+    16  |   18     | 21   | 13  6  11
+    /10 19 12\    22  \   |8 \      \
+   2-15-|----4--24-|---7  14  3--10--1
+    \ 11| 9 /      |13 /  |  /      /
+    14  |  17      | 20   | 12  5  9
+      \ | /        |/     |/      /
+        3----23----6      2------
+         cell 1
+
 Quadrilateral
 -------------
 Test 0:
