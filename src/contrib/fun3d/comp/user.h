@@ -6,7 +6,7 @@
 
 #define REAL double
 
-typedef struct gxy{                           /* GRID STRUCTURE             */
+typedef struct gxy {                          /* GRID STRUCTURE             */
   int nnodes;                                 /* Number of nodes            */
   int ncell;                                  /* Number of cells            */
   int nedge;                                  /* Number of edges            */
@@ -66,9 +66,9 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
   int *nlcount;                              /* How many edges in each colr*/
   int *lvface;                               /* Edges that influence a set */
 /* Back substitution for ILU */
-  int *nbcol;                                /* No of edge colors for sets */
-  int *nbcount;                              /* How many edges in each colr*/
-  int *lbface;                               /* Edges that influence a set */
+  int  *nbcol;                               /* No of edge colors for sets */
+  int  *nbcount;                             /* How many edges in each colr*/
+  int  *lbface;                              /* Edges that influence a set */
   REAL *x, *y, *z;                           /* Node Coordinates           */
   REAL *area;                                /* Area of control volumes    */
   /*REAL *gradx, *grady, *gradz;*/           /* Gradients                  */
@@ -118,17 +118,17 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
   Vec dq;                                    /* Delta Q                     */
   Vec qold;                                  /* Global distributed solution
                                                 vector*/
-  Vec  res;                                  /* Residual                    */
-  Vec  grad;                                 /* Gradient Vector             */
-  Vec  gradLoc;                              /* Local Gradient Vector       */
-  Vec B;                                     /* Right hand side             */
-  Mat A;                                     /* Left hand side              */
+  Vec        res;                            /* Residual                    */
+  Vec        grad;                           /* Gradient Vector             */
+  Vec        gradLoc;                        /* Local Gradient Vector       */
+  Vec        B;                              /* Right hand side             */
+  Mat        A;                              /* Left hand side              */
   VecScatter scatter, gradScatter;           /* Scatter between local
                                                 and global vectors          */
   int *loc2pet;                              /* local to PETSc mapping      */
   int *loc2glo;                              /* local to global mapping     */
   int *v2p;                                  /* Vertex to processor mapping */
-  AO   ao;
+  AO  ao;
   int *sface_bit, *vface_bit;
   int nnodesLoc, nedgeLoc, nvertices;
   int nsnodeLoc, nvnodeLoc, nfnodeLoc;
@@ -147,7 +147,7 @@ typedef struct gxy{                           /* GRID STRUCTURE             */
                                                 /*============================*/
 
                                              /*============================*/
-typedef struct{                              /* GENERAL INFORMATION        */
+typedef struct {                             /* GENERAL INFORMATION        */
   REAL title[20];                            /* Title line                 */
   REAL xmach;                                /* Mach # in X-direction      */
   REAL alpha;                                /* Angle of attack            */
@@ -157,9 +157,9 @@ typedef struct{                              /* GENERAL INFORMATION        */
   REAL tot;                                  /* total computer time        */
   REAL res0;                                 /* Begining residual          */
   REAL resc;                                 /* Current residual           */
-  int ntt;                                   /* A counter                  */
-  int mseq;                                  /* Mesh sequencing            */
-  int ivisc;                                 /* 0 = Euler                  */
+  int  ntt;                                  /* A counter                  */
+  int  mseq;                                 /* Mesh sequencing            */
+  int  ivisc;                                /* 0 = Euler                  */
                                              /* 1 = laminar no visc LHS    */
                                              /* 2 = laminar w/ visc LHS    */
                                              /* 3 = turb BB no visc LHS    */
@@ -179,16 +179,16 @@ typedef struct{                              /* GENERAL INFORMATION        */
 typedef struct {                             /* FLOW SOLVER VARIABLES      */
   REAL cfl1;                                 /* Starting CFL number        */
   REAL cfl2;                                 /* Ending   CFL number        */
-  int nsmoth;                                /* How many its for Res smooth*/
-  int iflim;                                 /* 1=use limiter 0=no limiter */
-  int itran;                                 /* 1=transition (spalart only)*/
-  int nbtran;                                /* No. of transition points   */
-  int jupdate;                               /* For freezing Jacobians */
-  int nstage;                                /* Number of subiterations    */
-  int ncyct;                                 /* Subiterations for turb mod */
-  int iramp;                                 /* Ramp CFL over iramp iters  */
-  int nitfo;                                 /* Iterations first order     */
-  int ncyc;                                  /* Number of iterations to run*/
+  int  nsmoth;                               /* How many its for Res smooth*/
+  int  iflim;                                /* 1=use limiter 0=no limiter */
+  int  itran;                                /* 1=transition (spalart only)*/
+  int  nbtran;                               /* No. of transition points   */
+  int  jupdate;                              /* For freezing Jacobians */
+  int  nstage;                               /* Number of subiterations    */
+  int  ncyct;                                /* Subiterations for turb mod */
+  int  iramp;                                /* Ramp CFL over iramp iters  */
+  int  nitfo;                                /* Iterations first order     */
+  int  ncyc;                                 /* Number of iterations to run*/
 } CRUNGE;                                    /* COMMON RUNGE               */
                                              /*============================*/
 
@@ -203,15 +203,15 @@ typedef struct {                              /*============================*/
                                               /*============================*/
 
 typedef struct {                             /*============================*/
-  REAL  gtol;                                /* linear system tolerence    */
-  int   icycle;                              /* Number of GMRES iterations */
-  int   nsrch;                               /* Dimension of Krylov        */
-  int   ilu0;                                /* 1 for ILU(0)               */
-  int   ifcn;                                /* 0=fcn2 1=fcneval(nwt Krlv) */
+  REAL gtol;                                 /* linear system tolerence    */
+  int  icycle;                               /* Number of GMRES iterations */
+  int  nsrch;                                /* Dimension of Krylov        */
+  int  ilu0;                                 /* 1 for ILU(0)               */
+  int  ifcn;                                 /* 0=fcn2 1=fcneval(nwt Krlv) */
 } CGMCOM;                                    /* COMMON GMCOM               */
                                              /*============================*/
-int set_up_grid(GRID *);
-int write_fine_grid(GRID *);
+int set_up_grid(GRID*);
+int write_fine_grid(GRID*);
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
