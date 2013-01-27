@@ -96,7 +96,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
    PetscTimeAdd() is intended only for timing of application codes.
-   The options database commands -log_summary activate
+   The options database command -log_summary activate
    PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
 .seealso:  PetscTime(), PetscTimeSubtract()
@@ -124,43 +124,6 @@ PETSC_EXTERN PetscLogDouble rs6000_time(void);
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
 
 #define PetscTimeAdd(v)      (v)+=rs6000_time();
-
-/* ------------------------------------------------------------------
-    Dec Alpha has a very fast system clock accessible through getclock()
-    getclock() doesn't seem to have a prototype for C++
-*/
-#elif defined(PETSC_USE_GETCLOCK)
-EXTERN_C_BEGIN
-extern int getclock(int clock_type,struct timespec *tp);
-EXTERN_C_END
-
-
-#define PetscTime(v)         {static struct  timespec _tp; \
-                             getclock(TIMEOFDAY,&_tp); \
-                             (v)=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
-
-#define PetscTimeSubtract(v) {static struct timespec  _tp; \
-                             getclock(TIMEOFDAY,&_tp); \
-                             (v)-=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
-
-#define PetscTimeAdd(v)      {static struct timespec  _tp; \
-                             getclock(TIMEOFDAY,&_tp); \
-                             (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
-
-/* ------------------------------------------------------------------
-   ASCI RED machine has a fast clock accessiable through dclock()
-*/
-#elif defined (PETSC_USE_DCLOCK)
-EXTERN_C_BEGIN
-PETSC_EXTERN PetscLogDouble dclock();
-EXTERN_C_END
-
-#define PetscTime(v)         (v)=dclock();
-
-#define PetscTimeSubtract(v) (v)-=dclock();
-
-#define PetscTimeAdd(v)      (v)+=dclock();
-
 
 /* ------------------------------------------------------------------
    Windows uses a special time code
