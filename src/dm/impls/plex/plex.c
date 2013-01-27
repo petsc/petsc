@@ -4027,11 +4027,12 @@ PetscErrorCode DMPlexConstructCohesiveCells_Private(DM dm, const char labelName[
       const PetscInt  oldp   = splitPoints[dep][p];
       const PetscInt  newp   = depthOffset[dep] + oldp;
       const PetscInt  splitp = pMaxNew[dep] + p;
-      const PetscInt *cone, *support;
+      const PetscInt *cone, *support, *ornt;
       PetscInt        coneSize, supportSize, q, v, e, s;
 
       ierr = DMPlexGetConeSize(dm, oldp, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, oldp, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, oldp, &ornt);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, oldp, &supportSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupport(dm, oldp, &support);CHKERRQ(ierr);
       if (dep == depth-1) {
@@ -4048,6 +4049,7 @@ PetscErrorCode DMPlexConstructCohesiveCells_Private(DM dm, const char labelName[
           coneNew[2+q] = pMaxNew[dim-2] + v;
         }
         ierr = DMPlexSetCone(sdm, splitp, &coneNew[2]);CHKERRQ(ierr);
+        ierr = DMPlexSetConeOrientation(sdm, splitp, ornt);CHKERRQ(ierr);
         /* Cohesive cell:    Old and new split face, then new cohesive edges */
         coneNew[0] = newp;
         coneNew[1] = splitp;

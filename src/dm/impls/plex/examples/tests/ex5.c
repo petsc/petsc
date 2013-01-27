@@ -84,6 +84,44 @@ should become two quads separated by a zero-volume cell with 4 vertices
   14   0  12  2 18   1  16   11   0   9  1 12  8   0   6
    |       |     |       |    |       |     |  |       |
    3--11---4-19--9--15---7    2---8---3-13--6  3---5---1
+
+Hexahedron
+----------
+Test 0:
+Two hexes sharing a face
+
+cell   9-----31------8-----42------13 cell
+0     /|            /|            /|     1
+    32 |   15      30|   21      41|
+    /  |          /  |          /  |
+   6-----29------7-----40------12  |
+   |   |     18  |   |     24  |   |
+   |  36         |  35         |   44
+   |19 |         |17 |         |23 |
+  33   |  16    34   |   22   43   |
+   |   5-----27--|---4-----39--|---11
+   |  /          |  /          |  /
+   | 28   14     | 26    20    | 38
+   |/            |/            |/
+   2-----25------3-----37------10
+
+should become two hexes separated by a zero-volume cell with 8 vertices
+
+                         cell 2
+cell  10-----37------9-----58------18----48------14 cell
+0     /|            /|            /|            /|     1
+    38 |   20      36|           52|   26      47|
+    /  |          /  |          /  |          /  |
+   7-----35------8-----57------17--|-46------13  |
+   |   |     23  |   |         |   |     29  |   |
+   |  42         |  41         |   54        |   50
+   |24 |         |22 |         |30 |         |28 |
+  39   |  21    40   |        53   |   27   49   |
+   |   6-----33--|---5-----56--|---16----45--|---12
+   |  /          |  /          |  /          |  /
+   | 34   19     | 32          | 51    25    | 44
+   |/            |/            |/            |/
+   3-----31------4-----55------15----43------11
 */
 
 typedef struct {
@@ -294,6 +332,57 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateHex_3D"
+PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
+{
+  PetscInt       depth = 3, testNum  = 0, p;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    switch(testNum) {
+    case 0:
+    {
+      PetscInt    numPoints[4]         = {12, 20, 11, 2};
+      PetscInt    coneSize[45]         = {6, 6, 0,0,0,0,0,0,0,0,0,0,0,0, 4,4,4,4,4,4,4,4,4,4,4, 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2};
+      PetscInt    cones[96]            = {14,15,16,17,18,19,  20,21,17,22,23,24,
+                                          25,28,27,26, 29,30,31,32, 25,34,29,33, 26,35,30,34, 27,36,31,35, 28,33,32,36, 37,26,39,38, 40,41,42,30, 37,43,40,34, 38,44,41,43, 39,35,42,44,
+                                          2,3, 3,4, 4,5, 5,2, 6,7, 7,8, 8,9, 9,6, 2,6, 3,7, 4,8, 5,9, 3,10, 10,11, 11,4, 7,12, 12,13, 13,8, 10,12, 11,13};
+      PetscInt    coneOrientations[96] = { 0, 0, 0, 0, 0, 0,   0, 0,-3, 0, 0, 0,
+                                           0, 0, 0, 0,  0, 0, 0, 0,  0, 0,-2,-2,  0, 0,-2,-2,  0, 0,-2,-2,  0, 0,-2,-2, -2, 0,-2,-2,  0, 0, 0,-2,  0, 0,-2,-2,  0, 0,-2,-2,  0, 0,-2,-2,
+                                           0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0, 0,  0, 0,  0,0, 0, 0,  0, 0,  0,0,  0, 0,  0, 0};
+      PetscScalar vertexCoords[36]     = {-0.5,0.0,0.0, 0.0,0.0,0.0, 0.0,1.0,0.0, -0.5,1.0,0.0,
+                                          -0.5,0.0,1.0, 0.0,0.0,1.0, 0.0,1.0,1.0, -0.5,1.0,1.0,
+                                           0.5,0.0,0.0, 0.5,1.0,0.0, 0.5,0.0,1.0,  0.5,1.0,1.0};
+      PetscInt    markerPoints[52]     = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1,
+                                          14,1,15,1,16,1,17,1,18,1,19,1,
+                                          25,1,26,1,27,1,28,1,29,1,30,1,31,1,32,1,33,1,34,1,35,1,36,1};
+      PetscInt    faultPoints[18]      = {17,2, 26,1,30,1,34,1,35,1, 3,0,4,0,7,0,8,0};
+
+      ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for(p = 0; p < 26; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+      }
+      for(p = 0; p < 9; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p*2], faultPoints[p*2+1]);CHKERRQ(ierr);
+      }
+    }
+    break;
+    default:
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    }
+  } else {
+    PetscInt numPoints[3] = {0, 0, 0};
+
+    ierr = CreateTopology(dm, depth, numPoints, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -320,7 +409,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
     } else {
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for hexahedra");
+      ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
     }
     break;
   default:
