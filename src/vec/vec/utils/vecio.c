@@ -257,7 +257,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
     count[dim] = 1;
     ++dim;
   }
-  count[dim] = PetscHDF5IntCast(n)/bs;
+  ierr = PetscHDF5IntCast(n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
   if (bs >= 1) {
     count[dim] = bs;
@@ -277,7 +277,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
     offset[dim] = timestep;
     ++dim;
   }
-  offset[dim] = PetscHDF5IntCast(low/bs);
+  ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
   if (bs >= 1) {
     offset[dim] = 0;

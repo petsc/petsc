@@ -319,23 +319,23 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     ++dim;
   }
   if (da->dim == 3) {
-    dims[dim]      = PetscHDF5IntCast(da->P);
+    ierr           = PetscHDF5IntCast(da->P,dims+dim);CHKERRQ(ierr);
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
   if (da->dim > 1) {
-    dims[dim]      = PetscHDF5IntCast(da->N);
+    ierr           = PetscHDF5IntCast(da->N,dims+dim);CHKERRQ(ierr);
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
-  dims[dim]    = PetscHDF5IntCast(da->M);
+  ierr           = PetscHDF5IntCast(da->M,dims+dim);CHKERRQ(ierr);
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
   if (da->w > 1) {
-    dims[dim]      = PetscHDF5IntCast(da->w);
+    ierr            = PetscHDF5IntCast(da->w,dims+dim);CHKERRQ(ierr);
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
@@ -384,9 +384,9 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     offset[dim] = timestep;
     ++dim;
   }
-  if (da->dim == 3) offset[dim++] = PetscHDF5IntCast(da->zs);
-  if (da->dim > 1)  offset[dim++] = PetscHDF5IntCast(da->ys);
-  offset[dim++] = PetscHDF5IntCast(da->xs/da->w);
+  if (da->dim == 3) {ierr = PetscHDF5IntCast(da->zs,offset + dim++);CHKERRQ(ierr);}
+  if (da->dim > 1)  {ierr = PetscHDF5IntCast(da->ys,offset + dim++);CHKERRQ(ierr);}
+  ierr = PetscHDF5IntCast(da->xs/da->w,offset + dim++);CHKERRQ(ierr);
   if (da->w > 1) offset[dim++] = 0;
 #if defined(PETSC_USE_COMPLEX)
   offset[dim++] = 0;
@@ -396,10 +396,10 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     count[dim] = 1;
     ++dim;
   }
-  if (da->dim == 3) count[dim++] = PetscHDF5IntCast(da->ze - da->zs);
-  if (da->dim > 1)  count[dim++] = PetscHDF5IntCast(da->ye - da->ys);
-  count[dim++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
-  if (da->w > 1) count[dim++] = PetscHDF5IntCast(da->w);
+  if (da->dim == 3) {ierr = PetscHDF5IntCast(da->ze - da->zs,count + dim++);CHKERRQ(ierr);}
+  if (da->dim > 1)  {ierr = PetscHDF5IntCast(da->ye - da->ys,count + dim++);CHKERRQ(ierr);}
+  ierr = PetscHDF5IntCast((da->xe - da->xs)/da->w,count + dim++);CHKERRQ(ierr);
+  if (da->w > 1) {ierr = PetscHDF5IntCast(da->w,count + dim++);CHKERRQ(ierr);}
 #if defined(PETSC_USE_COMPLEX)
   count[dim++] = 2;
 #endif
@@ -602,7 +602,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   dd = (DM_DA*)da->data;
 
   /* Create the dataspace for the dataset */
-  dim       = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1));
+  ierr = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1),&dim);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   dim++;
 #endif
@@ -619,18 +619,18 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   cnt = 0;
-  if (dd->dim == 3) offset[cnt++] = PetscHDF5IntCast(dd->zs);
-  if (dd->dim > 1)  offset[cnt++] = PetscHDF5IntCast(dd->ys);
-  offset[cnt++] = PetscHDF5IntCast(dd->xs/dd->w);
+  if (dd->dim == 3) {ierr = PetscHDF5IntCast(dd->zs,offset + cnt++);CHKERRQ(ierr);}
+  if (dd->dim > 1)  {ierr = PetscHDF5IntCast(dd->ys,offset + cnt++);CHKERRQ(ierr);}
+  ierr = PetscHDF5IntCast(dd->xs/dd->w,offset + cnt++);CHKERRQ(ierr);
   if (dd->w > 1) offset[cnt++] = 0;
 #if defined(PETSC_USE_COMPLEX)
   offset[cnt++] = 0;
 #endif
   cnt = 0;
-  if (dd->dim == 3) count[cnt++] = PetscHDF5IntCast(dd->ze - dd->zs);
-  if (dd->dim > 1)  count[cnt++] = PetscHDF5IntCast(dd->ye - dd->ys);
-  count[cnt++] = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w);
-  if (dd->w > 1) count[cnt++] = PetscHDF5IntCast(dd->w);
+  if (dd->dim == 3) {ierr = PetscHDF5IntCast(dd->ze - dd->zs,count + cnt++);CHKERRQ(ierr);}
+  if (dd->dim > 1)  {ierr = PetscHDF5IntCast(dd->ye - dd->ys,count + cnt++);CHKERRQ(ierr);}
+  ierr = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w,count + cnt++);CHKERRQ(ierr);
+  if (dd->w > 1) {ierr = PetscHDF5IntCast(dd->w,count + cnt++);CHKERRQ(ierr);}
 #if defined(PETSC_USE_COMPLEX)
   count[cnt++] = 2;
 #endif

@@ -2011,24 +2011,6 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 /* Limit BLAS to 32-bits */
 #define PETSC_BLAS_INT_MAX  2147483647
 #define PETSC_BLAS_INT_MIN -2147483647
-/* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */
-#define PETSC_HDF5_INT_MAX  2147483647
-#define PETSC_HDF5_INT_MIN -2147483647
-
-#if defined(PETSC_USE_64BIT_INDICES)
-
-#if (PETSC_SIZEOF_SIZE_T == 4)
-#define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
-#define PetscHDF5IntCast(a) (hsize_t)(a);PetscHDF5IntCheck(a)
-#else
-#define PetscHDF5IntCheck(a)
-#define PetscHDF5IntCast(a) a
-#endif
-
-#else
-#define PetscHDF5IntCheck(a)
-#define PetscHDF5IntCast(a) a
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBLASIntCast"
