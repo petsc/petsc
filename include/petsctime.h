@@ -96,7 +96,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
    PetscTimeAdd() is intended only for timing of application codes.
-   The options database commands -log, -log_summary, and -log_all activate
+   The options database commands -log_summary activate
    PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
 .seealso:  PetscTime(), PetscTimeSubtract()
