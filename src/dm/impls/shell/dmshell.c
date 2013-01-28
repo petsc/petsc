@@ -4,6 +4,7 @@
 
 typedef struct  {
   Vec Xglobal;
+  Vec Xlocal;
   Mat A;
 } DM_Shell;
 
@@ -76,6 +77,31 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
     ierr = VecZeroEntries(*gvec);CHKERRQ(ierr);
   }
   ierr = VecSetDM(*gvec,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalVector_Shell"
+PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+  Vec            X;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(gvec,2);
+  *gvec = 0;
+  X = shell->Xlocal;
+  if (!X) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
+  if (((PetscObject)X)->refct < 2) { /* We have an exclusive reference so we can give it out */
+    ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
+    ierr = VecZeroEntries(X);CHKERRQ(ierr);
+    *gvec = X;
+  } else {                      /* Need to create a copy, could use MAT_SHARE_NONZERO_PATTERN in most cases */
+    ierr = VecDuplicate(X,gvec);CHKERRQ(ierr);
+    ierr = VecZeroEntries(*gvec);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -192,6 +218,62 @@ PetscErrorCode DMShellSetCreateGlobalVector(DM dm,PetscErrorCode (*func)(DM,Vec*
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMShellSetLocalVector"
+/*@
+   DMShellSetLocalVector - sets a template local vector associated with the DMShell
+
+   Logically Collective on DM
+
+   Input Arguments:
++  dm - shell DM
+-  X - template vector
+
+   Level: advanced
+
+.seealso: DMCreateLocalVector(), DMShellSetMatrix(), DMShellSetCreateLocalVector()
+@*/
+PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
+{
+  DM_Shell *shell = (DM_Shell*)dm->data;
+  PetscErrorCode ierr;
+  PetscBool isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
+  shell->Xlocal = X;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateLocalVector"
+/*@C
+   DMShellSetCreateLocalVector - sets the routine to create a local vector associated with the shell DM
+
+   Logically Collective
+
+   Input Arguments:
++  dm - the shell DM
+-  func - the creation routine
+
+   Level: advanced
+
+.seealso: DMShellSetLocalVector(), DMShellSetCreateMatrix()
+@*/
+PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*))
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->ops->createlocalvector = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Shell"
 static PetscErrorCode DMDestroy_Shell(DM dm)
 {
@@ -201,6 +283,7 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   PetscFunctionBegin;
   ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -245,6 +328,7 @@ PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);
   dm->ops->destroy            = DMDestroy_Shell;
   dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
+  dm->ops->createlocalvector  = DMCreateLocalVector_Shell;
   dm->ops->creatematrix       = DMCreateMatrix_Shell;
   dm->ops->view               = DMView_Shell;
   dm->ops->load               = DMLoad_Shell;
@@ -266,7 +350,7 @@ PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateLocalVector()
 @*/
 PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
 {
