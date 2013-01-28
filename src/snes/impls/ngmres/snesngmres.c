@@ -284,7 +284,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = SNESNGMRESSelect_Private(snes,k_restart,XM,FM,fMnorm,XA,FA,fAnorm,dnorm,fminnorm,dminnorm,X,F,Y,&fnorm);CHKERRQ(ierr);
     selectRestart = PETSC_FALSE;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
-      ierr = SNESNGMRESSelectRestart_Private(snes,fAnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
+      ierr = SNESNGMRESSelectRestart_Private(snes,l,fAnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
       /* if the restart conditions persist for more than restart_it iterations, restart. */
       if (selectRestart) {
         restart_count++;
