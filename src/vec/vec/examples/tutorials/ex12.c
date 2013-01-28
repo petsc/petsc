@@ -21,7 +21,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   Vec            v,s;               /* vectors */
-  PetscInt       n = 20;
+  PetscInt       n   = 20;
   PetscScalar    one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);

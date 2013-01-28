@@ -8,7 +8,7 @@ static char help[] = "Tests repeated VecSetType().\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       n = 5;
+  PetscInt       n   = 5;
   PetscScalar    one = 1.0,two = 2.0;
   Vec            x,y;
 

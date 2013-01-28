@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
@@ -53,9 +53,7 @@ int main(int argc,char **argv)
   ng   = rend - rstart + 2;
   ierr = PetscMalloc(ng*sizeof(PetscInt),&gindices);CHKERRQ(ierr);
   gindices[0] = rstart - 1;
-  for (i=0; i<ng-1; i++) {
-    gindices[i+1] = gindices[i] + 1;
-  }
+  for (i=0; i<ng-1; i++) gindices[i+1] = gindices[i] + 1;
   /* map the first and last point as periodic */
   if (gindices[0]    == -1) gindices[0]    = M - 1;
   if (gindices[ng-1] == M)  gindices[ng-1] = 0;

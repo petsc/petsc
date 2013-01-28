@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Vec            vec;
   PetscViewer    view_out,view_in;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -27,9 +27,7 @@ int main(int argc,char **args)
 
   /* Allocate array and set values */
   ierr = PetscMalloc(m*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    array[i] = i*10.0;
-  }
+  for (i=0; i<m; i++) array[i] = i*10.0;
 
   /* Open viewer for binary output */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);

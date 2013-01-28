@@ -309,11 +309,8 @@ PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatte
 PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool flag)
 {
   PetscFunctionBegin;
-  if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
-    v->stash.donotstash = flag;
-  } else if (op == VEC_IGNORE_NEGATIVE_INDICES) {
-    v->stash.ignorenegidx = flag;
-  }
+  if (op == VEC_IGNORE_OFF_PROC_ENTRIES)      v->stash.donotstash   = flag;
+  else if (op == VEC_IGNORE_NEGATIVE_INDICES) v->stash.ignorenegidx = flag;
   PetscFunctionReturn(0);
 }
 

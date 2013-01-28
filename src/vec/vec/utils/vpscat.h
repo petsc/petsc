@@ -70,9 +70,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       ierr = PetscSortRemoveDupsInt(&n,tindices);CHKERRQ(ierr);
       ierr = PetscMalloc(bs*n*sizeof(PetscInt),&sindices);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        for (k=0; k<bs; k++) {
-          sindices[i*bs+k] = tindices[i]+k;
-        }
+        for (k=0; k<bs; k++) sindices[i*bs+k] = tindices[i]+k;
       }
       ierr = PetscFree(tindices);CHKERRQ(ierr);
       ierr = PetscCUSPIndicesCreate(n*bs,sindices,n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
@@ -80,7 +78,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     }
     ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
     xv   = *(PetscScalar**)xin->data;
-    } else {
+  } else {
     ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }
 #endif
@@ -90,7 +88,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 #endif
 
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);}
-  else {yv = xv;}
+  else yv = xv;
 
   if (!(mode & SCATTER_LOCAL)) {
     if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {

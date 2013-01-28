@@ -169,15 +169,15 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayRead(yy[2],&yy2);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3:
-      x2 = x[2];
+      x2    = x[2];
       sum0 += x2*PetscConj(yy0[2]); sum1 += x2*PetscConj(yy1[2]);
       sum2 += x2*PetscConj(yy2[2]);
     case 2:
-      x1 = x[1];
+      x1    = x[1];
       sum0 += x1*PetscConj(yy0[1]); sum1 += x1*PetscConj(yy1[1]);
       sum2 += x1*PetscConj(yy2[1]);
     case 1:
-      x0 = x[0];
+      x0    = x[0];
       sum0 += x0*PetscConj(yy0[0]); sum1 += x0*PetscConj(yy1[0]);
       sum2 += x0*PetscConj(yy2[0]);
     case 0:
@@ -198,7 +198,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       sum0 += x0*PetscConj(yy0[0]) + x1*PetscConj(yy0[1]) + x2*PetscConj(yy0[2]) + x3*PetscConj(yy0[3]); yy0+=4;
       sum1 += x0*PetscConj(yy1[0]) + x1*PetscConj(yy1[1]) + x2*PetscConj(yy1[2]) + x3*PetscConj(yy1[3]); yy1+=4;
       sum2 += x0*PetscConj(yy2[0]) + x1*PetscConj(yy2[1]) + x2*PetscConj(yy2[2]) + x3*PetscConj(yy2[3]); yy2+=4;
-      j -= 4;
+      j    -= 4;
     }
     z[0] = sum0;
     z[1] = sum1;
@@ -212,13 +212,13 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayRead(yy[1],&yy1);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3:
-      x2 = x[2];
+      x2    = x[2];
       sum0 += x2*PetscConj(yy0[2]); sum1 += x2*PetscConj(yy1[2]);
     case 2:
-      x1 = x[1];
+      x1    = x[1];
       sum0 += x1*PetscConj(yy0[1]); sum1 += x1*PetscConj(yy1[1]);
     case 1:
-      x0 = x[0];
+      x0    = x[0];
       sum0 += x0*PetscConj(yy0[0]); sum1 += x0*PetscConj(yy1[0]);
     case 0:
       x   += j_rem;
@@ -236,7 +236,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 
       sum0 += x0*PetscConj(yy0[0]) + x1*PetscConj(yy0[1]) + x2*PetscConj(yy0[2]) + x3*PetscConj(yy0[3]); yy0+=4;
       sum1 += x0*PetscConj(yy1[0]) + x1*PetscConj(yy1[1]) + x2*PetscConj(yy1[2]) + x3*PetscConj(yy1[3]); yy1+=4;
-      j -= 4;
+      j    -= 4;
     }
     z[0] = sum0;
     z[1] = sum1;
@@ -262,8 +262,8 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     while (j>0) {
       sum0 += x[0]*PetscConj(yy0[0]) + x[1]*PetscConj(yy0[1])
             + x[2]*PetscConj(yy0[2]) + x[3]*PetscConj(yy0[3]);
-      yy0+=4;
-      j -= 4; x+=4;
+      yy0  +=4;
+      j    -= 4; x+=4;
     }
     z[0] = sum0;
 
@@ -290,15 +290,15 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     x = xbase;
     switch (j_rem=j&0x3) {
     case 3:
-      x2 = x[2];
+      x2    = x[2];
       sum0 += x2*PetscConj(yy0[2]); sum1 += x2*PetscConj(yy1[2]);
       sum2 += x2*PetscConj(yy2[2]); sum3 += x2*PetscConj(yy3[2]);
     case 2:
-      x1 = x[1];
+      x1    = x[1];
       sum0 += x1*PetscConj(yy0[1]); sum1 += x1*PetscConj(yy1[1]);
       sum2 += x1*PetscConj(yy2[1]); sum3 += x1*PetscConj(yy3[1]);
     case 1:
-      x0 = x[0];
+      x0    = x[0];
       sum0 += x0*PetscConj(yy0[0]); sum1 += x0*PetscConj(yy1[0]);
       sum2 += x0*PetscConj(yy2[0]); sum3 += x0*PetscConj(yy3[0]);
     case 0:
@@ -321,7 +321,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       sum1 += x0*PetscConj(yy1[0]) + x1*PetscConj(yy1[1]) + x2*PetscConj(yy1[2]) + x3*PetscConj(yy1[3]); yy1+=4;
       sum2 += x0*PetscConj(yy2[0]) + x1*PetscConj(yy2[1]) + x2*PetscConj(yy2[2]) + x3*PetscConj(yy2[3]); yy2+=4;
       sum3 += x0*PetscConj(yy3[0]) + x1*PetscConj(yy3[1]) + x2*PetscConj(yy3[2]) + x3*PetscConj(yy3[3]); yy3+=4;
-      j -= 4;
+      j    -= 4;
     }
     z[0] = sum0;
     z[1] = sum1;
@@ -370,15 +370,15 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayRead(yy[2],&yy2);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3:
-      x2 = x[2];
+      x2    = x[2];
       sum0 += x2*yy0[2]; sum1 += x2*yy1[2];
       sum2 += x2*yy2[2];
     case 2:
-      x1 = x[1];
+      x1    = x[1];
       sum0 += x1*yy0[1]; sum1 += x1*yy1[1];
       sum2 += x1*yy2[1];
     case 1:
-      x0 = x[0];
+      x0    = x[0];
       sum0 += x0*yy0[0]; sum1 += x0*yy1[0];
       sum2 += x0*yy2[0];
     case 0:
@@ -399,7 +399,7 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
       sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
       sum2 += x0*yy2[0] + x1*yy2[1] + x2*yy2[2] + x3*yy2[3]; yy2+=4;
-      j -= 4;
+      j    -= 4;
     }
     z[0] = sum0;
     z[1] = sum1;
@@ -413,13 +413,13 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayRead(yy[1],&yy1);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3:
-      x2 = x[2];
+      x2    = x[2];
       sum0 += x2*yy0[2]; sum1 += x2*yy1[2];
     case 2:
-      x1 = x[1];
+      x1    = x[1];
       sum0 += x1*yy0[1]; sum1 += x1*yy1[1];
     case 1:
-      x0 = x[0];
+      x0    = x[0];
       sum0 += x0*yy0[0]; sum1 += x0*yy1[0];
     case 0:
       x   += j_rem;
@@ -437,7 +437,7 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 
       sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
       sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
-      j -= 4;
+      j    -= 4;
     }
     z[0] = sum0;
     z[1] = sum1;
@@ -462,7 +462,7 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     }
     while (j>0) {
       sum0 += x[0]*yy0[0] + x[1]*yy0[1] + x[2]*yy0[2] + x[3]*yy0[3]; yy0+=4;
-      j -= 4; x+=4;
+      j    -= 4; x+=4;
     }
     z[0] = sum0;
 
@@ -488,15 +488,15 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     j = n;
     switch (j_rem=j&0x3) {
     case 3:
-      x2 = x[2];
+      x2    = x[2];
       sum0 += x2*yy0[2]; sum1 += x2*yy1[2];
       sum2 += x2*yy2[2]; sum3 += x2*yy3[2];
     case 2:
-      x1 = x[1];
+      x1    = x[1];
       sum0 += x1*yy0[1]; sum1 += x1*yy1[1];
       sum2 += x1*yy2[1]; sum3 += x1*yy3[1];
     case 1:
-      x0 = x[0];
+      x0    = x[0];
       sum0 += x0*yy0[0]; sum1 += x0*yy1[0];
       sum2 += x0*yy2[0]; sum3 += x0*yy3[0];
     case 0:
@@ -519,7 +519,7 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
       sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
       sum2 += x0*yy2[0] + x1*yy2[1] + x2*yy2[2] + x3*yy2[3]; yy2+=4;
       sum3 += x0*yy3[0] + x1*yy3[1] + x2*yy3[2] + x3*yy3[3]; yy3+=4;
-      j -= 4;
+      j    -= 4;
     }
     z[0] = sum0;
     z[1] = sum1;
@@ -641,13 +641,13 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt *idx,PetscReal *z)
 
   PetscFunctionBegin;
   if (!n) {
-    *z = PETSC_MAX_REAL;
+    *z   = PETSC_MAX_REAL;
     *idx = -1;
   } else {
     ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_MINLOC,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecMin_kernel,xin,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,out);CHKERRQ(ierr);
-    *z = out[0];
+    *z   = out[0];
     if (idx) *idx = (PetscInt)out[1];
   }
   PetscFunctionReturn(0);
@@ -687,7 +687,7 @@ PetscErrorCode VecSet_kernel(PetscInt thread_id,Vec xin,PetscScalar *alpha_p)
   PetscScalar    *xx;
   PetscInt       i,start,end;
   PetscInt       *trstarts=xin->map->trstarts;
-  PetscScalar    alpha = *alpha_p;
+  PetscScalar    alpha    = *alpha_p;
 
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
@@ -695,7 +695,7 @@ PetscErrorCode VecSet_kernel(PetscInt thread_id,Vec xin,PetscScalar *alpha_p)
   if (alpha == (PetscScalar)0.0) {
     ierr = PetscMemzero(xx+start,(end-start)*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
-    for (i=start;i<end;i++) xx[i] = alpha;
+    for (i=start; i<end; i++) xx[i] = alpha;
   }
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   return 0;
@@ -709,9 +709,9 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
   PetscScalar    *scalar;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   *scalar = alpha;
-  ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,xin,scalar);CHKERRQ(ierr);
+  ierr    = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,xin,scalar);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -754,7 +754,7 @@ PetscErrorCode VecMAXPY_kernel(PetscInt thread_id,Vec xin,PetscInt *nv_p,const P
 #endif
 
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  x = xx+start;
+  x    = xx+start;
   switch (j_rem=nv&0x3) {
   case 3:
     ierr   = VecGetArrayRead(y[0],&yy0);CHKERRQ(ierr);
@@ -801,7 +801,8 @@ PetscErrorCode VecMAXPY_kernel(PetscInt thread_id,Vec xin,PetscInt *nv_p,const P
     alpha1 = alpha[1];
     alpha2 = alpha[2];
     alpha3 = alpha[3];
-    alpha  += 4;
+    alpha += 4;
+
     y0 = yy0+start; y1=yy1+start; y2=yy2+start; y3=yy3+start;
     PetscAXPY4(x,alpha0,alpha1,alpha2,alpha3,y0,y1,y2,y3,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
@@ -980,9 +981,9 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     PetscInt i;
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      yy[i] = xx[i] - yy[i];
-    }
+
+    for (i=0; i<n; i++) yy[i] = xx[i] - yy[i];
+
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
@@ -997,9 +998,8 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
 #else
     {
       PetscInt i;
-      for (i=0; i<n; i++) {
-        yy[i] = xx[i] + alpha*yy[i];
-      }
+
+      for (i=0; i<n; i++) yy[i] = xx[i] + alpha*yy[i];
     }
 #endif
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
@@ -1060,9 +1060,9 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
   PetscScalar        *scal1;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommGetScalars(((PetscObject)win)->comm,&scal1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscThreadCommGetScalars(((PetscObject)win)->comm,&scal1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   *scal1 = alpha;
-  ierr = PetscThreadCommRunKernel4(((PetscObject)win)->comm,(PetscThreadKernel)VecWAXPY_kernel,win,scal1,xin,yin);CHKERRQ(ierr);
+  ierr   = PetscThreadCommRunKernel4(((PetscObject)win)->comm,(PetscThreadKernel)VecWAXPY_kernel,win,scal1,xin,yin);CHKERRQ(ierr);
   if (alpha == (PetscScalar)1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
   } else if (alpha == (PetscScalar)-1.0) {

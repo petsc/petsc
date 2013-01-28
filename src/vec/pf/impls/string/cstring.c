@@ -11,7 +11,7 @@
 PetscErrorCode PFView_String(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool  iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -53,10 +53,10 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   PetscErrorCode ierr;
-  char       task[1024],tmp[256],lib[PETSC_MAX_PATH_LEN],username[64];
-  FILE       *fd;
-  PetscBool  tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
-  MPI_Comm   comm;
+  char           task[1024],tmp[256],lib[PETSC_MAX_PATH_LEN],username[64];
+  FILE           *fd;
+  PetscBool      tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
+  MPI_Comm       comm;
 #endif
 
   PetscFunctionBegin;
@@ -78,11 +78,9 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
     comm = ((PetscObject)pf)->comm;
   }
   ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,PETSC_NULL);CHKERRQ(ierr);
-  if (keeptmpfiles) {
-    sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; ke  MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
-  } else {
-    sprintf(task,"cd %s ; mkdir ${USERNAME} ;cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make  MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
-  }
+  if (keeptmpfiles) sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; ke  MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
+  else              sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make  MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
+
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,PETSC_NULL,task,"r",&fd);CHKERRQ(ierr);
   ierr = PetscPClose(comm,fd,PETSC_NULL);CHKERRQ(ierr);
@@ -106,17 +104,17 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
 PetscErrorCode PFSetFromOptions_String(PF pf)
 {
   PetscErrorCode ierr;
-  PetscBool  flag;
-  char       value[PETSC_MAX_PATH_LEN];
+  PetscBool      flag;
+  char           value[PETSC_MAX_PATH_LEN];
   PetscErrorCode (*f)(void*,PetscInt,const PetscScalar*,PetscScalar*) = 0;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("String function options");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);
-      pf->ops->apply = f;
-    }
+  ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr           = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);
+    pf->ops->apply = f;
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -128,13 +126,13 @@ EXTERN_C_BEGIN
 PetscErrorCode  PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;
-  FCN        f = 0;
+  FCN            f = 0;
 
   PetscFunctionBegin;
   if (value) {
     ierr = PFStringCreateFunction(pf,(char*)value,(void**)&f);CHKERRQ(ierr);
   }
-  ierr   = PFSet(pf,f,PETSC_NULL,PFView_String,PFDestroy_String,PETSC_NULL);CHKERRQ(ierr);
+  ierr                    = PFSet(pf,f,PETSC_NULL,PFView_String,PFDestroy_String,PETSC_NULL);CHKERRQ(ierr);
   pf->ops->setfromoptions = PFSetFromOptions_String;
   PetscFunctionReturn(0);
 }

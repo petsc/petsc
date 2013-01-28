@@ -16,7 +16,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  bs = size;
+  bs   = size;
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -37,9 +37,7 @@ int main(int argc,char **argv)
   ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    for (j=0; j<bs; j++) {
-      vals[j] = (i*bs+j)*1.0;
-    }
+    for (j=0; j<bs; j++) vals[j] = (i*bs+j)*1.0;
     ierr = VecSetValuesBlocked(x,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
 

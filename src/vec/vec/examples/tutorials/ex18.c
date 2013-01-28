@@ -16,7 +16,10 @@ T*/
 */
 #include <petscvec.h>
 
-PetscScalar func(PetscScalar a) {return 2*a/(1+a*a);}
+PetscScalar func(PetscScalar a)
+{
+  return 2*a/(1+a*a);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -28,7 +31,7 @@ int main(int argc,char **argv)
   PetscScalar    dummy,result=0,h=1.0/numPoints,*xarray;
   Vec            x,xend;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 
@@ -38,18 +41,18 @@ int main(int argc,char **argv)
        The xend vector is a dummy vector to find the value of the
          elements at the endpoints for use in the trapezoid rule.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,numPoints);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
-  ierr = VecSet(x,result);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&xend);CHKERRQ(ierr);
-  result=0.5;
+  ierr   = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr   = VecSetSizes(x,PETSC_DECIDE,numPoints);CHKERRQ(ierr);
+  ierr   = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr   = VecGetSize(x,&N);CHKERRQ(ierr);
+  ierr   = VecSet(x,result);CHKERRQ(ierr);
+  ierr   = VecDuplicate(x,&xend);CHKERRQ(ierr);
+  result = 0.5;
   if (!rank) {
-    i=0;
+    i    = 0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   } else if (rank == nproc) {
-    i=N-1;
+    i    = N-1;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }
   /*
@@ -69,7 +72,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-  k = 0;
+  k    = 0;
   for (i=rstart; i<rend; i++) {
     xarray[k] = i*h;
     xarray[k] = func(xarray[k]);
@@ -83,7 +86,7 @@ int main(int argc,char **argv)
      Then half the value at each endpoint is subtracted,
      this is part of the composite trapezoid rule.
   */
-  ierr = VecSum(x,&result);CHKERRQ(ierr);
+  ierr   = VecSum(x,&result);CHKERRQ(ierr);
   result = result*h;
   ierr   = VecDot(x,xend,&dummy);CHKERRQ(ierr);
   result = result-h*dummy;

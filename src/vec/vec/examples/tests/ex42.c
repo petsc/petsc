@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  N = size*n;
+  N    = size*n;
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   for (i=0; i<100; i++) {
     PetscReal ynorm;
-    PetscInt j;
+    PetscInt  j;
     ierr = VecNormBegin(y,NORM_2,&ynorm);CHKERRQ(ierr);
     ierr = PetscCommSplitReductionBegin(((PetscObject)y)->comm);CHKERRQ(ierr);
     for (j=0; j<3; j++) {

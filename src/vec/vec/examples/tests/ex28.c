@@ -8,7 +8,7 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       n = 25,i,row0 = 0;
+  PetscInt       n   = 25,i,row0 = 0;
   PetscScalar    one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
   PetscScalar    result1a,result2a;
   PetscReal      result3,result4,result[2],result3a,result4a,resulta[2];
@@ -30,15 +30,15 @@ int main(int argc,char **argv)
   */
   result1 = result2 = 0.0;
   result3 = result4 = 0.0;
-  ierr = VecDotBegin(x,y,&result1);CHKERRQ(ierr);
-  ierr = VecDotBegin(y,x,&result2);CHKERRQ(ierr);
-  ierr = VecNormBegin(y,NORM_2,&result3);CHKERRQ(ierr);
-  ierr = VecNormBegin(x,NORM_1,&result4);CHKERRQ(ierr);
-  ierr = PetscCommSplitReductionBegin(((PetscObject)x)->comm);CHKERRQ(ierr);
-  ierr = VecDotEnd(x,y,&result1);CHKERRQ(ierr);
-  ierr = VecDotEnd(y,x,&result2);CHKERRQ(ierr);
-  ierr = VecNormEnd(y,NORM_2,&result3);CHKERRQ(ierr);
-  ierr = VecNormEnd(x,NORM_1,&result4);CHKERRQ(ierr);
+  ierr    = VecDotBegin(x,y,&result1);CHKERRQ(ierr);
+  ierr    = VecDotBegin(y,x,&result2);CHKERRQ(ierr);
+  ierr    = VecNormBegin(y,NORM_2,&result3);CHKERRQ(ierr);
+  ierr    = VecNormBegin(x,NORM_1,&result4);CHKERRQ(ierr);
+  ierr    = PetscCommSplitReductionBegin(((PetscObject)x)->comm);CHKERRQ(ierr);
+  ierr    = VecDotEnd(x,y,&result1);CHKERRQ(ierr);
+  ierr    = VecDotEnd(y,x,&result2);CHKERRQ(ierr);
+  ierr    = VecNormEnd(y,NORM_2,&result3);CHKERRQ(ierr);
+  ierr    = VecNormEnd(x,NORM_1,&result4);CHKERRQ(ierr);
 
   ierr = VecDot(x,y,&result1a);CHKERRQ(ierr);
   ierr = VecDot(y,x,&result2a);CHKERRQ(ierr);

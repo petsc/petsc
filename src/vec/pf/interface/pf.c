@@ -3,8 +3,8 @@
 */
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
-PetscClassId      PF_CLASSID = 0;
-PetscFunctionList PFunctionList         = PETSC_NULL; /* list of all registered PD functions */
+PetscClassId      PF_CLASSID          = 0;
+PetscFunctionList PFunctionList       = PETSC_NULL;   /* list of all registered PD functions */
 PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -32,12 +32,11 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
-  pf->data             = ctx;
-
-  pf->ops->destroy     = destroy;
-  pf->ops->apply       = apply;
-  pf->ops->applyvec    = applyvec;
-  pf->ops->view        = view;
+  pf->data          = ctx;
+  pf->ops->destroy  = destroy;
+  pf->ops->apply    = apply;
+  pf->ops->applyvec = applyvec;
+  pf->ops->view     = view;
   PetscFunctionReturn(0);
 }
 
@@ -116,16 +115,15 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,-1,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
-  newpf->data             = 0;
+  newpf->data          = 0;
+  newpf->ops->destroy  = 0;
+  newpf->ops->apply    = 0;
+  newpf->ops->applyvec = 0;
+  newpf->ops->view     = 0;
+  newpf->dimin         = dimin;
+  newpf->dimout        = dimout;
 
-  newpf->ops->destroy     = 0;
-  newpf->ops->apply       = 0;
-  newpf->ops->applyvec    = 0;
-  newpf->ops->view        = 0;
-  newpf->dimin            = dimin;
-  newpf->dimout           = dimout;
-
-  *pf                     = newpf;
+  *pf                  = newpf;
   PetscFunctionReturn(0);
 
 }
@@ -168,15 +166,13 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     PetscScalar *xx;
     PetscInt    lsize;
 
-    ierr = VecGetLocalSize(y,&lsize);CHKERRQ(ierr);
+    ierr  = VecGetLocalSize(y,&lsize);CHKERRQ(ierr);
     lsize = pf->dimin*lsize/pf->dimout;
-    ierr = VecCreateMPI(((PetscObject)y)->comm,lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
-    nox  = PETSC_TRUE;
-    ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++) {
-      xx[i-rstart] = (PetscScalar)i;
-    }
+    ierr  = VecCreateMPI(((PetscObject)y)->comm,lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
+    nox   = PETSC_TRUE;
+    ierr  = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
+    ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) xx[i-rstart] = (PetscScalar)i;
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   }
 
@@ -231,7 +227,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
+PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscErrorCode ierr;
 
@@ -427,15 +423,15 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   if (match) PetscFunctionReturn(0);
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
-  pf->data        = 0;
+  pf->data = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFunctionListFind(((PetscObject)pf)->comm,PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(((PetscObject)pf)->comm,PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
-  pf->ops->destroy             = 0;
-  pf->ops->view                = 0;
-  pf->ops->apply               = 0;
-  pf->ops->applyvec            = 0;
+  pf->ops->destroy  = 0;
+  pf->ops->view     = 0;
+  pf->ops->apply    = 0;
+  pf->ops->applyvec = 0;
 
   /* Call the PFCreateXXX routine for this particular function */
   ierr = (*r)(pf,ctx);CHKERRQ(ierr);
@@ -476,21 +472,21 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
-    }
-    if (pf->ops->setfromoptions) {
-      ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
+  }
+  if (pf->ops->setfromoptions) {
+    ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
+  }
 
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)pf);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)pf);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscBool  PFPackageInitialized = PETSC_FALSE;
+static PetscBool PFPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "PFFinalizePackage"
 /*@C
@@ -506,7 +502,7 @@ PetscErrorCode  PFFinalizePackage(void)
 {
   PetscFunctionBegin;
   PFPackageInitialized = PETSC_FALSE;
-  PFunctionList               = PETSC_NULL;
+  PFunctionList        = PETSC_NULL;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -528,10 +524,10 @@ PetscErrorCode  PFFinalizePackage(void)
 @*/
 PetscErrorCode  PFInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PFPackageInitialized) PetscFunctionReturn(0);

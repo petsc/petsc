@@ -83,7 +83,7 @@ extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndic
 #define WaitForGPU() PetscCUSPSynchronize ? cudaThreadSynchronize() : 0
 
 struct Vec_CUSP {
-  CUSPARRAY       *GPUarray;  /* this always holds the GPU data */
+  CUSPARRAY *GPUarray;        /* this always holds the GPU data */
 #if defined(PETSC_HAVE_TXPETSCGPU)
   GPU_Vector<PetscInt, PetscScalar> * GPUvector; /* this always holds the GPU data */
 #endif
@@ -111,6 +111,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY
 
   PetscFunctionBegin;
   v->valid_GPU_array = PETSC_CUSP_GPU;
+
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,7 +125,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
   PetscFunctionBegin;
   *a   = 0;
   ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
-  *a   = ((Vec_CUSP *)v->spptr)->GPUarray;
+  *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +145,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  *a   = ((Vec_CUSP *)v->spptr)->GPUarray;
+  *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
 }
 
@@ -156,6 +157,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a
 
   PetscFunctionBegin;
   v->valid_GPU_array = PETSC_CUSP_GPU;
+
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

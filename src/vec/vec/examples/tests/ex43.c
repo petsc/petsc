@@ -27,9 +27,9 @@ int main(int argc, char **argv)
   ierr = VecDuplicateVecs(t,k,&V);CHKERRQ(ierr);
   ierr = VecSetRandom(t,rctx);CHKERRQ(ierr);
   ierr = PetscMalloc(k*sizeof(PetscScalar),&val);CHKERRQ(ierr);
-  for (i=0;i<k;i++) { ierr = VecSetRandom(V[i],rctx);CHKERRQ(ierr); }
-  for (reps=0;reps<20;reps++) {
-    for (i=1;i<k;i++) {
+  for (i=0; i<k; i++) { ierr = VecSetRandom(V[i],rctx);CHKERRQ(ierr); }
+  for (reps=0; reps<20; reps++)
+    for (i=1; i<k; i++) {
       if (mdot) {
         ierr = VecMDot(t,i,V,val);CHKERRQ(ierr);
       } else {

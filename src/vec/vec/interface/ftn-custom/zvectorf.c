@@ -89,7 +89,7 @@ $      type(Field)     :: a(*)
 
 .seealso: VecGetArray(), VecGetArrayF90()
 M*/
-static PetscBool  VecGetArrayAligned = PETSC_FALSE;
+static PetscBool VecGetArrayAligned = PETSC_FALSE;
 void PETSC_STDCALL vecgetarrayaligned_(PetscErrorCode *ierr)
 {
   VecGetArrayAligned = PETSC_TRUE;
@@ -102,7 +102,7 @@ void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode
 
   *ierr = VecGetArray(*x,&lx); if (*ierr) return;
   *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
-  bs = 1;
+  bs    = 1;
   if (VecGetArrayAligned) {
     *ierr = VecGetBlockSize(*x,&bs);if (*ierr) return;
   }
@@ -127,12 +127,10 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *ia,PetscError
 */
 void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode *ierr)
 {
-  Vec *lV;
+  Vec      *lV;
   PetscInt i;
   *ierr = VecDuplicateVecs(*v,*m,&lV); if (*ierr) return;
-  for (i=0; i<*m; i++) {
-    newv[i] = lV[i];
-  }
+  for (i=0; i<*m; i++) newv[i] = lV[i];
   *ierr = PetscFree(lV);
 }
 

@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,set_option_negidx);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRQ(ierr);
-  m = iend - istart;
+  m    = iend - istart;
 
 
   /* Set the vectors */
@@ -52,13 +52,9 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++) {
-    values[i - istart]  = (rank + 1) * i * 2;
-    if (set_values_negidx) {
-        indices[i - istart] = (-1 + 2*(i % 2)) * i;
-    }
-    else {
-        indices[i - istart] = i;
-    }
+    values[i - istart] = (rank + 1) * i * 2;
+    if (set_values_negidx) indices[i - istart] = (-1 + 2*(i % 2)) * i;
+    else                   indices[i - istart] = i;
   }
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank);CHKERRQ(ierr);
@@ -84,12 +80,8 @@ int main(int argc,char **argv)
 
   for (i=0; i<m; i++) {
     values[i] = -1.0;
-    if (get_values_negidx) {
-      indices[i] = (-1 + 2*((istart+i) % 2)) * (istart+i);
-    }
-    else {
-        indices[i] = istart+i;
-    }
+    if (get_values_negidx) indices[i] = (-1 + 2*((istart+i) % 2)) * (istart+i);
+    else                   indices[i] = istart+i;
   }
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetching these values from vector...\n", rank);CHKERRQ(ierr);

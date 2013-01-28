@@ -32,11 +32,9 @@ int main(int argc,char **argv)
   /*
      Create large IS and test ISGetIndices()
   */
-  n = 10000 + rank;
+  n    = 10000 + rank;
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    indices[i] = rank + i;
-  }
+  for (i=0; i<n; i++) indices[i] = rank + i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -84,9 +82,7 @@ int main(int argc,char **argv)
   /*
      Inverting permutation
   */
-  for (i=0; i<n; i++) {
-    indices[i] = n - i - 1;
-  }
+  for (i=0; i<n; i++) indices[i] = n - i - 1;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = ISSetPermutation(is);CHKERRQ(ierr);

@@ -21,7 +21,7 @@ int main(int argc,char **args)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -38,8 +38,8 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (PetscScalar)(i + 100*rank);
-    ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
+    v       = (PetscScalar)(i + 100*rank);
+    ierr    = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);

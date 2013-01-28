@@ -277,13 +277,9 @@ PetscErrorCode VecAXPBY_kernel(PetscInt thread_id,Vec yin,PetscScalar *alpha_p,P
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
 
   if (b == (PetscScalar)0.0) {
-    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
-      yy[i] = a*xx[i];
-    }
+    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) yy[i] = a*xx[i];
   } else {
-    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) {
-      yy[i] = a*xx[i] + b*yy[i];
-    }
+    for (i=trstarts[thread_id];i < trstarts[thread_id+1];i++) yy[i] = a*xx[i] + b*yy[i];
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
@@ -336,18 +332,18 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   } else if (b == (PetscScalar)0.0) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      yy[i] = a*xx[i];
-    }
+
+    for (i=0; i<n; i++) yy[i] = a*xx[i];
+
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   } else {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      yy[i] = a*xx[i] + b*yy[i];
-    }
+
+    for (i=0; i<n; i++) yy[i] = a*xx[i] + b*yy[i];
+
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
@@ -370,21 +366,13 @@ PetscErrorCode VecAXPBYPCZ_kernel(PetscInt thread_id,Vec zin,PetscScalar *alpha_
   ierr = VecGetArray(zin,&zz);CHKERRQ(ierr);
 
   if (alpha == (PetscScalar)1.0) {
-    for (i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
-      zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
-    }
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
   } else if (gamma == (PetscScalar)1.0) {
-    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
-    }
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
   } else if (gamma == (PetscScalar)0.0) {
-    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i];
-    }
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) zz[i] = alpha*xx[i] + beta*yy[i];
   } else {
-    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
-    }
+    for (i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
   }
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
@@ -429,24 +417,16 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
   ierr = VecGetArray(zin,&zz);CHKERRQ(ierr);
   if (alpha == (PetscScalar)1.0) {
-    for (i=0; i<n; i++) {
-      zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
-    }
+    for (i=0; i<n; i++) zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
   } else if (gamma == (PetscScalar)1.0) {
-    for (i=0; i<n; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
-    }
+    for (i=0; i<n; i++) zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
   } else if (gamma == (PetscScalar)0.0) {
-    for (i=0; i<n; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i];
-    }
+    for (i=0; i<n; i++) zz[i] = alpha*xx[i] + beta*yy[i];
     ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
   } else {
-    for (i=0; i<n; i++) {
-      zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
-    }
+    for (i=0; i<n; i++) zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);

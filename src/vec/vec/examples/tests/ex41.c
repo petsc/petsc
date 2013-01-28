@@ -19,12 +19,12 @@ T*/
 #define __FUNCT__ "test_vec_ops"
 PetscErrorCode test_vec_ops(void)
 {
-  Vec X,Y,a,b;
-  Vec c,d,e,f,g,h;
-  PetscScalar val;
+  Vec            X,Y,a,b;
+  Vec            c,d,e,f,g,h;
+  PetscScalar    val;
   PetscErrorCode ierr;
-  PetscInt tmp_ind[2];
-  Vec tmp_buf[2];
+  PetscInt       tmp_ind[2];
+  Vec            tmp_buf[2];
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD, "============== %s ==============\n",PETSC_FUNCTION_NAME);
@@ -55,7 +55,8 @@ PetscErrorCode test_vec_ops(void)
 
   /* assemble a */
   PetscPrintf(PETSC_COMM_WORLD, "a = [c d] \n");
-  tmp_buf[0] = c ; tmp_buf[1] = d ;
+  tmp_buf[0] = c; tmp_buf[1] = d;
+
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&a);CHKERRQ(ierr);
   ierr = VecView(a,PETSC_VIEWER_STDOUT_WORLD);
   PetscPrintf(PETSC_COMM_WORLD, "a = [d c] \n");
@@ -67,7 +68,8 @@ PetscErrorCode test_vec_ops(void)
 
   /* assemble b */
   PetscPrintf(PETSC_COMM_WORLD, "b = [e f] \n");
-  tmp_buf[0] = e ; tmp_buf[1] = f ;
+  tmp_buf[0] = e; tmp_buf[1] = f;
+
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);
   PetscPrintf(PETSC_COMM_WORLD, "b = [f e] \n");
@@ -78,7 +80,8 @@ PetscErrorCode test_vec_ops(void)
   ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);
 
   PetscPrintf(PETSC_COMM_WORLD, "X = [a b] \n");
-  tmp_buf[0] = a ; tmp_buf[1] = b ;
+  tmp_buf[0] = a; tmp_buf[1] = b;
+
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
@@ -112,8 +115,9 @@ PetscErrorCode test_vec_ops(void)
   PetscPrintf(PETSC_COMM_WORLD, "Y.Y = %f \n", val);
 
   PetscPrintf(PETSC_COMM_WORLD, "Y = [a b] \n");
-  tmp_buf[0] = a; tmp_buf[1] = b ;
+  tmp_buf[0] = a; tmp_buf[1] = b;
   tmp_ind[0] = 0; tmp_ind[1] = 1;
+
   ierr = VecNestSetSubVecs(Y,2,tmp_ind,tmp_buf);CHKERRQ(ierr);
   ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);
 
@@ -132,7 +136,7 @@ PetscErrorCode test_vec_ops(void)
 
 int main(int argc, char **args)
 {
-  PetscInitialize(&argc, &args,(char *)0, help);
+  PetscInitialize(&argc, &args,(char*)0, help);
 
   test_vec_ops();
 

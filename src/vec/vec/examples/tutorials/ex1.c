@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  
+
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
@@ -100,28 +100,28 @@ y
 
   ierr = VecScale(x,two);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",(double)v);CHKERRQ(ierr);
 
 
   ierr = VecCopy(x,w);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",(double)v);CHKERRQ(ierr);
 
   ierr = VecAXPY(y,three,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-8.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-8.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",(double)v);CHKERRQ(ierr);
 
   ierr = VecAYPX(y,two,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",(double)v);CHKERRQ(ierr);
 
   ierr = VecSwap(x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",(double)v);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   v = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
@@ -129,30 +129,31 @@ y
 
   ierr = VecWAXPY(w,two,x,y);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-38.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-38.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",(double)v);CHKERRQ(ierr);
 
   ierr = VecPointwiseMult(w,y,x);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-36.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-36.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",(double)v);CHKERRQ(ierr);
 
   ierr = VecPointwiseDivide(w,x,y);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-9.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-9.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",(double)v);CHKERRQ(ierr);
 
   dots[0] = one;
   dots[1] = three;
   dots[2] = two;
+
   ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecMAXPY(x,3,dots,z);CHKERRQ(ierr);
   ierr = VecNorm(z[0],NORM_2,&norm);CHKERRQ(ierr);
-  v = norm-sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
+  v    = norm-sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0;
   ierr = VecNorm(z[1],NORM_2,&norm);CHKERRQ(ierr);
-  v1 = norm-2.0*sqrt((double)n); if (v1 > -PETSC_SMALL && v1 < PETSC_SMALL) v1 = 0.0;
+  v1   = norm-2.0*sqrt((double)n); if (v1 > -PETSC_SMALL && v1 < PETSC_SMALL) v1 = 0.0;
   ierr = VecNorm(z[2],NORM_2,&norm);CHKERRQ(ierr);
-  v2 = norm-3.0*sqrt((double)n); if (v2 > -PETSC_SMALL && v2 < PETSC_SMALL) v2 = 0.0;
+  v2   = norm-3.0*sqrt((double)n); if (v2 > -PETSC_SMALL && v2 < PETSC_SMALL) v2 = 0.0;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",(double)v,(double)v1,(double)v2);CHKERRQ(ierr);
 
   /*

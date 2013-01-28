@@ -7,9 +7,9 @@ static char help[] = "Tests for norm caching\n";
 int main(int argc,char **argv)
 {
   Vec            V,W;
-  PetscReal      nrm1,nrm2,nrm3,nrm4;
   MPI_Comm       comm;
   PetscScalar    one=1,e=2.7181;
+  PetscReal      nrm1,nrm2,nrm3,nrm4;
   PetscInt       ione=1;
   PetscErrorCode ierr;
 

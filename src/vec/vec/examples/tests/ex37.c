@@ -67,23 +67,23 @@ PetscErrorCode test_view(void)
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  ierr = PetscOptionsGetBool(0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
-  ierr = GetISs(tmp_buf,tmp_is);CHKERRQ(ierr);
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,explcit?tmp_is:PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&e);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = ISDestroy(&tmp_is[0]);CHKERRQ(ierr);
-  ierr = ISDestroy(&tmp_is[1]);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetBool(0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
+  ierr       = GetISs(tmp_buf,tmp_is);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,explcit ? tmp_is : PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
+  ierr       = VecDestroy(&e);CHKERRQ(ierr);
+  ierr       = VecDestroy(&f);CHKERRQ(ierr);
+  ierr       = ISDestroy(&tmp_is[0]);CHKERRQ(ierr);
+  ierr       = ISDestroy(&tmp_is[1]);CHKERRQ(ierr);
 
   tmp_buf[0] = c;
   tmp_buf[1] = d;
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&a);CHKERRQ(ierr);
-  ierr = VecDestroy(&c);CHKERRQ(ierr);   ierr = VecDestroy(&d);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&a);CHKERRQ(ierr);
+  ierr       = VecDestroy(&c);CHKERRQ(ierr);   ierr = VecDestroy(&d);CHKERRQ(ierr);
 
   tmp_buf[0] = a;
   tmp_buf[1] = b;
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&a);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
+  ierr       = VecDestroy(&a);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   else { ierr = VecSetType(v, VECMPI);CHKERRQ(ierr); }
 
   for (i=0; i<length; i++) {
-    vx = (PetscScalar)(start_value + i * stride);
+    vx   = (PetscScalar)(start_value + i * stride);
     ierr = VecSetValue(v, i, vx, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
@@ -231,29 +231,29 @@ PetscErrorCode test_axpy_dot_max(void)
 
   tmp_buf[0] = x1;
   tmp_buf[1] = x2;
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecDestroy(&x1);CHKERRQ(ierr);
-  ierr = VecDestroy(&x2);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
+  ierr       = VecAssemblyBegin(X);CHKERRQ(ierr);
+  ierr       = VecAssemblyEnd(X);CHKERRQ(ierr);
+  ierr       = VecDestroy(&x1);CHKERRQ(ierr);
+  ierr       = VecDestroy(&x2);CHKERRQ(ierr);
 
 
   tmp_buf[0] = y1;
   tmp_buf[1] = y2;
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&Y);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&y1);CHKERRQ(ierr);
-  ierr = VecDestroy(&y2);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&Y);CHKERRQ(ierr);
+  ierr       = VecAssemblyBegin(Y);CHKERRQ(ierr);
+  ierr       = VecAssemblyEnd(Y);CHKERRQ(ierr);
+  ierr       = VecDestroy(&y1);CHKERRQ(ierr);
+  ierr       = VecDestroy(&y2);CHKERRQ(ierr);
 
 
   PetscPrintf(PETSC_COMM_WORLD, "VecAXPY \n");
   ierr = VecAXPY(Y, 1.0, X); /* Y <- a X + Y */
   ierr = VecNestGetSubVec(Y, 0, &y1);CHKERRQ(ierr);
   ierr = VecNestGetSubVec(Y, 1, &y2);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(1) y1 = \n"); 
+  PetscPrintf(PETSC_COMM_WORLD, "(1) y1 = \n");
   ierr = VecView(y1, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(1) y2 = \n"); 
+  PetscPrintf(PETSC_COMM_WORLD, "(1) y2 = \n");
   ierr = VecView(y2, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDot(X,Y, &scalar);CHKERRQ(ierr);
 
@@ -290,7 +290,7 @@ PetscErrorCode test_axpy_dot_max(void)
 
 int main(int argc, char **args)
 {
-  PetscInitialize(&argc, &args,(char *)0, help);
+  PetscInitialize(&argc, &args,(char*)0, help);
 
   test_view();
   test_axpy_dot_max();

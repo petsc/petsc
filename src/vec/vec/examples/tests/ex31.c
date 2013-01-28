@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   char           *output;
   Vec            x;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);

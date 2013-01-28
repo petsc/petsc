@@ -7,9 +7,9 @@ static char help[] = "Tests ISToGeneral().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
-  PetscInt        step = 2;
-  IS              is;
+  PetscErrorCode ierr;
+  PetscInt       step = 2;
+  IS             is;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 

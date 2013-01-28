@@ -60,15 +60,13 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
 
   ierr = ISGetSize(is1,&sz1);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&sz2);CHKERRQ(ierr);
-  if (sz1 != sz2) {
-    *flg = PETSC_FALSE;
-  } else {
+  if (sz1 != sz2) *flg = PETSC_FALSE;
+  else {
     ierr = ISGetLocalSize(is1,&sz1);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is2,&sz2);CHKERRQ(ierr);
 
-    if (sz1 != sz2) {
-      flag = PETSC_FALSE;
-    } else {
+    if (sz1 != sz2) flag = PETSC_FALSE;
+    else {
       ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
 

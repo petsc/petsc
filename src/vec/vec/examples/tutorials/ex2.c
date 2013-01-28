@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*

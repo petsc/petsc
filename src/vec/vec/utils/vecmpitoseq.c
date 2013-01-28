@@ -45,7 +45,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   PetscInt       N;
   IS             is;
   Vec            tmp;
-  Vec           *tmpv;
+  Vec            *tmpv;
   PetscBool      tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -57,7 +57,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
     tmpv = vout;
   } else {
     tmpvout = PETSC_TRUE;
-    tmpv = &tmp;
+    tmpv    = &tmp;
   }
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
@@ -118,7 +118,7 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
   PetscMPIInt    rank;
   IS             is;
   Vec            tmp;
-  Vec           *tmpv;
+  Vec            *tmpv;
   PetscBool      tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -130,7 +130,7 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
     tmpv = vout;
   } else {
     tmpvout = PETSC_TRUE;
-    tmpv = &tmp;
+    tmpv    = &tmp;
   }
 
   /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/

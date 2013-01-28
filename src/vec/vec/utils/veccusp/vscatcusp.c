@@ -72,17 +72,13 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
 
       /* sender indices */
       for (i=0; i<ns; i++) {
-        for (k=0; k<to->bs; k++) {
-          sindicesSends[i*to->bs+k] = tindicesSends[i]+k;
-        }
+        for (k=0; k<to->bs; k++) sindicesSends[i*to->bs+k] = tindicesSends[i]+k;
       }
       ierr = PetscFree(tindicesSends);CHKERRQ(ierr);
 
       /* receiver indices */
       for (i=0; i<nr; i++) {
-        for (k=0; k<from->bs; k++) {
-          sindicesRecvs[i*from->bs+k] = tindicesRecvs[i]+k;
-        }
+        for (k=0; k<from->bs; k++) sindicesRecvs[i*from->bs+k] = tindicesRecvs[i]+k;
       }
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 

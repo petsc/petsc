@@ -27,17 +27,15 @@ void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,P
   *ierr = ISLocalToGlobalMappingView(*mapping,v);
 }
 
-static PetscInt   *sprocs, *snumprocs, **sindices;
-static PetscBool  called;
+static PetscInt  *sprocs, *snumprocs, **sindices;
+static PetscBool called;
 void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
 {
   PetscInt i;
   if (called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
   *ierr        = ISLocalToGlobalMappingGetInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
   *maxnumprocs = 0;
-  for (i=0; i<*nprocs; i++) {
-    *maxnumprocs = PetscMax(*maxnumprocs,snumprocs[i]);
-  }
+  for (i=0; i<*nprocs; i++) *maxnumprocs = PetscMax(*maxnumprocs,snumprocs[i]);
   called = PETSC_TRUE;
 }
 
@@ -49,11 +47,9 @@ void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mappin
   *ierr = PetscMemcpy(procs,sprocs,*nprocs*sizeof(PetscInt)); if (*ierr) return;
   *ierr = PetscMemcpy(numprocs,snumprocs,*nprocs*sizeof(PetscInt)); if (*ierr) return;
   for (i=0; i<*nprocs; i++) {
-    for (j=0; j<numprocs[i]; j++) {
-      indices[i + (*nprocs)*j] = sindices[i][j];
-    }
+    for (j=0; j<numprocs[i]; j++) indices[i + (*nprocs)*j] = sindices[i][j];
   }
-  *ierr = ISLocalToGlobalMappingRestoreInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
+  *ierr  = ISLocalToGlobalMappingRestoreInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
   called = PETSC_FALSE;
 }
 

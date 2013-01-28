@@ -18,9 +18,7 @@ PETSC_EXTERN_C void PETSC_STDCALL vecnestgetsubvecs_(Vec *X,PetscInt *N,Vec *sx,
   if (N) *N = n;
   CHKFORTRANNULLOBJECT(sx);
   if (sx) {
-    for (i=0; i<n; i++) {
-      sx[i] = tsx[i];
-    }
+    for (i=0; i<n; i++) sx[i] = tsx[i];
   }
 }
 

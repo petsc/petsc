@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  N = size*n;
+  N    = size*n;
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
@@ -32,8 +32,8 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2);CHKERRQ(ierr);
 
   value = rank+1;
-  ierr = VecSet(x,value);CHKERRQ(ierr);
-  ierr = VecSet(y,zero);CHKERRQ(ierr);
+  ierr  = VecSet(x,value);CHKERRQ(ierr);
+  ierr  = VecSet(y,zero);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

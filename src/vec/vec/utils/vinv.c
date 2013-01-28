@@ -51,9 +51,7 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
-  for (i=0; i<n; i+=bs) {
-    x[i] = s;
-  }
+  for (i=0; i<n; i+=bs) x[i] = s;
   x -= start;
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -104,9 +102,7 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
-  for (i=0; i<n; i+=bs) {
-    x[i] *= scale;
-  }
+  for (i=0; i<n; i+=bs) x[i] *= scale;
   x -= start;
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -170,17 +166,13 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
-    for (i=0; i<n; i+=bs) {
-      sum += x[i]*(PetscConj(x[i]));
-    }
+    for (i=0; i<n; i+=bs) sum += x[i]*(PetscConj(x[i]));
     tnorm = PetscRealPart(sum);
     ierr  = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
     *nrm  = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
-    for (i=0; i<n; i+=bs) {
-      tnorm += PetscAbsScalar(x[i]);
-    }
+    for (i=0; i<n; i+=bs) tnorm += PetscAbsScalar(x[i]);
     ierr = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
@@ -253,9 +245,8 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   x += start;
 
   id = -1;
-  if (!n) {
-    max = PETSC_MIN_REAL;
-  } else {
+  if (!n) max = PETSC_MIN_REAL;
+  else {
     id  = 0;
     max = PetscRealPart(x[0]);
     for (i=bs; i<n; i+=bs) {
@@ -336,9 +327,8 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   x += start;
 
   id = -1;
-  if (!n) {
-    min = PETSC_MAX_REAL;
-  } else {
+  if (!n) min = PETSC_MAX_REAL;
+  else {
     id = 0;
     min = PetscRealPart(x[0]);
     for (i=bs; i<n; i+=bs) {
@@ -403,9 +393,7 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
   /* need to provide optimized code for each bs */
   for (i=0; i<n; i+=bs) {
-    for (j=0; j<bs; j++) {
-      x[i+j] *= scales[j];
-    }
+    for (j=0; j<bs; j++) x[i+j] *= scales[j];
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -467,32 +455,23 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     PetscScalar sum[128];
     for (j=0; j<bs; j++) sum[j] = 0.0;
     for (i=0; i<n; i+=bs) {
-      for (j=0; j<bs; j++) {
-        sum[j] += x[i+j]*(PetscConj(x[i+j]));
-      }
+      for (j=0; j<bs; j++) sum[j] += x[i+j]*(PetscConj(x[i+j]));
     }
-    for (j=0; j<bs; j++) {
-      tnorm[j]  = PetscRealPart(sum[j]);
-    }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
-    for (j=0; j<bs; j++) {
-      nrm[j] = PetscSqrtReal(nrm[j]);
-    }
+    for (j=0; j<bs; j++) tnorm[j]  = PetscRealPart(sum[j]);
+
+    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    for (j=0; j<bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
-    for (j=0; j<bs; j++) {
-      tnorm[j] = 0.0;
-    }
+    for (j=0; j<bs; j++) tnorm[j] = 0.0;
+
     for (i=0; i<n; i+=bs) {
-      for (j=0; j<bs; j++) {
-        tnorm[j] += PetscAbsScalar(x[i+j]);
-      }
+      for (j=0; j<bs; j++) tnorm[j] += PetscAbsScalar(x[i+j]);
     }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+
+    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
-    for (j=0; j<bs; j++) {
-      tnorm[j] = 0.0;
-    }
+    for (j=0; j<bs; j++) tnorm[j] = 0.0;
 
     for (i=0; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
@@ -501,7 +480,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
         if (tmp != tmp) {tnorm[j] = tmp; break;}
       }
     }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -558,20 +537,17 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
   if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
-    for (j=0; j<bs; j++) {
-      max[j] = PETSC_MIN_REAL;
-    }
+    for (j=0; j<bs; j++) max[j] = PETSC_MIN_REAL;
   } else {
-    for (j=0; j<bs; j++) {
-      max[j] = PetscRealPart(x[j]);
-    }
+    for (j=0; j<bs; j++) max[j] = PetscRealPart(x[j]);
+
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-        if ((tmp = PetscRealPart(x[i+j])) > max[j]) { max[j] = tmp;}
+        if ((tmp = PetscRealPart(x[i+j])) > max[j]) max[j] = tmp;
       }
     }
   }
-  ierr   = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -628,16 +604,13 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
   if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
-    for (j=0; j<bs; j++) {
-      min[j] = PETSC_MAX_REAL;
-    }
+    for (j=0; j<bs; j++) min[j] = PETSC_MAX_REAL;
   } else {
-    for (j=0; j<bs; j++) {
-      min[j] = PetscRealPart(x[j]);
-    }
+    for (j=0; j<bs; j++) min[j] = PetscRealPart(x[j]);
+
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-        if ((tmp = PetscRealPart(x[i+j])) < min[j]) { min[j] = tmp;}
+        if ((tmp = PetscRealPart(x[i+j])) < min[j]) min[j] = tmp;
       }
     }
   }
@@ -718,18 +691,14 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   if (addv == INSERT_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-        for (i=0; i<n; i++) {
-          y[j][i*bss[j] + k] = x[bs*i+jj+k];
-        }
+        for (i=0; i<n; i++) y[j][i*bss[j] + k] = x[bs*i+jj+k];
       }
       jj += bss[j];
     }
   } else if (addv == ADD_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-        for (i=0; i<n; i++) {
-          y[j][i*bss[j] + k] += x[bs*i+jj+k];
-        }
+        for (i=0; i<n; i++) y[j][i*bss[j] + k] += x[bs*i+jj+k];
       }
       jj += bss[j];
     }
@@ -737,9 +706,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   } else if (addv == MAX_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-        for (i=0; i<n; i++) {
-          y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
-        }
+        for (i=0; i<n; i++) y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
       }
       jj += bss[j];
     }
@@ -821,18 +788,14 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   if (addv == INSERT_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-        for (i=0; i<n; i++) {
-          x[bs*i+jj+k] = y[j][i*bss[j] + k];
-        }
+        for (i=0; i<n; i++) x[bs*i+jj+k] = y[j][i*bss[j] + k];
       }
       jj += bss[j];
     }
   } else if (addv == ADD_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-        for (i=0; i<n; i++) {
-          x[bs*i+jj+k] += y[j][i*bss[j] + k];
-        }
+        for (i=0; i<n; i++) x[bs*i+jj+k] += y[j][i*bss[j] + k];
       }
       jj += bss[j];
     }
@@ -840,9 +803,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   } else if (addv == MAX_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-        for (i=0; i<n; i++) {
-          x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
-        }
+        for (i=0; i<n; i++) x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
       }
       jj += bss[j];
     }
@@ -971,18 +932,12 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
   n  =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] = x[bs*i];
-    }
+    for (i=0; i<n; i++) y[i] = x[bs*i];
   } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] += x[bs*i];
-    }
+    for (i=0; i<n; i++) y[i] += x[bs*i];
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] = PetscMax(y[i],x[bs*i]);
-    }
+    for (i=0; i<n; i++) y[i] = PetscMax(y[i],x[bs*i]);
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
@@ -1011,18 +966,12 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
   n  =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) {
-      x[bs*i] = y[i];
-    }
+    for (i=0; i<n; i++) x[bs*i] = y[i];
   } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) {
-      x[bs*i] += y[i];
-    }
+    for (i=0; i<n; i++) x[bs*i] += y[i];
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) {
-      x[bs*i] = PetscMax(y[i],x[bs*i]);
-    }
+    for (i=0; i<n; i++) x[bs*i] = PetscMax(y[i],x[bs*i]);
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
@@ -1081,9 +1030,7 @@ PetscErrorCode  VecExp(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for (i = 0; i < n; i++) {
-      x[i] = PetscExpScalar(x[i]);
-    }
+    for (i = 0; i < n; i++) x[i] = PetscExpScalar(x[i]);
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1121,9 +1068,7 @@ PetscErrorCode  VecLog(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for (i = 0; i < n; i++) {
-      x[i] = PetscLogScalar(x[i]);
-    }
+    for (i = 0; i < n; i++) x[i] = PetscLogScalar(x[i]);
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1163,9 +1108,7 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for (i = 0; i < n; i++) {
-      x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
-    }
+    for (i = 0; i < n; i++) x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1184,7 +1127,7 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
   Output Parameter:
 + dp - s'conj(t)
-- nm - t'conj(t) 
+- nm - t'conj(t)
 
   Level: advanced
 
@@ -1227,6 +1170,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
     }
     work[0] = dpx;
     work[1] = nmx;
+
     ierr = MPI_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
     *dp  = sum[0];
     *nm  = PetscRealPart(sum[1]);
@@ -1269,9 +1213,7 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   PetscValidScalarPointer(sum,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    lsum += x[i];
-  }
+  for (i=0; i<n; i++) lsum += x[i];
   ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)v)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1311,9 +1253,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   } else {
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      x[i] += shift;
-    }
+    for (i=0; i<n; i++) x[i] += shift;
     ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1347,9 +1287,7 @@ PetscErrorCode  VecAbs(Vec v)
   } else {
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      x[i] = PetscAbsScalar(x[i]);
-    }
+    for (i=0; i<n; i++) x[i] = PetscAbsScalar(x[i]);
     ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1432,19 +1370,16 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
   PetscValidHeaderSpecific(vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(vec2,VEC_CLASSID,2);
   PetscValidPointer(flg,3);
-  if (vec1 == vec2) {
-    *flg = PETSC_TRUE;
-  } else {
+  if (vec1 == vec2) *flg = PETSC_TRUE;
+  else {
     ierr = VecGetSize(vec1,&N1);CHKERRQ(ierr);
     ierr = VecGetSize(vec2,&N2);CHKERRQ(ierr);
-    if (N1 != N2) {
-      flg1 = PETSC_FALSE;
-    } else {
+    if (N1 != N2) flg1 = PETSC_FALSE;
+    else {
       ierr = VecGetLocalSize(vec1,&n1);CHKERRQ(ierr);
       ierr = VecGetLocalSize(vec2,&n2);CHKERRQ(ierr);
-      if (n1 != n2) {
-        flg1 = PETSC_FALSE;
-      } else {
+      if (n1 != n2) flg1 = PETSC_FALSE;
+      else {
         ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr);
         ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr);
         ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);

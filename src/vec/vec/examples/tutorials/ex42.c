@@ -12,10 +12,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
-  for (i=0;i<1000;i++) {
+  for (i=0; i<1000; i++) {
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
     ierr = VecLoad(b,fd);CHKERRQ(ierr);
     ierr = VecView(b,fd);CHKERRQ(ierr);

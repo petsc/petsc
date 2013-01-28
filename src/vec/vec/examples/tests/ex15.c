@@ -25,9 +25,10 @@ int main(int argc,char **argv)
   ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
-  indices[0] = 0; indices[1] = 2;
-  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+  indices[0] = 0;
+  indices[1] = 2;
 
+  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 

@@ -5,7 +5,7 @@
 #include <petsc-private/isimpl.h>      /*I "petscis.h" I*/
 
 /* Logging support */
-PetscClassId  IS_CLASSID;
+PetscClassId IS_CLASSID;
 
 #undef __FUNCT__
 #define __FUNCT__ "ISIdentity"
@@ -100,7 +100,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   if (is->ops->contiguous) {
     ierr = (*is->ops->contiguous)(is,gstart,gend,start,contig);CHKERRQ(ierr);
   } else {
-    *start = -1;
+    *start  = -1;
     *contig = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -442,7 +442,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
   ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
-  for (i=1;i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
+  for (i=1; i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
   ierr = PetscMalloc(N*sizeof(PetscInt),&(is->total));CHKERRQ(ierr);
@@ -491,8 +491,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = (*is->ops->getindices)(is,indices);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     if (!is->total) {
       ierr = ISGatherTotal_Private(is);CHKERRQ(ierr);
     }
@@ -521,8 +520,8 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt size;
-  
+  PetscMPIInt    size;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
@@ -563,16 +562,14 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt size;
-  PetscInt n, N;
-  
+  PetscMPIInt    size;
+  PetscInt       n, N;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
-  if (size == 1) {
-      *indices = PETSC_NULL;
-  }
+  if (size == 1) *indices = PETSC_NULL;
   else {
     if (!is->total) {
       ierr = ISGatherTotal_Private(is);CHKERRQ(ierr);
@@ -649,8 +646,7 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
   if (is->complement) {
     *complement = is->complement;
     ierr = PetscObjectReference((PetscObject)(is->complement));CHKERRQ(ierr);
-  }
-  else {
+  } else {
     PetscInt       N, n;
     const PetscInt *idx;
     ierr = ISGetSize(is, &N);CHKERRQ(ierr);
@@ -917,14 +913,14 @@ PetscErrorCode  ISCopy(IS is,IS isy)
 PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
   PetscErrorCode ierr;
-  PetscMPIInt match;
+  PetscMPIInt    match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newis,3);
   ierr = MPI_Comm_compare(((PetscObject)is)->comm,comm,&match);CHKERRQ(ierr);
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
-    ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
+    ierr   = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
     *newis = is;
   } else {
     ierr = (*is->ops->oncomm)(is,comm,mode,newis);CHKERRQ(ierr);
@@ -998,7 +994,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
   PetscFunctionBegin;
   ierr = ISGetSize(is,&len);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ptr);CHKERRQ(ierr);
-  for (i=0;i<len;i++) idx[i] = ptr[i];
+  for (i=0; i<len; i++) idx[i] = ptr[i];
   ierr = ISRestoreIndices(is,&ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

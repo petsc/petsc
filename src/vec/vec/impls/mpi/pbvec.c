@@ -78,6 +78,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
+
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
       ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
@@ -85,11 +86,12 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   }
 
   /* New vector should inherit stashing property of parent */
-  (*v)->stash.donotstash = win->stash.donotstash;
+  (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
+
   (*v)->map->bs   = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
@@ -183,6 +185,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   v->petscnative = PETSC_TRUE;
 
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
+
   s->array           = (PetscScalar*)array;
   s->array_allocated = 0;
   if (alloc && !array) {
@@ -519,12 +522,10 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     /* set local to global mapping for ghosted vector */
     ierr = PetscMalloc((n+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      indices[i] = rstart + i;
-    }
-    for (i=0; i<nghost; i++) {
-      indices[n+i] = ghosts[i];
-    }
+
+    for (i=0; i<n; i++)      indices[i]   = rstart + i;
+    for (i=0; i<nghost; i++) indices[n+i] = ghosts[i];
+
     ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(vv,ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
@@ -616,12 +617,10 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   nb   = n/bs;
   ierr = PetscMalloc((nb+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(*vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  for (i=0; i<nb; i++) {
-    indices[i] = rstart + i*bs;
-  }
-  for (i=0; i<nghost; i++) {
-    indices[nb+i] = ghosts[i];
-  }
+
+  for (i=0; i<nb; i++)      indices[i]    = rstart + i*bs;
+  for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];
+
   ierr = ISLocalToGlobalMappingCreate(comm,nb+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);

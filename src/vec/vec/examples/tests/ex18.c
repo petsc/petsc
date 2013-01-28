@@ -24,9 +24,9 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    v = ((PetscReal)i) + 1.0/(((PetscReal)i) + .35);
+    v    = ((PetscReal)i) + 1.0/(((PetscReal)i) + .35);
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v += 1.375547826473644376;
+    v   += 1.375547826473644376;
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);

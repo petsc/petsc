@@ -11,12 +11,12 @@ static char help[] = "Tests Mathematica I/O of vectors and illustrates the use o
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-  PetscViewer  viewer;
-  Vec          u;
-  PetscScalar  v;
-  int          VECTOR_GENERATE, VECTOR_READ;
-  int          i, m = 10, rank, size, low, high, ldim, iglobal;
-  int          ierr;
+  PetscViewer viewer;
+  Vec         u;
+  PetscScalar v;
+  int         VECTOR_GENERATE, VECTOR_READ;
+  int         i, m = 10, rank, size, low, high, ldim, iglobal;
+  int         ierr;
 
   PetscInitialize(&argc, &argv, PETSC_NULL, help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
   for (i = 0; i < ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar) (i + 100*rank);
-    ierr = VecSetValues(u, 1, &iglobal, &v, INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = VecSetValues(u, 1, &iglobal, &v, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);

@@ -123,7 +123,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       */
       static PetscInt stateId     = -1;
       int             outputState = 0;
-      int             doOutput = 0;
+      int             doOutput    = 0;
       PetscBool       hasState;
       PetscInt        bs, b;
 
@@ -131,9 +131,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
       }
       ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
-      if (!hasState) {
-        outputState = 0;
-      }
+      if (!hasState) outputState = 0;
+
       ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
@@ -141,34 +140,28 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       if (format == PETSC_VIEWER_ASCII_VTK) {
         if (outputState == 0) {
           outputState = 1;
-          doOutput = 1;
-        } else if (outputState == 1) {
-          doOutput = 0;
-        } else if (outputState == 2) {
+          doOutput    = 1;
+        else if (outputState == 1) doOutput = 0;
+        else if (outputState == 2) {
           outputState = 3;
-          doOutput = 1;
-        } else if (outputState == 3) {
-          doOutput = 0;
-        } else if (outputState == 4) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
-        }
+          doOutput    = 1;
+        } else if (outputState == 3) doOutput = 0;
+        else if (outputState == 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+
         if (doOutput) {
           ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
         }
       } else {
         if (outputState == 0) {
           outputState = 2;
-          doOutput = 1;
+          doOutput    = 1;
         } else if (outputState == 1) {
           outputState = 4;
-          doOutput = 1;
-        } else if (outputState == 2) {
-          doOutput = 0;
-        } else if (outputState == 3) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-        } else if (outputState == 4) {
-          doOutput = 0;
-        }
+          doOutput    = 1;
+        } else if (outputState == 2) doOutput = 0;
+        else if (outputState == 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        else if (outputState == 4) doOutput = 0;
+
         if (doOutput) {
           ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
         }
@@ -214,9 +207,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
-      }
+      if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+
       for (i=0; i<n/bs; i++) {
         for (b=0; b<bs; b++) {
           if (b > 0) {
@@ -251,9 +243,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
-      }
+      if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
+
       ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
       for (i=0; i<n/bs; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
@@ -393,7 +384,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
         ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
         ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);
-        n = (PetscInt)mesglen;
+        n    = (PetscInt)mesglen;
         ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
@@ -473,21 +464,19 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   if (!rank) {
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
     ierr = PetscMalloc(2*(N+1)*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-    for (i=0; i<N; i++) {xx[i] = (PetscReal) i;}
+    for (i=0; i<N; i++) xx[i] = (PetscReal) i;
     yy   = xx + N;
     ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
-    }
+    for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];
+    
 #if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
 #else
     {
       PetscReal *xr;
       ierr = PetscMalloc((xin->map->n+1)*sizeof(PetscReal),&xr);CHKERRQ(ierr);
-      for (i=0; i<xin->map->n; i++) {
-        xr[i] = PetscRealPart(xarray[i]);
-      }
+      for (i=0; i<xin->map->n; i++) xr[i] = PetscRealPart(xarray[i]);
+
       ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
@@ -502,9 +491,8 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
     {
       PetscReal *xr;
       ierr = PetscMalloc((xin->map->n+1)*sizeof(PetscReal),&xr);CHKERRQ(ierr);
-      for (i=0; i<xin->map->n; i++) {
-        xr[i] = PetscRealPart(xarray[i]);
-      }
+      for (i=0; i<xin->map->n; i++) xr[i] = PetscRealPart(xarray[i]);
+
       ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
@@ -611,9 +599,8 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   if (!rank) {
     ierr = PetscMalloc(N*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscMPIInt),&lens);CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
-    }
+    for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];
+
     ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
 
@@ -676,6 +663,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     ++dim;
   }
   ierr = PetscHDF5IntCast(xin->map->N/bs,dims + dim);CHKERRQ(ierr);
+
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
@@ -964,9 +952,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   if (addv == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if ((row = bs*ix[i]) >= start && row < end) {
-        for (j=0; j<bs; j++) {
-          xx[row-start+j] = y[j];
-        }
+        for (j=0; j<bs; j++) xx[row-start+j] = y[j];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -979,9 +965,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   } else {
     for (i=0; i<ni; i++) {
       if ((row = bs*ix[i]) >= start && row < end) {
-        for (j=0; j<bs; j++) {
-          xx[row-start+j] += y[j];
-        }
+        for (j=0; j<bs; j++) xx[row-start+j] += y[j];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -1011,9 +995,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   MPI_Comm       comm = ((PetscObject)xin)->comm;
 
   PetscFunctionBegin;
-  if (xin->stash.donotstash) {
-    PetscFunctionReturn(0);
-  }
+  if (xin->stash.donotstash) PetscFunctionReturn(0);
 
   ierr = MPI_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
@@ -1023,11 +1005,10 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
   if (!xin->bstash.bowners && xin->map->bs != -1) {
     ierr = PetscMalloc((size+1)*sizeof(PetscInt),&bowners);CHKERRQ(ierr);
-    for (i=0; i<size+1; i++) { bowners[i] = owners[i]/bs;}
+    for (i=0; i<size+1; i++) bowners[i] = owners[i]/bs;
     xin->bstash.bowners = bowners;
-  } else {
-    bowners = xin->bstash.bowners;
-  }
+  } else bowners = xin->bstash.bowners;
+
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
@@ -1057,9 +1038,9 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
       ierr = VecStashScatterGetMesg_Private(&vec->stash,&n,&row,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;
       if (vec->stash.insertmode == ADD_VALUES) {
-        for (i=0; i<n; i++) { xarray[row[i] - base] += val[i]; }
+        for (i=0; i<n; i++) xarray[row[i] - base] += val[i];
       } else if (vec->stash.insertmode == INSERT_VALUES) {
-        for (i=0; i<n; i++) { xarray[row[i] - base] = val[i]; }
+        for (i=0; i<n; i++) xarray[row[i] - base] = val[i];
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
     }
     ierr = VecStashScatterEnd_Private(&vec->stash);CHKERRQ(ierr);
@@ -1072,9 +1053,9 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
         array = xarray+row[i]*bs-base;
         vv    = val+i*bs;
         if (vec->stash.insertmode == ADD_VALUES) {
-          for (j=0; j<bs; j++) { array[j] += vv[j];}
+          for (j=0; j<bs; j++) array[j] += vv[j];
         } else if (vec->stash.insertmode == INSERT_VALUES) {
-          for (j=0; j<bs; j++) { array[j] = vv[j]; }
+          for (j=0; j<bs; j++) array[j] = vv[j];
         } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
       }
     }

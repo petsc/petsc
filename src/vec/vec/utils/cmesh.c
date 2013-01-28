@@ -30,17 +30,12 @@ PetscErrorCode  VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
 
-  if (PetscAbsReal(vmax - vmin) < 1.e-50) {
-     scale = 1.0;
-  } else {
-    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(vmax - vmin);
-  }
+  if (PetscAbsReal(vmax - vmin) < 1.e-50) scale = 1.0;
+  else scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(vmax - vmin);
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    values[i] = (PetscReal)PETSC_DRAW_BASIC_COLORS + scale*(values[i] - vmin);
-  }
+  for (i=0; i<n; i++) values[i] = (PetscReal)PETSC_DRAW_BASIC_COLORS + scale*(values[i] - vmin);
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

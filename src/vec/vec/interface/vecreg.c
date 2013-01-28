@@ -1,8 +1,8 @@
 
 #include <petsc-private/vecimpl.h>    /*I "petscvec.h"  I*/
 
-PetscFunctionList VecList                       = PETSC_NULL;
-PetscBool         VecRegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList VecList              = PETSC_NULL;
+PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetType"
@@ -99,7 +99,7 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 @*/
 PetscErrorCode  VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
 {
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

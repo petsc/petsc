@@ -21,7 +21,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  PetscInt     len;
+  PetscInt    len;
   if (!ptr) {
     *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
     return;
@@ -41,7 +41,7 @@ void PETSC_STDCALL vecrestorearrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_
 void PETSC_STDCALL vecgetarrayreadf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
-  PetscInt     len;
+  PetscInt          len;
   if (!ptr) {
     *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
     return;
@@ -66,9 +66,7 @@ void PETSC_STDCALL vecduplicatevecsf90_(Vec *v,int *m,F90Array1d *ptr,int *__ier
   *__ierr = VecDuplicateVecs(*v,*m,&lV); if (*__ierr) return;
   *__ierr = PetscMalloc((*m)*sizeof(PetscFortranAddr),&newvint);  if (*__ierr) return;
 
-  for (i=0; i<*m; i++) {
-    newvint[i] = (PetscFortranAddr)lV[i];
-  }
+  for (i=0; i<*m; i++) newvint[i] = (PetscFortranAddr)lV[i];
   *__ierr = PetscFree(lV); if (*__ierr) return;
   *__ierr = F90Array1dCreate(newvint,PETSC_FORTRANADDR,1,*m,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }

@@ -117,13 +117,11 @@ PETSC_EXTERN_C void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPI
   }
   count = count/2;
   for (i=0; i<count; i++) {
-    if (((int)PetscRealPart(xin[count+i])) == REDUCE_SUM) { /* second half of xin[] is flags for reduction type */
-      xout[i] += xin[i];
-    } else if ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_MAX) {
-      xout[i] = PetscMax(*(PetscReal *)(xout+i),*(PetscReal *)(xin+i));
-    } else if ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_MIN) {
-      xout[i] = PetscMin(*(PetscReal *)(xout+i),*(PetscReal *)(xin+i));
-    } else {
+     /* second half of xin[] is flags for reduction type */
+    if      ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_SUM) xout[i] += xin[i];
+    else if ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_MAX) xout[i] = PetscMax(*(PetscReal*)(xout+i),*(PetscReal*)(xin+i));
+    else if ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_MIN) xout[i] = PetscMin(*(PetscReal*)(xout+i),*(PetscReal*)(xin+i));
+    else {
       (*PetscErrorPrintf)("Reduction type input is not REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN");
       MPI_Abort(MPI_COMM_SELF,1);
     }
@@ -170,22 +168,18 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
     } else {
       /* determine if all reductions are sum, max, or min */
       for (i=0; i<numops; i++) {
-        if (reducetype[i] == REDUCE_MAX) {
-          max_flg = 1;
-        } else if (reducetype[i] == REDUCE_SUM) {
-          sum_flg = 1;
-        } else if (reducetype[i] == REDUCE_MIN) {
-          min_flg = 1;
-        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+        if      (reducetype[i] == REDUCE_MAX) max_flg = 1;
+        else if (reducetype[i] == REDUCE_SUM) sum_flg = 1;
+        else if (reducetype[i] == REDUCE_MIN) min_flg = 1;
+        else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       }
       if (sum_flg + max_flg + min_flg > 1) {
         /*
          after all the entires in lvalues we store the reducetype flags to indicate
          to the reduction operations what are sums and what are max
          */
-        for (i=0; i<numops; i++) {
-          lvalues[numops+i] = reducetype[i];
-        }
+        for (i=0; i<numops; i++) lvalues[numops+i] = reducetype[i];
+
         ierr = MPIPetsc_Iallreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm,&sr->request);CHKERRQ(ierr);
       } else if (max_flg) {   /* Compute max of real and imag parts separately, presumably only the real part is used */
         ierr = MPIPetsc_Iallreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm,&sr->request);CHKERRQ(ierr);
@@ -252,22 +246,17 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   } else {
     /* determine if all reductions are sum, max, or min */
     for (i=0; i<numops; i++) {
-      if (reducetype[i] == REDUCE_MAX) {
-        max_flg = 1;
-      } else if (reducetype[i] == REDUCE_SUM) {
-        sum_flg = 1;
-      } else if (reducetype[i] == REDUCE_MIN) {
-        min_flg = 1;
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+      if      (reducetype[i] == REDUCE_MAX) max_flg = 1;
+      else if (reducetype[i] == REDUCE_SUM) sum_flg = 1;
+      else if (reducetype[i] == REDUCE_MIN) min_flg = 1;
+      else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
     }
     if (sum_flg + max_flg + min_flg > 1) {
       /*
          after all the entires in lvalues we store the reducetype flags to indicate
          to the reduction operations what are sums and what are max
       */
-      for (i=0; i<numops; i++) {
-        lvalues[numops+i] = reducetype[i];
-      }
+      for (i=0; i<numops; i++) lvalues[numops+i] = reducetype[i];
       ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_SCALAR,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
     } else if (max_flg) {     /* Compute max of real and imag parts separately, presumably only the real part is used */
       ierr = MPI_Allreduce((PetscReal*)lvalues,(PetscReal*)gvalues,cmul*numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
@@ -625,9 +614,8 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   if (sr->reducetype[sr->numopsend] != REDUCE_MAX && ntype == NORM_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
 
-  if (ntype == NORM_2) {
-    result[0] = PetscSqrtReal(result[0]);
-  } else if (ntype == NORM_1_AND_2) {
+  if (ntype == NORM_2) result[0] = PetscSqrtReal(result[0]);
+  else if (ntype == NORM_1_AND_2) {
     result[1] = PetscRealPart(sr->gvalues[sr->numopsend++]);
     result[1] = PetscSqrtReal(result[1]);
   }
@@ -734,9 +722,7 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
   if (sr->numopsend >= sr->numopsbegin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
   if (x && (void*) x != sr->invecs[sr->numopsend]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   if (sr->reducetype[sr->numopsend] != REDUCE_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
-  for (i=0;i<nv;i++) {
-    result[i] = sr->gvalues[sr->numopsend++];
-  }
+  for (i=0;i<nv;i++) result[i] = sr->gvalues[sr->numopsend++];
 
   /*
      We are finished getting all the results so reset to no outstanding requests
@@ -780,7 +766,7 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state != STATE_BEGIN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
-  for (i=0;i<nv;i++) {
+  for (i=0; i<nv; i++) {
     if (sr->numopsbegin+i >= sr->maxops) {
       ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
     }

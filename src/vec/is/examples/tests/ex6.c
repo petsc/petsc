@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  n = 3*size;                   /* Number of local indices, same on each process. */
+  n      = 3*size;              /* Number of local indices, same on each process. */
   rstart = 3*(size+2)*rank;     /* start of local range */
   rend   = 3*(size+2)*(rank+1); /* end of local range */
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);

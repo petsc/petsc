@@ -44,6 +44,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_PetscLayout,map);CHKERRQ(ierr);
+
   (*map)->comm   = comm;
   (*map)->bs     = -1;
   (*map)->n      = -1;
@@ -150,9 +151,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
   map->range[0] = 0;
-  for (p = 2; p <= size; p++) {
-    map->range[p] += map->range[p-1];
-  }
+  for (p = 2; p <= size; p++) map->range[p] += map->range[p-1];
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
@@ -197,6 +196,7 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
+
   (*out)->refcnt = 0;
   PetscFunctionReturn(0);
 }
@@ -264,6 +264,7 @@ PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlo
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&in->mapping);CHKERRQ(ierr);
+
   in->mapping = ltog;
   PetscFunctionReturn(0);
 }
@@ -297,6 +298,7 @@ PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout in,ISLocal
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&in->bmapping);CHKERRQ(ierr);
+
   in->bmapping = ltog;
   PetscFunctionReturn(0);
 }

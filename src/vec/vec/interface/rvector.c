@@ -131,7 +131,7 @@ $    work load inbalance that causes certain processes to arrive much earlier th
      the space R^{2n} (that is a vector of 2n components with the real or imaginary part of the complex numbers for components)
 
    Developer Note: This is not currently optimized to compute only the real part of the dot product.
- 
+
    Level: intermediate
 
    Concepts: inner product
@@ -470,7 +470,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
    Concepts: scaling^vector
 
 @*/
-PetscErrorCode  VecScale (Vec x, PetscScalar alpha)
+PetscErrorCode  VecScale(Vec x, PetscScalar alpha)
 {
   PetscReal      norms[4] = {0.0,0.0,0.0, 0.0};
   PetscBool      flgs[4];
@@ -548,10 +548,10 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
 
   /*  norms can be simply set */
-  val = PetscAbsScalar(alpha);
+  val  = PetscAbsScalar(alpha);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
-  val = PetscSqrtReal((double)x->map->N) * val;
+  val  = PetscSqrtReal((double)x->map->N) * val;
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1233,9 +1233,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
   PetscValidType(*x,4);
   PetscCheckSameTypeAndComm(y,1,*x,4);
   PetscCheckSameSizeVec(y,*x);
-  for (i=0; i<nv; i++) {
-    PetscValidLogicalCollectiveScalar(y,alpha[i],3);
-  }
+  for (i=0; i<nv; i++) PetscValidLogicalCollectiveScalar(y,alpha[i],3);
 
   ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->maxpy)(y,nv,alpha,x);CHKERRQ(ierr);
@@ -1281,13 +1279,13 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
   } else {                      /* Default implementation currently does no caching */
-    PetscInt gstart,gend,start;
+    PetscInt  gstart,gend,start;
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
-      PetscInt n,N;
+      PetscInt    n,N;
       PetscScalar *x;
       PetscMPIInt size;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
@@ -1318,7 +1316,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   if (VecGetSubVectorSavedStateId < 0) {ierr = PetscObjectComposedDataRegister(&VecGetSubVectorSavedStateId);CHKERRQ(ierr);}
   ierr = PetscObjectStateQuery((PetscObject)Z,&state);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,state);CHKERRQ(ierr);
-  *Y = Z;
+  *Y   = Z;
   PetscFunctionReturn(0);
 }
 
@@ -1350,13 +1348,13 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
-    PetscInt savedstate=0,newstate;
+    PetscInt  savedstate=0,newstate;
     PetscBool valid;
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
     ierr = PetscObjectStateQuery((PetscObject)*Y,&newstate);CHKERRQ(ierr);
     if (valid && savedstate < newstate) {
       /* We might need to copy entries back, first check whether we have no-copy view */
-      PetscInt gstart,gend,start;
+      PetscInt  gstart,gend,start;
       PetscBool contiguous,gcontiguous;
       ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
       ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
@@ -1494,9 +1492,9 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscValidHeaderSpecific(*x,VEC_CLASSID,1);
   PetscValidPointer(a,3);
 
-  for (i=0;i<n;++i) {
+  for (i=0; i<n; ++i) {
     ierr = VecRestoreArray(x[i],&q[i]);CHKERRQ(ierr);
- }
+  }
   ierr = PetscFree(q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1619,7 +1617,7 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
   PetscValidType(vec,1);
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
-  } else  SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot replace array in this type of vector");
+  } else SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot replace array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1847,8 +1845,8 @@ PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr = PetscFree(dummy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscFree(dummy);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1991,13 +1989,12 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);
-  b    = (PetscScalar **)((*a) + m);
-  for (i=0; i<m; i++)   (*a)[i] = b + i*n - nstart;
-  for (i=0; i<m; i++) {
-    for (j=0; j<n; j++) {
+  b    = (PetscScalar**)((*a) + m);
+  for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
       b[i*n+j] = aa + i*n*p + j*p - pstart;
-    }
-  }
+
   *a -= mstart;
   PetscFunctionReturn(0);
 }
@@ -2043,8 +2040,8 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr = PetscFree(dummy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscFree(dummy);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2102,21 +2099,16 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a);CHKERRQ(ierr);
-  b    = (PetscScalar ***)((*a) + m);
-  c    = (PetscScalar **)(b + m*n);
-  for (i=0; i<m; i++)   (*a)[i] = b + i*n - nstart;
-  for (i=0; i<m; i++) {
-    for (j=0; j<n; j++) {
+  b    = (PetscScalar***)((*a) + m);
+  c    = (PetscScalar**)(b + m*n);
+  for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
       b[i*n+j] = c + i*n*p + j*p - pstart;
-    }
-  }
-  for (i=0; i<m; i++) {
-    for (j=0; j<n; j++) {
-      for (k=0; k<p; k++) {
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
+      for (k=0; k<p; k++)
         c[i*n*p+j*p+k] = aa + i*n*p*q + j*p*q + k*q - qstart;
-      }
-    }
-  }
   *a -= mstart;
   PetscFunctionReturn(0);
 }
@@ -2164,8 +2156,8 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
-  ierr = PetscFree(dummy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscFree(dummy);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

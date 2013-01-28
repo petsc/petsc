@@ -74,6 +74,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
         if (s->array==0) {
           // In this branch, GPUvector owns the ptr and manages the memory
           ierr = ((Vec_CUSP*)v->spptr)->GPUvector->allocateHostMemory();CHKERRCUSP(ierr);
+
           s->array           = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
           s->array_allocated = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
         } else {
@@ -87,6 +88,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 
           ierr = PetscMemcpy(temp,s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscFree(s->array);CHKERRQ(ierr);
+
           s->array           = temp;
           s->array_allocated = temp;
         }
@@ -1297,7 +1299,7 @@ PetscErrorCode VecSet_SeqCUSP(Vec xin,PetscScalar alpha)
   try {
     cusp::blas::fill(*xarray,alpha);
   } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = WaitForGPU();CHKERRCUSP(ierr);
   ierr = VecCUSPRestoreArrayWrite(xin,&xarray);
@@ -1626,7 +1628,7 @@ PetscErrorCode VecPointwiseMult_SeqCUSP(Vec win,Vec xin,Vec yin)
   try {
     cusp::blas::xmy(*xarray,*yarray,*warray);
   } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
@@ -1915,9 +1917,10 @@ PetscErrorCode  VecCreate_SeqCUSP(Vec V)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
-  if  (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUSP on more than one process");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUSP on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUSP);CHKERRQ(ierr);
+
   V->ops->dot             = VecDot_SeqCUSP;
   V->ops->norm            = VecNorm_SeqCUSP;
   V->ops->tdot            = VecTDot_SeqCUSP;

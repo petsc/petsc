@@ -54,9 +54,8 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
       imin = PetscMin(imin,i1[i]);
       imax = PetscMax(imax,i1[i]);
     }
-  } else {
-    imin = imax = 0;
-  }
+  } else imin = imax = 0;
+
   ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for (i=0; i<n1; i++) {
@@ -150,18 +149,28 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
   do {
     if (p1==n1) { /* cleanup for is2 */ n3 += n2-p2; break;
     } else {
-      while (p2<n2 && i2[p2]<i1[p1]) {n3++; p2++;}
-      if (p2==n2) { /* cleanup for is1 */ n3 += n1-p1; break;
+      while (p2<n2 && i2[p2]<i1[p1]) {
+        n3++; p2++;
+      }
+      if (p2==n2) {
+        /* cleanup for is1 */
+        n3 += n1-p1; break;
       } else {
-        if (i2[p2]==i1[p1]) {n3++; p1++; p2++;}
+        if (i2[p2]==i1[p1]) { n3++; p1++; p2++; }
       }
     }
-    if (p2==n2) { /* cleanup for is1 */ n3 += n1-p1; break;
+    if (p2==n2) {
+      /* cleanup for is1 */
+      n3 += n1-p1; break;
     } else {
-      while (p1<n1 && i1[p1]<i2[p2]) {n3++; p1++;}
-      if (p1==n1) { /* clean up for is2 */ n3 += n2-p2; break;
+      while (p1<n1 && i1[p1]<i2[p2]) {
+        n3++; p1++;
+      }
+      if (p1==n1) {
+        /* clean up for is2 */
+        n3 += n2-p2; break;
       } else {
-        if (i1[p1]==i2[p2]) {n3++; p1++; p2++;}
+        if (i1[p1]==i2[p2]) { n3++; p1++; p2++; }
       }
     }
   } while (p1<n1 || p2<n2);
@@ -185,7 +194,7 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
         while (p1<n1) iout[n3++] = i1[p1++];
         break;
       } else {
-        if (i2[p2]==i1[p1]) {iout[n3++] = i1[p1++]; p2++;}
+        if (i2[p2]==i1[p1]) { iout[n3++] = i1[p1++]; p2++; }
       }
     }
     if (p2==n2) { /* cleanup for is1 */
@@ -197,7 +206,7 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
         while (p2<n2) iout[n3++] = i2[p2++];
         break;
       } else {
-        if (i1[p1]==i2[p2]) {iout[n3++] = i1[p1++]; p2++;}
+        if (i1[p1]==i2[p2]) { iout[n3++] = i1[p1++]; p2++; }
       }
     }
   } while (p1<n1 || p2<n2);
@@ -270,26 +279,21 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
       imin = PetscMin(imin,i2[i]);
       imax = PetscMax(imax,i2[i]);
     }
-  } else {
-    imin = imax = 0;
-  }
+  } else imin = imax = 0;
+
   ierr = PetscMalloc((n1+n2)*sizeof(PetscInt),&iout);CHKERRQ(ierr);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for (i=0; i<n1; i++) {
     if (i1[i] < 0) continue;
-    if (!PetscBTLookupSet(mask,i1[i] - imin)) {
-      iout[nout++] = i1[i];
-    }
+    if (!PetscBTLookupSet(mask,i1[i] - imin)) iout[nout++] = i1[i];
   }
   ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Put the values from is2 */
   for (i=0; i<n2; i++) {
     if (i2[i] < 0) continue;
-    if (!PetscBTLookupSet(mask,i2[i] - imin)) {
-      iout[nout++] = i2[i];
-    }
+    if (!PetscBTLookupSet(mask,i2[i] - imin)) iout[nout++] = i2[i];
   }
   ierr = ISRestoreIndices(is2,&i2);CHKERRQ(ierr);
 
@@ -339,9 +343,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   PetscFunctionBegin;
   PetscValidPointer(islist,2);
 #if defined(PETSC_USE_DEBUG)
-  for (i = 0; i < len; ++i) {
-    PetscValidHeaderSpecific(islist[i], IS_CLASSID, 1);
-  }
+  for (i = 0; i < len; ++i) PetscValidHeaderSpecific(islist[i], IS_CLASSID, 1);
 #endif
   PetscValidPointer(isout, 4);
   if (!len) {
@@ -352,7 +354,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   N = 0;
   for (i = 0; i < len; ++i) {
     ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
-    N += n;
+    N   += n;
   }
   ierr = PetscMalloc(sizeof(PetscInt)*N, &idx);CHKERRQ(ierr);
   N = 0;
@@ -360,7 +362,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
     ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
     ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
-    N += n;
+    N   += n;
   }
   ierr = ISCreateGeneral(comm, N, idx, PETSC_OWN_POINTER, isout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -405,20 +407,20 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 PetscErrorCode ISListToMap(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
 {
   PetscErrorCode ierr;
-  PetscInt ncolors, *colors,i, leni,len,*xinds, *yinds,k,j;
+  PetscInt       ncolors, *colors,i, leni,len,*xinds, *yinds,k,j;
   const PetscInt *indsi;
-  
+
   PetscFunctionBegin;
   ierr = PetscMalloc(listlen*sizeof(PetscInt), &colors);CHKERRQ(ierr);
   ierr = PetscObjectsGetGlobalNumbering(comm, listlen, (PetscObject*)islist,&ncolors, colors);CHKERRQ(ierr);
-  len = 0;
+  len  = 0;
   for (i = 0; i < listlen; ++i) {
     ierr = ISGetLocalSize(islist[i], &leni);CHKERRQ(ierr);
     len += leni;
   }
   ierr = PetscMalloc(len*sizeof(PetscInt), &xinds);CHKERRQ(ierr);
   ierr = PetscMalloc(len*sizeof(PetscInt), &yinds);CHKERRQ(ierr);
-  k = 0;
+  k    = 0;
   for (i = 0; i < listlen; ++i) {
     ierr = ISGetLocalSize(islist[i], &leni);CHKERRQ(ierr);
     ierr = ISGetIndices(islist[i],&indsi);CHKERRQ(ierr);
@@ -466,12 +468,12 @@ PetscErrorCode ISListToMap(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis
 PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 {
   PetscErrorCode ierr;
-  IS indis = xis, coloris = yis;
-  PetscInt *inds, *colors, llen, ilen, lstart, lend, lcount,l;
-  PetscMPIInt rank, size, llow, lhigh, low, high,color,subsize;
+  IS             indis = xis, coloris = yis;
+  PetscInt       *inds, *colors, llen, ilen, lstart, lend, lcount,l;
+  PetscMPIInt    rank, size, llow, lhigh, low, high,color,subsize;
   const PetscInt *ccolors, *cinds;
-  MPI_Comm comm, subcomm;
-  
+  MPI_Comm       comm, subcomm;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(xis, IS_CLASSID, 1);
   PetscValidHeaderSpecific(yis, IS_CLASSID, 2);
@@ -492,17 +494,17 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   ierr = PetscMemcpy(colors,ccolors,llen*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscSortIntWithArray(llen, colors, inds);CHKERRQ(ierr);
   /* Determine the global extent of colors. */
-  llow = 0; lhigh = -1;
+  llow   = 0; lhigh  = -1;
   lstart = 0; lcount = 0;
   while (lstart < llen) {
     lend = lstart+1;
     while (lend < llen && colors[lend] == colors[lstart]) ++lend;
-    llow = PetscMin(llow,colors[lstart]);
+    llow  = PetscMin(llow,colors[lstart]);
     lhigh = PetscMax(lhigh,colors[lstart]);
     ++lcount;
   }
-  ierr = MPI_Allreduce(&llow,&low,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&lhigh,&high,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr     = MPI_Allreduce(&llow,&low,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr     = MPI_Allreduce(&lhigh,&high,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   *listlen = 0;
   if (low <= high) {
     if (lcount > 0) {
@@ -515,8 +517,8 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
      Traverse all possible global colors, and participate in the subcommunicators
      for the locally-supported colors.
      */
-    lcount   = 0;
-    lstart   = 0; lend = 0;
+    lcount = 0;
+    lstart = 0; lend = 0;
     for (l = low; l <= high; ++l) {
       /*
        Find the range of indices with the same color, which is not smaller than l.
@@ -558,8 +560,8 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
          */
         ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
       }
-    }/* for (l = low; l < high; ++l) */
-  }/* if (low <= high) */
+    } /* for (l = low; l < high; ++l) */
+  } /* if (low <= high) */
   ierr = PetscFree2(inds,colors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -601,7 +603,7 @@ PetscErrorCode ISMapFactorRight(IS a, IS b, PetscBool drop, IS *c)
   ISGlobalToLocalMappingType gtoltype = IS_GTOLM_DROP;
   PetscInt                   alen, clen, *cindices, *cindices2;
   const PetscInt             *aindices;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a, IS_CLASSID, 1);
   PetscValidHeaderSpecific(b, IS_CLASSID, 2);
@@ -614,9 +616,9 @@ PetscErrorCode ISMapFactorRight(IS a, IS b, PetscBool drop, IS *c)
   ISGlobalToLocalMappingApply(ltog,gtoltype,alen,aindices,&clen,cindices);CHKERRQ(ierr);
   if (clen != alen) {
     cindices2 = cindices;
-    ierr = PetscMalloc(clen*sizeof(PetscInt), &cindices);CHKERRQ(ierr);
-    ierr = PetscMemcpy(cindices,cindices2,clen*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscFree(cindices2);CHKERRQ(ierr);
+    ierr      = PetscMalloc(clen*sizeof(PetscInt), &cindices);CHKERRQ(ierr);
+    ierr      = PetscMemcpy(cindices,cindices2,clen*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr      = PetscFree(cindices2);CHKERRQ(ierr);
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, clen, cindices, PETSC_OWN_POINTER, c);CHKERRQ(ierr);
   PetscFunctionReturn(0);

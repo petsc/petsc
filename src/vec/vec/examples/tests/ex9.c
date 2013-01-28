@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   /* fill local part of parallel vector */
   for (i=n*rank; i<n*(rank+1); i++) {
     value = (PetscScalar) i;
-    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr  = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);

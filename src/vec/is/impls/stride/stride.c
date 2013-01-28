@@ -21,8 +21,8 @@ PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
   *ident         = PETSC_FALSE;
   if (is_stride->first != 0) PetscFunctionReturn(0);
   if (is_stride->step  != 1) PetscFunctionReturn(0);
-  *ident          = PETSC_TRUE;
-  is->isidentity  = PETSC_TRUE;
+  *ident         = PETSC_TRUE;
+  is->isidentity = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -179,7 +179,7 @@ PetscErrorCode ISRestoreIndices_Stride(IS in,const PetscInt *idx[])
 #define __FUNCT__ "ISGetSize_Stride"
 PetscErrorCode ISGetSize_Stride(IS is,PetscInt *size)
 {
-  IS_Stride *sub = (IS_Stride *)is->data;
+  IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
   *size = sub->N;
@@ -190,7 +190,7 @@ PetscErrorCode ISGetSize_Stride(IS is,PetscInt *size)
 #define __FUNCT__ "ISGetLocalSize_Stride"
 PetscErrorCode ISGetLocalSize_Stride(IS is,PetscInt *size)
 {
-  IS_Stride *sub = (IS_Stride *)is->data;
+  IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
   *size = sub->n;
@@ -201,7 +201,7 @@ PetscErrorCode ISGetLocalSize_Stride(IS is,PetscInt *size)
 #define __FUNCT__ "ISView_Stride"
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
-  IS_Stride      *sub = (IS_Stride *)is->data;
+  IS_Stride      *sub = (IS_Stride*)is->data;
   PetscInt       i,n = sub->n;
   PetscMPIInt    rank,size;
   PetscBool      iascii;
@@ -246,7 +246,7 @@ PetscErrorCode ISSort_Stride(IS is)
   PetscFunctionBegin;
   if (sub->step >= 0) PetscFunctionReturn(0);
   sub->first += (sub->n - 1)*sub->step;
-  sub->step *= -1;
+  sub->step  *= -1;
   PetscFunctionReturn(0);
 }
 
@@ -278,7 +278,7 @@ static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS 
 #define __FUNCT__ "ISSetBlockSize_Stride"
 static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
 {
-  IS_Stride      *sub = (IS_Stride*)is->data;
+  IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
   if (sub->step != 1 && bs != 1) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %D, cannot be blocked of size %D",sub->step,bs);
@@ -319,8 +319,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISToGeneral_Stride,
                                ISOnComm_Stride,
                                ISSetBlockSize_Stride,
-                               ISContiguousLocal_Stride
-};
+                               ISContiguousLocal_Stride};
 
 
 #undef __FUNCT__
@@ -347,7 +346,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(((PetscObject) is)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Negative length %d not valid", n);
   ierr = PetscUseMethod(is,"ISStrideSetStride_C",(IS,PetscInt,PetscInt,PetscInt),(is,n,first,step));CHKERRQ(ierr);
@@ -364,22 +363,19 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  sub->n         = n;
-  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
-  sub->first     = first;
-  sub->step      = step;
+  sub->n     = n;
+  ierr       = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
+  sub->first = first;
+  sub->step  = step;
   if (step > 0) {min = first; max = first + step*(n-1);}
   else          {max = first; min = first + step*(n-1);}
 
-  is->min     = n > 0 ? min : -1;
-  is->max     = n > 0 ? max : -1;
-  is->data    = (void*)sub;
+  is->min  = n > 0 ? min : -1;
+  is->max  = n > 0 ? max : -1;
+  is->data = (void*)sub;
 
-  if ((!first && step == 1) || (first == max && step == -1 && !min)) {
-    is->isperm  = PETSC_TRUE;
-  } else {
-    is->isperm  = PETSC_FALSE;
-  }
+  if ((!first && step == 1) || (first == max && step == -1 && !min)) is->isperm = PETSC_TRUE;
+  else is->isperm = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

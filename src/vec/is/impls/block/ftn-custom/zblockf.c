@@ -13,10 +13,10 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  const PetscInt   *lx;
+  const PetscInt *lx;
 
   *ierr = ISBlockGetIndices(*x,&lx); if (*ierr) return;
-  *ia      = PetscIntAddressToFortran(fa,(PetscInt*)lx);
+  *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
 void PETSC_STDCALL isblockrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)

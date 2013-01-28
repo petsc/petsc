@@ -212,6 +212,7 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   ierr = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree2(stash->array,stash->idx);CHKERRQ(ierr);
+
   stash->array = n_array;
   stash->idx   = n_idx;
   stash->nmax  = newnmax;
@@ -290,14 +291,12 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
   /* use 2 sends the first with all_v, the next with all_i */
   start[0] = 0;
-  for (i=1; i<size; i++) {
-    start[i] = start[i-1] + nprocs[2*i-2];
-  }
+  for (i=1; i<size; i++) start[i] = start[i-1] + nprocs[2*i-2];
+
   for (i=0; i<stash->n; i++) {
     j = owner[i];
-    if (bs == 1) {
-      svalues[start[j]] = stash->array[i];
-    } else {
+    if (bs == 1) svalues[start[j]] = stash->array[i];
+    else {
       ierr = PetscMemcpy(svalues+bs*start[j],stash->array+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     sindices[start[j]] = stash->idx[i];
@@ -316,8 +315,8 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr = PetscFree(start);CHKERRQ(ierr);
   /* This memory is reused in scatter end  for a different purpose*/
   for (i=0; i<2*size; i++) nprocs[i] = -1;
-  stash->nprocs     = nprocs;
 
+  stash->nprocs     = nprocs;
   stash->svalues    = svalues;
   stash->sindices   = sindices;
   stash->rvalues    = rvalues;

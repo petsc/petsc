@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscMPIInt    rank;
   PetscInt       i, nlocal, n = 6;
-  PetscScalar   *array;
+  PetscScalar    *array;
   PetscBool      equal;
   PetscErrorCode ierr;
 
@@ -32,9 +32,7 @@ int main(int argc,char **argv)
 
   ierr = VecGetLocalSize(x1, &nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(x1, &array);CHKERRQ(ierr);
-  for (i = 0; i < nlocal; i++) {
-    array[i] = rank + 1;
-  }
+  for (i = 0; i < nlocal; i++) array[i] = rank + 1;
   ierr = VecRestoreArray(x1, &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x1);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x1);CHKERRQ(ierr);

@@ -58,7 +58,7 @@ int main(int argc,char **argv)
          this is not practical, but is merely done as an example
    */
   for (i=0; i<n; i++) {
-    v = (PetscReal)(rank*i);
+    v    = (PetscReal)(rank*i);
     ierr = VecSetValues(x,1,&i,&v,ADD_VALUES);CHKERRQ(ierr);
   }
 
@@ -95,9 +95,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetLocalSize(x,&nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  for (i=0; i<nlocal; i++) {
-    array[i] = rank + 1;
-  }
+  for (i=0; i<nlocal; i++) array[i] = rank + 1;
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
   /*

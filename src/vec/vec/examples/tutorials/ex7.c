@@ -17,19 +17,19 @@ and from Fortran to C\n\n";
 #define ex7c_ ex7c
 #endif
 EXTERN_C_BEGIN
-extern void PETSC_STDCALL ex7f_(Vec *,int*);
+extern void PETSC_STDCALL ex7f_(Vec*,int*);
 EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  PetscErrorCode   ierr;
-  PetscInt         m = 10;
-  int              fcomm;
-  Vec              vec;
+  PetscErrorCode ierr;
+  PetscInt       m = 10;
+  int            fcomm;
+  Vec            vec;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
@@ -58,7 +58,7 @@ int main(int argc,char **args)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ex7c_"
-void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode* ierr)
+void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 {
   MPI_Comm comm;
   PetscInt vsize;

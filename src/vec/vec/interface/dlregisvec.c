@@ -2,7 +2,7 @@
 #include <petscvec.h>
 #include <petscpf.h>
 
-static PetscBool  ISPackageInitialized = PETSC_FALSE;
+static PetscBool ISPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "ISFinalizePackage"
 /*@C
@@ -40,10 +40,10 @@ PetscErrorCode  ISFinalizePackage(void)
 @*/
 PetscErrorCode  ISInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ISPackageInitialized) PetscFunctionReturn(0);
@@ -81,13 +81,13 @@ extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
 EXTERN_C_BEGIN
-extern void  MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void  MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void  MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 EXTERN_C_END
 
 const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
-PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
+PetscInt          NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 
 static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
@@ -108,11 +108,11 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  VecInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
-  PetscInt          i;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(0);
@@ -192,7 +192,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
     }
   }
   /* Special processing */
-  opt = PETSC_FALSE;
+  opt  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-log_sync", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_TRUE);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
 PetscErrorCode  VecFinalizePackage(void)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);

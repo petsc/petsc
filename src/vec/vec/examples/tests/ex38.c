@@ -13,11 +13,11 @@ int main(int argc, char *argv[])
   IS             is0,is1;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);
-  comm = PETSC_COMM_WORLD;
+  ierr   = PetscInitialize(&argc,&argv,0,help);
+  comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&X);CHKERRQ(ierr);
   ierr = VecSetSizes(X,10,PETSC_DETERMINE);CHKERRQ(ierr);

@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    size,rank;
   PetscErrorCode ierr;
-  PetscInt       n = 5,idx;
+  PetscInt       n   = 5,idx;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0;
   Vec            x,y;
 
@@ -34,8 +34,7 @@ int main(int argc,char **argv)
     idx = 2; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);
     idx = 0; ierr = VecSetValues(y,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);
     idx = 0; ierr = VecSetValues(y,1,&idx,&one,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     idx = 7; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);

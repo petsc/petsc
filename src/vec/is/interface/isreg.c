@@ -1,8 +1,8 @@
 
 #include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
 
-PetscFunctionList ISList                       = PETSC_NULL;
-PetscBool         ISRegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList ISList              = PETSC_NULL;
+PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate"

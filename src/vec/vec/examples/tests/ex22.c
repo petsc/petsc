@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  N = size*n;
+  N    = size*n;
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);

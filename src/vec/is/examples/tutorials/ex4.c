@@ -37,9 +37,7 @@ int main(int argc,char **argv)
   /*
      Map some global indices to local, retaining the ones without a local index by -1
   */
-  for (i=0; i<13; i++) {
-    inglobals[i] = i;
-  }
+  for (i=0; i<13; i++) inglobals[i] = i;
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,PETSC_NULL,outlocals);CHKERRQ(ierr);
   ierr = PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 

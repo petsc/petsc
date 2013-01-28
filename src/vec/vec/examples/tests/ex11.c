@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   /* fill parallel vector: note this is not efficient way*/
   for (i=0; i<N; i++) {
     value = (PetscScalar) i;
-    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr  = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
@@ -46,8 +46,10 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 
-  if (!rank)
-    {printf("----\n"); ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (!rank) {
+    printf("----\n");
+    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
 
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   ierr = ISDestroy(&is2);CHKERRQ(ierr);

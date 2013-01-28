@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   /* this is redundant but tests assembly */
   for (i=0; i<n; i++) {
     value = (PetscScalar) (i + 10*rank);
-    ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr  = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);

@@ -187,10 +187,11 @@ EXTERN_C_BEGIN
 PetscErrorCode  VecCreate_MPICUSP(Vec vv)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)vv,VECMPICUSP);CHKERRQ(ierr);
+
   vv->ops->dotnorm2        = VecDotNorm2_MPICUSP;
   vv->ops->waxpy           = VecWAXPY_SeqCUSP;
   vv->ops->duplicate       = VecDuplicate_MPICUSP;

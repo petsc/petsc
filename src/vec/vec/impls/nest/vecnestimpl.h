@@ -17,8 +17,7 @@ typedef struct {
     PetscCheckSameComm(x,xarg,y,yarg);                                  \
     if (!((Vec_Nest*)x->data)->setup_called) SETERRQ1(((PetscObject)x)->comm,PETSC_ERR_ARG_WRONG,"Nest vector argument %D not setup.",xarg); \
     if (!((Vec_Nest*)y->data)->setup_called) SETERRQ1(((PetscObject)x)->comm,PETSC_ERR_ARG_WRONG,"Nest vector argument %D not setup.",yarg); \
-    if (((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb)         \
-      SETERRQ2(((PetscObject)x)->comm,PETSC_ERR_ARG_WRONG,"Nest vector arguments %D and %D have different numbers of blocks.",xarg,yarg); \
+    if (((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb) SETERRQ2(((PetscObject)x)->comm,PETSC_ERR_ARG_WRONG,"Nest vector arguments %D and %D have different numbers of blocks.",xarg,yarg); \
   } while (0)
 
 #define VecNestCheckCompatible3(x,xarg,y,yarg,z,zarg) do {             \
@@ -30,10 +29,8 @@ typedef struct {
     if (!((Vec_Nest*)x->data)->setup_called) SETERRQ1(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector argument %D not setup.",xarg); \
     if (!((Vec_Nest*)y->data)->setup_called) SETERRQ1(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector argument %D not setup.",yarg); \
     if (!((Vec_Nest*)z->data)->setup_called) SETERRQ1(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector argument %D not setup.",zarg); \
-    if (((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb)         \
-      SETERRQ2(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector arguments %D and %D have different numbers of blocks.",xarg,yarg); \
-    if (((Vec_Nest*)x->data)->nb != ((Vec_Nest*)z->data)->nb)         \
-      SETERRQ2(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector arguments %D and %D have different numbers of blocks.",xarg,zarg); \
+    if (((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb) SETERRQ2(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector arguments %D and %D have different numbers of blocks.",xarg,yarg); \
+    if (((Vec_Nest*)x->data)->nb != ((Vec_Nest*)z->data)->nb) SETERRQ2(((PetscObject)w)->comm,PETSC_ERR_ARG_WRONG,"Nest vector arguments %D and %D have different numbers of blocks.",xarg,zarg); \
   } while (0)
 
 #endif

@@ -55,7 +55,7 @@ static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
 
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-  ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
+  ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
   ierr = MPIU_File_read_all(mfdes,avec,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
   ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
@@ -124,9 +124,8 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
       /* determine maximum chunck owned by other */
       range = vec->map->range;
       n = 1;
-      for (i=1; i<size; i++) {
-        n = PetscMax(n,range[i+1] - range[i]);
-      }
+      for (i=1; i<size; i++) n = PetscMax(n,range[i+1] - range[i]);
+
       ierr = PetscMalloc(n*sizeof(PetscScalar),&avecwork);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
@@ -178,9 +177,8 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
     group = H5Gopen(file_id, groupName);
 #endif
     if (group < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open group %s", groupName);
-  } else {
-    group = file_id;
-  }
+  } else group = file_id;
+
   *fileId  = file_id;
   *groupId = group;
   PetscFunctionReturn(0);
@@ -219,13 +217,9 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   filespace = H5Dget_space(dset_id);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not H5Dget_space()");
   dim = 0;
-  if (timestep >= 0) {
-    ++dim;
-  }
+  if (timestep >= 0) ++dim;
   ++dim;
-  if (bs >= 1) {
-    ++dim;
-  }
+  if (bs >= 1) ++dim;
 #if defined(PETSC_USE_COMPLEX)
   ++dim;
 #endif
@@ -237,9 +231,8 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #endif
   lenInd = timestep >= 0 ? 1 : 0;
   if (rdim != dim) {
-    if (rdim == dim+1 && bs == 1) {
-      bs = dims[bsInd];
-    } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
+    if (rdim == dim+1 && bs == 1) bs = dims[bsInd];
+    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
   } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
 
   /* Set Vec sizes,blocksize,and type if not already set */
@@ -337,7 +330,7 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
   if (ishdf5) {
     if (!((PetscObject)newvec)->name) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
-     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
     }
     ierr = VecLoad_HDF5(newvec, viewer);CHKERRQ(ierr);
   } else

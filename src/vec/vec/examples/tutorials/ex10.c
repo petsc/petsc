@@ -22,9 +22,10 @@ int main(int argc,char **args)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
-  isbinary = ishdf5 = PETSC_FALSE;
+  PetscInitialize(&argc,&args,(char*)0,help);
+  isbinary  = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
+
   ierr = PetscOptionsGetBool(PETSC_NULL,"-binary",&isbinary,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-hdf5",&ishdf5,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
@@ -48,8 +49,8 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (PetscScalar)(i + 100*rank);
-    ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
+    v       = (PetscScalar)(i + 100*rank);
+    ierr    = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
@@ -99,15 +100,13 @@ int main(int argc,char **args)
     if (size > 1) {
       if (!rank) {
         lsize = m/size + size;
-        ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
-      }
-      else if (rank == size-1) {
+        ierr  = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
+      } else if (rank == size-1) {
         lsize = m/size - size;
-        ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
-      }
-      else {
+        ierr  = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
+      } else {
         lsize = m/size;
-        ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
+        ierr  = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       }
     } else {
       ierr = VecSetSizes(u,m,m);CHKERRQ(ierr);

@@ -322,9 +322,7 @@ static PetscErrorCode VecNorm_Nest(Vec xin,NormType type,PetscReal *z)
   } else if (type == NORM_INFINITY) {
     for (i=0; i<nr; i++) {
       ierr = VecNorm(bx->v[i],type,&z_i);CHKERRQ(ierr);
-      if (z_i > _z) {
-        _z = z_i;
-      }
+      if (z_i > _z) _z = z_i;
     }
   }
 
@@ -653,9 +651,7 @@ static PetscErrorCode VecMaxPointwiseDivide_Nest(Vec x,Vec y,PetscReal *max)
   m  = 0.0;
   for (i=0; i<nr; i++) {
     ierr = VecMaxPointwiseDivide(bx->v[i],by->v[i],&local_max);CHKERRQ(ierr);
-    if (local_max > m) {
-      m = local_max;
-    }
+    if (local_max > m) m = local_max;
   }
   *max = m;
   PetscFunctionReturn(0);
