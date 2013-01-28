@@ -13,7 +13,7 @@
 -sigmay 0.1
 -rho 0.0
 -t0 0.0
--tmax 2.0
+-tmax 4.0
 -xmin -1
 -xmax 10
 -ymin -1
