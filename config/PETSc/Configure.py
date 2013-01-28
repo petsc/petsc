@@ -762,7 +762,7 @@ prepend-path PATH %s
       if self.checkLink('#include <Windows.h>','SetLastError(0)'):
         self.addDefine('HAVE_SETLASTERROR',1)
       if self.checkLink('#include <Windows.h>\n','QueryPerformanceCounter(0);\n'):
-        self.addDefine('USE_NT_TIME',1)
+        self.addDefine('USE_MICROSOFT_TIME',1)
     if self.libraries.add('Advapi32.lib','GetUserName',prototype='#include <Windows.h>', call='GetUserName(NULL,NULL);'):
       self.addDefine('HAVE_GET_USER_NAME',1)
     elif self.libraries.add('advapi32','GetUserName',prototype='#include <Windows.h>', call='GetUserName(NULL,NULL);'):

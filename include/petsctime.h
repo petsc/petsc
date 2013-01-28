@@ -115,29 +115,29 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 #define PetscTimeAdd(v)      (v)+=MPI_Wtime();
 
 /* ------------------------------------------------------------------
-   Power1,2,3,PC machines have a fast clock read_real_time()
+   IBM Power and PowerPC machines have a fast clock read_real_time()
 */
 #elif defined(PETSC_USE_READ_REAL_TIME)
-PETSC_EXTERN PetscLogDouble rs6000_time(void);
-#define PetscTime(v)         (v)=rs6000_time();
+PETSC_EXTERN PetscLogDouble PetscReadRealTime(void);
+#define PetscTime(v)         (v)=PetscReadRealTime();
 
-#define PetscTimeSubtract(v) (v)-=rs6000_time();
+#define PetscTimeSubtract(v) (v)-=PetscReadRealTime();
 
-#define PetscTimeAdd(v)      (v)+=rs6000_time();
+#define PetscTimeAdd(v)      (v)+=PetscReadRealTime();
 
 /* ------------------------------------------------------------------
-   Windows uses a special time code
+   Microsoft Windows has its own time routines
 */
-#elif defined (PETSC_USE_NT_TIME)
+#elif defined (PETSC_USE_MICROSOFT_TIME)
 #include <time.h>
 EXTERN_C_BEGIN
-PETSC_EXTERN PetscLogDouble nt_time(void);
+PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void);
 EXTERN_C_END
-#define PetscTime(v)         (v)=nt_time();
+#define PetscTime(v)         (v)=PetscMicrosoftTime();
 
-#define PetscTimeSubtract(v) (v)-=nt_time();
+#define PetscTimeSubtract(v) (v)-=PetscMicrosoftTime();
 
-#define PetscTimeAdd(v)      (v)+=nt_time();
+#define PetscTimeAdd(v)      (v)+=PetscMicrosoftTime();
 
 /* ------------------------------------------------------------------
     The usual Unix time routines.

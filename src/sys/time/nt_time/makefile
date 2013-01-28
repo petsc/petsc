@@ -1,4 +1,4 @@
-#requiresfunction 'PETSC_USE_NT_TIME'
+#requiresfunction 'PETSC_USE_MICROSOFT_TIME'
 ALL: lib
 
 CFLAGS    =

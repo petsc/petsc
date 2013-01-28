@@ -6,8 +6,8 @@
 EXTERN_C_BEGIN
 
 #undef __FUNCT__
-#define __FUNCT__ "nt_time"
-PetscLogDouble  nt_time(void)
+#define __FUNCT__ "PetscMicrosoftTime"
+PetscLogDouble  PetscMicrosoftTime(void)
 {
   static PetscBool      flag = PETSC_TRUE;
   PetscErrorCode ierr;
