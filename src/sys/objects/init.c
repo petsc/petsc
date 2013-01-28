@@ -41,6 +41,25 @@ template <> class std::complex<double>; /* instantiate complex template class */
 MPI_Datatype   MPIU_C_DOUBLE_COMPLEX;
 MPI_Datatype   MPIU_C_COMPLEX;
 #endif
+
+/*MC
+   PETSC_i - the imaginary number i
+
+   Synopsis:
+   #define PETSC_DESIRE_COMPLEX
+   #include <petscsys.h>
+   PetscComplex PETSC_i;
+
+   Level: beginner
+
+   Note:
+   Complex numbers are automatically available if PETSc was configured --with-scalar-type=complex (in which case
+   PetscComplex will match PetscScalar), otherwise the macro PETSC_DESIRE_COMPLEX must be defined before including any
+   PETSc headers. If the compiler supports complex numbers, PetscComplex and associated variables and functions will be
+   defined and PETSC_HAVE_COMPLEX will be set.
+
+.seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
+M*/
 PetscComplex    PETSC_i;
 #endif
 #if defined(PETSC_USE_REAL___FLOAT128)
