@@ -55,7 +55,7 @@ http://www.mcs.anl.gov/petsc
 \newpage
 
 
-\addcontentsline{toc}{chapter}{Abstract}
+
 
 \medskip \medskip
 
@@ -111,6 +111,8 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \hbox{ }
 \newpage
 
+\tableofcontents
+
 \chapter{Style Guide}
 
 The PETSc team uses certain conventions to make our source code consistent. Groups
@@ -161,13 +163,23 @@ so that the code is uniform and easily maintainable:
 \item The local variable declarations should be aligned. For example,
       use the style
 \begin{tabbing}
-   int    i,j;\\
-   Scalar a;
+   Scalar \=a;\\
+   int \>i,j;\\
 \end{tabbing}
 instead of
 \begin{tabbing}
-   Scalar \=a;
-   int \>i,j;\\
+   int    i,j;\\
+   Scalar a;
+\end{tabbing}
+\item Array and pointer arguments to functions where the array values are not changed should be labeled as \trl{const} arguments.
+\item Scalar values passed to functions should {\bf never} be labeled as const.
+\item The prototypes for functions should not include the names of the variables; for example write
+\begin{tabbing}
+PetscErrorCode MyFunction(PetscInt);
+\end{tabbing}
+not
+\begin{tabbing}
+PetscErrorCode MyFunction(PetscInt myvalue);
 \end{tabbing}
 \item All local variables of a particular type (e.g., \trl{int}) should be
       listed on the same line if possible; otherwise, they should be listed
@@ -231,6 +243,8 @@ never
    else \{.
 \end{tabbing}
  The closing bracket \} should {\bf always} be on its own line.
+\item Do not use NULL in the source code, use PETSC\_NULL.
+\item Do not leave chunks of commented out code in the source files.
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
 \item The macros SETERRQ() and CHKERRQ() should be on the
@@ -268,16 +282,34 @@ instead write
 instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
 \item Do not use {\em \#ifdef} or {\em \#ifndef} rather use {\em \#if defined(...} or {\em \#if !defined(...}
 \item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate ./configure checks and \#if defined() checks the code. Code should also be provided that works if the MPI feature is not available. For example,
-\begin{verbatim}
-#if defined(PETSC_HAVE_MPI_IN_PLACE)
-    ierr  = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
-#else
-    ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
-#endif
-\end{verbatim}
+\begin{tabbing}
+\#if\= defined(PETSC\_HAVE\_MPI\_IN\_PLACE)\\
+\>    ierr  = MPI_Allgatherv(\=MPI\_IN\_PLACE,0,MPI\_DATATYPE\_NULL,lens,recvcounts,\\
+\> \> displs,MPIU\_INT,comm);CHKERRQ(ierr);\\
+\#else\\
+\>    ierr  = MPI_Allgatherv(lens,sendcount,MPIU\_INT,lens,recvcounts,\\
+\> \> displs,MPIU\_INT,comm);CHKERRQ(ierr);\\
+\#endif
+\end{tabbing}
 \item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine PetscGlobalSum() that takes a scalar value and performs an MPI\_Allreduce() on it. One should use MPI\_Allreduce() directly in the code.
 \item XXXTypes (for example KSPType) do not have an underscore in them, unless they refer to another package that uses an underscore, for example MATSOLVERSUPERLU\_DIST.
 \end{itemize}
+
+\section{Formatted Comments for Documentation and Fortran Interfaces}
+
+PETSc uses formatted comments to generate documentation and fortran interfaces.
+
+\begin{verbatim}
+/*@     indicates a formatted comment of a function that will be used for both documentation and a Fortran interface.
+/*@C    a formatted comment of a function that will be used only for documentation
+/*E     a formatted comment of an enum used for documentation only
+/*M     a formatted comment of a CPP macro used for both documentation and a Fortran interface.
+/*MC    a formatted comment of a CPP macro for documentation
+\end{verbatim}
+
+Functions that take char* or function pointer arguments must have the C symbol since the Fortran interface generator cannot handle them.
+
+Directory structure of Fortran interface files: ftn-auto, ftn-custom, ftn-f90.
 
 % -----------------------------------------------------------------------------------
 \chapter{The PETSc Kernel}
@@ -373,8 +405,8 @@ of arguments.
 The error handling function PetscError() calls the ``current'' error handler
 with the code
 \begin{tabbing}
-Pe\=tscErrorCode PetscError(\=MPI\_Comm,int line,char *func,char* file,char *dir,error code, \\
- \> \> error type,char *mess)\\
+Pe\=tscErrorCode PetscError(\=MPI\_Comm,int line,const char *func,const char* file,\\
+ \> \> const char *dir,error code, error type,const char *mess)\\
 \{ \\
   \> PetscErrorCode ierr;\\
   \>PetscFunctionBegin;\\
@@ -397,8 +429,9 @@ struct \_EH \{\\
 
 One can set a new error handler with the command
 \begin{tabbing}
-Pe\=tscErrorCode PetscPushErrorHandler(\=PetscErrorCode (*handler)(int,char *,char*,char*,\\
-    \> \>                      PetscErrorCode,PetscErrorType,char*,void*),\\
+Pe\=tscErrorCode PetscPushErrorHandler(\=PetscErrorCode (*handler)(int,const char *,const char*,\\
+   \> \>                       const char*,\\
+    \> \>                      PetscErrorCode,PetscErrorType,const char*,void*),\\
    \>  \>                      void *ctx )\\
 \{\\
   \> PetscErrorCode ierr;\\
@@ -499,7 +532,7 @@ is logged with the command, \findex{PetscLogObjectParent()}
 It is also useful to log information about the state of an object, as can
 be done with the command \findex{PetscLogObjectState()}
 \begin{tabbing}
-   PetscLogObjectState(PetscObject h,char *format,...);
+   PetscLogObjectState(PetscObject h,const char *format,...);
 \end{tabbing}
 
 For example, for sparse matrices we usually log the matrix
@@ -524,7 +557,7 @@ are \findex{PetscLogBegin()} \findex{PetscLogDump()} \findex{PetscLogAllBegin()}
 \begin{tabbing}
    PetscLogBegin();\\
    PetscLogAllBegin();\\
-   PetscLogDump(char *filename);\\
+   PetscLogDump(const char *filename);\\
    PetscLogView(PetscViewer);
 \end{tabbing}
 These routines are normally called by the PetscInitialize()
@@ -581,7 +614,17 @@ Each class has
       sparse, parallel, and sequential formats.
 \item An abstract interface that defines the application callable
       functions for the class. These are defined in the directory
-      \trl{src/<class>/interface}.
+      \trl{src/<class>/interface}. This is how polymorphism is supported with code that implements the abstract interface to the
+operations on the object.  Essentially, these routines do some error
+checking of arguments and logging of profiling information
+and then call the function appropriate for the
+particular implementation of the object. The name of the abstract
+function is \trl{<class>Operation}, for instance, MatMult() or PCCreate(), while
+the name of a particular implementation is
+\trl{<class>Operation_<implementation>}, for instance,
+\trl{MatMult_SeqAIJ()} or \trl{PCCreate_ILU()}. These naming
+conventions are used to simplify code maintenance.
+
 \item One or more actual implementations of the classs (for example,
       sparse uniprocessor and parallel matrices implemented with the AIJ storage format).
       These are each in a subdirectory of
@@ -604,23 +647,11 @@ completely removing the details of the implementation of {\tt
 because it allows the library internals to be changed
 without altering or recompiling the application code.
 
-Polymorphism is supported through the directory
-\trl{src/<class>/interface},
-which contains the code that implements the abstract interface to the
-operations on the object.  Essentially, these routines do some error
-checking of arguments and logging of profiling information
-and then call the function appropriate for the
-particular implementation of the object. The name of the abstract
-function is \trl{<class>Operation}, for instance, MatMult() or PCCreate(), while
-the name of a particular implementation is
-\trl{<class>Operation_<implementation>}, for instance,
-\trl{MatMult_SeqAIJ()} or \trl{PCCreate_ILU()}. These naming
-conventions are used to simplify code maintenance.
 
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-(in \trl{include/petsc-private/petscimpl.h})
+defined in \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsc-private/petscimpl.h.html}{include/petsc-private/petscimpl.h}
 
 \begin{tabbing}
 \\
@@ -630,10 +661,10 @@ typedef struct \{ \\
    int (*getcomm)(PetscObject,MPI\_Comm *);\\
    int (*view)(PetscObject,Viewer);\\
    int (*destroy)(PetscObject);\\
-   int (*query)(PetscObject,char *,PetscObject *);\\
-   int (*compose)(PetscObject,char*,PetscObject);\\
-   int (*composefunction)(PetscObject,char *,char *,void *);\\
-   int (*queryfunction)(PetscObject,char *, void **);\\
+   int (*query)(PetscObject,const char *,PetscObject *);\\
+   int (*compose)(PetscObject,const char*,PetscObject);\\
+   int (*composefunction)(PetscObject,const char *,const char *,void *);\\
+   int (*queryfunction)(PetscObject,const char *, void **);\\
 \} PetscOps;\\
 \\
 /* Data structure header common to all PETSc compatible classs */\\
@@ -723,8 +754,7 @@ struct \_p\_Vec \{\\
   char                   *prefix;                                 \\
   void**                 fortran\_func\_pointers;       \\
   void                   *data;     /* implementation-specific data */\\
-  int                    N, n;      /* global, local vector size */\\
-  int                    bs;\\
+  PetscLayout            map;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */\\
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */\\
 \};
@@ -734,7 +764,7 @@ Each PETSc object begins with a PetscClassId which is used for error checking.
 Each different class of objects has its value for the classid; these are used
 to distinguish between classes. When a new class is created one needs to call
 \begin{tabbing}
-  ierr = PetscClassIdRegister(char *classname,PetscClassId *classid);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister(const char *classname,PetscClassId *classid);CHKERRQ(ierr);
 \end{tabbing}
 For example,
 \begin{tabbing}
@@ -754,18 +784,9 @@ To check for an object of any type use
   PetscValidHeader(x,1);
 \end{tabbing}
 
-
-Several routines are provided for manipulating data within the header,
-including
-\begin{tabbing}
-   int PetscObjectGetComm(PetscObject object,MPI\_Comm *comm);
-\end{tabbing}
-which returns in \trl{comm}  the MPI communicator associated with the
-specified object.
-
 \section{Common Object Functions}
 
-We now discuss the specific functions in the PETSc common function table.
+Several routines are provided for manipulating data within the header, these include the specific functions in the PETSc common function table.
 
 \begin{itemize}
 \item \trl{getcomm(PetscObject,MPI_Comm *)} obtains the MPI communicator associated
@@ -782,7 +803,7 @@ We now discuss the specific functions in the PETSc common function table.
       If the object has any other objects composed with it then they are each sent a
       \trl{destroy()}, i.e. the \trl{destroy()} function is called on them also.
 
-\item \trl{compose(PetscObject,char *name, PetscObject)} associates the second object with
+\item \trl{compose(PetscObject,const char *name, PetscObject)} associates the second object with
       the first object and increases the reference count of the second object. If an
       object with the
       same name was previously composed that object is dereferenced and replaced with
@@ -792,11 +813,11 @@ We now discuss the specific functions in the PETSc common function table.
       it, and that object is removed from the first object); i.e. this is a way to
       remove, by name, an object that was previously composed.
 
-\item \trl{query(PetscObject,char *name, PetscObject *)} retrieves an object that was
+\item \trl{query(PetscObject,const char *name, PetscObject *)} retrieves an object that was
       previously composed with the first object. Retreives a null if no object with
       that name was previously composed.
 
-\item \trl{composefunction(PetscObject,char *name,char *fname,void *func)} associates a function
+\item \trl{composefunction(PetscObject,const char *name,const char *fname,void *func)} associates a function
       pointer to an object. If the object already had a composed function with the
       same name, the old one is replace. If the fname is null it is removed from
       the object. The string \trl{fname} is the  character string name of the function;
@@ -805,10 +826,10 @@ We now discuss the specific functions in the PETSc common function table.
       \trl{queryfunction()} call. On systems that support dynamic libraries the \trl{func}
       argument is ignored; otherwise \trl{func} is the actual function pointer.
 
-      For example, \trl{fname} may be \trl{libpetscksp:PCCreate\_LU} or
-      \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate\_LU}.
+      For example, \trl{fname} may be \trl{libpetscksp:PCCreate_LU} or
+      \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate_LU}.
 
-\item \trl{queryfunction(PetscObject,char *name,void **func)} retreives a function pointer that
+\item \trl{queryfunction(PetscObject,const char *name,void **func)} retreives a function pointer that
       was associated with the object. If dynamic libraries are used the function is loaded
       into memory at this time (if it has not been previously loaded), not when the
       \trl{composefunction()} routine was called.
@@ -818,7 +839,7 @@ We now discuss the specific functions in the PETSc common function table.
 Since the object composition allows one to {\bf only} compose PETSc objects
 with PETSc objects rather than any arbitrary pointer, PETsc provides
 the convenience object PetscContainer, created with the
-routine PetscContainerCreate(MPI\_Comm,PetscContainer)
+routine PetscContainerCreate(MPI\_Comm,PetscContainer*)
 to allow one to wrap any kind of data into a PETSc object that can then be
 composed with a PETSc object.
 
@@ -833,7 +854,7 @@ not have to ``reinvent the wheel.''
 
 \subsection{Compose and Query}
 
-In \trl{src/sys/objects/olist.c} PETSc defines a C struct
+In \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/objects/olist.c.html}{src/sys/objects/olist.c} PETSc defines a C struct
 \begin{tabbing}
 typedef struct \_PetscObjectList *PetscObjectList;\\
 struct \_PetscObjectList \{\\
@@ -854,9 +875,9 @@ The function PetscObjectListAdd() will create the initial PetscObjectList if the
 \trl{fl} points to a null.
 
 The PETSc object \trl{compose()} and \trl{query()} functions are then simply
-(defined in \trl{src/sys/objects/inherit.c})
+(defined in \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/objects/inherit.c.html}{src/sys/objects/inherit.c})
 \begin{tabbing}
-  PetscErrorCode PetscObjectCompose\_Petsc(PetscObject obj,char *name,PetscObject ptr)\\
+  PetscErrorCode PetscObjectCompose\_Petsc(PetscObject obj,const char *name,PetscObject ptr)\\
   \{\\
     PetscErrorCode ierr;\\
 \\
@@ -865,7 +886,7 @@ The PETSc object \trl{compose()} and \trl{query()} functions are then simply
     PetscFunctionReturn(0);\\
   \}\\
 \\
-  PetscErrorCode PetscObjectQuery\_Petsc(PetscObject obj,char *name,PetscObject *ptr)\\
+  PetscErrorCode PetscObjectQuery\_Petsc(PetscObject obj,const char *name,PetscObject *ptr)\\
   \{\\
     PetscErrorCode ierr;\\
 \\
@@ -878,7 +899,7 @@ The PETSc object \trl{compose()} and \trl{query()} functions are then simply
 \subsection{Compose and Query Function}
 
 PETSc allows one to compose functions by string name (to be loaded later from
-a dynamic library) or by function pointer. In \trl{src/sys/dll/reg.c}
+a dynamic library) or by function pointer. In \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/sys/dll/reg.c.html}{src/sys/dll/reg.c}
 PETSc defines the C structure
 
 \begin{tabbing}
@@ -907,7 +928,8 @@ Each PETSc object contains a PetscFunctionList object. The \trl{composefunction(
 \trl{queryfunction()} are given by
 
 \begin{tabbing}
-PetscErrorCode PetscObjectComposeFunction\_Petsc(PetscObject obj,char *name,char *fname,void *ptr)\\
+PetscErrorCode PetscObjectComposeFunction\_Petsc(\=PetscObject obj,const char *name,\\
+   \> const char *fname,void *ptr)\\
 \{\\
   PetscErrorCode ierr;\\
 \\
@@ -916,12 +938,13 @@ PetscErrorCode PetscObjectComposeFunction\_Petsc(PetscObject obj,char *name,char
   PetscFunctionReturn(0);\\
 \}\\
 \\
-PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,char *name,void **ptr)\\
+PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,const char *name,void **ptr)\\
 \{\\
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
+  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);\\
+  CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
@@ -942,9 +965,9 @@ dynamic libraries. This is done with macros like the following
 \#endif\\
 \end{tabbing}
 Thus when the code is compiled with the dynamic link library flag the function pointer
-argument is removed from the code; otherwise it is retained. Ugly, but neccessary.
+argument is removed from the code; otherwise it is retained.
 
-The \trl{PetscFunctionListAdd\_Private()} and all related routines can be found in the directory
+The \trl{PetscFunctionListAdd_Private()} and all related routines can be found in the directory
 \trl{src/sys/dll}.
 
 In addition to using the PetscFunctionList mechanism to compose functions into PETSc objects, it is
@@ -967,20 +990,20 @@ vs \_p\_Vec.
 
 \subsection{Preconditioners: PC}
 
-The base PETSc PC object is defined in the \trl{include/petsc-private/pcimpl.h} include file.
+The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsc-private/pcimpl.h.html}{include/petsc-private/pcimpl.h} include file.
 A carefully commented implementation of a PC object can be found in
-\trl{src/ksp/pc/impls/jacobi/jacobi.c}.
+\href{http://www.mcs.anl.gov/petsc/petsc-dev/src/ksp/pc/impls/jacobi/jacobi.c.html}{src/ksp/pc/impls/jacobi/jacobi.c}.
 
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the \trl{include/petsc-private/kspimpl.h} include file.
+The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsc-private/kspimpl.h.html}{include/petsc-private/kspimpl.h} include file.
 A carefully commented implementation of a KSP object can be found in
-\trl{src/ksp/ksp/impls/cg/cg.c}.
+\href{http://www.mcs.anl.gov/petsc/petsc-dev/src/ksp/ksp/impls/cg/cg.c.html}{src/ksp/ksp/impls/cg/cg.c}.
 
 \subsection{Registering New Methods}
 \label{sec:registeringnewmethods}
 
-See \trl{src/ksp/examples/tutorials/ex12.c} for an example of registering a new
+See \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/ksp/ksp/examples/tutorials/ex12.c.html}{src/ksp/examples/tutorials/ex12.c} for an example of registering a new
 preconditioning (PC) method.
 
 
