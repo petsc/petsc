@@ -825,7 +825,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   PetscScalar    *t;            /* Store the result of the solution of H^T*t=h_{m+1,m}e_m */
   PetscBLASInt    nrhs = 1;     /* Number of right hand side */
   PetscBLASInt   *ipiv;         /* Permutation vector to be used in LAPACK */
-#if !defined(PETSC_MISSING_LAPACK_HSEQR)
+#if !defined(PETSC_MISSING_LAPACK_HSEQR) || !defined(PETSC_MISSING_LAPACK_TRSEN)
   PetscBLASInt    ilo  = 1;
   PetscBLASInt    info;
   PetscReal       CondEig;      /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */

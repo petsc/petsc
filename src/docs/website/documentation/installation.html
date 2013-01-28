@@ -835,7 +835,8 @@
           <li>make</li>
         </ul>
 
-        <p>One can also use the gnu prefix-install mode.</p>
+        <h4>Installing with --prefix:</h4>
+        <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
           <li>[untar PETSc in a non-root regular location - say /home/username]</li>
@@ -851,6 +852,35 @@
           variable. You should install different configurations using different
           --prefix names.
         </p>
+
+        <h4>Using DESTDIR with prefix install:</h4>
+        <p>One can also use the GNU <b>DESTDIR</b> with a prefix install. This mode is generally
+          used by binary packagers.</p>
+
+        <p> The following is an example of creating 2 binary packages
+        for PETSc - one with MPICH - the other with OpenMPI</p>
+
+        <ul class="code">
+          <li>[untar PETSc]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>[package up /tmp/petsc-pkg and install the package. It will now be installed at /opt/petsc/petsc-3.3-p0-mpich]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0-mpich ex1<li>
+          <br>
+          <li>[untar PETSc]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>[package up /tmp/petsc-pkg and install the package. It will now be installed at /opt/petsc/petsc-3.3-p0-openmpi]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0-openmpi ex1<li>
+        </ul>
+
+        <p>Note: The --prefix build process internally uses a PETSC_ARCH value [either specified by user or automatically
+           created by configure], and the buildfiles are stored in petsc-source-tree/PETSC_ARCH location. But after 'make
+           install' step - PETSC_ARCH has no significance. One can reuse the same PETSC_ARCH for multiple builds - provided
+           the previous buildfiles are removed before starting the next build. Similarly one can reuse DESTDIR for multiple
+           installs provided the installfiles from the previous builddir are removed</p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #root -->
