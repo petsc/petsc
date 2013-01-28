@@ -19,6 +19,9 @@
    Output Parameters:
 .  emin, emax - extreme singular values
 
+   Options Database Keys:
+.  -ksp_compute_singularvalues - compute extreme singular values and print when KSPSolve completes.
+
    Notes:
    One must call KSPSetComputeSingularValues() before calling KSPSetUp()
    (or use the option -ksp_compute_eigenvalues) in order for this routine to work correctly.
@@ -26,6 +29,13 @@
    Many users may just want to use the monitoring routine
    KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the extreme singular values at each iteration of the linear solve.
+
+   Estimates of the smallest singular value may be very inaccurate, especially if the Krylov method has not converged.
+   The largest singular value is usually accurate to within a few percent if the method has converged, but is still not
+   intended for eigenanalysis.
+
+   Disable restarts if using KSPGMRES, otherwise this estimate will only be using those iterations after the last
+   restart. See KSPGMRESSetRestart() for more details.
 
    Level: advanced
 
