@@ -141,7 +141,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         if (outputState == 0) {
           outputState = 1;
           doOutput    = 1;
-        else if (outputState == 1) doOutput = 0;
+        } else if (outputState == 1) doOutput = 0;
         else if (outputState == 2) {
           outputState = 3;
           doOutput    = 1;

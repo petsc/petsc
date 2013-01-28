@@ -1670,7 +1670,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
     if (sendSizes[n] <=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
     to->starts[n+1] = to->starts[n] + sendSizes[n];
     to->procs[n]    = sendProcs[n];
-    for (i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) to->indices[i] = sendIdx[i]
+    for (i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) to->indices[i] = sendIdx[i];
   }
   ctx->todata = (void*) to;
 
