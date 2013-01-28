@@ -18,7 +18,7 @@ else:
   PETSC_ARCH = a.split('=')[1][0:-1]
   fd.close()
 
-print '*** using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***'
+print '*** Using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***'
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config', 'BuildSystem'))
 
@@ -254,7 +254,7 @@ for src, dst in copies:
     return
 
 
-  def outputDone(self):
+  def outputInstallDone(self):
     print '''\
 ====================================
 Install complete. It is useable with PETSC_DIR=%s [and no more PETSC_ARCH].
@@ -262,6 +262,15 @@ Now to check if the libraries are working do (in current directory):
 make PETSC_DIR=%s test
 ====================================\
 ''' % (self.installDir,self.installDir)
+    return
+
+  def outputDestDirDone(self):
+    print '''\
+====================================
+Copy to DESTDIR %s is now complete.
+Before use - please copy/install over to specified prefix: %s
+====================================\
+''' % (self.destDir,self.installDir)
     return
 
   def runsetup(self):
@@ -272,7 +281,10 @@ make PETSC_DIR=%s test
     return
 
   def runcopy(self):
-    print '*** Installing PETSc at',self.destDir, ' ***'
+    if self.destDir == self.installDir:
+      print '*** Installing PETSc at prefix location:',self.destDir, ' ***'
+    else:
+      print '*** Copying PETSc to DESTDIR location:',self.destDir, ' ***'
     if not os.path.exists(self.destDir):
       try:
         os.makedirs(self.destDir)
@@ -294,7 +306,10 @@ make PETSC_DIR=%s test
 
   def rundone(self):
     self.createUninstaller()
-    self.outputDone()
+    if self.destDir == self.installDir:
+      self.outputInstallDone()
+    else:
+      self.outputDestDirDone()
     return
 
   def run(self):
