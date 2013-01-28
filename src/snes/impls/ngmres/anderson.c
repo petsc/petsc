@@ -128,11 +128,11 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
       fMnorm = fnorm;
     }
 
-    ierr = SNESNGMRESFormCombinedSolution_Private(snes,l,XM,FM,fMnorm,X,XA,FA);
+    ierr = SNESNGMRESFormCombinedSolution_Private(snes,l,XM,FM,fMnorm,X,XA,FA);CHKERRQ(ierr);
 
     if (l < ngmres->msize)l++;
     k_restart++;
-    ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fnorm,XM);
+    ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fnorm,XM);CHKERRQ(ierr);
 
     ierr = VecNorm(FA,NORM_2,&fnorm);CHKERRQ(ierr);
     ierr = VecCopy(XA,X);CHKERRQ(ierr);

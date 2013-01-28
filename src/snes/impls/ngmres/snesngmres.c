@@ -275,13 +275,13 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     /* differences for selection and restart */
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE || ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
-      ierr = SNESNGMRESCalculateDifferences_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,&fAnorm);
+      ierr = SNESNGMRESCalculateDifferences_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,&fAnorm);CHKERRQ(ierr);
     } else {
       ierr = VecNorm(FA,NORM_2,&fAnorm);CHKERRQ(ierr);
     }
     if (PetscIsInfOrNanReal(fAnorm)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
     /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
-    ierr = SNESNGMRESSelect_Private(snes,k_restart,XM,FM,fMnorm,XA,FA,fAnorm,dnorm,fminnorm,dminnorm,X,F,Y,&fnorm);
+    ierr = SNESNGMRESSelect_Private(snes,k_restart,XM,FM,fMnorm,XA,FA,fAnorm,dnorm,fminnorm,dminnorm,X,F,Y,&fnorm);CHKERRQ(ierr);
     selectRestart = PETSC_FALSE;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
       ierr = SNESNGMRESSelectRestart_Private(snes,fAnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
@@ -307,9 +307,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       l = 1;
       /* q_{00} = nu */
       if (ngmres->candidate) {
-        ierr = SNESNGMRESUpdateSubspace_Private(snes,0,0,FM,fMnorm,XM);
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,0,0,FM,fMnorm,XM);CHKERRQ(ierr);
       } else {
-        ierr = SNESNGMRESUpdateSubspace_Private(snes,0,0,F,fMnorm,X);
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,0,0,F,fMnorm,X);CHKERRQ(ierr);
       }
     } else {
       /* select the current size of the subspace */
@@ -318,10 +318,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       /* place the current entry in the list of previous entries */
       if (ngmres->candidate) {
         if (fminnorm > fMnorm) fminnorm = fMnorm;
-        ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fMnorm,XM);
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fMnorm,XM);CHKERRQ(ierr);
       } else {
         if (fminnorm > fnorm) fminnorm = fnorm;
-        ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,F,fnorm,X);
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,F,fnorm,X);CHKERRQ(ierr);
       }
     }
 
