@@ -1,9 +1,9 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 
-PETSC_EXTERN PetscErrorCode SNESDestroy_NGMRES(SNES);
-PETSC_EXTERN PetscErrorCode SNESReset_NGMRES(SNES);
-PETSC_EXTERN PetscErrorCode SNESSetUp_NGMRES(SNES);
-PETSC_EXTERN PetscErrorCode SNESView_NGMRES(SNES,PetscViewer);
+extern PetscErrorCode SNESDestroy_NGMRES(SNES);
+extern PetscErrorCode SNESReset_NGMRES(SNES);
+extern PetscErrorCode SNESSetUp_NGMRES(SNES);
+extern PetscErrorCode SNESView_NGMRES(SNES,PetscViewer);
 
 PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
