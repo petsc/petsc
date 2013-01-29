@@ -827,10 +827,10 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
     /*
      Restore vector
      */
-    ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   }
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = PetscLogFlops(tot_its*(21.0));CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
