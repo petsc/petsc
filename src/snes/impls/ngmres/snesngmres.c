@@ -269,7 +269,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         }
       }
     }
-    ierr = SNESNGMRESFormCombinedSolution_Private(snes,l,XM,FM,fMnorm,X,XA,FA);
+    ierr = SNESNGMRESFormCombinedSolution_Private(snes,l,XM,FM,fMnorm,X,XA,FA);CHKERRQ(ierr);
     /* r = F(x) */
     if (fminnorm > fMnorm) fminnorm = fMnorm;  /* the minimum norm is now of F^M */
 
