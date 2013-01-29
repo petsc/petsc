@@ -720,7 +720,7 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
  */
 PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
 {
-  PetscInt       i,j,k,xs,ys,xm,ym,its,tot_its,sweeps,l;
+  PetscInt       i,j,k,xs,ys,xm,ym,its,tot_its,sweeps,l,m;
   PetscErrorCode ierr;
   PetscReal      hx,hy,hxdhy,hydhx,dhx,dhy,sc;
   PetscScalar    **x,**b,bij,F,F0=0,J,y,u,source,eu;
@@ -765,62 +765,64 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      xm, ym   - widths of local grid (no ghost points)
      */
     ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-    for (j=ys; j<ys+ym; j++) {
-      for (i=xs; i<xs+xm; i++) {
-        PetscReal xx = i*hx,yy = j*hy;
-        if (B) {
-          bij = b[j][i];
-        } else {
-          bij = 0.;
-        }
-        if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
-          /* boundary conditions are all zero Dirichlet */
-          x[j][i] = 0.0 + bij;
-        } else {
-          u = x[j][i];
-          for (k=0; k<its; k++) {
-            const PetscScalar
-              /* */
-              ux_E = dhx*(x[j][i+1]-u),
-              uy_E = 0.25*dhy*(x[j+1][i]+x[j+1][i+1]-x[j-1][i]-x[j-1][i+1]),
-              ux_W = dhx*(u-x[j][i-1]),
-              uy_W = 0.25*dhy*(x[j+1][i-1]+x[j+1][i]-x[j-1][i-1]-x[j-1][i]),
-              ux_N = 0.25*dhx*(x[j][i+1]+x[j+1][i+1]-x[j][i-1]-x[j+1][i-1]),
-              uy_N = dhy*(x[j+1][i]-u),
-              ux_S = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]),
-              uy_S = dhy*(u-x[j-1][i]),
-              e_E = eta(user,xx,yy,ux_E,uy_E),
-              e_W = eta(user,xx,yy,ux_W,uy_W),
-              e_N = eta(user,xx,yy,ux_N,uy_N),
-              e_S = eta(user,xx,yy,ux_S,uy_S),
-              de_E = deta(user,xx,yy,ux_E,uy_E),
-              de_W = deta(user,xx,yy,ux_W,uy_W),
-              de_N = deta(user,xx,yy,ux_N,uy_N),
-              de_S = deta(user,xx,yy,ux_S,uy_S),
-              newt_E = e_E+de_E*PetscSqr(ux_E),
-              newt_W = e_W+de_W*PetscSqr(ux_W),
-              newt_N = e_N+de_N*PetscSqr(uy_N),
-              newt_S = e_S+de_S*PetscSqr(uy_S),
-              uxx = -hy * (e_E*ux_E - e_W*ux_W),
-              uyy = -hx * (e_N*uy_N - e_S*uy_S);
-            if (sc) {
-              eu = PetscExpScalar(u);
-            } else {
-              eu = 0;
-            }
-            F = uxx + uyy - sc*eu - source - bij;
-            if (k == 0) F0 = F;
-            J = hxdhy*(newt_N + newt_S) + hydhx*(newt_E + newt_W) - sc*eu;
-            y       = F/J;
-            u       -= y;
-            tot_its++;
-            if (atol > PetscAbsReal(PetscRealPart(F)) ||
-                rtol*PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) ||
-                stol*PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) {
-              break;
-            }
+    for (m=0;m<2;m++) {
+      for (j=ys; j<ys+ym; j++) {
+        for (i=xs+(m+j)%2; i<xs+xm; i+=2) {
+          PetscReal xx = i*hx,yy = j*hy;
+          if (B) {
+            bij = b[j][i];
+          } else {
+            bij = 0.;
           }
-          x[j][i] = u;
+          if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
+            /* boundary conditions are all zero Dirichlet */
+            x[j][i] = 0.0 + bij;
+          } else {
+            u = x[j][i];
+            for (k=0; k<its; k++) {
+              const PetscScalar
+                /* */
+                ux_E = dhx*(x[j][i+1]-u),
+                uy_E = 0.25*dhy*(x[j+1][i]+x[j+1][i+1]-x[j-1][i]-x[j-1][i+1]),
+                ux_W = dhx*(u-x[j][i-1]),
+                uy_W = 0.25*dhy*(x[j+1][i-1]+x[j+1][i]-x[j-1][i-1]-x[j-1][i]),
+                ux_N = 0.25*dhx*(x[j][i+1]+x[j+1][i+1]-x[j][i-1]-x[j+1][i-1]),
+                uy_N = dhy*(x[j+1][i]-u),
+                ux_S = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]),
+                uy_S = dhy*(u-x[j-1][i]),
+                e_E = eta(user,xx,yy,ux_E,uy_E),
+                e_W = eta(user,xx,yy,ux_W,uy_W),
+                e_N = eta(user,xx,yy,ux_N,uy_N),
+                e_S = eta(user,xx,yy,ux_S,uy_S),
+                de_E = deta(user,xx,yy,ux_E,uy_E),
+                de_W = deta(user,xx,yy,ux_W,uy_W),
+                de_N = deta(user,xx,yy,ux_N,uy_N),
+                de_S = deta(user,xx,yy,ux_S,uy_S),
+                newt_E = e_E+de_E*PetscSqr(ux_E),
+                newt_W = e_W+de_W*PetscSqr(ux_W),
+                newt_N = e_N+de_N*PetscSqr(uy_N),
+                newt_S = e_S+de_S*PetscSqr(uy_S),
+                uxx = -hy * (e_E*ux_E - e_W*ux_W),
+                uyy = -hx * (e_N*uy_N - e_S*uy_S);
+              if (sc) {
+                eu = PetscExpScalar(u);
+              } else {
+                eu = 0;
+              }
+              F = uxx + uyy - sc*eu - source - bij;
+              if (k == 0) F0 = F;
+              J = hxdhy*(newt_N + newt_S) + hydhx*(newt_E + newt_W) - sc*eu;
+              y       = F/J;
+              u       -= y;
+              tot_its++;
+              if (atol > PetscAbsReal(PetscRealPart(F)) ||
+                  rtol*PetscAbsReal(PetscRealPart(F0)) > PetscAbsReal(PetscRealPart(F)) ||
+                  stol*PetscAbsReal(PetscRealPart(u)) > PetscAbsReal(PetscRealPart(y))) {
+                break;
+              }
+            }
+            x[j][i] = u;
+          }
         }
       }
     }
