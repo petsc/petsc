@@ -34,7 +34,7 @@ static PetscErrorCode ourcreatematrix(DM dm,MatType type,Mat *A)
     type = PETSC_NULL_CHARACTER_Fortran;
     len = 0;
   }
-  PetscObjectUseFortranCallback(dm,_cb.creatematrix,(DM*,CHAR PETSC_MIXED_LEN(),Mat*,PetscErrorCode* PETSC_END_LEN()),
+  PetscObjectUseFortranCallback(dm,_cb.creatematrix,(DM*,CHAR PETSC_MIXED_LEN_PROTO,Mat*,PetscErrorCode* PETSC_END_LEN_PROTO),
                                 (&dm,ftype PETSC_MIXED_LEN_CALL(len),A,&ierr PETSC_END_LEN_CALL(len)));
   return 0;
 }
