@@ -1235,7 +1235,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreateNest"
-/*@
+/*@C
    VecCreateNest - Creates a new vector containing several nested subvectors, each stored separately
 
    Collective on Vec
