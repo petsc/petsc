@@ -338,8 +338,17 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
           }
         } else if (user->initial == 0) {
           x[j][i] = 0.;
+        } else if (user->initial == 1) {
+          const PetscReal
+            xx = 2*(PetscReal)i/(Mx-1) - 1,
+            yy = 2*(PetscReal)j/(My-1) - 1;
+          x[j][i] = (1 - xx*xx) * (1-yy*yy) * xx * yy;
         } else {
-          x[j][i] = sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+          if (user->lambda != 0) {
+            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+          } else {
+            x[j][i] = 0.5*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+          }
         }
       }
     }
