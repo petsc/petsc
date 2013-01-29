@@ -8,7 +8,7 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
- if (!*kdm) PetscFunctionReturn(0);
+  if (!*kdm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*kdm),DMTS_CLASSID,1);
   if (--((PetscObject)(*kdm))->refct > 0) {*kdm = 0; PetscFunctionReturn(0);}
   if ((*kdm)->ops->destroy) {ierr = ((*kdm)->ops->destroy)(*kdm);CHKERRQ(ierr);}
@@ -161,21 +161,21 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(kdm,DMTS_CLASSID,1);
   PetscValidHeaderSpecific(nkdm,DMTS_CLASSID,2);
-  nkdm->ops->rhsfunction    = kdm->ops->rhsfunction;
-  nkdm->ops->rhsjacobian    = kdm->ops->rhsjacobian;
-  nkdm->ops->ifunction      = kdm->ops->ifunction;
-  nkdm->ops->ijacobian      = kdm->ops->ijacobian;
-  nkdm->ops->solution       = kdm->ops->solution;
-  nkdm->ops->destroy        = kdm->ops->destroy;
-  nkdm->ops->duplicate      = kdm->ops->duplicate;
+  nkdm->ops->rhsfunction = kdm->ops->rhsfunction;
+  nkdm->ops->rhsjacobian = kdm->ops->rhsjacobian;
+  nkdm->ops->ifunction   = kdm->ops->ifunction;
+  nkdm->ops->ijacobian   = kdm->ops->ijacobian;
+  nkdm->ops->solution    = kdm->ops->solution;
+  nkdm->ops->destroy     = kdm->ops->destroy;
+  nkdm->ops->duplicate   = kdm->ops->duplicate;
 
-  nkdm->rhsfunctionctx      = kdm->rhsfunctionctx;
-  nkdm->rhsjacobianctx      = kdm->rhsjacobianctx;
-  nkdm->ifunctionctx        = kdm->ifunctionctx;
-  nkdm->ijacobianctx        = kdm->ijacobianctx;
-  nkdm->solutionctx         = kdm->solutionctx;
+  nkdm->rhsfunctionctx = kdm->rhsfunctionctx;
+  nkdm->rhsjacobianctx = kdm->rhsjacobianctx;
+  nkdm->ifunctionctx   = kdm->ifunctionctx;
+  nkdm->ijacobianctx   = kdm->ijacobianctx;
+  nkdm->solutionctx    = kdm->solutionctx;
 
-  nkdm->data             = kdm->data;
+  nkdm->data = kdm->data;
 
   /*
   nkdm->fortran_func_pointers[0] = kdm->fortran_func_pointers[0];
@@ -252,11 +252,11 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
   ierr = DMGetDMTS(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->originaldm) sdm->originaldm = dm;
   if (sdm->originaldm != dm) {  /* Copy on write */
-    DMTS          oldsdm = sdm;
-    ierr = PetscInfo(dm,"Copying DMTS due to write\n");CHKERRQ(ierr);
-    ierr = DMTSCreate(((PetscObject)dm)->comm,&sdm);CHKERRQ(ierr);
-    ierr = DMTSCopy(oldsdm,sdm);CHKERRQ(ierr);
-    ierr = DMTSDestroy((DMTS*)&dm->dmts);CHKERRQ(ierr);
+    DMTS oldsdm = sdm;
+    ierr     = PetscInfo(dm,"Copying DMTS due to write\n");CHKERRQ(ierr);
+    ierr     = DMTSCreate(((PetscObject)dm)->comm,&sdm);CHKERRQ(ierr);
+    ierr     = DMTSCopy(oldsdm,sdm);CHKERRQ(ierr);
+    ierr     = DMTSDestroy((DMTS*)&dm->dmts);CHKERRQ(ierr);
     dm->dmts = (PetscObject) sdm;
   }
   *tsdm = sdm;
@@ -288,11 +288,11 @@ PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = DMTSDestroy((DMTS*)&dmdest->dmts);CHKERRQ(ierr);
+  ierr         = DMTSDestroy((DMTS*)&dmdest->dmts);CHKERRQ(ierr);
   dmdest->dmts = dmsrc->dmts;
-  ierr = PetscObjectReference(dmdest->dmts);CHKERRQ(ierr);
-  ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PetscObjectReference(dmdest->dmts);CHKERRQ(ierr);
+  ierr         = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

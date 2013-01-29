@@ -19,7 +19,7 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
    User-defined data structures and routines
 */
 typedef struct {
-  PetscReal      c;
+  PetscReal c;
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
@@ -40,12 +40,12 @@ int main(int argc,char **argv)
   AppCtx         user;              /* user-defined work context */
   PetscBool      coloring=PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   }
 
   ftime = 1.0;
-  ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr  = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -138,10 +138,10 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -210,12 +210,12 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *J,Mat *Jpre,MatStructure
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  hx = 1.0/(PetscReal)(info.mx-1); sx = 1.0/(hx*hx);
-  hy = 1.0/(PetscReal)(info.my-1); sy = 1.0/(hy*hy);
+  hx   = 1.0/(PetscReal)(info.mx-1); sx = 1.0/(hx*hx);
+  hy   = 1.0/(PetscReal)(info.my-1); sy = 1.0/(hy*hy);
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
-      PetscInt nc = 0;
-      MatStencil row,col[5];
+      PetscInt    nc = 0;
+      MatStencil  row,col[5];
       PetscScalar val[5];
       row.i = i; row.j = j;
       if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
@@ -253,10 +253,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
+  hx = 1.0/(PetscReal)(Mx-1);
+  hy = 1.0/(PetscReal)(My-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -270,11 +270,8 @@ PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
       r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
-      if (r < .125) {
-        u[j][i] = PetscExpScalar(c*r*r*r);
-      } else {
-        u[j][i] = 0.0;
-      }
+      if (r < .125) u[j][i] = PetscExpScalar(c*r*r*r);
+      else u[j][i] = 0.0;
     }
   }
 

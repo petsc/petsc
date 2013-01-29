@@ -38,45 +38,45 @@ typedef struct {PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal 
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
-  Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
-  PetscInt               steps,Mx,maxsteps = 10000000;
-  PetscErrorCode         ierr;
-  DM                     da;
-  MatFDColoring          matfdcoloring;
-  ISColoring             iscoloring;
-  PetscReal              dt;
-  PetscReal              vbounds[] = {-100000,100000,-1.1,1.1};
-  PetscBool              wait;
-  Vec                    ul,uh;
-  SNES                   snes;
-  UserCtx                ctx;
+  TS             ts;                           /* nonlinear solver */
+  Vec            x,r;                          /* solution, residual vectors */
+  Mat            J;                            /* Jacobian matrix */
+  PetscInt       steps,Mx,maxsteps = 10000000;
+  PetscErrorCode ierr;
+  DM             da;
+  MatFDColoring  matfdcoloring;
+  ISColoring     iscoloring;
+  PetscReal      dt;
+  PetscReal      vbounds[] = {-100000,100000,-1.1,1.1};
+  PetscBool      wait;
+  Vec            ul,uh;
+  SNES           snes;
+  UserCtx        ctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  ctx.kappa = 1.0;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  ctx.kappa       = 1.0;
+  ierr            = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
-  ctx.energy = 1;
+  ierr            = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
+  ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
+  ctx.energy      = 1;
   /* ierr = PetscOptionsGetInt(PETSC_NULL,"-energy",&ctx.energy,PETSC_NULL);CHKERRQ(ierr); */
-  ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic, 4=degenerate mobility and weird splitting)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
-  ctx.tol = 1.0e-8;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
-  ctx.theta = .001;
+  ierr        = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic, 4=degenerate mobility and weird splitting)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
+  ctx.tol     = 1.0e-8;
+  ierr        = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
+  ctx.theta   = .001;
   ctx.theta_c = 1.0;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-theta",&ctx.theta,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-theta_c",&ctx.theta_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(PETSC_NULL,"-theta",&ctx.theta,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(PETSC_NULL,"-theta_c",&ctx.theta_c,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10 ,2,2,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,2,2,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"Biharmonic heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  wait  = PETSC_FALSE;
+  wait = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-wait",&wait,PETSC_NULL);CHKERRQ(ierr);
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
@@ -208,9 +208,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localXdot);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
+  hx = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -249,15 +249,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
         f[i].w += x[i].u;
         break;
       case 3: /* logarithmic */
-        if (x[i].u < -1.0 + 2.0*ctx->tol) {
-          f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
-        }
-        else if (x[i].u > 1.0 - 2.0*ctx->tol) {
-          f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + ctx->theta_c*x[i].u;
-        }
-        else {
-          f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
-        }
+        if (x[i].u < -1.0 + 2.0*ctx->tol)      f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
+        else if (x[i].u > 1.0 - 2.0*ctx->tol)  f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + ctx->theta_c*x[i].u;
+        else                                   f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         break;
       case 4:
         break;
@@ -267,8 +261,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
     if (ctx->energy==4) {
       f[i].u = xdot[i].u;
       /* approximation of \grad (M(u) \grad w), where M(u) = (1-u^2) */
-      r = (1.0 - x[i+1].u*x[i+1].u)*(x[i+2].w-x[i].w)*.5/hx;
-      l = (1.0 - x[i-1].u*x[i-1].u)*(x[i].w-x[i-2].w)*.5/hx;
+      r       = (1.0 - x[i+1].u*x[i+1].u)*(x[i+2].w-x[i].w)*.5/hx;
+      l       = (1.0 - x[i-1].u*x[i-1].u)*(x[i].w-x[i-2].w)*.5/hx;
       f[i].u -= (r - l)*.5/hx;
       f[i].u += 2.0*ctx->theta_c*x[i].u*(x[i+1].u-x[i-1].u)*(x[i+1].u-x[i-1].u)*.25*sx - (ctx->theta - ctx->theta_c*(1-x[i].u*x[i].u))*(x[i+1].u + x[i-1].u - 2.0*x[i].u)*sx;
     }
@@ -297,10 +291,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)Mx;
-  sx     = 1.0/(hx*hx);
+  hx = 1.0/(PetscReal)Mx;
+  sx = 1.0/(hx*hx);
 
   /*
      Get pointers to vector data
@@ -317,17 +311,12 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   */
   for (i=xs; i<xs+xm; i++) {
     xx = i*hx;
-    r = PetscSqrtScalar((xx-.5)*(xx-.5));
-    if (r < .125) {
-      x[i].u = 1.0;
-    } else {
-      x[i].u = -.50;
-    }
+    r  = PetscSqrtScalar((xx-.5)*(xx-.5));
+    if (r < .125) x[i].u = 1.0;
+    else          x[i].u = -.50;
     /*  u[i] = PetscPowScalar(x - .5,4.0); */
   }
-  for (i=xs; i<xs+xm; i++) {
-    x[i].w = -kappa*(x[i-1].u + x[i+1].u - 2.0*x[i].u)*sx;
-  }
+  for (i=xs; i<xs+xm; i++) x[i].w = -kappa*(x[i-1].u + x[i+1].u - 2.0*x[i].u)*sx;
 
   /*
      Restore vectors

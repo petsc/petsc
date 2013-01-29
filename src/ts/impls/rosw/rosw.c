@@ -15,8 +15,8 @@
 #include <../src/mat/blockinvert.h>
 
 static TSRosWType TSRosWDefault = TSROSWRA34PW2;
-static PetscBool TSRosWRegisterAllCalled;
-static PetscBool TSRosWPackageInitialized;
+static PetscBool  TSRosWRegisterAllCalled;
+static PetscBool  TSRosWPackageInitialized;
 
 typedef struct _RosWTableau *RosWTableau;
 struct _RosWTableau {
@@ -42,7 +42,7 @@ struct _RosWTableau {
 typedef struct _RosWTableauLink *RosWTableauLink;
 struct _RosWTableauLink {
   struct _RosWTableau tab;
-  RosWTableauLink next;
+  RosWTableauLink     next;
 };
 static RosWTableauLink RosWTableauList;
 
@@ -314,55 +314,56 @@ PetscErrorCode TSRosWRegisterAll(void)
   TSRosWRegisterAllCalled = PETSC_TRUE;
 
   {
-    const PetscReal
-      A = 0,
-      Gamma = 1,
-      b = 1,
-      binterpt=1;
+    const PetscReal A = 0;
+    const PetscReal Gamma = 1;
+    const PetscReal b = 1;
+    const PetscReal binterpt=1;
 
     ierr = TSRosWRegister(TSROSWTHETA1,1,1,&A,&Gamma,&b,PETSC_NULL,1,&binterpt);CHKERRQ(ierr);
   }
 
   {
-    const PetscReal
-      A= 0,
-      Gamma = 0.5,
-      b = 1,
-      binterpt=1;
+    const PetscReal A = 0;
+    const PetscReal Gamma = 0.5;
+    const PetscReal b = 1;
+    const PetscReal binterpt=1;
+
     ierr = TSRosWRegister(TSROSWTHETA2,2,1,&A,&Gamma,&b,PETSC_NULL,1,&binterpt);CHKERRQ(ierr);
   }
 
   {
     /*const PetscReal g = 1. + 1./PetscSqrtReal(2.0);   Direct evaluation: 1.707106781186547524401. Used for setting up arrays of values known at compile time below. */
     const PetscReal
-      A[2][2] = {{0,0}, {1.,0}},
+      A[2][2]     = {{0,0}, {1.,0}},
       Gamma[2][2] = {{1.707106781186547524401,0}, {-2.*1.707106781186547524401,1.707106781186547524401}},
-      b[2] = {0.5,0.5},
-      b1[2] = {1.0,0.0};
-      PetscReal  binterpt[2][2];
-      binterpt[0][0] = 1.707106781186547524401 - 1.0;
-      binterpt[1][0] = 2.0 - 1.707106781186547524401;
-      binterpt[0][1] = 1.707106781186547524401 - 1.5;
-      binterpt[1][1] = 1.5 - 1.707106781186547524401;
-      ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,b1,2,&binterpt[0][0]);CHKERRQ(ierr);
+      b[2]        = {0.5,0.5},
+      b1[2]       = {1.0,0.0};
+    PetscReal binterpt[2][2];
+    binterpt[0][0] = 1.707106781186547524401 - 1.0;
+    binterpt[1][0] = 2.0 - 1.707106781186547524401;
+    binterpt[0][1] = 1.707106781186547524401 - 1.5;
+    binterpt[1][1] = 1.5 - 1.707106781186547524401;
+
+    ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,b1,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     /*const PetscReal g = 1. - 1./PetscSqrtReal(2.0);   Direct evaluation: 0.2928932188134524755992. Used for setting up arrays of values known at compile time below. */
     const PetscReal
-      A[2][2] = {{0,0}, {1.,0}},
+      A[2][2]     = {{0,0}, {1.,0}},
       Gamma[2][2] = {{0.2928932188134524755992,0}, {-2.*0.2928932188134524755992,0.2928932188134524755992}},
-      b[2] = {0.5,0.5},
-      b1[2] = {1.0,0.0};
-      PetscReal  binterpt[2][2];
-      binterpt[0][0] = 0.2928932188134524755992 - 1.0;
-      binterpt[1][0] = 2.0 - 0.2928932188134524755992;
-      binterpt[0][1] = 0.2928932188134524755992 - 1.5;
-      binterpt[1][1] = 1.5 - 0.2928932188134524755992;
+      b[2]        = {0.5,0.5},
+      b1[2]       = {1.0,0.0};
+    PetscReal binterpt[2][2];
+    binterpt[0][0] = 0.2928932188134524755992 - 1.0;
+    binterpt[1][0] = 2.0 - 0.2928932188134524755992;
+    binterpt[0][1] = 0.2928932188134524755992 - 1.5;
+    binterpt[1][1] = 1.5 - 0.2928932188134524755992;
+
     ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b,b1,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     /*const PetscReal g = 7.8867513459481287e-01; Directly written in-place below */
-    PetscReal  binterpt[3][2];
+    PetscReal binterpt[3][2];
     const PetscReal
       A[3][3] = {{0,0,0},
                  {1.5773502691896257e+00,0,0},
@@ -370,15 +371,16 @@ PetscErrorCode TSRosWRegisterAll(void)
       Gamma[3][3] = {{7.8867513459481287e-01,0,0},
                      {-1.5773502691896257e+00,7.8867513459481287e-01,0},
                      {-6.7075317547305480e-01,-1.7075317547305482e-01,7.8867513459481287e-01}},
-      b[3] = {1.0566243270259355e-01,4.9038105676657971e-02,8.4529946162074843e-01},
+      b[3]  = {1.0566243270259355e-01,4.9038105676657971e-02,8.4529946162074843e-01},
       b2[3] = {-1.7863279495408180e-01,1./3.,8.4529946162074843e-01};
 
-      binterpt[0][0]=-0.8094010767585034;
-      binterpt[1][0]=-0.5;
-      binterpt[2][0]=2.3094010767585034;
-      binterpt[0][1]=0.9641016151377548;
-      binterpt[1][1]=0.5;
-      binterpt[2][1]=-1.4641016151377548;
+      binterpt[0][0] = -0.8094010767585034;
+      binterpt[1][0] = -0.5;
+      binterpt[2][0] = 2.3094010767585034;
+      binterpt[0][1] = 0.9641016151377548;
+      binterpt[1][1] = 0.5;
+      binterpt[2][1] = -1.4641016151377548;
+
       ierr = TSRosWRegister(TSROSWRA3PW,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
@@ -393,7 +395,7 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {-8.7173304301691801e-01,4.3586652150845900e-01,0,0},
                      {-9.0338057013044082e-01,5.4180672388095326e-02,4.3586652150845900e-01,0},
                      {2.4212380706095346e-01,-1.2232505839045147e+00,5.4526025533510214e-01,4.3586652150845900e-01}},
-      b[4] = {2.4212380706095346e-01,-1.2232505839045147e+00,1.5452602553351020e+00,4.3586652150845900e-01},
+      b[4]  = {2.4212380706095346e-01,-1.2232505839045147e+00,1.5452602553351020e+00,4.3586652150845900e-01},
       b2[4] = {3.7810903145819369e-01,-9.6042292212423178e-02,5.0000000000000000e-01,2.1793326075422950e-01};
 
     binterpt[0][0]=1.0564298455794094;
@@ -422,8 +424,9 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {1.,0.5,0,0},
                      {-0.25,-0.25,0.5,0},
                      {1./12,1./12,-2./3,0.5}},
-      b[4] = {5./6,-1./6,-1./6,0.5},
+      b[4]  = {5./6,-1./6,-1./6,0.5},
       b2[4] = {0.75,-0.25,0.5,0};
+
     ierr = TSRosWRegister(TSROSWRODAS3,3,4,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
   }
   {
@@ -435,18 +438,18 @@ PetscErrorCode TSRosWRegisterAll(void)
       Gamma[3][3] = {{0.43586652150845899941601945119356,0,0},
                      {-0.19294655696029095575009695436041,0.43586652150845899941601945119356,0},
                      {0,1.74927148125794685173529749738960,0.43586652150845899941601945119356}},
-      b[3] = {-0.75457412385404315829818998646589,1.94100407061964420292840123379419,-0.18642994676560104463021124732829},
+      b[3]  = {-0.75457412385404315829818998646589,1.94100407061964420292840123379419,-0.18642994676560104463021124732829},
       b2[3] = {-1.53358745784149585370766523913002,2.81745131148625772213931745457622,-0.28386385364476186843165221544619};
 
-      PetscReal  binterpt[3][2];
-      binterpt[0][0]=3.793692883777660870425141387941;
-      binterpt[1][0]=-2.918692883777660870425141387941;
-      binterpt[2][0]=0.125;
-      binterpt[0][1]=-0.725741064379812106687651020584;
-      binterpt[1][1]=0.559074397713145440020984353917;
-      binterpt[2][1]=0.16666666666666666666666666666667;
+    PetscReal binterpt[3][2];
+    binterpt[0][0] = 3.793692883777660870425141387941;
+    binterpt[1][0] = -2.918692883777660870425141387941;
+    binterpt[2][0] = 0.125;
+    binterpt[0][1] = -0.725741064379812106687651020584;
+    binterpt[1][1] = 0.559074397713145440020984353917;
+    binterpt[2][1] = 0.16666666666666666666666666666667;
 
-      ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSWSANDU3,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
   {
     /*const PetscReal s3 = PetscSqrtReal(3.),g = (3.0+s3)/6.0;
@@ -460,16 +463,17 @@ PetscErrorCode TSRosWRegisterAll(void)
       Gamma[3][3] = {{0,0,0},
                      {(-3.0-1.732050807568877293527)/6.0,0.7886751345948128822546,0},
                      {(-3.0-1.732050807568877293527)/24.0,(-3.0-1.732050807568877293527)/8.0,0.7886751345948128822546}},
-        b[3] = {1./6.,1./6.,2./3.},
-        b2[3] = {1./4.,1./4.,1./2.};
-    PetscReal  binterpt[3][2];
-    
+      b[3]  = {1./6.,1./6.,2./3.},
+      b2[3] = {1./4.,1./4.,1./2.};
+    PetscReal binterpt[3][2];
+
     binterpt[0][0]=0.089316397477040902157517886164709;
     binterpt[1][0]=-0.91068360252295909784248211383529;
     binterpt[2][0]=1.8213672050459181956849642276706;
     binterpt[0][1]=0.077350269189625764509148780501957;
     binterpt[1][1]=1.077350269189625764509148780502;
     binterpt[2][1]=-1.1547005383792515290182975610039;
+
     ierr = TSRosWRegister(TSROSWASSP3P3S1C,3,3,&A[0][0],&Gamma[0][0],b,b2,2,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
@@ -483,10 +487,10 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {0.0,1./4.,0,0},
                      {-2.,-2./3.,2./3.,0},
                      {1./2.,5./36.,-2./9,0}},
-      b[4] = {1./6.,1./6.,1./6.,1./2.},
+      b[4]  = {1./6.,1./6.,1./6.,1./2.},
       b2[4] = {1./8.,3./4.,1./8.,0};
-    PetscReal  binterpt[4][3];
-    
+    PetscReal binterpt[4][3];
+
     binterpt[0][0]=6.25;
     binterpt[1][0]=-30.25;
     binterpt[2][0]=1.75;
@@ -499,6 +503,7 @@ PetscErrorCode TSRosWRegisterAll(void)
     binterpt[1][2]=-28.333333333333333333333333333333;
     binterpt[2][2]=1.6666666666666666666666666666667;
     binterpt[3][2]=23.;
+
     ierr = TSRosWRegister(TSROSWLASSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
@@ -512,10 +517,10 @@ PetscErrorCode TSRosWRegisterAll(void)
                      {0.0,3./4.,0,0},
                      {-2./3.,-23./9.,2./9.,0},
                      {1./18.,65./108.,-2./27,0}},
-      b[4] = {1./6.,1./6.,1./6.,1./2.},
+      b[4]  = {1./6.,1./6.,1./6.,1./2.},
       b2[4] = {3./16.,10./16.,3./16.,0};
-    PetscReal  binterpt[4][3];
-    
+    PetscReal binterpt[4][3];
+
     binterpt[0][0]=1.6911764705882352941176470588235;
     binterpt[1][0]=3.6813725490196078431372549019608;
     binterpt[2][0]=0.23039215686274509803921568627451;
@@ -528,12 +533,13 @@ PetscErrorCode TSRosWRegisterAll(void)
     binterpt[1][2]=2.7254901960784313725490196078431;
     binterpt[2][2]=0.25490196078431372549019607843137;
     binterpt[3][2]=-2.4117647058823529411764705882353;
+
     ierr = TSRosWRegister(TSROSWLLSSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
   {
     PetscReal A[4][4],Gamma[4][4],b[4],b2[4];
-    PetscReal  binterpt[4][3];
+    PetscReal binterpt[4][3];
 
     Gamma[0][0]=0.4358665215084589994160194475295062513822671686978816;
     Gamma[0][1]=0; Gamma[0][2]=0; Gamma[0][3]=0;
@@ -717,27 +723,27 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   PetscValidPointer(b,6);
   if (bembed) PetscValidPointer(bembed,7);
 
-  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
-  t = &link->tab;
-  ierr = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
+  ierr     = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr     = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  t        = &link->tab;
+  ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
-  t->s = s;
-  ierr = PetscMalloc5(s*s,PetscReal,&t->A,s*s,PetscReal,&t->Gamma,s,PetscReal,&t->b,s,PetscReal,&t->ASum,s,PetscReal,&t->GammaSum);CHKERRQ(ierr);
-  ierr = PetscMalloc5(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv,s,PetscBool,&t->GammaZeroDiag,s*s,PetscReal,&t->GammaExplicitCorr);CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->GammaExplicitCorr,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
-  ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
+  t->s     = s;
+  ierr     = PetscMalloc5(s*s,PetscReal,&t->A,s*s,PetscReal,&t->Gamma,s,PetscReal,&t->b,s,PetscReal,&t->ASum,s,PetscReal,&t->GammaSum);CHKERRQ(ierr);
+  ierr     = PetscMalloc5(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv,s,PetscBool,&t->GammaZeroDiag,s*s,PetscReal,&t->GammaExplicitCorr);CHKERRQ(ierr);
+  ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
+  ierr     = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
+  ierr     = PetscMemcpy(t->GammaExplicitCorr,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
+  ierr     = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
   if (bembed) {
     ierr = PetscMalloc2(s,PetscReal,&t->bembed,s,PetscReal,&t->bembedt);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
   }
   for (i=0; i<s; i++) {
-    t->ASum[i] = 0;
+    t->ASum[i]     = 0;
     t->GammaSum[i] = 0;
     for (j=0; j<s; j++) {
-      t->ASum[i] += A[i*s+j];
+      t->ASum[i]     += A[i*s+j];
       t->GammaSum[i] += Gamma[i*s+j];
     }
   }
@@ -758,7 +764,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   case 3: ierr = PetscKernel_A_gets_inverse_A_3(GammaInv,0);CHKERRQ(ierr); break;
   case 4: ierr = PetscKernel_A_gets_inverse_A_4(GammaInv,0);CHKERRQ(ierr); break;
   case 5: {
-    PetscInt ipvt5[5];
+    PetscInt  ipvt5[5];
     MatScalar work5[5*5];
     ierr = PetscKernel_A_gets_inverse_A_5(GammaInv,ipvt5,work5,0);CHKERRQ(ierr); break;
   }
@@ -857,26 +863,26 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   M[0][0] = one; M[0][1] = one;      M[0][2] = one;      /* 7.15a */
   M[1][0] = 0.0; M[1][1] = a2*a2;    M[1][2] = a4*a4;    /* 7.15c */
   M[2][0] = 0.0; M[2][1] = a2*a2*a2; M[2][2] = a4*a4*a4; /* 7.15e */
-  rhs[0] = one - b3;
-  rhs[1] = one/three - a3*a3*b3;
-  rhs[2] = one/four - a3*a3*a3*b3;
-  ierr = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
-  b1 = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
-  b2 = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
-  b4 = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
+  rhs[0]  = one - b3;
+  rhs[1]  = one/three - a3*a3*b3;
+  rhs[2]  = one/four - a3*a3*a3*b3;
+  ierr    = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
+  b1      = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
+  b2      = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
+  b4      = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
 
   /* Step 3 */
-  beta43 = (p56 - a2*p43) / (b4*a3*a3*(a3 - a2)); /* 7.21 */
-  beta32beta2p =  p44 / (b4*beta43);              /* 7.15h */
+  beta43       = (p56 - a2*p43) / (b4*a3*a3*(a3 - a2)); /* 7.21 */
+  beta32beta2p =  p44 / (b4*beta43);                    /* 7.15h */
   beta4jbetajp = (p32 - b3*beta32beta2p) / b4;
-  M[0][0] = b2;                                    M[0][1] = b3;                 M[0][2] = b4;
-  M[1][0] = a4*a4*beta32beta2p-a3*a3*beta4jbetajp; M[1][1] = a2*a2*beta4jbetajp; M[1][2] = -a2*a2*beta32beta2p;
-  M[2][0] = b4*beta43*a3*a3-p43;                   M[2][1] = -b4*beta43*a2*a2;   M[2][2] = 0;
-  rhs[0] = one/two - gamma; rhs[1] = 0; rhs[2] = -a2*a2*p32;
-  ierr = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
-  beta2p = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
-  beta3p = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
-  beta4p = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
+  M[0][0]      = b2;                                    M[0][1] = b3;                 M[0][2] = b4;
+  M[1][0]      = a4*a4*beta32beta2p-a3*a3*beta4jbetajp; M[1][1] = a2*a2*beta4jbetajp; M[1][2] = -a2*a2*beta32beta2p;
+  M[2][0]      = b4*beta43*a3*a3-p43;                   M[2][1] = -b4*beta43*a2*a2;   M[2][2] = 0;
+  rhs[0]       = one/two - gamma; rhs[1] = 0; rhs[2] = -a2*a2*p32;
+  ierr         = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
+  beta2p       = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
+  beta3p       = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
+  beta4p       = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
 
   /* Step 4: back-substitute */
   beta32 = beta32beta2p / beta2p;
@@ -887,10 +893,10 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   a32 = p42 / (b3*a3*beta2p + b4*a4*beta2p);
   a42 = a32;
 
-  A[0][0] = 0;          A[0][1] = 0;   A[0][2] = 0;   A[0][3] = 0;
-  A[1][0] = a2;         A[1][1] = 0;   A[1][2] = 0;   A[1][3] = 0;
-  A[2][0] = a3-a32;     A[2][1] = a32; A[2][2] = 0;   A[2][3] = 0;
-  A[3][0] = a4-a43-a42; A[3][1] = a42; A[3][2] = a43; A[3][3] = 0;
+  A[0][0]     = 0;          A[0][1] = 0;   A[0][2] = 0;   A[0][3] = 0;
+  A[1][0]     = a2;         A[1][1] = 0;   A[1][2] = 0;   A[1][3] = 0;
+  A[2][0]     = a3-a32;     A[2][1] = a32; A[2][2] = 0;   A[2][3] = 0;
+  A[3][0]     = a4-a43-a42; A[3][1] = a42; A[3][2] = a43; A[3][3] = 0;
   Gamma[0][0] = gamma;                        Gamma[0][1] = 0;              Gamma[0][2] = 0;              Gamma[0][3] = 0;
   Gamma[1][0] = beta2p-A[1][0];               Gamma[1][1] = gamma;          Gamma[1][2] = 0;              Gamma[1][3] = 0;
   Gamma[2][0] = beta3p-beta32-A[2][0];        Gamma[2][1] = beta32-A[2][1]; Gamma[2][2] = gamma;          Gamma[2][3] = 0;
@@ -931,7 +937,7 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   RosWTableau    tab  = ros->tableau;
-  PetscScalar    *w = ros->work;
+  PetscScalar    *w   = ros->work;
   PetscInt       i;
   PetscErrorCode ierr;
 
@@ -987,22 +993,22 @@ static PetscErrorCode TSStep_RosW(TS ts)
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   next_time_step = ts->time_step;
-  accept = PETSC_TRUE;
-  ros->status = TS_STEP_INCOMPLETE;
+  accept         = PETSC_TRUE;
+  ros->status    = TS_STEP_INCOMPLETE;
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     const PetscReal h = ts->time_step;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
-    ierr = VecCopy(ts->vec_sol,ros->VecSolPrev);CHKERRQ(ierr);/*move this at the end*/
+    ierr = VecCopy(ts->vec_sol,ros->VecSolPrev);CHKERRQ(ierr); /*move this at the end*/
     for (i=0; i<s; i++) {
       ros->stage_time = ts->ptime + h*ASum[i];
       ierr = TSPreStage(ts,ros->stage_time);CHKERRQ(ierr);
       if (GammaZeroDiag[i]) {
         ros->stage_explicit = PETSC_TRUE;
-        ros->scoeff = 1.;
+        ros->scoeff         = 1.;
       } else {
         ros->stage_explicit = PETSC_FALSE;
-        ros->scoeff = 1./Gamma[i*s+i];
+        ros->scoeff         = 1./Gamma[i*s+i];
       }
 
       ierr = VecCopy(ts->vec_sol,Zstage);CHKERRQ(ierr);
@@ -1038,7 +1044,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         for (j=0; j<i; j++) w[j] = GammaExplicitCorr[i*s+j];
         ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr);
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
-        str = SAME_NONZERO_PATTERN;
+        str  = SAME_NONZERO_PATTERN;
         ierr = TSGetIJacobian(ts,&J,&Jp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
         ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
@@ -1058,7 +1064,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
     if (accept) {
       /* ignore next_scheme for now */
-      ts->ptime += ts->time_step;
+      ts->ptime    += ts->time_step;
       ts->time_step = next_time_step;
       ts->steps++;
       ros->status = TS_STEP_COMPLETE;
@@ -1067,9 +1073,9 @@ static PetscErrorCode TSStep_RosW(TS ts)
       for (i=0; i<s; i++) w[i] = -tab->bt[i];
       ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
       ts->time_step = next_time_step;
-      ros->status = TS_STEP_INCOMPLETE;
+      ros->status   = TS_STEP_INCOMPLETE;
     }
-    reject_step: continue;
+reject_step: continue;
   }
   if (ros->status != TS_STEP_COMPLETE && !ts->reason) ts->reason = TS_DIVERGED_STEP_REJECTED;
   PetscFunctionReturn(0);
@@ -1080,15 +1086,15 @@ static PetscErrorCode TSStep_RosW(TS ts)
 static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
 {
   TS_RosW         *ros = (TS_RosW*)ts->data;
-  PetscInt        s = ros->tableau->s,pinterp = ros->tableau->pinterp,i,j;
+  PetscInt        s    = ros->tableau->s,pinterp = ros->tableau->pinterp,i,j;
   PetscReal       h;
   PetscReal       tt,t;
   PetscScalar     *bt;
   const PetscReal *Bt = ros->tableau->binterpt;
   PetscErrorCode  ierr;
   const PetscReal *GammaInv = ros->tableau->GammaInv;
-  PetscScalar     *w   = ros->work;
-  Vec             *Y   = ros->Y;
+  PetscScalar     *w        = ros->work;
+  Vec             *Y        = ros->Y;
 
   PetscFunctionBegin;
   if (!Bt) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSRosW %s does not have an interpolation formula",ros->tableau->name);
@@ -1118,7 +1124,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
   ierr = VecZeroEntries(U);CHKERRQ(ierr);
 
   /*U<- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
-  for (j=0; j<s; j++)  w[j]=0;
+  for (j=0; j<s; j++) w[j]=0;
   for (j=0; j<s; j++) {
     for (i=j; i<s; i++) {
       w[j] +=  bt[i]*GammaInv[i*s+j];
@@ -1144,7 +1150,7 @@ static PetscErrorCode TSReset_RosW(TS ts)
 
   PetscFunctionBegin;
   if (!ros->tableau) PetscFunctionReturn(0);
-   s = ros->tableau->s;
+  s    = ros->tableau->s;
   ierr = VecDestroyVecs(s,&ros->Y);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Ydot);CHKERRQ(ierr);
   ierr = VecDestroy(&ros->Ystage);CHKERRQ(ierr);
@@ -1159,7 +1165,7 @@ static PetscErrorCode TSReset_RosW(TS ts)
 #define __FUNCT__ "TSDestroy_RosW"
 static PetscErrorCode TSDestroy_RosW(TS ts)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSReset_RosW(ts);CHKERRQ(ierr);
@@ -1320,15 +1326,15 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
   DM             dm,dmsave;
 
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
-  ierr = VecWAXPY(Ydot,shift,U,Zdot);CHKERRQ(ierr);      /* Ydot = shift*U + Zdot */
-  ierr = VecWAXPY(Ystage,1.0,U,Zstage);CHKERRQ(ierr);    /* Ystage = U + Zstage */
+  ierr   = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr   = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
+  ierr   = VecWAXPY(Ydot,shift,U,Zdot);CHKERRQ(ierr);    /* Ydot = shift*U + Zdot */
+  ierr   = VecWAXPY(Ystage,1.0,U,Zstage);CHKERRQ(ierr);  /* Ystage = U + Zstage */
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIFunction(ts,ros->stage_time,Ystage,Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
+  ierr   = TSComputeIFunction(ts,ros->stage_time,Ystage,Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
-  ierr = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
+  ierr   = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1344,13 +1350,13 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatS
 
   PetscFunctionBegin;
   /* ros->Ydot and ros->Ystage have already been computed in SNESTSFormFunction_RosW (SNES guarantees this) */
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
+  ierr   = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr   = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ierr   = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
   ts->dm = dmsave;
-  ierr = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
+  ierr   = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1436,8 +1442,8 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
     ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
     if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
     left -= count;
-    p += count;
-    *p++ = ' ';
+    p    += count;
+    *p++  = ' ';
   }
   p[i ? 0 : -1] = 0;
   PetscFunctionReturn(0);

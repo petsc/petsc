@@ -6,10 +6,10 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 {
 
   PetscFunctionBegin;
-  *accept = PETSC_TRUE;
+  *accept  = PETSC_TRUE;
   *next_sc = 0;                 /* Reuse the same order scheme */
-  *next_h = h;                  /* Reuse the old step */
-  *wlte = -1;                   /* Weighted local truncation error was not evaluated */
+  *next_h  = h;                 /* Reuse the old step */
+  *wlte    = -1;                /* Weighted local truncation error was not evaluated */
   PetscFunctionReturn(0);
 }
 

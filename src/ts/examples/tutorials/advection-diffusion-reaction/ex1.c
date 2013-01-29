@@ -166,7 +166,7 @@ static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(ctx->initialsolution,&uinit);CHKERRQ(ierr);
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  d0 = uinit[0] - uinit[1];
+  d0   = uinit[0] - uinit[1];
   if (d0 == 0.0) q = ctx->k*t;
   else q = (1.0 - PetscExpScalar(-ctx->k*t*d0))/d0;
   u[0] = uinit[0]/(1.0 + uinit[1]*q);
@@ -212,15 +212,15 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Reaction options","");CHKERRQ(ierr);
   {
-    ctx.k       = .9;
-    ierr        = PetscOptionsScalar("-k","Reaction coefficient","",ctx.k,&ctx.k,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
-    ierr = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
-    u[0] = 1;
-    u[1] = .7;
-    u[2] = 0;
-    ierr = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsVec("-initial","Initial values","",ctx.initialsolution,PETSC_NULL);CHKERRQ(ierr);
+    ctx.k = .9;
+    ierr  = PetscOptionsScalar("-k","Reaction coefficient","",ctx.k,&ctx.k,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
+    ierr  = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+    u[0]  = 1;
+    u[1]  = .7;
+    u[2]  = 0;
+    ierr  = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+    ierr  = PetscOptionsVec("-initial","Initial values","",ctx.initialsolution,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

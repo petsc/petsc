@@ -20,16 +20,16 @@ Input arguments are\n\
    User-defined application context - contains data needed by the
    application-provided call-back routines.
 */
-typedef struct{
-  Mat            Amat;            /* left hand side matrix */
-  Vec            ksp_rhs,ksp_sol; /* working vectors for formulating inv(Alhs)*(Arhs*U+g) */
-  int            max_probsz;      /* max size of the problem */
-  PetscBool      useAlhs;         /* flag (1 indicates solving Alhs*U' = Arhs*U+g */
-  int            nz;              /* total number of grid points */
-  PetscInt       m;               /* total number of interio grid points */
-  Vec            solution;        /* global exact ts solution vector */
-  PetscScalar    *z;              /* array of grid points */
-  PetscBool      debug;           /* flag (1 indicates activation of debugging printouts) */
+typedef struct {
+  Mat         Amat;               /* left hand side matrix */
+  Vec         ksp_rhs,ksp_sol;    /* working vectors for formulating inv(Alhs)*(Arhs*U+g) */
+  int         max_probsz;         /* max size of the problem */
+  PetscBool   useAlhs;            /* flag (1 indicates solving Alhs*U' = Arhs*U+g */
+  int         nz;                 /* total number of grid points */
+  PetscInt    m;                  /* total number of interio grid points */
+  Vec         solution;           /* global exact ts solution vector */
+  PetscScalar *z;                 /* array of grid points */
+  PetscBool   debug;              /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
 extern PetscScalar exact(PetscScalar,PetscReal);
@@ -66,13 +66,13 @@ int main(int argc,char **argv)
   if (nphase > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
   /* initializations */
-  zInitial       = 0.0;
-  zFinal         = 1.0;
-  T              = 0.014/nphase;
-  nz             = num_z;
-  m              = nz-2;
-  appctx.nz      = nz;
-  max_steps      = (PetscInt)10000;
+  zInitial  = 0.0;
+  zFinal    = 1.0;
+  T         = 0.014/nphase;
+  nz        = num_z;
+  m         = nz-2;
+  appctx.nz = nz;
+  max_steps = (PetscInt)10000;
 
   appctx.m          = m;
   appctx.max_probsz = nz;
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   /* set intial guess */
   /*------------------*/
   for (i=0; i<nz-2; i++) {
-    val = exact(z[i+1], 0.0);
+    val  = exact(z[i+1], 0.0);
     ierr = VecSetValue(init_sol,i,(PetscScalar)val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(init_sol);
@@ -156,11 +156,9 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,init_sol);CHKERRQ(ierr);
 
   stepsz[0] = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
-  ftime = 0.0;
+  ftime     = 0.0;
   for (k=0; k<nphase; k++) {
-    if (nphase > 1) {
-      printf("Phase %d: initial time %g, stepsz %g, duration: %g\n",k,ftime,stepsz[k],(k+1)*T);
-    }
+    if (nphase > 1) printf("Phase %d: initial time %g, stepsz %g, duration: %g\n",k,ftime,stepsz[k],(k+1)*T);
     ierr = TSSetInitialTimeStep(ts,ftime,stepsz[k]);CHKERRQ(ierr);
     ierr = TSSetDuration(ts,max_steps,(k+1)*T);CHKERRQ(ierr);
 
@@ -228,17 +226,15 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
   /* Compute the exact solution */
   ierr = VecGetArray(appctx->solution,&u_exact);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    u_exact[i] = exact(appctx->z[i+1],time);
-  }
+  for (i=0; i<m; i++) u_exact[i] = exact(appctx->z[i+1],time);
   ierr = VecRestoreArray(appctx->solution,&u_exact);CHKERRQ(ierr);
 
   /* Print debugging information if desired */
   if (appctx->debug) {
-     ierr = PetscPrintf(PETSC_COMM_SELF,"Computed solution vector at time %g\n",time);CHKERRQ(ierr);
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-     ierr = PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Computed solution vector at time %g\n",time);CHKERRQ(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n");CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   /* Compute the 2-norm and max-norm of the error */
@@ -246,17 +242,17 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
 
   norm_2 = PetscSqrtReal(h)*norm_2;
-  ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
+  ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %G, 2-norm error = %6.4f, max norm error = %6.4f\n",
-              step,time,norm_2,norm_max);CHKERRQ(ierr);
+                     step,time,norm_2,norm_max);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-     ierr = PetscPrintf(PETSC_COMM_SELF,"Error vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error vector\n");CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -267,9 +263,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
 PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 {
-  PetscErrorCode  ierr;
-  KSP             ksp;
-  PC              pc;
+  PetscErrorCode ierr;
+  KSP            ksp;
+  PC             pc;
 
   /*create the ksp context and set the operators,that is, associate the system matrix with it*/
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -310,8 +306,8 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 
 PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt nll[][2],PetscInt id)
 {
-  PetscScalar  x1,x2,bfcn;
-  PetscInt     i1,i2,iq1,iq2;
+  PetscScalar x1,x2,bfcn;
+  PetscInt    i1,i2,iq1,iq2;
 
   /*** Determine which basis function in interval intrvl is to be used in ***/
   iq1 = iq;
@@ -345,14 +341,14 @@ void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, Pets
 
   /*  initializing everything - btri and f are initialized in rhs.c  */
   for (i=0; i < nz; i++) {
-    nli[i][0] = 0;
-    nli[i][1] = 0;
-    indx[i] = 0;
+    nli[i][0]   = 0;
+    nli[i][1]   = 0;
+    indx[i]     = 0;
     zquad[i][0] = 0.0;
     zquad[i][1] = 0.0;
     zquad[i][2] = 0.0;
-    dlen[i] = 0.0;
-  }/*end for (i)*/
+    dlen[i]     = 0.0;
+  } /*end for (i)*/
 
   /*  quadrature weights  */
   qdwt[0] = 1.0/6.0;
@@ -362,24 +358,22 @@ void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, Pets
   /* 1st and last nodes have Dirichlet boundary condition -
      set indices there to -1 */
 
-  for (i=0; i < nz-1; i++) {
-    indx[i]=i-1;
-  }
-  indx[nz-1]=-1;
+  for (i=0; i < nz-1; i++) indx[i] = i-1;
+  indx[nz-1] = -1;
 
   ipq = 0;
   for (il=0; il < nz-1; il++) {
-    ip = ipq;
-    ipq = ip+1;
-    zip = z[ip];
-    zipq = z[ipq];
-    dl = zipq-zip;
+    ip           = ipq;
+    ipq          = ip+1;
+    zip          = z[ip];
+    zipq         = z[ipq];
+    dl           = zipq-zip;
     zquad[il][0] = zip;
     zquad[il][1] = (0.5)*(zip+zipq);
     zquad[il][2] = zipq;
-    dlen[il] = fabs(dl);
-    nli[il][0] = ip;
-    nli[il][1] = ipq;
+    dlen[il]     = fabs(dl);
+    nli[il][0]   = ip;
+    nli[il][1]   = ipq;
   }
 
   for (il=0; il < nz-1; il++) {
@@ -388,18 +382,18 @@ void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, Pets
       zz = zquad[il][iquad];
 
       for (iq=0; iq < 2; iq++) {
-        ip = nli[il][iq];
-        bb = bspl(z,zz,il,iq,nli,1);
+        ip  = nli[il][iq];
+        bb  = bspl(z,zz,il,iq,nli,1);
         b_z = bspl(z,zz,il,iq,nli,2);
-        i = indx[ip];
+        i   = indx[ip];
 
         if (i > -1) {
           for (iqq=0; iqq < 2; iqq++) {
-            ipp = nli[il][iqq];
-            bbb = bspl(z,zz,il,iqq,nli,1);
+            ipp  = nli[il][iqq];
+            bbb  = bspl(z,zz,il,iqq,nli,1);
             bb_z = bspl(z,zz,il,iqq,nli,2);
-            j = indx[ipp];
-            bij = -b_z*bb_z;
+            j    = indx[ipp];
+            bij  = -b_z*bb_z;
 
             if (j > -1) {
               jj = 1+j-i;
@@ -411,33 +405,33 @@ void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, Pets
               /* f[i] += bij*dd*exact(zz,t); */
               /* }*/ /*end if*/
             } /*end else*/
-          }/*end for (iqq)*/
-        }/*end if (i>0)*/
-      }/*end for (iq)*/
-    }/*end for (iquad)*/
-  }/*end for (il)*/
+          } /*end for (iqq)*/
+        } /*end if (i>0)*/
+      } /*end for (iq)*/
+    } /*end for (iquad)*/
+  } /*end for (il)*/
   return;
 }
 
 void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
 {
-  PetscInt        i,j,il,ip,ipp,ipq,iq,iquad,iqq;
-  PetscInt        nli[num_z][2],indx[num_z];
-  PetscScalar     dd,dl,zip,zipq,zz,bb,bbb,aij;
-  PetscScalar     rquad[num_z][3],dlen[num_z],qdwt[3],add_term;
-  PetscErrorCode  ierr;
+  PetscInt       i,j,il,ip,ipp,ipq,iq,iquad,iqq;
+  PetscInt       nli[num_z][2],indx[num_z];
+  PetscScalar    dd,dl,zip,zipq,zz,bb,bbb,aij;
+  PetscScalar    rquad[num_z][3],dlen[num_z],qdwt[3],add_term;
+  PetscErrorCode ierr;
 
   /*  initializing everything  */
 
   for (i=0; i < nz; i++) {
-    nli[i][0] = 0;
-    nli[i][1] = 0;
-    indx[i] = 0;
+    nli[i][0]   = 0;
+    nli[i][1]   = 0;
+    indx[i]     = 0;
     rquad[i][0] = 0.0;
     rquad[i][1] = 0.0;
     rquad[i][2] = 0.0;
-    dlen[i] = 0.0;
-  }/*end for (i)*/
+    dlen[i]     = 0.0;
+  } /*end for (i)*/
 
   /*  quadrature weights  */
   qdwt[0] = 1.0/6.0;
@@ -447,27 +441,24 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
   /* 1st and last nodes have Dirichlet boundary condition -
      set indices there to -1 */
 
-  for (i=0; i < nz-1; i++) {
-    indx[i]=i-1;
-  }/*end for (i)*/
+  for (i=0; i < nz-1; i++) indx[i]=i-1;
   indx[nz-1]=-1;
 
   ipq = 0;
 
   for (il=0; il < nz-1; il++) {
-     ip = ipq;
-     ipq = ip+1;
-     zip = z[ip];
-     zipq = z[ipq];
-     dl = zipq-zip;
-     rquad[il][0] = zip;
-     rquad[il][1] = (0.5)*(zip+zipq);
-     rquad[il][2] = zipq;
-     dlen[il] = fabs(dl);
-     nli[il][0] = ip;
-     nli[il][1] = ipq;
-
-  }/*end for (il)*/
+    ip           = ipq;
+    ipq          = ip+1;
+    zip          = z[ip];
+    zipq         = z[ipq];
+    dl           = zipq-zip;
+    rquad[il][0] = zip;
+    rquad[il][1] = (0.5)*(zip+zipq);
+    rquad[il][2] = zipq;
+    dlen[il]     = fabs(dl);
+    nli[il][0]   = ip;
+    nli[il][1]   = ipq;
+  } /*end for (il)*/
 
   for (il=0; il < nz-1; il++) {
     for (iquad=0; iquad < 3; iquad++) {
@@ -488,11 +479,11 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
               add_term = aij*dd;
               ierr = MatSetValue(obj->Amat,i,j,add_term,ADD_VALUES);
             }/*endif*/
-          }/*end for (iqq)*/
-        }/*end if (i>0)*/
-      }/*end for (iq)*/
-    }/*end for (iquad)*/
-  }/*end for (il)*/
+          } /*end for (iqq)*/
+        } /*end if (i>0)*/
+      } /*end for (iq)*/
+    } /*end for (iquad)*/
+  } /*end for (il)*/
   MatAssemblyBegin(obj->Amat,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(obj->Amat,MAT_FINAL_ASSEMBLY);
   return;
@@ -504,14 +495,12 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
 ---------------------------------------------------------*/
 void rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, PetscReal t)
 {
-  PetscInt        i,j,js,je,jj;
-  PetscScalar     val,g[num_z],btri[num_z][3],add_term;
-  PetscErrorCode  ierr;
+  PetscInt       i,j,js,je,jj;
+  PetscScalar    val,g[num_z],btri[num_z][3],add_term;
+  PetscErrorCode ierr;
 
   for (i=0; i < nz-2; i++) {
-    for (j=0; j <= 2; j++) {
-      btri[i][j]=0.0;
-    }
+    for (j=0; j <= 2; j++) btri[i][j]=0.0;
     g[i] = 0.0;
   }
 
@@ -521,13 +510,13 @@ void rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, PetscReal t)
   /*  setting the entries of the right hand side vector  */
   for (i=0; i < nz-2; i++) {
     val = 0.0;
-    js = 0;
+    js  = 0;
     if (i == 0) js = 1;
     je = 2;
     if (i == nz-2) je = 1;
 
     for (jj=js; jj <= je; jj++) {
-      j = i+jj-1;
+      j    = i+jj-1;
       val += (btri[i][jj])*(y[j]);
     }
     add_term = val + g[i];
@@ -561,9 +550,7 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 
   /* get the previous solution to compute updated system */
   ierr = VecGetArray(globalin,&soln_ptr);
-  for (i=0;i < num_z-2;i++) {
-    soln[i] = soln_ptr[i];
-  }
+  for (i=0; i < num_z-2; i++) soln[i] = soln_ptr[i];
   ierr = VecRestoreArray(globalin,&soln_ptr);
 
   /* clear out the matrix and rhs for ksp to keep things straight */

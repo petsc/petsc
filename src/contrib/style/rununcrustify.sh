@@ -8,7 +8,7 @@
 #          
 
 
-UNCRUSTIFY=../../uncrustify/bin/uncrustify #change this as required
+UNCRUSTIFY=../uncrustify/bin/uncrustify #change this as required
 UNCRUSTIFYCONF=bin/uncrustify.cfg
 DIFFTOOL=meld
 TMPDIR=src_uncrustified

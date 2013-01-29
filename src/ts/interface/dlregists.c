@@ -1,7 +1,7 @@
 
 #include <petsc-private/tsimpl.h>
 
-static PetscBool  TSPackageInitialized = PETSC_FALSE;
+static PetscBool TSPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "TSFinalizePackage"
 /*@C
@@ -39,10 +39,10 @@ PetscErrorCode  TSFinalizePackage(void)
 @*/
 PetscErrorCode  TSInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSPackageInitialized) PetscFunctionReturn(0);

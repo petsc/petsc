@@ -107,16 +107,17 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr        = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   appctx.comm = PETSC_COMM_WORLD;
 
-  m    = 60;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  m               = 60;
+  ierr            = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem, number of processors = %d\n",size);CHKERRQ(ierr);
 
@@ -163,7 +164,7 @@ int main(int argc,char **argv)
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
 
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-nonlinear",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,flg ? TS_NONLINEAR : TS_LINEAR);CHKERRQ(ierr);
 
@@ -182,7 +183,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-time_dependent_rhs",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     /*
@@ -216,7 +217,7 @@ int main(int argc,char **argv)
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  dt = appctx.h*appctx.h/2.0;
+  dt   = appctx.h*appctx.h/2.0;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
@@ -320,9 +321,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=mybase; i<myend; i++) {
-    u_localptr[i-mybase] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
-  }
+  for (i=mybase; i<myend; i++) u_localptr[i-mybase] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
 
   /*
      Restore vector
@@ -333,8 +332,8 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"initial guess vector\n");CHKERRQ(ierr);
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(appctx->comm,"initial guess vector\n");CHKERRQ(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   return 0;
@@ -376,9 +375,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   */
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
-  for (i=mybase; i<myend; i++) {
-    s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
-  }
+  for (i=mybase; i<myend; i++) s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
 
   /*
      Restore vector
@@ -425,26 +422,26 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-     ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
+  ierr   = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
+  ierr   = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = PetscSqrtReal(appctx->h)*norm_2;
-  ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
+  ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   /*
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
   ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G 2-norm error = %G max norm error = %G\n",
-              step,time,norm_2,norm_max);CHKERRQ(ierr);
+                     step,time,norm_2,norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
@@ -457,8 +454,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"Error vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(appctx->comm,"Error vector\n");CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   return 0;
@@ -497,7 +494,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 */
 PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat            A = *AA;                      /* Jacobian matrix */
+  Mat            A       = *AA;              /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,idx[3];
@@ -532,7 +529,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   v[0] = sone; v[1] = stwo; v[2] = sone;
   for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -71,23 +71,25 @@ extern PetscErrorCode MyMonitorSetUp(TS);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;                 /* nonlinear solver */
-  Vec             C;                  /* solution */
-  PetscErrorCode  ierr;
-  DM              da;                 /* manages the grid data */
-  AppCtx          ctx;                /* holds problem specific paramters */
-  PetscInt        He,dof = 3*N+N*N,*ofill;
+  TS             ts;                  /* nonlinear solver */
+  Vec            C;                   /* solution */
+  PetscErrorCode ierr;
+  DM             da;                  /* manages the grid data */
+  AppCtx         ctx;                 /* holds problem specific paramters */
+  PetscInt       He,dof = 3*N+N*N,*ofill;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  
+  PetscInitialize(&argc,&argv,(char*)0,help);
+
   PetscFunctionBeginUser;
   ctx.noreactions     = PETSC_FALSE;
   ctx.nodissociations = PETSC_FALSE;
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-noreactions",&ctx.noreactions);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-nodissociations",&ctx.nodissociations);CHKERRQ(ierr);
+
   ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
   ctx.HeDiffusion[2]    = 1000*3.24e-4;
   ctx.HeDiffusion[3]    = 1000*2.26e-4;
@@ -110,7 +112,10 @@ int main(int argc,char **argv)
      adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion. */
   ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
   ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1; ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
+
+  for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1;
+  ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
+
   ierr = DMDASetBlockFills(da,PETSC_NULL,ofill);CHKERRQ(ierr);
   ierr = PetscFree(ofill);CHKERRQ(ierr);
 
@@ -170,7 +175,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  hx     = 1.0/(PetscReal)(Mx-1);
+  hx   = 1.0/(PetscReal)(Mx-1);
 
   /* Name each of the concentrations */
   for (He=1; He<N+1; He++) {
@@ -209,26 +214,18 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
+    for (He=1; He<N+1; He++) c[i].He[He] = 0.0;
+    for (V=1; V<N+1; V++)    c[i].V[V]   = 1.0;
+    for (I=1; I<N+1; I++)    c[i].I[I]   = 1.0;
     for (He=1; He<N+1; He++) {
-      c[i].He[He] = 0.0;
-    }
-    for (V=1; V<N+1; V++) {
-      c[i].V[V] = 1.0;
-    }
-    for (I=1; I<N+1; I++) {
-      c[i].I[I] = 1.0;
-    }
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N+1; V++) {
-        c[i].HeV[He][V] = 0.0;
-      }
+      for (V=1; V<N+1; V++)  c[i].HeV[He][V] = 0.0;
     }
   }
 
   /*
      Restore vectors
   */
-  c = (Concentrations*)(((PetscScalar*)c)+1);
+  c    = (Concentrations*)(((PetscScalar*)c)+1);
   ierr = DMDAVecRestoreArray(da,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -261,7 +258,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  hx     = 8.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hx   = 8.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
   /*
        F  = Cdot +  all the diffusion and reaction terms added below
@@ -277,14 +274,14 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   ierr = DMGlobalToLocalBegin(da,C,INSERT_VALUES,localC);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,C,INSERT_VALUES,localC);CHKERRQ(ierr);
 
-   /*
-     Get pointers to vector data
+  /*
+    Get pointers to vector data
   */
   ierr = DMDAVecGetArray(da,localC,&c);CHKERRQ(ierr);
   /* Shift the c pointer to allow accessing with index of 1, instead of 0 */
-  c = (Concentrations*)(((PetscScalar*)c)-1);
+  c    = (Concentrations*)(((PetscScalar*)c)-1);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
-  f = (Concentrations*)(((PetscScalar*)f)-1);
+  f    = (Concentrations*)(((PetscScalar*)f)-1);
 
   /*
      Get local grid boundaries
@@ -332,7 +329,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
                  3   2  these last two are not needed in the sum since they repeat from above
                  4   1  this is why he < (He/2) + 1            */
       for (he=1; he<(He/2)+1; he++) {
-        f[xi].He[He]    -= ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
+        f[xi].He[He] -= ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
 
         /* remove the two clusters that merged to form the larger cluster */
         f[xi].He[he]    += ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
@@ -342,26 +339,26 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     /*   V[V]  +  V[v] ->  V[V+v]  */
     for (V=2; V<N+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
-        f[xi].V[V]    -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
+        f[xi].V[V] -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
         /* remove the clusters that merged to form the larger cluster */
-        f[xi].V[v]    += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
-        f[xi].V[V-v]  += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
+        f[xi].V[v]   += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
+        f[xi].V[V-v] += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
       }
     }
     /*   I[I] +  I[i] -> I[I+i] */
     for (I=2; I<N+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
-        f[xi].I[I]    -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
+        f[xi].I[I] -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
         /* remove the clusters that merged to form the larger cluster */
-        f[xi].I[i]    += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
-        f[xi].I[I-i]  += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
+        f[xi].I[i]   += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
+        f[xi].I[I-i] += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
       }
     }
     /* He[1] +  V[1]  ->  He[1]-V[1] */
-    f[xi].HeV[1][1]   -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
-     /* remove the He and V  that merged to form the He-V cluster */
-    f[xi].He[1]   += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
-    f[xi].V[1]    += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+    f[xi].HeV[1][1] -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+    /* remove the He and V  that merged to form the He-V cluster */
+    f[xi].He[1] += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+    f[xi].V[1]  += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
     /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
     for (He=1; He<N; He++) {
       for (V=1; V<N+1; V++) {
@@ -379,8 +376,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         for (v=1; v<N-V+1; v++) {
           f[xi].HeV[He][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
           /* remove the two clusters that merged to form the larger cluster */
-          f[xi].V[v]         += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
-          f[xi].HeV[He][V]   += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+          f[xi].V[v]       += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+          f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
         }
       }
     }
@@ -392,8 +389,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
           for (v=1; v<N-V+1; v++) {
             f[xi].HeV[He+he][V+v] -= 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
             /* remove the two clusters that merged to form the larger cluster */
-            f[xi].HeV[he][V]      += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
-            f[xi].HeV[He][V]      += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            f[xi].HeV[he][V] += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            f[xi].HeV[He][V] += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
           }
         }
       }
@@ -409,26 +406,26 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     */
     /*   He[He] ->  He[He-1] + He[1] */
     for (He=2; He<N+1; He++) {
-      f[xi].He[He-1]  -= ctx->dissociationScale*c[xi].He[He];
-      f[xi].He[1]     -= ctx->dissociationScale*c[xi].He[He];
-      f[xi].He[He]    += ctx->dissociationScale*c[xi].He[He];
+      f[xi].He[He-1] -= ctx->dissociationScale*c[xi].He[He];
+      f[xi].He[1]    -= ctx->dissociationScale*c[xi].He[He];
+      f[xi].He[He]   += ctx->dissociationScale*c[xi].He[He];
     }
     /*   V[V] ->  V[V-1] + V[1] */
     for (V=2; V<N+1; V++) {
-      f[xi].V[V-1]  -= ctx->dissociationScale*c[xi].V[V];
-      f[xi].V[1]    -= ctx->dissociationScale*c[xi].V[V];
-      f[xi].V[V]    += ctx->dissociationScale*c[xi].V[V];
+      f[xi].V[V-1] -= ctx->dissociationScale*c[xi].V[V];
+      f[xi].V[1]   -= ctx->dissociationScale*c[xi].V[V];
+      f[xi].V[V]   += ctx->dissociationScale*c[xi].V[V];
     }
     /*   I[I] ->  I[I-1] + I[1] */
     for (I=2; I<N+1; I++) {
-      f[xi].I[I-1]   -= ctx->dissociationScale*c[xi].I[I];
-      f[xi].I[1]     -= ctx->dissociationScale*c[xi].I[I];
-      f[xi].I[I]     += ctx->dissociationScale*c[xi].I[I];
+      f[xi].I[I-1] -= ctx->dissociationScale*c[xi].I[I];
+      f[xi].I[1]   -= ctx->dissociationScale*c[xi].I[I];
+      f[xi].I[I]   += ctx->dissociationScale*c[xi].I[I];
     }
     /* He[1]-V[1]  ->  He[1] + V[1] */
-    f[xi].He[1]      -= 1000*ctx->reactionScale*c[xi].HeV[1][1];
-    f[xi].V[1]       -= 1000*ctx->reactionScale*c[xi].HeV[1][1];
-    f[xi].HeV[1][1]  += 1000*ctx->reactionScale*c[xi].HeV[1][1];
+    f[xi].He[1]     -= 1000*ctx->reactionScale*c[xi].HeV[1][1];
+    f[xi].V[1]      -= 1000*ctx->reactionScale*c[xi].HeV[1][1];
+    f[xi].HeV[1][1] += 1000*ctx->reactionScale*c[xi].HeV[1][1];
     /*   He[He]-V[1] ->  He[He] + V[1]  */
     for (He=2; He<N+1; He++) {
       f[xi].He[He]     -= 1000*ctx->reactionScale*c[xi].HeV[He][1];
@@ -437,9 +434,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     }
     /*   He[1]-V[V] ->  He[1] + V[V]  */
     for (V=2; V<N+1; V++) {
-      f[xi].He[1]      -= 1000*ctx->reactionScale*c[xi].HeV[1][V];
-      f[xi].V[V]       -= 1000*ctx->reactionScale*c[xi].HeV[1][V];
-      f[xi].HeV[1][V ] += 1000*ctx->reactionScale*c[xi].HeV[1][V];
+      f[xi].He[1]     -= 1000*ctx->reactionScale*c[xi].HeV[1][V];
+      f[xi].V[V]      -= 1000*ctx->reactionScale*c[xi].HeV[1][V];
+      f[xi].HeV[1][V] += 1000*ctx->reactionScale*c[xi].HeV[1][V];
     }
     /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
     for (He=2; He<N+1; He++) {
@@ -463,9 +460,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  c = (Concentrations*)(((PetscScalar*)c)+1);
+  c    = (Concentrations*)(((PetscScalar*)c)+1);
   ierr = DMDAVecRestoreArray(da,localC,&c);CHKERRQ(ierr);
-  f = (Concentrations*)(((PetscScalar*)f)+1);
+  f    = (Concentrations*)(((PetscScalar*)f)+1);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -532,7 +529,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   PetscBool      flg;
   IS             is;
   char           ycoor[32];
-  PetscReal      valuebounds[4]  = {0, 1.2, 0, 1.2};
+  PetscReal      valuebounds[4] = {0, 1.2, 0, 1.2};
 
   PetscFunctionBeginUser;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&flg);CHKERRQ(ierr);

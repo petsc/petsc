@@ -8,10 +8,10 @@ typedef struct {
   PetscErrorCode (*rhsfunctionlocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
   PetscErrorCode (*ijacobianlocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*);
   PetscErrorCode (*rhsjacobianlocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
-  void *ifunctionlocalctx;
-  void *ijacobianlocalctx;
-  void *rhsfunctionlocalctx;
-  void *rhsjacobianlocalctx;
+  void       *ifunctionlocalctx;
+  void       *ijacobianlocalctx;
+  void       *rhsfunctionlocalctx;
+  void       *rhsjacobianlocalctx;
   InsertMode ifunctionlocalimode;
   InsertMode rhsfunctionlocalimode;
 } DMTS_DA;
@@ -279,8 +279,8 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
   ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
   dmdats->rhsfunctionlocalimode = imode;
-  dmdats->rhsfunctionlocal = func;
-  dmdats->rhsfunctionlocalctx = ctx;
+  dmdats->rhsfunctionlocal      = func;
+  dmdats->rhsfunctionlocalctx   = ctx;
   ierr = DMTSSetRHSFunction(dm,TSComputeRHSFunction_DMDA,dmdats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -323,7 +323,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
-  dmdats->rhsjacobianlocal = func;
+  dmdats->rhsjacobianlocal    = func;
   dmdats->rhsjacobianlocalctx = ctx;
   ierr = DMTSSetRHSJacobian(dm,TSComputeRHSJacobian_DMDA,dmdats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -365,8 +365,8 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
   ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
   dmdats->ifunctionlocalimode = imode;
-  dmdats->ifunctionlocal = func;
-  dmdats->ifunctionlocalctx = ctx;
+  dmdats->ifunctionlocal      = func;
+  dmdats->ifunctionlocalctx   = ctx;
   ierr = DMTSSetIFunction(dm,TSComputeIFunction_DMDA,dmdats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -410,7 +410,7 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
-  dmdats->ijacobianlocal = func;
+  dmdats->ijacobianlocal    = func;
   dmdats->ijacobianlocalctx = ctx;
   ierr = DMTSSetIJacobian(dm,TSComputeIJacobian_DMDA,dmdats);CHKERRQ(ierr);
   PetscFunctionReturn(0);

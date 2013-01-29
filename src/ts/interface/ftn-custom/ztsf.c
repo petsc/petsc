@@ -59,66 +59,67 @@ enum {OUR_PRESTEP = 0,
 static PetscErrorCode ourprestep(TS ts)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_PRESTEP]))(&ts,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_PRESTEP]))(&ts,&ierr);
   return 0;
 }
 static PetscErrorCode ourpoststep(TS ts)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_POSTSTEP]))(&ts,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_POSTSTEP]))(&ts,&ierr);
   return 0;
 }
 static PetscErrorCode ourrhsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_RHSFUNCTION]))(&ts,&d,&x,&f,ctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_RHSFUNCTION]))(&ts,&d,&x,&f,ctx,&ierr);
   return 0;
 }
 static PetscErrorCode ourifunction(TS ts,PetscReal d,Vec x,Vec xdot,Vec f,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IFUNCTION]))(&ts,&d,&x,&xdot,&f,ctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Vec*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IFUNCTION]))(&ts,&d,&x,&xdot,&f,ctx,&ierr);
   return 0;
 }
-static PetscErrorCode ourrhsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
+static PetscErrorCode ourrhsjacobian(TS ts,PetscReal d,Vec x,Mat *m,Mat *p,MatStructure *type,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_RHSJACOBIAN]))(&ts,&d,&x,m,p,type,ctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_RHSJACOBIAN]))(&ts,&d,&x,m,p,type,ctx,&ierr);
   return 0;
 }
-static PetscErrorCode ourijacobian(TS ts,PetscReal d,Vec x,Vec xdot,PetscReal shift,Mat* m,Mat* p,MatStructure* type,void*ctx)
+static PetscErrorCode ourijacobian(TS ts,PetscReal d,Vec x,Vec xdot,PetscReal shift,Mat *m,Mat *p,MatStructure *type,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,PetscReal*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IJACOBIAN]))(&ts,&d,&x,&xdot,&shift,m,p,type,ctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Vec*,PetscReal*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IJACOBIAN]))(&ts,&d,&x,&xdot,&shift,m,p,type,ctx,&ierr);
   return 0;
 }
 
 static PetscErrorCode ourmonitordestroy(void **ctx)
 {
-  PetscErrorCode ierr = 0;
-  TS          ts = *(TS*)ctx;
-  void        *mctx = (void*) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
-  (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITORDESTROY]))(mctx,&ierr);
+  PetscErrorCode ierr  = 0;
+  TS             ts    = *(TS*)ctx;
+  void           *mctx = (void*) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
+  (*(void (PETSC_STDCALL*)(void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITORDESTROY]))(mctx,&ierr);
   return 0;
 }
 
 /*
    Note ctx is the same as ts so we need to get the Fortran context out of the TS
 */
-static PetscErrorCode ourmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void*ctx)
+static PetscErrorCode ourmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void *ctx)
 {
-  PetscErrorCode ierr = 0;
+  PetscErrorCode ierr  = 0;
   void           *mctx = (void*) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
-  (*(void (PETSC_STDCALL *)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR]))(&ts,&i,&d,&v,mctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
 }
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL tssetprestep_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL tssetprestep_(TS *ts,PetscErrorCode (PETSC_STDCALL*f)(TS*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   ((PetscObject)*ts)->fortran_func_pointers[OUR_PRESTEP] = (PetscVoidFunction)f;
+
   *ierr = TSSetPreStep(*ts,ourprestep);
 }
 
@@ -126,6 +127,7 @@ void PETSC_STDCALL tssetpoststep_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,P
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   ((PetscObject)*ts)->fortran_func_pointers[OUR_POSTSTEP] = (PetscVoidFunction)f;
+
   *ierr = TSSetPreStep(*ts,ourpoststep);
 }
 
@@ -133,7 +135,7 @@ void tscomputerhsfunctionlinear_(TS *ts,PetscReal *t,Vec *X,Vec *F,void *ctx,Pet
 {
   *ierr = TSComputeRHSFunctionLinear(*ts,*t,*X,*F,ctx);
 }
-void PETSC_STDCALL tssetrhsfunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetrhsfunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
   Vec R;
   CHKFORTRANNULLOBJECT(r);
@@ -159,7 +161,7 @@ void tscomputeifunctionlinear_(TS *ts,PetscReal *t,Vec *X,Vec *Xdot,Vec *F,void 
 {
   *ierr = TSComputeIFunctionLinear(*ts,*t,*X,*Xdot,*F,ctx);
 }
-void PETSC_STDCALL tssetifunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetifunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Vec*,Vec*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
   Vec R;
   CHKFORTRANNULLOBJECT(r);
@@ -186,8 +188,7 @@ void tscomputerhsjacobianconstant_(TS *ts,PetscReal *t,Vec *X,Mat *A,Mat *B,MatS
 {
   *ierr = TSComputeRHSJacobianConstant(*ts,*t,*X,A,B,flg,ctx);
 }
-void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,
-               void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   if (FORTRANNULLFUNCTION(f)) {
@@ -204,8 +205,7 @@ void tscomputeijacobianconstant_(TS *ts,PetscReal *t,Vec *X,Vec *Xdot,PetscReal 
 {
   *ierr = TSComputeIJacobianConstant(*ts,*t,*X,*Xdot,*shift,A,B,flg,ctx);
 }
-void PETSC_STDCALL tssetijacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,
-               void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetijacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   if (FORTRANNULLFUNCTION(f)) {
@@ -229,7 +229,7 @@ void PETSC_STDCALL tsgetijacobian_(TS *ts,Mat *J,Mat *M,int *func,void **ctx,Pet
 
 extern void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*);
 
-void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL*func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   if ((PetscVoidFunction)func == (PetscVoidFunction)tsmonitordefault_) {

@@ -224,10 +224,8 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
     /* need to save FILE_CLASS_ID for adapt class */
     ierr = PetscStrncpy(type,((PetscObject)adapt)->type_name,256);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
-  } else {
-    if (adapt->ops->view) {
-      ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
-    }
+  } else if (adapt->ops->view) {
+    ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -369,7 +367,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   * function can only be called from inside TSSetFromOptions_GL()  */
   ierr = PetscOptionsHead("TS Adaptivity options");CHKERRQ(ierr);
   ierr = PetscOptionsList("-ts_adapt_type","Algorithm to use for adaptivity","TSAdaptSetType",TSAdaptList,
-                          ((PetscObject)adapt)->type_name?((PetscObject)adapt)->type_name:type,type,sizeof(type),&flg);CHKERRQ(ierr);
+                          ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
@@ -442,11 +440,12 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
   }
   /* first slot if this is the current scheme, otherwise the next available slot */
   c = inuse ? 0 : !adapt->candidates.inuse_set + adapt->candidates.n;
-  adapt->candidates.name[c]         = name;
-  adapt->candidates.order[c]        = order;
-  adapt->candidates.stageorder[c]   = stageorder;
-  adapt->candidates.ccfl[c]         = ccfl;
-  adapt->candidates.cost[c]         = cost;
+
+  adapt->candidates.name[c]       = name;
+  adapt->candidates.order[c]      = order;
+  adapt->candidates.stageorder[c] = stageorder;
+  adapt->candidates.ccfl[c]       = ccfl;
+  adapt->candidates.cost[c]       = cost;
   adapt->candidates.n++;
   PetscFunctionReturn(0);
 }
@@ -514,7 +513,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **o
 PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept)
 {
   PetscErrorCode ierr;
-  PetscReal wlte = -1.0;
+  PetscReal      wlte = -1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -527,8 +526,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   ierr = (*adapt->ops->choose)(adapt,ts,h,next_sc,next_h,accept,&wlte);CHKERRQ(ierr);
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
     /* Reduce time step if it overshoots max time */
-    PetscReal max_time=ts->max_time;
-    PetscReal next_dt=0.0;
+    PetscReal max_time = ts->max_time;
+    PetscReal next_dt  = 0.0;
     if (ts->ptime + ts->time_step + *next_h >= max_time) {
       next_dt = max_time - (ts->ptime + ts->time_step);
       if (next_dt > PETSC_SMALL) *next_h = next_dt;
@@ -541,9 +540,9 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   if (adapt->monitor) {
     ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
     if (wlte < 0) {
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e family='%s' scheme=%D:'%s' dt=%-10g\n",((PetscObject)adapt)->type_name,ts->steps,*accept?"accepted":"rejected",(double)ts->ptime,(double)h,((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],(double)*next_h);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e family='%s' scheme=%D:'%s' dt=%-10g\n",((PetscObject)adapt)->type_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],(double)*next_h);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e wlte=%5.3g family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept?"accepted":"rejected",(double)ts->ptime,(double)h,(double)wlte,((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],(double)*next_h);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e wlte=%5.3g family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,(double)wlte,((PetscObject)ts)->type_name,*next_sc,adapt->candidates.name[*next_sc],(double)*next_h);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
   }
@@ -576,12 +575,12 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
 
   PetscFunctionBegin;
   *accept = PETSC_TRUE;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetConvergedReason(snes,&snesreason);CHKERRQ(ierr);
+  ierr    = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr    = SNESGetConvergedReason(snes,&snesreason);CHKERRQ(ierr);
   if (snesreason < 0) {
     PetscReal dt,new_dt;
     *accept = PETSC_FALSE;
-    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+    ierr    = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     if (++ts->num_snes_failures >= ts->max_snes_failures && ts->max_snes_failures > 0) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
       ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
@@ -592,7 +591,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
       }
     } else {
       new_dt = dt*adapt->scale_solve_failed;
-      ierr = TSSetTimeStep(ts,new_dt);CHKERRQ(ierr);
+      ierr   = TSSetTimeStep(ts,new_dt);CHKERRQ(ierr);
       if (adapt->monitor) {
         ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D stage rejected t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
@@ -630,11 +629,11 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 {
   PetscErrorCode ierr;
-  TSAdapt adapt;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
   *inadapt = 0;
-  ierr = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,0,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
+  ierr     = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,0,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;

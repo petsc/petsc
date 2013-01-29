@@ -14,7 +14,7 @@ Runtime options include:\n\
 #include "petscts.h"
 #include "petscdmda.h"
 
-typedef struct{
+typedef struct {
   PetscReal   dt,T; /* Time step and end time */
   DM          da;
   Mat         M; /* Mass matrix */
@@ -25,7 +25,7 @@ typedef struct{
   PetscReal   xmin,xmax,ymin,ymax;
   PetscBool   tsmonitor;
   PetscInt    implicit; /* Evaluate theta_c*Mo*u impliicitly or explicitly */
-}AppCtx;
+} AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
@@ -142,18 +142,16 @@ PetscErrorCode Update_q(TS ts)
   PetscScalar    scale;
 
   PetscFunctionBeginUser;
-  ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&x);CHKERRQ(ierr);
-  ierr = VecStrideGather(x,1,user->u,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatMult(user->M_0,user->u,user->work1);CHKERRQ(ierr);
+  ierr  = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
+  ierr  = TSGetSolution(ts,&x);CHKERRQ(ierr);
+  ierr  = VecStrideGather(x,1,user->u,INSERT_VALUES);CHKERRQ(ierr);
+  ierr  = MatMult(user->M_0,user->u,user->work1);CHKERRQ(ierr);
   scale = -(1.0 - user->implicit)*user->theta_c;
-  ierr = VecScale(user->work1,scale);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->u,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(user->q,&q_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_arr[2*i+1] = w_arr[i];
-  }
+  ierr  = VecScale(user->work1,scale);CHKERRQ(ierr);
+  ierr  = VecGetLocalSize(user->u,&n);CHKERRQ(ierr);
+  ierr  = VecGetArray(user->q,&q_arr);CHKERRQ(ierr);
+  ierr  = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
+  for (i=0; i<n; i++) q_arr[2*i+1] = w_arr[i];
   ierr = VecRestoreArray(user->q,&q_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -161,13 +159,13 @@ PetscErrorCode Update_q(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetInitialGuess"
-PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
+PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscScalar    *x;
-  PetscInt        n,i;
-  PetscRandom     rand;
-  PetscScalar     value;
+  PetscInt       n,i;
+  PetscRandom    rand;
+  PetscScalar    value;
 
   PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
@@ -176,8 +174,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   /* Set initial guess, only set value for 2nd dof */
-  for (i=0;i<n/2;i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
+  for (i=0; i<n/2; i++) {
+    ierr     = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     x[2*i+1] = -0.4 + 0.05*value*(value - 0.5);
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -227,7 +225,7 @@ static void ShapefunctionsT3(PetscScalar *phi,PetscScalar phider[][2],PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "FormIFunction"
-PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void* ctx)
+PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
@@ -246,7 +244,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void* ctx)
 PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat *J,Mat *B,MatStructure *flg,void *ctx)
 {
   PetscErrorCode   ierr;
-  AppCtx           *user=(AppCtx*)ctx;
+  AppCtx           *user  =(AppCtx*)ctx;
   static PetscBool copied = PETSC_FALSE;
 
   PetscFunctionBeginUser;
@@ -254,8 +252,8 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   *flg = SAME_PRECONDITIONER;
   if (!copied) {
-    ierr = MatCopy(user->S,*J,*flg);CHKERRQ(ierr);
-    ierr = MatAXPY(*J,a,user->M,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->S,*J,*flg);CHKERRQ(ierr);
+    ierr   = MatAXPY(*J,a,user->M,*flg);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -281,7 +279,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   for (j=ys; j < ys+ym; j++) {
-    for (i=xs; i < xs+xm;i++) {
+    for (i=xs; i < xs+xm; i++) {
       l[j][i][0] = -SNES_VI_INF;
       l[j][i][1] = -1.0;
       u[j][i][0] = SNES_VI_INF;
@@ -296,7 +294,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
 #undef __FUNCT__
 #define __FUNCT__ "GetParams"
-PetscErrorCode GetParams(AppCtx* user)
+PetscErrorCode GetParams(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -304,11 +302,11 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscFunctionBeginUser;
   /* Set default parameters */
   user->tsmonitor = PETSC_FALSE;
-  user->xmin = 0.0; user->xmax = 1.0;
-  user->ymin = 0.0; user->ymax = 1.0;
-  user->T = 0.2;    user->dt = 0.0001;
-  user->gamma = 3.2E-4; user->theta_c = 1;
-  user->implicit = 0;
+  user->xmin      = 0.0; user->xmax = 1.0;
+  user->ymin      = 0.0; user->ymax = 1.0;
+  user->T         = 0.2;    user->dt = 0.0001;
+  user->gamma     = 3.2E-4; user->theta_c = 1;
+  user->implicit  = 0;
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
@@ -323,7 +321,7 @@ PetscErrorCode GetParams(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetUpMatrices"
-PetscErrorCode SetUpMatrices(AppCtx* user)
+PetscErrorCode SetUpMatrices(AppCtx *user)
 {
   PetscErrorCode    ierr;
   PetscInt          nele,nen,i;
@@ -334,9 +332,9 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscInt          idx[3];
   PetscScalar       phi[3],phider[3][2];
   PetscScalar       eM_0[3][3],eM_2[3][3];
-  Mat               M=user->M;
-  Mat               S=user->S;
-  PetscScalar       gamma=user->gamma,theta_c=user->theta_c;
+  Mat               M        = user->M;
+  Mat               S        = user->S;
+  PetscScalar       gamma    = user->gamma,theta_c=user->theta_c;
   PetscInt          implicit = user->implicit;
 
   PetscFunctionBeginUser;
@@ -346,11 +344,11 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-  for (i=0;i < nele;i++) {
+  for (i=0; i < nele; i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-    x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
-    x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
-    x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
+    x[0]   = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
+    x[1]   = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
+    x[2]   = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
 
     ierr = PetscMemzero(xx,3*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(yy,3*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -364,7 +362,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     eM_2[2][0]=eM_2[2][1]=eM_2[2][2]=0.0;
 
     PetscInt m;
-    for (m=0;m<3;m++) {
+    for (m=0; m<3; m++) {
       ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
       phider[0][0]=phider[0][1]=0.0;
       phider[1][0]=phider[1][1]=0.0;
@@ -399,7 +397,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
       ierr = MatSetValuesLocal(S,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
-      row = 2*idx[r]+1;
+      row     = 2*idx[r]+1;
       cols[0] = 2*idx[0];     vals[0] = -eM_0[r][0];
       cols[1] = 2*idx[0]+1;   vals[1] = gamma*eM_2[r][0]-implicit*theta_c*eM_0[r][0];
       cols[2] = 2*idx[1];     vals[2] = -eM_0[r][1];
@@ -447,7 +445,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-PetscErrorCode Monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void* mctx)
+PetscErrorCode Monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 {
   PetscErrorCode ierr;
 

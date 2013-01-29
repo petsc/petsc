@@ -87,8 +87,8 @@ struct _n_User {
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscScalar *x,*f;
+  User           user = (User)ctx;
+  PetscScalar    *x,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -105,8 +105,8 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscScalar *x,*xdot,*f;
+  User           user = (User)ctx;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -125,17 +125,17 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscReal mu = user->mu;
-  PetscInt rowcol[] = {0,1};
-  PetscScalar *x,J[2][2];
+  User           user     = (User)ctx;
+  PetscReal      mu       = user->mu;
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *x,J[2][2];
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
   J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
-  ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -173,11 +173,11 @@ static PetscErrorCode RegisterMyARK2(void)
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscReal tfinal, dt;
-  User user = (User)ctx;
-  Vec interpolatedX;
+  PetscReal         tfinal, dt;
+  User              user = (User)ctx;
+  Vec               interpolatedX;
 
   PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
@@ -190,6 +190,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",user->next_output,step,t,dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(interpolatedX,&x);CHKERRQ(ierr);
     ierr = VecDestroy(&interpolatedX);CHKERRQ(ierr);
+
     user->next_output += 0.1;
   }
   PetscFunctionReturn(0);
@@ -199,16 +200,16 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;           /* nonlinear solver */
-  Vec             x;            /* solution, residual vectors */
-  Mat             A;            /* Jacobian matrix */
-  PetscInt        steps;
-  PetscReal       ftime=0.5;
-  PetscBool       monitor = PETSC_FALSE;
-  PetscScalar     *x_ptr;
-  PetscMPIInt     size;
-  struct _n_User  user;
-  PetscErrorCode  ierr;
+  TS             ts;            /* nonlinear solver */
+  Vec            x;             /* solution, residual vectors */
+  Mat            A;             /* Jacobian matrix */
+  PetscInt       steps;
+  PetscReal      ftime   =0.5;
+  PetscBool      monitor = PETSC_FALSE;
+  PetscScalar    *x_ptr;
+  PetscMPIInt    size;
+  struct _n_User user;
+  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -223,9 +224,10 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.mu = 1000;
-  user.imex = PETSC_TRUE;
+  user.mu          = 1000;
+  user.imex        = PETSC_TRUE;
   user.next_output = 0.0;
+
   ierr = PetscOptionsGetReal(PETSC_NULL,"-mu",&user.mu,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-imex",&user.imex,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
@@ -256,7 +258,9 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
+
   x_ptr[0] = 2;   x_ptr[1] = 0.66666654321;
+
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
 

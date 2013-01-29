@@ -18,9 +18,9 @@ static char help[] = "Solves a nonlinear ODE. \n\n";
 #include <petscpc.h>
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
-extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode Initial(Vec,void *);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode Initial(Vec,void*);
 
 extern PetscReal solx(PetscReal);
 extern PetscReal soly(PetscReal);
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr= MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
@@ -105,9 +105,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
 
   /* Initialize the array */
   ierr = VecGetArray(global,&localptr);CHKERRQ(ierr);
-  for (i=0; i<locsize; i++) {
-    localptr[i] = 1.0;
-  }
+  for (i=0; i<locsize; i++) localptr[i] = 1.0;
 
   if (mybase == 0) localptr[0]=1.0;
 
@@ -226,18 +224,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   *str = SAME_NONZERO_PATTERN;
 
   idx[0]=0; idx[1]=1; idx[2]=2;
-  ierr = VecGetArray(x,&tmp);CHKERRQ(ierr);
+  ierr  = VecGetArray(x,&tmp);CHKERRQ(ierr);
 
-  i = 0;
+  i    = 0;
   v[0] = 2.0; v[1] = 1.0; v[2] = 0.0;
   ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
-  i = 1;
+  i    = 1;
   v[0] = 1.0; v[1] = 2.0; v[2] = 1.0;
   ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
-  i = 2;
-  v[0]= 0.0; v[1] = 1.0; v[2] = 2.0;
+  i    = 2;
+  v[0] = 0.0; v[1] = 1.0; v[2] = 2.0;
   ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

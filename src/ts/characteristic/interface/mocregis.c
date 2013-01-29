@@ -9,7 +9,7 @@ EXTERN_C_END
     CharacteristicRegisterAll() is called. In general, if there is more than one
     DLL, then CharacteristicRegisterAll() may be called several times.
 */
-extern PetscBool  CharacteristicRegisterAllCalled;
+extern PetscBool CharacteristicRegisterAllCalled;
 
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicRegisterAll"

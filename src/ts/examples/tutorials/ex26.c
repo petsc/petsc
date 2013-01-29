@@ -79,9 +79,9 @@ typedef struct {
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo*,PetscReal,Field**,Field**,Field**,void*);
 
 typedef struct {
-  PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-  PetscBool    parabolic;                    /* allow a transient term corresponding roughly to artificial compressibility */
-  PetscReal    cfl_initial;                  /* CFL for first time step */
+  PassiveReal lidvelocity,prandtl,grashof;   /* physical parameters */
+  PetscBool   parabolic;                     /* allow a transient term corresponding roughly to artificial compressibility */
+  PetscReal   cfl_initial;                   /* CFL for first time step */
 } AppCtx;
 
 PetscErrorCode FormInitialSolution(TS,Vec,AppCtx*);
@@ -90,16 +90,16 @@ PetscErrorCode FormInitialSolution(TS,Vec,AppCtx*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  AppCtx         user;                /* user-defined work context */
-  PetscInt       mx,my,steps;
-  PetscErrorCode ierr;
-  TS             ts;
-  DM             da;
-  Vec            X;
-  PetscReal      ftime;
+  AppCtx            user;             /* user-defined work context */
+  PetscInt          mx,my,steps;
+  PetscErrorCode    ierr;
+  TS                ts;
+  DM                da;
+  Vec               X;
+  PetscReal         ftime;
   TSConvergedReason reason;
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
 
@@ -111,11 +111,12 @@ int main(int argc,char **argv)
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
-  user.lidvelocity   = 1.0/(mx*my);
-  user.prandtl       = 1.0;
-  user.grashof       = 1.0;
-  user.parabolic     = PETSC_FALSE;
-  user.cfl_initial   = 50.;
+  user.lidvelocity = 1.0/(mx*my);
+  user.prandtl     = 1.0;
+  user.grashof     = 1.0;
+  user.parabolic   = PETSC_FALSE;
+  user.cfl_initial = 50.;
+
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Driven cavity/natural convection options","");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
@@ -196,9 +197,9 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
   Field          **x;
 
   grashof = user->grashof;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dx  = 1.0/(mx-1);
+  ierr    = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  dx      = 1.0/(mx-1);
 
   /*
      Get local grid boundaries (for 2-dimensional DMDA):
@@ -239,7 +240,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "FormIFunctionLocal"
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,Field **xdot,Field **f,void *ptr)
- {
+{
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
@@ -260,15 +261,15 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
 
 
   */
-  dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
-  hx = 1.0/dhx;                   hy = 1.0/dhy;
+  dhx   = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
+  hx    = 1.0/dhx;                   hy = 1.0/dhy;
   hxdhy = hx*dhy;                 hydhx = hy*dhx;
 
   xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
 
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
-    j = 0;
+    j     = 0;
     yints = yints + 1;
     /* bottom edge */
     for (i=info->xs; i<info->xs+info->xm; i++) {
@@ -281,20 +282,20 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
 
   /* Test whether we are on the top edge of the global array */
   if (yinte == info->my) {
-    j = info->my - 1;
+    j     = info->my - 1;
     yinte = yinte - 1;
     /* top edge */
     for (i=info->xs; i<info->xs+info->xm; i++) {
-        f[j][i].u     = x[j][i].u - lid;
-        f[j][i].v     = x[j][i].v;
-        f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy;
-        f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
+      f[j][i].u     = x[j][i].u - lid;
+      f[j][i].v     = x[j][i].v;
+      f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy;
+      f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
     }
   }
 
   /* Test whether we are on the left edge of the global array */
   if (xints == 0) {
-    i = 0;
+    i     = 0;
     xints = xints + 1;
     /* left edge */
     for (j=info->ys; j<info->ys+info->ym; j++) {
@@ -307,7 +308,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
 
   /* Test whether we are on the right edge of the global array */
   if (xinte == info->mx) {
-    i = info->mx - 1;
+    i     = info->mx - 1;
     xinte = xinte - 1;
     /* right edge */
     for (j=info->ys; j<info->ys+info->ym; j++) {
@@ -322,48 +323,48 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
 
-        /*
-          convective coefficients for upwinding
-        */
-        vx = x[j][i].u; avx = PetscAbsScalar(vx);
-        vxp = .5*(vx+avx); vxm = .5*(vx-avx);
-        vy = x[j][i].v; avy = PetscAbsScalar(vy);
-        vyp = .5*(vy+avy); vym = .5*(vy-avy);
+      /*
+        convective coefficients for upwinding
+      */
+      vx  = x[j][i].u; avx = PetscAbsScalar(vx);
+      vxp = .5*(vx+avx); vxm = .5*(vx-avx);
+      vy  = x[j][i].v; avy = PetscAbsScalar(vy);
+      vyp = .5*(vy+avy); vym = .5*(vy-avy);
 
-        /* U velocity */
-        u          = x[j][i].u;
-        udot       = user->parabolic ? xdot[j][i].u : 0.;
-        uxx        = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
-        uyy        = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
-        f[j][i].u  = udot + uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
+      /* U velocity */
+      u         = x[j][i].u;
+      udot      = user->parabolic ? xdot[j][i].u : 0.;
+      uxx       = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
+      uyy       = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
+      f[j][i].u = udot + uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
 
-        /* V velocity */
-        u          = x[j][i].v;
-        udot       = user->parabolic ? xdot[j][i].v : 0.;
-        uxx        = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
-        uyy        = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
-        f[j][i].v  = udot + uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
+      /* V velocity */
+      u         = x[j][i].v;
+      udot      = user->parabolic ? xdot[j][i].v : 0.;
+      uxx       = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
+      uyy       = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
+      f[j][i].v = udot + uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
 
-        /* Omega */
-        u          = x[j][i].omega;
-        uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
-        uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-        f[j][i].omega = (xdot[j][i].omega + uxx + uyy
-                         + (vxp*(u - x[j][i-1].omega)
-                            + vxm*(x[j][i+1].omega - u)) * hy
-                         + (vyp*(u - x[j-1][i].omega)
-                            + vym*(x[j+1][i].omega - u)) * hx
-                         - .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy);
+      /* Omega */
+      u             = x[j][i].omega;
+      uxx           = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
+      uyy           = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
+      f[j][i].omega = (xdot[j][i].omega + uxx + uyy
+                       + (vxp*(u - x[j][i-1].omega)
+                          + vxm*(x[j][i+1].omega - u)) * hy
+                       + (vyp*(u - x[j-1][i].omega)
+                          + vym*(x[j+1][i].omega - u)) * hx
+                       - .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy);
 
-        /* Temperature */
-        u             = x[j][i].temp;
-        uxx           = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
-        uyy           = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-        f[j][i].temp =  (xdot[j][i].temp + uxx + uyy
-                         + prandtl * ((vxp*(u - x[j][i-1].temp)
-                                       + vxm*(x[j][i+1].temp - u)) * hy
-                                      + (vyp*(u - x[j-1][i].temp)
-                                         + vym*(x[j+1][i].temp - u)) * hx));
+      /* Temperature */
+      u            = x[j][i].temp;
+      uxx          = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
+      uyy          = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
+      f[j][i].temp =  (xdot[j][i].temp + uxx + uyy
+                       + prandtl * ((vxp*(u - x[j][i-1].temp)
+                                     + vxm*(x[j][i+1].temp - u)) * hy
+                                    + (vyp*(u - x[j-1][i].temp)
+                                       + vym*(x[j+1][i].temp - u)) * hx));
     }
   }
 

@@ -97,7 +97,7 @@ typedef struct {
   PetscScalar Tc;        /* temperature at base of lowest cloud layer */
   PetscScalar lat;       /* Latitude in degrees */
   PetscScalar init;      /* initialization scenario */
-  PetscScalar deep_grnd_temp;/* temperature of ground under top soil surface layer */
+  PetscScalar deep_grnd_temp; /* temperature of ground under top soil surface layer */
 } AppCtx;
 
 /* Struct for visualization */
@@ -135,80 +135,80 @@ extern PetscErrorCode FormInitialSolution(DM,Vec,void*);            /* Specifies
 extern PetscErrorCode RhsFunc(TS,PetscReal,Vec,Vec,void*);          /* Specifies the user defined functions                     (PETSc defined function) */
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);     /* Specifies output and visualization tools                 (PETSc defined function) */
 extern void readinput(struct in *put);                              /* reads input from text file */
-extern PetscErrorCode calcfluxs(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);/* calculates upward IR from surface */
-extern PetscErrorCode calcfluxa(PetscScalar, PetscScalar, PetscScalar, PetscScalar*);                          /* calculates downward IR from atmosphere */
-extern PetscErrorCode sensibleflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar*);                       /* calculates sensible heat flux */
-extern PetscErrorCode potential_temperature(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*); /* calculates potential temperature */
-extern PetscErrorCode latentflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);            /* calculates latent heat flux */
-extern PetscErrorCode calc_gflux(PetscScalar, PetscScalar, PetscScalar*);                                      /* calculates flux between top soil layer and underlying earth */
+extern PetscErrorCode calcfluxs(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*); /* calculates upward IR from surface */
+extern PetscErrorCode calcfluxa(PetscScalar, PetscScalar, PetscScalar, PetscScalar*);                           /* calculates downward IR from atmosphere */
+extern PetscErrorCode sensibleflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar*);                        /* calculates sensible heat flux */
+extern PetscErrorCode potential_temperature(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);  /* calculates potential temperature */
+extern PetscErrorCode latentflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);             /* calculates latent heat flux */
+extern PetscErrorCode calc_gflux(PetscScalar, PetscScalar, PetscScalar*);                                       /* calculates flux between top soil layer and underlying earth */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
-  int time;                   /* amount of loops */
-  struct in   put;
-  PetscScalar rh;             /* relative humidity */
-  PetscScalar x;              /* memory varialbe for relative humidity calculation */
-  PetscScalar deep_grnd_temp; /* temperature of ground under top soil surface layer */
-  PetscScalar emma;           /* absorption-emission constant for air */
-  PetscScalar pressure1 = 101300; /* surface pressure */
-  PetscScalar mixratio;          /* mixing ratio */
-  PetscScalar airtemp;           /* temperature of air near boundary layer inversion */
-  PetscScalar dewtemp;           /* dew point temperature */
-  PetscScalar sfctemp;           /* temperature at surface */
-  PetscScalar pwat;              /* total column precipitable water */
-  PetscScalar cloudTemp;         /* temperature at base of cloud */
-  AppCtx      user;              /*  user-defined work context */
-  MonitorCtx  usermonitor;       /* user-defined monitor context */
-  PetscMPIInt rank,size;
-  TS          ts;
-  SNES        snes;
-  DM          da;
-  Vec         T,rhs;            /* solution vector */
-  Mat         J;                /* Jacobian matrix */
-  PetscReal   ftime,dt;
-  PetscInt    steps,dof = 5;
+  PetscErrorCode ierr;
+  int            time;           /* amount of loops */
+  struct in      put;
+  PetscScalar    rh;             /* relative humidity */
+  PetscScalar    x;              /* memory varialbe for relative humidity calculation */
+  PetscScalar    deep_grnd_temp; /* temperature of ground under top soil surface layer */
+  PetscScalar    emma;           /* absorption-emission constant for air */
+  PetscScalar    pressure1 = 101300; /* surface pressure */
+  PetscScalar    mixratio;       /* mixing ratio */
+  PetscScalar    airtemp;        /* temperature of air near boundary layer inversion */
+  PetscScalar    dewtemp;        /* dew point temperature */
+  PetscScalar    sfctemp;        /* temperature at surface */
+  PetscScalar    pwat;           /* total column precipitable water */
+  PetscScalar    cloudTemp;      /* temperature at base of cloud */
+  AppCtx         user;           /*  user-defined work context */
+  MonitorCtx     usermonitor;    /* user-defined monitor context */
+  PetscMPIInt    rank,size;
+  TS             ts;
+  SNES           snes;
+  DM             da;
+  Vec            T,rhs;          /* solution vector */
+  Mat            J;              /* Jacobian matrix */
+  PetscReal      ftime,dt;
+  PetscInt       steps,dof = 5;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Inputs */
   readinput(&put);
 
-  sfctemp = put.Ts;
-  dewtemp = put.Td;
+  sfctemp   = put.Ts;
+  dewtemp   = put.Td;
   cloudTemp = put.Tc;
-  airtemp = put.Ta;
-  pwat = put.pwt;
+  airtemp   = put.Ta;
+  pwat      = put.pwt;
 
   if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",sfctemp); /* input surface temperature */
 
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
-  emma = emission(pwat);           /* accounts for radiative effects of water vapor */
+  emma           = emission(pwat); /* accounts for radiative effects of water vapor */
 
- /* Converts from Fahrenheit to Celsuis */
-  sfctemp = fahr_to_cel(sfctemp);
-  airtemp = fahr_to_cel(airtemp);
-  dewtemp = fahr_to_cel(dewtemp);
-  cloudTemp = fahr_to_cel(cloudTemp);
+  /* Converts from Fahrenheit to Celsuis */
+  sfctemp        = fahr_to_cel(sfctemp);
+  airtemp        = fahr_to_cel(airtemp);
+  dewtemp        = fahr_to_cel(dewtemp);
+  cloudTemp      = fahr_to_cel(cloudTemp);
   deep_grnd_temp = fahr_to_cel(deep_grnd_temp);
 
- /* Converts from Celsius to Kelvin */
-  sfctemp +=273;
-  airtemp +=273;
-  dewtemp +=273;
-  cloudTemp +=273;
-  deep_grnd_temp +=273;
+  /* Converts from Celsius to Kelvin */
+  sfctemp        += 273;
+  airtemp        += 273;
+  dewtemp        += 273;
+  cloudTemp      += 273;
+  deep_grnd_temp += 273;
 
- /* Calculates initial relative humidity */
-  x = calcmixingr(dewtemp,pressure1);
+  /* Calculates initial relative humidity */
+  x        = calcmixingr(dewtemp,pressure1);
   mixratio = calcmixingr(sfctemp,pressure1);
-  rh = (x/mixratio)*100;
+  rh       = (x/mixratio)*100;
 
-  if (!rank) {printf("Initial RH = %.1f percent\n\n",rh);}   /* prints initial relative humidity */
+  if (!rank) printf("Initial RH = %.1f percent\n\n",rh);   /* prints initial relative humidity */
 
   time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
@@ -228,19 +228,19 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,4,"p");CHKERRQ(ierr);
 
   /* set values for appctx */
-  user.da        = da;
-  user.Ts        = sfctemp;
-  user.fract     = put.fr;               /* fraction of sky covered by clouds */
-  user.dewtemp   = dewtemp;              /* dew point temperature (mositure in air) */
-  user.csoil     = 2000000;              /* heat constant for layer */
-  user.dzlay     = 0.08;                 /* thickness of top soil layer */
-  user.emma      = emma;                 /* emission parameter */
-  user.wind      = put.wnd;              /* wind spped */
-  user.pressure1 = pressure1;            /* sea level pressure */
-  user.airtemp   = airtemp;              /* temperature of air near boundar layer inversion */
-  user.Tc        = cloudTemp;            /* temperature at base of lowest cloud layer */
-  user.init      = put.init;             /* user chosen initiation scenario */
-  user.lat       = 70*0.0174532;         /* converts latitude degrees to latitude in radians */
+  user.da             = da;
+  user.Ts             = sfctemp;
+  user.fract          = put.fr;          /* fraction of sky covered by clouds */
+  user.dewtemp        = dewtemp;         /* dew point temperature (mositure in air) */
+  user.csoil          = 2000000;         /* heat constant for layer */
+  user.dzlay          = 0.08;            /* thickness of top soil layer */
+  user.emma           = emma;            /* emission parameter */
+  user.wind           = put.wnd;         /* wind spped */
+  user.pressure1      = pressure1;       /* sea level pressure */
+  user.airtemp        = airtemp;         /* temperature of air near boundar layer inversion */
+  user.Tc             = cloudTemp;       /* temperature at base of lowest cloud layer */
+  user.init           = put.init;        /* user chosen initiation scenario */
+  user.lat            = 70*0.0174532;    /* converts latitude degrees to latitude in radians */
   user.deep_grnd_temp = deep_grnd_temp;  /* temp in lowest ground layer */
 
   /* set values for MonitorCtx */
@@ -264,12 +264,12 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,rhs,RhsFunc,&user);CHKERRQ(ierr);
 
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
-  PetscBool      use_coloring=PETSC_TRUE;
-  MatFDColoring  matfdcoloring=0;
+  PetscBool     use_coloring  = PETSC_TRUE;
+  MatFDColoring matfdcoloring = 0;
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (use_coloring) {
-    ISColoring     iscoloring;
+    ISColoring iscoloring;
     ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
@@ -281,15 +281,16 @@ int main(int argc,char **argv)
   }
 
   /* Define what to print for ts_monitor option */
-  PetscBool  monitor_off = PETSC_FALSE;
+  PetscBool monitor_off = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
   if (!monitor_off) {
     ierr = TSMonitorSet(ts,Monitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
+  ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  if (!rank) {printf("time %d, ftime %g hour, TIMESTEP %g\n",time,ftime/3600,dt);}
+  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,ftime/3600,dt);
+
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,T);CHKERRQ(ierr);
@@ -306,7 +307,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,T);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  if (!rank) {PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);}
+  if (!rank) PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);
 
 
   if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
@@ -328,7 +329,7 @@ int main(int argc,char **argv)
 /*****************************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "calcfluxs"
-PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar* flux)
+PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux)
 {
   PetscFunctionBeginUser;
   *flux = SIG*((EMMSFC*emma*pow(airtemp,4)) + (EMMSFC*fract*(1 - emma)*pow(cloudTemp,4)) - (EMMSFC*pow(sfctemp,4)));   /* calculates flux using Stefan-Boltzmann relation */
@@ -337,21 +338,21 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 
 #undef __FUNCT__
 #define __FUNCT__ "calcfluxa"
-PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar* flux)   /* this function is not currently called upon */
+PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar *flux)   /* this function is not currently called upon */
 {
   PetscScalar emm = 0.001;
-  
+
   PetscFunctionBeginUser;
-  *flux = SIG*(- emm*(pow(airtemp,4)));     /* calculates flux usinge Stefan-Boltzmann relation */
+  *flux = SIG*(-emm*(pow(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "sensibleflux"
-PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar* sheat)
+PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat)
 {
-  PetscScalar density = 1; /* air density */
-  PetscScalar Cp = 1005;   /* heat capicity for dry air */
-  PetscScalar wndmix;      /* temperature change from wind mixing: wind*Ch */
+  PetscScalar density = 1;    /* air density */
+  PetscScalar Cp      = 1005; /* heat capicity for dry air */
+  PetscScalar wndmix;         /* temperature change from wind mixing: wind*Ch */
 
   PetscFunctionBeginUser;
   wndmix = 0.0025 + 0.0042*wind;                               /* regression equation valid for neutral and stable BL */
@@ -361,26 +362,26 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "latentflux"
-PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar* latentheat)
+PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar *latentheat)
 {
   PetscScalar density = 1;   /* density of dry air */
   PetscScalar q;             /* actual specific humitity */
   PetscScalar qs;            /* saturation specific humidity */
   PetscScalar wndmix;        /* temperature change from wind mixing: wind*Ch */
   PetscScalar beta = .4;     /* moisture availability */
-  PetscScalar mr      ;      /* mixing ratio */
+  PetscScalar mr;            /* mixing ratio */
   PetscScalar lhcnst;        /* latent heat of vaporization constant = 2501000 J/kg at 0c */
-                              /* latent heat of saturation const = 2834000 J/kg */
-                              /* latent heat of fusion const = 333700 J/kg */
-                              
+                             /* latent heat of saturation const = 2834000 J/kg */
+                             /* latent heat of fusion const = 333700 J/kg */
+
   PetscFunctionBeginUser;
-  wind = mph2mpers(wind);              /* converts wind from mph to meters per second */
-  wndmix = 0.0025 + 0.0042*wind;       /* regression equation valid for neutral BL */
-  lhcnst = Lconst(sfctemp);            /* calculates latent heat of evaporation */
-  mr  = calcmixingr(sfctemp,pressure1);/* calculates saturation mixing ratio */
-  qs = calc_q(mr);                     /* calculates saturation specific humidty */
-  mr = calcmixingr(dewtemp,pressure1); /* calculates mixing ratio */
-  q = calc_q(mr);                      /* calculates specific humidty */
+  wind   = mph2mpers(wind);                /* converts wind from mph to meters per second */
+  wndmix = 0.0025 + 0.0042*wind;           /* regression equation valid for neutral BL */
+  lhcnst = Lconst(sfctemp);                /* calculates latent heat of evaporation */
+  mr     = calcmixingr(sfctemp,pressure1); /* calculates saturation mixing ratio */
+  qs     = calc_q(mr);                     /* calculates saturation specific humidty */
+  mr     = calcmixingr(dewtemp,pressure1); /* calculates mixing ratio */
+  q      = calc_q(mr);                     /* calculates specific humidty */
 
   *latentheat = density*wndmix*beta*lhcnst*(q - qs); /* calculates latent heat flux */
   PetscFunctionReturn(0);
@@ -388,21 +389,21 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
 
 #undef __FUNCT__
 #define __FUNCT__ "potential_temperature"
-PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar* pottemp)
+PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
 {
-  PetscScalar kdry;    /* poisson constant for dry atmosphere */
-  PetscScalar kmoist;  /* poisson constant for moist atmosphere */
-  PetscScalar pavg;    /* average atmospheric pressure */
-  PetscScalar mixratio;/* mixing ratio */
+  PetscScalar kdry;     /* poisson constant for dry atmosphere */
+  PetscScalar kmoist;   /* poisson constant for moist atmosphere */
+  PetscScalar pavg;     /* average atmospheric pressure */
+  PetscScalar mixratio; /* mixing ratio */
 
   PetscFunctionBeginUser;
   mixratio = calcmixingr(sfctemp,pressure1);
 
 /* initialize poisson constant */
-  kdry = 0.2854;
+  kdry   = 0.2854;
   kmoist = 0.2854*(1 - 0.24*mixratio);
 
-  pavg = ((0.7*pressure1)+pressure2)/2;         /* calculates simple average press */
+  pavg     = ((0.7*pressure1)+pressure2)/2;     /* calculates simple average press */
   *pottemp = temp*(pow((pressure1/pavg),kdry)); /* calculates potential temperature */
   PetscFunctionReturn(0);
 }
@@ -411,11 +412,11 @@ extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
   PetscScalar e;        /* vapor pressure */
   PetscScalar mixratio; /* mixing ratio */
 
-  dtemp = dtemp - 273;                              /* converts from Kelvin to Celsuis */
-  e = 6.11*(pow(10,((7.5*dtemp)/(237.7+dtemp))));   /* converts from dew point temp to vapor pressure */
-  e = e*100;                                        /* converts from hPa to Pa */
-  mixratio = (0.622*e)/(pressure1 - e);             /* computes mixing ratio */
-  mixratio = mixratio*1;                            /* convert to g/Kg */
+  dtemp    = dtemp - 273;                                /* converts from Kelvin to Celsuis */
+  e        = 6.11*(pow(10,((7.5*dtemp)/(237.7+dtemp)))); /* converts from dew point temp to vapor pressure */
+  e        = e*100;                                      /* converts from hPa to Pa */
+  mixratio = (0.622*e)/(pressure1 - e);                  /* computes mixing ratio */
+  mixratio = mixratio*1;                                 /* convert to g/Kg */
 
   return mixratio;
 }
@@ -431,12 +432,12 @@ extern PetscScalar calc_q(PetscScalar rv)
 PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar* Gflux)
 {
   PetscScalar k;                       /* thermal conductivity parameter */
-  PetscScalar n = 0.38;                /* value of soil porosity */
-  PetscScalar dz = 1;                  /* depth of layer between soil surface and deep soil layer */
+  PetscScalar n                = 0.38; /* value of soil porosity */
+  PetscScalar dz               = 1;    /* depth of layer between soil surface and deep soil layer */
   PetscScalar unit_soil_weight = 2700; /* unit soil weight in kg/m^3 */
 
   PetscFunctionBeginUser;
-  k = ((0.135*(1-n)*unit_soil_weight) + 64.7)/(unit_soil_weight - (0.947*(1-n)*unit_soil_weight));  /* dry soil conductivity */
+  k      = ((0.135*(1-n)*unit_soil_weight) + 64.7)/(unit_soil_weight - (0.947*(1-n)*unit_soil_weight)); /* dry soil conductivity */
   *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   /* calculates flux from deep ground layer */
   PetscFunctionReturn(0);
 }
@@ -466,8 +467,8 @@ extern PetscScalar cloud(PetscScalar fract)
 extern PetscScalar Lconst(PetscScalar sfctemp)
 {
   PetscScalar Lheat;
-  sfctemp -=273;                              /* converts from kelvin to celsius */
-  Lheat = 4186.8*(597.31 - 0.5625*sfctemp);   /* calculates latent heat constant */
+  sfctemp -=273;                               /* converts from kelvin to celsius */
+  Lheat    = 4186.8*(597.31 - 0.5625*sfctemp); /* calculates latent heat constant */
   return Lheat;
 }
 extern PetscScalar mph2mpers(PetscScalar wind)
@@ -487,50 +488,40 @@ extern PetscScalar cel_to_fahr(PetscScalar temp)
 }
 void readinput(struct in *put)
 {
-  int i;
+  int  i;
   char x;
   FILE *ifp;
 
   ifp = fopen("ex5_control.txt", "r");
 
-  for (i=0;i<110;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<110; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->Ts);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->Td);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->Ta);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->Tc);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->fr);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->wnd);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->pwt);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->wndDir);
 
-  for (i=0;i<43;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->time);
 
-  for (i=0;i<63;i++)
-    fscanf(ifp, "%c", &x);
+  for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &put->init);
 }
 
@@ -549,8 +540,8 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   FILE           *ofp;
 
   PetscFunctionBeginUser;
-  ofp = fopen("swing", "w");
-  ifp = fopen("grid.in", "r");
+  ofp   = fopen("swing", "w");
+  ifp   = fopen("grid.in", "r");
   deltT = 0.8;
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -575,13 +566,11 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
         X[j][i].u  = 0;
         X[j][i].v  = 0;
         X[j][i].p  = 1.25;
-        if ((j == 5 || j == 6) && (i == 4 || i == 5)) X[j][i].p  += 0.00001;
-        if ((j == 5 || j == 6) && (i == 12 || i == 13)) X[j][i].p  += 0.00001;
+        if ((j == 5 || j == 6) && (i == 4 || i == 5))   X[j][i].p += 0.00001;
+        if ((j == 5 || j == 6) && (i == 12 || i == 13)) X[j][i].p += 0.00001;
       }
     }
-  }
-
-  else {
+  } else {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         X[j][i].Ts = user->Ts;
@@ -616,35 +605,35 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
 PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;       /* user-defined application context */
-  DM             da = user->da;
+  DM             da    = user->da;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      dhx,dhy;
   Vec            localT;
-  Field          **X,**Frhs;                  /* structures that contain variables of interest and left hand side of governing equations respectively */
-  PetscScalar    csoil     = user->csoil;     /* heat constant for layer */
-  PetscScalar    dzlay     = user->dzlay;     /* thickness of top soil layer */
-  PetscScalar    emma      = user->emma;      /* emission parameter */
-  PetscScalar    wind      = user->wind;      /* wind speed */
-  PetscScalar    dewtemp   = user->dewtemp;   /* dew point temperature (moisture in air) */
-  PetscScalar    pressure1 = user->pressure1; /* sea level pressure */
-  PetscScalar    airtemp   = user->airtemp;   /* temperature of air near boundary layer inversion */
-  PetscScalar    fract     = user->fract;     /* fraction of the sky covered by clouds */
-  PetscScalar    Tc        = user->Tc;        /* temperature at base of lowest cloud layer */
-  PetscScalar    lat       = user->lat;       /* latitude */
-  PetscScalar    Cp        = 1005.7;          /* specific heat of air at constant pressure */
-  PetscScalar    Rd        = 287.058;         /* gas constant for dry air */
-  PetscScalar    diffconst = 1000;            /* diffusion coefficient */
-  PetscScalar    f         = 2*0.0000727*sin(lat);      /* coriolis force */
+  Field          **X,**Frhs;                            /* structures that contain variables of interest and left hand side of governing equations respectively */
+  PetscScalar    csoil          = user->csoil;          /* heat constant for layer */
+  PetscScalar    dzlay          = user->dzlay;          /* thickness of top soil layer */
+  PetscScalar    emma           = user->emma;           /* emission parameter */
+  PetscScalar    wind           = user->wind;           /* wind speed */
+  PetscScalar    dewtemp        = user->dewtemp;        /* dew point temperature (moisture in air) */
+  PetscScalar    pressure1      = user->pressure1;      /* sea level pressure */
+  PetscScalar    airtemp        = user->airtemp;        /* temperature of air near boundary layer inversion */
+  PetscScalar    fract          = user->fract;          /* fraction of the sky covered by clouds */
+  PetscScalar    Tc             = user->Tc;             /* temperature at base of lowest cloud layer */
+  PetscScalar    lat            = user->lat;            /* latitude */
+  PetscScalar    Cp             = 1005.7;               /* specific heat of air at constant pressure */
+  PetscScalar    Rd             = 287.058;              /* gas constant for dry air */
+  PetscScalar    diffconst      = 1000;                 /* diffusion coefficient */
+  PetscScalar    f              = 2*0.0000727*sin(lat); /* coriolis force */
   PetscScalar    deep_grnd_temp = user->deep_grnd_temp; /* temp in lowest ground layer */
   PetscScalar    Ts,u,v,p,P;
   PetscScalar    u_abs,u_plus,u_minus,v_abs,v_plus,v_minus;
 
-  PetscScalar         sfctemp1,fsfc1,Ra;
-  PetscScalar         sheat;           /* sensible heat flux */
-  PetscScalar         latentheat;      /* latent heat flux */
-  PetscScalar         groundflux;      /* flux from conduction of deep ground layer in contact with top soil */
-  PetscInt       xend,yend;
+  PetscScalar sfctemp1,fsfc1,Ra;
+  PetscScalar sheat;                   /* sensible heat flux */
+  PetscScalar latentheat;              /* latent heat flux */
+  PetscScalar groundflux;              /* flux from conduction of deep ground layer in contact with top soil */
+  PetscInt    xend,yend;
 
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&localT);CHKERRQ(ierr);
@@ -680,19 +669,19 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 
       sfctemp1 = (double)Ts;
       sfctemp1 = (double)X[j][i].Ts;
-      ierr = calcfluxs(sfctemp1,airtemp,emma,fract,Tc,&fsfc1);CHKERRQ(ierr);       /* calculates surface net radiative flux */
-      ierr = sensibleflux(sfctemp1,airtemp,wind,&sheat);CHKERRQ(ierr);             /* calculate sensible heat flux */
-      ierr = latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat);CHKERRQ(ierr);/* calculates latent heat flux */
-      ierr = calc_gflux(sfctemp1,deep_grnd_temp,&groundflux);CHKERRQ(ierr);        /* calculates flux from earth below surface soil layer by conduction */
-      ierr = calcfluxa(sfctemp1,airtemp,emma,&Ra);                                 /* Calculates the change in downward radiative flux */
-      fsfc1 = fsfc1 + latentheat + sheat + groundflux;                             /* adds radiative, sensible heat, latent heat, and ground heat flux yielding net flux */
+      ierr     = calcfluxs(sfctemp1,airtemp,emma,fract,Tc,&fsfc1);CHKERRQ(ierr);        /* calculates surface net radiative flux */
+      ierr     = sensibleflux(sfctemp1,airtemp,wind,&sheat);CHKERRQ(ierr);              /* calculate sensible heat flux */
+      ierr     = latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat);CHKERRQ(ierr); /* calculates latent heat flux */
+      ierr     = calc_gflux(sfctemp1,deep_grnd_temp,&groundflux);CHKERRQ(ierr);         /* calculates flux from earth below surface soil layer by conduction */
+      ierr     = calcfluxa(sfctemp1,airtemp,emma,&Ra);                                  /* Calculates the change in downward radiative flux */
+      fsfc1    = fsfc1 + latentheat + sheat + groundflux;                               /* adds radiative, sensible heat, latent heat, and ground heat flux yielding net flux */
 
       /* convective coefficients for upwinding */
-      u_abs = PetscAbsScalar(u);
+      u_abs   = PetscAbsScalar(u);
       u_plus  = .5*(u + u_abs); /* u if u>0; 0 if u<0 */
       u_minus = .5*(u - u_abs); /* u if u <0; 0 if u>0 */
 
-      v_abs = PetscAbsScalar(v);
+      v_abs   = PetscAbsScalar(v);
       v_plus  = .5*(v + v_abs); /* v if v>0; 0 if v<0 */
       v_minus = .5*(v - v_abs); /* v if v <0; 0 if v>0 */
 
@@ -741,7 +730,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
-  MonitorCtx     *user = (MonitorCtx*)ctx;
+  MonitorCtx     *user  = (MonitorCtx*)ctx;
   PetscViewer    viewer = user->drawviewer;
   PetscMPIInt    rank;
   PetscReal      norm;
@@ -751,7 +740,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
   ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-  if (!rank) {printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);}
+  if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
   ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
 
   if (user->drawcontours) {

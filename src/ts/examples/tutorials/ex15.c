@@ -30,11 +30,11 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
 
 /* AppCtx: used by FormIFunction() and FormIJacobian() */
 typedef struct {
-  DM             da;
-  PetscInt       nstencilpts;    /* number of stencil points: 5 or 9 */
-  PetscReal      c;
-  PetscInt       boundary;       /* Type of boundary condition */
-  PetscBool      viewJacobian;
+  DM        da;
+  PetscInt  nstencilpts;         /* number of stencil points: 5 or 9 */
+  PetscReal c;
+  PetscInt  boundary;            /* Type of boundary condition */
+  PetscBool viewJacobian;
 } AppCtx;
 
 extern PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -59,13 +59,14 @@ int main(int argc,char **argv)
                             1: slow finite difference;
                             2: fd with coloring; */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   /* Initialize user application context */
-  user.da            = PETSC_NULL;
-  user.nstencilpts   = 5;
-  user.c             = -30.0;
-  user.boundary      = 0; /* 0: Drichlet BC; 1: Neumann BC */
-  user.viewJacobian  = PETSC_FALSE;
+  user.da           = PETSC_NULL;
+  user.nstencilpts  = 5;
+  user.c            = -30.0;
+  user.boundary     = 0;  /* 0: Drichlet BC; 1: Neumann BC */
+  user.viewJacobian = PETSC_FALSE;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nstencilpts",&user.nstencilpts,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
@@ -107,9 +108,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set Jacobian evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr  = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   Jtype = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
   if (Jtype == 0) { /* use user provided Jacobian evaluation routine */
     if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
     ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
@@ -157,7 +158,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
-  DM             da = (DM)user->da;
+  DM             da   = (DM)user->da;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      hx,hy,sx,sy;
   PetscScalar    u,uxx,uyy,**uarray,**f,**udot;
@@ -166,11 +167,11 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
-  if (user->nstencilpts == 9 && hx != hy)SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"hx must equal hy when nstencilpts = 9 for this example");
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  if (user->nstencilpts == 9 && hx != hy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"hx must equal hy when nstencilpts = 9 for this example");
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -216,12 +217,12 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
           }
         }
       } else { /* Interior */
-        u       = uarray[j][i];
+        u = uarray[j][i];
         /* 5-point stencil */
-        uxx     = (-2.0*u + uarray[j][i-1] + uarray[j][i+1]);
-        uyy     = (-2.0*u + uarray[j-1][i] + uarray[j+1][i]);
+        uxx = (-2.0*u + uarray[j][i-1] + uarray[j][i+1]);
+        uyy = (-2.0*u + uarray[j-1][i] + uarray[j+1][i]);
         if (user->nstencilpts == 9) {
-        /* 9-point stencil: assume hx=hy */
+          /* 9-point stencil: assume hx=hy */
           uxx = 2.0*uxx/3.0 + (0.5*(uarray[j-1][i-1]+uarray[j-1][i+1]+uarray[j+1][i-1]+uarray[j+1][i+1]) - 2.0*u)/6.0;
           uyy = 2.0*uyy/3.0 + (0.5*(uarray[j-1][i-1]+uarray[j-1][i+1]+uarray[j+1][i-1]+uarray[j+1][i+1]) - 2.0*u)/6.0;
         }
@@ -251,7 +252,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym,nc;
   AppCtx         *user = (AppCtx*)ctx;
-  DM             da = (DM)user->da;
+  DM             da    = (DM)user->da;
   MatStencil     col[5],row;
   PetscScalar    vals[5],hx,hy,sx,sy;
 
@@ -272,13 +273,13 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
       } else if (user->boundary > 0 && i == 0) {  /* Left Neumann */
         col[nc].j = j; col[nc].i = i;   vals[nc++] = 1.0;
         col[nc].j = j; col[nc].i = i+1; vals[nc++] = -1.0;
-      } else if (user->boundary > 0 && i == Mx-1) {/* Right Neumann */
+      } else if (user->boundary > 0 && i == Mx-1) { /* Right Neumann */
         col[nc].j = j; col[nc].i = i;   vals[nc++] = 1.0;
         col[nc].j = j; col[nc].i = i-1; vals[nc++] = -1.0;
       } else if (user->boundary > 0 && j == 0) {  /* Bottom Neumann */
         col[nc].j = j;   col[nc].i = i; vals[nc++] = 1.0;
         col[nc].j = j+1; col[nc].i = i; vals[nc++] = -1.0;
-      } else if (user->boundary > 0 && j == My-1) {/* Top Neumann */
+      } else if (user->boundary > 0 && j == My-1) { /* Top Neumann */
         col[nc].j = j;   col[nc].i = i;  vals[nc++] = 1.0;
         col[nc].j = j-1; col[nc].i = i;  vals[nc++] = -1.0;
       } else {   /* Interior */
@@ -308,11 +309,11 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-PetscErrorCode FormInitialSolution(Vec U,void* ptr)
+PetscErrorCode FormInitialSolution(Vec U,void *ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
-  DM             da=user->da;
-  PetscReal      c=user->c;
+  DM             da   =user->da;
+  PetscReal      c    =user->c;
   PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   PetscScalar    **u;
@@ -320,10 +321,10 @@ PetscErrorCode FormInitialSolution(Vec U,void* ptr)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
+  hx = 1.0/(PetscReal)(Mx-1);
+  hy = 1.0/(PetscReal)(My-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -337,11 +338,8 @@ PetscErrorCode FormInitialSolution(Vec U,void* ptr)
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
       r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
-      if (r < .125) {
-        u[j][i] = PetscExpScalar(c*r*r*r);
-      } else {
-        u[j][i] = 0.0;
-      }
+      if (r < .125) u[j][i] = PetscExpScalar(c*r*r*r);
+      else u[j][i] = 0.0;
     }
   }
 
