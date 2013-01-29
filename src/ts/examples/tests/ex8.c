@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   AppCtx         ctx;
   TS             ts;
-  Vec            tsrhs,U;
+  Vec            tsrhs,UV;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
@@ -85,16 +85,16 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&U);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&UV);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,TSFunctionI,&ctx);CHKERRQ(ierr);
   ctx.f = f;
   ctx.F = F;
 
-  ierr = VecSet(U,1.0);CHKERRQ(ierr);
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  ierr = VecSet(UV,1.0);CHKERRQ(ierr);
+  ierr = TSSolve(ts,UV);CHKERRQ(ierr);
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
+  ierr = VecDestroy(&UV);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
@@ -108,14 +108,14 @@ int main(int argc,char **argv)
 
 
 */
-PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec U,Vec F,void *actx)
+PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
-  ierr = (*ctx->f)(t,U,F);CHKERRQ(ierr);
+  ierr = (*ctx->f)(t,UV,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -125,14 +125,14 @@ PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec U,Vec F,void *actx)
    Defines the nonlinear function that is passed to the time-integrator
 
 */
-PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *actx)
+PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecCopy(Udot,F);CHKERRQ(ierr);
-  ierr = (*ctx->F)(t,U,F);CHKERRQ(ierr);
+  ierr = VecCopy(UVdot,F);CHKERRQ(ierr);
+  ierr = (*ctx->F)(t,UV,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
