@@ -102,6 +102,7 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
     ierr = VecDuplicate(X,gvec);CHKERRQ(ierr);
     ierr = VecZeroEntries(*gvec);CHKERRQ(ierr);
   }
+  ierr = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
