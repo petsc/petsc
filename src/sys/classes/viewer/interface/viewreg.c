@@ -1,9 +1,9 @@
 
 #include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/
 
-PetscFunctionList PetscViewerList              = 0;
+PetscFunctionList PetscViewerList = 0;
 
-PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char *[],PetscBool*);
+PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char*[],PetscBool*);
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetViewer"
 /*@C
@@ -58,9 +58,9 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
     } else {
-      char        *cvalue,*loc,*loc2 = PETSC_NULL;
-      PetscInt    cnt;
-      const char  *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERVTK,0};
+      char       *cvalue,*loc,*loc2 = PETSC_NULL;
+      PetscInt   cnt;
+      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERVTK,0};
 
       ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
       ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
@@ -150,9 +150,9 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,-1,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
-  *inviewer           = viewer;
-  viewer->data        = 0;
+  ierr         = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,-1,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
+  *inviewer    = viewer;
+  viewer->data = 0;
   PetscFunctionReturn(0);
 }
 
@@ -194,8 +194,9 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   /* cleanup any old type that may be there */
   if (viewer->data) {
     ierr         = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
+
     viewer->ops->destroy = PETSC_NULL;
-    viewer->data = 0;
+    viewer->data         = 0;
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
@@ -233,7 +234,7 @@ PetscErrorCode  PetscViewerRegisterDestroy(void)
 PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscViewer))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
@@ -265,8 +266,8 @@ PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const cha
 PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  char       vtype[256];
-  PetscBool  flg;
+  char           vtype[256];
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -275,20 +276,20 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
     ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char *)(((PetscObject)viewer)->type_name?((PetscObject)viewer)->type_name:PETSCVIEWERASCII),vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerSetType(viewer,vtype);CHKERRQ(ierr);
-    }
-    /* type has not been set? */
-    if (!((PetscObject)viewer)->type_name) {
-      ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
-    }
-    if (viewer->ops->setfromoptions) {
-      ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char*)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII),vtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerSetType(viewer,vtype);CHKERRQ(ierr);
+  }
+  /* type has not been set? */
+  if (!((PetscObject)viewer)->type_name) {
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
+  }
+  if (viewer->ops->setfromoptions) {
+    ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
+  }
 
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)viewer);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

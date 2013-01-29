@@ -38,24 +38,25 @@ extern const char *const PetscPThreadCommPoolSparkTypes[];
    and PTHREAD threading models. For NONTHREADED threading model, no extra
    pthreads are created
 */
-struct _p_PetscThreadComm_PThread{
-  PetscInt    nthreads;                      /* Number of threads created */
-  pthread_t  *tid;                           /* thread ids */
+struct _p_PetscThreadComm_PThread {
+  PetscInt       nthreads;                   /* Number of threads created */
+  pthread_t      *tid;                       /* thread ids */
   pthread_attr_t *attr;                      /* thread attributes */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  cpu_set_t   *cpuset;
+  cpu_set_t *cpuset;
 #endif
-  PetscBool  ismainworker;                   /* Is the main thread also a work thread?*/
-  PetscInt   *granks;                        /* Thread ranks - if main thread is a worker then main thread
+  PetscBool ismainworker;                    /* Is the main thread also a work thread?*/
+  PetscInt  *granks;                         /* Thread ranks - if main thread is a worker then main thread
                                                 rank is 0 and ranks for other threads start from 1,
                                                 otherwise the thread ranks start from 0.
                                                 These ranks are with respect to the first initialized thread pool */
-  PetscInt    thread_num_start;              /* index for the first created thread (= 1 if the main thread is a worker
+  PetscInt thread_num_start;                 /* index for the first created thread (= 1 if the main thread is a worker
                                                 else 0) */
   PetscPThreadCommSynchronizationType sync;   /* Synchronization type */
   PetscPThreadCommAffinityPolicyType  aff;    /* affinity policy */
   PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */
   PetscBool                           synchronizeafter; /* Whether the main thread should be blocked till all threads complete the given kernel */
+
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
 };
@@ -65,7 +66,7 @@ typedef struct _p_PetscThreadComm_PThread *PetscThreadComm_PThread;
 #if defined(PETSC_PTHREAD_LOCAL)
 extern PETSC_PTHREAD_LOCAL PetscInt PetscPThreadRank; /* Rank of the calling thread ... thread local variable */
 #else
-extern pthread_key_t  PetscPThreadRankkey;
+extern pthread_key_t PetscPThreadRankkey;
 #endif
 
 #if defined(PETSC_CPU_RELAX)

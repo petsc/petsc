@@ -110,7 +110,9 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
   ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(MPI_Comm),&addr_local_comm);CHKERRQ(ierr);
+
   *addr_local_comm = local_comm;
+
   ierr = MPI_Attr_put(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -148,7 +150,7 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  ierr = MPI_Attr_get(comm,Petsc_Seq_keyval,(void **)&addr_local_comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Seq_keyval,(void**)&addr_local_comm,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
   local_comm = *addr_local_comm;
 

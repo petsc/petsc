@@ -320,9 +320,9 @@ static const double __ac_HASH_UPPER = 0.77;
  */
 PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
 {
-        khint_t h = *s;
-        if (h) for (++s ; *s; ++s) h = (h << 5) - h + *s;
-        return h;
+  khint_t h = *s;
+  if (h) for (++s; *s; ++s) h = (h << 5) - h + *s;
+  return h;
 }
 /*! @function
   @abstract     Another interface to const char* hash function
@@ -515,7 +515,7 @@ KHASH_MAP_INIT_INT(HASHI,PetscInt)
 
 typedef khash_t(HASHI) *PetscHashI;
 
-typedef khiter_t   PetscHashIIter;
+typedef khiter_t PetscHashIIter;
 
 #define PetscHashICreate(ht) ((ht) = kh_init(HASHI))
 
@@ -527,7 +527,7 @@ typedef khiter_t   PetscHashIIter;
 
 #define PetscHashISize(ht,n)     ((n)=kh_size((ht)))
 
-#define PetscHashIIterNext(ht,hi)  do{++(hi);} while (!kh_exist((ht),(hi)) && (hi) != kh_end((ht)))
+#define PetscHashIIterNext(ht,hi)  do {++(hi);} while (!kh_exist((ht),(hi)) && (hi) != kh_end((ht)))
 
 #define PetscHashIIterBegin(ht,hi) {(hi) = kh_begin((ht));if (!kh_exist((ht),(hi))) {PetscHashIIterNext((ht),(hi));}}
 
@@ -622,7 +622,7 @@ typedef khiter_t   PetscHashIIter;
 /* HASHIJ */
 /* Linked list of values in a bucket. */
 struct _IJNode {
-  PetscInt k;
+  PetscInt       k;
   struct _IJNode *next;
 };
 typedef struct _IJNode IJNode;
@@ -630,7 +630,7 @@ typedef struct _IJNode IJNode;
 /* Value (holds a linked list of nodes) in the bucket. */
 struct _IJVal {
   PetscInt n;
-  IJNode *head, *tail;
+  IJNode   *head, *tail;
 };
 typedef struct _IJVal IJVal;
 
@@ -647,13 +647,13 @@ typedef struct _PetscHashIJKey PetscHashIJKey;
 #define IJKeyHash(key) ((((key).i) << (4*sizeof(PetscInt)))^((key).j))
 
 /* Compare two keys (integer pairs). */
-#define IJKeyEqual(k1,k2) (((k1).i==(k2).i)?((k1).j==(k2).j):0)
+#define IJKeyEqual(k1,k2) (((k1).i==(k2).i) ? ((k1).j==(k2).j) : 0)
 
 KHASH_INIT(HASHIJ,PetscHashIJKey,IJVal,1,IJKeyHash,IJKeyEqual)
 
 struct _PetscHashIJ {
   PetscBool multivalued;
-  PetscInt size;
+  PetscInt  size;
   khash_t(HASHIJ) *ht;
 };
 
@@ -669,11 +669,11 @@ typedef IJNode              *PetscHashIJValIter;
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h)
 {
   PetscErrorCode _15_ierr;
-  
+
   PetscFunctionBegin;
   PetscValidPointer(h,1);
-  _15_ierr = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
-  (*h)->ht = kh_init(HASHIJ);
+  _15_ierr          = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
+  (*h)->ht          = kh_init(HASHIJ);
   (*h)->multivalued = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -734,11 +734,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGet(PetscHashIJ h, PetscHashIJKey 
 
   PetscFunctionBegin;
   _9_hi = kh_get(HASHIJ, (h)->ht, (i));
-  if (_9_hi != kh_end((h)->ht)) {
-    *ii = kh_val((h)->ht, _9_hi).head->k;
-  } else {
-    *ii = -1;
-  }
+  if (_9_hi != kh_end((h)->ht)) *ii = kh_val((h)->ht, _9_hi).head->k;
+  else *ii = -1;
+
   PetscFunctionReturn(0);
 }
 
@@ -748,7 +746,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashI
 {
   PetscFunctionBegin;
   *hn = hi;
-  do{++(*hn);} while (!kh_exist((h)->ht,(*hn)) && (*hn) != kh_end((h)->ht));
+  do { ++(*hn); } while (!kh_exist((h)->ht,(*hn)) && (*hn) != kh_end((h)->ht));
   PetscFunctionReturn(0);
 }
 
@@ -757,7 +755,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashI
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))) {ierr = PetscHashIJIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -779,7 +777,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetKey(PetscHashIJ h, PetscHas
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetValIter(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJValIter *vi)
 {
   PetscFunctionBegin;
-  if (hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head); else ((*vi) = 0);
+  if (hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head);
+  else ((*vi) = 0);
   PetscFunctionReturn(0);
 }
 
@@ -808,33 +807,30 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterGetVal(PetscHashIJ h, Petsc
 #define __FUNCT__ "PetscHashIJAdd"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i, PetscInt ii)
 {
-  khiter_t _11_hi;
-  khint_t  _11_r;
-  IJNode   *_11_ijnode;
-  IJVal    *_11_ijval;
+  khiter_t       _11_hi;
+  khint_t        _11_r;
+  IJNode         *_11_ijnode;
+  IJVal          *_11_ijval;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  _11_hi = kh_put(HASHIJ,(h)->ht,(i),&_11_r);
+  _11_hi    = kh_put(HASHIJ,(h)->ht,(i),&_11_r);
   _11_ijval = &(kh_val((h)->ht,_11_hi));
   if (_11_r) {
     _11_ijval->head = _11_ijval->tail = 0;
-    _11_ijval->n = 0;
+    _11_ijval->n    = 0;
   }
-  if (!_11_r && !(h)->multivalued) {
-    _11_ijval->head->k = (ii);
-  }
+  if (!_11_r && !(h)->multivalued) _11_ijval->head->k = (ii);
   else {
-    ierr = PetscNew(IJNode, &_11_ijnode);CHKERRQ(ierr);
+    ierr          = PetscNew(IJNode, &_11_ijnode);CHKERRQ(ierr);
     _11_ijnode->k = (ii);
-    _11_ijval = &(kh_val((h)->ht,_11_hi));
+    _11_ijval     = &(kh_val((h)->ht,_11_hi));
     if (!_11_ijval->tail) {
       _11_ijval->tail = _11_ijnode;
       _11_ijval->head = _11_ijnode;
-    }
-    else {
+    } else {
       _11_ijval->tail->next = _11_ijnode;
-      _11_ijval->tail = _11_ijnode;
+      _11_ijval->tail       = _11_ijnode;
     }
     ++(_11_ijval->n);
     ++((h)->size);
@@ -850,17 +846,17 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJKey *arr)
 {
   PetscHashIJIter _12_hi;
-  PetscHashIJKey _12_key;
-  PetscInt n;
-  PetscErrorCode ierr;
-  
+  PetscHashIJKey  _12_key;
+  PetscInt        n;
+  PetscErrorCode  ierr;
+
   PetscFunctionBegin;
-  n = 0;
+  n    = 0;
   ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
   while (!PetscHashIJIterAtEnd((h),_12_hi)) {
-    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);CHKERRQ(ierr);
+    ierr         = PetscHashIJIterGetKey((h),_12_hi,&_12_key);CHKERRQ(ierr);
     (arr)[(n)++] = _12_key;
-    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi);CHKERRQ(ierr);
+    ierr         = PetscHashIJIterNext((h),_12_hi, &_12_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -872,12 +868,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJK
 #define __FUNCT__ "PetscHashIJGetIndices"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt *iarr, PetscInt *jarr, PetscInt *karr)
 {
-  PetscErrorCode ierr;
-  PetscHashIJIter _12_hi;
+  PetscErrorCode     ierr;
+  PetscHashIJIter    _12_hi;
   PetscHashIJValIter _12_vi;
-  PetscHashIJKey _12_key;
-  PetscInt n = 0;
-  
+  PetscHashIJKey     _12_key;
+  PetscInt           n = 0;
+
   PetscFunctionBegin;
   ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
   while (!PetscHashIJIterAtEnd((h),_12_hi)) {
@@ -886,7 +882,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt
     while (!PetscHashIJValIterAtEnd((h),_12_vi)) {
       (iarr)[(n)] = _12_key.i;
       (jarr)[(n)] = _12_key.j;
-      ierr = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]);CHKERRQ(ierr);
+      ierr        = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]);CHKERRQ(ierr);
       ++(n);
       ierr = PetscHashIJValIterNext((h),_12_vi, &_12_vi);CHKERRQ(ierr);
     }
@@ -899,12 +895,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt
 #define __FUNCT__ "PetscHashIJDuplicate"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHashIJ *hd)
 {
-  PetscHashIJIter  _14_hi;
+  PetscHashIJIter    _14_hi;
   PetscHashIJValIter _14_vi;
-  PetscHashIJKey   _14_key;
-  PetscInt         _14_val;
-  PetscErrorCode   ierr;
-  
+  PetscHashIJKey     _14_key;
+  PetscInt           _14_val;
+  PetscErrorCode     ierr;
+
   PetscFunctionBegin;
   ierr = PetscHashIJCreate((hd));CHKERRQ(ierr);
   ierr = PetscHashIJIterBegin((h),&_14_hi);CHKERRQ(ierr);
@@ -927,20 +923,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHash
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if ((h) && (h)->ht) {
-    PetscHashIJIter _15_hi;
-    PetscHashIJValIter  _15_vi, _15_vid;
-    PetscErrorCode _15_ierr;
+    PetscHashIJIter    _15_hi;
+    PetscHashIJValIter _15_vi, _15_vid;
+    PetscErrorCode     _15_ierr;
     ierr = PetscHashIJIterBegin((h),&_15_hi);CHKERRQ(ierr);
     while (!PetscHashIJIterAtEnd((h),_15_hi)) {
       ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi);CHKERRQ(ierr);
       while (!PetscHashIJValIterAtEnd((h),_15_vi)) {
-        _15_vid = _15_vi;
-        ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
+        _15_vid       = _15_vi;
+        ierr          = PetscHashIJValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
         _15_vid->next = 0;
-        _15_ierr = PetscFree(_15_vid);CHKERRQ(_15_ierr);
+        _15_ierr      = PetscFree(_15_vid);CHKERRQ(_15_ierr);
       }
       ierr = PetscHashIJIterNext((h),_15_hi,&_15_hi);CHKERRQ(ierr);
     }
@@ -953,7 +949,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h)
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscHashIJClearValues((h));CHKERRQ(ierr);
   kh_clear(HASHIJ,(h)->ht);

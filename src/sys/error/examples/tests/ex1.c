@@ -13,12 +13,10 @@ typedef struct _handlerCtx {
 #define __FUNCT__ "handleSignal"
 int handleSignal(int signum, void *ctx)
 {
-  HandlerCtx *user = (HandlerCtx *) ctx;
+  HandlerCtx *user = (HandlerCtx*) ctx;
 
   user->signum = signum;
-  if (signum == SIGHUP) {
-    user->exitHandler = 1;
-  }
+  if (signum == SIGHUP) user->exitHandler = 1;
   return 0;
 }
 
@@ -31,11 +29,11 @@ int main(int argc, char *args[])
 
   user.exitHandler = 0;
 
-  ierr = PetscInitialize(&argc, &args, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &args, (char*) 0, help);CHKERRQ(ierr);
   ierr = PetscPushSignalHandler(handleSignal, &user);CHKERRQ(ierr);
   while (!user.exitHandler) {
     if (user.signum > 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum);CHKERRQ(ierr);
+      ierr        = PetscPrintf(PETSC_COMM_SELF, "Caught signal %d\n", user.signum);CHKERRQ(ierr);
       user.signum = -1;
     }
   }

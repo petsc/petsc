@@ -9,14 +9,14 @@ T*/
 */
 #include <petscthreadcomm.h>
 
-PetscInt    *trstarts;
+PetscInt *trstarts;
 
 PetscErrorCode set_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *alphap)
 {
   PetscScalar alpha=*alphap;
   PetscInt    i;
 
-  for (i=trstarts[myrank];i < trstarts[myrank+1];i++) a[i] = alpha+(PetscScalar)i;
+  for (i=trstarts[myrank]; i < trstarts[myrank+1]; i++) a[i] = alpha+(PetscScalar)i;
 
   return 0;
 }
@@ -26,7 +26,7 @@ PetscErrorCode sum_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReductio
   PetscScalar my_sum=0.0;
   PetscInt    i;
 
-  for (i=trstarts[myrank];i < trstarts[myrank+1];i++) my_sum += a[i];
+  for (i=trstarts[myrank]; i < trstarts[myrank+1]; i++) my_sum += a[i];
 
   PetscThreadReductionKernelPost(myrank,red,&my_sum);
 
@@ -66,10 +66,13 @@ PetscErrorCode maxloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReduc
   PetscScalar my_maxloc[2];
   PetscInt    i;
 
-  my_maxloc[0]=a[trstarts[myrank]];
+  my_maxloc[0] = a[trstarts[myrank]];
   my_maxloc[1] = trstarts[myrank];
   for (i=trstarts[myrank]+1;i < trstarts[myrank+1];i++) {
-    if (PetscRealPart(a[i]) > PetscRealPart(my_maxloc[0])) { my_maxloc[0] = a[i]; my_maxloc[1] = i;}
+    if (PetscRealPart(a[i]) > PetscRealPart(my_maxloc[0])) {
+      my_maxloc[0] = a[i];
+      my_maxloc[1] = i;
+    }
   }
 
   PetscThreadReductionKernelPost(myrank,red,my_maxloc);
@@ -82,10 +85,14 @@ PetscErrorCode minloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReduc
   PetscScalar my_minloc[2];
   PetscInt    i;
 
-  my_minloc[0]=a[trstarts[myrank]];
+  my_minloc[0] = a[trstarts[myrank]];
   my_minloc[1] = trstarts[myrank];
   for (i=trstarts[myrank]+1;i < trstarts[myrank+1];i++) {
-    if (PetscRealPart(a[i]) < PetscRealPart(my_minloc[0])) { my_minloc[0] = a[i]; my_minloc[1] = i;}
+    if (PetscRealPart(a[i]) < PetscRealPart(my_minloc[0]))
+    {
+      my_minloc[0] = a[i];
+      my_minloc[1] = i;
+    }
   }
 
   PetscThreadReductionKernelPost(myrank,red,my_minloc);
@@ -104,12 +111,12 @@ PetscErrorCode mult_reds_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRe
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
-  PetscInt               N=8;
-  PetscScalar           *a,sum=0.0,alpha=0.0,*scalar,max=0.0,min=N,maxloc[2],minloc[2];
-  PetscThreadCommReduction  red;
+  PetscErrorCode           ierr;
+  PetscInt                 N=8;
+  PetscScalar              *a,sum=0.0,alpha=0.0,*scalar,max=0.0,min=N,maxloc[2],minloc[2];
+  PetscThreadCommReduction red;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -121,9 +128,9 @@ int main(int argc,char **argv)
 
   /* Set a[i] = 1.0 .. i = 1,N */
   /* Get location to store the scalar value alpha from threadcomm */
-  ierr = PetscThreadCommGetScalars(PETSC_COMM_WORLD,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscThreadCommGetScalars(PETSC_COMM_WORLD,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   *scalar = alpha;
-  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)set_kernel,2,a,scalar);CHKERRQ(ierr);
+  ierr    = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)set_kernel,2,a,scalar);CHKERRQ(ierr);
 
   ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_SUM,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)sum_kernel,2,a,red);CHKERRQ(ierr);

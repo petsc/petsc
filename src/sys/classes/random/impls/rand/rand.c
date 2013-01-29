@@ -1,6 +1,6 @@
 
 #include <../src/sys/classes/random/randomimpl.h>
-#if defined (PETSC_HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
@@ -49,7 +49,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   PetscRandomSeed_Rand,
   PetscRandomGetValue_Rand,
   PetscRandomGetValueReal_Rand,
-   0,
+  0,
   /* 5 */
   0
 };

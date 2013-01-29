@@ -33,7 +33,7 @@ static void PetscXIOHandler(Display *dpy)
 
 .seealso:
 @*/
-PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
+PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void*),void *ctx)
 {
   PetscErrorCode  ierr;
   PetscDrawButton button;
@@ -77,11 +77,11 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
       ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
       if (button == PETSC_BUTTON_LEFT)        scale = .5;
       else if (button == PETSC_BUTTON_CENTER) scale = 2.;
-      xl = scale*(xl + w - xc) + xc - w*scale;
-      xr = scale*(xr - w - xc) + xc + w*scale;
-      yl = scale*(yl + h - yc) + yc - h*scale;
-      yr = scale*(yr - h - yc) + yc + h*scale;
-      w *= scale; h *= scale;
+      xl   = scale*(xl + w - xc) + xc - w*scale;
+      xr   = scale*(xr - w - xc) + xc + w*scale;
+      yl   = scale*(yl + h - yc) + yc - h*scale;
+      yr   = scale*(yr - h - yc) + yc + h*scale;
+      w   *= scale; h *= scale;
       ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
       ierr = (*func)(draw,ctx);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
     }
   }
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-  theend:
+theend:
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
   XSetIOErrorHandler(PETSC_NULL);
 #endif

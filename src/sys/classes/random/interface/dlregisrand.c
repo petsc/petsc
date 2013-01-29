@@ -1,10 +1,10 @@
 
 #include <../src/sys/classes/random/randomimpl.h>
-#if defined (PETSC_HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
-static PetscBool  PetscRandomPackageInitialized = PETSC_FALSE;
+static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomFinalizePackage"
 /*@C
@@ -42,7 +42,7 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
 @*/
 PetscErrorCode  PetscRandomInitializePackage(const char path[])
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscRandomPackageInitialized) PetscFunctionReturn(0);

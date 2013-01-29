@@ -62,9 +62,10 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _n_PetscViewers,v);CHKERRQ(ierr);
-  (*v)->n      = 64;
-  (*v)->comm   = comm;
+  ierr       = PetscNew(struct _n_PetscViewers,v);CHKERRQ(ierr);
+  (*v)->n    = 64;
+  (*v)->comm = comm;
+
   ierr = PetscMalloc(64*sizeof(PetscViewer),&(*v)->viewer);CHKERRQ(ierr);
   ierr = PetscMemzero((*v)->viewer,64*sizeof(PetscViewer));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -99,12 +100,13 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %d\n",n);
   if (n >= viewers->n) {
     PetscViewer *v;
-    int    newn = n + 64; /* add 64 new ones at a time */
+    int         newn = n + 64; /* add 64 new ones at a time */
 
     ierr = PetscMalloc(newn*sizeof(PetscViewer),&v);CHKERRQ(ierr);
     ierr = PetscMemzero(v,newn*sizeof(PetscViewer));CHKERRQ(ierr);
     ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(PetscViewer));CHKERRQ(ierr);
     ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
+
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {

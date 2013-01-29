@@ -11,9 +11,9 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
                            PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char   *c1;
+  char *c1;
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerHDF5Open(MPI_Comm_f2c(*(MPI_Fint *)&*comm),c1,*type,binv);
+  *ierr = PetscViewerHDF5Open(MPI_Comm_f2c(*(MPI_Fint*)&*comm),c1,*type,binv);
   FREECHAR(name,c1);
 }
 

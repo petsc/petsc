@@ -13,7 +13,7 @@ static char help[] = "Micro-benchmark kernel times.\n\n";
 
 static PetscErrorCode CounterInit_kernel(PetscInt trank,PetscInt **counters)
 {
-  counters[trank] = malloc(sizeof(PetscInt)); /* Separate allocation per thread */
+  counters[trank]  = malloc(sizeof(PetscInt)); /* Separate allocation per thread */
   *counters[trank] = 0;                      /* Initialize memory to fault it */
   return 0;
 }
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       i,j,k,N=100,**counters,tsize;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
@@ -78,9 +78,7 @@ int main(int argc,char **argv)
   for (i=0; i<10; i++) {
     PetscReal t0,t1;
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-    for (j=0; j<N; j++) {
-      CounterIncrement_kernel(0,counters);
-    }
+    for (j=0; j<N; j++) CounterIncrement_kernel(0,counters);
     ierr = PetscGetTime(&t1);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Serial inline time per single kernel: %g us\n",1e6*(t1-t0)/N);CHKERRQ(ierr);
   }

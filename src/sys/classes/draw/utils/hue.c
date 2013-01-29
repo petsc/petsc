@@ -55,16 +55,16 @@ static PetscErrorCode PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *
   if (l <= 50) m2 = l * (100 + s) / 100 ;           /* not sure of "/100" */
   else         m2 = l + s - l*s/100;
 
-  m1  = 2*l - m2;
+  m1 = 2*l - m2;
   if (!s) {
     /* ignore h */
-    *r  = 255 * l / 100;
-    *g  = 255 * l / 100;
-    *b  = 255 * l / 100;
+    *r = 255 * l / 100;
+    *g = 255 * l / 100;
+    *b = 255 * l / 100;
   } else {
-    *r  = (255 * PetscDrawUtilityHlsHelper(h+120,m1,m2)) / 100;
-    *g  = (255 * PetscDrawUtilityHlsHelper(h,m1,m2))     / 100;
-    *b  = (255 * PetscDrawUtilityHlsHelper(h-120,m1,m2)) / 100;
+    *r = (255 * PetscDrawUtilityHlsHelper(h+120,m1,m2)) / 100;
+    *g = (255 * PetscDrawUtilityHlsHelper(h,m1,m2))     / 100;
+    *b = (255 * PetscDrawUtilityHlsHelper(h-120,m1,m2)) / 100;
   }
   PetscFunctionReturn(0);
 }
@@ -78,12 +78,12 @@ PetscErrorCode  PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *gre
   PetscReal      igamma = 1.0 / Gamma;
 
   PetscFunctionBegin;
-  red[0]      = 0;
-  green[0]    = 0;
-  blue[0]     = 0;
-  hue         = 0;        /* in 0:359 */
-  lightness   = 50;       /* in 0:100 */
-  saturation  = 100;      /* in 0:100 */
+  red[0]     = 0;
+  green[0]   = 0;
+  blue[0]    = 0;
+  hue        = 0;         /* in 0:359 */
+  lightness  = 50;        /* in 0:100 */
+  saturation = 100;       /* in 0:100 */
   for (i = 0; i < mapsize; i++) {
     ierr     = PetscDrawUtilityHlsToRgb(hue,lightness,saturation,red + i,green + i,blue + i);CHKERRQ(ierr);
     red[i]   = (int)floor(255.999 * pow(((PetscReal) red[i])/(PetscReal)255.0,igamma));

@@ -68,7 +68,7 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
 @*/
 PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
 {
-  PetscErrorCode ierr ;
+  PetscErrorCode ierr;
   PetscBool      isnull;
   PetscReal      top,left,right,bottom,tw,th;
   size_t         len,mlen = 0;

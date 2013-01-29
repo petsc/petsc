@@ -48,140 +48,140 @@ static PetscErrorCode InitializeColors(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  rcolor[PETSC_DRAW_WHITE] =           255;
-  gcolor[PETSC_DRAW_WHITE] =  255;
-  bcolor[PETSC_DRAW_WHITE] =    255;
-  rcolor[PETSC_DRAW_BLACK] =           0;
-  gcolor[PETSC_DRAW_BLACK] = 0;
-  bcolor[PETSC_DRAW_BLACK] = 0;
-  rcolor[PETSC_DRAW_RED] =             255;
-  gcolor[PETSC_DRAW_RED] =  0;
-  bcolor[PETSC_DRAW_RED] =  0;
-  rcolor[PETSC_DRAW_GREEN] =           0;
-  gcolor[PETSC_DRAW_GREEN] =128;
-  bcolor[PETSC_DRAW_GREEN] =  0;
-  rcolor[PETSC_DRAW_CYAN] =            0;
-  gcolor[PETSC_DRAW_CYAN] = 139;
-  bcolor[PETSC_DRAW_CYAN] =    139;
-  rcolor[PETSC_DRAW_BLUE] =            0;
-  gcolor[PETSC_DRAW_BLUE] = 0;
-  bcolor[PETSC_DRAW_BLUE] =     255;
-  rcolor[PETSC_DRAW_MAGENTA] =         255;
-  gcolor[PETSC_DRAW_MAGENTA] =    0;
-  bcolor[PETSC_DRAW_MAGENTA] =    255;
-  rcolor[PETSC_DRAW_AQUAMARINE] =      127;
-  gcolor[PETSC_DRAW_AQUAMARINE] = 255;
-  bcolor[PETSC_DRAW_AQUAMARINE] =   212;
-  rcolor[PETSC_DRAW_FORESTGREEN] =     34;
-  gcolor[PETSC_DRAW_FORESTGREEN] = 139;
-  bcolor[PETSC_DRAW_FORESTGREEN] =  34;
-  rcolor[PETSC_DRAW_ORANGE] =          255;
-  gcolor[PETSC_DRAW_ORANGE] = 165;
-  bcolor[PETSC_DRAW_ORANGE] = 0;
-  rcolor[PETSC_DRAW_VIOLET] =          238;
-  gcolor[PETSC_DRAW_VIOLET] =  130;
-  bcolor[PETSC_DRAW_VIOLET] =  238;
-  rcolor[PETSC_DRAW_BROWN] =           165;
-  gcolor[PETSC_DRAW_BROWN] = 42;
-  bcolor[PETSC_DRAW_BROWN] = 42;
-  rcolor[PETSC_DRAW_PINK] =            255;
-  gcolor[PETSC_DRAW_PINK] = 192;
-  bcolor[PETSC_DRAW_PINK] = 203;
-  rcolor[PETSC_DRAW_CORAL] =           255;
-  gcolor[PETSC_DRAW_CORAL] = 127;
-  bcolor[PETSC_DRAW_CORAL] = 80;
-  rcolor[PETSC_DRAW_GRAY] =            128;
-  gcolor[PETSC_DRAW_GRAY] = 128;
-  bcolor[PETSC_DRAW_GRAY] = 128;
-  rcolor[PETSC_DRAW_YELLOW] =          255;
-  gcolor[PETSC_DRAW_YELLOW] = 255;
-  bcolor[PETSC_DRAW_YELLOW] =   0;
-  rcolor[PETSC_DRAW_GOLD] =            255;
-  gcolor[PETSC_DRAW_GOLD] =   215;
-  bcolor[PETSC_DRAW_GOLD] =   0;
-  rcolor[PETSC_DRAW_LIGHTPINK] =       255;
-  gcolor[PETSC_DRAW_LIGHTPINK] = 182;
-  bcolor[PETSC_DRAW_LIGHTPINK] = 193;
-  rcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 72;
-  gcolor[PETSC_DRAW_MEDIUMTURQUOISE] =  209;
+  rcolor[PETSC_DRAW_WHITE]           = 255;
+  gcolor[PETSC_DRAW_WHITE]           = 255;
+  bcolor[PETSC_DRAW_WHITE]           = 255;
+  rcolor[PETSC_DRAW_BLACK]           =   0;
+  gcolor[PETSC_DRAW_BLACK]           =   0;
+  bcolor[PETSC_DRAW_BLACK]           =   0;
+  rcolor[PETSC_DRAW_RED]             = 255;
+  gcolor[PETSC_DRAW_RED]             =   0;
+  bcolor[PETSC_DRAW_RED]             =   0;
+  rcolor[PETSC_DRAW_GREEN]           =   0;
+  gcolor[PETSC_DRAW_GREEN]           = 128;
+  bcolor[PETSC_DRAW_GREEN]           =   0;
+  rcolor[PETSC_DRAW_CYAN]            =   0;
+  gcolor[PETSC_DRAW_CYAN]            = 139;
+  bcolor[PETSC_DRAW_CYAN]            = 139;
+  rcolor[PETSC_DRAW_BLUE]            =   0;
+  gcolor[PETSC_DRAW_BLUE]            =   0;
+  bcolor[PETSC_DRAW_BLUE]            = 255;
+  rcolor[PETSC_DRAW_MAGENTA]         = 255;
+  gcolor[PETSC_DRAW_MAGENTA]         =   0;
+  bcolor[PETSC_DRAW_MAGENTA]         = 255;
+  rcolor[PETSC_DRAW_AQUAMARINE]      = 127;
+  gcolor[PETSC_DRAW_AQUAMARINE]      = 255;
+  bcolor[PETSC_DRAW_AQUAMARINE]      = 212;
+  rcolor[PETSC_DRAW_FORESTGREEN]     =  34;
+  gcolor[PETSC_DRAW_FORESTGREEN]     = 139;
+  bcolor[PETSC_DRAW_FORESTGREEN]     =  34;
+  rcolor[PETSC_DRAW_ORANGE]          = 255;
+  gcolor[PETSC_DRAW_ORANGE]          = 165;
+  bcolor[PETSC_DRAW_ORANGE]          =   0;
+  rcolor[PETSC_DRAW_VIOLET]          = 238;
+  gcolor[PETSC_DRAW_VIOLET]          = 130;
+  bcolor[PETSC_DRAW_VIOLET]          = 238;
+  rcolor[PETSC_DRAW_BROWN]           = 165;
+  gcolor[PETSC_DRAW_BROWN]           =  42;
+  bcolor[PETSC_DRAW_BROWN]           =  42;
+  rcolor[PETSC_DRAW_PINK]            = 255;
+  gcolor[PETSC_DRAW_PINK]            = 192;
+  bcolor[PETSC_DRAW_PINK]            = 203;
+  rcolor[PETSC_DRAW_CORAL]           = 255;
+  gcolor[PETSC_DRAW_CORAL]           = 127;
+  bcolor[PETSC_DRAW_CORAL]           =  80;
+  rcolor[PETSC_DRAW_GRAY]            = 128;
+  gcolor[PETSC_DRAW_GRAY]            = 128;
+  bcolor[PETSC_DRAW_GRAY]            = 128;
+  rcolor[PETSC_DRAW_YELLOW]          = 255;
+  gcolor[PETSC_DRAW_YELLOW]          = 255;
+  bcolor[PETSC_DRAW_YELLOW]          =   0;
+  rcolor[PETSC_DRAW_GOLD]            = 255;
+  gcolor[PETSC_DRAW_GOLD]            = 215;
+  bcolor[PETSC_DRAW_GOLD]            =   0;
+  rcolor[PETSC_DRAW_LIGHTPINK]       = 255;
+  gcolor[PETSC_DRAW_LIGHTPINK]       = 182;
+  bcolor[PETSC_DRAW_LIGHTPINK]       = 193;
+  rcolor[PETSC_DRAW_MEDIUMTURQUOISE] =  72;
+  gcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 209;
   bcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 204;
-  rcolor[PETSC_DRAW_KHAKI] =           240;
-  gcolor[PETSC_DRAW_KHAKI] =230;
-  bcolor[PETSC_DRAW_KHAKI] =140;
-  rcolor[PETSC_DRAW_DIMGRAY] =         105;
-  gcolor[PETSC_DRAW_DIMGRAY] = 105;
-  bcolor[PETSC_DRAW_DIMGRAY] = 105;
-  rcolor[PETSC_DRAW_YELLOWGREEN] =     54;
-  gcolor[PETSC_DRAW_YELLOWGREEN] =   205;
-  bcolor[PETSC_DRAW_YELLOWGREEN] =  50;
-  rcolor[PETSC_DRAW_SKYBLUE] =         135;
-  gcolor[PETSC_DRAW_SKYBLUE] =   206;
-  bcolor[PETSC_DRAW_SKYBLUE] = 235;
-  rcolor[PETSC_DRAW_DARKGREEN] =       0;
-  gcolor[PETSC_DRAW_DARKGREEN] =    100;
-  bcolor[PETSC_DRAW_DARKGREEN] = 0;
-  rcolor[PETSC_DRAW_NAVYBLUE] =       0;
-  gcolor[PETSC_DRAW_NAVYBLUE] =    0;
-  bcolor[PETSC_DRAW_NAVYBLUE] = 128;
-  rcolor[PETSC_DRAW_SANDYBROWN] =      244;
-  gcolor[PETSC_DRAW_SANDYBROWN] =  164;
-  bcolor[PETSC_DRAW_SANDYBROWN] =   96;
-  rcolor[PETSC_DRAW_CADETBLUE] =      95;
-  gcolor[PETSC_DRAW_CADETBLUE] =  158;
-  bcolor[PETSC_DRAW_CADETBLUE] =  160;
-  rcolor[PETSC_DRAW_POWDERBLUE] =     176;
-  gcolor[PETSC_DRAW_POWDERBLUE] =  224;
-  bcolor[PETSC_DRAW_POWDERBLUE] =  230;
-  rcolor[PETSC_DRAW_DEEPPINK] =       255;
-  gcolor[PETSC_DRAW_DEEPPINK] =    20;
-  bcolor[PETSC_DRAW_DEEPPINK] =    147;
-  rcolor[PETSC_DRAW_THISTLE] =        216;
-  gcolor[PETSC_DRAW_THISTLE] =  191;
-  bcolor[PETSC_DRAW_THISTLE] =   216;
-  rcolor[PETSC_DRAW_LIMEGREEN] =      50;
-  gcolor[PETSC_DRAW_LIMEGREEN] =   205;
-  bcolor[PETSC_DRAW_LIMEGREEN] =   50;
-  rcolor[PETSC_DRAW_LAVENDERBLUSH] =  255;
-  gcolor[PETSC_DRAW_LAVENDERBLUSH] =     240;
-  bcolor[PETSC_DRAW_LAVENDERBLUSH] =    245;
-  rcolor[PETSC_DRAW_PLUM] =           221;
-  gcolor[PETSC_DRAW_PLUM] =  160;
-  bcolor[PETSC_DRAW_PLUM] =   221;
+  rcolor[PETSC_DRAW_KHAKI]           = 240;
+  gcolor[PETSC_DRAW_KHAKI]           = 230;
+  bcolor[PETSC_DRAW_KHAKI]           = 140;
+  rcolor[PETSC_DRAW_DIMGRAY]         = 105;
+  gcolor[PETSC_DRAW_DIMGRAY]         = 105;
+  bcolor[PETSC_DRAW_DIMGRAY]         = 105;
+  rcolor[PETSC_DRAW_YELLOWGREEN]     =  54;
+  gcolor[PETSC_DRAW_YELLOWGREEN]     = 205;
+  bcolor[PETSC_DRAW_YELLOWGREEN]     =  50;
+  rcolor[PETSC_DRAW_SKYBLUE]         = 135;
+  gcolor[PETSC_DRAW_SKYBLUE]         = 206;
+  bcolor[PETSC_DRAW_SKYBLUE]         = 235;
+  rcolor[PETSC_DRAW_DARKGREEN]       =   0;
+  gcolor[PETSC_DRAW_DARKGREEN]       = 100;
+  bcolor[PETSC_DRAW_DARKGREEN]       =   0;
+  rcolor[PETSC_DRAW_NAVYBLUE]        =   0;
+  gcolor[PETSC_DRAW_NAVYBLUE]        =   0;
+  bcolor[PETSC_DRAW_NAVYBLUE]        = 128;
+  rcolor[PETSC_DRAW_SANDYBROWN]      = 244;
+  gcolor[PETSC_DRAW_SANDYBROWN]      = 164;
+  bcolor[PETSC_DRAW_SANDYBROWN]      =  96;
+  rcolor[PETSC_DRAW_CADETBLUE]       =  95;
+  gcolor[PETSC_DRAW_CADETBLUE]       = 158;
+  bcolor[PETSC_DRAW_CADETBLUE]       = 160;
+  rcolor[PETSC_DRAW_POWDERBLUE]      = 176;
+  gcolor[PETSC_DRAW_POWDERBLUE]      = 224;
+  bcolor[PETSC_DRAW_POWDERBLUE]      = 230;
+  rcolor[PETSC_DRAW_DEEPPINK]        = 255;
+  gcolor[PETSC_DRAW_DEEPPINK]        =  20;
+  bcolor[PETSC_DRAW_DEEPPINK]        = 147;
+  rcolor[PETSC_DRAW_THISTLE]         = 216;
+  gcolor[PETSC_DRAW_THISTLE]         = 191;
+  bcolor[PETSC_DRAW_THISTLE]         = 216;
+  rcolor[PETSC_DRAW_LIMEGREEN]       =  50;
+  gcolor[PETSC_DRAW_LIMEGREEN]       = 205;
+  bcolor[PETSC_DRAW_LIMEGREEN]       =  50;
+  rcolor[PETSC_DRAW_LAVENDERBLUSH]   = 255;
+  gcolor[PETSC_DRAW_LAVENDERBLUSH]   = 240;
+  bcolor[PETSC_DRAW_LAVENDERBLUSH]   = 245;
+  rcolor[PETSC_DRAW_PLUM]            = 221;
+  gcolor[PETSC_DRAW_PLUM]            = 160;
+  bcolor[PETSC_DRAW_PLUM]            = 221;
 
-  ierr    = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
+  ierr = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static GLuint        vertexshader,fragmentshader,shaderprogram;
+static GLuint vertexshader,fragmentshader,shaderprogram;
 #undef __FUNCT__
 #define __FUNCT__ "InitializeShader"
 static PetscErrorCode InitializeShader(void)
 {
-  const char     *vertexsource = "attribute vec2 position;\
-                                  attribute vec3 color; \
-                                  varying vec4 vColor;\
-                                  void main(void)\
-                                  {\
-                                    vColor = vec4(color,0.50);\
-                                    gl_Position = vec4(position,0.0,1.0);\
-                                  }\n";
+  const char *vertexsource = "attribute vec2 position;\
+                              attribute vec3 color; \
+                              varying vec4 vColor;\
+                              void main(void)\
+                              {\
+                                vColor = vec4(color,0.50);\
+                                gl_Position = vec4(position,0.0,1.0);\
+                              }\n";
 #if defined(PETSC_HAVE_GLUT)
-  const char    *fragmentsource =  "varying vec4 vColor;\
-                                    void main (void)\
-                                    {\
-                                      gl_FragColor = vColor; \
-                                    }\n";
+  const char *fragmentsource = "varying vec4 vColor;\
+                                void main (void)\
+                                {\
+                                  gl_FragColor = vColor; \
+                                }\n";
 #else
-  const char    *fragmentsource =  "precision mediump float;\
-                                    varying vec4 vColor;\
-                                    void main (void)\
-                                    {\
-                                      gl_FragColor = vColor; \
-                                    }\n";
+  const char *fragmentsource = "precision mediump float;\
+                                varying vec4 vColor;\
+                                void main (void)\
+                                {\
+                                  gl_FragColor = vColor; \
+                                }\n";
 #endif
-  int           isCompiled_VS, isCompiled_FS;
-  int           isLinked;
-  GLenum        err;
+  int    isCompiled_VS, isCompiled_FS;
+  int    isLinked;
+  GLenum err;
 
   PetscFunctionBegin;
   /*  http://www.opengl.org/wiki/OpenGL_Shading_Language */
@@ -220,7 +220,7 @@ static PetscErrorCode InitializeShader(void)
   if (isCompiled_FS == GL_FALSE) {
     PetscErrorCode ierr;
     int            maxLength;
-    char          *fragmentInfoLog;
+    char           *fragmentInfoLog;
     glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
     ierr = PetscMalloc(maxLength*sizeof(char),&fragmentInfoLog);CHKERRQ(ierr);
     glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
@@ -301,8 +301,8 @@ extern PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw);
 #if defined(PETSC_HAVE_GLUT)
 #include <GLUT/glut.h>
 typedef struct {
-  int  win;          /* OpenGL GLUT window identifier */
-  int  x,y,w,h;      /* Size and location of window */
+  int win;           /* OpenGL GLUT window identifier */
+  int x,y,w,h;       /* Size and location of window */
 } PetscDraw_OpenGL;
 
 static int currentwindow = -1;
@@ -316,13 +316,11 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 
 PETSC_STATIC_INLINE PetscErrorCode OpenGLString(float x,float y, const char *str,size_t len,int icolor)
 {
-  PetscInt         i;
+  PetscInt i;
 
   glColor3ub(rcolor[icolor],gcolor[icolor],bcolor[icolor]);
   glRasterPos2f(x, y);
-  for (i = 0; i < len; i++) {
-    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
-  }
+  for (i = 0; i < len; i++) glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
   return 0;
 }
 
@@ -341,18 +339,19 @@ PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawGetPopup_OpenGL"
 static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
   ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
+
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringVertical_OpenGL"
-static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
   float            xx,yy;
@@ -364,9 +363,9 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
   ierr = PetscStrlen(chrs,&n);CHKERRQ(ierr);
   ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
-  xx = XTRANS(draw,x);
+  xx   = XTRANS(draw,x);
   for (i=0; i<n; i++) {
-    yy = YTRANS(draw,y-th*i);
+    yy   = YTRANS(draw,y-th*i);
     ierr = OpenGLString(xx,yy,chrs+i,1,c);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -374,7 +373,7 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawString_OpenGL"
-static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
   float            xx,yy;
@@ -384,8 +383,8 @@ static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscRea
   PetscToken       token;
 
   PetscFunctionBegin;
-  xx = XTRANS(draw,x);
-  yy = YTRANS(draw,y);
+  xx   = XTRANS(draw,x);
+  yy   = YTRANS(draw,y);
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
 
   ierr = PetscTokenCreate(chrs,'\n',&token);CHKERRQ(ierr);
@@ -435,8 +434,8 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawFlush_OpenGL"
 static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 {
-  PetscDraw_OpenGL* win = (PetscDraw_OpenGL*)draw->data;
-  PetscErrorCode    ierr;
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
@@ -449,15 +448,15 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawStringGetSize_OpenGL"
 static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
-  PetscDraw_OpenGL* win = (PetscDraw_OpenGL*)draw->data;
-  PetscInt          w;
-  PetscErrorCode    ierr;
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  PetscInt         w;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
-  w = glutBitmapWidth(GLUT_BITMAP_8_BY_13,'W');
-  *x = w*(draw->coor_xr - draw->coor_xl)/((win->w)*(draw->port_xr - draw->port_xl));
-  *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((win->h)*(draw->port_yr - draw->port_yl));
+  w    = glutBitmapWidth(GLUT_BITMAP_8_BY_13,'W');
+  *x   = w*(draw->coor_xr - draw->coor_xl)/((win->w)*(draw->port_xr - draw->port_xl));
+  *y   = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((win->h)*(draw->port_yr - draw->port_yl));
   PetscFunctionReturn(0);
 }
 
@@ -482,7 +481,7 @@ static PetscBool resized = PETSC_FALSE;
 #define __FUNCT__ "PetscDrawCheckResizedWindow_OpenGL"
 static PetscErrorCode PetscDrawCheckResizedWindow_OpenGL(PetscDraw draw)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!resized) PetscFunctionReturn(0);
@@ -499,16 +498,17 @@ static OpenGLButton Mouse;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetMouseButton_OpenGL"
-static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
   int              px,py;
 
   PetscFunctionBegin;
-  while (Mouse.button == -1) {glutCheckLoop();}
-  *button = (PetscDrawButton)(Mouse.button + 1);
-  px      = Mouse.x;
-  py      = Mouse.y;
+  while (Mouse.button == -1) glutCheckLoop();
+
+  *button      = (PetscDrawButton)(Mouse.button + 1);
+  px           = Mouse.x;
+  py           = Mouse.y;
   Mouse.button = -1;
 
   if (x_phys) *x_phys = ((double)px)/((double)win->w);
@@ -525,7 +525,7 @@ typedef struct {
   GLKView *view;
 } PetscDraw_OpenGL;
 
-static GLKView  *globalGLKView[10] = {0,0,0,0,0,0,0,0,0,0};
+static GLKView *globalGLKView[10] = {0,0,0,0,0,0,0,0,0,0};
 
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 {
@@ -550,7 +550,7 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawGetPopup_OpenGL"
 static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *popup = PETSC_NULL;
@@ -559,7 +559,7 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawString_OpenGL"
-static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
   float            xx,yy;
@@ -568,8 +568,8 @@ static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscRea
 
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
-  xx = XPTRANS(draw,win,x);
-  yy = YPTRANS(draw,win,y);
+  xx   = XPTRANS(draw,win,x);
+  yy   = YPTRANS(draw,win,y);
   NSLog(@"Draw string start");
   yourLabel = [[UILabel alloc] initWithFrame:CGRectMake(xx, yy, 300, 20)];
   [yourLabel setTextColor:[UIColor colorWithRed:rcolor[c]/255.0 green:gcolor[c]/255.0 blue:rcolor[c]/255.0 alpha:1.0]];
@@ -590,7 +590,7 @@ static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscRea
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawStringVertical_OpenGL"
-static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
   float            xx,yy, w = 100,h = 20;
@@ -599,8 +599,8 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
 
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
-  xx = XPTRANS(draw,win,x);
-  yy = YPTRANS(draw,win,y);
+  xx   = XPTRANS(draw,win,x);
+  yy   = YPTRANS(draw,win,y);
   NSLog(@"Draw string vertical start");
   yourLabel = [[UILabel alloc] initWithFrame:CGRectMake(0,0, w, h)];
   [yourLabel setTextColor:[UIColor colorWithRed:rcolor[c]/255.0 green:gcolor[c]/255.0 blue:rcolor[c]/255.0 alpha:1.0]];
@@ -631,6 +631,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   for (i=0; i<10; i++) {
     if (!globalGLKView[i]) {
       globalGLKView[i] = win->view;
+
       ierr = PetscFree(win);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
@@ -642,7 +643,7 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawFlush_OpenGL"
 static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 {
-  PetscDraw_OpenGL* win = (PetscDraw_OpenGL*)draw->data;
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
 
   GLenum err;
   glFlush();
@@ -678,7 +679,7 @@ static PetscErrorCode PetscDrawCheckResizedWindow_OpenGL(PetscDraw draw)
 }
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetMouseButton_OpenGL"
-static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   return 0;
 }
@@ -689,7 +690,7 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
 #define __FUNCT__ "PetscDrawSynchronizedFlush_OpenGL"
 static PetscErrorCode PetscDrawSynchronizedFlush_OpenGL(PetscDraw draw)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* currently on sequential support */
@@ -701,21 +702,21 @@ static PetscErrorCode PetscDrawSynchronizedFlush_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawClear_OpenGL_Base"
 PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw draw)
 {
-  PetscDraw_OpenGL* win = (PetscDraw_OpenGL*)draw->data;
-  PetscErrorCode    ierr;
-  float             xl,yl,xr,yr;
-  GLfloat           vertices[12];
-  GLfloat           colors[18];
-  GLuint            positionBufferObject;
-  GLuint            colorBufferObject;
-  GLenum            err;
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  PetscErrorCode   ierr;
+  float            xl,yl,xr,yr;
+  GLfloat          vertices[12];
+  GLfloat          colors[18];
+  GLuint           positionBufferObject;
+  GLuint           colorBufferObject;
+  GLenum           err;
 
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
-  xl = -1.0 + 2.0*((draw)->port_xl);
-  xr = -1.0 + 2.0*((draw)->port_xr);
-  yl = -1.0 + 2.0*((draw)->port_yl);
-  yr = -1.0 + 2.0*((draw)->port_yr);
+  xl   = -1.0 + 2.0*((draw)->port_xl);
+  xr   = -1.0 + 2.0*((draw)->port_xr);
+  yl   = -1.0 + 2.0*((draw)->port_yl);
+  yr   = -1.0 + 2.0*((draw)->port_yr);
 
   vertices[0] = xl;
   vertices[1] = yl;
@@ -735,7 +736,7 @@ PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw draw)
   colors[3] = 1.0;  colors[4] = 1.0; colors[5] = 1.0;
   colors[6] = 1.0;  colors[7] = 1.0; colors[8] = 1.0;
 
-  colors[9] = 1.0;  colors[10] = 1.0; colors[11] = 1.0;
+  colors[9]  = 1.0;  colors[10] = 1.0; colors[11] = 1.0;
   colors[12] = 1.0;  colors[13] = 1.0; colors[14] = 1.0;
   colors[15] = 1.0;  colors[16] = 1.0; colors[17] = 1.0;
 
@@ -787,16 +788,16 @@ static PetscErrorCode PetscDrawSynchronizedClear_OpenGL(PetscDraw draw)
 static PetscErrorCode PetscDrawPoint_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
-  GLfloat           vertices[2],colors[3];
-  PetscErrorCode    ierr;
-  GLuint            positionBufferObject;
-  GLuint            colorBufferObject;
-  GLenum            err;
+  GLfloat          vertices[2],colors[3];
+  PetscErrorCode   ierr;
+  GLuint           positionBufferObject;
+  GLuint           colorBufferObject;
+  GLenum           err;
 
   PetscFunctionBegin;
   vertices[0] = XTRANS(draw,xl);
   vertices[1] = YTRANS(draw,yl);
-  colors[0] = rcolor[cl]/255.0;  colors[1] = gcolor[cl]/255.0; colors[2] = bcolor[cl]/255.0;
+  colors[0]   = rcolor[cl]/255.0;  colors[1] = gcolor[cl]/255.0; colors[2] = bcolor[cl]/255.0;
 
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
   glGenBuffers(1, &positionBufferObject);
@@ -834,18 +835,18 @@ static PetscErrorCode PetscDrawPoint_OpenGL(PetscDraw draw,PetscReal xl,PetscRea
 static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
-  GLfloat           linevertices[4],colors[6];
-  PetscErrorCode    ierr;
-  GLenum            err;
-  GLuint            positionBufferObject;
-  GLuint            colorBufferObject;
+  GLfloat          linevertices[4],colors[6];
+  PetscErrorCode   ierr;
+  GLenum           err;
+  GLuint           positionBufferObject;
+  GLuint           colorBufferObject;
 
 
   PetscFunctionBegin;
-  linevertices[0]  = XTRANS(draw,xl);
-  linevertices[2]  = XTRANS(draw,xr);
-  linevertices[1]  = YTRANS(draw,yl);
-  linevertices[3]  = YTRANS(draw,yr);
+  linevertices[0] = XTRANS(draw,xl);
+  linevertices[2] = XTRANS(draw,xr);
+  linevertices[1] = YTRANS(draw,yl);
+  linevertices[3] = YTRANS(draw,yr);
   if (linevertices[0] == linevertices[2] && linevertices[1] == linevertices[3]) PetscFunctionReturn(0);
   colors[0] = rcolor[cl]/255.0;  colors[1] = gcolor[cl]/255.0; colors[2] = bcolor[cl]/255.0;
   colors[3] = rcolor[cl]/255.0;  colors[4] = gcolor[cl]/255.0; colors[5] = bcolor[cl]/255.0;
@@ -887,22 +888,22 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
 static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
-  PetscErrorCode    ierr;
-  GLfloat           vertices[6],colors[9];
-  GLenum            err;
-  GLuint            positionBufferObject;
-  GLuint            colorBufferObject;
+  PetscErrorCode   ierr;
+  GLfloat          vertices[6],colors[9];
+  GLenum           err;
+  GLuint           positionBufferObject;
+  GLuint           colorBufferObject;
 
   PetscFunctionBegin;
-  vertices[0]  = XTRANS(draw,X1);
-  vertices[1]  = YTRANS(draw,Y_1);
-  vertices[2]  = XTRANS(draw,X2);
-  vertices[3]  = YTRANS(draw,Y2);
-  vertices[4]  = XTRANS(draw,X3);
-  vertices[5]  = YTRANS(draw,Y3);
-  colors[0] = rcolor[c1]/255.0;  colors[1] = gcolor[c1]/255.0; colors[2] = bcolor[c1]/255.0;
-  colors[3] = rcolor[c2]/255.0;  colors[4] = gcolor[c2]/255.0; colors[5] = bcolor[c2]/255.0;
-  colors[6] = rcolor[c3]/255.0;  colors[7] = gcolor[c3]/255.0; colors[8] = bcolor[c3]/255.0;
+  vertices[0] = XTRANS(draw,X1);
+  vertices[1] = YTRANS(draw,Y_1);
+  vertices[2] = XTRANS(draw,X2);
+  vertices[3] = YTRANS(draw,Y2);
+  vertices[4] = XTRANS(draw,X3);
+  vertices[5] = YTRANS(draw,Y3);
+  colors[0]   = rcolor[c1]/255.0;  colors[1] = gcolor[c1]/255.0; colors[2] = bcolor[c1]/255.0;
+  colors[3]   = rcolor[c2]/255.0;  colors[4] = gcolor[c2]/255.0; colors[5] = bcolor[c2]/255.0;
+  colors[6]   = rcolor[c3]/255.0;  colors[7] = gcolor[c3]/255.0; colors[8] = bcolor[c3]/255.0;
 
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
   glGenBuffers(1, &positionBufferObject);
@@ -940,20 +941,21 @@ static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,Petsc
 static PetscErrorCode PetscDrawRectangle_OpenGL(PetscDraw draw,PetscReal Xl,PetscReal Yl,PetscReal Xr,PetscReal Yr,int c1,int c2,int c3,int c4)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
-  PetscErrorCode    ierr;
-  GLfloat           vertices[12],colors[18];
-  float             x1,y_1,x2,y2;
-  GLuint            positionBufferObject;
-  GLuint            colorBufferObject;
-  GLenum            err;
+  PetscErrorCode   ierr;
+  GLfloat          vertices[12],colors[18];
+  float            x1,y_1,x2,y2;
+  GLuint           positionBufferObject;
+  GLuint           colorBufferObject;
+  GLenum           err;
 
   PetscFunctionBegin;
-  x1   = XTRANS(draw,Xl);
-  y_1  = YTRANS(draw,Yl);
-  x2   = XTRANS(draw,Xr);
-  y2   = YTRANS(draw,Yr);
+  x1  = XTRANS(draw,Xl);
+  y_1 = YTRANS(draw,Yl);
+  x2  = XTRANS(draw,Xr);
+  y2  = YTRANS(draw,Yr);
 
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
+
   vertices[0] = x1; colors[0] = rcolor[c1]/255.0;  colors[1] = gcolor[c1]/255.0; colors[2] = bcolor[c1]/255.0;
   vertices[1] = y_1;
   vertices[2] = x2;colors[3] = rcolor[c2]/255.0;  colors[4] = gcolor[c2]/255.0; colors[5] = bcolor[c2]/255.0;
@@ -1106,30 +1108,22 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
   if (w == PETSC_DECIDE) w = draw->w = 300;
   if (h == PETSC_DECIDE) h = draw->h = 300;
   switch (w) {
-    case PETSC_DRAW_FULL_SIZE: w = draw->w = xmax - 10;
-                        break;
-    case PETSC_DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2;
-                        break;
-    case PETSC_DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3;
-                        break;
-    case PETSC_DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4;
-                        break;
+  case PETSC_DRAW_FULL_SIZE: w = draw->w = xmax - 10; break;
+  case PETSC_DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2; break;
+  case PETSC_DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3; break;
+  case PETSC_DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4; break;
   }
   switch (h) {
-    case PETSC_DRAW_FULL_SIZE: h = draw->h = ymax - 10;
-                        break;
-    case PETSC_DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2;
-                        break;
-    case PETSC_DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3;
-                        break;
-    case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4;
-                        break;
+  case PETSC_DRAW_FULL_SIZE: h = draw->h = ymax - 10; break;
+  case PETSC_DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2; break;
+  case PETSC_DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3; break;
+  case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4; break;
   }
 
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
-  x = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
+  ierr    = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
+  x       = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
 
 
   if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
@@ -1182,10 +1176,10 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
   if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
   if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
 
-  win->x      = x;
-  win->y      = y;
-  win->w      = w;
-  win->h      = h;
+  win->x = x;
+  win->y = y;
+  win->w = w;
+  win->h = h;
 
   glutInitWindowSize(w, h);
   glutInitWindowPosition(x,y);
@@ -1203,7 +1197,7 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   ierr = InitializeShader();CHKERRQ(ierr);
 
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  ierr    = PetscDrawClear(draw);CHKERRQ(ierr);
   resized = PETSC_FALSE; /* opening the window triggers OpenGL call to reshape so need to cancel that resized flag */
   glutCheckLoop();
   PetscFunctionReturn(0);
@@ -1252,7 +1246,7 @@ EXTERN_C_END
 
 .seealso: PetscDrawSynchronizedFlush(), PetscDrawDestroy(), PetscDrawOpenX(), PetscDrawCreate()
 @*/
-PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
+PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *draw)
 {
   PetscErrorCode ierr;
 
@@ -1298,12 +1292,13 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+
   draw->data = win;
   for (i=0; i<10; i++) {
     if (globalGLKView[i]) {
       win->view = globalGLKView[i];
-      win->w = win->view.frame.size.width;
-      win->h = win->view.frame.size.height;
+      win->w    = win->view.frame.size.width;
+      win->h    = win->view.frame.size.height;
       [win->view bindDrawable];
       globalGLKView[i] = 0;
       break;
@@ -1313,7 +1308,7 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
 
   if (!initialized) {
     initialized = PETSC_TRUE;
-    ierr = InitializeColors();CHKERRQ(ierr);
+    ierr        = InitializeColors();CHKERRQ(ierr);
   }
   ierr = InitializeShader();CHKERRQ(ierr);
 

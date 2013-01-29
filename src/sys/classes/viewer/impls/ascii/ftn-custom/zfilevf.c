@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char   *c1;
+  char        *c1;
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   FIXCHAR(name,len,c1);

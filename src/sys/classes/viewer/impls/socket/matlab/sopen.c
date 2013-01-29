@@ -49,7 +49,7 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-#if defined (PETSC_HAVE_IO_H)
+#if defined(PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
@@ -70,7 +70,7 @@ typedef unsigned long   u_long;
 #include <../src/sys/viewer/impls/socket/socket.h>
 #include <mex.h>
 
-#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}
+#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}
 #define PETSC_MEX_ERRORQ(a) {mexErrMsgTxt(a); return -1;}
 
 /*-----------------------------------------------------------------*/
@@ -97,15 +97,11 @@ int SOCKConnect_Private(int portnumber)
 
 /* open port*/
   listenport = establish((u_short) portnumber);
-  if (listenport == -1) {
-    PETSC_MEX_ERRORQ("RECEIVE: unable to establish port\n");
-  }
+  if (listenport == -1) PETSC_MEX_ERRORQ("RECEIVE: unable to establish port\n");
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ((t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
-    PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
-  }
+  if ((t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
   close(listenport);
   return(t);
 }
@@ -139,19 +135,16 @@ int establish(u_short portnum)
   memset(&sa,0,sizeof(struct sockaddr_in));
 #endif
   hp = gethostbyname(myname);
-  if (!hp) {
-    PETSC_MEX_ERRORQ("RECEIVE: error from gethostbyname\n");
-  }
+  if (!hp) PETSC_MEX_ERRORQ("RECEIVE: error from gethostbyname\n");
 
   sa.sin_family = hp->h_addrtype;
-  sa.sin_port = htons(portnum);
+  sa.sin_port   = htons(portnum);
 
-  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-    PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");
-  }
+  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");
+
   {
   int optval = 1; /* Turn on the option */
-  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
+  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));
   }
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
@@ -178,7 +171,7 @@ int establish(u_short portnum)
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
-  int        t,portnumber;
+  int t,portnumber;
 
   /* check output parameters */
   if (nlhs != 1) PETSC_MEX_ERROR("Open requires one output argument.");
@@ -189,14 +182,12 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
     str = getenv("PETSC_VIEWER_SOCKET_PORT");
     if (str) portnumber = atoi(str);
     else portnumber = PETSCSOCKETDEFAULTPORT;
-  } else {
-    portnumber = (int)*mxGetPr(prhs[0]);
-  }
+  } else portnumber = (int)*mxGetPr(prhs[0]);
 
   /* open connection */
-  t = SOCKConnect_Private(portnumber); if (t == -1)  PETSC_MEX_ERROR("opening socket");
+  t = SOCKConnect_Private(portnumber); if (t == -1) PETSC_MEX_ERROR("opening socket");
 
-  plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
 
   *mxGetPr(plhs[0]) = t;
   return;

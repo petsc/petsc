@@ -33,7 +33,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 
 void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
-  char     *c1,*tmp;
+  char *c1,*tmp;
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
@@ -59,7 +59,7 @@ void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fna
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscSynchronizedFPrintf(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*file,tmp);if (*ierr) return;
+  *ierr = PetscSynchronizedFPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file,tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(fname,c1);
 }
@@ -70,7 +70,7 @@ void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXE
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
-  *ierr = PetscSynchronizedPrintf(MPI_Comm_f2c(*(MPI_Fint *)&*comm),tmp);if (*ierr) return;
+  *ierr = PetscSynchronizedPrintf(MPI_Comm_f2c(*(MPI_Fint*)&*comm),tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(fname,c1);
 }

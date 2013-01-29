@@ -14,11 +14,11 @@
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
-extern PetscBool  PetscHMPIWorker;
+extern PetscBool PetscHMPIWorker;
 
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-PetscFPT  PetscFPTData = 0;
+PetscFPT PetscFPTData = 0;
 #endif
 
 /* -----------------------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
 extern PetscErrorCode PetscFunctionListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-extern PetscErrorCode PetscCloseHistoryFile(FILE **);
+extern PetscErrorCode PetscCloseHistoryFile(FILE**);
 
 /* user may set this BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
@@ -47,8 +47,8 @@ const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER",
 const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
                                       "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","FUNCTION","PetscDataType","PETSC_",0};
 
-PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
-PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
+PetscBool PetscPreLoadingUsed = PETSC_FALSE;
+PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 
 /* pthread_key for PetscStack */
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
@@ -63,14 +63,14 @@ pthread_key_t petscstack;
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
 PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
-  PetscBool  flg1;
+  PetscBool      flg1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
-#if defined (PETSC_USE_LOG)
-    MPI_Comm   comm = PETSC_COMM_WORLD;
+#if defined(PETSC_USE_LOG)
+    MPI_Comm comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
@@ -102,7 +102,7 @@ extern PetscBool PetscBeganMPI;
 PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filename,const char *help)
 {
   PetscErrorCode ierr;
-  int            myargc = argc;
+  int            myargc   = argc;
   char           **myargs = args;
 
   PetscFunctionBegin;
@@ -139,7 +139,7 @@ PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
 PetscErrorCode  PetscInitializeNoArguments(void)
 {
   PetscErrorCode ierr;
-  int            argc = 0;
+  int            argc   = 0;
   char           **args = 0;
 
   PetscFunctionBegin;
@@ -182,7 +182,7 @@ PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
 }
 
 extern PetscErrorCode        PetscOptionsCheckInitial_Private(void);
-extern PetscBool  PetscBeganMPI;
+extern PetscBool PetscBeganMPI;
 
 /*
        This function is the MPI reduction operation used to compute the sum of the
@@ -193,7 +193,7 @@ MPI_Op PetscMaxSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum_Local"
-void  MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -228,13 +228,13 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr   = PetscMalloc(size*sizeof(*work),&work);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  *max   = work[rank].max;
-  *sum   = work[rank].sum;
-  ierr   = PetscFree(work);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(*work),&work);CHKERRQ(ierr);
+  ierr = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  *max = work[rank].max;
+  *sum = work[rank].sum;
+  ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -244,9 +244,9 @@ MPI_Op  PetscADMax_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void  MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+  PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
@@ -265,14 +265,14 @@ void  MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *
 }
 EXTERN_C_END
 
-MPI_Op  PetscADMin_Op = 0;
+MPI_Op PetscADMin_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void  MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+  PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
@@ -299,21 +299,17 @@ MPI_Op MPIU_SUM = 0;
 #define __FUNCT__ "PetscSum_Local"
 PETSC_EXTERN_C void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscInt    i,count = *cnt;
+  PetscInt i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype == MPIU_REAL) {
-    PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
-    for (i=0; i<count; i++) {
-      xout[i] += xin[i];
-    }
+    PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
+    for (i=0; i<count; i++) xout[i] += xin[i];
   }
 #if defined(PETSC_HAVE_COMPLEX)
   else if (*datatype == MPIU_COMPLEX) {
-    PetscComplex *xin = (PetscComplex *)in,*xout = (PetscComplex*)out;
-    for (i=0; i<count; i++) {
-      xout[i] += xin[i];
-    }
+    PetscComplex *xin = (PetscComplex*)in,*xout = (PetscComplex*)out;
+    for (i=0; i<count; i++) xout[i] += xin[i];
   }
 #endif
   else {
@@ -332,20 +328,18 @@ MPI_Op MPIU_MIN = 0;
 #define __FUNCT__ "PetscMax_Local"
 PETSC_EXTERN_C void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscInt    i,count = *cnt;
+  PetscInt i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype == MPIU_REAL) {
-    PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
-    for (i=0; i<count; i++) {
-      xout[i] = PetscMax(xout[i],xin[i]);
-    }
+    PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
+    for (i=0; i<count; i++) xout[i] = PetscMax(xout[i],xin[i]);
   }
 #if defined(PETSC_HAVE_COMPLEX)
   else if (*datatype == MPIU_COMPLEX) {
-    PetscComplex *xin = (PetscComplex *)in,*xout = (PetscComplex*)out;
+    PetscComplex *xin = (PetscComplex*)in,*xout = (PetscComplex*)out;
     for (i=0; i<count; i++) {
-      xout[i] = PetscRealPartComplex(xout[i])<PetscRealPartComplex(xin[i])? xin[i]: xout[i];
+      xout[i] = PetscRealPartComplex(xout[i])<PetscRealPartComplex(xin[i]) ? xin[i] : xout[i];
     }
   }
 #endif
@@ -364,16 +358,14 @@ PETSC_EXTERN_C void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datat
 
   PetscFunctionBegin;
   if (*datatype == MPIU_REAL) {
-    PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
-    for (i=0; i<count; i++) {
-      xout[i] = PetscMin(xout[i],xin[i]);
-    }
+    PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
+    for (i=0; i<count; i++) xout[i] = PetscMin(xout[i],xin[i]);
   }
 #if defined(PETSC_HAVE_COMPLEX)
   else if (*datatype == MPIU_COMPLEX) {
-    PetscComplex *xin = (PetscComplex *)in,*xout = (PetscComplex*)out;
+    PetscComplex *xin = (PetscComplex*)in,*xout = (PetscComplex*)out;
     for (i=0; i<count; i++) {
-      xout[i] = PetscRealPartComplex(xout[i])>PetscRealPartComplex(xin[i])? xin[i]: xout[i];
+      xout[i] = PetscRealPartComplex(xout[i])>PetscRealPartComplex(xin[i]) ? xin[i] : xout[i];
     }
   }
 #endif
@@ -396,7 +388,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt  MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -419,15 +411,15 @@ EXTERN_C_BEGIN
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt  MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
-  PetscErrorCode   ierr;
-  PetscMPIInt      flg;
-  MPI_Comm         icomm;
-  void             *ptr;
+  PetscErrorCode ierr;
+  PetscMPIInt    flg;
+  MPI_Comm       icomm;
+  void           *ptr;
 
   PetscFunctionBegin;
-  ierr  = MPI_Attr_get(comm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (flg) {
     /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
     ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
@@ -549,7 +541,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!args) {PetscFunctionReturn(0);}
+  if (!args) PetscFunctionReturn(0);
   while (args[i]) {
     ierr = PetscFree(args[i]);CHKERRQ(ierr);
     i++;
@@ -694,11 +686,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscGlobalArgc = *argc;
     PetscGlobalArgs = *args;
   }
-  PetscFinalizeCalled   = PETSC_FALSE;
+  PetscFinalizeCalled = PETSC_FALSE;
 
-  if (PETSC_COMM_WORLD == MPI_COMM_NULL) {
-    PETSC_COMM_WORLD = MPI_COMM_WORLD;
-  }
+  if (PETSC_COMM_WORLD == MPI_COMM_NULL) PETSC_COMM_WORLD = MPI_COMM_WORLD;
   ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_RETURN);CHKERRQ(ierr);
 
   /* Done after init due to a bug in MPICH-GM? */
@@ -813,7 +803,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       Currently not used because it is not supported by MPICH.
   */
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  ierr = MPI_Register_datarep((char *)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Register_datarep((char*)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
 #endif
 #endif
 
@@ -839,7 +829,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   {
     PetscMPIInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) {cublasInit();}
+      if (p == PetscGlobalRank) cublasInit();
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }
@@ -847,9 +837,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscAMSPublishAll = PETSC_TRUE;
-  }
+  if (flg) PetscAMSPublishAll = PETSC_TRUE;
 #endif
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-python",&flg);CHKERRQ(ierr);
@@ -977,6 +965,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_LOG)
 #if defined(PETSC_HAVE_MPE)
   mname[0] = 0;
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
@@ -984,30 +973,32 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
   mname[0] = 0;
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
-    if (mname[0])  {
+    if (mname[0]) {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
       ierr = PetscLogView(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
-      ierr = PetscLogView(viewer);CHKERRQ(ierr);
+      ierr   = PetscLogView(viewer);CHKERRQ(ierr);
     }
   }
 
   mname[0] = 0;
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
-    if (mname[0])  {
+    if (mname[0]) {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
       ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
-      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
+      ierr   = PetscLogViewPython(viewer);CHKERRQ(ierr);
     }
   }
 
@@ -1018,6 +1009,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 
   mname[0] = 0;
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
@@ -1098,8 +1090,8 @@ PetscErrorCode  PetscFinalize(void)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    MPI_Comm  local_comm;
-    char      string[64];
+    MPI_Comm local_comm;
+    char     string[64];
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-objects_dump",string,64,PETSC_NULL);CHKERRQ(ierr);
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
@@ -1110,8 +1102,8 @@ PetscErrorCode  PetscFinalize(void)
   }
   PetscObjectsCounts    = 0;
   PetscObjectsMaxCounts = 0;
-  ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 
+  ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogDestroy();CHKERRQ(ierr);
@@ -1145,6 +1137,7 @@ PetscErrorCode  PetscFinalize(void)
     int  err;
 
     fname[0] = 0;
+
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     flg2 = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg2,PETSC_NULL);CHKERRQ(ierr);
@@ -1159,14 +1152,14 @@ PetscErrorCode  PetscFinalize(void)
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
-      err = fclose(fd);
+      err  = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
     } else if (flg1 || flg2) {
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-        ierr = PetscMallocDump(stdout);CHKERRQ(ierr);
+      ierr = PetscMallocDump(stdout);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
@@ -1177,10 +1170,11 @@ PetscErrorCode  PetscFinalize(void)
     FILE *fd = PETSC_NULL;
 
     fname[0] = 0;
+
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg2);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
-      int  err;
+      int err;
 
       if (!rank) {
         fd = fopen(fname,"w");
@@ -1241,7 +1235,7 @@ PetscErrorCode  PetscFinalize(void)
     PetscMPIInt      flg;
     MPI_Comm         icomm;
     void             *ptr;
-    ierr  = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
     if (flg) {
       /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
       ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
@@ -1252,7 +1246,7 @@ PetscErrorCode  PetscFinalize(void)
       ierr = MPI_Attr_delete(icomm,Petsc_Counter_keyval);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
     }
-    ierr  = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
     if (flg) {
       /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
       ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
@@ -1273,7 +1267,7 @@ PetscErrorCode  PetscFinalize(void)
   {
     PetscInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) {cublasShutdown();}
+      if (p == PetscGlobalRank) cublasShutdown();
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }
@@ -1299,6 +1293,7 @@ PetscErrorCode  PetscFinalize(void)
 
 */
   ierr = PetscMallocClear();CHKERRQ(ierr);
+
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
   PetscFunctionReturn(ierr);

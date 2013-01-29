@@ -48,14 +48,12 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    PetscBool  isstdout,isstderr;
+    PetscBool isstdout,isstderr;
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
-    if (isstdout || !name) {
-      fd = PETSC_STDOUT;
-    } else if (isstderr) {
-      fd = PETSC_STDERR;
-    } else {
+    if (isstdout || !name) fd = PETSC_STDOUT;
+    else if (isstderr) fd = PETSC_STDERR;
+    else {
       ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
       ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
@@ -138,7 +136,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     char buf[1024];
-    while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
+    while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
     err = pclose(fd);
     if (rval) *rval = err;
     else if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"pclose() failed with error code %D",err);
@@ -196,12 +194,11 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
     ierr = PetscStrlen(command,&cnt);CHKERRQ(ierr);
     ierr = PetscStrlen(program,&len);CHKERRQ(ierr);
     for (i=0; i<len; i++) {
-      if (program[i] == '\"') {
-        command[cnt++] = '\\';
-      }
+      if (program[i] == '\"') command[cnt++] = '\\';
       command[cnt++] = program[i];
     }
     command[cnt] = 0;
+
     ierr = PetscStrcat(command,"\"");CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(command,program);CHKERRQ(ierr);

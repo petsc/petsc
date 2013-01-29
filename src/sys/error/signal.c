@@ -10,12 +10,12 @@ static PetscClassId SIGNAL_CLASSID = 0;
 
 struct SH {
   PetscClassId   classid;
-  PetscErrorCode (*handler)(int,void *);
+  PetscErrorCode (*handler)(int,void*);
   void           *ctx;
-  struct SH*     previous;
+  struct SH      *previous;
 };
-static struct SH* sh        = 0;
-static PetscBool  SignalSet = PETSC_FALSE;
+static struct SH *sh       = 0;
+static PetscBool SignalSet = PETSC_FALSE;
 
 
 
@@ -46,9 +46,8 @@ static void PetscSignalHandler_Private(int sig)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sh || !sh->handler) {
-    ierr = PetscDefaultSignalHandler(sig,(void*)0);
-  } else {
+  if (!sh || !sh->handler) ierr = PetscDefaultSignalHandler(sig,(void*)0);
+  else {
     if (sh->classid != SIGNAL_CLASSID) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
     ierr = (*sh->handler)(sig,sh->ctx);
   }
@@ -141,19 +140,16 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
 #endif
 
   signal(sig,SIG_DFL);
-    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
-  if (sig >= 0 && sig <= 20) {
-    (*PetscErrorPrintf)("Caught signal number %d %s\n",sig,SIGNAME[sig]);
-  } else {
-    (*PetscErrorPrintf)("Caught signal\n");
-  }
+  (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+  if (sig >= 0 && sig <= 20) (*PetscErrorPrintf)("Caught signal number %d %s\n",sig,SIGNAME[sig]);
+  else (*PetscErrorPrintf)("Caught signal\n");
+
   (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
   (*PetscErrorPrintf)("or see http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind");
   (*PetscErrorPrintf)("or try http://valgrind.org on GNU/linux and Apple Mac OS X to find memory corruption errors\n");
 #if defined(PETSC_USE_DEBUG)
-  if (!PetscStackActive) {
-    (*PetscErrorPrintf)("  or try option -log_stack\n");
-  } else {
+  if (!PetscStackActive) (*PetscErrorPrintf)("  or try option -log_stack\n");
+  else {
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;
     (*PetscErrorPrintf)("likely location of problem given in stack below\n");
@@ -193,7 +189,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
 .seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler(), PetscPushErrorHandler()
 
 @*/
-PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
+PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void *ctx)
 {
   struct  SH     *newsh;
   PetscErrorCode ierr;
@@ -316,11 +312,10 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   if (sh) {
     if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
-  }
-  else {newsh->previous = 0;}
+  }  else newsh->previous = 0;
   newsh->handler = routine;
   newsh->ctx     = ctx;
-  newsh->classid  = SIGNAL_CLASSID;
+  newsh->classid = SIGNAL_CLASSID;
   sh             = newsh;
   PetscFunctionReturn(0);
 }

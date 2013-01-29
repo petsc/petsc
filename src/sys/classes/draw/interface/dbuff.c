@@ -23,7 +23,7 @@
 PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
 {
   PetscErrorCode ierr;
-  PetscBool  isdrawnull;
+  PetscBool      isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -54,7 +54,7 @@ PetscErrorCode  PetscDrawIsNull(PetscDraw draw,PetscBool  *yes)
 PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->setdoublebuffer) {

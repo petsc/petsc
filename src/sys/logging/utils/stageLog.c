@@ -7,7 +7,7 @@
 */
 #include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
 
-PetscStageLog  petsc_stageLog = 0;
+PetscStageLog petsc_stageLog = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscStageInfoDestroy"
@@ -98,7 +98,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   PetscValidCharPointer(sname,2);
   PetscValidIntPointer(stage,3);
   for (st = 0; st < stageLog->numStages; ++st) {
-    PetscBool  same;
+    PetscBool same;
 
     ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
     if (same) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);
@@ -108,11 +108,13 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
     ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(PetscStageInfo), &stageInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(PetscStageInfo));CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
+
     stageLog->stageInfo  = stageInfo;
     stageLog->maxStages *= 2;
   }
   /* Setup stage */
   ierr = PetscStrallocpy(sname, &str);CHKERRQ(ierr);
+
   stageLog->stageInfo[s].name                   = str;
   stageLog->stageInfo[s].used                   = PETSC_FALSE;
   stageLog->stageInfo[s].perfInfo.active        = PETSC_TRUE;
@@ -123,6 +125,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   stageLog->stageInfo[s].perfInfo.numMessages   = 0.0;
   stageLog->stageInfo[s].perfInfo.messageLength = 0.0;
   stageLog->stageInfo[s].perfInfo.numReductions = 0.0;
+
   ierr = EventPerfLogCreate(&stageLog->stageInfo[s].eventLog);CHKERRQ(ierr);
   ierr = ClassPerfLogCreate(&stageLog->stageInfo[s].classLog);CHKERRQ(ierr);
   *stage = s;
@@ -190,6 +193,7 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
   }
   /* Activate the stage */
   ierr = PetscIntStackPush(stageLog->stack, stage);CHKERRQ(ierr);
+
   stageLog->stageInfo[stage].used = PETSC_TRUE;
   stageLog->stageInfo[stage].perfInfo.count++;
   stageLog->curStage = stage;
@@ -264,10 +268,8 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
       stageLog->stageInfo[curStage].perfInfo.messageLength -= petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
       stageLog->stageInfo[curStage].perfInfo.numReductions -= petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
     }
-    stageLog->curStage                           = curStage;
-  } else {
-    stageLog->curStage                           = -1;
-  }
+    stageLog->curStage = curStage;
+  } else stageLog->curStage = -1;
   PetscFunctionReturn(0);
 }
 
@@ -370,7 +372,7 @@ PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, 
 .keywords: log, active, stage
 .seealso: PetscStageLogGetActive(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscBool  isActive)
+PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscBool isActive)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
@@ -426,7 +428,7 @@ PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscB
 .keywords: log, visible, stage
 .seealso: PetscStageLogGetVisible(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscBool  isVisible)
+PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscBool isVisible)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
@@ -520,18 +522,21 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
 @*/
 PetscErrorCode  PetscStageLogCreate(PetscStageLog *stageLog)
 {
-  PetscStageLog       l;
+  PetscStageLog  l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_PetscStageLog, &l);CHKERRQ(ierr);
+
   l->numStages = 0;
   l->maxStages = 10;
   l->curStage  = -1;
+
   ierr = PetscIntStackCreate(&l->stack);CHKERRQ(ierr);
   ierr = PetscMalloc(l->maxStages * sizeof(PetscStageInfo), &l->stageInfo);CHKERRQ(ierr);
   ierr = EventRegLogCreate(&l->eventLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogCreate(&l->classLog);CHKERRQ(ierr);
+
   *stageLog = l;
   PetscFunctionReturn(0);
 }

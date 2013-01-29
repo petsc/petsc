@@ -61,10 +61,10 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCOMPUTERNAME)
- {
+  {
     size_t nnlen = nlen;
     GetComputerName((LPTSTR)name,(LPDWORD)(&nnlen));
- }
+  }
 #elif defined(PETSC_HAVE_UNAME)
   uname(&utname);
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
   /* See if this name includes the domain */
   ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
   if (!domain) {
-    size_t  l,ll;
+    size_t l,ll;
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen-1) PetscFunctionReturn(0);
     name[l++] = '.';
@@ -95,7 +95,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
       PetscInt   index;
       ierr = PetscStrendswithwhich(name,suffixes,&index);CHKERRQ(ierr);
       if (!suffixes[index]) {
-        ierr = PetscInfo1(0,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
+        ierr      = PetscInfo1(0,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
         name[l-1] = 0;
       }
     }

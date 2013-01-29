@@ -19,11 +19,11 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       view_rank=-1;
-#if defined (PETSC_USE_LOG)
+#if defined(PETSC_USE_LOG)
   PetscLogEvent  event;
 #endif
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-view_randomvalues",&view_rank,PETSC_NULL);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
 
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+    ierr      = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
     /* printf("value[%d] = %g\n",i,value); */
   }

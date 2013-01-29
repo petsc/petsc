@@ -23,17 +23,17 @@ typedef struct {
 #define __FUNCT__ "PetscViewerFileClose_VU"
 static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (vu->vecSeen) {
     ierr = PetscViewerVUPrintDeferred(viewer, "};\n\n");CHKERRQ(ierr);
   }
-  ierr = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
-  ierr = PetscFClose(((PetscObject)viewer)->comm, vu->fd);CHKERRQ(ierr);
+  ierr   = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
+  ierr   = PetscFClose(((PetscObject)viewer)->comm, vu->fd);CHKERRQ(ierr);
   vu->fd = PETSC_NULL;
-  ierr = PetscFree(vu->filename);CHKERRQ(ierr);
+  ierr   = PetscFree(vu->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -41,7 +41,7 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
 #define __FUNCT__ "PetscViewerDestroy_VU"
 PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -54,7 +54,7 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 #define __FUNCT__ "PetscViewerFlush_VU"
 PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
   PetscMPIInt    rank;
   int            err;
   PetscErrorCode ierr;
@@ -73,7 +73,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerFileGetName_VU"
 PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
   PetscFunctionBegin;
   *name = vu->filename;
@@ -86,7 +86,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerFileSetName_VU"
 PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
   char           fname[PETSC_MAX_PATH_LEN];
   int            rank;
   PetscErrorCode ierr;
@@ -110,18 +110,15 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
     break;
   case FILE_MODE_UPDATE:
     vu->fd = fopen(fname, "r+");
-    if (!vu->fd) {
-      vu->fd = fopen(fname, "w+");
-    }
+    if (!vu->fd) vu->fd = fopen(fname, "w+");
     break;
   case FILE_MODE_APPEND_UPDATE:
     /* I really want a file which is opened at the end for updating,
        not a+, which opens at the beginning, but makes writes at the end.
     */
     vu->fd = fopen(fname, "r+");
-    if (!vu->fd) {
-      vu->fd = fopen(fname, "w+");
-    } else {
+    if (!vu->fd) vu->fd = fopen(fname, "w+");
+    else {
       ierr = fseek(vu->fd, 0, SEEK_END);CHKERRQ(ierr);
     }
     break;
@@ -194,7 +191,7 @@ EXTERN_C_END
 @*/
 PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -221,7 +218,7 @@ PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 @*/
 PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
   PetscFunctionBegin;
   vu->mode = mode;
@@ -245,9 +242,9 @@ PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 .keywords: Viewer, Vec
 .seealso: PetscViewerVUGetVecSeen()
 @*/
-PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool  vecSeen)
+PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
   PetscFunctionBegin;
   vu->vecSeen = vecSeen;
@@ -275,7 +272,7 @@ PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool  vecSeen)
 @*/
 PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -302,7 +299,7 @@ PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 @*/
 PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 {
-  PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
   va_list        Argp;
   size_t         fullLength;
   PrintfQueue    next;
@@ -343,7 +340,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
 @*/
 PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)
 {
-  PetscViewer_VU *vu   = (PetscViewer_VU *) viewer->data;
+  PetscViewer_VU *vu  = (PetscViewer_VU*) viewer->data;
   PrintfQueue    next = vu->queueBase;
   PrintfQueue    previous;
   int            i;

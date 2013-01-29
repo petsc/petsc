@@ -36,7 +36,7 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,con
 
   PetscStrlen(fun,&len1); l1 = (int)len1;
   PetscStrlen(file,&len2);l2 = (int)len2;
-  PetscStrlen(dir,&len3);l3 = (int)len3;
+  PetscStrlen(dir,&len3); l3 = (int)len3;
   PetscStrlen(mess,&len4);l4 = (int)len4;
 
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
@@ -82,9 +82,8 @@ void petscignoreerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const cha
 
 void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,PetscErrorCode *ierr)
 {
-  if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) {
-    *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
-  } else {
+  if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
+  else {
     f2    = handler;
     *ierr = PetscPushErrorHandler(ourerrorhandler,ctx);
   }

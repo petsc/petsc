@@ -26,11 +26,11 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   int            i,imax=10000,icount;
-#if defined (PETSC_USE_LOG)
-  PetscLogEvent  USER_EVENT;
+#if defined(PETSC_USE_LOG)
+  PetscLogEvent USER_EVENT;
 #endif
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /*
      Create a new user-defined event.
@@ -42,6 +42,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+
   icount = 0;
   for (i=0; i<imax; i++) icount++;
   ierr = PetscLogFlops(imax);CHKERRQ(ierr);

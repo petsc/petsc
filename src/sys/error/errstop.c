@@ -54,25 +54,19 @@ PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun
     PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
     PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
     PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg3);
-    if (flg2 || flg3) {
-      PetscMallocDumpLog(stdout);
-    } else {
+    if (flg2 || flg3) PetscMallocDumpLog(stdout);
+    else {
       (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
-      if (flg1) {
-        PetscMallocDump(stdout);
-      }  else {
-        (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
-      }
+      if (flg1) PetscMallocDump(stdout);
+      else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
     }
   } else if (n == PETSC_ERR_SUP) {
     (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
     (*PetscErrorPrintf)("No support for this operation for this object type!\n");
     (*PetscErrorPrintf)("%s\n",mess);
-  } else if (n == PETSC_ERR_SIG) {
-    (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
-  } else {
-    (*PetscErrorPrintf)("%s() line %d in %s%s\n    %s\n",fun,line,dir,file,mess);
-  }
+  } else if (n == PETSC_ERR_SIG) (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
+  else (*PetscErrorPrintf)("%s() line %d in %s%s\n    %s\n",fun,line,dir,file,mess);
+
   MPI_Abort(PETSC_COMM_WORLD,n);
   PetscFunctionReturn(0);
 }

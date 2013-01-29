@@ -16,15 +16,15 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewer *lab,
                                     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char   *c1;
+  char *c1;
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerASCIIOpen(MPI_Comm_f2c(*(MPI_Fint *)&*comm),c1,lab);
+  *ierr = PetscViewerASCIIOpen(MPI_Comm_f2c(*(MPI_Fint*)&*comm),c1,lab);
   FREECHAR(name,c1);
 }
 
 PetscViewer PETSC_STDCALL petsc_viewer_stdout__(MPI_Comm *comm)
 {
-  return PETSC_VIEWER_STDOUT_(MPI_Comm_f2c(*(MPI_Fint *)&*comm));
+  return PETSC_VIEWER_STDOUT_(MPI_Comm_f2c(*(MPI_Fint*)&*comm));
 }
 
 EXTERN_C_END

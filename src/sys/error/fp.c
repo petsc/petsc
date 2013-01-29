@@ -23,11 +23,11 @@
 #endif
 
 struct PetscFPTrapLink {
-  PetscFPTrap trapmode;
+  PetscFPTrap            trapmode;
   struct PetscFPTrapLink *next;
 };
-static PetscFPTrap _trapmode = PETSC_FP_TRAP_OFF; /* Current trapping mode */
-static struct PetscFPTrapLink *_trapstack;        /* Any pushed states of _trapmode */
+static PetscFPTrap            _trapmode = PETSC_FP_TRAP_OFF; /* Current trapping mode */
+static struct PetscFPTrapLink *_trapstack;                   /* Any pushed states of _trapmode */
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFPTrapPush"
@@ -45,14 +45,14 @@ static struct PetscFPTrapLink *_trapstack;        /* Any pushed states of _trapm
 @*/
 PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode         ierr;
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr           = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   link->trapmode = _trapmode;
-  link->next = _trapstack;
-  _trapstack = link;
+  link->next     = _trapstack;
+  _trapstack     = link;
   if (trap != _trapmode) {ierr = PetscSetFPTrap(trap);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -70,14 +70,14 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
 @*/
 PetscErrorCode PetscFPTrapPop(void)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode         ierr;
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
   if (_trapstack->trapmode != _trapmode) {ierr = PetscSetFPTrap(_trapstack->trapmode);CHKERRQ(ierr);}
-  link = _trapstack;
+  link       = _trapstack;
   _trapstack = _trapstack->next;
-  ierr = PetscFree(link);CHKERRQ(ierr);
+  ierr       = PetscFree(link);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,7 +87,7 @@ PetscErrorCode PetscFPTrapPop(void)
 
 EXTERN_C_BEGIN
 PetscErrorCode ieee_flags(char*,char*,char*,char**);
-PetscErrorCode ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sigcontext*,char *));
+PetscErrorCode ieee_handler(char*,char*,sigfpe_handler_type(int,int,struct sigcontext*,char*));
 EXTERN_C_END
 
 static struct { int code_no; char *name; } error_codes[] = {
@@ -106,18 +106,16 @@ static struct { int code_no; char *name; } error_codes[] = {
 sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,char *addr)
 {
   PetscErrorCode ierr;
-  int err_ind = -1,j;
+  int            err_ind = -1,j;
 
   PetscFunctionBegin;
-  for (j = 0 ; error_codes[j].code_no ; j++) {
+  for (j = 0; error_codes[j].code_no; j++) {
     if (error_codes[j].code_no == code) err_ind = j;
   }
 
-  if (err_ind >= 0) {
-    (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name,SIGPC(scp));
-  } else {
-    (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
-  }
+  if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name,SIGPC(scp));
+  else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
+
   ierr = PetscError(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
   PetscFunctionReturn(0);
@@ -171,18 +169,13 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
   if (flag == PETSC_FP_TRAP_ON) {
-    if (ieee_handler("set","common",PetscDefaultFPTrap)) {
-      /*
-        To trap more fp exceptions, including undrflow, change the above line to
-        if (ieee_handler("set","all",PetscDefaultFPTrap)) {
-      */
-      (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
-    }
-  } else {
-    if (ieee_handler("clear","common",PetscDefaultFPTrap)) {
-      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
-    }
-  }
+    /*
+      To trap more fp exceptions, including underflow, change the line below to
+      if (ieee_handler("set","all",PetscDefaultFPTrap)) {
+    */
+    if (ieee_handler("set","common",PetscDefaultFPTrap))        (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
+  } else if (ieee_handler("clear","common",PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
+
   _trapmode = flag;
   PetscFunctionReturn(0);
 }
@@ -208,20 +201,18 @@ static struct { int code_no; char *name; } error_codes[] = {
 #define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
 {
-  int err_ind,j,code = scp->si_code;
+  int            err_ind,j,code = scp->si_code;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  err_ind = -1 ;
-  for (j = 0 ; error_codes[j].code_no ; j++) {
+  err_ind = -1;
+  for (j = 0; error_codes[j].code_no; j++) {
     if (error_codes[j].code_no == code) err_ind = j;
   }
 
-  if (err_ind >= 0) {
-    (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name,SIGPC(scp));
-  } else {
-    (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
-  }
+  if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name,SIGPC(scp));
+  else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
+
   ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
@@ -236,21 +227,15 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
   if (flag == PETSC_FP_TRAP_ON) {
-    if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap)) {
-      (*PetscErrorPrintf)("Can't set floating point handler\n");
-    }
-  } else {
-    if (ieee_handler("clear","common",(sigfpe_handler_type)PetscDefaultFPTrap)) {
-     (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
-    }
-  }
+    if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap))        (*PetscErrorPrintf)("Can't set floating point handler\n");
+  } else if (ieee_handler("clear","common",(sigfpe_handler_type)PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
   _trapmode = flag;
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------------------------------*/
 
-#elif defined (PETSC_HAVE_IRIX_STYLE_FPTRAP)
+#elif defined(PETSC_HAVE_IRIX_STYLE_FPTRAP)
 #include <sigfpe.h>
 static struct { int code_no; char *name; } error_codes[] = {
   { _INVALID   ,"IEEE operand error" },
@@ -266,16 +251,14 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   int err_ind,j,code;
 
   PetscFunctionBegin;
-  code = exception[0];
-  err_ind = -1 ;
-  for (j = 0 ; error_codes[j].code_no ; j++) {
+  code    = exception[0];
+  err_ind = -1;
+  for (j = 0; error_codes[j].code_no; j++) {
     if (error_codes[j].code_no == code) err_ind = j;
   }
-  if (err_ind >= 0) {
-    (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
-  } else {
-    (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);
-  }
+  if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
+  else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);
+
   PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
@@ -285,11 +268,9 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
-  if (flag == PETSC_FP_TRAP_ON) {
-    handle_sigfpes(_ON,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,PetscDefaultFPTrap,_ABORT_ON_ERROR,0);
-  } else {
-    handle_sigfpes(_OFF,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,0,_ABORT_ON_ERROR,0);
-  }
+  if (flag == PETSC_FP_TRAP_ON) handle_sigfpes(_ON,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,PetscDefaultFPTrap,_ABORT_ON_ERROR,0);
+  else                          handle_sigfpes(_OFF,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,0,_ABORT_ON_ERROR,0);
+
   _trapmode = flag;
   PetscFunctionReturn(0);
 }
@@ -327,22 +308,20 @@ static struct { int code_no; char *name; } error_codes[] = {
 void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
 {
   PetscErrorCode ierr;
-  int      err_ind,j;
-  fp_ctx_t flt_context;
+  int            err_ind,j;
+  fp_ctx_t       flt_context;
 
   PetscFunctionBegin;
   fp_sh_trap_info(scp,&flt_context);
 
-  err_ind = -1 ;
-  for (j = 0 ; error_codes[j].code_no ; j++) {
+  err_ind = -1;
+  for (j = 0; error_codes[j].code_no; j++) {
     if (error_codes[j].code_no == flt_context.trap) err_ind = j;
   }
 
-  if (err_ind >= 0) {
-    (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
-  } else {
-    (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
-  }
+  if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
+  else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
+
   ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
@@ -427,9 +406,8 @@ void PetscDefaultFPTrap(int sig)
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
 #if defined(PETSC_USE_DEBUG)
-  if (!PetscStackActive) {
-    (*PetscErrorPrintf)("  or try option -log_stack\n");
-  } else {
+  if (!PetscStackActive) (*PetscErrorPrintf)("  or try option -log_stack\n");
+  else {
     (*PetscErrorPrintf)("likely location of problem given in stack below\n");
     (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
     PetscStackView(PETSC_STDOUT);
@@ -488,14 +466,9 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 {
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) {
-      (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
-    }
-  } else {
-    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) {
-      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
-    }
-  }
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
+  } else if (SIG_ERR == signal(SIGFPE,SIG_DFL))       (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
+
   _trapmode = on;
   PetscFunctionReturn(0);
 }

@@ -85,9 +85,9 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMatlabPutVariable"
-PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer viewer,const char* name,void* mat)
+PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer viewer,const char *name,void *mat)
 {
-  PetscViewer_Matlab *ml = (PetscViewer_Matlab*)viewer->data; ;
+  PetscViewer_Matlab *ml = (PetscViewer_Matlab*)viewer->data;
 
   PetscFunctionBegin;
   matPutVariable(ml->ep,name,(mxArray*)mat);
@@ -150,8 +150,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerFileSetName_Matlab"
 PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name[])
 {
-  PetscViewer_Matlab  *vmatlab = (PetscViewer_Matlab*)viewer->data;
-  PetscFileMode       type = vmatlab->btype;
+  PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab*)viewer->data;
+  PetscFileMode      type     = vmatlab->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
@@ -159,11 +159,9 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
 
   /* only first processor opens file */
   if (!vmatlab->rank) {
-    if (type == FILE_MODE_READ) {
-      vmatlab->ep = matOpen(name,"r");
-    } else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) {
-      vmatlab->ep = matOpen(name,"w");
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+    if (type == FILE_MODE_READ) vmatlab->ep = matOpen(name,"r");
+    else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
   }
   PetscFunctionReturn(0);
 }
@@ -195,10 +193,10 @@ PetscErrorCode  PetscViewerCreate_Matlab(PetscViewer viewer)
   ierr         = MPI_Comm_rank(((PetscObject)viewer)->comm,&e->rank);CHKERRQ(ierr);
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",
-                                     PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_Matlab",
-                                     PetscViewerFileSetMode_Matlab);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_Matlab",PetscViewerFileSetMode_Matlab);CHKERRQ(ierr);
+
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
 }
@@ -294,7 +292,7 @@ PetscViewer  PETSC_VIEWER_MATLAB_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Matlab_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Matlab_keyval,(void **)&viewer,(int*)&flg);
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Matlab_keyval,(void**)&viewer,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(ncomm,"PETSC_VIEWER_MATLAB_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);

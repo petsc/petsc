@@ -21,12 +21,12 @@
   If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
   to that object are printed. OBJECT_CLASSID is, for example, MAT_CLASSID.
 */
-PetscBool   PetscLogPrintInfo     = PETSC_FALSE;
-PetscBool   PetscLogPrintInfoNull = PETSC_FALSE;
-int        PetscInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                                    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                                    1,1,1,1,1,1,1,1,1,1,1,1};
-FILE      *PetscInfoFile      = PETSC_NULL;
+PetscBool PetscLogPrintInfo     = PETSC_FALSE;
+PetscBool PetscLogPrintInfoNull = PETSC_FALSE;
+int       PetscInfoFlags[]      = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                                   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                                   1,1,1,1,1,1,1,1,1,1,1,1};
+FILE      *PetscInfoFile = PETSC_NULL;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscInfoAllow"
@@ -51,7 +51,7 @@ FILE      *PetscInfoFile      = PETSC_NULL;
 
 .seealso: PetscInfo()
 @*/
-PetscErrorCode  PetscInfoAllow(PetscBool  flag, const char filename[])
+PetscErrorCode  PetscInfoAllow(PetscBool flag, const char filename[])
 {
   char           fname[PETSC_MAX_PATH_LEN], tname[5];
   PetscMPIInt    rank;
@@ -65,9 +65,8 @@ PetscErrorCode  PetscInfoAllow(PetscBool  flag, const char filename[])
     ierr = PetscStrcat(fname, tname);CHKERRQ(ierr);
     ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscInfoFile);CHKERRQ(ierr);
     if (!PetscInfoFile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
-  } else if (flag) {
-    PetscInfoFile = PETSC_STDOUT;
-  }
+  } else if (flag) PetscInfoFile = PETSC_STDOUT;
+
   PetscLogPrintInfo     = flag;
   PetscLogPrintInfoNull = flag;
   PetscFunctionReturn(0);
@@ -123,11 +122,9 @@ PetscErrorCode  PetscInfoDeactivateClass(int objclass)
 PetscErrorCode  PetscInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
-  if (!objclass) {
-    PetscLogPrintInfoNull = PETSC_TRUE;
-  } else {
-    PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 1;
-  }
+  if (!objclass) PetscLogPrintInfoNull = PETSC_TRUE;
+  else PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 1;
+
   PetscFunctionReturn(0);
 }
 
@@ -194,9 +191,8 @@ PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char messa
   if (!PetscLogPrintInfo) PetscFunctionReturn(0);
   if ((!PetscLogPrintInfoNull) && !vobj) PetscFunctionReturn(0);
   if (obj && !PetscInfoFlags[obj->classid - PETSC_SMALLEST_CLASSID - 1]) PetscFunctionReturn(0);
-  if (!obj) {
-    rank = 0;
-  } else {
+  if (!obj) rank = 0;
+  else {
     ierr = MPI_Comm_rank(obj->comm, &rank);CHKERRQ(ierr);
   }
   if (rank) PetscFunctionReturn(0);
@@ -207,7 +203,7 @@ PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char messa
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message,&fullLength, Argp);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
-  err = fflush(PetscInfoFile);
+  err  = fflush(PetscInfoFile);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   if (petsc_history) {
     va_start(Argp, message);

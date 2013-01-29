@@ -6,9 +6,9 @@
 #include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  I*/
 
 typedef struct {
-  int           port;
+  int       port;
 #if defined(PETSC_HAVE_MPIIO)
-  PetscBool     MPIIO;
+  PetscBool MPIIO;
 #endif
 } PetscViewer_Socket;
 

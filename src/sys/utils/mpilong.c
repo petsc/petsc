@@ -17,11 +17,9 @@ PetscErrorCode MPIULong_Send(void *mess,PetscInt cnt, MPI_Datatype type,PetscMPI
   for (i=0; i<numchunks; i++) {
     ierr = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE,&icnt);CHKERRQ(ierr);
     ierr = MPI_Send(mess,icnt,type,to,tag,comm);CHKERRQ(ierr);
-    if (type == MPIU_INT) {
-      mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
-    } else if (type == MPIU_SCALAR) {
-      mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
-    } else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
+    if (type == MPIU_INT)         mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
+    else if (type == MPIU_SCALAR) mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
+    else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -39,11 +37,9 @@ PetscErrorCode MPIULong_Recv(void *mess,PetscInt cnt, MPI_Datatype type,PetscMPI
   for (i=0; i<numchunks; i++) {
     ierr = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE,&icnt);CHKERRQ(ierr);
     ierr = MPI_Recv(mess,icnt,type,from,tag,comm,&status);CHKERRQ(ierr);
-    if (type == MPIU_INT) {
-      mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
-    } else if (type == MPIU_SCALAR) {
-      mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
-    } else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
+    if (type == MPIU_INT)         mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
+    else if (type == MPIU_SCALAR) mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
+    else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
   }
   PetscFunctionReturn(0);
 }

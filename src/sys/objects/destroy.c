@@ -138,13 +138,10 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj) {
-    *same = PETSC_FALSE;
-  } else if (!type_name && !obj->type_name) {
-    *same = PETSC_TRUE;
-  } else if (!type_name || !obj->type_name) {
-    *same = PETSC_FALSE;
-  } else {
+  if (!obj) *same = PETSC_FALSE;
+  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
+  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
     PetscValidPointer(same,3);
@@ -180,7 +177,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
 {
   PetscErrorCode ierr;
-  va_list Argp;
+  va_list        Argp;
 
   PetscFunctionBegin;
   *match = PETSC_FALSE;
@@ -227,9 +224,9 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) {
+  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) 
     PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
   PetscFunctionReturn(0);
 }
 
@@ -260,7 +257,7 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 
 
 #define MAXREGFIN 256
-static int         PetscRegisterFinalize_Count = 0;
+static int PetscRegisterFinalize_Count = 0;
 static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 
 #undef __FUNCT__
@@ -288,9 +285,8 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
   for (i=0; i<PetscRegisterFinalize_Count; i++) {
     if (f == PetscRegisterFinalize_Functions[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Called twice with same function to register");
   }
-  if (PetscRegisterFinalize_Count < MAXREGFIN) {
-    PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
+  if (PetscRegisterFinalize_Count < MAXREGFIN) PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
   PetscFunctionReturn(0);
 }
 

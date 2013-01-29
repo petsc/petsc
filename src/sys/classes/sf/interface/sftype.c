@@ -10,21 +10,19 @@
 #define __FUNCT__ "MPIPetsc_Type_unwrap"
 PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype)
 {
-  PetscMPIInt nints,naddrs,ntypes,combiner;
+  PetscMPIInt    nints,naddrs,ntypes,combiner;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner);CHKERRQ(ierr);
   if (combiner == MPI_COMBINER_DUP) {
-    PetscMPIInt ints[1];
-    MPI_Aint addrs[1];
+    PetscMPIInt  ints[1];
+    MPI_Aint     addrs[1];
     MPI_Datatype types[1];
     if (nints != 0 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
-    ierr = MPI_Type_get_contents(a,0,0,1,ints,addrs,types);CHKERRQ(ierr);
+    ierr   = MPI_Type_get_contents(a,0,0,1,ints,addrs,types);CHKERRQ(ierr);
     *atype = types[0];
-  } else {
-    *atype = a;
-  }
+  } else *atype = a;
   PetscFunctionReturn(0);
 }
 
@@ -33,13 +31,13 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype)
 PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *match)
 {
   PetscErrorCode ierr;
-  MPI_Datatype atype,btype;
-  PetscMPIInt aintcount,aaddrcount,atypecount,acombiner;
-  PetscMPIInt bintcount,baddrcount,btypecount,bcombiner;
+  MPI_Datatype   atype,btype;
+  PetscMPIInt    aintcount,aaddrcount,atypecount,acombiner;
+  PetscMPIInt    bintcount,baddrcount,btypecount,bcombiner;
 
   PetscFunctionBegin;
-  ierr = MPIPetsc_Type_unwrap(a,&atype);CHKERRQ(ierr);
-  ierr = MPIPetsc_Type_unwrap(b,&btype);CHKERRQ(ierr);
+  ierr   = MPIPetsc_Type_unwrap(a,&atype);CHKERRQ(ierr);
+  ierr   = MPIPetsc_Type_unwrap(b,&btype);CHKERRQ(ierr);
   *match = PETSC_FALSE;
   if (atype == btype) {
     *match = PETSC_TRUE;

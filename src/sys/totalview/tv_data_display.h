@@ -37,19 +37,17 @@ extern "C" {
 #endif
 
 enum TV_format_result
-  {
-    TV_format_OK,           /* Type is known, and successfully converted */
-    TV_format_failed,       /* Type is known, but could not convert it */
-    TV_format_raw,          /* Just display it as a regular type for now */
-    TV_format_never         /* Don't know about this type, and please don't ask again */
-  };
+{
+  TV_format_OK,             /* Type is known, and successfully converted */
+  TV_format_failed,         /* Type is known, but could not convert it */
+  TV_format_raw,            /* Just display it as a regular type for now */
+  TV_format_never           /* Don't know about this type, and please don't ask again */
+};
 
 #define TV_ascii_string_type "$string"
 #define TV_int_type "$int"
 
-extern int TV_add_row(const char *field_name,
-                      const char *type_name,
-                      const void *value);
+extern int TV_add_row(const char *field_name,const char *type_name,const void *value);
 
 /*
        0: Success

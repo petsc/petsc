@@ -69,9 +69,7 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
         }
       }
     }
-  } else {
-    PetscSortReal_Private(v,n-1);
-  }
+  } else PetscSortReal_Private(v,n-1);
   PetscFunctionReturn(0);
 }
 
@@ -112,9 +110,9 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
   if (ncut < first || ncut > last) PetscFunctionReturn(0);
 
   while (1) {
-    mid = first;
+    mid    = first;
     abskey = (d = a[mid],PetscAbsScalar(d));
-    i = last;
+    i      = last;
     for (j = first + 1; j <= i; ++j) {
       if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
         ++mid;
@@ -131,13 +129,9 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
     a[first] = tmp;    idx[first] = itmp;
 
     /* test for while loop */
-    if (mid == ncut) {
-      break;
-    } else if (mid > ncut) {
-      last = mid - 1;
-    } else {
-      first = mid + 1;
-    }
+    if (mid == ncut) break;
+    else if (mid > ncut) last = mid - 1;
+    else first = mid + 1;
   }
   PetscFunctionReturn(0);
 }
@@ -169,9 +163,9 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 @*/
 PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscInt idx[])
 {
-  PetscInt    i,mid,last,itmp,j,first;
-  PetscReal   d,tmp;
-  PetscReal   abskey;
+  PetscInt  i,mid,last,itmp,j,first;
+  PetscReal d,tmp;
+  PetscReal abskey;
 
   PetscFunctionBegin;
   first = 0;
@@ -179,9 +173,9 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
   if (ncut < first || ncut > last) PetscFunctionReturn(0);
 
   while (1) {
-    mid = first;
+    mid    = first;
     abskey = (d = a[mid],PetscAbsReal(d));
-    i = last;
+    i      = last;
     for (j = first + 1; j <= i; ++j) {
       if ((d = a[j],PetscAbsReal(d)) >= abskey) {
         ++mid;
@@ -198,13 +192,9 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
     a[first] = tmp;    idx[first] = itmp;
 
     /* test for while loop */
-    if (mid == ncut) {
-      break;
-    } else if (mid > ncut) {
-      last = mid - 1;
-    } else {
-      first = mid + 1;
-    }
+    if (mid == ncut) break;
+    else if (mid > ncut) last = mid - 1;
+    else first = mid + 1;
   }
   PetscFunctionReturn(0);
 }

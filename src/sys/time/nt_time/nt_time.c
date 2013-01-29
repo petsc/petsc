@@ -9,15 +9,15 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscMicrosoftTime"
 PetscLogDouble  PetscMicrosoftTime(void)
 {
-  static PetscBool      flag = PETSC_TRUE;
-  PetscErrorCode ierr;
+  static PetscBool flag = PETSC_TRUE;
+  PetscErrorCode   ierr;
 
   static LARGE_INTEGER  StartTime,PerfFreq,CurTime;
   static PetscLogDouble SecInTick=0.0;
 
-  DWORD                 dwStartHigh,dwCurHigh;
-  PetscLogDouble        dTime,dHigh;
-  PetscLogDouble        ptime;
+  DWORD          dwStartHigh,dwCurHigh;
+  PetscLogDouble dTime,dHigh;
+  PetscLogDouble ptime;
 
 
   PetscFunctionBegin;
@@ -34,7 +34,7 @@ PetscLogDouble  PetscMicrosoftTime(void)
     flag = PETSC_FALSE;
   }
 
-  ierr        = QueryPerformanceCounter(&CurTime);CHKERRQ(!ierr);
+  ierr = QueryPerformanceCounter(&CurTime);CHKERRQ(!ierr);
 #if defined(PETSC_HAVE_LARGE_INTEGER_U)
   dwCurHigh   = (DWORD)CurTime.u.HighPart;
   dwStartHigh = (DWORD)StartTime.u.HighPart;

@@ -8,8 +8,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(len),
-                                        PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

@@ -44,6 +44,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 
   if (rnd->ops->destroy) {
     ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
+
     rnd->ops->destroy = PETSC_NULL;
   }
   ierr = (*r)(rnd);CHKERRQ(ierr);
@@ -123,6 +124,7 @@ PetscErrorCode  PetscRandomRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscRandomList);CHKERRQ(ierr);
+
   PetscRandomRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

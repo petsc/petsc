@@ -13,10 +13,10 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscScalar    dot=0.0,v;
   Vec            x,y;
-  PetscInt       N=8;
+  PetscInt       N  =8;
   PetscScalar    one=1.0,two=2.0,alpha=2.0;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"y = %lf\n",PetscRealPart(two));CHKERRQ(ierr);
 
   ierr = VecAXPY(y,alpha,x);CHKERRQ(ierr);
-  v = two+alpha*one;
+  v    = two+alpha*one;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"y+%lfx = %lf\n",alpha,PetscRealPart(v));CHKERRQ(ierr);
 
   ierr = VecDot(x,y,&dot);CHKERRQ(ierr);

@@ -97,8 +97,11 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   ierr = PetscMemcpy(roothostname,hostname,256);CHKERRQ(ierr);
   ierr = MPI_Bcast(roothostname,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
+
   localmatch = (PetscMPIInt)flag;
+
   ierr = MPI_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
+
   *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(0);
 }
@@ -127,16 +130,15 @@ PetscErrorCode  PetscSetDisplay(void)
   if (!str) str = ":0.0";
   if (str[0] != ':' || singlehost) {
     ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
-  } else {
-    if (!rank) {
-      size_t len;
-      ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
-      ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
-      ierr = PetscStrncat(display,str,sizeof(display)-len-1);CHKERRQ(ierr);
-    }
+  } else if (!rank) {
+    size_t len;
+    ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
+    ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
+    ierr = PetscStrncat(display,str,sizeof(display)-len-1);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay));CHKERRQ(ierr);
+
   PetscDisplay[sizeof(PetscDisplay)-1] = 0;
   PetscFunctionReturn(0);
 }

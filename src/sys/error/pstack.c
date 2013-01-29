@@ -6,7 +6,7 @@
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 #if defined(PETSC_PTHREAD_LOCAL)
-PETSC_PTHREAD_LOCAL PetscStack  *petscstack = 0;
+PETSC_PTHREAD_LOCAL PetscStack *petscstack = 0;
 #endif
 #else
 PetscStack *petscstack = 0;
@@ -33,7 +33,7 @@ PetscErrorCode PetscStackCreate_kernel(PetscInt trank)
   PetscStack *petscstack_in;
   if (PetscStackActive) return 0;
 
-  petscstack_in = (PetscStack*)malloc(sizeof(PetscStack));
+  petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
   PetscThreadLocalSetValue(petscstack,petscstack_in);
   return 0;
@@ -54,8 +54,8 @@ PetscErrorCode  PetscStackCreate(void)
 #define __FUNCT__ "PetscStackView"
 PetscErrorCode  PetscStackView(FILE *file)
 {
-  int            i;
-  PetscStack     *petscstackp;
+  int        i;
+  PetscStack *petscstackp;
 
   petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
   if (!file) file = PETSC_STDOUT;
@@ -64,16 +64,12 @@ PetscErrorCode  PetscStackView(FILE *file)
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) {
-      (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
-    }
+    for (i=petscstackp->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
   } else {
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) {
-      fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
-    }
+    for (i=petscstackp->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
   }
   return 0;
 }
@@ -104,13 +100,12 @@ PetscErrorCode  PetscStackDestroy(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackCopy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
-PetscErrorCode  PetscStackCopy(PetscStack* sint,PetscStack* sout)
+PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
 {
   int i;
 
-  if (!sint) {
-    sout->currentsize = 0;
-  } else {
+  if (!sint) sout->currentsize = 0;
+  else {
     for (i=0; i<sint->currentsize; i++) {
       sout->function[i]     = sint->function[i];
       sout->file[i]         = sint->file[i];
@@ -126,14 +121,12 @@ PetscErrorCode  PetscStackCopy(PetscStack* sint,PetscStack* sout)
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackPrint"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
-PetscErrorCode  PetscStackPrint(PetscStack* sint,FILE *fp)
+PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
 {
   int i;
 
   if (!sint) return(0);
-  for (i=sint->currentsize-2; i>=0; i--) {
-    fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->directory[i],sint->file[i]);
-  }
+  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->directory[i],sint->file[i]);
   return 0;
 }
 

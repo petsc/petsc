@@ -3,11 +3,11 @@
       PETSc code to log PETSc events using MPE
 */
 #include <petscsys.h>        /*I    "petscsys.h"   I*/
-#if defined(PETSC_USE_LOG) && defined (PETSC_HAVE_MPE)
+#if defined(PETSC_USE_LOG) && defined(PETSC_HAVE_MPE)
 #include <mpe.h>
 
-PetscBool  UseMPE = PETSC_FALSE;
-PetscBool  PetscBeganMPE = PETSC_FALSE;
+PetscBool UseMPE        = PETSC_FALSE;
+PetscBool PetscBeganMPE = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogMPEBegin"
@@ -44,11 +44,12 @@ PetscErrorCode  PetscLogMPEBegin(void)
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
     ierr = PetscInfo(0,"Initializing MPE.\n");CHKERRQ(ierr);
     ierr = MPE_Init_log();CHKERRQ(ierr);
+
     PetscBeganMPE = PETSC_TRUE;
   } else {
     ierr = PetscInfo(0,"MPE already initialized. Not attempting to reinitialize.\n");CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   UseMPE = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -72,8 +73,11 @@ PetscErrorCode  PetscLogMPEDump(const char sname[])
   PetscFunctionBegin;
   if (PetscBeganMPE) {
     ierr = PetscInfo(0,"Finalizing MPE.\n");CHKERRQ(ierr);
-    if (sname) { ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);}
-    else { ierr = PetscGetProgramName(name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);}
+    if (sname) {
+      ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);
+    } else { 
+      ierr = PetscGetProgramName(name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    }
     ierr = MPE_Finish_log(name);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(0,"Not finalizing MPE (not started by PETSc).\n");CHKERRQ(ierr);
@@ -150,7 +154,7 @@ PetscErrorCode  PetscLogGetRGBColor(const char *str[])
   static int idx = 0;
 
   PetscFunctionBegin;
-  *str  = PetscRGBColor[idx];
-  idx = (idx + 1)% PETSC_RGB_COLOR_MAX;
+  *str = PetscRGBColor[idx];
+  idx  = (idx + 1)% PETSC_RGB_COLOR_MAX;
   PetscFunctionReturn(0);
 }

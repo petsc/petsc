@@ -66,7 +66,7 @@ void PETSC_STDCALL petsclogprintDetailed_(MPI_Comm *comm,CHAR filename PETSC_MIX
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(filename,len,t);
-  *ierr = PetscLogPrintDetailed(MPI_Comm_f2c(*(MPI_Fint *)&*comm),t);
+  *ierr = PetscLogPrintDetailed(MPI_Comm_f2c(*(MPI_Fint*)&*comm),t);
   FREECHAR(filename,t);
 #endif
 }
@@ -152,7 +152,7 @@ void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,PetscErrorCode *ierr)
   *ierr = PetscGetFlops(d);
 #else
   ierr = 0;
-  *d     = 0.0;
+  *d   = 0.0;
 #endif
 }
 

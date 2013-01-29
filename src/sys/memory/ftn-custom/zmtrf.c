@@ -56,7 +56,7 @@ void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)
 void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   PetscViewer v;
-  char *msg, *tmp;
+  char        *msg, *tmp;
 
   FIXCHAR(message,len,msg);
   *ierr = PetscFixSlashN(msg,&tmp);if (*ierr) return;

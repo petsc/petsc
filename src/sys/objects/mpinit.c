@@ -3,9 +3,9 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
-MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
-PetscBool  PetscHMPIWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
-void* PetscHMPICtx                   = 0;
+MPI_Comm        PETSC_COMM_LOCAL_WORLD = 0;           /* comm for a single node (local set of processes) */
+PetscBool       PetscHMPIWorker        = PETSC_FALSE; /* this is a regular process, nonworker process */
+void            * PetscHMPICtx         = 0;
 
 extern PetscErrorCode  PetscHMPIHandle(MPI_Comm);
 
@@ -82,10 +82,11 @@ PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = PetscInfo2(0,"PETSc HMPI successfully spawned: number of nodes = %d node size = %d\n",size,nodesize);CHKERRQ(ierr);
+
     saved_PETSC_COMM_WORLD = PETSC_COMM_WORLD;
   } else { /* worker nodes that get spawned */
-    ierr              = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
-    ierr              = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    ierr            = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    ierr            = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
     PetscHMPIWorker = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
     PetscEnd();  /* cannot continue into user code */
   }
@@ -183,14 +184,12 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
      All process not involved in user application code wait here
   */
   if (!PETSC_COMM_WORLD) {
-    ierr              = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
-    PETSC_COMM_WORLD  = saved_PETSC_COMM_WORLD;
-    PetscHMPIWorker = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
-    ierr = PetscInfo(0,"PETSc HMPI inactive process becoming active");CHKERRQ(ierr);
-  } else {
-    if (func) {
-      ierr = (*func)(ctx);CHKERRQ(ierr);
-    }
+    ierr             = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+    PetscHMPIWorker  = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
+    ierr             = PetscInfo(0,"PETSc HMPI inactive process becoming active");CHKERRQ(ierr);
+  } else if (func) {
+    ierr = (*func)(ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -210,13 +209,15 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
 @*/
 PetscErrorCode  PetscHMPIFinalize(void)
 {
-  PetscErrorCode ierr = 0;
+  PetscErrorCode ierr    = 0;
   PetscInt       command = 3;
 
   PetscFunctionBegin;
   if (!PetscHMPIWorker && PETSC_COMM_LOCAL_WORLD) {
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); /* broadcast to my worker group to end program */
+
     PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+
     ierr = PetscInfo(0,"PETSc HMPI active process ending PetscHMPIMerge()");CHKERRQ(ierr);
   }
   PetscFunctionReturn(ierr);
@@ -247,7 +248,7 @@ static void     *objects[100];
 PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscInt       command = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
+  PetscInt       command       = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
   PetscBool      exitwhileloop = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -255,12 +256,13 @@ PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     switch (command) {
     case 0: { /* allocate some memory on this worker process */
-      size_t   n = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
-      void     *ptr;
+      size_t n = 0;   /* dummy value so MPI-Uni doesn't think it is not set*/
+      void   *ptr;
       ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       /* cannot use PetscNew() cause it requires struct argument */
       ierr = PetscMalloc(n,&ptr);CHKERRQ(ierr);
       ierr = PetscMemzero(ptr,n);CHKERRQ(ierr);
+
       objects[numberobjects++] = ptr;
       break;
     }
@@ -325,9 +327,11 @@ PetscErrorCode  PetscHMPIMalloc(MPI_Comm comm,size_t n,void **ptr)
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+
   /* cannot use PetscNew() cause it requires struct argument */
   ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
   ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);
+
   objects[numberobjects++] = *ptr;
   PetscFunctionReturn(0);
 }
@@ -389,7 +393,7 @@ PetscErrorCode  PetscHMPIFree(MPI_Comm comm,void *ptr)
 .seealso: PetscHMPIMerge(), PetscHMPIMalloc(), PetscHMPIFree(), PetscHMPIRunCtx()
 
 @*/
-PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)
+PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*),void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 2,i;
@@ -430,7 +434,7 @@ PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),
 .seealso: PetscHMPIMerge(), PetscHMPIMalloc(), PetscHMPIFree(), PetscHMPIRun()
 
 @*/
-PetscErrorCode  PetscHMPIRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void *),void *ptr)
+PetscErrorCode  PetscHMPIRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void*),void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 4,i;

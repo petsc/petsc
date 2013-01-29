@@ -21,39 +21,27 @@
 
 .seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
 @*/
-PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
+PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mtype)
 {
   PetscFunctionBegin;
-  if (ptype == PETSC_INT) {
-    *mtype = MPIU_INT;
-  } else if (ptype == PETSC_DOUBLE) {
-    *mtype = MPI_DOUBLE;
+  if (ptype == PETSC_INT)              *mtype = MPIU_INT;
+  else if (ptype == PETSC_DOUBLE)      *mtype = MPI_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-  } else if (ptype == PETSC_COMPLEX) {
-    *mtype = MPIU_C_COMPLEX;
+  else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_COMPLEX;
 #else
-  } else if (ptype == PETSC_COMPLEX) {
-    *mtype = MPIU_C_DOUBLE_COMPLEX;
+  else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_DOUBLE_COMPLEX;
 #endif
 #endif
-  } else if (ptype == PETSC_LONG) {
-    *mtype = MPI_LONG;
-  } else if (ptype == PETSC_SHORT) {
-    *mtype = MPI_SHORT;
-  } else if (ptype == PETSC_ENUM) {
-    *mtype = MPI_INT;
-  } else if (ptype == PETSC_BOOL) {
-    *mtype = MPI_INT;
-  } else if (ptype == PETSC_FLOAT) {
-    *mtype = MPI_FLOAT;
-  } else if (ptype == PETSC_CHAR) {
-    *mtype = MPI_CHAR;
-  } else if (ptype == PETSC_BIT_LOGICAL) {
-    *mtype = MPI_BYTE;
-  } else if (ptype == PETSC___FLOAT128) {
-    *mtype = MPI_LONG_DOUBLE;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
+  else if (ptype == PETSC_LONG)        *mtype = MPI_LONG;
+  else if (ptype == PETSC_SHORT)       *mtype = MPI_SHORT;
+  else if (ptype == PETSC_ENUM)        *mtype = MPI_INT;
+  else if (ptype == PETSC_BOOL)        *mtype = MPI_INT;
+  else if (ptype == PETSC_FLOAT)       *mtype = MPI_FLOAT;
+  else if (ptype == PETSC_CHAR)        *mtype = MPI_CHAR;
+  else if (ptype == PETSC_BIT_LOGICAL) *mtype = MPI_BYTE;
+  else if (ptype == PETSC___FLOAT128)  *mtype = MPI_LONG_DOUBLE;
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }
 
@@ -77,41 +65,36 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
 PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType *ptype)
 {
   PetscFunctionBegin;
-  if (mtype == MPIU_INT) {
-    *ptype = PETSC_INT;
-  } else if (mtype == MPI_INT) {
-    *ptype = PETSC_INT;
-  } else if (mtype == MPI_DOUBLE) {
-    *ptype = PETSC_DOUBLE;
+  if (mtype == MPIU_INT)             *ptype = PETSC_INT;
+  else if (mtype == MPI_INT)         *ptype = PETSC_INT;
+  else if (mtype == MPI_DOUBLE)      *ptype = PETSC_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-  } else if (mtype == MPIU_C_COMPLEX) {
-    *ptype = PETSC_COMPLEX;
+  else if (mtype == MPIU_C_COMPLEX)  *ptype = PETSC_COMPLEX;
 #else
-  } else if (mtype == MPIU_C_DOUBLE_COMPLEX) {
-    *ptype = PETSC_COMPLEX;
+  else if (mtype == MPIU_C_DOUBLE_COMPLEX) *ptype = PETSC_COMPLEX;
 #endif
 #endif
-  } else if (mtype == MPI_LONG) {
-    *ptype = PETSC_LONG;
-  } else if (mtype == MPI_SHORT) {
-    *ptype = PETSC_SHORT;
-  } else if (mtype == MPI_FLOAT) {
-    *ptype = PETSC_FLOAT;
-  } else if (mtype == MPI_CHAR) {
-    *ptype = PETSC_CHAR;
-  } else if (mtype == MPI_LONG_DOUBLE) {
-    *ptype = PETSC___FLOAT128;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
+  else if (mtype == MPI_LONG)        *ptype = PETSC_LONG;
+  else if (mtype == MPI_SHORT)       *ptype = PETSC_SHORT;
+  else if (mtype == MPI_FLOAT)       *ptype = PETSC_FLOAT;
+  else if (mtype == MPI_CHAR)        *ptype = PETSC_CHAR;
+  else if (mtype == MPI_LONG_DOUBLE) *ptype = PETSC___FLOAT128;
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
   PetscFunctionReturn(0);
 }
 
-typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_COMPLEX_SIZE = sizeof(PetscScalar),PETSC_LONG_SIZE=sizeof(long),
-              PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
-              PETSC_CHAR_SIZE = sizeof(char),PETSC_BIT_LOGICAL_SIZE = sizeof(char),
-              PETSC_ENUM_SIZE = sizeof(PetscBool), PETSC_BOOL_SIZE = sizeof(PetscBool),
-              PETSC___FLOAT128_SIZE = sizeof(long double)
+typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
+              PETSC_DOUBLE_SIZE      = sizeof(double),
+              PETSC_COMPLEX_SIZE     = sizeof(PetscScalar),
+              PETSC_LONG_SIZE        = sizeof(long),
+              PETSC_SHORT_SIZE       = sizeof(short),
+              PETSC_FLOAT_SIZE       = sizeof(float),
+              PETSC_CHAR_SIZE        = sizeof(char),
+              PETSC_BIT_LOGICAL_SIZE = sizeof(char),
+              PETSC_ENUM_SIZE        = sizeof(PetscBool),
+              PETSC_BOOL_SIZE        = sizeof(PetscBool),
+              PETSC___FLOAT128_SIZE  = sizeof(long double)
              } PetscDataTypeSize;
 
 #undef __FUNCT__
@@ -139,30 +122,19 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
     PetscFunctionReturn(0);
   }
 
-  if (ptype == PETSC_INT) {
-    *size = PETSC_INT_SIZE;
-  } else if (ptype == PETSC_DOUBLE) {
-    *size = PETSC_DOUBLE_SIZE;
+  if (ptype == PETSC_INT)              *size = PETSC_INT_SIZE;
+  else if (ptype == PETSC_DOUBLE)      *size = PETSC_DOUBLE_SIZE;
 #if defined(PETSC_USE_COMPLEX)
-  } else if (ptype == PETSC_COMPLEX) {
-    *size = PETSC_COMPLEX_SIZE;
+  else if (ptype == PETSC_COMPLEX)     *size = PETSC_COMPLEX_SIZE;
 #endif
-  } else if (ptype == PETSC_LONG) {
-    *size = PETSC_LONG_SIZE;
-  } else if (ptype == PETSC_SHORT) {
-    *size = PETSC_SHORT_SIZE;
-  } else if (ptype == PETSC_FLOAT) {
-    *size = PETSC_FLOAT_SIZE;
-  } else if (ptype == PETSC_CHAR) {
-    *size = PETSC_CHAR_SIZE;
-  } else if (ptype == PETSC_ENUM) {
-    *size = PETSC_ENUM_SIZE;
-  } else if (ptype == PETSC_BIT_LOGICAL) {
-    *size = PETSC_BIT_LOGICAL_SIZE;
-  } else if (ptype == PETSC_BOOL) {
-    *size = PETSC_BOOL_SIZE;
-  } else if (ptype == PETSC___FLOAT128) {
-    *size = PETSC___FLOAT128_SIZE;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
+  else if (ptype == PETSC_LONG)        *size = PETSC_LONG_SIZE;
+  else if (ptype == PETSC_SHORT)       *size = PETSC_SHORT_SIZE;
+  else if (ptype == PETSC_FLOAT)       *size = PETSC_FLOAT_SIZE;
+  else if (ptype == PETSC_CHAR)        *size = PETSC_CHAR_SIZE;
+  else if (ptype == PETSC_ENUM)        *size = PETSC_ENUM_SIZE;
+  else if (ptype == PETSC_BIT_LOGICAL) *size = PETSC_BIT_LOGICAL_SIZE;
+  else if (ptype == PETSC_BOOL)        *size = PETSC_BOOL_SIZE;
+  else if (ptype == PETSC___FLOAT128)  *size = PETSC___FLOAT128_SIZE;
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }

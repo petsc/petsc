@@ -6,16 +6,16 @@
 #endif
 
 typedef struct  {
-  char         *string;   /* string where info is stored */
-  char         *head;     /* pointer to begining of unused portion */
-  size_t       curlen,maxlen;
+  char   *string;         /* string where info is stored */
+  char   *head;           /* pointer to begining of unused portion */
+  size_t curlen,maxlen;
 } PetscViewer_String;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDestroy_String"
 static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 {
-  PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
+  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -128,12 +128,12 @@ PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer
 {
   PetscErrorCode     ierr;
   PetscViewer_String *iviewer = (PetscViewer_String*)(*sviewer)->data;
-  PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
+  PetscViewer_String *vstr    = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
   vstr->head    = iviewer->head;
   vstr->curlen += iviewer->curlen;
-  ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
+  ierr          = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -185,14 +185,14 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],Pets
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(string,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
-  if (!isstring)  PetscFunctionReturn(0);
+  if (!isstring) PetscFunctionReturn(0);
   if (len <= 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 
-  ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
-  vstr->string      = string;
-  vstr->head        = string;
-  vstr->curlen      = 0;
-  vstr->maxlen      = len;
+  ierr         = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
+  vstr->string = string;
+  vstr->head   = string;
+  vstr->curlen = 0;
+  vstr->maxlen = len;
   PetscFunctionReturn(0);
 }
 

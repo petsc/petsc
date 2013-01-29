@@ -11,8 +11,8 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR fileout PETSC_MIXED_LEN(len2),
                                      PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
-  PetscInt  i,n;
-  char *in,*out;
+  PetscInt i,n;
+  char     *in,*out;
 
   in  = filein;
   out = fileout;

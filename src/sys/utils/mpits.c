@@ -38,7 +38,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     PetscMPIInt b1[2],b2[2];
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
-    ierr = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr  = MPI_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
     if (-b2[0] != b2[1]) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
 #endif
@@ -95,8 +95,8 @@ struct _SegArray {
   SegArray tail;
   union {                       /* Dummy types to ensure alignment */
     PetscReal dummy_real;
-    PetscInt dummy_int;
-    char array[1];
+    PetscInt  dummy_int;
+    char      array[1];
   } u;
 };
 
@@ -109,8 +109,9 @@ static PetscErrorCode SegArrayCreate(PetscInt unitbytes,PetscInt expected,SegArr
   PetscFunctionBegin;
   ierr = PetscMalloc(offsetof(struct _SegArray,u)+expected*unitbytes,seg);CHKERRQ(ierr);
   ierr = PetscMemzero(*seg,offsetof(struct _SegArray,u));CHKERRQ(ierr);
+
   (*seg)->unitbytes = unitbytes;
-  (*seg)->alloc = expected;
+  (*seg)->alloc     = expected;
   PetscFunctionReturn(0);
 }
 
@@ -119,20 +120,21 @@ static PetscErrorCode SegArrayCreate(PetscInt unitbytes,PetscInt expected,SegArr
 static PetscErrorCode SegArrayAlloc_Private(SegArray *seg,PetscInt count)
 {
   PetscErrorCode ierr;
-  SegArray newseg,s;
-  PetscInt alloc;
+  SegArray       newseg,s;
+  PetscInt       alloc;
 
   PetscFunctionBegin;
   s = *seg;
   /* Grow at least fast enough to hold next item, like Fibonacci otherwise (up to 1MB chunks) */
   alloc = PetscMax(s->used+count,PetscMin(1000000/s->unitbytes+1,s->alloc+s->tailused));
-  ierr = PetscMalloc(offsetof(struct _SegArray,u)+alloc*s->unitbytes,&newseg);CHKERRQ(ierr);
-  ierr = PetscMemzero(newseg,offsetof(struct _SegArray,u));CHKERRQ(ierr);
+  ierr  = PetscMalloc(offsetof(struct _SegArray,u)+alloc*s->unitbytes,&newseg);CHKERRQ(ierr);
+  ierr  = PetscMemzero(newseg,offsetof(struct _SegArray,u));CHKERRQ(ierr);
+
   newseg->unitbytes = s->unitbytes;
-  newseg->tailused = s->used + s->tailused;
-  newseg->tail = s;
-  newseg->alloc = alloc;
-  *seg = newseg;
+  newseg->tailused  = s->used + s->tailused;
+  newseg->tail      = s;
+  newseg->alloc     = alloc;
+  *seg              = newseg;
   PetscFunctionReturn(0);
 }
 
@@ -141,7 +143,7 @@ static PetscErrorCode SegArrayAlloc_Private(SegArray *seg,PetscInt count)
 static PetscErrorCode SegArrayGet(SegArray *seg,PetscInt count,void *array)
 {
   PetscErrorCode ierr;
-  SegArray s;
+  SegArray       s;
 
   PetscFunctionBegin;
   s = *seg;
@@ -157,7 +159,7 @@ static PetscErrorCode SegArrayGet(SegArray *seg,PetscInt count,void *array)
 static PetscErrorCode SegArrayDestroy(SegArray *seg)
 {
   PetscErrorCode ierr;
-  SegArray s;
+  SegArray       s;
 
   PetscFunctionBegin;
   for (s=*seg; s;) {
@@ -175,26 +177,28 @@ static PetscErrorCode SegArrayDestroy(SegArray *seg)
 static PetscErrorCode SegArrayExtract(SegArray *seg,void *contiguous)
 {
   PetscErrorCode ierr;
-  PetscInt unitbytes;
-  SegArray s,t;
-  char *contig,*ptr;
+  PetscInt       unitbytes;
+  SegArray       s,t;
+  char           *contig,*ptr;
 
   PetscFunctionBegin;
   s = *seg;
+
   unitbytes = s->unitbytes;
+
   ierr = PetscMalloc((s->used+s->tailused)*unitbytes,&contig);CHKERRQ(ierr);
-  ptr = contig + s->tailused*unitbytes;
+  ptr  = contig + s->tailused*unitbytes;
   ierr = PetscMemcpy(ptr,s->u.array,s->used*unitbytes);CHKERRQ(ierr);
   for (t=s->tail; t;) {
     SegArray tail = t->tail;
     ptr -= t->used*unitbytes;
     ierr = PetscMemcpy(ptr,t->u.array,t->used*unitbytes);CHKERRQ(ierr);
     ierr = PetscFree(t);CHKERRQ(ierr);
-    t = tail;
+    t    = tail;
   }
   if (ptr != contig) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
-  s->tailused = 0;
-  s->tail = PETSC_NULL;
+  s->tailused         = 0;
+  s->tail             = PETSC_NULL;
   *(char**)contiguous = contig;
   PetscFunctionReturn(0);
 }
@@ -211,29 +215,29 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   SegArray       segrank,segdata;
 
   PetscFunctionBegin;
-  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
-  ierr = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
+  ierr  = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+  ierr  = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   tdata = (char*)todata;
-  ierr = PetscMalloc(nto*sizeof(MPI_Request),&sendreqs);CHKERRQ(ierr);
+  ierr  = PetscMalloc(nto*sizeof(MPI_Request),&sendreqs);CHKERRQ(ierr);
   for (i=0; i<nto; i++) {
     ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
   }
   ierr = SegArrayCreate(sizeof(PetscMPIInt),4,&segrank);CHKERRQ(ierr);
   ierr = SegArrayCreate(unitbytes,4*count,&segdata);CHKERRQ(ierr);
 
-  nrecvs = 0;
+  nrecvs  = 0;
   barrier = MPI_REQUEST_NULL;
-  for (done=0; !done;) {
+  for (done=0; !done; ) {
     PetscMPIInt flag;
-    MPI_Status status;
+    MPI_Status  status;
     ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);
     if (flag) {                 /* incoming message */
       PetscMPIInt *recvrank;
-      void *buf;
-      ierr = SegArrayGet(&segrank,1,&recvrank);CHKERRQ(ierr);
-      ierr = SegArrayGet(&segdata,count,&buf);CHKERRQ(ierr);
+      void        *buf;
+      ierr      = SegArrayGet(&segrank,1,&recvrank);CHKERRQ(ierr);
+      ierr      = SegArrayGet(&segdata,count,&buf);CHKERRQ(ierr);
       *recvrank = status.MPI_SOURCE;
-      ierr = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr      = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       nrecvs++;
     }
     if (barrier == MPI_REQUEST_NULL) {
@@ -249,10 +253,10 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
     }
   }
   *nfrom = nrecvs;
-  ierr = SegArrayExtract(&segrank,fromranks);CHKERRQ(ierr);
-  ierr = SegArrayDestroy(&segrank);CHKERRQ(ierr);
-  ierr = SegArrayExtract(&segdata,fromdata);CHKERRQ(ierr);
-  ierr = SegArrayDestroy(&segdata);CHKERRQ(ierr);
+  ierr   = SegArrayExtract(&segrank,fromranks);CHKERRQ(ierr);
+  ierr   = SegArrayDestroy(&segrank);CHKERRQ(ierr);
+  ierr   = SegArrayExtract(&segdata,fromdata);CHKERRQ(ierr);
+  ierr   = SegArrayDestroy(&segdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -276,11 +280,11 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr = PetscGatherNumberOfMessages(comm,iflags,PETSC_NULL,&nrecvs);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
-  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
-  ierr = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
-  tdata = (char*)todata;
-  ierr = PetscMalloc2(nto+nrecvs,MPI_Request,&reqs,nto+nrecvs,MPI_Status,&statuses);CHKERRQ(ierr);
+  ierr     = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+  ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
+  ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
+  tdata    = (char*)todata;
+  ierr     = PetscMalloc2(nto+nrecvs,MPI_Request,&reqs,nto+nrecvs,MPI_Status,&statuses);CHKERRQ(ierr);
   sendreqs = reqs + nrecvs;
   for (i=0; i<nrecvs; i++) {
     ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);
@@ -290,13 +294,11 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   }
   ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRQ(ierr);
   ierr = PetscMalloc(nrecvs*sizeof(PetscMPIInt),&franks);CHKERRQ(ierr);
-  for (i=0; i<nrecvs; i++) {
-    franks[i] = statuses[i].MPI_SOURCE;
-  }
+  for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
   ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
 
-  *nfrom = nrecvs;
-  *fromranks = franks;
+  *nfrom            = nrecvs;
+  *fromranks        = franks;
   *(void**)fromdata = fdata;
   PetscFunctionReturn(0);
 }
@@ -337,7 +339,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
 @*/
 PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode         ierr;
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
 
   PetscFunctionBegin;

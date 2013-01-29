@@ -42,7 +42,7 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
     PetscInt Nbs = *N/bs;
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    *n = bs*(Nbs/size + ((Nbs % size) > rank));
+    *n   = bs*(Nbs/size + ((Nbs % size) > rank));
   }
   PetscFunctionReturn(0);
 }
@@ -85,7 +85,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   } else if (*n == PETSC_DECIDE) {
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    *n = *N/size + ((*N % size) > rank);
+    *n   = *N/size + ((*N % size) > rank);
 #if defined(PETSC_USE_DEBUG)
   } else {
     PetscInt tmp;

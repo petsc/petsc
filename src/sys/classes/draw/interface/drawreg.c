@@ -47,6 +47,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 #endif
   *indraw = 0;
   ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,-1,"Draw","Graphics","Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
+
   draw->data    = 0;
   ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
@@ -64,18 +65,21 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->port_yl = 0.0;
   draw->port_yr = 1.0;
   draw->popup   = 0;
+
   ierr = PetscOptionsGetReal(PETSC_NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
   draw->savefilename  = PETSC_NULL;
   draw->savefilemovie = PETSC_FALSE;
   draw->savefilecount = -1;
+
   ierr = PetscDrawSetCurrentPoint(draw,.5,.9);CHKERRQ(ierr);
+
   draw->boundbox_xl  = .5;
   draw->boundbox_xr  = .5;
   draw->boundbox_yl  = .9;
   draw->boundbox_yr  = .9;
 
-  *indraw       = draw;
+  *indraw = draw;
   PetscFunctionReturn(0);
 }
 
@@ -109,8 +113,8 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
   PetscErrorCode ierr,(*r)(PetscDraw);
-  PetscBool       match;
-  PetscBool       flg=PETSC_FALSE;
+  PetscBool      match;
+  PetscBool      flg=PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -131,31 +135,27 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   if (!flg) {
     ierr = PetscStrcmp(type,PETSC_DRAW_X,&match);CHKERRQ(ierr);
     if (match) {
-      PetscBool  dontwarn = PETSC_TRUE;
-      flg = PETSC_TRUE;
+      PetscBool dontwarn = PETSC_TRUE;
+      flg  = PETSC_TRUE;
       ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
-      if (!dontwarn) {
-        (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
-      }
+      if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     }
   }
 #endif
-  if (flg) {
-    type  = PETSC_DRAW_NULL;
-  }
+  if (flg) type = PETSC_DRAW_NULL;
 
   if (draw->data) {
     /* destroy the old private PetscDraw context */
-    ierr       = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
+    ierr               = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
     draw->ops->destroy = PETSC_NULL;
-    draw->data = 0;
+    draw->data         = 0;
   }
 
   ierr =  PetscFunctionListFind(((PetscObject)draw)->comm,PetscDrawList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
-  ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
-  draw->data        = 0;
-  ierr = (*r)(draw);CHKERRQ(ierr);
+  ierr       = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
+  draw->data = 0;
+  ierr       = (*r)(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -264,9 +264,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  if (((PetscObject)draw)->type_name) {
-    def = ((PetscObject)draw)->type_name;
-  } else {
+  if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;
+  else {
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
@@ -279,33 +278,31 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (!nox) def = PETSC_DRAW_OPENGLES;
 #else
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&warn);CHKERRQ(ierr);
-    if (!nox && !warn) {
-      (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, OpenGL ES, or GLUT/OpenGL on this machine\nproceeding without graphics\n");
-    }
+    if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, OpenGL ES, or GLUT/OpenGL on this machine\nproceeding without graphics\n");
 #endif
   }
   ierr = PetscObjectOptionsBegin((PetscObject)draw);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscDrawSetType(draw,vtype);CHKERRQ(ierr);
-    } else if (!((PetscObject)draw)->type_name) {
-      ierr = PetscDrawSetType(draw,def);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscDrawSetType(draw,vtype);CHKERRQ(ierr);
+  } else if (!((PetscObject)draw)->type_name) {
+    ierr = PetscDrawSetType(draw,def);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_X)
-    {
-      char      filename[PETSC_MAX_PATH_LEN];
-      PetscBool save,movie = PETSC_FALSE;
-      ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
-      if (save) {
-        ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
-      }
+  {
+    char      filename[PETSC_MAX_PATH_LEN];
+    PetscBool save,movie = PETSC_FALSE;
+    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
+    if (save) {
+      ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
     }
+  }
 #endif
 
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -347,6 +344,7 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char *filename,PetscBool m
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscFree(draw->savefilename);CHKERRQ(ierr);
+
   draw->savefilemovie = movie;
   if (filename && filename[0]) {
     ierr = PetscStrallocpy(filename,&draw->savefilename);CHKERRQ(ierr);

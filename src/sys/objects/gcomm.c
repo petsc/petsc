@@ -35,9 +35,7 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
   PetscValidPointer(comm,2);
   if (obj->bops->getcomm) {
     ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
-  } else {
-    *comm = obj->comm;
-  }
+  } else *comm = obj->comm;
   PetscFunctionReturn(0);
 }
 
@@ -130,10 +128,7 @@ PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (oldobj) {
-    obj->tablevel = oldobj->tablevel + tab;
-  } else {
-    obj->tablevel = tab;
-  }
+  if (oldobj) obj->tablevel = oldobj->tablevel + tab;
+  else obj->tablevel = tab;
   PetscFunctionReturn(0);
 }

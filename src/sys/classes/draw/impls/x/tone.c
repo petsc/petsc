@@ -8,7 +8,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawInterpolatedTriangle_X"
-PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
+PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
 {
   PetscReal rfrac,lfrac;
   PetscReal R_y2_y_1,R_y3_y_1,R_y3_y2;
@@ -42,12 +42,14 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,i
   /* This code is decidely non-optimal; it is intended to be a start at
    an implementation */
 
-  if (y2 != y_1) R_y2_y_1 = 1.0/((double)(y2-y_1)); else R_y2_y_1 = 0.0;
-  if (y3 != y_1) R_y3_y_1 = 1.0/((double)(y3-y_1)); else R_y3_y_1 = 0.0;
-  t2_t1   = t2 - t1;
-  x2_x1   = x2 - x1;
-  t3_t1   = t3 - t1;
-  x3_x1   = x3 - x1;
+  if (y2 != y_1) R_y2_y_1 = 1.0/((double)(y2-y_1));
+  else R_y2_y_1 = 0.0;
+  if (y3 != y_1) R_y3_y_1 = 1.0/((double)(y3-y_1));
+  else R_y3_y_1 = 0.0;
+  t2_t1 = t2 - t1;
+  x2_x1 = x2 - x1;
+  t3_t1 = t3 - t1;
+  x3_x1 = x3 - x1;
   for (y=y_1; y<=y2; y++) {
     /* PetscDraw a line with the correct color from t1-t2 to t1-t3 */
     /* Left color is (y-y_1)/(y2-y_1) * (t2-t1) + t1 */
@@ -88,13 +90,16 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,i
     y_1 = y2;
     x1  = rx;
 
-    t3_t1   = t3 - t1;
-    x3_x1   = x3 - x1;
+    t3_t1 = t3 - t1;
+    x3_x1 = x3 - x1;
   }
   t3_t2 = t3 - t2;
   x3_x2 = x3 - x2;
-  if (y3 != y2) R_y3_y2 = 1.0/((double)(y3-y2)); else R_y3_y2 = 0.0;
-  if (y3 != y_1) R_y3_y_1 = 1.0/((double)(y3-y_1)); else R_y3_y_1 = 0.0;
+  if (y3 != y2) R_y3_y2 = 1.0/((double)(y3-y2));
+  else R_y3_y2 = 0.0;
+  if (y3 != y_1) R_y3_y_1 = 1.0/((double)(y3-y_1));
+  else R_y3_y_1 = 0.0;
+
   for (y=y2; y<=y3; y++) {
     /* PetscDraw a line with the correct color from t2-t3 to t1-t3 */
     /* Left color is (y-y_1)/(y2-y_1) * (t2-t1) + t1 */

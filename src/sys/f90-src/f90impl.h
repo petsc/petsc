@@ -14,7 +14,7 @@
 #define PETSC_F90_2PTR_PARAM(ptr)
 #endif
 
-#if defined (PETSC_USING_F90)
+#if defined(PETSC_USING_F90)
 
 #define F90Array1d void
 #define F90Array2d void

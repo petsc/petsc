@@ -54,11 +54,8 @@ PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(empty,2);
-  if (stack->top == -1) {
-    *empty = PETSC_TRUE;
-  } else {
-    *empty = PETSC_FALSE;
-  }
+  if (stack->top == -1) *empty = PETSC_TRUE;
+  else *empty = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -115,6 +112,7 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
     ierr = PetscMalloc(stack->max*2 * sizeof(int), &array);CHKERRQ(ierr);
     ierr = PetscMemcpy(array, stack->stack, stack->max * sizeof(int));CHKERRQ(ierr);
     ierr = PetscFree(stack->stack);CHKERRQ(ierr);
+
     stack->stack = array;
     stack->max  *= 2;
   }
@@ -166,14 +164,16 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 @*/
 PetscErrorCode PetscIntStackCreate(PetscIntStack *stack)
 {
-  PetscIntStack       s;
+  PetscIntStack  s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(stack,1);
   ierr = PetscNew(struct _n_PetscIntStack, &s);CHKERRQ(ierr);
+
   s->top = -1;
   s->max = 128;
+
   ierr = PetscMalloc(s->max * sizeof(int), &s->stack);CHKERRQ(ierr);
   ierr = PetscMemzero(s->stack, s->max * sizeof(int));CHKERRQ(ierr);
   *stack = s;

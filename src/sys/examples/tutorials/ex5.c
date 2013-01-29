@@ -24,7 +24,7 @@ const char *EnumeratedChoices[] = {"THIS","THAT","THE_OTHER","EnumeratedChoices"
   are declared in the bag with a variable, not with a pointer.
 */
 typedef struct {
-  PetscReal   x1,x2;
+  PetscReal x1,x2;
 } TwoVec;
 
 /*
@@ -64,11 +64,11 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Create an empty bag */
-  ierr   = PetscBagCreate(PETSC_COMM_WORLD,sizeof(Parameter),&bag);CHKERRQ(ierr);
-  ierr   = PetscBagGetData(bag,(void **)&params);CHKERRQ(ierr);
+  ierr = PetscBagCreate(PETSC_COMM_WORLD,sizeof(Parameter),&bag);CHKERRQ(ierr);
+  ierr = PetscBagGetData(bag,(void**)&params);CHKERRQ(ierr);
 
   /* register variables, defaults, names, help strings */
   ierr = PetscBagSetName(bag,"ParameterBag","contains parameters for simulations of top-secret, dangerous physics");CHKERRQ(ierr);
@@ -77,12 +77,16 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
   ierr = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
   ierr = PetscBagRegisterInt   (bag,&params->Ii, 2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
+
   params->iarray[0] = 1;
   params->iarray[1] = 2;
   params->iarray[2] = 3;
+
   ierr = PetscBagRegisterIntArray(bag,&params->iarray, 3,"int_array","Int array with 3 locations");CHKERRQ(ierr);
+
   params->rarray[0] = -1.0;
   params->rarray[1] = -2.0;
+
   ierr = PetscBagRegisterRealArray(bag,&params->rarray, 2,"real_array","Real array with 2 locations");CHKERRQ(ierr);
   ierr = PetscBagRegisterBool (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
   ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,(PetscEnum)PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);

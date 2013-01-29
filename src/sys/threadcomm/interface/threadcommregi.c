@@ -32,6 +32,7 @@ PetscErrorCode PetscThreadCommRegisterAll(const char path[])
 
   PetscFunctionBegin;
   PetscThreadCommRegisterAllCalled = PETSC_TRUE;
+
   ierr = PetscThreadCommRegisterDynamic(NOTHREAD,         path,"PetscThreadCommCreate_NoThread",         PetscThreadCommCreate_NoThread);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = PetscThreadCommRegisterDynamic(PTHREAD,          path,"PetscThreadCommCreate_PThread",          PetscThreadCommCreate_PThread);CHKERRQ(ierr);

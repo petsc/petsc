@@ -83,7 +83,7 @@ PetscErrorCode  PetscGetFileFromPath(char *path,char *defname,char *name,char *f
       /* Form trial file name */
       ierr = PetscStrcpy(trial,cdir);CHKERRQ(ierr);
       ierr = PetscStrlen(trial,&ln);CHKERRQ(ierr);
-      if (trial[ln-1] != '/')  trial[ln++] = '/';
+      if (trial[ln-1] != '/') trial[ln++] = '/';
 
       ierr = PetscStrcpy(trial + ln,name);CHKERRQ(ierr);
 

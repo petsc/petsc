@@ -11,7 +11,7 @@
 
 PetscErrorCode PetscBinaryRead(int,void *p,int,PetscDataType);
 
-#define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return ;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
@@ -31,19 +31,17 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
 
   if (dt == PETSC_DOUBLE) {
-    plhs[0]  = mxCreateDoubleMatrix(1,cnt,mxREAL);
-    ierr = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive double items.");
+    plhs[0] = mxCreateDoubleMatrix(1,cnt,mxREAL);
+    ierr    = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive double items.");
   } else if (dt == PETSC_INT) {
-    plhs[0]  = mxCreateNumericMatrix(1,cnt,mxINT32_CLASS,mxREAL);
-    ierr = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive int items.");
+    plhs[0] = mxCreateNumericMatrix(1,cnt,mxINT32_CLASS,mxREAL);
+    ierr    = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive int items.");
   } else if (dt == PETSC_CHAR) {
     char *tmp = (char*) mxMalloc(cnt*sizeof(char));
-    ierr = PetscBinaryRead(fd,tmp,cnt,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive char items.");
+    ierr    = PetscBinaryRead(fd,tmp,cnt,(PetscDataType)dt);if (ierr) PETSC_MEX_ERROR("Unable to receive char items.");
     plhs[0] = mxCreateStringFromNChars(tmp,cnt);
     mxFree(tmp);
-  } else {
-    PETSC_MEX_ERROR("Unknown datatype.");
-  }
+  } else PETSC_MEX_ERROR("Unknown datatype.");
   return;
 }
 

@@ -12,7 +12,7 @@
 /* ----------------------------------------------------------------------- */
 typedef struct _PrintfQueue *PrintfQueue;
 struct _PrintfQueue {
-  char       *string;
+  char        *string;
   int         size;
   PrintfQueue next;
 };

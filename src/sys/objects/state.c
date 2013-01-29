@@ -75,7 +75,7 @@ PetscErrorCode  PetscObjectSetState(PetscObject obj,PetscInt state)
   PetscFunctionReturn(0);
 }
 
-PetscInt  PetscObjectComposedDataMax = 10;
+PetscInt PetscObjectComposedDataMax = 10;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataRegister"
@@ -113,10 +113,10 @@ PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ar);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ar,new_n*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ar);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ar,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   if (n) {
     for (i=0; i<n; i++) {
       new_ar[i] = ar[i]; new_ir[i] = ir[i];
@@ -124,7 +124,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
     ierr = PetscFree(ar);CHKERRQ(ierr);
     ierr = PetscFree(ir);CHKERRQ(ierr);
   }
-  obj->int_idmax = new_n;
+  obj->int_idmax       = new_n;
   obj->intcomposeddata = new_ar; obj->intcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
@@ -134,15 +134,15 @@ PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
 PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
   PetscInt       **ar = obj->intstarcomposeddata,**new_ar;
-  PetscInt       *ir = obj->intstarcomposedstate,*new_ir,n = obj->intstar_idmax,new_n,i;
+  PetscInt       *ir  = obj->intstarcomposedstate,*new_ir,n = obj->intstar_idmax,new_n,i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr = PetscMalloc(new_n*sizeof(PetscInt*),&new_ar);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ar,new_n*sizeof(PetscInt*));CHKERRQ(ierr);
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt*),&new_ar);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ar,new_n*sizeof(PetscInt*));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   if (n) {
     for (i=0; i<n; i++) {
       new_ar[i] = ar[i]; new_ir[i] = ir[i];
@@ -150,7 +150,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
     ierr = PetscFree(ar);CHKERRQ(ierr);
     ierr = PetscFree(ir);CHKERRQ(ierr);
   }
-  obj->intstar_idmax = new_n;
+  obj->intstar_idmax       = new_n;
   obj->intstarcomposeddata = new_ar; obj->intstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
@@ -165,10 +165,10 @@ PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr = PetscMalloc(new_n*sizeof(PetscReal),&new_ar);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ar,new_n*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscReal),&new_ar);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ar,new_n*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   if (n) {
     for (i=0; i<n; i++) {
       new_ar[i] = ar[i]; new_ir[i] = ir[i];
@@ -176,7 +176,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
     ierr = PetscFree(ar);CHKERRQ(ierr);
     ierr = PetscFree(ir);CHKERRQ(ierr);
   }
-  obj->real_idmax = new_n;
+  obj->real_idmax       = new_n;
   obj->realcomposeddata = new_ar; obj->realcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
@@ -186,15 +186,15 @@ PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
 PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 {
   PetscReal      **ar = obj->realstarcomposeddata,**new_ar;
-  PetscInt       *ir = obj->realstarcomposedstate,*new_ir,n = obj->realstar_idmax,new_n,i;
+  PetscInt       *ir  = obj->realstarcomposedstate,*new_ir,n = obj->realstar_idmax,new_n,i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr = PetscMalloc(new_n*sizeof(PetscReal*),&new_ar);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ar,new_n*sizeof(PetscReal*));CHKERRQ(ierr);
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscReal*),&new_ar);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ar,new_n*sizeof(PetscReal*));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   if (n) {
     for (i=0; i<n; i++) {
       new_ar[i] = ar[i]; new_ir[i] = ir[i];
@@ -202,7 +202,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
     ierr = PetscFree(ar);CHKERRQ(ierr);
     ierr = PetscFree(ir);CHKERRQ(ierr);
   }
-  obj->realstar_idmax = new_n;
+  obj->realstar_idmax       = new_n;
   obj->realstarcomposeddata = new_ar; obj->realstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
@@ -217,10 +217,10 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr = PetscMalloc(new_n*sizeof(PetscScalar),&new_ar);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ar,new_n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscScalar),&new_ar);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ar,new_n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   if (n) {
     for (i=0; i<n; i++) {
       new_ar[i] = ar[i]; new_ir[i] = ir[i];
@@ -228,7 +228,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
     ierr = PetscFree(ar);CHKERRQ(ierr);
     ierr = PetscFree(ir);CHKERRQ(ierr);
   }
-  obj->scalar_idmax = new_n;
+  obj->scalar_idmax       = new_n;
   obj->scalarcomposeddata = new_ar; obj->scalarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
@@ -238,15 +238,15 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {
   PetscScalar    **ar = obj->scalarstarcomposeddata,**new_ar;
-  PetscInt       *ir = obj->scalarstarcomposedstate,*new_ir,n = obj->scalarstar_idmax,new_n,i;
+  PetscInt       *ir  = obj->scalarstarcomposedstate,*new_ir,n = obj->scalarstar_idmax,new_n,i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   new_n = PetscObjectComposedDataMax;
-  ierr = PetscMalloc(new_n*sizeof(PetscScalar*),&new_ar);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ar,new_n*sizeof(PetscScalar*));CHKERRQ(ierr);
-  ierr = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
-  ierr = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscScalar*),&new_ar);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ar,new_n*sizeof(PetscScalar*));CHKERRQ(ierr);
+  ierr  = PetscMalloc(new_n*sizeof(PetscInt),&new_ir);CHKERRQ(ierr);
+  ierr  = PetscMemzero(new_ir,new_n*sizeof(PetscInt));CHKERRQ(ierr);
   if (n) {
     for (i=0; i<n; i++) {
       new_ar[i] = ar[i]; new_ir[i] = ir[i];
@@ -254,7 +254,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
     ierr = PetscFree(ar);CHKERRQ(ierr);
     ierr = PetscFree(ir);CHKERRQ(ierr);
   }
-  obj->scalarstar_idmax = new_n;
+  obj->scalarstar_idmax       = new_n;
   obj->scalarstarcomposeddata = new_ar; obj->scalarstarcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }

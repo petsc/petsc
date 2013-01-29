@@ -42,8 +42,8 @@
 @*/
 PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
 {
-  int        i,n,*lens,cnt = 0;
-  PetscBool  flg = PETSC_FALSE;
+  int       i,n,*lens,cnt = 0;
+  PetscBool flg = PETSC_FALSE;
 
   if (!s) n = 0;
   else    n = strlen(s);
@@ -59,7 +59,7 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
     if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
     else if (s[i] != sp) {flg = PETSC_FALSE;}
   }
-  (*args) = (char **) malloc(((*argc)+1)*sizeof(char*)); if (!*args) return PETSC_ERR_MEM;
+  (*args) = (char**) malloc(((*argc)+1)*sizeof(char*)); if (!*args) return PETSC_ERR_MEM;
   lens    = (int*) malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
   for (i=0; i<*argc; i++) lens[i] = 0;
 
@@ -115,12 +115,8 @@ PetscErrorCode  PetscStrToArrayDestroy(int argc,char **args)
 {
   PetscInt i;
 
-  for (i=0; i<argc; i++) {
-    free(args[i]);
-  }
-  if (args) {
-    free(args);
-  }
+  for (i=0; i<argc; i++) free(args[i]);
+  if (args) free(args);
   return 0;
 }
 
@@ -152,11 +148,8 @@ PetscErrorCode  PetscStrToArrayDestroy(int argc,char **args)
 PetscErrorCode  PetscStrlen(const char s[],size_t *len)
 {
   PetscFunctionBegin;
-  if (!s) {
-    *len = 0;
-  } else {
-    *len = strlen(s);
-  }
+  if (!s) *len = 0;
+  else    *len = strlen(s);
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +215,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
 .seealso: PetscStrallocpy() PetscStrArrayDestroy()
 
 @*/
-PetscErrorCode  PetscStrArrayallocpy(const char *const*list,char ***t)
+PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 {
   PetscErrorCode ierr;
   PetscInt       i,n = 0;
@@ -301,8 +294,8 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
-  if (t) {strcpy(s,t);}
-  else if (s) {s[0] = 0;}
+  if (t) strcpy(s,t);
+  else if (s) s[0] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -334,8 +327,8 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
-  if (t) {strncpy(s,t,n);}
-  else if (s) {s[0] = 0;}
+  if (t) strncpy(s,t,n);
+  else if (s) s[0] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -421,11 +414,9 @@ PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool  *flg)
   int c;
 
   PetscFunctionBegin;
-  if (!a && !b) {
-    *flg = PETSC_TRUE;
-  } else if (!a || !b) {
-    *flg = PETSC_FALSE;
-  } else {
+  if (!a && !b)      *flg = PETSC_TRUE;
+  else if (!a || !b) *flg = PETSC_FALSE;
+  else {
     c = strcmp(a,b);
     if (c) *flg = PETSC_FALSE;
     else   *flg = PETSC_TRUE;
@@ -463,13 +454,10 @@ PetscErrorCode  PetscStrgrt(const char a[],const char b[],PetscBool  *t)
   int c;
 
   PetscFunctionBegin;
-  if (!a && !b) {
-    *t = PETSC_FALSE;
-  } else if (a && !b) {
-    *t = PETSC_TRUE;
-  } else if (!a && b) {
-    *t = PETSC_FALSE;
-  } else {
+  if (!a && !b) *t = PETSC_FALSE;
+  else if (a && !b) *t = PETSC_TRUE;
+  else if (!a && b) *t = PETSC_FALSE;
+  else {
     c = strcmp(a,b);
     if (c > 0) *t = PETSC_TRUE;
     else       *t = PETSC_FALSE;
@@ -589,7 +577,7 @@ PetscErrorCode  PetscStrncmp(const char a[],const char b[],size_t n,PetscBool  *
 PetscErrorCode  PetscStrchr(const char a[],char b,char *c[])
 {
   PetscFunctionBegin;
-  *c = (char *)strchr(a,b);
+  *c = (char*)strchr(a,b);
   PetscFunctionReturn(0);
 }
 
@@ -616,8 +604,9 @@ PetscErrorCode  PetscStrchr(const char a[],char b,char *c[])
 PetscErrorCode  PetscStrrchr(const char a[],char b,char *tmp[])
 {
   PetscFunctionBegin;
-  *tmp = (char *)strrchr(a,b);
-  if (!*tmp) *tmp = (char*)a; else *tmp = *tmp + 1;
+  *tmp = (char*)strrchr(a,b);
+  if (!*tmp) *tmp = (char*)a;
+  else *tmp = *tmp + 1;
   PetscFunctionReturn(0);
 }
 
@@ -734,9 +723,7 @@ PetscErrorCode  PetscStrbeginswith(const char a[],const char b[],PetscBool *flg)
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   ierr = PetscStrrstr(a,b,&test);CHKERRQ(ierr);
-  if (test && (test == a)) {
-    *flg = PETSC_TRUE;
-  }
+  if (test && (test == a)) *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -800,10 +787,10 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
 
   PetscFunctionBegin;
   while (stmp) {
-    stmp = (char *)strstr(stmp,b);
+    stmp = (char*)strstr(stmp,b);
     if (stmp) {ltmp = stmp;stmp++;}
   }
-  *tmp = (char *)ltmp;
+  *tmp = (char*)ltmp;
   PetscFunctionReturn(0);
 }
 
@@ -829,7 +816,7 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
 PetscErrorCode  PetscStrstr(const char haystack[],const char needle[],char *tmp[])
 {
   PetscFunctionBegin;
-  *tmp = (char *)strstr(haystack,needle);
+  *tmp = (char*)strstr(haystack,needle);
   PetscFunctionReturn(0);
 }
 
@@ -920,6 +907,7 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_PetscToken,t);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
+
   (*t)->current = (*t)->array;
   (*t)->token   = b;
   PetscFunctionReturn(0);
@@ -1014,7 +1002,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   PetscFunctionBegin;
   if (!a || !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
   if (aa == b) {
-    ierr    = PetscStrallocpy(aa,(char **)&a);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(aa,(char**)&a);CHKERRQ(ierr);
   }
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
@@ -1045,38 +1033,38 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
     ierr = PetscStrlen(s[i],&l);CHKERRQ(ierr);
     ierr = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);
     while (par) {
-      *par  =  0;
-      par  += l;
+      *par =  0;
+      par += l;
 
       ierr = PetscStrlen(b,&l1);CHKERRQ(ierr);
       ierr = PetscStrlen(r[i],&l2);CHKERRQ(ierr);
       ierr = PetscStrlen(par,&l3);CHKERRQ(ierr);
       if (l1 + l2 + l3 >= len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
-      ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
-      ierr  = PetscStrcat(work,r[i]);CHKERRQ(ierr);
-      ierr  = PetscStrcat(work,par);CHKERRQ(ierr);
-      ierr  = PetscStrncpy(b,work,len);CHKERRQ(ierr);
-      ierr  = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);
+      ierr = PetscStrcpy(work,b);CHKERRQ(ierr);
+      ierr = PetscStrcat(work,r[i]);CHKERRQ(ierr);
+      ierr = PetscStrcat(work,par);CHKERRQ(ierr);
+      ierr = PetscStrncpy(b,work,len);CHKERRQ(ierr);
+      ierr = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);
     }
     i++;
   }
   i = 0;
   while (r[i]) {
     tfree = (char*)r[i];
-    ierr = PetscFree(tfree);CHKERRQ(ierr);
+    ierr  = PetscFree(tfree);CHKERRQ(ierr);
     i++;
   }
 
   /* look for any other ${xxx} strings to replace from environmental variables */
   ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
   while (par) {
-    *par = 0;
-    par += 2;
+    *par  = 0;
+    par  += 2;
     ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
-    ierr = PetscStrstr(par,"}",&epar);CHKERRQ(ierr);
+    ierr  = PetscStrstr(par,"}",&epar);CHKERRQ(ierr);
     *epar = 0;
     epar += 1;
-    ierr = PetscOptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
     if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
     ierr = PetscStrcat(work,env);CHKERRQ(ierr);
     ierr = PetscStrcat(work,epar);CHKERRQ(ierr);

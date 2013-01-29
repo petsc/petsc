@@ -58,7 +58,7 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 @*/
 PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {
-  struct passwd *pw=0;
+  struct passwd  *pw=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

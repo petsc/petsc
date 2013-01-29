@@ -107,7 +107,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
   ierr = MPI_Comm_size(((PetscObject)draw)->comm,&size);CHKERRQ(ierr);
 
   n = (int)(.1 + sqrt((double)size));
-  while (n*n < size) {n++;}
+  while (n*n < size) n++;
 
   h  = 1.0/n;
   xl = (rank % n)*h;
@@ -177,14 +177,14 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
 
   n = (int)(.1 + sqrt((double)nports));
-  while (n*n < nports) {n++;}
+  while (n*n < nports) n++;
 
   ierr = PetscMalloc(n*n*sizeof(PetscReal),&xl);CHKERRQ(ierr);(*ports)->xl = xl;
   ierr = PetscMalloc(n*n*sizeof(PetscReal),&xr);CHKERRQ(ierr);(*ports)->xr = xr;
   ierr = PetscMalloc(n*n*sizeof(PetscReal),&yl);CHKERRQ(ierr);(*ports)->yl = yl;
   ierr = PetscMalloc(n*n*sizeof(PetscReal),&yr);CHKERRQ(ierr);(*ports)->yr = yr;
 
-  h  = 1.0/n;
+  h = 1.0/n;
 
   for (i=0; i<n*n; i++) {
     xl[i] = (i % n)*h;
@@ -234,7 +234,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
 @*/
 PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt ny,PetscDrawViewPorts **ports)
 {
-  PetscReal     *xl, *xr, *yl, *yr, hx, hy;
+  PetscReal      *xl, *xr, *yl, *yr, hx, hy;
   PetscBool      isnull;
   PetscInt       i, j, n;
   PetscErrorCode ierr;
@@ -247,12 +247,14 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
     *ports = PETSC_NULL;
     PetscFunctionReturn(0);
   }
-  n  = nx*ny;
-  hx = 1.0/nx;
-  hy = 1.0/ny;
+  n    = nx*ny;
+  hx   = 1.0/nx;
+  hy   = 1.0/ny;
   ierr = PetscNew(PetscDrawViewPorts, ports);CHKERRQ(ierr);
+
   (*ports)->draw   = draw;
   (*ports)->nports = n;
+
   ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscReal), &xl);CHKERRQ(ierr);(*ports)->xl = xl;
   ierr = PetscMalloc(n*sizeof(PetscReal), &xr);CHKERRQ(ierr);(*ports)->xr = xr;

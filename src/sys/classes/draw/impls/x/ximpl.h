@@ -35,8 +35,8 @@ typedef struct {
   PetscDrawXiGC     gc;
   PetscDrawXiFont   *font;
   int               depth;           /* Depth of visual */
-  int               numcolors,      /* Number of available colors */
-                    maxcolors;       /* Current number in use */
+  int               numcolors;       /* Number of available colors */
+  int               maxcolors;       /* Current number in use */
   Colormap          cmap;
   PetscDrawXiPixVal foreground,background;
   PetscDrawXiPixVal cmapping[256];
@@ -46,17 +46,17 @@ typedef struct {
 
 #define PetscDrawXiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 
-#define PetscDrawXiSetColor(Win,icolor)\
-  { if (icolor >= 256 || icolor < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value out of range");\
+#define PetscDrawXiSetColor(Win,icolor) \
+  { if (icolor >= 256 || icolor < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value out of range"); \
     if ((Win)->gc.cur_pix != (Win)->cmapping[icolor]) {                  \
       XSetForeground((Win)->disp,(Win)->gc.set,(Win)->cmapping[icolor]); \
-      (Win)->gc.cur_pix   = (Win)->cmapping[icolor];\
-  }}
+      (Win)->gc.cur_pix = (Win)->cmapping[icolor]; \
+    }}
 
-#define PetscDrawXiSetPixVal(Win,pix)\
+#define PetscDrawXiSetPixVal(Win,pix) \
   { if ((PetscDrawXiPixVal) (Win)->gc.cur_pix != pix) { \
       XSetForeground((Win)->disp,(Win)->gc.set,pix);    \
-      (Win)->gc.cur_pix   = pix;\
-  }}
+      (Win)->gc.cur_pix = pix; \
+    }}
 
 #endif

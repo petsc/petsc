@@ -19,12 +19,12 @@
 
 /* Nodes that record mouse actions when needed */
 typedef struct _p_MouseNode *MouseNode;
-struct _p_MouseNode{
+struct _p_MouseNode {
   PetscDrawButton Button;
-  POINT      user;
-  POINT      phys;
-  MouseNode  mnext;
-  int        Length;
+  POINT           user;
+  POINT           phys;
+  MouseNode       mnext;
+  int             Length;
 };
 
 /* nodes that contain handle to all user created windows */
@@ -56,7 +56,7 @@ typedef struct  {
   PetscBool  haveresized;
   HANDLE     hReadyEvent;
   int        x,y,w,h;  /* Size and location of window */
-  WindowNode node;/* so we can grab windownode info if needed */
+  WindowNode node; /* so we can grab windownode info if needed */
   DWORD      popup,caption,overlapped;
 
 } PetscDraw_Win32;

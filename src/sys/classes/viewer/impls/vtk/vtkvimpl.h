@@ -11,12 +11,12 @@ struct _n_PetscViewerVTKObjectLink {
 };
 
 typedef struct {
-  char                        *filename;
-  PetscFileMode               btype;
-  PetscBool                   written;
-  PetscObject                 dm;
-  PetscViewerVTKObjectLink    link;
-  PetscErrorCode              (*write)(PetscObject,PetscViewer);
+  char                     *filename;
+  PetscFileMode            btype;
+  PetscBool                written;
+  PetscObject              dm;
+  PetscViewerVTKObjectLink link;
+  PetscErrorCode (*write)(PetscObject,PetscViewer);
 } PetscViewer_VTK;
 
 PETSC_EXTERN PetscErrorCode PetscViewerVTKFWrite(PetscViewer,FILE*,const void*,PetscInt,PetscDataType);

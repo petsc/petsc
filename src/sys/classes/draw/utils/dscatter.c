@@ -13,11 +13,11 @@ struct _p_PetscDrawSP {
   PETSCHEADER(int);
   PetscErrorCode (*destroy)(PetscDrawSP);
   PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
-  int           len,loc;
-  PetscDraw     win;
-  PetscDrawAxis axis;
-  PetscReal     xmin,xmax,ymin,ymax,*x,*y;
-  int           nopts,dim;
+  int            len,loc;
+  PetscDraw      win;
+  PetscDrawAxis  axis;
+  PetscReal      xmin,xmax,ymin,ymax,*x,*y;
+  int            nopts,dim;
 };
 
 #define CHUNCKSIZE 100
@@ -58,6 +58,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
     PetscFunctionReturn(0);
   }
   ierr = PetscHeaderCreate(sp,_p_PetscDrawSP,int,PETSC_DRAWSP_CLASSID,0,"PetscDrawSP","Scatter plot","Draw",((PetscObject)obj)->comm,PetscDrawSPDestroy,0);CHKERRQ(ierr);
+
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;
@@ -67,12 +68,16 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   sp->ymin    = 1.e20;
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
+
   ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
+
   ierr = PetscDrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(sp,sp->axis);CHKERRQ(ierr);
+
   *drawsp = sp;
   PetscFunctionReturn(0);
 }
@@ -102,11 +107,11 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
-  ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
-  sp->dim     = dim;
-  ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-  sp->len     = dim*CHUNCKSIZE;
+  ierr    = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
+  sp->dim = dim;
+  ierr    = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  sp->len = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }
 
@@ -201,13 +206,13 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpx,sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
-    sp->x = tmpx;
-    sp->y = tmpy;
+    ierr     = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpx,sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
+    sp->x    = tmpx;
+    sp->y    = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }
   for (i=0; i<sp->dim; i++) {
@@ -262,6 +267,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
+
     sp->x    = tmpx;
     sp->y    = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
@@ -277,7 +283,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 
       sp->x[k] = x[i];
       sp->y[k] = y[i];
-      k += sp->dim;
+      k       += sp->dim;
     }
   }
   sp->loc   += n*sp->dim;
@@ -417,10 +423,7 @@ PetscErrorCode  PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
   PetscFunctionBegin;
   PetscValidHeader(sp,1);
   PetscValidPointer(draw,2);
-  if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) {
-    *draw = (PetscDraw)sp;
-  } else {
-    *draw = sp->win;
-  }
+  if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) *draw = (PetscDraw)sp;
+  else *draw = sp->win;
   PetscFunctionReturn(0);
 }

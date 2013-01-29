@@ -3,7 +3,7 @@
 
 PetscClassId PETSC_VIEWER_CLASSID;
 
-static PetscBool  PetscViewerPackageInitialized = PETSC_FALSE;
+static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFinalizePackage"
 /*@C
@@ -38,10 +38,10 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 @*/
 PetscErrorCode  PetscViewerInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscViewerPackageInitialized) PetscFunctionReturn(0);

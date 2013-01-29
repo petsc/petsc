@@ -13,12 +13,12 @@
  */
 
 #include <../src/sys/classes/random/randomimpl.h>                              /*I "petscsys.h" I*/
-#if defined (PETSC_HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
 /* Logging support */
-PetscClassId  PETSC_RANDOM_CLASSID;
+PetscClassId PETSC_RANDOM_CLASSID;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomDestroy"
@@ -38,7 +38,7 @@ PetscClassId  PETSC_RANDOM_CLASSID;
 PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (!*r) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);
@@ -109,7 +109,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   r->seed = seed;
-  ierr = PetscInfo1(PETSC_NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
+  ierr    = PetscInfo1(PETSC_NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,18 +189,18 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 
   ierr = PetscObjectOptionsBegin((PetscObject)rnd);CHKERRQ(ierr);
 
-    /* Handle PetscRandom type options */
-    ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
+  /* Handle PetscRandom type options */
+  ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
 
-    /* Handle specific random generator's options */
-    if (rnd->ops->setfromoptions) {
-      ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set);CHKERRQ(ierr);
-    if (set) {
-      ierr = PetscRandomSetSeed(rnd,(unsigned long int)seed);CHKERRQ(ierr);
-      ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
-    }
+  /* Handle specific random generator's options */
+  if (rnd->ops->setfromoptions) {
+    ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscRandomSetSeed(rnd,(unsigned long int)seed);CHKERRQ(ierr);
+    ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscRandomViewFromOptions(rnd, "-random_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -234,8 +234,8 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 @*/
 PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
-  PetscBool         iascii;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
@@ -370,6 +370,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,-1,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
   rr->data  = PETSC_NULL;
   rr->low   = 0.0;
   rr->width = 1.0;

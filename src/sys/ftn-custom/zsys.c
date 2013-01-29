@@ -36,7 +36,7 @@ void flush__(int unit)
 
 void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
-  *ierr = 0;
+  *ierr  = 0;
   *shift = y - x;
 }
 

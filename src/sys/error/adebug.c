@@ -14,9 +14,9 @@
 /*
       These are the debugger and display used if the debugger is started up
 */
-static char       Debugger[PETSC_MAX_PATH_LEN];
-static char       DebugTerminal[PETSC_MAX_PATH_LEN];
-static PetscBool  Xterm = PETSC_TRUE;
+static char      Debugger[PETSC_MAX_PATH_LEN];
+static char      DebugTerminal[PETSC_MAX_PATH_LEN];
+static PetscBool Xterm = PETSC_TRUE;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetDebugTerminal"
@@ -83,7 +83,7 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool  xterm)
+PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool xterm)
 {
   PetscErrorCode ierr;
 
@@ -136,11 +136,8 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
   ierr = PetscStrstr(string, defaultDbg, &f);CHKERRQ(ierr);
   if (f) {
     ierr = PetscTestFile(string, 'x', &exists);CHKERRQ(ierr);
-    if (exists) {
-      *debugger = string;
-    } else {
-      *debugger = defaultDbg;
-    }
+    if (exists) *debugger = string;
+    else        *debugger = defaultDbg;
   }
   PetscFunctionReturn(0);
 }
@@ -160,7 +157,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 {
   const char     *debugger = PETSC_NULL;
-  PetscBool      xterm    = PETSC_TRUE;
+  PetscBool      xterm     = PETSC_TRUE;
   char           *f;
   PetscErrorCode ierr;
 
@@ -206,7 +203,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 PetscErrorCode  PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER)
-  int            child=0;
+  int            child    =0;
   PetscReal      sleeptime=0;
   PetscErrorCode ierr;
   char           program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
@@ -239,8 +236,8 @@ PetscErrorCode  PetscAttachDebugger(void)
       Swap role the parent and child. This is (I think) so that control c typed
     in the debugger goes to the correct process.
   */
-  if (child) { child = 0; }
-  else       { child = (int)getppid(); }
+  if (child) child = 0;
+  else       child = (int)getppid();
 
   if (child) { /* I am the parent, will run the debugger */
     const char *args[10];
@@ -253,7 +250,7 @@ PetscErrorCode  PetscAttachDebugger(void)
          We need to send a continue signal to the "child" process on the
        alpha, otherwise it just stays off forever
     */
-#if defined (PETSC_NEED_KILL_FOR_DEBUGGER)
+#if defined(PETSC_NEED_KILL_FOR_DEBUGGER)
     kill(child,SIGCONT);
 #endif
     sprintf(pid,"%d",child);
@@ -304,8 +301,8 @@ PetscErrorCode  PetscAttachDebugger(void)
     } else {
       j = 0;
       if (Xterm) {
-        PetscBool  cmp;
-        char *tmp,*tmp1;
+        PetscBool cmp;
+        char      *tmp,*tmp1;
         ierr = PetscStrncmp(DebugTerminal,"screen",6,&cmp);CHKERRQ(ierr);
         if (cmp) display[0] = 0; /* when using screen, we never pass -display */
         args[j++] = tmp = DebugTerminal;
@@ -315,8 +312,8 @@ PetscErrorCode  PetscAttachDebugger(void)
         while (*tmp) {
           ierr = PetscStrchr(tmp,' ',&tmp1);CHKERRQ(ierr);
           if (!tmp1) break;
-          *tmp1 = 0;
-          tmp = tmp1+1;
+          *tmp1     = 0;
+          tmp       = tmp1+1;
           args[j++] = tmp;
         }
       }
@@ -373,11 +370,9 @@ PetscErrorCode  PetscAttachDebugger(void)
       }
 #endif
       if (Xterm) {
-        if (display[0]) {
-          (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
-        } else {
-          (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
-        }
+        if (display[0]) (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
+        else            (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
+
         if (execvp(args[0],(char**)args)  < 0) {
           perror("Unable to start debugger in xterm");
           exit(0);
@@ -400,8 +395,8 @@ PetscErrorCode  PetscAttachDebugger(void)
     */
     {
       PetscReal x = 1.0;
-      int i=10000000;
-      while (i--) x++ ; /* cannot attach to sleeper */
+      int       i =10000000;
+      while (i--) x++;  /* cannot attach to sleeper */
     }
 #elif defined(PETSC_HAVE_SLEEP_RETURNS_EARLY)
     /*
@@ -409,7 +404,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     */
     {
       int left = sleeptime;
-      while (left > 0) {left = PetscSleep(left) - 1;}
+      while (left > 0) left = PetscSleep(left) - 1;
     }
 #else
     PetscSleep(sleeptime);
@@ -468,21 +463,20 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
            PetscAbortErrorHandler()
 @*/
-PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,PetscErrorCode num,PetscErrorType p,const char* mess,void *ctx)
+PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode num,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!fun)  fun = "User provided function";
-  if (!dir)  dir = " ";
+  if (!fun) fun = "User provided function";
+  if (!dir) dir = " ";
   if (!mess) mess = " ";
 
   (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
 
   ierr = PetscAttachDebugger();
-  if (ierr) { /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
-    abort();
-  }
+  if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
+    
   PetscFunctionReturn(0);
 }
 
@@ -546,34 +540,21 @@ PetscErrorCode  PetscStopForDebugger(void)
   ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
 
-  if (isxxgdb || isups || isddd || iskdbg) {
-    (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
-  }
+  if (isxxgdb || isups || isddd || iskdbg) (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+
 #if defined(PETSC_USE_A_FOR_DEBUGGER)
-  else if (isxldb) {
-    (*PetscErrorPrintf)("{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
-  }
+  else if (isxldb) (*PetscErrorPrintf)("{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
 #endif
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
-  else if (isdbx) {
-    (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
-  }
+  else if (isdbx) (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
 #elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
-  else if (isxdb) {
-    (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
-  }
+  else if (isxdb) (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
 #elif defined(PETSC_USE_A_FOR_DEBUGGER)
-  else if (isdbx) {
-    (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,Debugger,ppid);
-  }
+  else if (isdbx) (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,Debugger,ppid);
 #elif defined(PETSC_USE_PID_FOR_DEBUGGER)
-  else if (isdbx) {
-    (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
-  }
+  else if (isdbx) (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
 #else
-  else {
-    (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
-  }
+  else (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
 #endif
 #endif /* PETSC_CANNOT_START_DEBUGGER */
 
@@ -588,8 +569,8 @@ PetscErrorCode  PetscStopForDebugger(void)
   */
   {
     PetscReal x = 1.0;
-    int i=10000000;
-    while (i--) x++ ; /* cannot attach to sleeper */
+    int       i =10000000;
+    while (i--) x++;  /* cannot attach to sleeper */
   }
 #elif defined(PETSC_HAVE_SLEEP_RETURNS_EARLY)
   /*
@@ -597,7 +578,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   */
   {
     int left = sleeptime;
-    while (left > 0) {left = sleep(left) - 1;}
+    while (left > 0) left = sleep(left) - 1;
   }
 #else
   PetscSleep(sleeptime);

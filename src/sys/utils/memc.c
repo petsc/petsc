@@ -37,7 +37,7 @@ PetscErrorCode  PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBo
   PetscFunctionBegin;
   if (len > 0 && !str1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
   if (len > 0 && !str2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
-  r = memcmp((char *)str1,(char *)str2,len);
+  r = memcmp((char*)str1,(char*)str2,len);
   if (!r) *e = PETSC_TRUE;
   else    *e = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -78,16 +78,14 @@ PetscErrorCode  PetscMemmove(void *a,void *b,size_t n)
   if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
 #if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
-    if (a <= b - n) {
-      memcpy(a,b,n);
-    } else {
+    if (a <= b - n) memcpy(a,b,n);
+    else {
       memcpy(a,b,(int)(b - a));
       PetscMemmove(b,b + (int)(b - a),n - (int)(b - a));
     }
-  }  else {
-    if (b <= a - n) {
-      memcpy(a,b,n);
-    } else {
+  } else {
+    if (b <= a - n) memcpy(a,b,n);
+    else {
       memcpy(b + n,b + (n - (int)(a - b)),(int)(a - b));
       PetscMemmove(a,b,n - (int)(a - b));
     }

@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscBool      values_view=PETSC_FALSE;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(0,"-values_view",&values_view,PETSC_NULL);CHKERRQ(ierr);
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
+    ierr      = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
+    ierr      = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);

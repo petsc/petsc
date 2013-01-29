@@ -16,28 +16,33 @@ struct _n_PetscSFBasicPack {
   void (*FetchAndMax)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndMinloc)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndMaxloc)(PetscInt,const PetscInt*,void*,void*);
-  MPI_Datatype unit;
-  size_t unitbytes;             /* Number of bytes in a unit */
-  const void *key;              /* Array used as key for operation */
-  char *root;                   /* Packed root data, contiguous by leaf rank */
-  char *leaf;                   /* Packed leaf data, contiguous by root rank */
-  MPI_Request *requests;        /* Array of root requests followed by leaf requests */
+
+  MPI_Datatype     unit;
+  size_t           unitbytes;   /* Number of bytes in a unit */
+  const void       *key;        /* Array used as key for operation */
+  char             *root;       /* Packed root data, contiguous by leaf rank */
+  char             *leaf;       /* Packed leaf data, contiguous by root rank */
+  MPI_Request      *requests;   /* Array of root requests followed by leaf requests */
   PetscSFBasicPack next;
 };
 
 typedef struct {
-  PetscMPIInt tag;
-  PetscInt niranks;             /* Number of incoming ranks (ranks accessing my roots) */
-  PetscMPIInt *iranks;          /* Array of ranks that reference my roots */
-  PetscInt itotal;              /* Total number of graph edges referencing my roots */
-  PetscInt *ioffset;            /* Array of length niranks+1 holding offset in irootloc[] for each rank */
-  PetscInt *irootloc;           /* Incoming roots referenced by ranks starting at ioffset[rank] */
+  PetscMPIInt      tag;
+  PetscInt         niranks;     /* Number of incoming ranks (ranks accessing my roots) */
+  PetscMPIInt      *iranks;     /* Array of ranks that reference my roots */
+  PetscInt         itotal;      /* Total number of graph edges referencing my roots */
+  PetscInt         *ioffset;    /* Array of length niranks+1 holding offset in irootloc[] for each rank */
+  PetscInt         *irootloc;   /* Incoming roots referenced by ranks starting at ioffset[rank] */
   PetscSFBasicPack avail;       /* One or more entries per MPI Datatype, lazily constructed */
   PetscSFBasicPack inuse;       /* Buffers being used for transactions that have not yet completed */
 } PetscSF_Basic;
 
 #if !defined(PETSC_HAVE_MPI_TYPE_DUP) /* Danger: type is not reference counted; subject to ABA problem */
-PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype) { *newtype = datatype; return 0; }
+PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
+{
+  *newtype = datatype;
+  return 0;
+}
 #endif
 
 /*
@@ -331,6 +336,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   for (i=0,bas->itotal=0; i<bas->niranks; i++) bas->itotal += ilengths[i];
   ierr = PetscMalloc2(bas->niranks+1,PetscInt,&bas->ioffset,bas->itotal,PetscInt,&bas->irootloc);CHKERRQ(ierr);
   ierr = PetscMalloc((bas->niranks+sf->nranks)*sizeof(MPI_Request),&rootreqs);CHKERRQ(ierr);
+
   leafreqs = rootreqs + bas->niranks;
   bas->ioffset[0] = 0;
   for (i=0; i<bas->niranks; i++) {
@@ -353,7 +359,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
-  PetscBool isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
+  PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
 #if defined(PETSC_HAVE_COMPLEX)
   PetscBool isPetscComplex;
 #endif
@@ -442,7 +448,7 @@ static PetscErrorCode PetscSFBasicPackGetReqs(PetscSF sf,PetscSFBasicPack link,M
 #define __FUNCT__ "PetscSFBasicPackWaitall"
 static PetscErrorCode PetscSFBasicPackWaitall(PetscSF sf,PetscSFBasicPack link)
 {
-  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -454,13 +460,13 @@ static PetscErrorCode PetscSFBasicPackWaitall(PetscSF sf,PetscSFBasicPack link)
 #define __FUNCT__ "PetscSFBasicGetRootInfo"
 static PetscErrorCode PetscSFBasicGetRootInfo(PetscSF sf,PetscInt *nrootranks,const PetscMPIInt **rootranks,const PetscInt **rootoffset,const PetscInt **rootloc)
 {
-  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
+  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
   if (nrootranks) *nrootranks = bas->niranks;
-  if (rootranks)  *rootranks = bas->iranks;
+  if (rootranks)  *rootranks  = bas->iranks;
   if (rootoffset) *rootoffset = bas->ioffset;
-  if (rootloc)    *rootloc = bas->irootloc;
+  if (rootloc)    *rootloc    = bas->irootloc;
   PetscFunctionReturn(0);
 }
 
@@ -470,9 +476,9 @@ static PetscErrorCode PetscSFBasicGetLeafInfo(PetscSF sf,PetscInt *nleafranks,co
 {
   PetscFunctionBegin;
   if (nleafranks) *nleafranks = sf->nranks;
-  if (leafranks)  *leafranks = sf->ranks;
+  if (leafranks)  *leafranks  = sf->ranks;
   if (leafoffset) *leafoffset = sf->roffset;
-  if (leafloc)    *leafloc = sf->rmine;
+  if (leafloc)    *leafloc    = sf->rmine;
   PetscFunctionReturn(0);
 }
 
@@ -480,11 +486,11 @@ static PetscErrorCode PetscSFBasicGetLeafInfo(PetscSF sf,PetscInt *nleafranks,co
 #define __FUNCT__ "PetscSFBasicGetPack"
 static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const void *key,PetscSFBasicPack *mylink)
 {
-  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode ierr;
+  PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode   ierr;
   PetscSFBasicPack link,*p;
-  PetscInt nrootranks,nleafranks;
-  const PetscInt *rootoffset,*leafoffset;
+  PetscInt         nrootranks,nleafranks;
+  const PetscInt   *rootoffset,*leafoffset;
 
   PetscFunctionBegin;
   /* Look for types in cache */
@@ -505,8 +511,8 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,char,&link->root,leafoffset[nleafranks]*link->unitbytes,char,&link->leaf);CHKERRQ(ierr);
   ierr = PetscMalloc((nrootranks+nleafranks)*sizeof(MPI_Request),&link->requests);CHKERRQ(ierr);
 
-  found:
-  link->key = key;
+found:
+  link->key  = key;
   link->next = bas->inuse;
   bas->inuse = link;
 
@@ -518,8 +524,8 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
 #define __FUNCT__ "PetscSFBasicGetPackInUse"
 static PetscErrorCode PetscSFBasicGetPackInUse(PetscSF sf,MPI_Datatype unit,const void *key,PetscCopyMode cmode,PetscSFBasicPack *mylink)
 {
-  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode ierr;
+  PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode   ierr;
   PetscSFBasicPack link,*p;
 
   PetscFunctionBegin;
@@ -548,10 +554,10 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
   PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
 
   PetscFunctionBegin;
-  (*link)->key = PETSC_NULL;
+  (*link)->key  = PETSC_NULL;
   (*link)->next = bas->avail;
-  bas->avail = *link;
-  *link = PETSC_NULL;
+  bas->avail    = *link;
+  *link         = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -571,8 +577,8 @@ static PetscErrorCode PetscSFSetFromOptions_Basic(PetscSF sf)
 #define __FUNCT__ "PetscSFReset_Basic"
 static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
 {
-  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode ierr;
+  PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode   ierr;
   PetscSFBasicPack link,next;
 
   PetscFunctionBegin;
@@ -613,7 +619,7 @@ static PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  sort=%s\n",sf->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  sort=%s\n",sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -623,20 +629,22 @@ static PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
 /* Send from roots to leaves */
 static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
-  PetscSF_Basic      *bas = (PetscSF_Basic*)sf->data;
-  PetscErrorCode     ierr;
-  PetscSFBasicPack   link;
-  PetscInt           i,nrootranks,nleafranks;
-  const PetscInt     *rootoffset,*leafoffset,*rootloc,*leafloc;
-  const PetscMPIInt  *rootranks,*leafranks;
-  MPI_Request        *rootreqs,*leafreqs;
-  size_t             unitbytes;
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
+  PetscErrorCode    ierr;
+  PetscSFBasicPack  link;
+  PetscInt          i,nrootranks,nleafranks;
+  const PetscInt    *rootoffset,*leafoffset,*rootloc,*leafloc;
+  const PetscMPIInt *rootranks,*leafranks;
+  MPI_Request       *rootreqs,*leafreqs;
+  size_t            unitbytes;
 
   PetscFunctionBegin;
   ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,&leafranks,&leafoffset,&leafloc);CHKERRQ(ierr);
   ierr = PetscSFBasicGetPack(sf,unit,rootdata,&link);CHKERRQ(ierr);
+
   unitbytes = link->unitbytes;
+
   ierr = PetscSFBasicPackGetReqs(sf,link,&rootreqs,&leafreqs);CHKERRQ(ierr);
   /* Eagerly post leaf receives */
   for (i=0; i<nleafranks; i++) {
@@ -645,8 +653,8 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const
   }
   /* Pack and send root data */
   for (i=0; i<nrootranks; i++) {
-    PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
-    void *packstart = link->root+rootoffset[i]*unitbytes;
+    PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
+    void        *packstart = link->root+rootoffset[i]*unitbytes;
     (*link->Pack)(n,rootloc+rootoffset[i],rootdata,packstart);
     ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
   }
@@ -657,18 +665,18 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const
 #define __FUNCT__ "PetscSFBcastEnd_Basic"
 PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PetscSFBasicPack link;
-  PetscInt i,nleafranks;
-  const PetscInt *leafoffset,*leafloc;
+  PetscInt         i,nleafranks;
+  const PetscInt   *leafoffset,*leafloc;
 
   PetscFunctionBegin;
   ierr = PetscSFBasicGetPackInUse(sf,unit,rootdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,PETSC_NULL,&leafoffset,&leafloc);CHKERRQ(ierr);
   for (i=0; i<nleafranks; i++) {
-    PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    const void *packstart = link->leaf+leafoffset[i]*link->unitbytes;
+    PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
+    const void  *packstart = link->leaf+leafoffset[i]*link->unitbytes;
     (*link->UnpackInsert)(n,leafloc+leafoffset[i],leafdata,packstart);
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
@@ -680,20 +688,22 @@ PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *ro
 /* leaf -> root with reduction */
 PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
-  PetscSF_Basic      *bas = (PetscSF_Basic*)sf->data;
-  PetscSFBasicPack   link;
-  PetscErrorCode     ierr;
-  PetscInt           i,nrootranks,nleafranks;
-  const PetscInt     *rootoffset,*leafoffset,*rootloc,*leafloc;
-  const PetscMPIInt  *rootranks,*leafranks;
-  MPI_Request        *rootreqs,*leafreqs;
-  size_t             unitbytes;
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
+  PetscSFBasicPack  link;
+  PetscErrorCode    ierr;
+  PetscInt          i,nrootranks,nleafranks;
+  const PetscInt    *rootoffset,*leafoffset,*rootloc,*leafloc;
+  const PetscMPIInt *rootranks,*leafranks;
+  MPI_Request       *rootreqs,*leafreqs;
+  size_t            unitbytes;
 
   PetscFunctionBegin;
   ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,&leafranks,&leafoffset,&leafloc);CHKERRQ(ierr);
   ierr = PetscSFBasicGetPack(sf,unit,rootdata,&link);CHKERRQ(ierr);
+
   unitbytes = link->unitbytes;
+
   ierr = PetscSFBasicPackGetReqs(sf,link,&rootreqs,&leafreqs);CHKERRQ(ierr);
   /* Eagerly post root receives */
   for (i=0; i<nrootranks; i++) {
@@ -702,8 +712,8 @@ PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void 
   }
   /* Pack and send leaf data */
   for (i=0; i<nleafranks; i++) {
-    PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    void *packstart = link->leaf+leafoffset[i]*unitbytes;
+    PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
+    void        *packstart = link->leaf+leafoffset[i]*unitbytes;
     (*link->Pack)(n,leafloc+leafoffset[i],leafdata,packstart);
     ierr = MPI_Isend(packstart,n,unit,leafranks[i],bas->tag,((PetscObject)sf)->comm,&leafreqs[i]);CHKERRQ(ierr);
   }
@@ -714,11 +724,11 @@ PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void 
 #define __FUNCT__ "PetscSFReduceEnd_Basic"
 static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
-  void (*UnpackOp)(PetscInt,const PetscInt*,void*,const void*);
-  PetscErrorCode ierr;
+  void             (*UnpackOp)(PetscInt,const PetscInt*,void*,const void*);
+  PetscErrorCode   ierr;
   PetscSFBasicPack link;
-  PetscInt i,nrootranks;
-  const PetscInt *rootoffset,*rootloc;
+  PetscInt         i,nrootranks;
+  const PetscInt   *rootoffset,*rootloc;
 
   PetscFunctionBegin;
   ierr = PetscSFBasicGetPackInUse(sf,unit,rootdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
@@ -727,8 +737,9 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
   ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,PETSC_NULL,&rootoffset,&rootloc);CHKERRQ(ierr);
   ierr = PetscSFBasicPackGetUnpackOp(sf,link,op,&UnpackOp);CHKERRQ(ierr);
   for (i=0; i<nrootranks; i++) {
-    PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
-    const void *packstart = link->root+rootoffset[i]*link->unitbytes;
+    PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
+    const void  *packstart = link->root+rootoffset[i]*link->unitbytes;
+
     (*UnpackOp)(n,rootloc+rootoffset[i],rootdata,packstart);
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
@@ -763,11 +774,11 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   PetscFunctionBegin;
   ierr = PetscSFBasicGetPackInUse(sf,unit,rootdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   /* This implementation could be changed to unpack as receives arrive, at the cost of non-determinism */
-  ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
+  ierr      = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   unitbytes = link->unitbytes;
-  ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
-  ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,&leafranks,&leafoffset,&leafloc);CHKERRQ(ierr);
-  ierr = PetscSFBasicPackGetReqs(sf,link,&rootreqs,&leafreqs);CHKERRQ(ierr);
+  ierr      = PetscSFBasicGetRootInfo(sf,&nrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
+  ierr      = PetscSFBasicGetLeafInfo(sf,&nleafranks,&leafranks,&leafoffset,&leafloc);CHKERRQ(ierr);
+  ierr      = PetscSFBasicPackGetReqs(sf,link,&rootreqs,&leafreqs);CHKERRQ(ierr);
   /* Post leaf receives */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
@@ -776,15 +787,16 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   /* Process local fetch-and-op, post root sends */
   ierr = PetscSFBasicPackGetFetchAndOp(sf,link,op,&FetchAndOp);CHKERRQ(ierr);
   for (i=0; i<nrootranks; i++) {
-    PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
-    void *packstart = link->root+rootoffset[i]*unitbytes;
+    PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
+    void        *packstart = link->root+rootoffset[i]*unitbytes;
+
     (*FetchAndOp)(n,rootloc+rootoffset[i],rootdata,packstart);
     ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
   }
   ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   for (i=0; i<nleafranks; i++) {
-    PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    const void *packstart = link->leaf+leafoffset[i]*unitbytes;
+    PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
+    const void  *packstart = link->leaf+leafoffset[i]*unitbytes;
     (*link->UnpackInsert)(n,leafloc+leafoffset[i],leafupdate,packstart);
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
@@ -795,7 +807,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
 #define __FUNCT__ "PetscSFCreate_Basic"
 PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
 {
-  PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
+  PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -811,7 +823,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Basic;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Basic;
 
-  ierr = PetscNewLog(sf,PetscSF_Basic,&bas);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sf,PetscSF_Basic,&bas);CHKERRQ(ierr);
   sf->data = (void*)bas;
   PetscFunctionReturn(0);
 }

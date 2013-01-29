@@ -55,17 +55,13 @@ PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETPWUID)
   pw = getpwuid(getuid());
-  if (pw)  {
-    d1 = pw->pw_dir;
-  }
+  if (pw) d1 = pw->pw_dir;
 #else
   d1 = getenv("HOME");
 #endif
   if (d1) {
     ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
-  } else if (maxlen > 0) {
-    dir[0] = 0;
-  }
+  } else if (maxlen > 0) dir[0] = 0;
   PetscFunctionReturn(0);
 }
 

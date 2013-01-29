@@ -39,7 +39,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);CHKERRQ(ierr);
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Stdout_keyval,(void **)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Stdout_keyval,(void**)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerASCIIOpen(ncomm,"stdout",viewer);CHKERRQ(ierr);
     ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);CHKERRQ(ierr);
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Stderr_keyval,(void **)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Stderr_keyval,(void**)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerASCIIOpen(ncomm,"stderr",viewer);CHKERRQ(ierr);
     ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ EXTERN_C_BEGIN
   This is called by MPI, not by users.
 
 */
-PetscMPIInt  MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -229,10 +229,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
-  PetscErrorCode    ierr;
-  PetscViewerLink   *vlink,*nv;
-  PetscBool         flg,eq;
-  size_t            len;
+  PetscErrorCode  ierr;
+  PetscViewerLink *vlink,*nv;
+  PetscBool       flg,eq;
+  size_t          len;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
 @*/
 PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm comm,FILE *fd,PetscViewer *lab)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);

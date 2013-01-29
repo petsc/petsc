@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRQ(ierr);
   if (flg) {
-    xlabel = (char *)0; toplabel = (char *)0;
+    xlabel = (char*)0; toplabel = (char*)0;
   }
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
@@ -38,8 +38,8 @@ int main(int argc,char **argv)
   ierr = PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
 
-  for (i=0; i<n ; i++) {
-    xd = (PetscReal)(i - 5); yd = xd*xd;
+  for (i=0; i<n; i++) {
+    xd   = (PetscReal)(i - 5); yd = xd*xd;
     ierr = PetscDrawLGAddPoint(lg,&xd,&yd);CHKERRQ(ierr);
   }
   ierr = PetscDrawLGIndicateDataPoints(lg);CHKERRQ(ierr);

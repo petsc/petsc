@@ -34,9 +34,7 @@ PetscErrorCode  PetscBarrier(PetscObject obj)
   ierr = PetscLogEventBegin(PETSC_Barrier,obj,0,0,0);CHKERRQ(ierr);
   if (obj) {
     ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
-  } else {
-    comm = PETSC_COMM_WORLD;
-  }
+  } else comm = PETSC_COMM_WORLD;
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSC_Barrier,obj,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -45,7 +45,7 @@ extern int close(int);
 EXTERN_C_END
 
 #include <mex.h>
-#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}
+#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}
 typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
@@ -63,8 +63,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   if (!nrhs) PETSC_MEX_ERROR("Needs one argument, the port");
   t = (int)*mxGetPr(prhs[0]);
 
-  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger)))
-    PETSC_MEX_ERROR("Setting linger");
+  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) PETSC_MEX_ERROR("Setting linger");
   if (close(t)) PETSC_MEX_ERROR("closing socket");
   return;
 }

@@ -4,12 +4,12 @@ EXTERN_C_BEGIN
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestIACall"
-PetscErrorCode  TestIACall(PetscShell component, const char* message)
+PetscErrorCode  TestIACall(PetscShell component, const char *message)
 {
-  MPI_Comm comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
-  PetscBool  init;
-  
+  PetscBool      init;
+
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   ierr = PetscStrcmp(message, "initialize", &init);CHKERRQ(ierr);
@@ -20,31 +20,31 @@ PetscErrorCode  TestIACall(PetscShell component, const char* message)
     ierr = PetscShellRegisterDependence(shell, "TestIB", ((PetscObject)component)->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-}/* TestIACall() */
+} /* TestIACall() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestIBCall"
 PetscErrorCode  TestIBCall(PetscShell component, const char* message)
 {
-  MPI_Comm comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* TestIBCall() */
+} /* TestIBCall() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "TestICCall"
-PetscErrorCode  TestICCall(PetscShell component, const char* message)
+PetscErrorCode  TestICCall(PetscShell component, const char *message)
 {
-  MPI_Comm comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = ((PetscObject)component)->comm;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* TestICCall() */
+} /* TestICCall() */
 
 EXTERN_C_END
 

@@ -27,6 +27,7 @@ PetscErrorCode PetscSFInitializePackage(const char *path)
   PetscFunctionBegin;
   if (PetscSFPackageInitialized) PetscFunctionReturn(0);
   PetscSFPackageInitialized = PETSC_TRUE;
+
   ierr = PetscClassIdRegister("Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
   ierr = PetscSFRegisterAll(path);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscSFFinalizePackage);CHKERRQ(ierr);

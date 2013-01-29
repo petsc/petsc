@@ -7,10 +7,10 @@ static char help[] = "Tests PetscHeapCreate)_\n\n";
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscHeap h;
-  PetscInt id,val,cnt,*values;
+  PetscHeap      h;
+  PetscInt       id,val,cnt,*values;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscHeapCreate(9,&h);CHKERRQ(ierr);
   ierr = PetscHeapAdd(h,0,100);CHKERRQ(ierr);
   ierr = PetscHeapAdd(h,1,19);CHKERRQ(ierr);
@@ -37,10 +37,10 @@ int main(int argc,char **args)
 
   ierr = PetscMalloc(9*sizeof(PetscInt),&values);CHKERRQ(ierr);
   ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
-  cnt = 0;
+  cnt  = 0;
   while (id >= 0) {
     values[cnt++] = val;
-    ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
+    ierr          = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
   }
   ierr = PetscPrintf(PETSC_COMM_SELF,"Sorted values:\n");CHKERRQ(ierr);
   ierr = PetscIntView(cnt,values,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

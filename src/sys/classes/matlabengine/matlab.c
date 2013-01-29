@@ -5,8 +5,8 @@
 
 struct  _p_PetscMatlabEngine {
   PETSCHEADER(int);
-  Engine   *ep;
-  char     buffer[1024];
+  Engine *ep;
+  char   buffer[1024];
 };
 
 PetscClassId MATLABENGINE_CLASSID = -1;
@@ -55,8 +55,8 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   if (!flg) {
     ierr = PetscStrcat(buffer," -nodisplay ");CHKERRQ(ierr);
   }
-  ierr = PetscStrcat(buffer," -nojvm ");CHKERRQ(ierr);
-  ierr = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
+  ierr  = PetscStrcat(buffer," -nojvm ");CHKERRQ(ierr);
+  ierr  = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
   e->ep = engOpen(buffer);
   if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
@@ -90,7 +90,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
 PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*v,MATLABENGINE_CLASSID,1);
@@ -290,7 +290,7 @@ $      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
 @*/
 PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscBool         flg;
   PetscMatlabEngine mengine;
 
@@ -299,7 +299,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
   }
-  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&mengine,(int*)&flg);
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void**)&mengine,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
@@ -340,14 +340,14 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,const PetscScalar *array,const char name[])
 {
   PetscErrorCode ierr;
-  mxArray *mat;
+  mxArray        *mat;
 
   PetscFunctionBegin;
   ierr = PetscInfo1(0,"Putting MATLAB array %s\n",name);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(m,n,mxREAL);
+  mat = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
-  mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
+  mat = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   engPutVariable(mengine->ep,name,mat);
@@ -378,7 +378,7 @@ PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,
 PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
 {
   PetscErrorCode ierr;
-  mxArray *mat;
+  mxArray        *mat;
 
   PetscFunctionBegin;
   ierr = PetscInfo1(0,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);

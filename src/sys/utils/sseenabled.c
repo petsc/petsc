@@ -13,9 +13,9 @@
 PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 {
   PetscErrorCode ierr;
-  char *vendor;
-  char Intel[13]="GenuineIntel";
-  char AMD[13]  ="AuthenticAMD";
+  char           *vendor;
+  char           Intel[13]="GenuineIntel";
+  char           AMD[13]  ="AuthenticAMD";
 
   PetscFunctionBegin;
   ierr = PetscMalloc(13*sizeof(char),&vendor);CHKERRQ(ierr);
@@ -26,11 +26,8 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
     /* to denote availability of SSE Support */
     unsigned long myeax,myebx,myecx,myedx;
     CPUID(CPUID_FEATURES,&myeax,&myebx,&myecx,&myedx);
-    if (myedx & SSE_FEATURE_FLAG) {
-      *flag = PETSC_TRUE;
-    } else {
-      *flag = PETSC_FALSE;
-    }
+    if (myedx & SSE_FEATURE_FLAG) *flag = PETSC_TRUE;
+    else *flag = PETSC_FALSE;
   }
   ierr = PetscFree(vendor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -58,23 +55,18 @@ static void PetscSSEDisabledHandler(int sig)
 PetscErrorCode  PetscSSEOSEnabledTest_Linux(PetscBool  *flag)
 {
   int status, pid = 0;
-  
+
   PetscFunctionBegin;
   signal(SIGILL,PetscSSEDisabledHandler);
   pid = fork();
   if (pid==0) {
     SSE_SCOPE_BEGIN;
-      XOR_PS(XMM0,XMM0);
+    XOR_PS(XMM0,XMM0);
     SSE_SCOPE_END;
     exit(0);
-  } else {
-    wait(&status);
-  }
-  if (!status) {
-    *flag = PETSC_TRUE;
-  } else {
-    *flag = PETSC_FALSE;
-  }
+  } else wait(&status);
+  if (!status) *flag = PETSC_TRUE;
+  else *flag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -91,9 +83,7 @@ PetscErrorCode  PetscSSEOSEnabledTest_Linux(PetscBool  *flag)
 PetscErrorCode  PetscSSEOSEnabledTest_TRUE(PetscBool  *flag)
 {
   PetscFunctionBegin;
-  if (flag) {
-    *flag = PETSC_TRUE;
-  }
+  if (flag) *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -107,9 +97,7 @@ PetscErrorCode  PetscSSEOSEnabledTest_TRUE(PetscBool  *flag)
 PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 {
   PetscFunctionBegin;
-  if (flag) {
-    *flag = PETSC_FALSE;
-  }
+  if (flag) *flag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -139,10 +127,10 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 
      Level: developer
 @*/
-static PetscBool  petsc_sse_local_is_untested  = PETSC_TRUE;
-static PetscBool  petsc_sse_enabled_local      = PETSC_FALSE;
-static PetscBool  petsc_sse_global_is_untested = PETSC_TRUE;
-static PetscBool  petsc_sse_enabled_global     = PETSC_FALSE;
+static PetscBool petsc_sse_local_is_untested  = PETSC_TRUE;
+static PetscBool petsc_sse_enabled_local      = PETSC_FALSE;
+static PetscBool petsc_sse_global_is_untested = PETSC_TRUE;
+static PetscBool petsc_sse_enabled_global     = PETSC_FALSE;
 PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gflag)
 {
   PetscErrorCode ierr;
@@ -172,16 +160,14 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
 
     if (gflag && petsc_sse_global_is_untested) {
       ierr = MPI_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+
       petsc_sse_global_is_untested = PETSC_FALSE;
     }
   }
 
-  if (lflag) {
-    *lflag = petsc_sse_enabled_local;
-  }
-  if (gflag) {
-    *gflag = petsc_sse_enabled_global;
-  }
+  if (lflag) *lflag = petsc_sse_enabled_local;
+  if (gflag) *gflag = petsc_sse_enabled_global;
+
   PetscFunctionReturn(0);
 }
 

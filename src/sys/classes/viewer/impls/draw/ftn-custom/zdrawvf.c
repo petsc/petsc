@@ -31,11 +31,11 @@ void PETSC_STDCALL petscviewerdrawopen_(MPI_Comm *comm,CHAR display PETSC_MIXED_
                    CHAR title PETSC_MIXED_LEN(len2),int *x,int*y,int*w,int*h,PetscViewer *v,
                    PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
-  char   *c1,*c2;
+  char *c1,*c2;
 
   FIXCHAR(display,len1,c1);
   FIXCHAR(title,len2,c2);
-  *ierr = PetscViewerDrawOpen(MPI_Comm_f2c(*(MPI_Fint *)&*comm),c1,c2,*x,*y,*w,*h,v);
+  *ierr = PetscViewerDrawOpen(MPI_Comm_f2c(*(MPI_Fint*)&*comm),c1,c2,*x,*y,*w,*h,v);
   FREECHAR(display,c1);
   FREECHAR(title,c2);
 }

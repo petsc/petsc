@@ -95,15 +95,13 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
   dlflags1 = RTLD_LAZY;
 #endif
 #if defined(PETSC_HAVE_RTLD_NOW)
-  if (mode & PETSC_DL_NOW)
-    dlflags1 = RTLD_NOW;
+  if (mode & PETSC_DL_NOW) dlflags1 = RTLD_NOW;
 #endif
 #if defined(PETSC_HAVE_RTLD_GLOBAL)
   dlflags2 = RTLD_GLOBAL;
 #endif
 #if defined(PETSC_HAVE_RTLD_LOCAL)
-  if (mode & PETSC_DL_LOCAL)
-    dlflags2 = RTLD_LOCAL;
+  if (mode & PETSC_DL_LOCAL) dlflags2 = RTLD_LOCAL;
 #endif
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
@@ -227,7 +225,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 
   dlhandle = (dlhandle_t) 0;
   dlsymbol = (dlsymbol_t) 0;
-  *value   = (void *) 0;
+  *value   = (void*) 0;
 
   /*
      --- GetProcAddress ---
@@ -247,9 +245,8 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   */
 #elif defined(PETSC_HAVE_DLFCN_H)
 #if defined(PETSC_HAVE_DLSYM)
-  if (handle) {
-    dlhandle = (dlhandle_t) handle;
-  } else {
+  if (handle) dlhandle = (dlhandle_t) handle;
+  else {
 
 #if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
     /* Attempt to retrieve the main executable's dlhandle. */

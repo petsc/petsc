@@ -4,7 +4,7 @@
 /*
      If true then every PETSc object will be published with the AMS
 */
-PetscBool  PetscAMSPublishAll;
+PetscBool PetscAMSPublishAll;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectAMSPublish"
@@ -39,7 +39,7 @@ PetscErrorCode  PetscObjectAMSPublish(PetscObject obj)
   if (obj->amem != -1) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
-  ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
   /* Really want to attach to correct communicator but then browser needs to access multiple communicators
   ierr      = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr); */
 

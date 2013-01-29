@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
   PetscViewerFormat format;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,PETSC_NULL,"-myviewer",&viewer,&format,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
   ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

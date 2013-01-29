@@ -48,33 +48,29 @@
 volatile int TV_data_format_control = TV_FORMAT_INACTIVE;
 
 /* TV_data_format_buffer should not be static for icc 11, and others */
-char TV_data_format_buffer[DATA_FORMAT_BUFFER_SIZE];
+char        TV_data_format_buffer[DATA_FORMAT_BUFFER_SIZE];
 static char *TV_data_buffer_ptr = TV_data_format_buffer;
 
 int TV_add_row(const char *field_name, const char *type_name, const void *value)
 {
   size_t remaining;
-  int out;
+  int    out;
 
   /* Called at the wrong time */
-  if (TV_data_format_control == TV_FORMAT_INACTIVE)
-    return EPERM;
+  if (TV_data_format_control == TV_FORMAT_INACTIVE) return EPERM;
 
-  if (strpbrk(field_name, "\n\t") != NULL)
-    return EINVAL;
+  if (strpbrk(field_name, "\n\t") != NULL) return EINVAL;
 
-  if (strpbrk(type_name, "\n\t") != NULL)
-    return EINVAL;
+  if (strpbrk(type_name, "\n\t") != NULL) return EINVAL;
 
-  if (TV_data_format_control == TV_FORMAT_FIRST_CALL)
-    {
-      /* Zero out the buffer to avoid confusion, and set the write point
-         to the top of the buffer. */
+  if (TV_data_format_control == TV_FORMAT_FIRST_CALL) {
+    /* Zero out the buffer to avoid confusion, and set the write point
+       to the top of the buffer. */
 
-      memset(TV_data_format_buffer, 0, DATA_FORMAT_BUFFER_SIZE);
-      TV_data_buffer_ptr = TV_data_format_buffer;
-      TV_data_format_control = TV_FORMAT_APPEND_CALL;
-    }
+    memset(TV_data_format_buffer, 0, DATA_FORMAT_BUFFER_SIZE);
+    TV_data_buffer_ptr     = TV_data_format_buffer;
+    TV_data_format_control = TV_FORMAT_APPEND_CALL;
+  }
 
   remaining = TV_data_buffer_ptr + DATA_FORMAT_BUFFER_SIZE - TV_data_format_buffer;
 
@@ -83,8 +79,7 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
 #endif
   out = snprintf(TV_data_buffer_ptr,remaining, "%s\t%s\t%p\n",field_name, type_name, value);
 
-  if (out < 1)
-    return ENOMEM;
+  if (out < 1) return ENOMEM;
 
   TV_data_buffer_ptr += out;
 

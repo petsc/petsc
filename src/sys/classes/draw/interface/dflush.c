@@ -23,7 +23,7 @@
 PetscErrorCode  PetscDrawFlush(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->flush) {

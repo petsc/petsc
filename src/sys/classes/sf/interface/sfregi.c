@@ -70,6 +70,7 @@ PetscErrorCode  PetscSFRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscSFunctionList);CHKERRQ(ierr);
+
   PetscSFRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

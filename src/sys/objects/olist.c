@@ -6,10 +6,10 @@
 #include <petscsys.h>
 
 struct _n_PetscObjectList {
-    char             name[256];
-    PetscBool        skipdereference;   /* when the PetscObjectList is destroyed do not call PetscObjectDereference() on this object */
-    PetscObject      obj;
-    PetscObjectList  next;
+  char            name[256];
+  PetscBool       skipdereference;      /* when the PetscObjectList is destroyed do not call PetscObjectDereference() on this object */
+  PetscObject     obj;
+  PetscObjectList next;
 };
 
 #undef __FUNCT__
@@ -89,11 +89,8 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
           ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
         }
         if (prev) prev->next = nlist->next;
-        else if (nlist->next) {
-          *fl = nlist->next;
-        } else {
-          *fl = 0;
-        }
+        else if (nlist->next) *fl = nlist->next;
+        else *fl = 0;
         ierr = PetscFree(nlist);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
@@ -122,12 +119,12 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   ierr        = PetscNew(struct _n_PetscObjectList,&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
+
   ierr = PetscObjectReference(obj);CHKERRQ(ierr);
   ierr = PetscStrcpy(olist->name,name);CHKERRQ(ierr);
 
-  if (!*fl) {
-    *fl = olist;
-  } else { /* go to end of list */
+  if (!*fl) *fl = olist;
+  else { /* go to end of list */
     nlist = *fl;
     while (nlist->next) {
       nlist = nlist->next;
@@ -157,12 +154,12 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 
   PetscFunctionBegin;
   while (fl) {
-    tmp   = fl->next;
+    tmp = fl->next;
     if (!fl->skipdereference) {
-      ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+      ierr = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
     }
-    ierr  = PetscFree(fl);CHKERRQ(ierr);
-    fl    = tmp;
+    ierr = PetscFree(fl);CHKERRQ(ierr);
+    fl   = tmp;
   }
   *ifl = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -270,7 +267,7 @@ PetscErrorCode  PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl)
   PetscFunctionBegin;
   while (fl) {
     ierr = PetscObjectListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
-    fl = fl->next;
+    fl   = fl->next;
   }
   PetscFunctionReturn(0);
 }

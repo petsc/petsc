@@ -32,6 +32,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   axis->xhigh= xmax;
   axis->ylow = ymin;
   axis->yhigh= ymax;
+
   ierr = PetscOptionsHasName(((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -96,7 +97,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 #undef __FUNCT__
 #define __FUNCT__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
-PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
+PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int maxtick)
 {
   PetscErrorCode ierr;
   int            i,power;
@@ -113,7 +114,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
   i = 0;
   while (i < maxtick && x <= high) {
     tickloc[i++] = x;
-    x += base;
+    x           += base;
   }
   *ntick = i;
 
@@ -138,15 +139,15 @@ PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
 #define __FUNCT__ "PetscMod"
 PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 {
-  int     i;
+  int i;
 
   PetscFunctionBegin;
   if (y == 1) {
     *result = 0.0;
     PetscFunctionReturn(0);
   }
-  i   = ((int)x) / ((int)y);
-  x   = x - i * y;
+  i = ((int)x) / ((int)y);
+  x = x - i * y;
   while (x > y) x -= y;
   *result = x;
   PetscFunctionReturn(0);
@@ -187,7 +188,7 @@ PetscErrorCode PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *res
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscAGetBase"
-PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,int*power)
+PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Base,int *power)
 {
   PetscReal        base,ftemp,e10;
   static PetscReal base_try[5] = {10.0,5.0,2.0,1.0,0.5};
@@ -197,29 +198,29 @@ PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Bas
   PetscFunctionBegin;
   /* labels of the form n * BASE */
   /* get an approximate value for BASE */
-  base    = (vmax - vmin) / (double)(num + 1);
+  base = (vmax - vmin) / (double)(num + 1);
 
   /* make it of form   m x 10^power,  m in [1.0, 10) */
   if (base <= 0.0) {
-    base    = PetscAbsReal(vmin);
+    base = PetscAbsReal(vmin);
     if (base < 1.0) base = 1.0;
   }
-  ftemp   = log10((1.0 + EPS) * base);
-  if (ftemp < 0.0)  ftemp   -= 1.0;
-  *power  = (int)ftemp;
-  ierr = PetscExp10((double)- *power,&e10);CHKERRQ(ierr);
-  base    = base * e10;
-  if (base < 1.0) base    = 1.0;
+  ftemp = log10((1.0 + EPS) * base);
+  if (ftemp < 0.0) ftemp -= 1.0;
+  *power = (int)ftemp;
+  ierr   = PetscExp10((double)-*power,&e10);CHKERRQ(ierr);
+  base   = base * e10;
+  if (base < 1.0) base = 1.0;
   /* now reduce it to one of 1, 2, or 5 */
   for (i=1; i<5; i++) {
     if (base >= base_try[i]) {
       ierr = PetscExp10((double)*power,&e10);CHKERRQ(ierr);
       base = base_try[i-1] * e10;
-      if (i == 1) *power    = *power + 1;
+      if (i == 1) *power = *power + 1;
       break;
     }
   }
-  *Base   = base;
+  *Base = base;
   PetscFunctionReturn(0);
 }
 

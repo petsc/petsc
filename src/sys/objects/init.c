@@ -27,19 +27,19 @@
      Indicates if PETSc started up MPI, or it was
    already started before PETSc was initialized.
 */
-PetscBool    PetscBeganMPI         = PETSC_FALSE;
-PetscBool    PetscInitializeCalled = PETSC_FALSE;
-PetscBool    PetscFinalizeCalled   = PETSC_FALSE;
-PetscMPIInt  PetscGlobalRank = -1;
-PetscMPIInt  PetscGlobalSize = -1;
+PetscBool   PetscBeganMPI         = PETSC_FALSE;
+PetscBool   PetscInitializeCalled = PETSC_FALSE;
+PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
+PetscMPIInt PetscGlobalRank       = -1;
+PetscMPIInt PetscGlobalSize       = -1;
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-MPI_Datatype   MPIU_C_DOUBLE_COMPLEX;
-MPI_Datatype   MPIU_C_COMPLEX;
+MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
+MPI_Datatype MPIU_C_COMPLEX;
 #endif
 
 /*MC
@@ -60,35 +60,35 @@ MPI_Datatype   MPIU_C_COMPLEX;
 
 .seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
 M*/
-PetscComplex    PETSC_i;
+PetscComplex PETSC_i;
 #endif
 #if defined(PETSC_USE_REAL___FLOAT128)
-MPI_Datatype   MPIU___FLOAT128 = 0;
+MPI_Datatype MPIU___FLOAT128 = 0;
 #if defined(PETSC_HAVE_COMPLEX)
-MPI_Datatype   MPIU___COMPLEX128 = 0;
+MPI_Datatype MPIU___COMPLEX128 = 0;
 #endif
 #endif
-MPI_Datatype   MPIU_2SCALAR = 0;
+MPI_Datatype MPIU_2SCALAR = 0;
 #if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
-MPI_Datatype   MPIU_2INT = 0;
+MPI_Datatype MPIU_2INT = 0;
 #endif
-MPI_Datatype    MPIU_BOOL;
-MPI_Datatype    MPIU_ENUM;
+MPI_Datatype MPIU_BOOL;
+MPI_Datatype MPIU_ENUM;
 
 /*
        Function that is called to display all error messages
 */
-PetscErrorCode  (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
-PetscErrorCode  (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+PetscErrorCode (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
+PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
+PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_Matlab;
 #else
-PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
+PetscErrorCode (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 #endif
 /*
   This is needed to turn on/off cusp synchronization
 */
-PetscBool   PetscCUSPSynchronize = PETSC_FALSE;
+PetscBool PetscCUSPSynchronize = PETSC_FALSE;
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -124,7 +124,9 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
       ierr = PetscFixFilename(pfile,fname);CHKERRQ(ierr);
     }
 
-    *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
+    *fd = fopen(fname,"a");
+    if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
+
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);CHKERRQ(ierr);
     ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
@@ -133,6 +135,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+
     err = fflush(*fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
@@ -155,7 +158,7 @@ PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
-    err = fflush(*fd);
+    err  = fflush(*fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     err = fclose(*fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
@@ -192,9 +195,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n",*flag);
   ierr = PetscAttachDebugger();
-  if (ierr) { /* hopeless so get out */
-    MPI_Abort(*comm,*flag);
-  }
+  if (ierr) MPI_Abort(*comm,*flag); /* hopeless so get out */
 }
 
 #undef __FUNCT__
@@ -222,10 +223,10 @@ PetscErrorCode  PetscEnd(void)
   return 0;
 }
 
-PetscBool    PetscOptionsPublish = PETSC_FALSE;
-extern PetscErrorCode        PetscSetUseTrMalloc_Private(void);
-extern PetscBool  petscsetmallocvisited;
-static char       emacsmachinename[256];
+PetscBool PetscOptionsPublish = PETSC_FALSE;
+extern PetscErrorCode PetscSetUseTrMalloc_Private(void);
+extern PetscBool      petscsetmallocvisited;
+static char           emacsmachinename[256];
 
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
@@ -480,7 +481,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   /*
         Setup profiling and logging
   */
-#if defined (PETSC_USE_INFO)
+#if defined(PETSC_USE_INFO)
   {
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
@@ -513,8 +514,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-log",&flg2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
-  if (flg1)                      {  ierr = PetscLogAllBegin();CHKERRQ(ierr); }
-  else if (flg2 || flg3 || flg4) {  ierr = PetscLogBegin();CHKERRQ(ierr);}
+  if (flg1)                      { ierr = PetscLogAllBegin();CHKERRQ(ierr); }
+  else if (flg2 || flg3 || flg4) { ierr = PetscLogBegin();CHKERRQ(ierr);}
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -525,9 +526,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w");
       if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
-    } else {
-      file = PETSC_STDOUT;
-    }
+    } else file = PETSC_STDOUT;
+
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }
 #endif
@@ -542,8 +542,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
   if (flg1) {
     struct cudaDeviceProp prop;
-    int devCount;
-    int device;
+    int                   devCount;
+    int                   device;
 
     ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
     for (device = 0; device < devCount; ++device) {
@@ -556,12 +556,11 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size>1) {
       int devCount, device, rank;
-      ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+      ierr   = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+      ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
       device = rank % devCount;
-      ierr = cudaSetDevice(device);CHKERRQ(ierr);
-    }
-    else {
+      ierr   = cudaSetDevice(device);CHKERRQ(ierr);
+    } else {
       int device;
       /* the code below works for serial GPU simulations */
       ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);

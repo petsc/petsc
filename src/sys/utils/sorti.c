@@ -28,7 +28,7 @@
 */
 static void PetscSortInt_Private(PetscInt *v,PetscInt right)
 {
-  PetscInt       i,j,pivot,tmp;
+  PetscInt i,j,pivot,tmp;
 
   if (right <= 1) {
     if (right == 1) {
@@ -39,9 +39,9 @@ static void PetscSortInt_Private(PetscInt *v,PetscInt right)
   i = MEDIAN(v,right);          /* Choose a pivot */
   SWAP(v[0],v[i],tmp);          /* Move it out of the way */
   pivot = v[0];
-  for (i=0,j=right+1;;) {
-    while (++i < j && v[i] <= pivot); /* Scan from the left */
-    while (v[--j] > pivot);           /* Scan from the right */
+  for (i=0,j=right+1;; ) {
+    while (++i < j && v[i] <= pivot) ; /* Scan from the left */
+    while (v[--j] > pivot) ;           /* Scan from the right */
     if (i >= j) break;
     SWAP(v[i],v[j],tmp);
   }
@@ -69,7 +69,7 @@ static void PetscSortInt_Private(PetscInt *v,PetscInt right)
 @*/
 PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
 {
-  PetscInt       j,k,tmp,ik;
+  PetscInt j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -82,9 +82,7 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
         }
       }
     }
-  } else {
-    PetscSortInt_Private(i,n-1);
-  }
+  } else PetscSortInt_Private(i,n-1);
   PetscFunctionReturn(0);
 }
 
@@ -116,8 +114,9 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
   PetscFunctionBegin;
   ierr = PetscSortInt(N,ii);CHKERRQ(ierr);
   for (i=0; i<N-1; i++) {
-    if (ii[b+s+1] != ii[b]) {ii[b+1] = ii[b+s+1]; b++;}
-    else s++;
+    if (ii[b+s+1] != ii[b]) {
+      ii[b+1] = ii[b+s+1]; b++;
+    }else s++;
   }
   *n = N - s;
   PetscFunctionReturn(0);
@@ -334,9 +333,9 @@ static void PetscSortMPIInt_Private(PetscMPIInt *v,PetscInt right)
   i = MEDIAN(v,right);          /* Choose a pivot */
   SWAP(v[0],v[i],tmp);          /* Move it out of the way */
   pivot = v[0];
-  for (i=0,j=right+1;;) {
-    while (++i < j && v[i] <= pivot); /* Scan from the left */
-    while (v[--j] > pivot);           /* Scan from the right */
+  for (i=0,j=right+1;; ) {
+    while (++i < j && v[i] <= pivot) ; /* Scan from the left */
+    while (v[--j] > pivot) ;           /* Scan from the right */
     if (i >= j) break;
     SWAP(v[i],v[j],tmp);
   }
@@ -364,8 +363,8 @@ static void PetscSortMPIInt_Private(PetscMPIInt *v,PetscInt right)
 @*/
 PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
 {
-  PetscInt       j,k;
-  PetscMPIInt    tmp,ik;
+  PetscInt    j,k;
+  PetscMPIInt tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -378,9 +377,7 @@ PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
         }
       }
     }
-  } else {
-    PetscSortMPIInt_Private(i,n-1);
-  }
+  } else PetscSortMPIInt_Private(i,n-1);
   PetscFunctionReturn(0);
 }
 
@@ -412,8 +409,9 @@ PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt ii[])
   PetscFunctionBegin;
   ierr = PetscSortMPIInt(N,ii);CHKERRQ(ierr);
   for (i=0; i<N-1; i++) {
-    if (ii[b+s+1] != ii[b]) {ii[b+1] = ii[b+s+1]; b++;}
-    else s++;
+    if (ii[b+s+1] != ii[b]) {
+      ii[b+1] = ii[b+s+1]; b++;
+    } else s++;
   }
   *n = N - s;
   PetscFunctionReturn(0);
@@ -605,11 +603,11 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   *n = n_;
   if (!L_) {
     ierr = PetscMalloc(n_*sizeof(PetscInt), L);CHKERRQ(ierr);
-    L_ = *L;
+    L_   = *L;
   }
   if (!J_) {
     ierr = PetscMalloc(n_*sizeof(PetscInt), &J_);CHKERRQ(ierr);
-    J_ = *J;
+    J_   = *J;
   }
   k = ak = bk = 0;
   while (ak < an && bk < bn) {
@@ -618,8 +616,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
       J_[k] = aJ[ak];
       ++ak;
       ++k;
-    }
-    else {
+    } else {
       L_[k] = bI[bk];
       J_[k] = bJ[bk];
       ++bk;
@@ -629,7 +626,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   if (ak < an) {
     ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
-    k += (an-ak);
+    k   += (an-ak);
   }
   if (bk < bn) {
     ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -663,7 +660,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
+PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscInt parentid[],PetscInt *Nlevels,PetscInt **Level,PetscInt **Levelcnt,PetscInt **Idbylevel,PetscInt **Column)
 {
   PetscInt       i,j,cnt,nmask = 0,nlevels = 0,*level,*levelcnt,levelmax = 0,*workid,*workparentid,tcnt = 0,*idbylevel,*column;
   PetscErrorCode ierr;
@@ -684,6 +681,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscI
   /* determine the level in the tree of each node */
   ierr = PetscMalloc(n*sizeof(PetscInt),&level);CHKERRQ(ierr);
   ierr = PetscMemzero(level,n*sizeof(PetscInt));CHKERRQ(ierr);
+
   level[0] = 1;
   while (!done) {
     done = PETSC_TRUE;
@@ -705,9 +703,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscI
     if (mask[i]) continue;
     levelcnt[level[i]-1]++;
   }
-  for (i=0; i<nlevels;i++) {
-    levelmax = PetscMax(levelmax,levelcnt[i]);
-  }
+  for (i=0; i<nlevels;i++) levelmax = PetscMax(levelmax,levelcnt[i]);
 
   /* for each level sort the ids by the parent id */
   ierr = PetscMalloc2(levelmax,PetscInt,&workid,levelmax,PetscInt,&workparentid);CHKERRQ(ierr);
@@ -725,7 +721,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscI
     ierr = PetscSortIntWithArray(cnt,workparentid,workid);CHKERRQ(ierr);
     PetscIntView(cnt,workparentid,0);
     PetscIntView(cnt,workid,0);*/
-    ierr = PetscMemcpy(idbylevel+tcnt,workid,cnt*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr  = PetscMemcpy(idbylevel+tcnt,workid,cnt*sizeof(PetscInt));CHKERRQ(ierr);
     tcnt += cnt;
   }
   if (tcnt != nmask) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent count of unmasked nodes");

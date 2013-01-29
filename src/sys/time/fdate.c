@@ -7,7 +7,7 @@
 #include <time.h>
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
 EXTERN_C_BEGIN
-extern int gettimeofday(struct timeval *,struct timezone *);
+extern int gettimeofday(struct timeval*,struct timezone*);
 EXTERN_C_END
 #endif
 
@@ -52,7 +52,7 @@ PetscErrorCode  PetscGetDate(char date[],size_t len)
   time(&aclock);
   ierr = PetscStrncpy(date,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
 #else
-  gettimeofday(&tp,(struct timezone *)0);
+  gettimeofday(&tp,(struct timezone*)0);
   ierr = PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len);CHKERRQ(ierr);
 #endif
   /* now strip out the new-line chars at the end of the string */

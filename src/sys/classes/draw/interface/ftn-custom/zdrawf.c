@@ -16,8 +16,8 @@ void PETSC_STDCALL petscdrawgettitle_(PetscDraw *draw,CHAR title PETSC_MIXED_LEN
 {
   char *c3,*t;
   int  len3;
-  c3   = title;
-  len3 = len - 1;
+  c3    = title;
+  len3  = len - 1;
   *ierr = PetscDrawGetTitle(*draw,&t);
   *ierr = PetscStrncpy(c3,t,len3);
 }

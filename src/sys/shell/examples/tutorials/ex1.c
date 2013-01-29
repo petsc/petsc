@@ -32,13 +32,13 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  PetscShell         field, viz;
-  PetscInt           numIter = 10, i;
-  PetscObject        mesh, rho;
-  PetscErrorCode     ierr;
-  
+  PetscShell     field, viz;
+  PetscInt       numIter = 10, i;
+  PetscObject    mesh, rho;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   /**/
   ierr = PetscShellCreate(PETSC_COMM_SELF, &field);CHKERRQ(ierr);
   ierr = PetscShellSetURL(field, "./field.py:Field");CHKERRQ(ierr);
@@ -60,5 +60,5 @@ int main(int argc,char **args)
   ierr = PetscShellDestroy(&field);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
-}/* main() */
+} /* main() */
 

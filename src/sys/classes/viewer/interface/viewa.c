@@ -88,7 +88,7 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveEnum(viewer,format,2);
-  viewer->format     = format;
+  viewer->format = format;
   PetscFunctionReturn(0);
 }
 
@@ -140,8 +140,8 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
   PetscValidLogicalCollectiveEnum(viewer,format,2);
   if (viewer->iformat > 9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
-  viewer->formats[viewer->iformat++]  = viewer->format;
-  viewer->format                      = format;
+  viewer->formats[viewer->iformat++] = viewer->format;
+  viewer->format                     = format;
   PetscFunctionReturn(0);
 }
 

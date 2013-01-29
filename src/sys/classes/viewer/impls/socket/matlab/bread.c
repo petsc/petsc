@@ -26,9 +26,7 @@ void SYByteSwapInt(int *buff,int n)
   char *ptr1,*ptr2 = (char*)&tmp;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(int)sizeof(int); i++) {
-      ptr2[i] = ptr1[sizeof(int)-1-i];
-    }
+    for (i=0; i<(int)sizeof(int); i++) ptr2[i] = ptr1[sizeof(int)-1-i];
     buff[j] = tmp;
   }
 }
@@ -44,9 +42,7 @@ void SYByteSwapShort(short *buff,int n)
   char  *ptr1,*ptr2 = (char*)&tmp;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(int)sizeof(short); i++) {
-      ptr2[i] = ptr1[sizeof(int)-1-i];
-    }
+    for (i=0; i<(int)sizeof(short); i++) ptr2[i] = ptr1[sizeof(int)-1-i];
     buff[j] = tmp;
   }
 }
@@ -66,9 +62,7 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 #endif
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<(int)sizeof(double); i++) {
-      ptr2[i] = ptr1[sizeof(double)-1-i];
-    }
+    for (i=0; i<(int)sizeof(double); i++) ptr2[i] = ptr1[sizeof(double)-1-i];
     buff1[j] = tmp;
   }
 }
@@ -97,7 +91,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   int  maxblock,wsize,err;
   char *pp = (char*)p;
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  int  ntmp = n;
+  int  ntmp  = n;
   void *ptmp = p;
 #endif
 
@@ -111,14 +105,12 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
-    err = read(fd,pp,wsize);
+    err   = read(fd,pp,wsize);
 #if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
 #endif
     if (!err && wsize > 0) return 1;
-    if (err < 0) {
-      PETSC_MEX_ERROR("Error reading from socket\n");
-    }
+    if (err < 0) PETSC_MEX_ERROR("Error reading from socket\n");
     n  -= err;
     pp += err;
   }
@@ -145,13 +137,13 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   Notes: does byte swapping to work on all machines.
 */
-PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBool  dummy)
+PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBool dummy)
 {
 
   int  maxblock,wsize,err;
   char *pp = (char*)p;
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  int  ntmp = n;
+  int  ntmp  = n;
   void *ptmp = p;
 #endif
 
@@ -171,14 +163,12 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscBoo
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
-    err = write(fd,pp,wsize);
+    err   = write(fd,pp,wsize);
 #if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
 #endif
     if (!err && wsize > 0) return 1;
-    if (err < 0) {
-      PETSC_MEX_ERROR("Error reading from socket\n");
-    }
+    if (err < 0) PETSC_MEX_ERROR("Error reading from socket\n");
     n  -= err;
     pp += err;
   }

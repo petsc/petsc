@@ -20,7 +20,7 @@
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,int c,PetscErrorCode (*f)(void *,PetscReal,PetscReal,PetscBool*),void *ctx)
+PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,int c,PetscErrorCode (*f)(void*,PetscReal,PetscReal,PetscBool*),void *ctx)
 {
   PetscInt       xstart,ystart,xend,yend,i,j,tmp;
   PetscErrorCode ierr;

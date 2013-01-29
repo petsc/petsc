@@ -71,17 +71,17 @@
 PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
-  FILE                   *file;
-  int                    fd;
-  char                   proc[PETSC_MAX_PATH_LEN];
-  prpsinfo_t             prusage;
+  FILE       *file;
+  int        fd;
+  char       proc[PETSC_MAX_PATH_LEN];
+  prpsinfo_t prusage;
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
-  long                   *ii = sbreak(0);
-  int                    fd = ii - (long*)0;
+  long       *ii = sbreak(0);
+  int        fd  = ii - (long*)0;
 #elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
-  FILE                   *file;
-  char                   proc[PETSC_MAX_PATH_LEN];
-  int                    mm,rss,err;
+  FILE       *file;
+  char       proc[PETSC_MAX_PATH_LEN];
+  int        mm,rss,err;
 #elif defined(PETSC_HAVE_TASK_INFO)
   /*  task_basic_info_data_t ti;
       unsigned int           count; */
@@ -93,7 +93,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   */
   /* kern_return_t          kerr; */
 #elif defined(PETSC_HAVE_GETRUSAGE)
-  static struct rusage   temp;
+  static struct rusage temp;
 #endif
 
   PetscFunctionBegin;
@@ -114,7 +114,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   if (!(file = fopen(proc,"r"))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   if (fscanf(file,"%d %d",&mm,&rss) != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read two integers (mm and rss) from %s",proc);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
-  err = fclose(file);
+  err  = fclose(file);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
 
 #elif defined(PETSC_HAVE_TASK_INFO)
@@ -139,7 +139,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 }
 
 PetscBool      PetscMemoryCollectMaximumUsage = PETSC_FALSE;
-PetscLogDouble PetscMemoryMaximumUsage = 0;
+PetscLogDouble PetscMemoryMaximumUsage        = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMemoryGetMaximumUsage"

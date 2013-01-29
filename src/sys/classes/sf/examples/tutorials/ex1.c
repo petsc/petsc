@@ -27,36 +27,36 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");CHKERRQ(ierr);
-  test_bcast = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,PETSC_NULL);CHKERRQ(ierr);
-  test_reduce = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,PETSC_NULL);CHKERRQ(ierr);
-  test_degree = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");CHKERRQ(ierr);
+  test_bcast      = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,PETSC_NULL);CHKERRQ(ierr);
+  test_reduce     = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,PETSC_NULL);CHKERRQ(ierr);
+  test_degree     = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,PETSC_NULL);CHKERRQ(ierr);
   test_fetchandop = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,PETSC_NULL);CHKERRQ(ierr);
-  test_gather = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,PETSC_NULL);CHKERRQ(ierr);
-  test_scatter = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,PETSC_NULL);CHKERRQ(ierr);
-  test_embed = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,PETSC_NULL);CHKERRQ(ierr);
-  test_invert = PETSC_FALSE;
-  ierr = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,PETSC_NULL);CHKERRQ(ierr);
+  test_gather     = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,PETSC_NULL);CHKERRQ(ierr);
+  test_scatter    = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,PETSC_NULL);CHKERRQ(ierr);
+  test_embed      = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,PETSC_NULL);CHKERRQ(ierr);
+  test_invert     = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
-  nroots = 2 + (PetscInt)(rank == 0);
+  nroots  = 2 + (PetscInt)(rank == 0);
   nleaves = 2 + (PetscInt)(rank > 0);
-  ierr = PetscMalloc(nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
+  ierr    = PetscMalloc(nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
   /* Left periodic neighbor */
-  remote[0].rank = (rank+size-1)%size;
+  remote[0].rank  = (rank+size-1)%size;
   remote[0].index = 1;
   /* Right periodic neighbor */
-  remote[1].rank = (rank+1)%size;
+  remote[1].rank  = (rank+1)%size;
   remote[1].index = 0;
   if (rank > 0) {               /* All processes reference rank 0, index 1 */
-    remote[2].rank = 0;
+    remote[2].rank  = 0;
     remote[2].index = 2;
   }
 
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 
   if (test_fetchandop) {
     /* Cannot use text compare here because token ordering is not deterministic */
-    PetscInt    *leafdata,*leafupdate,*rootdata;
+    PetscInt *leafdata,*leafupdate,*rootdata;
     ierr = PetscMalloc3(nleaves,PetscInt,&leafdata,nleaves,PetscInt,&leafupdate,nroots,PetscInt,&rootdata);CHKERRQ(ierr);
     for (i=0; i<nleaves; i++) leafdata[i] = 1;
     for (i=0; i<nroots; i++) rootdata[i] = 0;
@@ -135,7 +135,7 @@ int main(int argc,char **argv)
 
   if (test_gather) {
     const PetscInt *degree;
-    PetscInt inedges,*indata,*outdata;
+    PetscInt       inedges,*indata,*outdata;
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
     for (i=0,inedges=0; i<nroots; i++) inedges += degree[i];
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
 
   if (test_scatter) {
     const PetscInt *degree;
-    PetscInt j,count,inedges,*indata,*outdata;
+    PetscInt       j,count,inedges,*indata,*outdata;
     ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
     ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
     for (i=0,inedges=0; i<nroots; i++) inedges += degree[i];
@@ -169,11 +169,11 @@ int main(int argc,char **argv)
   }
 
   if (test_embed) {
-    const PetscInt nroots = 1 + (PetscInt)!rank,selected[] = {1,2};
-    PetscSF esf;
+    const PetscInt nroots = 1 + (PetscInt) !rank,selected[] = {1,2};
+    PetscSF        esf;
     ierr = PetscSFCreateEmbeddedSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
     ierr = PetscSFView(esf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&esf);CHKERRQ(ierr);

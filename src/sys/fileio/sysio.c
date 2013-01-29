@@ -9,7 +9,7 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (PETSC_HAVE_IO_H)
+#if defined(PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
 #include <petscbt.h>
@@ -23,19 +23,15 @@
 */
 PetscErrorCode  PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
 {
-  PetscInt   i,j;
-  PetscEnum   tmp = ENUM_DUMMY;
-  char       *ptr1,*ptr2 = (char*)&tmp;
+  PetscInt  i,j;
+  PetscEnum tmp = ENUM_DUMMY;
+  char      *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) {
-      ptr2[i] = ptr1[sizeof(PetscEnum)-1-i];
-    }
-    for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) ptr2[i] = ptr1[sizeof(PetscEnum)-1-i];
+    for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -48,19 +44,15 @@ PetscErrorCode  PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
 */
 PetscErrorCode  PetscByteSwapBool(PetscBool *buff,PetscInt n)
 {
-  PetscInt    i,j;
-  PetscBool   tmp = PETSC_FALSE;
-  char        *ptr1,*ptr2 = (char*)&tmp;
+  PetscInt  i,j;
+  PetscBool tmp = PETSC_FALSE;
+  char      *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(PetscInt)sizeof(PetscBool); i++) {
-      ptr2[i] = ptr1[sizeof(PetscBool)-1-i];
-    }
-    for (i=0; i<(PetscInt)sizeof(PetscBool); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt)sizeof(PetscBool); i++) ptr2[i] = ptr1[sizeof(PetscBool)-1-i];
+    for (i=0; i<(PetscInt)sizeof(PetscBool); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -73,18 +65,14 @@ PetscErrorCode  PetscByteSwapBool(PetscBool *buff,PetscInt n)
 */
 PetscErrorCode  PetscByteSwapInt(PetscInt *buff,PetscInt n)
 {
-  PetscInt  i,j,tmp = 0;
-  char       *ptr1,*ptr2 = (char*)&tmp;
+  PetscInt i,j,tmp = 0;
+  char     *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(PetscInt)sizeof(PetscInt); i++) {
-      ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
-    }
-    for (i=0; i<(PetscInt)sizeof(PetscInt); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt)sizeof(PetscInt); i++) ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
+    for (i=0; i<(PetscInt)sizeof(PetscInt); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -96,19 +84,15 @@ PetscErrorCode  PetscByteSwapInt(PetscInt *buff,PetscInt n)
 */
 PetscErrorCode  PetscByteSwapShort(short *buff,PetscInt n)
 {
-  PetscInt   i,j;
-  short      tmp;
-  char       *ptr1,*ptr2 = (char*)&tmp;
+  PetscInt i,j;
+  short    tmp;
+  char     *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(PetscInt) sizeof(short); i++) {
-      ptr2[i] = ptr1[sizeof(short)-1-i];
-    }
-    for (i=0; i<(PetscInt) sizeof(short); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt) sizeof(short); i++) ptr2[i] = ptr1[sizeof(short)-1-i];
+    for (i=0; i<(PetscInt) sizeof(short); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -131,12 +115,8 @@ PetscErrorCode  PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
 #endif
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) {
-      ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
-    }
-    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
+    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -155,12 +135,8 @@ PetscErrorCode  PetscByteSwapDouble(double *buff,PetscInt n)
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<(PetscInt) sizeof(double); i++) {
-      ptr2[i] = ptr1[sizeof(double)-1-i];
-    }
-    for (i=0; i<(PetscInt) sizeof(double); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt) sizeof(double); i++) ptr2[i] = ptr1[sizeof(double)-1-i];
+    for (i=0; i<(PetscInt) sizeof(double); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -173,18 +149,14 @@ PetscErrorCode  PetscByteSwapDouble(double *buff,PetscInt n)
 PetscErrorCode PetscByteSwapFloat(float *buff,PetscInt n)
 {
   PetscInt i,j;
-  float   tmp,*buff1 = (float*)buff;
+  float    tmp,*buff1 = (float*)buff;
   char     *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<(PetscInt) sizeof(float); i++) {
-      ptr2[i] = ptr1[sizeof(float)-1-i];
-    }
-    for (i=0; i<(PetscInt) sizeof(float); i++) {
-      ptr1[i] = ptr2[i];
-    }
+    for (i=0; i<(PetscInt) sizeof(float); i++) ptr2[i] = ptr1[sizeof(float)-1-i];
+    for (i=0; i<(PetscInt) sizeof(float); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(0);
 }
@@ -201,7 +173,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
-  else if (pdtype == PETSC_FLOAT) {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_FLOAT)  {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -263,11 +235,11 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
   if (type == PETSC_FUNCTION) {
     functionload = PETSC_TRUE;
-    m    = 64;
-    type = PETSC_CHAR;
-    pp   = (char*)fname;
+    m            = 64;
+    type         = PETSC_CHAR;
+    pp           = (char*)fname;
 #if !defined(PETSC_WORDS_BIGENDIAN)
-    ptmp = (void*)fname;
+    ptmp         = (void*)fname;
 #endif
   }
 
@@ -293,7 +265,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
-    err = read(fd,pp,wsize);
+    err   = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
     if (!err && wsize > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
     if (err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
@@ -308,9 +280,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 #if !defined(PETSC_WORDS_BIGENDIAN)
     ierr = PetscByteSwapDouble(ppp,n);CHKERRQ(ierr);
 #endif
-    for (i=0; i<n; i++) {
-      pv[i] = ppp[i];
-    }
+    for (i=0; i<n; i++) pv[i] = ppp[i];
     ierr = PetscFree(ppp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -422,10 +392,10 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
-    err = write(fd,pp,wsize);
+    err   = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
     if (err != wsize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file.");
-    m -= wsize;
+    m  -= wsize;
     pp += wsize;
   }
 
@@ -469,31 +439,19 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_O_BINARY)
   if (mode == FILE_MODE_WRITE) {
-    if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
-    }
+    if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
   } else if (mode == FILE_MODE_READ) {
-    if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
-    }
+    if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
   } else if (mode == FILE_MODE_APPEND) {
-    if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
-    }
+    if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
 #else
   if (mode == FILE_MODE_WRITE) {
-    if ((*fd = creat(name,0666)) == -1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
-    }
+    if ((*fd = creat(name,0666)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
   } else if (mode == FILE_MODE_READ) {
-    if ((*fd = open(name,O_RDONLY,0)) == -1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
-    }
+    if ((*fd = open(name,O_RDONLY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
   }
   else if (mode == FILE_MODE_APPEND) {
-    if ((*fd = open(name,O_WRONLY,0)) == -1) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
-    }
+    if ((*fd = open(name,O_WRONLY,0)) == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file mode");
   PetscFunctionReturn(0);
@@ -559,13 +517,10 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
   int iwhence = 0;
 
   PetscFunctionBegin;
-  if (whence == PETSC_BINARY_SEEK_SET) {
-    iwhence = SEEK_SET;
-  } else if (whence == PETSC_BINARY_SEEK_CUR) {
-    iwhence = SEEK_CUR;
-  } else if (whence == PETSC_BINARY_SEEK_END) {
-    iwhence = SEEK_END;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
+  if (whence == PETSC_BINARY_SEEK_SET) iwhence = SEEK_SET;
+  else if (whence == PETSC_BINARY_SEEK_CUR) iwhence = SEEK_CUR;
+  else if (whence == PETSC_BINARY_SEEK_END) iwhence = SEEK_END;
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
 #if defined(PETSC_HAVE_LSEEK)
   *offset = lseek(fd,off,iwhence);
 #elif defined(PETSC_HAVE__LSEEK)
@@ -620,7 +575,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   MPI_Datatype   mtype;
   char           *fname;
   PetscBool      functionload = PETSC_FALSE;
-  void           *ptmp = PETSC_NULL;
+  void           *ptmp        = PETSC_NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
@@ -686,7 +641,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscBool  istemp)
+PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscBool istemp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -776,7 +731,7 @@ PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,Petsc
   ierr = PetscDataTypeGetSize(pdtype,&dsize);CHKERRQ(ierr);
 
   /* offset is given in units of MPI_Datatype */
-  userbuf = ((char *)userbuf) + dsize*position;
+  userbuf = ((char*)userbuf) + dsize*position;
 
   ierr = PetscMemcpy(userbuf,filebuf,count*dsize);CHKERRQ(ierr);
   ierr = PetscByteSwap(userbuf,pdtype,count);CHKERRQ(ierr);
@@ -793,7 +748,7 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
   ierr = PetscDataTypeGetSize(pdtype,&dsize);CHKERRQ(ierr);
 
   /* offset is given in units of MPI_Datatype */
-  userbuf = ((char *)userbuf) + dsize*position;
+  userbuf = ((char*)userbuf) + dsize*position;
 
   ierr = PetscMemcpy(filebuf,userbuf,count*dsize);CHKERRQ(ierr);
   ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);

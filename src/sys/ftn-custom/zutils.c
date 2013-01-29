@@ -25,16 +25,16 @@ M*/
     This is code for translating PETSc memory addresses to integer offsets
     for Fortran.
 */
-char   *PETSC_NULL_CHARACTER_Fortran = 0;
-void   *PETSC_NULL_INTEGER_Fortran   = 0;
-void   *PETSC_NULL_OBJECT_Fortran    = 0;
-void   *PETSC_NULL_Fortran           = 0;
-void   *PETSC_NULL_SCALAR_Fortran    = 0;
-void   *PETSC_NULL_DOUBLE_Fortran    = 0;
-void   *PETSC_NULL_REAL_Fortran      = 0;
-void   *PETSC_NULL_BOOL_Fortran     = 0;
+char *PETSC_NULL_CHARACTER_Fortran = 0;
+void *PETSC_NULL_INTEGER_Fortran   = 0;
+void *PETSC_NULL_OBJECT_Fortran    = 0;
+void *PETSC_NULL_Fortran           = 0;
+void *PETSC_NULL_SCALAR_Fortran    = 0;
+void *PETSC_NULL_DOUBLE_Fortran    = 0;
+void *PETSC_NULL_REAL_Fortran      = 0;
+void *PETSC_NULL_BOOL_Fortran      = 0;
 EXTERN_C_BEGIN
-void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
+void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
 size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 {
@@ -182,12 +182,13 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 
   ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
-    tlx   = base + addr;
+    ierr = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
+    tlx  = base + addr;
 
     shift = *(PetscInt*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
     tlx   = (PetscScalar*)(((char *)tlx) - shift);
+
     ierr = PetscFree(tlx);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
@@ -206,12 +207,12 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 #endif
 
 EXTERN_C_BEGIN
-PetscBool  PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
+PetscBool PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
   return (PetscBool) PetscIsInfOrNanScalar(*v);
 }
 
-PetscBool  PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+PetscBool PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
   return (PetscBool) PetscIsInfOrNanReal(*v);
 }

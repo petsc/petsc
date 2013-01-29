@@ -7,8 +7,8 @@ static const char help[] = "Tests PetscOptionsPrefix{Push,Pop}\n\n";
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
-  PetscInt opts[6] = {0};
-  PetscBool  hascl = PETSC_FALSE,hasstr = PETSC_FALSE;
+  PetscInt       opts[6] = {0};
+  PetscBool      hascl   = PETSC_FALSE,hasstr = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-zero","0");CHKERRQ(ierr);

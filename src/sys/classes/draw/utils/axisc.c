@@ -31,11 +31,13 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
   ierr = PetscObjectTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)axis);CHKERRQ(ierr);
+
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
   ierr = PetscHeaderCreate(ad,_p_PetscDrawAxis,int,PETSC_DRAWAXIS_CLASSID,0,"PetscDrawAxis","Draw Axis","Draw",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
+
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;
   ad->xlabelstr = PetscADefLabel;
@@ -159,7 +161,7 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
 .seealso:  PetscDrawAxisSetLimits()
 
 @*/
-PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool  hold)
+PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -206,12 +208,12 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
    } */
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
 
-  xl = axis->xlow; xr = axis->xhigh; yl = axis->ylow; yr = axis->yhigh;
+  xl   = axis->xlow; xr = axis->xhigh; yl = axis->ylow; yr = axis->yhigh;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
-  numx = (int)(.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
-  numy = (int)(.5*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
-  xl -= 11*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
+  numx = (int)(.15*(xr-xl)/tw); if (numx > 6) numx = 6;if (numx< 2) numx = 2;
+  numy = (int)(.50*(yr-yl)/th); if (numy > 6) numy = 6;if (numy< 2) numy = 2;
+  xl  -= 11*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
   if (axis->xlabel) yl -= 2*th;
   if (axis->ylabel) xl -= 2*tw;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
@@ -296,9 +298,7 @@ PetscErrorCode PetscStripe0(char *buf)
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
   ierr = PetscStrendswith(buf,"e00",&flg);CHKERRQ(ierr);
-  if (flg) {
-    buf[n-3] = 0;
-  }
+  if (flg) buf[n-3] = 0;
   ierr = PetscStrstr(buf,"e0",&str);CHKERRQ(ierr);
   if (str) {
     buf[n-2] = buf[n-1];
@@ -377,13 +377,9 @@ PetscErrorCode PetscStripInitialZero(char *buf)
   PetscFunctionBegin;
   ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
   if (buf[0] == '0') {
-    for (i=0; i<n; i++) {
-      buf[i] = buf[i+1];
-    }
+    for (i=0; i<n; i++) buf[i] = buf[i+1];
   } else if (buf[0] == '-' && buf[1] == '0') {
-    for (i=1; i<n; i++) {
-      buf[i] = buf[i+1];
-    }
+    for (i=1; i<n; i++) buf[i] = buf[i+1];
   }
   PetscFunctionReturn(0);
 }

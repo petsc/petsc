@@ -14,15 +14,18 @@ PetscErrorCode  PetscFunctionListGetPathAndFunction(const char name[],char *path
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(work,name,sizeof(work));CHKERRQ(ierr);
+
   work[sizeof(work) - 1] = 0;
+
   ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
   if (lfunction != work && lfunction && lfunction[1] != ':') {
     lfunction[0] = 0;
+
     ierr = PetscStrallocpy(work,path);CHKERRQ(ierr);
     ierr = PetscStrallocpy(lfunction+1,function);CHKERRQ(ierr);
   } else {
     *path = 0;
-    ierr = PetscStrallocpy(name,function);CHKERRQ(ierr);
+    ierr  = PetscStrallocpy(name,function);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -141,6 +144,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
+
   PetscDLLibrariesLoaded = 0;
   PetscFunctionReturn(0);
 }
@@ -149,18 +153,18 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 
 /* ------------------------------------------------------------------------------*/
 struct _n_PetscFunctionList {
-  void               (*routine)(void);   /* the routine */
-  char               *path;              /* path of link library containing routine */
-  char               *name;              /* string to identify routine */
-  char               *rname;             /* routine name in dynamic library */
-  PetscFunctionList  next;               /* next pointer */
-  PetscFunctionList  next_list;          /* used to maintain list of all lists for freeing */
+  void              (*routine)(void);    /* the routine */
+  char              *path;               /* path of link library containing routine */
+  char              *name;               /* string to identify routine */
+  char              *rname;              /* routine name in dynamic library */
+  PetscFunctionList next;                /* next pointer */
+  PetscFunctionList next_list;           /* used to maintain list of all lists for freeing */
 };
 
 /*
      Keep a linked list of PetscFunctionLists so that we can destroy all the left-over ones.
 */
-static PetscFunctionList   dlallhead = 0;
+static PetscFunctionList dlallhead = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFunctionListAdd"
@@ -208,7 +212,7 @@ PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const c
     entry->rname   = fname;
     entry->routine = fnc;
     entry->next    = 0;
-    *fl = entry;
+    *fl            = entry;
 
     /* add this new list to list of all lists */
     if (!dlallhead) {
@@ -223,19 +227,21 @@ PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const c
     /* search list to see if it is already there */
     ne = *fl;
     while (ne) {
-      PetscBool  founddup;
+      PetscBool founddup;
 
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
         ierr = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
         ierr = PetscFree(ne->path);CHKERRQ(ierr);
         ierr = PetscFree(ne->rname);CHKERRQ(ierr);
+
         ne->path    = fpath;
         ne->rname   = fname;
         ne->routine = fnc;
         PetscFunctionReturn(0);
       }
-      if (ne->next) ne = ne->next; else break;
+      if (ne->next) ne = ne->next;
+      else break;
     }
     /* create new entry and add to end of list */
     ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
@@ -275,11 +281,8 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
        Remove this entry from the master DL list (if it is in it)
   */
   if (dlallhead == *fl) {
-    if (dlallhead->next_list) {
-      dlallhead = dlallhead->next_list;
-    } else {
-      dlallhead = 0;
-    }
+    if (dlallhead->next_list) dlallhead = dlallhead->next_list;
+    else dlallhead = 0;
   } else {
     while (tmp->next_list != *fl) {
       tmp = tmp->next_list;
@@ -291,11 +294,11 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
   /* free this list */
   entry = *fl;
   while (entry) {
-    next = entry->next;
-    ierr = PetscFree(entry->path);CHKERRQ(ierr);
-    ierr = PetscFree(entry->name);CHKERRQ(ierr);
-    ierr = PetscFree(entry->rname);CHKERRQ(ierr);
-    ierr = PetscFree(entry);CHKERRQ(ierr);
+    next  = entry->next;
+    ierr  = PetscFree(entry->path);CHKERRQ(ierr);
+    ierr  = PetscFree(entry->name);CHKERRQ(ierr);
+    ierr  = PetscFree(entry->rname);CHKERRQ(ierr);
+    ierr  = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
   *fl = 0;
@@ -371,11 +374,11 @@ PetscErrorCode  PetscFunctionListFind(MPI_Comm comm,PetscFunctionList fl,const c
       ierr = PetscStrcmp(path,entry->path,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->name,&f3);CHKERRQ(ierr);
-      flg =  (PetscBool) ((f1 && f2) || (f1 && f3));
+      flg  =  (PetscBool) ((f1 && f2) || (f1 && f3));
     } else if (!path) {
       ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
       ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      flg =  (PetscBool) (f1 || f2);
+      flg  =  (PetscBool) (f1 || f2);
     } else {
       ierr = PetscStrcmp(function,entry->name,&flg);CHKERRQ(ierr);
       if (flg) {
@@ -406,9 +409,10 @@ PetscErrorCode  PetscFunctionListFind(MPI_Comm comm,PetscFunctionList fl,const c
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
       newpath = path;
       if (!path) newpath = entry->path;
-      ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
+      ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,newpath,entry->rname,(void**)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
+
         ierr = PetscFree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
@@ -421,7 +425,7 @@ PetscErrorCode  PetscFunctionListFind(MPI_Comm comm,PetscFunctionList fl,const c
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   if (searchlibraries) {
     /* Function never registered; try for it anyway */
-    ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
+    ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,path,function,(void**)r);CHKERRQ(ierr);
     ierr = PetscFree(path);CHKERRQ(ierr);
     if (*r) {
       ierr = PetscFunctionListAdd(comm,&fl,name,name,*r);CHKERRQ(ierr);
@@ -506,15 +510,15 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc((count+1)*sizeof(char *),array);CHKERRQ(ierr);
+  ierr  = PetscMalloc((count+1)*sizeof(char*),array);CHKERRQ(ierr);
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;
-    klist = klist->next;
+    klist           = klist->next;
     count++;
   }
   (*array)[count] = 0;
-  *n = count+1;
+  *n              = count+1;
   PetscFunctionReturn(0);
 }
 
@@ -623,7 +627,7 @@ PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionLis
 PetscErrorCode  PetscFunctionListConcat(const char path[],const char name[],char fullname[])
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (path) {
     ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);

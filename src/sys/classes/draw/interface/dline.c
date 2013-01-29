@@ -103,7 +103,7 @@ PetscErrorCode  PetscDrawPushCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->currentpoint > 9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
   draw->currentpoint_x[++draw->currentpoint] = x;
-  draw->currentpoint_y[draw->currentpoint] = y;
+  draw->currentpoint_y[draw->currentpoint]   = y;
   PetscFunctionReturn(0);
 }
 
@@ -150,7 +150,7 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
 PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscErrorCode ierr;
-  PetscBool  isdrawnull;
+  PetscBool      isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -182,7 +182,7 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscErrorCode ierr;
-  PetscBool  isdrawnull;
+  PetscBool      isdrawnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

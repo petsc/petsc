@@ -51,25 +51,25 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
 #define __FUNCT__ "PetscViewerDestroy_VTK"
 static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
 {
- PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
- PetscErrorCode  ierr;
+  PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
+  PetscErrorCode  ierr;
 
- PetscFunctionBegin;
- ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
- ierr = PetscFree(vtk);CHKERRQ(ierr);
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","",PETSC_NULL);CHKERRQ(ierr);
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","",PETSC_NULL);CHKERRQ(ierr);
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerVTKAddField_C","",PETSC_NULL);CHKERRQ(ierr);
- PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vtk);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerVTKAddField_C","",PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFlush_VTK"
 static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
 {
-  PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
-  PetscErrorCode ierr;
-  PetscViewerVTKObjectLink   link,next;
+  PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
+  PetscErrorCode           ierr;
+  PetscViewerVTKObjectLink link,next;
 
   PetscFunctionBegin;
   if (vtk->link && (!vtk->dm || !vtk->write)) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_WRONGSTATE,"No fields or no grid");
@@ -79,7 +79,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
     ierr = PetscObjectDestroy(&link->vec);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
-  ierr = PetscObjectDestroy(&vtk->dm);CHKERRQ(ierr);
+  ierr       = PetscObjectDestroy(&vtk->dm);CHKERRQ(ierr);
   vtk->write = PETSC_NULL;
   PetscFunctionReturn(0);
 }
@@ -143,19 +143,17 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   if (vtk->dm) {
     if (dm != vtk->dm) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
   }
-  vtk->dm = dm;
+  vtk->dm    = dm;
   vtk->write = PetscViewerVTKWriteFunction;
-  ierr = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
-  link->ft = fieldtype;
-  link->vec = vec;
+  ierr       = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
+  link->ft   = fieldtype;
+  link->vec  = vec;
   link->next = PETSC_NULL;
   /* Append to list */
   if (tail) {
     while (tail->next) tail = tail->next;
     tail->next = link;
-  } else {
-    vtk->link = link;
-  }
+  } else vtk->link = link;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -175,8 +173,8 @@ PetscErrorCode  PetscViewerCreate_VTK(PetscViewer v)
   v->ops->destroy = PetscViewerDestroy_VTK;
   v->ops->flush   = PetscViewerFlush_VTK;
   v->iformat      = 0;
-  vtk->btype     = (PetscFileMode) -1;
-  vtk->filename  = 0;
+  vtk->btype      = (PetscFileMode) -1;
+  vtk->filename   = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_VTK",
                                            PetscViewerFileSetName_VTK);CHKERRQ(ierr);
@@ -254,15 +252,15 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
 PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data,PetscInt n,PetscDataType dtype)
 {
   PetscErrorCode ierr;
-  PetscMPIInt rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    size_t count;
-    PetscInt size;
+    size_t      count;
+    PetscInt    size;
     PetscVTKInt bytes;
     switch (dtype) {
     case PETSC_DOUBLE:

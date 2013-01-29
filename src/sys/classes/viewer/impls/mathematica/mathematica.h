@@ -20,7 +20,7 @@ typedef struct {
 } PetscViewer_Mathematica;
 
 extern PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer);
-extern PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer, const char *);
-extern PetscErrorCode PetscViewerMathematicaSetLinkPort(PetscViewer, int);
-extern PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer, const char *);
-extern PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer, LinkMode);
+extern PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer,const char*);
+extern PetscErrorCode PetscViewerMathematicaSetLinkPort(PetscViewer,int);
+extern PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer,const char*);
+extern PetscErrorCode PetscViewerMathematicaSetLinkMode(PetscViewer,LinkMode);

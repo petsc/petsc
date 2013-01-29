@@ -21,7 +21,7 @@
 #include <sys/systeminfo.h>
 #endif
 
-#if defined (PETSC_HAVE_SYS_TIMES_H)
+#if defined(PETSC_HAVE_SYS_TIMES_H)
 
 #include <sys/times.h>
 #include <limits.h>
@@ -94,9 +94,9 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 
   PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);
-  foo     = temp.ru_utime.tv_sec;     /* seconds */
-  foo1    = temp.ru_utime.tv_usec;    /* uSecs */
-  *t      = foo + foo1 * 1.0e-6;
+  foo  = temp.ru_utime.tv_sec;        /* seconds */
+  foo1 = temp.ru_utime.tv_usec;       /* uSecs */
+  *t   = foo + foo1 * 1.0e-6;
   PetscFunctionReturn(0);
 }
 

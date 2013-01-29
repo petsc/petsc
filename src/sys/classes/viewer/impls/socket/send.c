@@ -58,7 +58,7 @@ extern int socket(int,int,int);
 extern int sleep(unsigned);
 #endif
 #if defined(PETSC_NEED_CONNECT_PROTO)
-extern int connect(int,struct sockaddr *,int);
+extern int connect(int,struct sockaddr*,int);
 #endif
 EXTERN_C_END
 
@@ -108,7 +108,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
   ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr_list[0],hp->h_length);CHKERRQ(ierr);
 
   sa.sin_family = hp->h_addrtype;
-  sa.sin_port = htons((u_short) portnum);
+  sa.sin_port   = htons((u_short) portnum);
   while (flg) {
     if ((s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0) {
       perror("SEND: error socket");  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
@@ -116,11 +116,9 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
       ierr = WSAGetLastError();
-      if (ierr == WSAEADDRINUSE) {
-        (*PetscErrorPrintf)("SEND: address is in use\n");
-      } else if (ierr == WSAEALREADY) {
-        (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
-      } else if (ierr == WSAEISCONN) {
+      if (ierr == WSAEADDRINUSE)    (*PetscErrorPrintf)("SEND: address is in use\n");
+      else if (ierr == WSAEALREADY) (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
+      else if (ierr == WSAEISCONN) {
         (*PetscErrorPrintf)("SEND: socket already connected\n");
         Sleep((unsigned) 1);
       } else if (ierr == WSAECONNREFUSED) {
@@ -130,11 +128,9 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
         perror(NULL); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
       }
 #else
-      if (errno == EADDRINUSE) {
-        (*PetscErrorPrintf)("SEND: address is in use\n");
-      } else if (errno == EALREADY) {
-        (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
-      } else if (errno == EISCONN) {
+      if (errno == EADDRINUSE)    (*PetscErrorPrintf)("SEND: address is in use\n");
+      else if (errno == EALREADY) (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
+      else if (errno == EISCONN) {
         (*PetscErrorPrintf)("SEND: socket already connected\n");
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
@@ -151,8 +147,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
 #else
       close(s);
 #endif
-    }
-    else flg = PETSC_FALSE;
+    } else flg = PETSC_FALSE;
   }
   *t = s;
   PetscFunctionReturn(0);
@@ -183,13 +178,13 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   if (!hp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
   sa.sin_family = hp->h_addrtype;
-  sa.sin_port = htons((u_short)portnum);
+  sa.sin_port   = htons((u_short)portnum);
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
 #if defined(PETSC_HAVE_SO_REUSEADDR)
   {
     int optval = 1; /* Turn on the option */
-    ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
+    ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));CHKERRQ(ierr);
   }
 #endif
 
@@ -228,7 +223,7 @@ PetscErrorCode PetscSocketListen(int listenport,int *t)
   PetscFunctionBegin;
   /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ((*t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()\n");
+  if ((*t = accept(listenport,(struct sockaddr*)&isa,(socklen_t*)&i)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()\n");
   PetscFunctionReturn(0);
 }
 
@@ -314,19 +309,17 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
     are listed here for the GUI to display
   */
   ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
-    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
-    if (tflg) {
-      ierr = PetscOptionsStringToInt(sdef,&def);CHKERRQ(ierr);
-    } else {
-      def = PETSCSOCKETDEFAULTPORT;
-    }
-    ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+  if (tflg) {
+    ierr = PetscOptionsStringToInt(sdef,&def);CHKERRQ(ierr);
+  } else def = PETSCSOCKETDEFAULTPORT;
+  ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
-    if (!tflg) {
-      ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
+  if (!tflg) {
+    ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -377,7 +370,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
   PetscMPIInt        rank;
   char               mach[256];
   PetscBool          tflg;
-  PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
+  PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)v->data;
 
   PetscFunctionBegin;
   /* PetscValidLogicalCollectiveInt(v,port,3); not a PetscInt */
@@ -388,9 +381,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
       PetscInt pport;
       ierr = PetscOptionsStringToInt(portn,&pport);CHKERRQ(ierr);
       port = (int)pport;
-    } else {
-      port = PETSCSOCKETDEFAULTPORT;
-    }
+    } else port = PETSCSOCKETDEFAULTPORT;
   }
   if (!machine) {
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
@@ -477,7 +468,7 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Socket_keyval,(void**)&viewer,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerSocketOpen(ncomm,0,0,&viewer);
@@ -564,27 +555,25 @@ PetscErrorCode PetscAMSDisplayList(FILE *fd)
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
-  if (!comm_list || !comm_list[0]) {
-    fprintf(fd, "AMS Communicator not running</p>\r\n");
-  } else {
+  if (!comm_list || !comm_list[0]) fprintf(fd, "AMS Communicator not running</p>\r\n");
+  else {
     ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
     ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
-    if (!mem_list[0]) {
-      fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
-    } else {
+    if (!mem_list[0]) fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
+    else {
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
       fprintf(fd,"<ul>\r\n");
       while (mem_list[i]) {
         fprintf(fd,"<li> %s</li>\r\n",mem_list[i]);
         ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
         ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        j = 0;
+        j    = 0;
         fprintf(fd,"<ul>\r\n");
         while (fld_list[j]) {
           fprintf(fd,"<li> %s",fld_list[j]);
           ierr = AMS_Memory_get_field_info(memory, fld_list[j], &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
           if (len == 1) {
-            if (dtype == AMS_INT)        fprintf(fd," %d",*(int*)addr);
+            if (dtype == AMS_INT)         fprintf(fd," %d",*(int*)addr);
             else if (dtype == AMS_STRING) fprintf(fd," %s",*(char**)addr);
           }
           fprintf(fd,"</li>\r\n");
@@ -620,48 +609,47 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
-  if (!comm_list || !comm_list[0]) {
-    fprintf(fd, "AMS Communicator not running</p>\r\n");
-  } else {
+  if (!comm_list || !comm_list[0]) fprintf(fd, "AMS Communicator not running</p>\r\n");
+  else {
     ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
     ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
-    if (!mem_list[0]) {
-      fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
-    } else {
-      PetscInt   Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt,Nlevelcnt = 0;
-      PetscBool  *mask;
-      char       **classes,*clas,**subclasses,*sclas;
+    if (!mem_list[0]) fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
+    else {
+      PetscInt  Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt,Nlevelcnt = 0;
+      PetscBool *mask;
+      char      **classes,*clas,**subclasses,*sclas;
 
       /* get maximum number of objects */
       while (mem_list[i]) {
-        ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        Id = (int*) addr2;
+        ierr  = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+        ierr  = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr  = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        Id    = (int*) addr2;
         maxId = PetscMax(maxId,*Id);
         i++;
       }
       maxId++;
 
       /* Gets everyone's parent ID and which nodes are masked */
-      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscBool ,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
+      ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscBool,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
       ierr = PetscMemzero(classes,maxId*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscMemzero(subclasses,maxId*sizeof(char*));CHKERRQ(ierr);
       for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
       i = 0;
       while (mem_list[i]) {
-        ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        Id = (int*) addr2;
-        ierr = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        parentId = (int*) addr3;
-        ierr = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        clas = *(char**)addr;
-        ierr = AMS_Memory_get_field_info(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
-        sclas = *(char**)addr4;
+        ierr          = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
+        ierr          = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        ierr          = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        Id            = (int*) addr2;
+        ierr          = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        parentId      = (int*) addr3;
+        ierr          = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        clas          = *(char**)addr;
+        ierr          = AMS_Memory_get_field_info(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        sclas         = *(char**)addr4;
         parentid[*Id] = *parentId;
         mask[*Id]     = PETSC_FALSE;
+
         ierr = PetscStrallocpy(clas,classes+*Id);CHKERRQ(ierr);
         ierr = PetscStrallocpy(sclas,subclasses+*Id);CHKERRQ(ierr);
         i++;
@@ -674,12 +662,8 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 
       ierr = PetscProcessTree(maxId,mask,parentid,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column);CHKERRQ(ierr);
 
-      for (i=0; i<Nlevels; i++) {
-        maxCol = PetscMax(maxCol,Levelcnt[i]);
-      }
-      for (i=0; i<Nlevels; i++) {
-        Nlevelcnt = PetscMax(Nlevelcnt,Levelcnt[i]);
-      }
+      for (i=0; i<Nlevels; i++) maxCol    = PetscMax(maxCol,Levelcnt[i]);
+      for (i=0; i<Nlevels; i++) Nlevelcnt = PetscMax(Nlevelcnt,Levelcnt[i]);
 
       /* print all the top-level objects */
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
@@ -689,11 +673,8 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "  var example = document.getElementById('tree');\r\n");
       fprintf(fd, "  var context = example.getContext('2d');\r\n");
       /* adjust font size based on how big a tree is printed */
-      if (Nlevels > 5 || Nlevelcnt > 10) {
-        fprintf(fd, "  context.font         = \"normal 12px sans-serif\";\r\n");
-      } else {
-        fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
-      }
+      if (Nlevels > 5 || Nlevelcnt > 10) fprintf(fd, "  context.font         = \"normal 12px sans-serif\";\r\n");
+      else                               fprintf(fd, "  context.font         = \"normal 24px sans-serif\";\r\n");
       fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
       fprintf(fd, "  context.textBaseline = \"top\";\r\n");
       fprintf(fd, "  var xspacep = 0;\r\n");
@@ -706,7 +687,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       for (i=0; i<Nlevels; i++) {
         fprintf(fd, "  var xspace = example.width/%d;\r\n",Levelcnt[i]+1);
         for (j=0; j<Levelcnt[i]; j++) {
-          id   = Idbylevel[cnt++];
+          id    = Idbylevel[cnt++];
           clas  = classes[id];
           sclas = subclasses[id];
           fprintf(fd, "  var width = context.measureText(\"%s\");\r\n",clas);
@@ -765,7 +746,7 @@ PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso
     ierr = PetscPrintf(PETSC_COMM_SELF,"  %s\n",args[i]);CHKERRQ(ierr);
   }
   *argco = argc;
-  ierr = PetscMalloc(argc*sizeof(char*),argso);CHKERRQ(ierr);
+  ierr   = PetscMalloc(argc*sizeof(char*),argso);CHKERRQ(ierr);
   for (i=0; i<argc; i++) {
     ierr = PetscStrallocpy(args[i],&(*argso)[i]);CHKERRQ(ierr);
   }
@@ -793,10 +774,13 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
 
   PetscFunctionBegin;
   ierr = AMS_Connect(0,-1,&list);
-  if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);}
-  else if (!list) {ierr = PetscInfo(PETSC_NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);}
+  if (ierr) {
+    ierr = PetscInfo1(PETSC_NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);
+  } else if (!list) {
+    ierr = PetscInfo(PETSC_NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);
+  }
   *argco = 1;
-  ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+  ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   if (list) {
     ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
   } else {
@@ -828,8 +812,8 @@ PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,ch
   ierr = AMS_Comm_attach(args[0],&comm);
   if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Comm_attach() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 1;
-  ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-  ierr = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
+  ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+  ierr   = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
   sprintf(argso[0][0],"%d",(int)comm);
   PetscFunctionReturn(0);
 }
@@ -901,8 +885,8 @@ PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,
   ierr = AMS_Memory_attach(comm,args[1],&mem,&step);
   if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Memory_attach() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 2;
-  ierr = PetscMalloc(2*sizeof(char*),argso);CHKERRQ(ierr);
-  ierr = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*sizeof(char*),argso);CHKERRQ(ierr);
+  ierr   = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
   sprintf(argso[0][0],"%d",(int)mem);
   ierr = PetscMalloc(3*sizeof(char*),&argso[0][1]);CHKERRQ(ierr);
   sprintf(argso[0][1],"%d",(int)step);
@@ -984,14 +968,14 @@ PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt
   ierr = AMS_Memory_get_field_info(mem,args[1],&addr,&len,&dtype,&mtype,&stype,&rtype);
   if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 4 + len;
-  ierr = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(AMS_Data_types[dtype],&argso[0][0]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(AMS_Memory_types[mtype],&argso[0][1]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(AMS_Shared_types[stype],&argso[0][2]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(AMS_Reduction_types[rtype],&argso[0][3]);CHKERRQ(ierr);
+  ierr   = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
+  ierr   = PetscStrallocpy(AMS_Data_types[dtype],&argso[0][0]);CHKERRQ(ierr);
+  ierr   = PetscStrallocpy(AMS_Memory_types[mtype],&argso[0][1]);CHKERRQ(ierr);
+  ierr   = PetscStrallocpy(AMS_Shared_types[stype],&argso[0][2]);CHKERRQ(ierr);
+  ierr   = PetscStrallocpy(AMS_Reduction_types[rtype],&argso[0][3]);CHKERRQ(ierr);
   for (i=0; i<len; i++) {
     if (dtype == AMS_STRING) {
-      ierr = PetscStrallocpy(*(const char **)addr,&argso[0][4+i]);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(*(const char**)addr,&argso[0][4+i]);CHKERRQ(ierr);
     } else if (dtype == AMS_DOUBLE) {
       ierr = PetscMalloc(20*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
       sprintf(argso[0][4+i],"%18.16e",*(double*)addr);
@@ -1015,24 +999,24 @@ EXTERN_C_END
 #include "yaml.h"
 #undef __FUNCT__
 #define __FUNCT__ "PetscProcessYAMLRPC"
-PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
+PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
 {
   yaml_parser_t  parser;
   yaml_event_t   event;
-  int            done = 0;
+  int            done  = 0;
   int            count = 0;
   size_t         len;
   PetscErrorCode ierr;
   PetscBool      method,params,id;
   char           *methodname,*idname,**args,**argso = 0;
   PetscInt       argc = 0,argco,i;
-  PetscErrorCode (*fun)(PetscInt,char **,PetscInt*,char ***);
+  PetscErrorCode (*fun)(PetscInt,char**,PetscInt*,char***);
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(char*),&args);CHKERRQ(ierr);
   yaml_parser_initialize(&parser);
   PetscStrlen(request,&len);
-  yaml_parser_set_input_string(&parser, (unsigned char *)request, len);
+  yaml_parser_set_input_string(&parser, (unsigned char*)request, len);
 
   /* this is totally bogus; it only handles the simple JSON-RPC messages */
   while (!done) {
@@ -1106,7 +1090,7 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
     }
 
     yaml_event_delete(&event);
-    count ++;
+    count++;
   }
   yaml_parser_delete(&parser);
 
@@ -1170,7 +1154,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
   FILE           *fd,*fdo;
   char           buf[4096],fullpath[PETSC_MAX_PATH_LEN],truefullpath[PETSC_MAX_PATH_LEN];
   char           *method, *path, *protocol,*result;
-  const char*    type;
+  const char     *type;
   PetscBool      flg;
   PetscToken     tok;
   PetscInt       cnt = 8;
@@ -1330,7 +1314,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
     }
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
-  theend:
+theend:
   ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr);
@@ -1351,7 +1335,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
 
 .seealso: PetscViewerSocketOpen(), PetscWebServe()
 @*/
-void  *PetscWebServeWait(int *port)
+void *PetscWebServeWait(int *port)
 {
   PetscErrorCode ierr;
   int            iport,listenport,tport = *port;

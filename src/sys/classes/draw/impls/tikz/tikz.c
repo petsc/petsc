@@ -59,7 +59,7 @@ PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
 static const char *TikZColors[] = { "white",  "black", "red",  "green", "cyan",   "blue", "magenta", 0, 0, "orange",
                                     "violet", "brown", "pink", 0,       "yellow", 0};
 
-PETSC_STATIC_INLINE const char * TikZColorMap(int cl)
+PETSC_STATIC_INLINE const char *TikZColorMap(int cl)
 {
   return((cl < 16) ? (TikZColors[cl] ? TikZColors[cl] : "black") : "black");
 }
@@ -187,6 +187,7 @@ PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_TikZ,&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_TikZ));CHKERRQ(ierr);
+
   draw->data = (void*) win;
 
   if (draw->title) {
@@ -199,6 +200,7 @@ PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
   ierr = PetscFOpen(((PetscObject)draw)->comm,win->filename,"w",&win->fd);CHKERRQ(ierr);
   ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_BEGIN_DOCUMENT);CHKERRQ(ierr);
   ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
+
   win->written = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

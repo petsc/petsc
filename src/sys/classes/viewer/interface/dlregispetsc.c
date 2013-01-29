@@ -2,9 +2,9 @@
 #include <petscdraw.h>
 #include <petscsf.h>
 
-extern PetscLogEvent  PETSC_Barrier;
+extern PetscLogEvent PETSC_Barrier;
 
-static PetscBool  PetscSysPackageInitialized = PETSC_FALSE;
+static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "PetscSysFinalizePackage"
 /*@C
@@ -40,10 +40,10 @@ PetscErrorCode  PetscSysFinalizePackage(void)
 @*/
 PetscErrorCode  PetscSysInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscSysPackageInitialized) PetscFunctionReturn(0);
