@@ -4,9 +4,9 @@
 #define __FUNCT__ "CharacteristicView_DA"
 PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 {
-  Characteristic_DA *da = (Characteristic_DA *) c->data;
-  PetscBool          iascii, isstring;
-  PetscErrorCode     ierr;
+  Characteristic_DA *da = (Characteristic_DA*) c->data;
+  PetscBool         iascii, isstring;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   /* Pull out field names from DM */
@@ -25,7 +25,7 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
 {
   Characteristic_DA *da = (Characteristic_DA*) c->data;
-  PetscErrorCode     ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(da);CHKERRQ(ierr);
@@ -76,13 +76,13 @@ EXTERN_C_BEGIN
 PetscErrorCode CharacteristicCreate_DA(Characteristic c)
 {
   Characteristic_DA *da;
-  PetscErrorCode     ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(Characteristic_DA, &da);CHKERRQ(ierr);
-  ierr = PetscMemzero(da, sizeof(Characteristic_DA));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(c, sizeof(Characteristic_DA));CHKERRQ(ierr);
-  c->data = (void *) da;
+  ierr    = PetscNew(Characteristic_DA, &da);CHKERRQ(ierr);
+  ierr    = PetscMemzero(da, sizeof(Characteristic_DA));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory(c, sizeof(Characteristic_DA));CHKERRQ(ierr);
+  c->data = (void*) da;
 
   c->ops->setup   = CharacteristicSetUp_DA;
   c->ops->destroy = CharacteristicDestroy_DA;
@@ -109,12 +109,12 @@ PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar 
   ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);
 
   if (bx == DMDA_BOUNDARY_PERIODIC) {
-      while (*x >= (PetscScalar)gx) { *x -= (PetscScalar)gx; }
-      while (*x < 0.0)              { *x += (PetscScalar)gx; }
+      while (*x >= (PetscScalar)gx) *x -= (PetscScalar)gx;
+      while (*x < 0.0)              *x += (PetscScalar)gx;
     }
     if (by == DMDA_BOUNDARY_PERIODIC) {
-      while (*y >= (PetscScalar)gy) { *y -= (PetscScalar)gy; }
-      while (*y < 0.0)              { *y += (PetscScalar)gy; }
+      while (*y >= (PetscScalar)gy) *y -= (PetscScalar)gy;
+      while (*y < 0.0)              *y += (PetscScalar)gy;
     }
   PetscFunctionReturn(ierr);
 }

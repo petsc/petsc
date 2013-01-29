@@ -1,7 +1,7 @@
 #include <petsc-private/tsimpl.h>      /*I "petscts.h"  I*/
 
-PetscFunctionList TSList                       = PETSC_NULL;
-PetscBool         TSRegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList TSList              = PETSC_NULL;
+PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetType"
@@ -56,10 +56,13 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
+
     ts->ops->destroy = PETSC_NULL;
   }
   ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
+
   ts->setupcalled = PETSC_FALSE;
+
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
   ierr = (*r)(ts);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
@@ -115,7 +118,7 @@ PetscErrorCode  TSRegister(const char sname[], const char path[], const char nam
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSList, sname, fullname, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

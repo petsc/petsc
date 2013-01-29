@@ -60,13 +60,13 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  appctx.a        = 1.0;
-  appctx.d        = 0.0;
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-a",&appctx.a,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-d",&appctx.d,PETSC_NULL);CHKERRQ(ierr);
-  appctx.upwind   = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  appctx.a      = 1.0;
+  appctx.d      = 0.0;
+  ierr          = PetscOptionsGetScalar(PETSC_NULL,"-a",&appctx.a,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetScalar(PETSC_NULL,"-d",&appctx.d,PETSC_NULL);CHKERRQ(ierr);
+  appctx.upwind = PETSC_TRUE;
+  ierr          = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -60, 1, 1,PETSC_NULL,&da);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -180,9 +180,7 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=mstart; i<mend; i++) {
-    u[i] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
-  }
+  for (i=mstart; i<mend; i++) u[i] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
 
   /*
      Restore vector
@@ -228,9 +226,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
   ex1 = PetscExpScalar(-36.*PETSC_PI*PETSC_PI*appctx->d*t);
   ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*appctx->d*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
-  for (i=mstart; i<mend; i++) {
-    u[i] = PetscSinScalar(sc1*(PetscReal)i + appctx->a*PETSC_PI*6.*t)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i + appctx->a*PETSC_PI*2.*t)*ex2;
-  }
+  for (i=mstart; i<mend; i++) u[i] = PetscSinScalar(sc1*(PetscReal)i + appctx->a*PETSC_PI*6.*t)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i + appctx->a*PETSC_PI*2.*t)*ex2;
 
   /*
      Restore vector
@@ -263,7 +259,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 */
 PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat            A = *AA;                      /* Jacobian matrix */
+  Mat            A       = *AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscInt       mstart, mend;
   PetscErrorCode ierr;
@@ -289,14 +285,14 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
   v[2] = appctx->d/(h*h);
   if (!mstart) {
     idx[0] = M-1; idx[1] = 0; idx[2] = 1;
-    ierr = MatSetValues(A,1,&mstart,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&mstart,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
     mstart++;
   }
 
   if (mend == M) {
     mend--;
     idx[0] = M-2; idx[1] = M-1; idx[2] = 0;
-    ierr = MatSetValues(A,1,&mend,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&mend,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -305,7 +301,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
   */
   for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
@@ -318,19 +314,19 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
     v[1] = .5*appctx->a/(h);
     if (!mstart) {
       idx[0] = M-1; idx[1] = 1;
-      ierr = MatSetValues(A,1,&mstart,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&mstart,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
       mstart++;
     }
 
     if (mend == M) {
       mend--;
       idx[0] = M-2; idx[1] = 0;
-      ierr = MatSetValues(A,1,&mend,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&mend,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
     }
 
     for (i=mstart; i<mend; i++) {
       idx[0] = i-1; idx[1] = i+1;
-      ierr = MatSetValues(A,1,&i,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&i,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
     }
   } else {
     /* advection -- upwinding */
@@ -338,19 +334,19 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructur
     v[1] = appctx->a/(h);
     if (!mstart) {
       idx[0] = 0; idx[1] = 1;
-      ierr = MatSetValues(A,1,&mstart,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&mstart,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
       mstart++;
     }
 
     if (mend == M) {
       mend--;
       idx[0] = M-1; idx[1] = 0;
-      ierr = MatSetValues(A,1,&mend,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&mend,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
     }
 
     for (i=mstart; i<mend; i++) {
       idx[0] = i; idx[1] = i+1;
-      ierr = MatSetValues(A,1,&i,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&i,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
     }
   }
 

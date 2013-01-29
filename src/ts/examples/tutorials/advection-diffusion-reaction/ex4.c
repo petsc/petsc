@@ -42,16 +42,16 @@ extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*),InitialCondition
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;                 /* nonlinear solver */
-  Vec             U;                  /* solution, residual vectors */
-  PetscErrorCode  ierr;
-  DM              da;
-  AppCtx          appctx;
+  TS             ts;                  /* nonlinear solver */
+  Vec            U;                   /* solution, residual vectors */
+  PetscErrorCode ierr;
+  DM             da;
+  AppCtx         appctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   appctx.epsilon = 1.0e-3;
   appctx.delta   = 1.0;
@@ -63,6 +63,7 @@ int main(int argc,char **argv)
   appctx.mu      = 100.;
   appctx.cstar   = .2;
   appctx.upwind  = PETSC_TRUE;
+
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-delta",&appctx.delta,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
 
@@ -148,7 +149,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -187,18 +188,17 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   for (i=xs; i<xs+xm; i++) {
-    rho       = u[i].rho;
-    rhoxx     = (-2.0*rho + u[i-1].rho + u[i+1].rho)*sx;
-    c         = u[i].c;
-    cxx       = (-2.0*c + u[i-1].c + u[i+1].c)*sx;
+    rho   = u[i].rho;
+    rhoxx = (-2.0*rho + u[i-1].rho + u[i+1].rho)*sx;
+    c     = u[i].c;
+    cxx   = (-2.0*c + u[i-1].c + u[i+1].c)*sx;
 
     if (!appctx->upwind) {
-      rhox      = .5*(u[i+1].rho - u[i-1].rho)/hx;
-      cx        = .5*(u[i+1].c - u[i-1].c)/hx;
-      kcxrhox   = appctx->kappa*(cxx*rho + cx*rhox);
-    } else {
-      kcxrhox   = appctx->kappa*((u[i+1].c - u[i].c)*u[i+1].rho - (u[i].c - u[i-1].c)*u[i].rho)*sx;
-    }
+      rhox    = .5*(u[i+1].rho - u[i-1].rho)/hx;
+      cx      = .5*(u[i+1].c - u[i-1].c)/hx;
+      kcxrhox = appctx->kappa*(cxx*rho + cx*rhox);
+    } else
+      kcxrhox = appctx->kappa*((u[i+1].c - u[i].c)*u[i+1].rho - (u[i].c - u[i-1].c)*u[i].rho)*sx;
 
     f[i].rho = udot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,PetscRealPart(c - appctx->cstar)) + appctx->beta*rho;
     f[i].c   = udot[i].c - appctx->delta*cxx + appctx->lambda*c + appctx->alpha*rho*c/(appctx->gamma + c);
@@ -227,7 +227,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
+  hx = 1.0/(PetscReal)(Mx-1);
 
   /*
      Get pointers to vector data
@@ -244,11 +244,8 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    if (x < 1.0) {
-      u[i].rho = 0.0;
-    } else {
-      u[i].rho = 1.0;
-    }
+    if (x < 1.0) u[i].rho = 0.0;
+    else         u[i].rho = 1.0;
     u[i].c = PetscCosScalar(.5*PETSC_PI*x);
   }
 

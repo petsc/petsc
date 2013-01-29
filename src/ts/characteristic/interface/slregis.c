@@ -1,6 +1,6 @@
 #include <petsc-private/characteristicimpl.h>
 
-static PetscBool  CharacteristicPackageInitialized = PETSC_FALSE;
+static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicFinalizePackage"
 /*@C
@@ -16,8 +16,8 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 {
   PetscFunctionBegin;
   CharacteristicPackageInitialized = PETSC_FALSE;
-  CharacteristicRegisterAllCalled = PETSC_FALSE;
-  CharacteristicList              = PETSC_NULL;
+  CharacteristicRegisterAllCalled  = PETSC_FALSE;
+  CharacteristicList               = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -38,10 +38,10 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 @*/
 PetscErrorCode CharacteristicInitializePackage(const char path[])
 {
-  char              logList[256];
-  char             *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (CharacteristicPackageInitialized) PetscFunctionReturn(0);

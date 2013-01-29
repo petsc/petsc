@@ -31,7 +31,7 @@ typedef struct {
 
 PetscScalar k1(AppCtx *ctx,PetscReal t)
 {
-  PetscReal th = t/3600.0;
+  PetscReal th    = t/3600.0;
   PetscReal barth = th - 24.0*floor(th/24.0);
   if (((((PetscInt)th) % 24) < 4)               || ((((PetscInt)th) % 24) >= 20)) return(1.0e-40);
   else return(ctx->k1*PetscExpScalar(7.0*PetscPowScalar(PetscSinScalar(.0625*PETSC_PI*(barth - 4.0)),.2)));
@@ -71,8 +71,8 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   J[0][0] = a + ctx->k2;   J[0][1] = 0.0;                J[0][2] = -k1(ctx,t);       J[0][3] = 0.0;
   J[1][0] = 0.0;           J[1][1] = a + ctx->k3*u[3];   J[1][2] = -k1(ctx,t);       J[1][3] = ctx->k3*u[1];
-  J[2][0] = 0.0;           J[2][1] = - ctx->k3*u[3];     J[2][2] = a + k1(ctx,t);    J[2][3] =  - ctx->k3*u[1];
-  J[3][0] =  - ctx->k2;    J[3][1] = ctx->k3*u[3];       J[3][2] = 0.0;              J[3][3] = a + ctx->k3*u[1];
+  J[2][0] = 0.0;           J[2][1] = -ctx->k3*u[3];      J[2][2] = a + k1(ctx,t);    J[2][3] =  -ctx->k3*u[1];
+  J[3][0] =  -ctx->k2;     J[3][1] = ctx->k3*u[3];       J[3][2] = 0.0;              J[3][3] = a + ctx->k3*u[1];
   ierr    = MatSetValues(*B,4,rowcol,4,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 #define __FUNCT__ "Solution"
 static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(ctx->initialsolution,U);CHKERRQ(ierr);
@@ -129,10 +129,10 @@ int main(int argc,char **argv)
 
   ierr = MatGetVecs(A,&U,PETSC_NULL);CHKERRQ(ierr);
 
-  ctx.k1       = 1.0e-5;
-  ctx.k2       = 1.0e5;
-  ctx.k3       = 1.0e-16;
-  ctx.sigma2   = 1.0e6;
+  ctx.k1     = 1.0e-5;
+  ctx.k2     = 1.0e5;
+  ctx.k3     = 1.0e-16;
+  ctx.sigma2 = 1.0e6;
 
   ierr = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
   ierr = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);

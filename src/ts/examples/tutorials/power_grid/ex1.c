@@ -33,8 +33,8 @@ typedef struct {
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f,r;
+  PetscErrorCode     ierr;
+  PetscScalar        *u,*udot,*f,r;
   static PetscScalar R = .4;
 
   PetscFunctionBegin;
@@ -120,15 +120,15 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Reaction options","");CHKERRQ(ierr);
   {
-    ctx.omega_s  = 1.0;
+    ctx.omega_s = 1.0;
     ierr        = PetscOptionsScalar("-omega_s","","",ctx.omega_s,&ctx.omega_s,PETSC_NULL);CHKERRQ(ierr);
-    ctx.H        = 1.0;
+    ctx.H       = 1.0;
     ierr        = PetscOptionsScalar("-H","","",ctx.H,&ctx.H,PETSC_NULL);CHKERRQ(ierr);
-    ctx.E        = 1.0;
+    ctx.E       = 1.0;
     ierr        = PetscOptionsScalar("-E","","",ctx.E,&ctx.E,PETSC_NULL);CHKERRQ(ierr);
-    ctx.V        = 1.0;
+    ctx.V       = 1.0;
     ierr        = PetscOptionsScalar("-V","","",ctx.V,&ctx.V,PETSC_NULL);CHKERRQ(ierr);
-    ctx.X        = 1.0;
+    ctx.X       = 1.0;
     ierr        = PetscOptionsScalar("-X","","",ctx.X,&ctx.X,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);

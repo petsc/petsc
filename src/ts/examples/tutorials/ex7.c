@@ -21,29 +21,29 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
 extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* time integrator */
-  SNES                   snes;
-  Vec                    x,r;                  /* solution, residual vectors */
-  PetscInt               maxsteps = 100;     /* iterations for convergence */
-  PetscErrorCode         ierr;
-  DM                     da;
+  TS             ts;                         /* time integrator */
+  SNES           snes;
+  Vec            x,r;                        /* solution, residual vectors */
+  PetscInt       maxsteps = 100;             /* iterations for convergence */
+  PetscErrorCode ierr;
+  DM             da;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -138,10 +138,10 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -172,12 +172,12 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
         f[j][i] = x[j][i];
         continue;
       }
-      u       = x[j][i];
-      uxx     = (two*u - x[j][i-1] - x[j][i+1])*sx;
-      uyy     = (two*u - x[j-1][i] - x[j+1][i])*sy;
+      u   = x[j][i];
+      uxx = (two*u - x[j][i-1] - x[j][i+1])*sx;
+      uyy = (two*u - x[j-1][i] - x[j+1][i])*sy;
       /*      f[j][i] = -(uxx + uyy); */
       f[j][i] = -u*(uxx + uyy) - (4.0 - 1.0)*((x[j][i+1] - x[j][i-1])*(x[j][i+1] - x[j][i-1])*.25*sx +
-                                            (x[j+1][i] - x[j-1][i])*(x[j+1][i] - x[j-1][i])*.25*sy);
+                                              (x[j+1][i] - x[j-1][i])*(x[j+1][i] - x[j-1][i])*.25*sy);
     }
   }
 
@@ -203,10 +203,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
+  hx = 1.0/(PetscReal)(Mx-1);
+  hy = 1.0/(PetscReal)(My-1);
 
   /*
      Get pointers to vector data
@@ -226,11 +226,8 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
       r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
-      if (r < .125) {
-        u[j][i] = PetscExpScalar(-30.0*r*r*r);
-      } else {
-        u[j][i] = 0.0;
-      }
+      if (r < .125) u[j][i] = PetscExpScalar(-30.0*r*r*r);
+      else          u[j][i] = 0.0;
     }
   }
 

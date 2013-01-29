@@ -835,21 +835,55 @@
           <li>make</li>
         </ul>
 
-        <p>One can also use the gnu prefix-install mode.</p>
+        <h4>Installing with --prefix:</h4>
+        <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
-          <li>[untar PETSc in a non-root regular location - say /home/username]</li>
           <li>./configure --prefix=/opt/petsc/petsc-3.3-p0  [other configure options]</li>
           <li>make</li>
-          <li>sudo make install</li>
+          <li>[sudo] make install</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
         </ul>
 
         <p>
-          After the install is done, one has to switch to using
-          <code>PETSC_DIR=/opt/petsc/petsc-3.3-p0</code>.  If you've installed
-          PETSc with the --prefix option then you <b>DO NOT</b> use a PETSC_ARCH
-          variable. You should install different configurations using different
-          --prefix names.
+          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.3-p0</code> after
+          install is done - and <b>NOT</b> use PETSC_ARCH anymore.
+        </p>
+
+        <h4>Using DESTDIR with prefix install:</h4>
+
+        <p>
+          One can also use the GNU <b>DESTDIR</b> with a prefix install. This mode is generally
+          used by binary packagers. For ex:
+        </p>
+
+        <ul class="code">
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>[package up /tmp/petsc-pkg and install the package. It will now be installed at /opt/petsc/petsc-3.3-p0]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
+        </ul>
+
+        <h4>Multiple installs using --prefix/DESTDIR:</h4>
+
+        Sepcify a different --prefix location/option for each build - at configure time. For eg:
+
+        <ul class="code">
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>[build/install]
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>[build/install]
+        </ul>
+
+        Note: PETSc defaults to using PETSC_DIR/PETSC_ARCH as the
+        BUILDDIR where the buildfiles are stored. So if rebuilding in
+        the same source tree [with a different prefix] - one could
+        delete the oldbuild files before the next build [thus reusing
+        same PETSC_ARCH,BUILDDIR between builds] or sepcify a
+        different PETSC_ARCH value to configure - so a different
+        BUILDDIR location is used for the second build.
+
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>

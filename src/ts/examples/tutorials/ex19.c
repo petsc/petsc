@@ -79,7 +79,7 @@ struct _n_User {
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*xdot,*f;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -98,15 +98,15 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt rowcol[] = {0,1};
-  PetscScalar *x,J[2][2];
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *x,J[2][2];
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;    J[0][1] = -1.;
   J[1][0] = 1.;   J[1][1] = -1. + x[1]*x[1];
-  ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -133,8 +133,8 @@ static PetscErrorCode RegisterMyARK2(void)
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
                   {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}},
-        *bembedt = PETSC_NULL,*bembed = PETSC_NULL;
-        ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembed,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    *bembedt = PETSC_NULL,*bembed = PETSC_NULL;
+    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembed,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -144,11 +144,11 @@ static PetscErrorCode RegisterMyARK2(void)
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscReal tfinal, dt;
-  User user = (User)ctx;
-  Vec interpolatedX;
+  PetscReal         tfinal, dt;
+  User              user = (User)ctx;
+  Vec               interpolatedX;
 
   PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
@@ -170,16 +170,16 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;           /* nonlinear solver */
-  Vec             x;            /* solution, residual vectors */
-  Mat             A;            /* Jacobian matrix */
-  PetscInt        steps;
-  PetscReal       ftime=0.5;
-  PetscBool       monitor = PETSC_FALSE;
-  PetscScalar     *x_ptr;
-  PetscMPIInt     size;
-  struct _n_User  user;
-  PetscErrorCode  ierr;
+  TS             ts;            /* nonlinear solver */
+  Vec            x;             /* solution, residual vectors */
+  Mat            A;             /* Jacobian matrix */
+  PetscInt       steps;
+  PetscReal      ftime   = 0.5;
+  PetscBool      monitor = PETSC_FALSE;
+  PetscScalar    *x_ptr;
+  PetscMPIInt    size;
+  struct _n_User user;
+  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program

@@ -29,30 +29,30 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
 extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
-  Vec                    x,r;                  /* solution, residual vectors */
-  PetscInt               steps,maxsteps = 100;     /* iterations for convergence */
-  PetscErrorCode         ierr;
-  DM                     da;
-  PetscReal              ftime;
-  SNES                   ts_snes;
+  TS             ts;                         /* nonlinear solver */
+  Vec            x,r;                        /* solution, residual vectors */
+  PetscInt       steps,maxsteps = 100;       /* iterations for convergence */
+  PetscErrorCode ierr;
+  DM             da;
+  PetscReal      ftime;
+  SNES           ts_snes;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
-                    2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
@@ -131,17 +131,17 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   DM             da = (DM)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal      hx,hy,/*hxdhy,hydhx,*/sx,sy;
+  PetscReal      hx,hy,/*hxdhy,hydhx,*/ sx,sy;
   PetscScalar    u,uxx,uyy,v,***x,***f;
   Vec            localX;
 
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
   /*hxdhy  = hx/hy;*/
   /*hydhx  = hy/hx;*/
 
@@ -206,10 +206,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
+  hx = 1.0/(PetscReal)(Mx-1);
+  hy = 1.0/(PetscReal)(My-1);
 
   /*
      Get pointers to vector data

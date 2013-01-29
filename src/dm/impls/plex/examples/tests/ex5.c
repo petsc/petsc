@@ -451,7 +451,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM      hybridMesh = PETSC_NULL;
     DMLabel label;
 
-    //ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "fault", &label);CHKERRQ(ierr);
     ierr = DMLabelCohesiveComplete(*dm, label);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);

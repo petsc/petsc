@@ -6,7 +6,9 @@
 PETSC_EXTERN PetscErrorCode DMShellCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMShellSetMatrix(DM,Mat);
 PETSC_EXTERN PetscErrorCode DMShellSetGlobalVector(DM,Vec);
+PETSC_EXTERN PetscErrorCode DMShellSetLocalVector(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMShellSetCreateGlobalVector(DM,PetscErrorCode (*)(DM,Vec*));
+PETSC_EXTERN PetscErrorCode DMShellSetCreateLocalVector(DM,PetscErrorCode (*)(DM,Vec*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateMatrix(DM,PetscErrorCode (*)(DM,MatType,Mat*));
 
 #endif

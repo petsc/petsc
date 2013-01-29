@@ -41,9 +41,13 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
 #define PETSC_MIXED_LEN(len) ,int len
 #define PETSC_END_LEN(len)
+#define PETSC_MIXED_LEN_CALL(len) ,len
+#define PETSC_END_LEN_CALL(len)
 #else
 #define PETSC_MIXED_LEN(len)
 #define PETSC_END_LEN(len)   ,int len
+#define PETSC_MIXED_LEN_CALL(len)
+#define PETSC_END_LEN_CALL(len)   ,len
 #endif
 
 /* --------------------------------------------------------------------*/

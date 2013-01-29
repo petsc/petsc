@@ -51,14 +51,14 @@ timestepping.  Runtime options include:\n\
    application-provided callback routines.
 */
 typedef struct {
-  MPI_Comm   comm;          /* communicator */
-  DM         da;            /* distributed array data structure */
-  Vec        localwork;     /* local ghosted work vector */
-  Vec        u_local;       /* local ghosted approximate solution vector */
-  Vec        solution;      /* global exact solution vector */
-  PetscInt   m;             /* total number of grid points */
-  PetscReal  h;             /* mesh width: h = 1/(m-1) */
-  PetscBool  debug;         /* flag (1 indicates activation of debugging printouts) */
+  MPI_Comm  comm;           /* communicator */
+  DM        da;             /* distributed array data structure */
+  Vec       localwork;      /* local ghosted work vector */
+  Vec       u_local;        /* local ghosted approximate solution vector */
+  Vec       solution;       /* global exact solution vector */
+  PetscInt  m;              /* total number of grid points */
+  PetscReal h;              /* mesh width: h = 1/(m-1) */
+  PetscBool debug;          /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
 /*
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,PETSC_NULL,
-                    &appctx.da);CHKERRQ(ierr);
+                      &appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -305,7 +305,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   uh - constant upper bound for all variables
   appctx - Application context
  */
-PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx* appctx)
+PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *appctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *l,*u;
@@ -431,10 +431,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-     ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /*
@@ -442,7 +442,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   */
   ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&en2);CHKERRQ(ierr);
-  en2s  = PetscSqrtReal(appctx->h)*en2; /* scale the 2-norm by the grid spacing */
+  en2s = PetscSqrtReal(appctx->h)*en2;  /* scale the 2-norm by the grid spacing */
   ierr = VecNorm(appctx->solution,NORM_MAX,&enmax);CHKERRQ(ierr);
 
   /*
@@ -450,7 +450,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      communicator to print the timestep information.
   */
   ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G,2-norm error = %G, max norm error = %G\n",
-              step,time,en2s,enmax);CHKERRQ(ierr);
+                     step,time,en2s,enmax);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
@@ -482,9 +482,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 */
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
 {
-  AppCtx         *appctx = (AppCtx*) ctx;       /* user-defined application context */
-  DM             da = appctx->da;               /* distributed array */
-  Vec            local_in = appctx->u_local;    /* local ghosted input vector */
+  AppCtx         *appctx   = (AppCtx*) ctx;     /* user-defined application context */
+  DM             da        = appctx->da;        /* distributed array */
+  Vec            local_in  = appctx->u_local;   /* local ghosted input vector */
   Vec            localwork = appctx->localwork; /* local ghosted work vector */
   PetscErrorCode ierr;
   PetscInt       i,localsize;
@@ -535,16 +535,14 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   */
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
-  if (!rank)          copyptr[0]           = 1.0;
+  if (!rank) copyptr[0] = 1.0;
   if (rank == size-1) copyptr[localsize-1] = (t < .5) ? 2.0 : 0.0;
 
   /*
      Handle the interior nodes where the PDE is replace by finite
      difference operators.
   */
-  for (i=1; i<localsize-1; i++) {
-    copyptr[i] =  localptr[i] * sc * (localptr[i+1] + localptr[i-1] - 2.0*localptr[i]);
-  }
+  for (i=1; i<localsize-1; i++) copyptr[i] =  localptr[i] * sc * (localptr[i+1] + localptr[i-1] - 2.0*localptr[i]);
 
   /*
      Restore vectors
@@ -600,10 +598,10 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
 */
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat            B = *BB;                      /* Jacobian matrix */
-  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  Mat            B        = *BB;               /* Jacobian matrix */
+  AppCtx         *appctx  = (AppCtx*)ctx;    /* user-defined application context */
   Vec            local_in = appctx->u_local;   /* local ghosted input vector */
-  DM             da = appctx->da;              /* distributed array */
+  DM             da       = appctx->da;        /* distributed array */
   PetscScalar    v[3],*localptr,sc;
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,mstarts,mends,idx[3],is;
@@ -628,7 +626,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   /*
      Get starting and ending locally owned rows of the matrix
   */
-  ierr = MatGetOwnershipRange(B,&mstarts,&mends);CHKERRQ(ierr);
+  ierr   = MatGetOwnershipRange(B,&mstarts,&mends);CHKERRQ(ierr);
   mstart = mstarts; mend = mends;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -668,7 +666,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
     v[0]   = sc*localptr[is];
     v[1]   = sc*(localptr[is+1] + localptr[is-1] - 4.0*localptr[is]);
     v[2]   = sc*localptr[is];
-    ierr = MatSetValues(B,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(B,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*

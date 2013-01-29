@@ -1335,7 +1335,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateNest"
-/*@
+/*@C
    MatCreateNest - Creates a new matrix containing several nested submatrices, each stored separately
 
    Collective on Mat

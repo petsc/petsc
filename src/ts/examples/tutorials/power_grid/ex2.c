@@ -43,11 +43,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) {
-    V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
-  } else {
-    V = ctx->V;
-  }
+  if ((t > ctx->tf) && (t < ctx->tcl)) V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
+  else V = ctx->V;
   f[0] = 2.0*ctx->H*udot[0]/ctx->omega_s +  ctx->E*V*PetscSinScalar(u[1])/ctx->X + ctx->D*(u[0] - ctx->omega_s)- ctx->Pm;
   f[1] = udot[1] - u[0] + ctx->omega_s;
 
@@ -69,8 +66,8 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscScalar    *u,*udot,J[2][2],V;
 
   PetscFunctionBegin;
-  ierr    = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   if ((t > ctx->tf) && (t < ctx->tcl)) V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
   else V = ctx->V;
   J[0][0] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[0][1] = -ctx->E*V*PetscCosScalar(u[1])/ctx->X;
@@ -124,16 +121,16 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Swing equation options","");CHKERRQ(ierr);
   {
-    ctx.omega_s  = 2*PETSC_PI*60;
-    ctx.H        = 3.01;
+    ctx.omega_s = 2*PETSC_PI*60;
+    ctx.H       = 3.01;
     ierr        = PetscOptionsScalar("-Inertia","","",ctx.H,&ctx.H,PETSC_NULL);CHKERRQ(ierr);
-    ctx.D        = 0.01;
+    ctx.D       = 0.01;
     ierr        = PetscOptionsScalar("-D","","",ctx.D,&ctx.D,PETSC_NULL);CHKERRQ(ierr);
-    ctx.E        = 1.056;
+    ctx.E       = 1.056;
     ierr        = PetscOptionsScalar("-E","","",ctx.E,&ctx.E,PETSC_NULL);CHKERRQ(ierr);
-    ctx.V        = 1.025;
+    ctx.V       = 1.025;
     ierr        = PetscOptionsScalar("-V","","",ctx.V,&ctx.V,PETSC_NULL);CHKERRQ(ierr);
-    ctx.X        = 0.1813;
+    ctx.X       = 0.1813;
     ierr        = PetscOptionsScalar("-X","","",ctx.X,&ctx.X,PETSC_NULL);CHKERRQ(ierr);
     ctx.Pm      = 0.85;
     ctx.tf      = 2.0;

@@ -4,7 +4,7 @@
 
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
-PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
@@ -31,11 +31,8 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (((PetscObject)ts)->type_name) {
-    defaultType = ((PetscObject)ts)->type_name;
-  } else {
-    defaultType = TSEULER;
-  }
+  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
+  else defaultType = TSEULER;
 
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
@@ -213,12 +210,12 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsString("-ts_monitor_draw_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
     const char *ptr,*ptr2;
-    char *filetemplate;
+    char       *filetemplate;
     if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
     /* Do some cursory validation of the input. */
     ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
     if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
-    for (ptr++ ; ptr && *ptr; ptr++) {
+    for (ptr++; ptr && *ptr; ptr++) {
       ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
       if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_draw_solution_vtk, should look like filename-%%03D.vts");
       if (ptr2) break;
@@ -342,9 +339,9 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
     if (*A != *B) {ierr = MatZeroEntries(*B);CHKERRQ(ierr);}
     *flg = SAME_NONZERO_PATTERN;
   }
-  ts->rhsjacobian.time = t;
-  ts->rhsjacobian.X = U;
-  ierr = PetscObjectStateQuery((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
+  ts->rhsjacobian.time       = t;
+  ts->rhsjacobian.X          = U;
+  ierr                       = PetscObjectStateQuery((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
   ts->rhsjacobian.mstructure = *flg;
   PetscFunctionReturn(0);
 }
@@ -459,7 +456,7 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
 
   PetscFunctionBegin;
   *Frhs = PETSC_NULL;
-  ierr = TSGetIFunction(ts,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = TSGetIFunction(ts,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!ts->Frhs) {
     ierr = VecDuplicate(F,&ts->Frhs);CHKERRQ(ierr);
   }
@@ -665,7 +662,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
         ierr = MatShift(*B,shift);CHKERRQ(ierr);
       }
     } else if (rhsjacobian) {
-      Mat Arhs,Brhs;
+      Mat          Arhs,Brhs;
       MatStructure axpy,flg2 = DIFFERENT_NONZERO_PATTERN;
       ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
       ierr = TSComputeRHSJacobian(ts,t,U,&Arhs,&Brhs,&flg2);CHKERRQ(ierr);
@@ -679,13 +676,16 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   }
 
   ts->ijacobian.time = t;
-  ts->ijacobian.X = U;
+  ts->ijacobian.X    = U;
   ts->ijacobian.Xdot = Udot;
+
   ierr = PetscObjectStateQuery((PetscObject)U,&ts->ijacobian.Xstate);CHKERRQ(ierr);
   ierr = PetscObjectStateQuery((PetscObject)Udot,&ts->ijacobian.Xdotstate);CHKERRQ(ierr);
-  ts->ijacobian.shift = shift;
-  ts->ijacobian.imex = imex;
+
+  ts->ijacobian.shift      = shift;
+  ts->ijacobian.imex       = imex;
   ts->ijacobian.mstructure = *flg;
+
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,*A,*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -735,7 +735,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!r && !ts->dm && ts->vec_sol) {
     ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
-    r = ralloc;
+    r    = ralloc;
   }
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
@@ -856,11 +856,13 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   if (A) {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
+
     ts->Arhs = A;
   }
   if (B) {
     ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
+
     ts->Brhs = B;
   }
   PetscFunctionReturn(0);
@@ -915,7 +917,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!res && !ts->dm && ts->vec_sol) {
     ierr = VecDuplicate(ts->vec_sol,&resalloc);CHKERRQ(ierr);
-    res = resalloc;
+    res  = resalloc;
   }
   ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(&resalloc);CHKERRQ(ierr);
@@ -1191,10 +1193,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscInt         classid = TS_FILE_CLASSID;
-    MPI_Comm         comm;
-    PetscMPIInt      rank;
-    char             type[256];
+    PetscInt    classid = TS_FILE_CLASSID;
+    MPI_Comm    comm;
+    PetscMPIInt rank;
+    char        type[256];
 
     ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1215,13 +1217,13 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     char      str[36];
     PetscReal x,y,bottom,h;
 
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr = PetscStrcpy(str,"TS: ");CHKERRQ(ierr);
-    ierr = PetscStrcat(str,((PetscObject)ts)->type_name);CHKERRQ(ierr);
-    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr   = PetscStrcpy(str,"TS: ");CHKERRQ(ierr);
+    ierr   = PetscStrcat(str,((PetscObject)ts)->type_name);CHKERRQ(ierr);
+    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
-    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+    ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
     }
@@ -1306,7 +1308,7 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 .keywords: TS, timestep, get, iteration, number
 .seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStep()
 @*/
-PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt* iter)
+PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt *iter)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1368,7 +1370,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,time_step,2);
-  ts->time_step = time_step;
+  ts->time_step      = time_step;
   ts->time_step_orig = time_step;
   PetscFunctionReturn(0);
 }
@@ -1418,7 +1420,7 @@ PetscErrorCode  TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
 
 .keywords: TS, get, timestep
 @*/
-PetscErrorCode  TSGetTimeStep(TS ts,PetscReal* dt)
+PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1623,6 +1625,7 @@ PetscErrorCode  TSReset(TS ts)
     ierr = (*ts->ops->reset)(ts);CHKERRQ(ierr);
   }
   if (ts->snes) {ierr = SNESReset(ts->snes);CHKERRQ(ierr);}
+
   ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->Frhs);CHKERRQ(ierr);
@@ -1630,6 +1633,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
+
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1743,14 +1747,16 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 PetscErrorCode TSSetSNES(TS ts,SNES snes)
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*func)(SNES,Vec,Mat *,Mat *,MatStructure *,void *);
+  PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(snes,SNES_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)snes);CHKERRQ(ierr);
   ierr = SNESDestroy(&ts->snes);CHKERRQ(ierr);
+
   ts->snes = snes;
+
   ierr = SNESSetFunction(ts->snes,PETSC_NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = SNESGetJacobian(ts->snes,PETSC_NULL,PETSC_NULL,&func,PETSC_NULL);CHKERRQ(ierr);
   if (func == SNESTSFormJacobian) {
@@ -1829,7 +1835,7 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
   }
   if (maxtime) {
     PetscValidScalarPointer(maxtime,3);
-    *maxtime  = ts->max_time;
+    *maxtime = ts->max_time;
   }
   PetscFunctionReturn(0);
 }
@@ -1867,7 +1873,7 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
   PetscValidLogicalCollectiveInt(ts,maxsteps,2);
   PetscValidLogicalCollectiveReal(ts,maxtime,2);
   if (maxsteps >= 0) ts->max_steps = maxsteps;
-  if (maxtime != PETSC_DEFAULT) ts->max_time  = maxtime;
+  if (maxtime != PETSC_DEFAULT) ts->max_time = maxtime;
   PetscFunctionReturn(0);
 }
 
@@ -1897,7 +1903,9 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
   PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)u);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
+
   ts->vec_sol = u;
+
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(dm,u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2140,9 +2148,9 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->numbermonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
-  ts->monitor[ts->numbermonitors]           = monitor;
-  ts->monitordestroy[ts->numbermonitors]    = mdestroy;
-  ts->monitorcontext[ts->numbermonitors++]  = (void*)mctx;
+  ts->monitor[ts->numbermonitors]          = monitor;
+  ts->monitordestroy[ts->numbermonitors]   = mdestroy;
+  ts->monitorcontext[ts->numbermonitors++] = (void*)mctx;
   PetscFunctionReturn(0);
 }
 
@@ -2302,11 +2310,12 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
-
   ptime_prev = ts->ptime;
+
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+
   ts->time_step_prev = ts->ptime - ptime_prev;
 
   if (ts->reason < 0) {
@@ -2400,23 +2409,22 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     if (u) {
       ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
     }
-  } else {
-    if (u) {
-      ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
-    }
+  } else if (u) {
+    ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
-  ts->steps = 0;
-  ts->ksp_its = 0;
-  ts->snes_its = 0;
+  ts->steps             = 0;
+  ts->ksp_its           = 0;
+  ts->snes_its          = 0;
   ts->num_snes_failures = 0;
-  ts->reject = 0;
-  ts->reason = TS_CONVERGED_ITERATING;
+  ts->reject            = 0;
+  ts->reason            = TS_CONVERGED_ITERATING;
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
+
     ts->solvetime = ts->ptime;
   } else {
     /* steps the requested number of timesteps. */
@@ -2430,6 +2438,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
+
       ts->solvetime = ts->max_time;
     } else {
       if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
@@ -2549,12 +2558,12 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
 PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
-  PetscReal      x = ptime,y;
+  PetscReal      x   = ptime,y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!n) {
-    PetscDrawAxis  axis;
+    PetscDrawAxis axis;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
@@ -2620,7 +2629,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 
 .keywords: TS, get, time
 @*/
-PetscErrorCode  TSGetTime(TS ts,PetscReal* t)
+PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2922,7 +2931,7 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
 @*/
 PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
 {
-  PetscErrorCode       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerDestroy(&(*ictx)->viewer);CHKERRQ(ierr);
@@ -2960,8 +2969,10 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_TSMonitorDrawCtx,ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
+
   (*ctx)->showinitial = PETSC_FALSE;
   (*ctx)->howoften    = howoften;
+
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_draw_solution_initial",&(*ctx)->showinitial,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2989,7 +3000,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
 {
   PetscErrorCode   ierr;
-  TSMonitorDrawCtx ctx = (TSMonitorDrawCtx)dummy;
+  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
   PetscViewer      viewer = ctx->viewer;
   Vec              work;
 
@@ -3040,6 +3051,7 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
     ierr = DMDestroy(&ts->dm);CHKERRQ(ierr);
   }
   ts->dm = dm;
+
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3309,7 +3321,7 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
 .  ts - the TS context
 
    Output Parameter:
-.  equation_type - see TSEquatioType 
+.  equation_type - see TSEquatioType
 
    Level: beginner
 
@@ -3335,7 +3347,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Input Parameter:
 +  ts - the TS context
-.  equation_type - see TSEquatioType 
+.  equation_type - see TSEquatioType
 
    Level: advanced
 
@@ -3817,12 +3829,14 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
   if (vatol) {
     ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
+
     ts->vatol = vatol;
   }
   if (rtol != PETSC_DECIDE && rtol != PETSC_DEFAULT) ts->rtol = rtol;
   if (vrtol) {
     ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
+
     ts->vrtol = vrtol;
   }
   PetscFunctionReturn(0);
@@ -3896,7 +3910,7 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
-  sum = 0.;
+  sum  = 0.;
   if (ts->vatol && ts->vrtol) {
     const PetscScalar *atol,*rtol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
@@ -3932,7 +3946,7 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
   *norm = PetscSqrtReal(gsum / N);
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   PetscFunctionReturn(0);
@@ -3961,7 +3975,7 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts,PetscReal cfltime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->cfltime_local = cfltime;
-  ts->cfltime = -1.;
+  ts->cfltime       = -1.;
   PetscFunctionReturn(0);
 }
 
@@ -4055,11 +4069,11 @@ typedef struct {char *funcname; mxArray *ctx;} TSMatlabContext;
 */
 PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec u,Vec udot,Vec y, void *ctx)
 {
-  PetscErrorCode   ierr;
-  TSMatlabContext *sctx = (TSMatlabContext *)ctx;
-  int              nlhs = 1,nrhs = 7;
-  mxArray          *plhs[1],*prhs[7];
-  long long int    lx = 0,lxdot = 0,ly = 0,ls = 0;
+  PetscErrorCode  ierr;
+  TSMatlabContext *sctx = (TSMatlabContext*)ctx;
+  int             nlhs  = 1,nrhs = 7;
+  mxArray         *plhs[1],*prhs[7];
+  long long int   lx = 0,lxdot = 0,ly = 0,ls = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,TS_CLASSID,1);
@@ -4073,6 +4087,7 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec u,Vec udot,V
   ierr = PetscMemcpy(&lx,&u,sizeof(u));CHKERRQ(ierr);
   ierr = PetscMemcpy(&lxdot,&udot,sizeof(udot));CHKERRQ(ierr);
   ierr = PetscMemcpy(&ly,&y,sizeof(u));CHKERRQ(ierr);
+
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar(time);
   prhs[2] =  mxCreateDoubleScalar((double)lx);
@@ -4130,6 +4145,7 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
   mexMakeArrayPersistent(sctx->ctx);
   */
   sctx->ctx = mxDuplicateArray(ctx);
+
   ierr = TSSetIFunction(ts,PETSC_NULL,TSComputeFunction_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4160,8 +4176,8 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
 {
   PetscErrorCode  ierr;
-  TSMatlabContext *sctx = (TSMatlabContext *)ctx;
-  int             nlhs = 2,nrhs = 9;
+  TSMatlabContext *sctx = (TSMatlabContext*)ctx;
+  int             nlhs  = 2,nrhs = 9;
   mxArray         *plhs[2],*prhs[9];
   long long int   lx = 0,lxdot = 0,lA = 0,ls = 0, lB = 0;
 
@@ -4176,6 +4192,7 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,Pet
   ierr = PetscMemcpy(&lxdot,&udot,sizeof(u));CHKERRQ(ierr);
   ierr = PetscMemcpy(&lA,A,sizeof(u));CHKERRQ(ierr);
   ierr = PetscMemcpy(&lB,B,sizeof(u));CHKERRQ(ierr);
+
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)time);
   prhs[2] =  mxCreateDoubleScalar((double)lx);
@@ -4228,7 +4245,7 @@ $    flag = func (TS ts,PetscReal time,Vec u,Vec udot,Mat A,Mat B,void *ctx);
 */
 PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *ctx)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode  ierr;
   TSMatlabContext *sctx;
 
   PetscFunctionBegin;
@@ -4241,6 +4258,7 @@ PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *
   mexMakeArrayPersistent(sctx->ctx);
   */
   sctx->ctx = mxDuplicateArray(ctx);
+
   ierr = TSSetIJacobian(ts,A,B,TSComputeJacobian_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4257,8 +4275,8 @@ PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *
 PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec u, void *ctx)
 {
   PetscErrorCode  ierr;
-  TSMatlabContext *sctx = (TSMatlabContext *)ctx;
-  int             nlhs = 1,nrhs = 6;
+  TSMatlabContext *sctx = (TSMatlabContext*)ctx;
+  int             nlhs  = 1,nrhs = 6;
   mxArray         *plhs[1],*prhs[6];
   long long int   lx = 0,ls = 0;
 
@@ -4268,6 +4286,7 @@ PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec u, void *
 
   ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr);
   ierr = PetscMemcpy(&lx,&u,sizeof(u));CHKERRQ(ierr);
+
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)it);
   prhs[2] =  mxCreateDoubleScalar((double)time);
@@ -4299,7 +4318,7 @@ PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec u, void *
 */
 PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode  ierr;
   TSMatlabContext *sctx;
 
   PetscFunctionBegin;
@@ -4312,6 +4331,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
   mexMakeArrayPersistent(sctx->ctx);
   */
   sctx->ctx = mxDuplicateArray(ctx);
+
   ierr = TSMonitorSet(ts,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4350,7 +4370,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
   PetscFunctionBegin;
   if (!step) {
-    PetscDrawAxis  axis;
+    PetscDrawAxis axis;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
     ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
@@ -4416,7 +4436,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 
   PetscFunctionBegin;
   if (!step) {
-    PetscDrawAxis  axis;
+    PetscDrawAxis axis;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Error in solution as function of time","Time","Solution");CHKERRQ(ierr);
     ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
@@ -4453,17 +4473,19 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
-  PetscReal      x = ptime,y;
+  PetscReal      x   = ptime,y;
   PetscErrorCode ierr;
   PetscInt       its;
 
   PetscFunctionBegin;
   if (!n) {
-    PetscDrawAxis  axis;
+    PetscDrawAxis axis;
+
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Nonlinear iterations as function of time","Time","SNES Iterations");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
-    ctx->snes_its  = 0;
+
+    ctx->snes_its = 0;
   }
   ierr = TSGetSNESIterations(ts,&its);CHKERRQ(ierr);
   y    = its - ctx->snes_its;
@@ -4480,16 +4502,18 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,
 PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
-  PetscReal      x = ptime,y;
+  PetscReal      x   = ptime,y;
   PetscErrorCode ierr;
   PetscInt       its;
 
   PetscFunctionBegin;
   if (!n) {
-    PetscDrawAxis  axis;
+    PetscDrawAxis axis;
+
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Linear iterations as function of time","Time","KSP Iterations");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+
     ctx->ksp_its = 0;
   }
   ierr = TSGetKSPIterations(ts,&its);CHKERRQ(ierr);

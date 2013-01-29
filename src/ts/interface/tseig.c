@@ -69,10 +69,13 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   ierr = KSPSetFromOptions((*ctx)->ksp);CHKERRQ(ierr);
   ierr = KSPGetPC((*ctx)->ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+
   (*ctx)->howoften          = howoften;
   (*ctx)->computeexplicitly = PETSC_FALSE;
+
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,PETSC_NULL);CHKERRQ(ierr);
-  (*ctx)->comm              = comm;
+
+  (*ctx)->comm = comm;
   (*ctx)->xmin = -2.1;
   (*ctx)->xmax = 1.1;
   (*ctx)->ymin = -1.1;
@@ -82,7 +85,7 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
 
 #undef __FUNCT__
 #define __FUNCT__ "TSLinearStabilityIndicator"
-static PetscErrorCode TSLinearStabilityIndicator(TS  ts, PetscReal xr,PetscReal xi,PetscBool *flg)
+static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr,PetscReal xi,PetscBool *flg)
 {
   PetscErrorCode ierr;
   PetscReal      yr,yi;
@@ -121,9 +124,11 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
        seems we would need code for each method to trick the correct Jacobian in being computed.
      */
     time_step_save = ts->time_step;
-    ts->time_step = PETSC_MAX_REAL;
+    ts->time_step  = PETSC_MAX_REAL;
+
     ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr);
-    ts->time_step = time_step_save;
+
+    ts->time_step  = time_step_save;
 
     ierr = KSPSetOperators(ksp,B,B,structure);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n);CHKERRQ(ierr);
@@ -133,7 +138,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     ierr = KSPSolve(ksp,xdot,xdot);CHKERRQ(ierr);
     ierr = VecDestroy(&xdot);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
-    N = nits+2;
+    N    = nits+2;
 
     if (nits) {
       PetscDraw     draw;

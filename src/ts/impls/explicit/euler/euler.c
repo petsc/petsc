@@ -12,7 +12,7 @@ typedef struct {
 static PetscErrorCode TSStep_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
-  Vec            sol = ts->vec_sol,update = euler->update;
+  Vec            sol    = ts->vec_sol,update = euler->update;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

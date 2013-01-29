@@ -30,17 +30,17 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     if (cfl->always_accept) {
       ierr = PetscInfo3(adapt,"Step length %G with scheme of CFL coefficient %G did not satisfy user-provided CFL constraint %G, proceeding anyway\n",h,ccfl[0],cfltime);CHKERRQ(ierr);
     } else {
-      ierr = PetscInfo3(adapt,"Step length %G with scheme of CFL coefficient %G did not satisfy user-provided CFL constraint %G, step REJECTED\n",h,ccfl[0],cfltime);CHKERRQ(ierr);
+      ierr     = PetscInfo3(adapt,"Step length %G with scheme of CFL coefficient %G did not satisfy user-provided CFL constraint %G, step REJECTED\n",h,ccfl[0],cfltime);CHKERRQ(ierr);
       *next_sc = 0;
-      *next_h = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
-      *accept = PETSC_FALSE;
+      *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
+      *accept  = PETSC_FALSE;
     }
   }
 
   *next_sc = 0;
-  *next_h = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
-  *accept = PETSC_TRUE;
-  *wlte = -1;                   /* Weighted local truncation error was not evaluated */
+  *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
+  *accept  = PETSC_TRUE;
+  *wlte    = -1;                /* Weighted local truncation error was not evaluated */
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +59,7 @@ static PetscErrorCode TSAdaptDestroy_CFL(TSAdapt adapt)
 #define __FUNCT__ "TSAdaptSetFromOptions_CFL"
 static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
 {
-  TSAdapt_CFL  *cfl = (TSAdapt_CFL*)adapt->data;
+  TSAdapt_CFL    *cfl = (TSAdapt_CFL*)adapt->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -84,11 +84,11 @@ M*/
 PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
 {
   PetscErrorCode ierr;
-  TSAdapt_CFL *a;
+  TSAdapt_CFL    *a;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,TSAdapt_CFL,&a);CHKERRQ(ierr);
-  adapt->data = (void*)a;
+  ierr                       = PetscNewLog(adapt,TSAdapt_CFL,&a);CHKERRQ(ierr);
+  adapt->data                = (void*)a;
   adapt->ops->choose         = TSAdaptChoose_CFL;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_CFL;
   adapt->ops->destroy        = TSAdaptDestroy_CFL;

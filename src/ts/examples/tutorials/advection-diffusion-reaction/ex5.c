@@ -53,16 +53,16 @@ extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;                 /* ODE integrator */
-  Vec             x;                  /* solution */
-  PetscErrorCode  ierr;
-  DM              da;
-  AppCtx          appctx;
+  TS             ts;                  /* ODE integrator */
+  Vec            x;                   /* solution */
+  PetscErrorCode ierr;
+  DM             da;
+  AppCtx         appctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -152,8 +152,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
-  hy     = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
+  hx = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
+  hy = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -180,10 +180,10 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      uc         = u[j][i].u;
+      uc        = u[j][i].u;
       uxx       = (-2.0*uc + u[j][i-1].u + u[j][i+1].u)*sx;
       uyy       = (-2.0*uc + u[j-1][i].u + u[j+1][i].u)*sy;
-      vc         = u[j][i].v;
+      vc        = u[j][i].v;
       vxx       = (-2.0*vc + u[j][i-1].v + u[j][i+1].v)*sx;
       vyy       = (-2.0*vc + u[j-1][i].v + u[j+1][i].v)*sy;
       f[j][i].u = appctx->D1*(uxx + uyy) - uc*vc*vc + appctx->gamma*(1.0 - uc);
@@ -214,8 +214,8 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 2.5/(PetscReal)(Mx);
-  hy     = 2.5/(PetscReal)(My);
+  hx = 2.5/(PetscReal)(Mx);
+  hy = 2.5/(PetscReal)(My);
 
   /*
      Get pointers to vector data
@@ -234,11 +234,9 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) {
-        u[j][i].v = .25*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*x),2.0)*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*y),2.0);
-      } else {
-        u[j][i].v = 0.0;
-      }
+      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) u[j][i].v = .25*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*x),2.0)*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*y),2.0);
+      else u[j][i].v = 0.0;
+
       u[j][i].u = 1.0 - 2.0*u[j][i].v;
     }
   }
@@ -254,7 +252,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
 #define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat            A = *AA;                      /* Jacobian matrix */
+  Mat            A       = *AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   DM             da;
   PetscErrorCode ierr;
@@ -271,8 +269,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
-  hy     = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
+  hx = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
+  hy = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -313,8 +311,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
     stencil[5].j = j;
     rowstencil.k = 0; rowstencil.j = j;
     for (i=xs; i<xs+xm; i++) {
-      uc         = u[j][i].u;
-      vc         = u[j][i].v;
+      uc = u[j][i].u;
+      vc = u[j][i].v;
 
       /*      uxx       = (-2.0*uc + u[j][i-1].u + u[j][i+1].u)*sx;
       uyy       = (-2.0*uc + u[j-1][i].u + u[j+1][i].u)*sy;
@@ -330,6 +328,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
       stencil[4].i = i; stencil[4].c = 0; entries[4] = -2.0*appctx->D1*(sx + sy) - vc*vc - appctx->gamma;
       stencil[5].i = i; stencil[5].c = 1; entries[5] = -2.0*uc*vc;
       rowstencil.i = i; rowstencil.c = 0;
+
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
 
       stencil[0].c = 1; entries[0] = appctx->D2*sy;
@@ -339,6 +338,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
       stencil[4].c = 1; entries[4] = -2.0*appctx->D2*(sx + sy) + 2.0*uc*vc - appctx->gamma - appctx->kappa;
       stencil[5].c = 0; entries[5] = vc*vc;
       rowstencil.c = 1;
+
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }

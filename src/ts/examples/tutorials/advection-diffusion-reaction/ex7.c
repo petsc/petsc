@@ -19,7 +19,7 @@ static char help[] = ".\n";
 
 /* AppCtx */
 typedef struct {
-  PetscInt  N;              /* number of dofs */
+  PetscInt N;               /* number of dofs */
 } AppCtx;
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -31,22 +31,22 @@ extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStru
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;                 /* nonlinear solver */
-  Vec             U;                  /* solution, residual vectors */
-  Mat             J;                  /* Jacobian matrix */
-  PetscInt        maxsteps = 1000;
-  PetscErrorCode  ierr;
-  DM              da;
-  AppCtx          user;
-  PetscInt        i;
-  char            Name[16];
+  TS             ts;                  /* nonlinear solver */
+  Vec            U;                   /* solution, residual vectors */
+  Mat            J;                   /* Jacobian matrix */
+  PetscInt       maxsteps = 1000;
+  PetscErrorCode ierr;
+  DM             da;
+  AppCtx         user;
+  PetscInt       i;
+  char           Name[16];
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  user.N            = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&user.N,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  user.N = 1;
+  ierr   = PetscOptionsGetInt(PETSC_NULL,"-N",&user.N,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -135,7 +135,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,&N,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -146,8 +146,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
-   /*
-     Get pointers to vector data
+  /*
+    Get pointers to vector data
   */
   ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,Udot,&udot);CHKERRQ(ierr);
@@ -166,8 +166,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 
     /*  diffusion term */
     for (c=0; c<N; c++) {
-      uxx      = (-2.0*u[i][c] + u[i-1][c] + u[i+1][c])*sx;
-      f[i][c]   = udot[i][c] - uxx;
+      uxx     = (-2.0*u[i][c] + u[i-1][c] + u[i+1][c])*sx;
+      f[i][c] = udot[i][c] - uxx;
     }
 
     /* reaction terms */
@@ -205,7 +205,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   MatStencil     col[3],row;
   PetscScalar    vals[3],hx,sx;
   AppCtx         *user = (AppCtx*)ctx;
-  PetscInt       N = user->N;
+  PetscInt       N     = user->N;
   PetscScalar    **u;
 
   PetscFunctionBegin;
@@ -220,32 +220,32 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (c=0; c<N; c++) {
-      nc = 0;
+      nc        = 0;
       row.c     = c; row.i = i;
       col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
       col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
       col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
     }
 
     for (c=0; c<N/3; c++) {
-      nc = 0;
-      row.c      = c;   row.i = i;
-      col[nc].c  = c;   col[nc].i = i; vals[nc++] = 1000*u[i][c] + 500*u[i][c+1];
-      col[nc].c  = c+1; col[nc].i = i; vals[nc++] =  500*u[i][c];
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      nc        = 0;
+      row.c     = c;   row.i = i;
+      col[nc].c = c;   col[nc].i = i; vals[nc++] = 1000*u[i][c] + 500*u[i][c+1];
+      col[nc].c = c+1; col[nc].i = i; vals[nc++] =  500*u[i][c];
+      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
 
-      nc = 0;
-      row.c      = c+1; row.i = i;
-      col[nc].c  = c;   col[nc].i = i; vals[nc++] = -1000*u[i][c] + 500*u[i][c+1];
-      col[nc].c  = c+1; col[nc].i = i; vals[nc++] =   500*u[i][c];
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      nc        = 0;
+      row.c     = c+1; row.i = i;
+      col[nc].c = c;   col[nc].i = i; vals[nc++] = -1000*u[i][c] + 500*u[i][c+1];
+      col[nc].c = c+1; col[nc].i = i; vals[nc++] =   500*u[i][c];
+      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
 
-      nc = 0;
-      row.c      = c+2; row.i = i;
-      col[nc].c  = c;   col[nc].i = i; vals[nc++] =  -500*u[i][c+1];
-      col[nc].c  = c+1; col[nc].i = i; vals[nc++] =  -500*u[i][c];
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      nc        = 0;
+      row.c     = c+2; row.i = i;
+      col[nc].c = c;   col[nc].i = i; vals[nc++] =  -500*u[i][c+1];
+      col[nc].c = c+1; col[nc].i = i; vals[nc++] =  -500*u[i][c];
+      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
 
     }
   }
@@ -272,7 +272,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,&N,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
+  hx = 1.0/(PetscReal)(Mx-1);
 
   /*
      Get pointers to vector data
@@ -289,9 +289,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    for (c=0; c<N; c++) {
-      u[i][c] = 0.0; /*PetscCosScalar(PETSC_PI*x);*/
-    }
+    for (c=0; c<N; c++) u[i][c] = 0.0; /*PetscCosScalar(PETSC_PI*x);*/
   }
 
   /*

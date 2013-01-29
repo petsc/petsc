@@ -25,9 +25,9 @@ typedef PetscScalar Field[2];
 
 typedef struct _User *User;
 struct _User {
-  PetscReal      a[2];         /* Advection speeds */
-  PetscReal      k[2];         /* Reaction coefficients */
-  PetscReal      s[2];         /* Source terms */
+  PetscReal a[2];              /* Advection speeds */
+  PetscReal k[2];              /* Reaction coefficients */
+  PetscReal s[2];              /* Source terms */
 };
 
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options",""); 
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options","");
   {
     user.a[0] = 1;           ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0],&user.a[0],PETSC_NULL);CHKERRQ(ierr);
     user.a[1] = 0;           ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1],&user.a[1],PETSC_NULL);CHKERRQ(ierr);
@@ -93,9 +93,9 @@ int main(int argc,char **argv)
   ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
-  ftime = 1.0;
+  ftime    = 1.0;
   maxsteps = 10000;
-  ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -180,7 +180,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  hx = 1.0/(PetscReal)info.mx;
+  hx   = 1.0/(PetscReal)info.mx;
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -198,20 +198,14 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    const PetscReal *a = user->a;
-    PetscReal u0t[2] = {1. - PetscPowScalar(sin(12*t),4.),0};
+    const PetscReal *a     = user->a;
+    PetscReal       u0t[2] = {1. - PetscPowScalar(sin(12*t),4.),0};
     for (j=0; j<2; j++) {
-      if (i == 0) {
-        f[i][j] = a[j]/hx*(1./3*u0t[j] + 0.5*x[i][j] - x[i+1][j] + 1./6*x[i+2][j]);
-      } else if (i == 1) {
-        f[i][j] = a[j]/hx*(-1./12*u0t[j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
-      } else if (i == info.mx-2) {
-        f[i][j] = a[j]/hx*(-1./6*x[i-2][j] + x[i-1][j] - 0.5*x[i][j] - 1./3*x[i+1][j]);
-      } else if (i == info.mx-1) {
-        f[i][j] = a[j]/hx*(-x[i][j] + x[i-1][j]);
-      } else {
-        f[i][j] = a[j]/hx*(-1./12*x[i-2][j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
-      }
+      if (i == 0)              f[i][j] = a[j]/hx*(1./3*u0t[j] + 0.5*x[i][j] - x[i+1][j] + 1./6*x[i+2][j]);
+      else if (i == 1)         f[i][j] = a[j]/hx*(-1./12*u0t[j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
+      else if (i == info.mx-2) f[i][j] = a[j]/hx*(-1./6*x[i-2][j] + x[i-1][j] - 0.5*x[i][j] - 1./3*x[i+1][j]);
+      else if (i == info.mx-1) f[i][j] = a[j]/hx*(-x[i][j] + x[i-1][j]);
+      else                     f[i][j] = a[j]/hx*(-1./12*x[i-2][j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
     }
   }
 
@@ -248,11 +242,11 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
     const PetscReal *k = user->k;
-    PetscScalar v[2][2];
-    
+    PetscScalar     v[2][2];
+
     v[0][0] = a + k[0]; v[0][1] =  -k[1];
     v[1][0] =    -k[0]; v[1][1] = a+k[1];
-    ierr = MatSetValuesBlocked(*Jpre,1,&i,1,&i,&v[0][0],INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValuesBlocked(*Jpre,1,&i,1,&i,&v[0][0],INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* Restore vectors */
@@ -272,7 +266,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
 #define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
-  User user = (User)ctx;
+  User           user = (User)ctx;
   DM             da;
   PetscInt       i;
   DMDALocalInfo  info;
@@ -283,7 +277,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  hx = 1.0/(PetscReal)info.mx;
+  hx   = 1.0/(PetscReal)info.mx;
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);

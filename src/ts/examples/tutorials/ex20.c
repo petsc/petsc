@@ -92,8 +92,8 @@ struct _n_User {
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscScalar *x,*f;
+  User           user = (User)ctx;
+  PetscScalar    *x,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -110,8 +110,8 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscScalar *x,*f;
+  User           user = (User)ctx;
+  PetscScalar    *x,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -128,8 +128,8 @@ static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscScalar *x,*xdot,*f;
+  User           user = (User)ctx;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -148,8 +148,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 static PetscErrorCode IFunction2(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscScalar *x,*xdot,*f;
+  User           user = (User)ctx;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -168,16 +168,16 @@ static PetscErrorCode IFunction2(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscInt rowcol[] = {0,1};
-  PetscScalar *x,J[2][2];
+  User           user     = (User)ctx;
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *x,J[2][2];
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;     J[0][1] = (user->imex ? 0 : -1.);
   J[1][0] = 0.0;   J[1][1] = a - 1./(x[1]*x[1]-1)+x[1]*x[1]/(x[1]*x[1]-1)/(x[1]*x[1]-1)*2;
-  ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -194,16 +194,16 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 static PetscErrorCode IJacobian2(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  User user = (User)ctx;
-  PetscInt rowcol[] = {0,1};
-  PetscScalar *x,J[2][2];
+  User           user     = (User)ctx;
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *x,J[2][2];
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;    J[0][1] = (user->imex ? 0 : -1.);
   J[1][0] = 0.0;  J[1][1] = a - (user->imex ? 0 : 1./(x[1]*x[1]-1) + 2*x[1]*x[1]/(x[1]*x[1]-1)/(x[1]*x[1]-1));
-  ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -230,7 +230,7 @@ static PetscErrorCode RegisterMyARK2(void)
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
                   {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
-      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -240,11 +240,11 @@ static PetscErrorCode RegisterMyARK2(void)
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscReal tfinal, dt;
-  User user = (User)ctx;
-  Vec interpolatedX;
+  PetscReal         tfinal, dt;
+  User              user = (User)ctx;
+  Vec               interpolatedX;
 
   PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
@@ -266,16 +266,16 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;           /* nonlinear solver */
-  Vec             x;            /* solution, residual vectors */
-  Mat             A;            /* Jacobian matrix */
-  PetscInt        steps;
-  PetscReal       ftime=0.5;
-  PetscBool       monitor = PETSC_FALSE,rhs2 = PETSC_FALSE;
-  PetscScalar     *x_ptr;
-  PetscMPIInt     size;
-  struct _n_User  user;
-  PetscErrorCode  ierr;
+  TS             ts;            /* nonlinear solver */
+  Vec            x;             /* solution, residual vectors */
+  Mat            A;             /* Jacobian matrix */
+  PetscInt       steps;
+  PetscReal      ftime   = 0.5;
+  PetscBool      monitor = PETSC_FALSE,rhs2 = PETSC_FALSE;
+  PetscScalar    *x_ptr;
+  PetscMPIInt    size;
+  struct _n_User user;
+  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -290,7 +290,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.imex = PETSC_TRUE;
+  user.imex        = PETSC_TRUE;
   user.next_output = 0.0;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-imex",&user.imex,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);

@@ -41,11 +41,11 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
   Mat            I;
   Vec            vscale;
   DM             cdm,cdmc;
-  
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject *)&cdm);CHKERRQ(ierr);
 
-  if (!cdm)SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm);CHKERRQ(ierr);
+
+  if (!cdm) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
   ierr = DMDAGetReducedDMDA(dmc,2,&cdmc);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dmc,"coefficientdm",(PetscObject)cdmc);CHKERRQ(ierr);
@@ -83,11 +83,11 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
   DM             cdm,csubdm;
   PetscErrorCode ierr;
   VecScatter     *iscat,*oscat,*gscat;
-  
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject *)&cdm);CHKERRQ(ierr);
 
-  if (!cdm)SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm);CHKERRQ(ierr);
+
+  if (!cdm) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
   ierr = DMDAGetReducedDMDA(subdm,2,&csubdm);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)subdm,"coefficientdm",(PetscObject)csubdm);CHKERRQ(ierr);
@@ -116,12 +116,12 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
 int main(int argc,char **argv)
 
 {
-  TS                     ts;
-  Vec                    x,c,clocal;
-  PetscErrorCode         ierr;
-  DM                     da,cda;
+  TS             ts;
+  Vec            x,c,clocal;
+  PetscErrorCode ierr;
+  DM             da,cda;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
@@ -191,8 +191,8 @@ PetscErrorCode FormInitialGuess(DM da,void *ctx,Vec X)
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      x0 = 10.0*(i - 0.5*(Mx-1)) / (Mx-1);
-      x1 = 10.0*(j - 0.5*(Mx-1)) / (My-1);
+      x0        = 10.0*(i - 0.5*(Mx-1)) / (Mx-1);
+      x1        = 10.0*(j - 0.5*(Mx-1)) / (My-1);
       x[j][i].u = PetscCosReal(2.0*PetscSqrtReal(x1*x1 + x0*x0));
     }
   }
@@ -227,8 +227,9 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
     for (i=xs; i<xs+xm; i++) {
       x0 = 10.0*(i - 0.5*(Mx-1)) / (Mx-1);
       x1 = 10.0*(j - 0.5*(My-1)) / (My-1);
+
       x[j][i].epsilon = 0.0;
-      x[j][i].beta = 0.05+0.05*PetscSqrtReal(x0*x0+x1*x1);
+      x[j][i].beta    = 0.05+0.05*PetscSqrtReal(x0*x0+x1*x1);
     }
   }
 
@@ -251,37 +252,33 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
   DM             cdm;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectQuery((PetscObject)info->da,"coefficientdm",(PetscObject *)&cdm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)info->da,"coefficientdm",(PetscObject*)&cdm);CHKERRQ(ierr);
   ierr = DMGetNamedLocalVector(cdm,"coefficient",&C);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cdm,C,&c);CHKERRQ(ierr);
 
-  hx     = 10.0/((PetscReal)(info->mx-1));
-  hy     = 10.0/((PetscReal)(info->my-1));
+  hx = 10.0/((PetscReal)(info->mx-1));
+  hy = 10.0/((PetscReal)(info->my-1));
 
   dhx = 1. / hx;
   dhy = 1. / hy;
 
-  hxdhy  =  hx/hy;
-  hydhx  =  hy/hx;
+  hxdhy =  hx/hy;
+  hydhx =  hy/hx;
   scale =   hx*hy;
 
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       f[j][i].u = xt[j][i].u*scale;
 
-      u       = x[j][i].u;
+      u = x[j][i].u;
 
       f[j][i].u += scale*(u*u - 1.)*u;
 
-      if (i == 0) {
-        f[j][i].u += (x[j][i].u - x[j][i+1].u)*dhx;
-      } else if (i == info->mx-1) {
-        f[j][i].u += (x[j][i].u - x[j][i-1].u)*dhx;
-      } else if (j == 0) {
-        f[j][i].u += (x[j][i].u - x[j+1][i].u)*dhy;
-      } else if (j == info->my-1) {
-        f[j][i].u += (x[j][i].u - x[j-1][i].u)*dhy;
-      } else {
+      if (i == 0)               f[j][i].u += (x[j][i].u - x[j][i+1].u)*dhx;
+      else if (i == info->mx-1) f[j][i].u += (x[j][i].u - x[j][i-1].u)*dhx;
+      else if (j == 0)          f[j][i].u += (x[j][i].u - x[j+1][i].u)*dhy;
+      else if (j == info->my-1) f[j][i].u += (x[j][i].u - x[j-1][i].u)*dhy;
+      else {
         uyy     = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
         uxx     = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
 

@@ -111,10 +111,12 @@ int main(int argc,char **argv)
   m    = 60;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
+
   ierr = PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,7 +189,7 @@ int main(int argc,char **argv)
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  dt = appctx.h*appctx.h/2.0;
+  dt   = appctx.h*appctx.h/2.0;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
@@ -284,9 +286,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=0; i<appctx->m; i++) {
-    u_localptr[i] = sin(PETSC_PI*i*6.*appctx->h) + 3.*sin(PETSC_PI*i*2.*appctx->h);
-  }
+  for (i=0; i<appctx->m; i++) u_localptr[i] = sin(PETSC_PI*i*6.*appctx->h) + 3.*sin(PETSC_PI*i*2.*appctx->h);
 
   /*
      Restore vector
@@ -334,9 +334,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   */
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
-  for (i=0; i<appctx->m; i++) {
-    s_localptr[i] = sin(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(PetscReal)i)*ex2;
-  }
+  for (i=0; i<appctx->m; i++) s_localptr[i] = sin(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(PetscReal)i)*ex2;
 
   /*
      Restore vector
@@ -386,19 +384,19 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     printf("Computed solution vector\n");
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-     printf("Exact solution vector\n");
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    printf("Computed solution vector\n");
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    printf("Exact solution vector\n");
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
+  ierr   = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
+  ierr   = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = PetscSqrtReal(appctx->h)*norm_2;
-  ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
+  ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   if (norm_2 > 1.e-2) {
@@ -409,9 +407,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dttol",&dttol,&flg);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetReal(PETSC_NULL,"-dttol",&dttol,&flg);CHKERRQ(ierr);
   if (dt < dttol) {
-    dt *= .999;
+    dt  *= .999;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   }
 
@@ -424,8 +422,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     printf("Error vector\n");
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    printf("Error vector\n");
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -454,10 +452,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
 */
 PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat            A = *AA;                      /* Jacobian matrix */
-  AppCtx         *appctx = (AppCtx *) ctx;     /* user-defined application context */
-  PetscInt       mstart = 0;
-  PetscInt       mend = appctx->m;
+  Mat            A       = *AA;                /* Jacobian matrix */
+  AppCtx         *appctx = (AppCtx*) ctx;      /* user-defined application context */
+  PetscInt       mstart  = 0;
+  PetscInt       mend    = appctx->m;
   PetscErrorCode ierr;
   PetscInt       i, idx[3];
   PetscScalar    v[3], stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
@@ -470,8 +468,8 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   */
 
   mstart = 0;
-  v[0] = 1.0;
-  ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
+  v[0]   = 1.0;
+  ierr   = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
   mstart++;
 
   mend--;
@@ -485,7 +483,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   v[0] = sone; v[1] = stwo; v[2] = sone;
   for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -539,15 +537,15 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
  */
 PetscErrorCode MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
 {
-  AppCtx         *appctx = (AppCtx *) ctx;     /* user-defined application context */
+  AppCtx         *appctx = (AppCtx*) ctx;      /* user-defined application context */
   PetscErrorCode ierr;
   PetscInt       m = appctx->m;
   PetscScalar    *fa;
 
-  ierr = VecGetArray(f,&fa);CHKERRQ(ierr);
-  fa[0] = 0.0;
+  ierr    = VecGetArray(f,&fa);CHKERRQ(ierr);
+  fa[0]   = 0.0;
   fa[m-1] = 1.0;
-  ierr = VecRestoreArray(f,&fa);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(f,&fa);CHKERRQ(ierr);
   printf("t=%g\n",t);
 
   return 0;

@@ -11,16 +11,16 @@
 #include <time.h>
 
 typedef struct {
-   Vec          y1,y2;  /* work wectors for the two rk permuations */
-   PetscInt     nok,nnok; /* counters for ok and not ok steps */
-   PetscReal    maxerror; /* variable to tell the maxerror allowed */
-   PetscReal    ferror; /* variable to tell (global maxerror)/(total time) */
-   PetscReal    tolerance; /* initial value set for maxerror by user */
-   Vec          tmp,tmp_y,*k; /* two temp vectors and the k vectors for rk */
-   PetscScalar  a[7][6]; /* rk scalars */
-   PetscScalar  b1[7],b2[7]; /* rk scalars */
-   PetscReal    c[7]; /* rk scalars */
-   PetscInt     p,s; /* variables to tell the size of the runge-kutta solver */
+  Vec         y1,y2;        /* work wectors for the two rk permuations */
+  PetscInt    nok,nnok;     /* counters for ok and not ok steps */
+  PetscReal   maxerror;     /* variable to tell the maxerror allowed */
+  PetscReal   ferror;       /* variable to tell (global maxerror)/(total time) */
+  PetscReal   tolerance;    /* initial value set for maxerror by user */
+  Vec         tmp,tmp_y,*k; /* two temp vectors and the k vectors for rk */
+  PetscScalar a[7][6];      /* rk scalars */
+  PetscScalar b1[7],b2[7];  /* rk scalars */
+  PetscReal   c[7];         /* rk scalars */
+  PetscInt    p,s;          /* variables to tell the size of the runge-kutta solver */
 } TS_RK;
 
 EXTERN_C_BEGIN
@@ -245,8 +245,8 @@ PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
   TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
   PetscInt       j,l;
-  PetscReal      tmp_t=t;
-  PetscScalar    hh=h;
+  PetscReal      tmp_t = t;
+  PetscScalar    hh    = h;
 
   PetscFunctionBegin;
   /* k[0]=0  */
@@ -256,42 +256,42 @@ PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
   ierr = TSComputeRHSFunction(ts,t,rk->y1,rk->k[0]);CHKERRQ(ierr);
   /* looping over runge-kutta variables */
   /* building the k - array of vectors */
-  for (j = 1 ; j < rk->s ; j++) {
+  for (j = 1; j < rk->s; j++) {
 
-     /* rk->tmp = 0 */
-     ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);
+    /* rk->tmp = 0 */
+    ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);
 
-     for (l=0;l<j;l++) {
-        /* tmp += a(j,l)*k[l] */
-       ierr = VecAXPY(rk->tmp,rk->a[j][l],rk->k[l]);CHKERRQ(ierr);
-     }
+    for (l=0; l<j; l++) {
+      /* tmp += a(j,l)*k[l] */
+      ierr = VecAXPY(rk->tmp,rk->a[j][l],rk->k[l]);CHKERRQ(ierr);
+    }
 
-     /* ierr = VecView(rk->tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+    /* ierr = VecView(rk->tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
-     /* k[j] = derivs(t+c(j)*h,y1+h*tmp,k(j)) */
-     /* I need the following helpers:
-        PetscScalar  tmp_t=t+c(j)*h
-        Vec          tmp_y=h*tmp+y1
-     */
+    /* k[j] = derivs(t+c(j)*h,y1+h*tmp,k(j)) */
+    /* I need the following helpers:
+       PetscScalar  tmp_t=t+c(j)*h
+       Vec          tmp_y=h*tmp+y1
+    */
 
-     tmp_t = t + rk->c[j] * h;
+    tmp_t = t + rk->c[j] * h;
 
-     /* tmp_y = h * tmp + y1 */
-     ierr = VecWAXPY(rk->tmp_y,hh,rk->tmp,rk->y1);CHKERRQ(ierr);
+    /* tmp_y = h * tmp + y1 */
+    ierr = VecWAXPY(rk->tmp_y,hh,rk->tmp,rk->y1);CHKERRQ(ierr);
 
-     /* rk->k[j]=0 */
-     ierr = VecSet(rk->k[j],0.0);CHKERRQ(ierr);
-     ierr = TSComputeRHSFunction(ts,tmp_t,rk->tmp_y,rk->k[j]);CHKERRQ(ierr);
+    /* rk->k[j]=0 */
+    ierr = VecSet(rk->k[j],0.0);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,tmp_t,rk->tmp_y,rk->k[j]);CHKERRQ(ierr);
   }
 
   /* tmp=0 and tmp_y=0 */
   ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);
   ierr = VecSet(rk->tmp_y,0.0);CHKERRQ(ierr);
 
-  for (j = 0 ; j < rk->s ; j++) {
-     /* tmp=b1[j]*k[j]+tmp  */
+  for (j = 0; j < rk->s; j++) {
+    /* tmp=b1[j]*k[j]+tmp  */
     ierr = VecAXPY(rk->tmp,rk->b1[j],rk->k[j]);CHKERRQ(ierr);
-     /* tmp_y=b2[j]*k[j]+tmp_y */
+    /* tmp_y=b2[j]*k[j]+tmp_y */
     ierr = VecAXPY(rk->tmp_y,rk->b2[j],rk->k[j]);CHKERRQ(ierr);
   }
 
@@ -309,7 +309,7 @@ PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
 static PetscErrorCode TSSolve_RK(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
-  PetscReal      norm=0.0,dt_fac=0.0,fac = 0.0/*,ttmp=0.0*/;
+  PetscReal      norm=0.0,dt_fac=0.0,fac = 0.0 /*,ttmp=0.0*/;
   PetscInt       i;
   PetscErrorCode ierr;
 
@@ -320,75 +320,71 @@ static PetscErrorCode TSSolve_RK(TS ts)
   for (i = 0; i < ts->max_steps; i++) {
     ierr = TSPreStep(ts);CHKERRQ(ierr); /* Note that this is called once per STEP, not once per STAGE. */
 
-   /* calling rkqs */
-     /*
-       -- input
-       ts        - pointer to ts
-       ts->ptime - current time
-       ts->time_step        - try this timestep
-       y1        - solution for this step
+    /* calling rkqs */
+    /*
+      -- input
+      ts        - pointer to ts
+      ts->ptime - current time
+      ts->time_step        - try this timestep
+      y1        - solution for this step
 
-       --output
-       y1        - suggested solution
-       y2        - check solution (runge - kutta second permutation)
+      --output
+      y1        - suggested solution
+      y2        - check solution (runge - kutta second permutation)
+    */
+    ierr = TSRKqs(ts,ts->ptime,ts->time_step);CHKERRQ(ierr);
+    /* counting steps */
+    ts->steps++;
+    /* checking for maxerror */
+    /* comparing difference to maxerror */
+    ierr = VecNorm(rk->y2,NORM_2,&norm);CHKERRQ(ierr);
+    /* modifying maxerror to satisfy this timestep */
+    rk->maxerror = rk->ferror * ts->time_step;
+    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"norm err: %f maxerror: %f dt: %f",norm,rk->maxerror,ts->time_step);CHKERRQ(ierr); */
+
+    /* handling ok and not ok */
+    if (norm < rk->maxerror) {
+      /* if ok: */
+      ierr       = VecCopy(rk->y1,ts->vec_sol);CHKERRQ(ierr); /* saves the suggested solution to current solution */
+      ts->ptime += ts->time_step;   /* storing the new current time */
+      rk->nok++;
+      fac=5.0;
+      /* trying to save the vector */
+      ierr = TSPostStep(ts);CHKERRQ(ierr);
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      if (ts->ptime >= ts->max_time) break;
+    } else {
+      /* if not OK */
+      rk->nnok++;
+      fac =1.0;
+      ierr=VecCopy(ts->vec_sol,rk->y1);CHKERRQ(ierr);    /* restores old solution */
+    }
+
+    /*Computing next stepsize. See page 167 in Solving ODE 1
+     *
+     * h_new = h * min(facmax , max(facmin , fac * (tol/err)^(1/(p+1))))
+     * facmax set above
+     * facmin
      */
-     ierr = TSRKqs(ts,ts->ptime,ts->time_step);CHKERRQ(ierr);
-     /* counting steps */
-     ts->steps++;
-   /* checking for maxerror */
-     /* comparing difference to maxerror */
-     ierr = VecNorm(rk->y2,NORM_2,&norm);CHKERRQ(ierr);
-     /* modifying maxerror to satisfy this timestep */
-     rk->maxerror = rk->ferror * ts->time_step;
-     /* ierr = PetscPrintf(PETSC_COMM_WORLD,"norm err: %f maxerror: %f dt: %f",norm,rk->maxerror,ts->time_step);CHKERRQ(ierr); */
+    dt_fac = exp(log((rk->maxerror) / norm) / ((rk->p) + 1)) * 0.9;
 
-   /* handling ok and not ok */
-     if (norm < rk->maxerror) {
-        /* if ok: */
-        ierr=VecCopy(rk->y1,ts->vec_sol);CHKERRQ(ierr); /* saves the suggested solution to current solution */
-        ts->ptime += ts->time_step; /* storing the new current time */
-        rk->nok++;
-        fac=5.0;
-        /* trying to save the vector */
-        ierr = TSPostStep(ts);CHKERRQ(ierr);
-        ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-        if (ts->ptime >= ts->max_time) break;
-     } else {
-        /* if not OK */
-        rk->nnok++;
-        fac=1.0;
-        ierr=VecCopy(ts->vec_sol,rk->y1);CHKERRQ(ierr);  /* restores old solution */
-     }
+    if (dt_fac > fac) dt_fac = fac;
+      
 
-     /*Computing next stepsize. See page 167 in Solving ODE 1
-      *
-      * h_new = h * min(facmax , max(facmin , fac * (tol/err)^(1/(p+1))))
-      * facmax set above
-      * facmin
-      */
-     dt_fac = exp(log((rk->maxerror) / norm) / ((rk->p) + 1)) * 0.9 ;
+    /* computing new ts->time_step */
+    ts->time_step = ts->time_step * dt_fac;
 
-     if (dt_fac > fac) {
-        /*ierr = PetscPrintf(PETSC_COMM_WORLD,"changing fac %f\n",fac);*/
-        dt_fac = fac;
-     }
+    if (ts->ptime+ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
 
-     /* computing new ts->time_step */
-     ts->time_step = ts->time_step * dt_fac;
+    if (ts->time_step < 1e-14) {
+      ierr          = PetscPrintf(PETSC_COMM_WORLD,"Very small steps: %f\n",ts->time_step);CHKERRQ(ierr);
+      ts->time_step = 1e-14;
+    }
 
-     if (ts->ptime+ts->time_step > ts->max_time) {
-        ts->time_step = ts->max_time - ts->ptime;
-     }
-
-     if (ts->time_step < 1e-14) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Very small steps: %f\n",ts->time_step);CHKERRQ(ierr);
-        ts->time_step = 1e-14;
-     }
-
-     /* trying to purify h */
-     /* (did not give any visible result) */
-     /* ttmp = ts->ptime + ts->time_step;
-        ts->time_step = ttmp - ts->ptime; */
+    /* trying to purify h */
+    /* (did not give any visible result) */
+    /* ttmp = ts->ptime + ts->time_step;
+       ts->time_step = ttmp - ts->ptime; */
 
   }
 
@@ -436,7 +432,7 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("RK ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_rk_tol","Tolerance for convergence","TSRKSetTolerance",rk->tolerance,&rk->tolerance,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_rk_tol","Tolerance for convergence","TSRKSetTolerance",rk->tolerance,&rk->tolerance,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -445,17 +441,17 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts)
 #define __FUNCT__ "TSView_RK"
 static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
-   TS_RK          *rk = (TS_RK*)ts->data;
-   PetscBool      iascii;
-   PetscErrorCode ierr;
+  TS_RK          *rk = (TS_RK*)ts->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
 
-   PetscFunctionBegin;
-   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-   if (iascii) {
-     ierr = PetscViewerASCIIPrintf(viewer,"number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
-   }
-   PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------ */
@@ -482,11 +478,11 @@ PetscErrorCode  TSCreate_RK(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ts->ops->setup           = TSSetUp_RK;
-  ts->ops->solve           = TSSolve_RK;
-  ts->ops->destroy         = TSDestroy_RK;
-  ts->ops->setfromoptions  = TSSetFromOptions_RK;
-  ts->ops->view            = TSView_RK;
+  ts->ops->setup          = TSSetUp_RK;
+  ts->ops->solve          = TSSolve_RK;
+  ts->ops->destroy        = TSDestroy_RK;
+  ts->ops->setfromoptions = TSSetFromOptions_RK;
+  ts->ops->view           = TSView_RK;
 
   ierr = PetscNewLog(ts,TS_RK,&rk);CHKERRQ(ierr);
   ts->data = (void*)rk;
