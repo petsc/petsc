@@ -4,9 +4,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmcompositegetaccessvpvp_             DMCOMPOSITEGETACCESSVPVP
 #define dmcompositerestoreaccessvpvp_         DMCOMPOSITERESTOREACCESSVPVP
+#define dmcompositegetentriesarray_           DMCOMPOSITEGETENTRIESARRAY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmcompositegetaccessvpvp_             dmcompositegetaccessvpvp
 #define dmcompositerestoreaccessvpvp_         dmcompositerestoreaccessvpvp
+#define dmcompositegetentriesarray_           dmcompositegetentriesarray
 #endif
 
 EXTERN_C_BEGIN
@@ -26,5 +28,11 @@ void PETSC_STDCALL dmcompositerestoreaccessvpvp_(DM *dm,Vec *v,Vec *v1,F90Array1
   *ierr = F90Array1dDestroy(&p1,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd1));
   *ierr = F90Array1dDestroy(&p2,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
 }
+
+void PETSC_STDCALL dmcompositegetentriesarray_( DM *dm, DM *dmarray, PetscErrorCode *ierr )
+{
+  *ierr = DMCompositeGetEntriesArray( *dm, dmarray );
+}
+
 
 EXTERN_C_END

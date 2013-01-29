@@ -894,7 +894,7 @@ PetscErrorCode  DMCompositeGetEntries(DM dm,...)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCompositeGetEntriesArray"
-/*@
+/*@C
     DMCompositeGetEntriesArray - Gets the DM for each entry in a DMComposite.
 
     Not Collective
