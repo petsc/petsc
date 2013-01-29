@@ -1215,7 +1215,7 @@ class PETScMaker(script.Script):
    lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
    self.logPrint('Archiving files '+str(objects)+' into '+lib)
    self.logWrite('Building archive '+lib+'\n', debugSection = 'screen', forceScroll = True)
-   if self.rootDir == self.petscDir:
+   if os.path.samefile(self.rootDir, self.petscDir):
      cmd = ' '.join([self.configInfo.setCompilers.AR, self.configInfo.setCompilers.FAST_AR_FLAGS, lib]+objects)
    else:
      cmd = ' '.join([self.configInfo.setCompilers.AR, self.configInfo.setCompilers.AR_FLAGS, lib]+objects)
@@ -1377,7 +1377,7 @@ class PETScMaker(script.Script):
  def buildLibraries(self, libname, rootDir, parallel = False):
    '''TODO: If a file fails to build, it still must go in the source database'''
    if not self.argDB['buildLibraries']: return
-   totalRebuild = rootDir == self.petscDir and not len(self.sourceDatabase)
+   totalRebuild = os.path.samefile(rootDir, self.petscDir) and not len(self.sourceDatabase)
    self.logPrint('Building Libraries')
    library = os.path.join(self.petscDir, self.petscArch, 'lib', libname)
    objDir  = self.getObjDir(libname)
