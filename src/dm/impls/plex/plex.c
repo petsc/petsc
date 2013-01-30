@@ -4062,9 +4062,6 @@ PetscErrorCode DMPlexConstructCohesiveCells_Private(DM dm, const char labelName[
 
           ierr = DMLabelGetValue(label, support[s], &val);CHKERRQ(ierr);
           if (val < 0) {
-            const PetscInt *scone;
-            PetscInt        sconeSize, sc;
-
             /* Split old face:   Replace negative side cell with cohesive cell */
             ierr = DMPlexInsertSupport(sdm, newp, s, ccell);CHKERRQ(ierr);
           } else {
@@ -4156,7 +4153,6 @@ PetscErrorCode DMPlexConstructCohesiveCells_Private(DM dm, const char labelName[
     for(p = 0; p < numPoints; ++p) {
       const PetscInt  oldp   = points[p];
       const PetscInt  newp   = depthOffset[dep] + oldp;
-      const PetscInt  splitp = pMaxNew[dep] + p;
       const PetscInt *cone;
       PetscInt        coneSize, c;
       PetscBool       replaced = PETSC_FALSE;
