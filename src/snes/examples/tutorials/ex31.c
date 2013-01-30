@@ -395,9 +395,9 @@ PetscScalar linear_p_3d(const PetscReal x[])
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *bcTypes[2]      = {"dirichlet", "freeslip"};
-  const char    *forcingTypes[3] = {"constant", "linear", "cubic"};
-  const char    *runTypes[2]     = {"full", "test"};
+  const char     *bcTypes[2]      = {"dirichlet", "freeslip"};
+  const char     *forcingTypes[3] = {"constant", "linear", "cubic"};
+  const char     *runTypes[2]     = {"full", "test"};
   PetscInt       bc, forcing, run;
   PetscErrorCode ierr;
 
@@ -415,7 +415,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
 
-  options->fem.quad    = (PetscQuadrature *) &options->q;
+  options->fem.quad    = (PetscQuadrature*) &options->q;
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
   options->fem.g0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g0Funcs;
@@ -427,20 +427,26 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex31.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  run = options->runType;
+  run  = options->runType;
   ierr = PetscOptionsEList("-run_type", "The run type", "ex31.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
+
   options->runType = (RunType) run;
+
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex31.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex31.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex31.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
-  bc = options->bcType;
+  bc   = options->bcType;
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex31.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+
   options->bcType = (BCType) bc;
-  forcing = options->forcingType;
+  forcing         = options->forcingType;
+
   ierr = PetscOptionsEList("-forcing_type","Type of forcing function","ex31.c",forcingTypes,3,forcingTypes[options->forcingType],&forcing,PETSC_NULL);CHKERRQ(ierr);
+
   options->forcingType = (ForcingType) forcing;
+
   ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex31.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex31.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex31.c", options->jacobianMF, &options->jacobianMF, PETSC_NULL);CHKERRQ(ierr);
@@ -483,7 +489,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner     = user->partitioner;
+  const char     *partitioner    = user->partitioner;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -507,8 +513,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -518,7 +524,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 PetscErrorCode PointOnBoundary_2D(const PetscScalar coords[], PetscBool onBd[])
 {
   const PetscInt  corner = 0, bottom = 1, right = 2, top = 3, left = 4;
-  const PetscReal eps = 1.0e-10;
+  const PetscReal eps    = 1.0e-10;
 
   PetscFunctionBeginUser;
   onBd[bottom] = PetscAbsScalar(coords[1])       < eps ? PETSC_TRUE : PETSC_FALSE;
@@ -533,17 +539,17 @@ PetscErrorCode PointOnBoundary_2D(const PetscScalar coords[], PetscBool onBd[])
 #define __FUNCT__ "CreateBoundaryPointIS_Square"
 PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, PetscInt **numBoundaryConstraints, IS **boundaryPoints, IS **constraintIndices)
 {
-  MPI_Comm        comm = ((PetscObject) dm)->comm;
-  PetscSection    coordSection;
-  Vec             coordinates;
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscSection   coordSection;
+  Vec            coordinates;
   PetscScalar    *coords;
-  PetscInt        vStart, vEnd;
-  IS              bcPoints;
+  PetscInt       vStart, vEnd;
+  IS             bcPoints;
   const PetscInt *points;
-  const PetscInt  corner = 0, bottom = 1, right = 2, top = 3, left = 4;
-  PetscInt        numBoundaryPoints[5] = {0, 0, 0, 0, 0}, bd, numPoints, p;
+  const PetscInt corner               = 0, bottom = 1, right = 2, top = 3, left = 4;
+  PetscInt       numBoundaryPoints[5] = {0, 0, 0, 0, 0}, bd, numPoints, p;
   PetscInt       *bdPoints[5], *idx;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -554,9 +560,11 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
      boundary 4: left
   */
   *numBoundaries = 5;
+
   ierr = PetscMalloc(*numBoundaries * sizeof(PetscInt), numBoundaryConstraints);CHKERRQ(ierr);
   ierr = PetscMalloc(*numBoundaries * sizeof(IS), boundaryPoints);CHKERRQ(ierr);
   ierr = PetscMalloc(*numBoundaries * sizeof(IS), constraintIndices);CHKERRQ(ierr);
+
   /* Set number of constraints for each boundary */
   (*numBoundaryConstraints)[corner] = 2;
   (*numBoundaryConstraints)[bottom] = 1;
@@ -564,21 +572,22 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   (*numBoundaryConstraints)[top]    = 1;
   (*numBoundaryConstraints)[left]   = 1;
   /* Set local constraint indices for each boundary */
-  ierr = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = 1;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*constraintIndices)[corner]);CHKERRQ(ierr);
-  ierr = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*constraintIndices)[corner]);CHKERRQ(ierr);
+  ierr   = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 1;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*constraintIndices)[bottom]);CHKERRQ(ierr);
-  ierr = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*constraintIndices)[bottom]);CHKERRQ(ierr);
+  ierr   = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 0;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*constraintIndices)[right]);CHKERRQ(ierr);
-  ierr = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*constraintIndices)[right]);CHKERRQ(ierr);
+  ierr   = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 1;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*constraintIndices)[top]);CHKERRQ(ierr);
-  ierr = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*constraintIndices)[top]);CHKERRQ(ierr);
+  ierr   = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 0;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
+  ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
+
   /* Count points on each boundary */
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -595,7 +604,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
       ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
     } else {
       PetscInt *closure = PETSC_NULL;
-      PetscInt  closureSize, q, r;
+      PetscInt closureSize, q, r;
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* Compress out non-vertices */
@@ -767,7 +776,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     }
   }
   if (user->bcType == FREE_SLIP) {
-    PetscInt  numBoundaries, b;
+    PetscInt numBoundaries, b;
     PetscInt *numBoundaryConstraints;
     IS       *boundaryPoints, *constraintIndices;
 
@@ -788,10 +797,10 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = DMPlexCreateSectionBCIndices(dm, section);CHKERRQ(ierr);
   } else {
     if (user->bcType == DIRICHLET) {
-      numBC = 2;
-      ierr  = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+      numBC       = 2;
+      ierr        = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
       bcPoints[1] = bcPoints[0];
-      ierr  = PetscObjectReference((PetscObject) bcPoints[1]);CHKERRQ(ierr);
+      ierr        = PetscObjectReference((PetscObject) bcPoints[1]);CHKERRQ(ierr);
     }
     ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   }
@@ -817,7 +826,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
 {
-  PetscFEM      *fem = &user->fem;
+  PetscFEM       *fem = &user->fem;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -910,14 +919,14 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
         user->exactFuncs[1] = quadratic_v_2d;
         user->exactFuncs[2] = linear_p_2d;
         user->exactFuncs[3] = linear_T_2d;
-      break;
+        break;
       case 3:
         user->exactFuncs[0] = quadratic_u_3d;
         user->exactFuncs[1] = quadratic_v_3d;
         user->exactFuncs[2] = quadratic_w_3d;
         user->exactFuncs[3] = linear_p_3d;
         user->exactFuncs[4] = linear_T_2d;
-      break;
+        break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
       }
@@ -977,16 +986,16 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
 */
 PetscErrorCode CreateNullSpaces(DM dm, PetscInt field, MatNullSpace *nullSpace)
 {
-  AppCtx        *user;
+  AppCtx         *user;
   Vec            nullVec, localNullVec;
   PetscSection   section;
-  PetscScalar   *a;
+  PetscScalar    *a;
   PetscInt       pressure = field;
   PetscInt       pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, (void**) &user);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &nullVec);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localNullVec);CHKERRQ(ierr);
   ierr = VecSet(nullVec, 0.0);CHKERRQ(ierr);
@@ -999,9 +1008,7 @@ PetscErrorCode CreateNullSpaces(DM dm, PetscInt field, MatNullSpace *nullSpace)
 
     ierr = PetscSectionGetFieldDof(section, p, pressure, &fDim);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldOffset(section, p, pressure, &off);CHKERRQ(ierr);
-    for (d = 0; d < fDim; ++d) {
-      a[off+d] = 1.0;
-    }
+    for (d = 0; d < fDim; ++d) a[off+d] = 1.0;
   }
   ierr = VecRestoreArray(localNullVec, &a);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localNullVec, INSERT_VALUES, nullVec);CHKERRQ(ierr);
@@ -1037,18 +1044,18 @@ PetscErrorCode CreateNullSpaces(DM dm, PetscInt field, MatNullSpace *nullSpace)
 */
 PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
 {
-  JacActionCtx    *ctx;
-  DM               dm;
-  Vec              dummy, localX, localY;
-  PetscInt         N, n;
-  PetscErrorCode   ierr;
+  JacActionCtx   *ctx;
+  DM             dm;
+  Vec            dummy, localX, localY;
+  PetscInt       N, n;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
   ierr = MatShellGetContext(J, &ctx);CHKERRQ(ierr);
-  dm = ctx->dm;
+  dm   = ctx->dm;
 
   /* determine whether X = localX */
   ierr = DMGetLocalVector(dm, &dummy);CHKERRQ(ierr);
@@ -1066,7 +1073,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
     ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   } else {
-    ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+    ierr   = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
     localX = X;
   }
   ierr = DMPlexComputeJacobianActionFEM(dm, J, localX, localY, ctx->user);CHKERRQ(ierr);
@@ -1111,7 +1118,7 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   JacActionCtx   userJ;                /* context for Jacobian MF action */
   PetscInt       its;                  /* iterations for convergence */
-  PetscReal      error = 0.0;          /* L_2 error in the solution */
+  PetscReal      error         = 0.0;  /* L_2 error in the solution */
   const PetscInt numComponents = NUM_BASIS_COMPONENTS_TOTAL;
   PetscErrorCode ierr;
 
@@ -1142,9 +1149,11 @@ int main(int argc, char **argv)
     ierr = MatSetType(A, MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A, MATOP_MULT, (void (*)(void)) FormJacobianAction);CHKERRQ(ierr);
+
     userJ.dm   = user.dm;
     userJ.J    = J;
     userJ.user = &user;
+
     ierr = DMCreateLocalVector(user.dm, &userJ.u);CHKERRQ(ierr);
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
@@ -1158,10 +1167,10 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   {
-    KSP ksp; PC pc; Vec crd_vec;
+    KSP               ksp; PC pc; Vec crd_vec;
     const PetscScalar *v;
-    PetscInt i,k,j,mlocal;
-    PetscReal *coords;
+    PetscInt          i,k,j,mlocal;
+    PetscReal         *coords;
 
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
@@ -1183,7 +1192,7 @@ int main(int argc, char **argv)
     PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
     PetscInt c;
 
-    for (c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
+    for (c = 0; c < numComponents; ++c) initialGuess[c] = zero;
     ierr = DMPlexProjectFunction(user.dm, numComponents, initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     if (user.debug) {
@@ -1247,7 +1256,7 @@ int main(int argc, char **argv)
     PetscSection   section;
     Vec            sol;
     PetscViewer    viewer;
-    const char    *name;
+    const char     *name;
 
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);

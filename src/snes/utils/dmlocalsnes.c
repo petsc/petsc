@@ -43,6 +43,7 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlo
   *dmlocalsnes = PETSC_NULL;
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
+
     sdm->ops->destroy   = DMSNESDestroy_DMLocal;
     sdm->ops->duplicate = DMSNESDuplicate_DMLocal;
   }
@@ -105,14 +106,14 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
     MatFDColoring fdcoloring;
     ierr = PetscObjectQuery((PetscObject)dm,"DMDASNES_FDCOLORING",(PetscObject*)&fdcoloring);CHKERRQ(ierr);
     if (!fdcoloring) {
-      ISColoring     coloring;
+      ISColoring coloring;
 
       ierr = DMCreateColoring(dm,dm->coloringtype,dm->mattype,&coloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,coloring,&fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
-        ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode(*)(void))SNESComputeFunction_DMLocal,dmlocalsnes);CHKERRQ(ierr);
+        ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))SNESComputeFunction_DMLocal,dmlocalsnes);CHKERRQ(ierr);
         break;
       default: SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for coloring type '%s'",ISColoringTypes[dm->coloringtype]);
       }
@@ -130,7 +131,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     }
     *mstr = SAME_NONZERO_PATTERN;
-    ierr = MatFDColoringApply(*B,fdcoloring,X,mstr,snes);CHKERRQ(ierr);
+    ierr  = MatFDColoringApply(*B,fdcoloring,X,mstr,snes);CHKERRQ(ierr);
   }
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (*A != *B) {
@@ -168,8 +169,10 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
+
   dmlocalsnes->residuallocal = func;
   dmlocalsnes->residuallocalctx = ctx;
+
   ierr = DMSNESSetFunction(dm,SNESComputeFunction_DMLocal,dmlocalsnes);CHKERRQ(ierr);
   if (!sdm->ops->computejacobian) {  /* Call us for the Jacobian too, can be overridden by the user. */
     ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMLocal,dmlocalsnes);CHKERRQ(ierr);
@@ -203,8 +206,10 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Ma
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
+
   dmlocalsnes->jacobianlocal = func;
   dmlocalsnes->jacobianlocalctx = ctx;
+
   ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMLocal,dmlocalsnes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

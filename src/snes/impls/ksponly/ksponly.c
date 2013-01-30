@@ -44,14 +44,13 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
   if (kspreason < 0 && ++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-    ierr = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
+    ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-  } else {
-    snes->reason = SNES_CONVERGED_ITS;
-  }
-  ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+  } else snes->reason = SNES_CONVERGED_ITS;
+
+  ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
   snes->linear_its += lits;
-  ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+  ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
   snes->iter++;
 
   /* Take the computed step. */
@@ -102,15 +101,15 @@ PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
 {
 
   PetscFunctionBegin;
-  snes->ops->setup           = SNESSetUp_KSPONLY;
-  snes->ops->solve           = SNESSolve_KSPONLY;
-  snes->ops->destroy         = SNESDestroy_KSPONLY;
-  snes->ops->setfromoptions  = 0;
-  snes->ops->view            = 0;
-  snes->ops->reset           = 0;
+  snes->ops->setup          = SNESSetUp_KSPONLY;
+  snes->ops->solve          = SNESSolve_KSPONLY;
+  snes->ops->destroy        = SNESDestroy_KSPONLY;
+  snes->ops->setfromoptions = 0;
+  snes->ops->view           = 0;
+  snes->ops->reset          = 0;
 
-  snes->usesksp         = PETSC_TRUE;
-  snes->usespc          = PETSC_FALSE;
+  snes->usesksp = PETSC_TRUE;
+  snes->usespc  = PETSC_FALSE;
 
   snes->data = 0;
   PetscFunctionReturn(0);

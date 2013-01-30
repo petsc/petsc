@@ -52,18 +52,18 @@ PetscErrorCode MatrixFreePreconditioner(PC,Vec,Vec);
    User-defined application context
 */
 typedef struct {
-   DM          da;     /* distributed array */
-   Vec         F;      /* right-hand-side of PDE */
-   PetscMPIInt rank;   /* rank of processor */
-   PetscMPIInt size;   /* size of communicator */
-   PetscReal   h;      /* mesh spacing */
+  DM          da;      /* distributed array */
+  Vec         F;       /* right-hand-side of PDE */
+  PetscMPIInt rank;    /* rank of processor */
+  PetscMPIInt size;    /* size of communicator */
+  PetscReal   h;       /* mesh spacing */
 } ApplicationCtx;
 
 /*
    User-defined context for monitoring
 */
 typedef struct {
-   PetscViewer viewer;
+  PetscViewer viewer;
 } MonitorCtx;
 
 /*
@@ -100,10 +100,10 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRQ(ierr);
   ctx.h = 1.0/(N-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -206,8 +206,10 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post step checking routine\n");CHKERRQ(ierr);
     ierr = SNESLineSearchSetPostCheck(linesearch,PostCheck,&checkP);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr);
+
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;
+
     ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
   }
 
@@ -287,7 +289,7 @@ int main(int argc,char **argv)
      Check the error
   */
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /*
@@ -345,7 +347,7 @@ PetscErrorCode FormInitialGuess(Vec x)
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
-  DM             da = user->da;
+  DM             da    = user->da;
   PetscScalar    *xx,*ff,*FF,d;
   PetscErrorCode ierr;
   PetscInt       i,M,xs,xm;
@@ -378,7 +380,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
-                   PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                     PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Set function values for boundary points; define local interior grid point range:
@@ -398,9 +400,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      Compute function over locally owned part of the grid (interior points only)
   */
   d = 1.0/(user->h*user->h);
-  for (i=xs; i<xs+xm; i++) {
-    ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
-  }
+  for (i=xs; i<xs+xm; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
 
   /*
      Restore vectors
@@ -427,7 +427,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   PetscScalar    *xx,d,A[3];
@@ -446,7 +446,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
     Get range of locally owned matrix
   */
   ierr = DMDAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
-                   PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                     PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Determine starting and ending local indices for interior grid points.
@@ -459,7 +459,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
     xs++;xm--;
   }
   if (xs+xm == M) { /* right boundary */
-    i = M-1; A[0] = 1.0;
+    i    = M-1;
+    A[0] = 1.0;
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     xm--;
   }
@@ -580,11 +581,13 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   PetscFunctionBeginUser;
   *changed_x = PETSC_FALSE;
   *changed_y = PETSC_FALSE;
-  ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  check = (StepCheckCtx *)ctx;
-  user = check->user;
-  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetPreCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
+
+  ierr  = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  check = (StepCheckCtx*)ctx;
+  user  = check->user;
+  ierr  = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  ierr  = SNESLineSearchGetPreCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
+
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {
     da   = user->da;
@@ -602,13 +605,14 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
        as a meaningful or appropriate choice.)
     */
     for (i=xs; i<xs+xm; i++) {
-      if (!PetscAbsScalar(xa[i])) rdiff = 2*check->tolerance; else rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
+      if (!PetscAbsScalar(xa[i])) rdiff = 2*check->tolerance;
+      else rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
       if (rdiff > check->tolerance) {
         tmp        = xa[i];
         xa[i]      = .5*(xa[i] + xa_last[i]);
         *changed_x = PETSC_TRUE;
         ierr       = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%G, x_last=%G, diff=%G, x_new=%G\n",
-                                i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
+                                 i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
     ierr = DMDAVecRestoreArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
@@ -650,20 +654,20 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   SNES           snes;
 
   PetscFunctionBeginUser;
-  ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  check = (SetSubKSPCtx *)ctx;
-  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCBJacobiGetSubKSP(pc,PETSC_NULL,PETSC_NULL,&sub_ksps);CHKERRQ(ierr);
+  ierr    = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
+  check   = (SetSubKSPCtx*)ctx;
+  ierr    = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  ierr    = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr    = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr    = PCBJacobiGetSubKSP(pc,PETSC_NULL,PETSC_NULL,&sub_ksps);CHKERRQ(ierr);
   sub_ksp = sub_ksps[0];
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);         /* outer KSP iteration number */
-  ierr = KSPGetIterationNumber(sub_ksp,&sub_its);CHKERRQ(ierr); /* inner KSP iteration number */
+  ierr    = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);      /* outer KSP iteration number */
+  ierr    = KSPGetIterationNumber(sub_ksp,&sub_its);CHKERRQ(ierr); /* inner KSP iteration number */
 
   if (iter) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %d %d, subksp_it %d\n",iter,check->its0,its,sub_its);CHKERRQ(ierr);
+    ierr      = PetscPrintf(PETSC_COMM_WORLD,"    ...PostCheck snes iteration %D, ksp_it %d %d, subksp_it %d\n",iter,check->its0,its,sub_its);CHKERRQ(ierr);
     ksp_ratio = ((PetscReal)(its))/check->its0;
-    maxit = (PetscInt)(ksp_ratio*sub_its + 0.5);
+    maxit     = (PetscInt)(ksp_ratio*sub_its + 0.5);
     if (maxit < 2) maxit = 2;
     ierr = KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,maxit);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"    ...ksp_ratio %g, new maxit %d\n\n",ksp_ratio,maxit);CHKERRQ(ierr);

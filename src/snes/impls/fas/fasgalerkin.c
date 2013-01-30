@@ -19,8 +19,8 @@
 @*/
 PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 {
-  SNES_FAS * fas = (SNES_FAS *)snes->data;
-  
+  SNES_FAS * fas = (SNES_FAS*)snes->data;
+
   PetscFunctionBegin;
   *flg = fas->galerkin;
   PetscFunctionReturn(0);
@@ -43,9 +43,9 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 @*/
 PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 {
-  SNES_FAS * fas = (SNES_FAS *)snes->data;
+  SNES_FAS       * fas = (SNES_FAS*)snes->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   fas->galerkin = flg;
   if (fas->next) {ierr = SNESFASSetGalerkin(fas->next, flg);CHKERRQ(ierr);}
@@ -72,16 +72,16 @@ PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ct
 
   PetscFunctionBegin;
   /* prolong to the fine level and evaluate there. */
-  fassnes = (SNES)ctx;
-  fas     = (SNES_FAS *)fassnes->data;
+  fassnes  = (SNES)ctx;
+  fas      = (SNES_FAS*)fassnes->data;
   prevsnes = fas->previous;
-  prevfas = (SNES_FAS *)prevsnes->data;
+  prevfas  = (SNES_FAS*)prevsnes->data;
   /* interpolate down the solution */
   ierr = MatInterpolate(prevfas->interpolate, X, prevfas->Xg);CHKERRQ(ierr);
   /* the RHS we care about is at the coarsest level */
-  b_temp = prevsnes->vec_rhs;
+  b_temp            = prevsnes->vec_rhs;
   prevsnes->vec_rhs = PETSC_NULL;
-  ierr = SNESComputeFunction(prevsnes, prevfas->Xg, prevfas->Fg);CHKERRQ(ierr);
+  ierr              = SNESComputeFunction(prevsnes, prevfas->Xg, prevfas->Fg);CHKERRQ(ierr);
   prevsnes->vec_rhs = b_temp;
   /* restrict up the function */
   ierr = MatRestrict(prevfas->restrct, prevfas->Fg, F);CHKERRQ(ierr);

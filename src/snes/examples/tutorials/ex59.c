@@ -42,10 +42,10 @@ int main(int argc,char **argv)
   PetscScalar       *xx;
 
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-second_order",&second_order,PETSC_NULL);CHKERRQ(ierr);
-  h = 1.0/(n-1);
+  h    = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -95,18 +95,18 @@ int main(int argc,char **argv)
 #define SQR(x) ((x)*(x))
   xp = 0.0;
   for (i=0; i<n; i++)
-    {
-      v = k*(k-1.)*(b-a)*PetscPowScalar(xp,k-2.) + SQR(a*xp) + SQR(b-a)*PetscPowScalar(xp,2.*k) + 2.*a*(b-a)*PetscPowScalar(xp,k+1.);
-      ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-      v2 = a*xp + (b-a)*PetscPowScalar(xp,k);
-      ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
-      xp += h;
-    }
+  {
+    v    = k*(k-1.)*(b-a)*PetscPowScalar(xp,k-2.) + SQR(a*xp) + SQR(b-a)*PetscPowScalar(xp,2.*k) + 2.*a*(b-a)*PetscPowScalar(xp,k+1.);
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    v2   = a*xp + (b-a)*PetscPowScalar(xp,k);
+    ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
+    xp  += h;
+  }
 
   /* perturb initial guess */
   ierr = VecGetArray(x,&xx);
   for (i=0; i<n; i++) {
-    v2 = xx[i]*sperturb;
+    v2   = xx[i]*sperturb;
     ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
@@ -139,20 +139,17 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
   ierr = VecGetArray((Vec)dummy,&FF);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (PetscReal)(n - 1); d2 = d*d;
+  d    = (PetscReal)(n - 1); d2 = d*d;
 
-  if (second_order) {
-    ff[0] = d*(0.5*d*(-xx[2] + 4.*xx[1] - 3.*xx[0]) - X0DOT);
-  } else {
-    ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT);
-  }
-  for (i=1; i<n-1; i++) {
-    ff[i] = d2*(xx[i-1] - 2.*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
-  }
+  if (second_order) ff[0] = d*(0.5*d*(-xx[2] + 4.*xx[1] - 3.*xx[0]) - X0DOT);
+  else ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT);
+
+  for (i=1; i<n-1; i++) ff[i] = d2*(xx[i-1] - 2.*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
+
   ff[n-1] = d*d*(xx[n-1] - X1);
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(f,&ff);CHKERRQ(ierr);
+  ierr    = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
   return 0;
 }
 
@@ -164,7 +161,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
 
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  d = (PetscReal)(n - 1); d2 = d*d;
+  d    = (PetscReal)(n - 1); d2 = d*d;
 
   i = 0;
   if (second_order) {
@@ -177,12 +174,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
     ierr = MatSetValues(*prejac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
   for (i=1; i<n-1; i++) {
-     j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
-     A[0] = d2;    A[1] = -2.*d2 + 2.*xx[i];  A[2] = d2;
-     ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
+    A[0] = d2;    A[1] = -2.*d2 + 2.*xx[i];  A[2] = d2;
+    ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  i = n-1;
+  i    = n-1;
   A[0] = d*d;
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
 
@@ -191,7 +188,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
   ierr = MatAssemblyBegin(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

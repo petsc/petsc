@@ -50,8 +50,8 @@ T*/
    FormFunction().
 */
 typedef struct {
-   PetscReal   param;          /* test problem parameter */
-   DM          da;             /* distributed array data structure */
+  PetscReal param;             /* test problem parameter */
+  DM        da;                /* distributed array data structure */
 } AppCtx;
 
 /*
@@ -64,26 +64,26 @@ extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES                   snes;                 /* nonlinear solver */
-  Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
-  AppCtx                 user;                 /* user-defined work context */
-  PetscInt               its;                  /* iterations for convergence */
-  PetscBool              matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
-  PetscErrorCode         ierr;
-  PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
+  SNES           snes;                         /* nonlinear solver */
+  Vec            x,r;                          /* solution, residual vectors */
+  Mat            J;                            /* Jacobian matrix */
+  AppCtx         user;                         /* user-defined work context */
+  PetscInt       its;                          /* iterations for convergence */
+  PetscBool      matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+                      PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -271,13 +271,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  lambda = user->param;
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
-  hz     = 1.0/(PetscReal)(Mz-1);
-  sc     = hx*hy*hz*lambda;
+  lambda  = user->param;
+  hx      = 1.0/(PetscReal)(Mx-1);
+  hy      = 1.0/(PetscReal)(My-1);
+  hz      = 1.0/(PetscReal)(Mz-1);
+  sc      = hx*hy*hz*lambda;
   hxhzdhy = hx*hz/hy;
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
@@ -311,17 +311,17 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         if (i == 0 || j == 0 || k == 0 || i == Mx-1 || j == My-1 || k == Mz-1) {
           f[k][j][i] = x[k][j][i];
         } else {
-          u           = x[k][j][i];
-          u_east      = x[k][j][i+1];
-          u_west      = x[k][j][i-1];
-          u_north     = x[k][j+1][i];
-          u_south     = x[k][j-1][i];
-          u_up        = x[k+1][j][i];
-          u_down      = x[k-1][j][i];
-          u_xx        = (-u_east + two*u - u_west)*hyhzdhx;
-          u_yy        = (-u_north + two*u - u_south)*hxhzdhy;
-          u_zz        = (-u_up + two*u - u_down)*hxhydhz;
-          f[k][j][i]  = u_xx + u_yy + u_zz - sc*PetscExpScalar(u);
+          u          = x[k][j][i];
+          u_east     = x[k][j][i+1];
+          u_west     = x[k][j][i-1];
+          u_north    = x[k][j+1][i];
+          u_south    = x[k][j-1][i];
+          u_up       = x[k+1][j][i];
+          u_down     = x[k-1][j][i];
+          u_xx       = (-u_east + two*u - u_west)*hyhzdhx;
+          u_yy       = (-u_north + two*u - u_south)*hxhzdhy;
+          u_zz       = (-u_up + two*u - u_down)*hxhydhz;
+          f[k][j][i] = u_xx + u_yy + u_zz - sc*PetscExpScalar(u);
         }
       }
     }
@@ -356,7 +356,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat            jac = *B;                /* Jacobian matrix */
+  Mat            jac   = *B;              /* Jacobian matrix */
   Vec            localX;
   PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,My,Mz;
@@ -367,13 +367,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  lambda = user->param;
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
-  hz     = 1.0/(PetscReal)(Mz-1);
-  sc     = hx*hy*hz*lambda;
+  lambda  = user->param;
+  hx      = 1.0/(PetscReal)(Mx-1);
+  hy      = 1.0/(PetscReal)(My-1);
+  hz      = 1.0/(PetscReal)(Mz-1);
+  sc      = hx*hy*hz*lambda;
   hxhzdhy = hx*hz/hy;
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
@@ -417,7 +417,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
           v[0] = 1.0;
           ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else {
-        /* interior grid points */
+          /* interior grid points */
           v[0] = -hxhydhz; col[0].k=k-1;col[0].j=j;  col[0].i = i;
           v[1] = -hxhzdhy; col[1].k=k;  col[1].j=j-1;col[1].i = i;
           v[2] = -hyhzdhx; col[2].k=k;  col[2].j=j;  col[2].i = i-1;

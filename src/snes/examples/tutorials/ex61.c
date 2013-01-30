@@ -41,7 +41,7 @@ Movie version
 #include "petscsnes.h"
 #include "petscdmda.h"
 
-typedef struct{
+typedef struct {
   PetscReal   dt,T; /* Time step and end time */
   PetscReal   dtevent;  /* time scale of radiation events, roughly one event per dtevent */
   PetscInt    maxevents; /* once this number of events is reached no more events are generated */
@@ -65,7 +65,7 @@ typedef struct{
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    Mda, Nda;
   PetscViewer graphicsfile;  /* output of solution at each times step */
-}AppCtx;
+} AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetRandomVectors(AppCtx*,PetscReal);
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
       break;
     case 2:
       ierr = Phi_read(&user);CHKERRQ(ierr);
-      break ;
+      break;
     }
   }
 
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 
     ierr = Update_u(x,&user);CHKERRQ(ierr);
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
-    t = t + user.dt;
+    t    = t + user.dt;
     /*
     if (user.graphicsfile) {
       ierr = VecView(x,user.graphicsfile);CHKERRQ(ierr);
@@ -351,11 +351,11 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
 
 
-  for (i=0;i<n;i++) {
-    wv_p[i] = xx[5*i];
-    cv_p[i] = xx[5*i+1];
-    wi_p[i] = xx[5*i+2];
-    ci_p[i] = xx[5*i+3];
+  for (i=0; i<n; i++) {
+    wv_p[i]  = xx[5*i];
+    cv_p[i]  = xx[5*i+1];
+    wi_p[i]  = xx[5*i+2];
+    ci_p[i]  = xx[5*i+3];
     eta_p[i] = xx[5*i+4];
   }
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
@@ -404,14 +404,10 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_p[5*i]=w2[i];
-  }
+  for (i=0; i<n; i++) q_p[5*i]=w2[i];
 
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_p[5*i+1]=w1[i];
-  }
+  for (i=0;i<n;i++) q_p[5*i+1]=w1[i];
 
   ierr = VecCopy(user->Riv,user->work1);CHKERRQ(ierr);
   if (user->radiation) {
@@ -430,14 +426,10 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->ci);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_p[5*i+2]=w2[i];
-  }
+  for (i=0;i<n;i++) q_p[5*i+2]=w2[i];
 
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_p[5*i+3]=w1[i];
-  }
+  for (i=0;i<n;i++) q_p[5*i+3]=w1[i];
 
   ierr = VecCopy(user->DPsieta,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,user->L);CHKERRQ(ierr);
@@ -446,9 +438,7 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecAXPY(user->work1,-1.0,user->Piv);CHKERRQ(ierr);
   }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_p[5*i+4]=w2[i];
-  }
+  for (i=0;i<n;i++) q_p[5*i+4]=w2[i];
 
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
@@ -458,12 +448,12 @@ PetscErrorCode Update_q(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "DPsi"
-PetscErrorCode DPsi(AppCtx* user)
+PetscErrorCode DPsi(AppCtx *user)
 {
-  PetscErrorCode  ierr;
-  PetscScalar     Evf=user->Evf,Eif=user->Eif,kBT=user->kBT,A=user->A;
-  PetscScalar     *cv_p,*ci_p,*eta_p,*logcv_p,*logci_p,*logcvi_p,*DPsiv_p,*DPsii_p,*DPsieta_p;
-  PetscInt        n,i;
+  PetscErrorCode ierr;
+  PetscScalar    Evf=user->Evf,Eif=user->Eif,kBT=user->kBT,A=user->A;
+  PetscScalar    *cv_p,*ci_p,*eta_p,*logcv_p,*logci_p,*logcvi_p,*DPsiv_p,*DPsii_p,*DPsieta_p;
+  PetscInt       n,i;
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->cv,&n);CHKERRQ(ierr);
@@ -491,12 +481,9 @@ PetscErrorCode DPsi(AppCtx* user)
   for (i=0;i<n;i++)
   {
     DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
-
-    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i] ;
+    DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i];
 
     DPsieta_p[i] = 2.0*(eta_p[i]-1.0)*(Evf*cv_p[i] + Eif*ci_p[i] + kBT*(cv_p[i]* logcv_p[i] + ci_p[i]* logci_p[i] + (1-cv_p[i]-ci_p[i])*logcvi_p[i])) + 2.0*eta_p[i]*A*((cv_p[i]-1.0)*(cv_p[i]-1.0) + ci_p[i]*ci_p[i]);
-
-
   }
 
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
@@ -516,21 +503,17 @@ PetscErrorCode DPsi(AppCtx* user)
 #define __FUNCT__ "Llog"
 PetscErrorCode Llog(Vec X, Vec Y)
 {
-  PetscErrorCode    ierr;
-  PetscScalar       *x,*y;
-  PetscInt          n,i;
+  PetscErrorCode ierr;
+  PetscScalar    *x,*y;
+  PetscInt       n,i;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-    if (x[i] < 1.0e-12) {
-      y[i] = log(1.0e-12);
-    }
-    else {
-      y[i] = log(x[i]);
-    }
+    if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
+    else y[i] = log(x[i]);
   }
   PetscFunctionReturn(0);
 }
@@ -538,11 +521,11 @@ PetscErrorCode Llog(Vec X, Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetInitialGuess"
-PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
+PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 {
-  PetscErrorCode    ierr;
-  PetscInt          n,i,Mda,Nda;
-  PetscScalar       *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta;
+  PetscErrorCode ierr;
+  PetscInt       n,i,Mda,Nda;
+  PetscScalar    *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta;
 
   /* needed for the void growth case */
   PetscScalar       xmid,ymid,cv_v=1.0,cv_m=0.122,ci_v=0.0,ci_m=.00069,eta_v=1.0,eta_m=0.0,h,lambda;
@@ -562,37 +545,37 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
-    h = (user->xmax-user->xmin)/Mda;
-    xmid = (user->xmax + user->xmin)/2.0;
-    ymid = (user->ymax + user->ymin)/2.0;
+    h      = (user->xmax-user->xmin)/Mda;
+    xmid   = (user->xmax + user->xmin)/2.0;
+    ymid   = (user->ymax + user->ymin)/2.0;
     lambda = 4.0*h;
 
     ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
-    for (i=0;i < nele; i++) {
+    for (i=0; i < nele; i++) {
       idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
 
       x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
       x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
       x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
 
-      PetscInt k;
+      PetscInt    k;
       PetscScalar vals_cv[3],vals_ci[3],vals_eta[3],s,hhr,r;
-      for (k=0; k < 3 ; k++) {
+      for (k=0; k < 3; k++) {
         s = sqrt((x[k] - xmid)*(x[k] - xmid) + (y[k] - ymid)*(y[k] - ymid));
         if (s < xwidth*(5.0/64.0)) {
-          vals_cv[k] = cv_v;
-          vals_ci[k] = ci_v;
+          vals_cv[k]  = cv_v;
+          vals_ci[k]  = ci_v;
           vals_eta[k] = eta_v;
         } else if (s>= xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0)) {
           /* r = (s - xwidth*(6.0/64.0))/(0.5*lambda); */
-          r = (s - xwidth*(6.0/64.0))/(xwidth/64.0);
-          hhr = 0.25*(-r*r*r + 3*r + 2);
-          vals_cv[k] = cv_m + (1.0 - hhr)*(cv_v - cv_m);
-          vals_ci[k] = ci_m + (1.0 - hhr)*(ci_v - ci_m);
+          r           = (s - xwidth*(6.0/64.0))/(xwidth/64.0);
+          hhr         = 0.25*(-r*r*r + 3*r + 2);
+          vals_cv[k]  = cv_m + (1.0 - hhr)*(cv_v - cv_m);
+          vals_ci[k]  = ci_m + (1.0 - hhr)*(ci_v - ci_m);
           vals_eta[k] = eta_m + (1.0 - hhr)*(eta_v - eta_m);
         } else {
-          vals_cv[k] = cv_m;
-          vals_ci[k] = ci_m;
+          vals_cv[k]  = cv_m;
+          vals_ci[k]  = ci_m;
           vals_eta[k] = eta_m;
         }
       }
@@ -615,8 +598,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = VecView(user->ci,view);CHKERRQ(ierr);
     ierr = VecView(user->eta,view);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     /* ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr); */
     /* ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr); */
     ierr = VecSet(user->cv,.05);CHKERRQ(ierr);
@@ -634,9 +616,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wi,&wi_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->eta,&eta);CHKERRQ(ierr);
-  for (i=0;i<n/5;i++)
-  {
-    xx[5*i]=wv_p[i];
+  for (i=0; i<n/5; i++) {
+    xx[5*i]  =wv_p[i];
     xx[5*i+1]=cv_p[i];
     xx[5*i+2]=wi_p[i];
     xx[5*i+3]=ci_p[i];
@@ -665,14 +646,14 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetRandomVectors"
-PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
+PetscErrorCode SetRandomVectors(AppCtx *user,PetscReal t)
 {
-  PetscErrorCode        ierr;
-  static RandomValues   *randomvalues = 0;
-  static PetscInt       randindex = 0,n; /* indicates how far into the randomvalues we have currently used */
-  static PetscReal      randtime = 0; /* indicates time of last radiation event */
-  PetscInt              i,j,M,N,cnt = 0;
-  PetscInt              xs,ys,xm,ym;
+  PetscErrorCode      ierr;
+  static RandomValues *randomvalues = 0;
+  static PetscInt     randindex     = 0,n; /* indicates how far into the randomvalues we have currently used */
+  static PetscReal    randtime      = 0; /* indicates time of last radiation event */
+  PetscInt            i,j,M,N,cnt = 0;
+  PetscInt            xs,ys,xm,ym;
 
   PetscFunctionBeginUser;
   if (!randomvalues) {
@@ -721,7 +702,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
@@ -762,7 +743,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i < xs+xm;i++) {
+    for (i=xs; i < xs+xm; i++) {
       l[j][i][0] = -SNES_VI_INF;
       l[j][i][1] = 0.0;
       l[j][i][2] = -SNES_VI_INF;
@@ -784,15 +765,15 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
 #undef __FUNCT__
 #define __FUNCT__ "GetParams"
-PetscErrorCode GetParams(AppCtx* user)
+PetscErrorCode GetParams(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscBool      flg,graphicsfile = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   /* Set default parameters */
-  user->xmin = 0.0; user->xmax = 128.0;
-  user->ymin = 0.0; user->ymax = 128.0;
+  user->xmin  = 0.0; user->xmax = 128.0;
+  user->ymin  = 0.0; user->ymax = 128.0;
   user->Dv    = 1.0;
   user->Di    = 4.0;
   user->Evf   = 0.8;
@@ -816,11 +797,11 @@ PetscErrorCode GetParams(AppCtx* user)
   user->graphics   = PETSC_TRUE;
 
   /* multidomain modeling */
-  user->domain    =   1;
-  user->Svr       = 0.5;
-  user->Sir       = 0.5;
-  user->cv_eq     = 6.9e-4;
-  user->ci_eq     = 6.9e-4;
+  user->domain =   1;
+  user->Svr    = 0.5;
+  user->Sir    = 0.5;
+  user->cv_eq  = 6.9e-4;
+  user->ci_eq  = 6.9e-4;
   /* void growth */
   user->voidgrowth = PETSC_FALSE;
 
@@ -832,40 +813,42 @@ PetscErrorCode GetParams(AppCtx* user)
 
   ierr = PetscOptionsInt("-domain","Number of domains (0=one domain, 1=two domains, 2=multidomain\n","None",user->domain,&user->domain,&flg);CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-Dv","Vacancy Diffusivity\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Di","Interstitial Diffusivity\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Evf","Vacancy Formation Energy\n","None",user->Evf,&user->Evf,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Eif","Interstitial Formation energy\n","None",user->Eif,&user->Eif,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-A","???","None",user->A,&user->A,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kBT","Boltzmann's Constant times the Absolute Temperature","None",user->kBT,&user->kBT,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kav","???","None",user->kav,&user->kav,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kai","???","None",user->kai,&user->kai,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kaeta","???","None",user->kaeta,&user->kaeta,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Rsurf","???","None",user->Rsurf,&user->Rsurf,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Rbulk","???","None",user->Rbulk,&user->Rbulk,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-VG","Maximum increase in vacancy (or interstitial) concentration due to a cascade event","None",user->VG,&user->VG,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-L","???","None",user->L,&user->L,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Dv","Vacancy Diffusivity\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Di","Interstitial Diffusivity\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Evf","Vacancy Formation Energy\n","None",user->Evf,&user->Evf,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Eif","Interstitial Formation energy\n","None",user->Eif,&user->Eif,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-A","???","None",user->A,&user->A,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-kBT","Boltzmann's Constant times the Absolute Temperature","None",user->kBT,&user->kBT,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-kav","???","None",user->kav,&user->kav,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-kai","???","None",user->kai,&user->kai,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-kaeta","???","None",user->kaeta,&user->kaeta,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Rsurf","???","None",user->Rsurf,&user->Rsurf,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Rbulk","???","None",user->Rbulk,&user->Rbulk,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-VG","Maximum increase in vacancy (or interstitial) concentration due to a cascade event","None",user->VG,&user->VG,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-L","???","None",user->L,&user->L,&flg);CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-initv","Initial solution of Cv and Ci","None",user->initv,&user->initv,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-initeta","Initial solution of Eta","None",user->initeta,&user->initeta,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-initv","Initial solution of Cv and Ci","None",user->initv,&user->initv,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-initeta","Initial solution of Eta","None",user->initeta,&user->initeta,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
 
-    ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-radiation","Use initial conditions for void growth\n","None",user->radiation,&user->radiation,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-xmin","Lower X coordinate of domain\n","None",user->xmin,&user->xmin,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-xmax","Upper X coordinate of domain\n","None",user->xmax,&user->xmax,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-T","Total runtime\n","None",user->T,&user->T,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-dt","Time step\n","None",user->dt,&user->dt,&flg);CHKERRQ(ierr);
-    user->dtevent = user->dt;
-    ierr = PetscOptionsReal("-dtevent","Average time between random events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-maxevents","Maximum random events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-radiation","Use initial conditions for void growth\n","None",user->radiation,&user->radiation,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-xmin","Lower X coordinate of domain\n","None",user->xmin,&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-xmax","Upper X coordinate of domain\n","None",user->xmax,&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-T","Total runtime\n","None",user->T,&user->T,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dt","Time step\n","None",user->dt,&user->dt,&flg);CHKERRQ(ierr);
 
-    ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-graphicsfile","Save solution at each timestep\n","None",graphicsfile,&graphicsfile,&flg);CHKERRQ(ierr);
-    if (graphicsfile) {
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex61.data",FILE_MODE_WRITE,&user->graphicsfile);CHKERRQ(ierr);
-    }
+  user->dtevent = user->dt;
+
+  ierr = PetscOptionsReal("-dtevent","Average time between random events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-maxevents","Maximum random events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-graphicsfile","Save solution at each timestep\n","None",graphicsfile,&graphicsfile,&flg);CHKERRQ(ierr);
+  if (graphicsfile) {
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex61.data",FILE_MODE_WRITE,&user->graphicsfile);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -873,22 +856,22 @@ PetscErrorCode GetParams(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetUpMatrices"
-PetscErrorCode SetUpMatrices(AppCtx* user)
+PetscErrorCode SetUpMatrices(AppCtx *user)
 {
-  PetscErrorCode    ierr;
-  PetscInt          nele,nen,i,n;
-  const PetscInt    *ele;
-  PetscScalar       dt=user->dt,hx,hy;
+  PetscErrorCode ierr;
+  PetscInt       nele,nen,i,n;
+  const PetscInt *ele;
+  PetscScalar    dt=user->dt,hx,hy;
 
-  PetscInt          idx[3];
-  PetscScalar       eM_0[3][3],eM_2_even[3][3],eM_2_odd[3][3];
-  PetscScalar       cv_sum, ci_sum;
-  Mat               M=user->M;
-  Mat               M_0=user->M_0;
-  PetscInt          Mda=user->Mda, Nda=user->Nda;
-  PetscScalar       *cv_p,*ci_p;
+  PetscInt    idx[3];
+  PetscScalar eM_0[3][3],eM_2_even[3][3],eM_2_odd[3][3];
+  PetscScalar cv_sum, ci_sum;
+  Mat         M  =user->M;
+  Mat         M_0=user->M_0;
+  PetscInt    Mda=user->Mda, Nda=user->Nda;
+  PetscScalar *cv_p,*ci_p;
   /* newly added */
-  Vec               cvlocal,cilocal;
+  Vec cvlocal,cilocal;
 
   PetscFunctionBeginUser;
   /*  ierr = MatSetOption(M,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
@@ -912,8 +895,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  hx = (user->xmax-user->xmin)/Mda;
-  hy = (user->ymax-user->ymin)/Nda;
+  hx   = (user->xmax-user->xmin)/Mda;
+  hy   = (user->ymax-user->ymin)/Nda;
 
   eM_0[0][0]=eM_0[1][1]=eM_0[2][2]=hx*hy/12.0;
   eM_0[0][1]=eM_0[0][2]=eM_0[1][0]=eM_0[1][2]=eM_0[2][0]=eM_0[2][1]=hx*hy/24.0;
@@ -949,7 +932,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     PetscInt    row,cols[6],r,row_M_0,cols3[3];
     PetscScalar vals[6],vals_M_0[3],vals3[3];
 
-    for (r=0;r<3;r++) {
+    for (r=0; r<3; r++) {
       /* row_M_0 = connect[k*3+r]; */
       row_M_0 = idx[r];
 
@@ -970,61 +953,61 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
 
 
-        row = 5*idx[r];
-        cols[0] = 5*idx[0];     vals[0] = dt*eM_2_odd[r][0]*cv_sum;
-        cols[1] = 5*idx[1];     vals[1] = dt*eM_2_odd[r][1]*cv_sum;
-        cols[2] = 5*idx[2];     vals[2] = dt*eM_2_odd[r][2]*cv_sum;
-        cols[3] = 5*idx[0]+1;   vals[3] = eM_0[r][0];
-        cols[4] = 5*idx[1]+1;   vals[4] = eM_0[r][1];
-        cols[5] = 5*idx[2]+1;   vals[5] = eM_0[r][2];
+      row     = 5*idx[r];
+      cols[0] = 5*idx[0];     vals[0] = dt*eM_2_odd[r][0]*cv_sum;
+      cols[1] = 5*idx[1];     vals[1] = dt*eM_2_odd[r][1]*cv_sum;
+      cols[2] = 5*idx[2];     vals[2] = dt*eM_2_odd[r][2]*cv_sum;
+      cols[3] = 5*idx[0]+1;   vals[3] = eM_0[r][0];
+      cols[4] = 5*idx[1]+1;   vals[4] = eM_0[r][1];
+      cols[5] = 5*idx[2]+1;   vals[5] = eM_0[r][2];
 
 
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
 
-        row = 5*idx[r]+1;
-        cols[0] = 5*idx[0];     vals[0] = -1.0*eM_0[r][0];
-        cols[1] = 5*idx[1];     vals[1] = -1.0*eM_0[r][1];
-        cols[2] = 5*idx[2];     vals[2] = -1.0*eM_0[r][2];
-        cols[3] = 5*idx[0]+1;   vals[3] =  user->kav*eM_2_odd[r][0];
-        cols[4] = 5*idx[1]+1;   vals[4] =  user->kav*eM_2_odd[r][1];
-        cols[5] = 5*idx[2]+1;   vals[5] =  user->kav*eM_2_odd[r][2];
+      row     = 5*idx[r]+1;
+      cols[0] = 5*idx[0];     vals[0] = -1.0*eM_0[r][0];
+      cols[1] = 5*idx[1];     vals[1] = -1.0*eM_0[r][1];
+      cols[2] = 5*idx[2];     vals[2] = -1.0*eM_0[r][2];
+      cols[3] = 5*idx[0]+1;   vals[3] =  user->kav*eM_2_odd[r][0];
+      cols[4] = 5*idx[1]+1;   vals[4] =  user->kav*eM_2_odd[r][1];
+      cols[5] = 5*idx[2]+1;   vals[5] =  user->kav*eM_2_odd[r][2];
 
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
-        row = 5*idx[r]+2;
-        cols[0] = 5*idx[0]+2;   vals[0] =  dt*eM_2_odd[r][0]*ci_sum;
-        cols[1] = 5*idx[1]+2;   vals[1] =  dt*eM_2_odd[r][1]*ci_sum;
-        cols[2] = 5*idx[2]+2;   vals[2] =  dt*eM_2_odd[r][2]*ci_sum;
-        cols[3] = 5*idx[0]+3;   vals[3] =  eM_0[r][0];
-        cols[4] = 5*idx[1]+3;   vals[4] =  eM_0[r][1];
-        cols[5] = 5*idx[2]+3;   vals[5] =  eM_0[r][2];
+      row     = 5*idx[r]+2;
+      cols[0] = 5*idx[0]+2;   vals[0] =  dt*eM_2_odd[r][0]*ci_sum;
+      cols[1] = 5*idx[1]+2;   vals[1] =  dt*eM_2_odd[r][1]*ci_sum;
+      cols[2] = 5*idx[2]+2;   vals[2] =  dt*eM_2_odd[r][2]*ci_sum;
+      cols[3] = 5*idx[0]+3;   vals[3] =  eM_0[r][0];
+      cols[4] = 5*idx[1]+3;   vals[4] =  eM_0[r][1];
+      cols[5] = 5*idx[2]+3;   vals[5] =  eM_0[r][2];
 
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-
-
-        row = 5*idx[r]+3;
-        cols[0] = 5*idx[0]+2;   vals[0] = -1.0*eM_0[r][0];
-        cols[1] = 5*idx[1]+2;   vals[1] = -1.0*eM_0[r][1];
-        cols[2] = 5*idx[2]+2;   vals[2] = -1.0*eM_0[r][2];
-        cols[3] = 5*idx[0]+3;   vals[3] =  user->kai*eM_2_odd[r][0];
-        cols[4] = 5*idx[1]+3;   vals[4] =  user->kai*eM_2_odd[r][1];
-        cols[5] = 5*idx[2]+3;   vals[5] =  user->kai*eM_2_odd[r][2];
-
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
 
-        row = 5*idx[r]+4;
-        /*
-        cols3[0] = 5*idx[0]+4;   vals3[0] = eM_0[r][0]/dt + user->L*user->kaeta*dt*eM_2_odd[r][0];
-        cols3[1] = 5*idx[1]+4;   vals3[1] = eM_0[r][1]/dt + user->L*user->kaeta*dt*eM_2_odd[r][1];
-        cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*dt*eM_2_odd[r][2];
-         */
-        cols3[0] = 5*idx[0]+4;   vals3[0] = (eM_0[r][0]/dt + user->L*user->kaeta*eM_2_odd[r][0]);
-        cols3[1] = 5*idx[1]+4;   vals3[1] = (eM_0[r][1]/dt + user->L*user->kaeta*eM_2_odd[r][1]);
-        cols3[2] = 5*idx[2]+4;   vals3[2] = (eM_0[r][2]/dt + user->L*user->kaeta*eM_2_odd[r][2]);
+      row     = 5*idx[r]+3;
+      cols[0] = 5*idx[0]+2;   vals[0] = -1.0*eM_0[r][0];
+      cols[1] = 5*idx[1]+2;   vals[1] = -1.0*eM_0[r][1];
+      cols[2] = 5*idx[2]+2;   vals[2] = -1.0*eM_0[r][2];
+      cols[3] = 5*idx[0]+3;   vals[3] =  user->kai*eM_2_odd[r][0];
+      cols[4] = 5*idx[1]+3;   vals[4] =  user->kai*eM_2_odd[r][1];
+      cols[5] = 5*idx[2]+3;   vals[5] =  user->kai*eM_2_odd[r][2];
 
-        ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+
+
+      row = 5*idx[r]+4;
+      /*
+      cols3[0] = 5*idx[0]+4;   vals3[0] = eM_0[r][0]/dt + user->L*user->kaeta*dt*eM_2_odd[r][0];
+      cols3[1] = 5*idx[1]+4;   vals3[1] = eM_0[r][1]/dt + user->L*user->kaeta*dt*eM_2_odd[r][1];
+      cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*dt*eM_2_odd[r][2];
+       */
+      cols3[0] = 5*idx[0]+4;   vals3[0] = (eM_0[r][0]/dt + user->L*user->kaeta*eM_2_odd[r][0]);
+      cols3[1] = 5*idx[1]+4;   vals3[1] = (eM_0[r][1]/dt + user->L*user->kaeta*eM_2_odd[r][1]);
+      cols3[2] = 5*idx[2]+4;   vals3[2] = (eM_0[r][2]/dt + user->L*user->kaeta*eM_2_odd[r][2]);
+
+      ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
 
     }
   }
@@ -1052,18 +1035,18 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "UpdateMatrices"
-PetscErrorCode UpdateMatrices(AppCtx* user)
+PetscErrorCode UpdateMatrices(AppCtx *user)
 {
-  PetscErrorCode    ierr;
-  PetscInt          i,n,Mda,Nda,nele,nen;
-  const PetscInt    *ele;
+  PetscErrorCode ierr;
+  PetscInt       i,n,Mda,Nda,nele,nen;
+  const PetscInt *ele;
 
-  PetscInt          idx[3];
-  PetscScalar       eM_2_odd[3][3],eM_2_even[3][3],h,dt=user->dt;
-  Mat               M=user->M;
-  PetscScalar       *cv_p,*ci_p,cv_sum,ci_sum;
+  PetscInt    idx[3];
+  PetscScalar eM_2_odd[3][3],eM_2_even[3][3],h,dt=user->dt;
+  Mat         M=user->M;
+  PetscScalar *cv_p,*ci_p,cv_sum,ci_sum;
   /* newly added */
-  Vec               cvlocal,cilocal;
+  Vec cvlocal,cilocal;
 
   PetscFunctionBeginUser;
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
@@ -1102,10 +1085,10 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     idx[1] = ele[3*i+1];
     idx[2] = ele[3*i+2];
 
-    PetscInt r,row,cols[3];
+    PetscInt    r,row,cols[3];
     PetscScalar vals[3];
-    for (r=0;r<3;r++) {
-      row = 5*idx[r];
+    for (r=0; r<3; r++) {
+      row     = 5*idx[r];
       cols[0] = 5*idx[0];     vals[0] = 0.0;
       cols[1] = 5*idx[1];     vals[1] = 0.0;
       cols[2] = 5*idx[2];     vals[2] = 0.0;
@@ -1113,7 +1096,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
       /* Insert values in matrix M for 1st dof */
       ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-      row = 5*idx[r]+2;
+      row     = 5*idx[r]+2;
       cols[0] = 5*idx[0]+2;   vals[0] = 0.0;
       cols[1] = 5*idx[1]+2;   vals[1] = 0.0;
       cols[2] = 5*idx[2]+2;   vals[2] = 0.0;
@@ -1155,10 +1138,10 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     idx[1] = ele[3*i+1];
     idx[2] = ele[3*i+2];
 
-      PetscInt    row,cols[3],r;
-      PetscScalar vals[3];
+    PetscInt    row,cols[3],r;
+    PetscScalar vals[3];
 
-      for (r=0;r<3;r++) {
+    for (r=0; r<3; r++) {
 
       if (user->degenerate) {
         printf("smallnumber = %14.12f\n",user->smallnumber);
@@ -1169,29 +1152,22 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
         ci_sum = user->initv*user->Di/user->kBT;
       }
 
+      row     = 5*idx[r];
+      cols[0] = 5*idx[0];     vals[0] = dt*eM_2_odd[r][0]*cv_sum;
+      cols[1] = 5*idx[1];     vals[1] = dt*eM_2_odd[r][1]*cv_sum;
+      cols[2] = 5*idx[2];     vals[2] = dt*eM_2_odd[r][2]*cv_sum;
 
+      /* Insert values in matrix M for 1st dof */
+      ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
-                row = 5*idx[r];
-                cols[0] = 5*idx[0];     vals[0] = dt*eM_2_odd[r][0]*cv_sum;
-                cols[1] = 5*idx[1];     vals[1] = dt*eM_2_odd[r][1]*cv_sum;
-                cols[2] = 5*idx[2];     vals[2] = dt*eM_2_odd[r][2]*cv_sum;
+      row     = 5*idx[r]+2;
+      cols[0] = 5*idx[0]+2;   vals[0] = dt*eM_2_odd[r][0]*ci_sum;
+      cols[1] = 5*idx[1]+2;   vals[1] = dt*eM_2_odd[r][1]*ci_sum;
+      cols[2] = 5*idx[2]+2;   vals[2] = dt*eM_2_odd[r][2]*ci_sum;
 
-                /* Insert values in matrix M for 1st dof */
-                ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-
-
-                row = 5*idx[r]+2;
-                cols[0] = 5*idx[0]+2;   vals[0] = dt*eM_2_odd[r][0]*ci_sum;
-                cols[1] = 5*idx[1]+2;   vals[1] = dt*eM_2_odd[r][1]*ci_sum;
-                cols[2] = 5*idx[2]+2;   vals[2] = dt*eM_2_odd[r][2]*ci_sum;
-
-                ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-
-
-
-        }
-
+      ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     }
+  }
 
   /* new stuff */
   ierr = VecRestoreArray(cvlocal,&cv_p);CHKERRQ(ierr);
@@ -1213,29 +1189,29 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "Phi"
-PetscErrorCode Phi(AppCtx* user)
+PetscErrorCode Phi(AppCtx *user)
 {
-  PetscErrorCode     ierr;
-  PetscScalar        xmid, xqu, lambda, h,x[3],y[3];
-  Vec                coords;
-  const PetscScalar  *_coords;
-  PetscInt           nele,nen,i,idx[3],Mda,Nda;
-  const PetscInt     *ele;
-  PetscViewer        view;
+  PetscErrorCode    ierr;
+  PetscScalar       xmid, xqu, lambda, h,x[3],y[3];
+  Vec               coords;
+  const PetscScalar *_coords;
+  PetscInt          nele,nen,i,idx[3],Mda,Nda;
+  const PetscInt    *ele;
+  PetscViewer       view;
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
-  h = (user->xmax - user->xmin)/Mda;
-  xmid = (user->xmin + user->xmax)/2.0;
-  xqu = (user->xmin + xmid)/2.0;
+  h      = (user->xmax - user->xmin)/Mda;
+  xmid   = (user->xmin + user->xmax)/2.0;
+  xqu    = (user->xmin + xmid)/2.0;
   lambda = 4.0*h;
 
 
   ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
-  for (i=0;i < nele; i++) {
+  for (i=0; i < nele; i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
     /* printf("idx[0]=%d,idx[1]=%d,idx[2]=%d\n",idx[0],idx[1],idx[2]); */
 
@@ -1254,42 +1230,27 @@ PetscErrorCode Phi(AppCtx* user)
 
     /*ierr = VecSet(user->phi1,0.0);CHKERRQ(ierr);*/
     for (k=0;k < 3; k++) {
-      if (x[k]-xqu > 0) {
-        s1 = (x[k] - xqu);
-      } else {
-        s1 = -(x[k] - xqu);
-      }
-      if (x[k] - xc1 > 0) {
-        dist1 = (x[k] - xc1);
-      } else {
-        dist1 = -(x[k] - xc1);
-      }
-      if (x[k] - xc2 > 0) {
-        dist2 = (x[k] - xc2);
-      } else {
-        dist2 = -(x[k] - xc2);
-      }
+      if (x[k]-xqu > 0) s1 = (x[k] - xqu);
+      else s1 = -(x[k] - xqu);
+
+      if (x[k] - xc1 > 0) dist1 = (x[k] - xc1);
+      else dist1 = -(x[k] - xc1);
+
+      if (x[k] - xc2 > 0) dist2 = (x[k] - xc2);
+      else dist2 = -(x[k] - xc2);
+
       if (dist1 <= 0.5*lambda) {
         r = (x[k]-xc1)/(0.5*lambda);
         hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals1[k] = hhr;
-      }
-      else if (dist2 <= 0.5*lambda) {
+      } else if (dist2 <= 0.5*lambda) {
         r = (x[k]-xc2)/(0.5*lambda);
         hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals1[k] = 1.0 - hhr;
-      }
-      else if (s1 <= xqu - 2.0*h) {
-        vals1[k] = 1.0;
-      }
-
+      } else if (s1 <= xqu - 2.0*h) vals1[k] = 1.0;
       /*else if (abs(x[k]-(user->xmax-h)) < 0.1*h) {*/
-      else if ((user->xmax-h)-x[k] < 0.1*h) {
-        vals1[k] = .15625;
-       }
-      else {
-        vals1[k] = 0.0;
-      }
+      else if ((user->xmax-h)-x[k] < 0.1*h) vals1[k] = .15625;
+      else vals1[k] = 0.0;
     }
 
     ierr = VecSetValuesLocal(user->phi1,3,idx,vals1,INSERT_VALUES);CHKERRQ(ierr);
@@ -1304,48 +1265,27 @@ PetscErrorCode Phi(AppCtx* user)
       dist1 = abs(x[k] - xc1);
       dist2 = abs(x[k] - xc2);
        */
-      if (x[k]-(xqu + xmid) > 0) {
-        s1 = (x[k] - (xqu + xmid));
-      } else {
-        s1 = -(x[k] - (xqu + xmid));
-      }
-      if (x[k] - xc1 > 0) {
-        dist1 = (x[k] - xc1);
-      } else {
-        dist1 = -(x[k] - xc1);
-      }
-      if (x[k] - xc2 > 0) {
-        dist2 = (x[k] - xc2);
-      } else {
-        dist2 = -(x[k] - xc2);
-      }
+      if (x[k]-(xqu + xmid) > 0) s1 = (x[k] - (xqu + xmid));
+      else s1 = -(x[k] - (xqu + xmid));
+
+      if (x[k] - xc1 > 0) dist1 = (x[k] - xc1);
+      else dist1 = -(x[k] - xc1);
+
+      if (x[k] - xc2 > 0) dist2 = (x[k] - xc2);
+      else dist2 = -(x[k] - xc2);
 
       if (dist1 <= 0.5*lambda) {
-        r = (x[k]-xc1)/(0.5*lambda);
-        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        r        = (x[k]-xc1)/(0.5*lambda);
+        hhr      = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals2[k] = hhr;
-      }
-      else if (dist2 <= 0.5*lambda) {
+      } else if (dist2 <= 0.5*lambda) {
         r = -(x[k]-xc2)/(0.5*lambda);
         hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals2[k] = hhr;
-      }
-      else if (s1 <= xqu - 2.0*h) {
-        vals2[k] = 1.0;
-      }
-
-      else if (x[k]-(user->xmin) < 0.1*h) {
-        vals2[k] = 0.5;
-      }
-
-
-      else if ((x[k]-(user->xmin+h)) < 0.1*h) {
-        vals2[k] = .15625;
-      }
-
-      else {
-        vals2[k] = 0.0;
-      }
+      } else if (s1 <= xqu - 2.0*h)           vals2[k] = 1.0;
+      else if (x[k]-(user->xmin) < 0.1*h)     vals2[k] = 0.5;
+      else if ((x[k]-(user->xmin+h)) < 0.1*h) vals2[k] = .15625;
+      else vals2[k] = 0.0;
 
     }
 
@@ -1391,11 +1331,11 @@ PetscErrorCode Phi(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "Phi_read"
-PetscErrorCode Phi_read(AppCtx* user)
+PetscErrorCode Phi_read(AppCtx *user)
 {
-  PetscErrorCode     ierr;
-  PetscReal          *values;
-  PetscViewer        viewer;
+  PetscErrorCode ierr;
+  PetscReal      *values;
+  PetscViewer    viewer;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(user->Phi2D_V,&values);CHKERRQ(ierr);

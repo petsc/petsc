@@ -4,31 +4,27 @@
 typedef struct {
   PetscInt   n;                   /* local subdomains */
   SNES       *subsnes;            /* nonlinear solvers for each subdomain */
-
   Vec        *x;                  /* solution vectors */
   Vec        *xl;                 /* solution local vectors */
   Vec        *y;                  /* step vectors */
   Vec        *b;                  /* rhs vectors */
-
   VecScatter *oscatter;           /* scatter from global space to the subdomain global space */
   VecScatter *iscatter;           /* scatter from global space to the nonoverlapping subdomain space */
   VecScatter *gscatter;           /* scatter from global space to the subdomain local space */
-
-  PCASMType type;                 /* ASM type */
-
-  PetscBool  usesdm;               /* use the DM for setting up the subproblems */
+  PCASMType  type;                /* ASM type */
+  PetscBool  usesdm;              /* use the DM for setting up the subproblems */
 } SNES_NASM;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NASM"
 PetscErrorCode SNESReset_NASM(SNES snes)
 {
-  SNES_NASM      *nasm = (SNES_NASM *)snes->data;
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
   PetscInt       i;
-  
+
   PetscFunctionBegin;
-  for (i=0;i<nasm->n;i++) {
+  for (i=0; i<nasm->n; i++) {
     if (nasm->xl) { ierr = VecDestroy(&nasm->xl[i]);CHKERRQ(ierr); }
     if (nasm->x) { ierr = VecDestroy(&nasm->x[i]);CHKERRQ(ierr); }
     if (nasm->y) { ierr = VecDestroy(&nasm->y[i]);CHKERRQ(ierr); }
@@ -57,7 +53,7 @@ PetscErrorCode SNESReset_NASM(SNES snes)
 PetscErrorCode SNESDestroy_NASM(SNES snes)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = SNESReset_NASM(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
@@ -69,8 +65,8 @@ PetscErrorCode SNESDestroy_NASM(SNES snes)
 PetscErrorCode DMGlobalToLocalSubDomainDirichletHook_Private(DM dm,Vec g,InsertMode mode,Vec l,void *ctx)
 {
   PetscErrorCode ierr;
-  Vec bcs = (Vec)ctx;
-  
+  Vec            bcs = (Vec)ctx;
+
   PetscFunctionBegin;
   ierr = VecCopy(bcs,l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -80,7 +76,7 @@ PetscErrorCode DMGlobalToLocalSubDomainDirichletHook_Private(DM dm,Vec g,InsertM
 #define __FUNCT__ "SNESSetUp_NASM"
 PetscErrorCode SNESSetUp_NASM(SNES snes)
 {
-  SNES_NASM      *nasm = (SNES_NASM *)snes->data;
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
   DM             dm,ddm;
   DM             *subdms;
@@ -93,7 +89,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     if (dm) {
       nasm->usesdm = PETSC_TRUE;
-      ierr = DMCreateDomainDecomposition(dm,&nasm->n,PETSC_NULL,PETSC_NULL,PETSC_NULL,&subdms);CHKERRQ(ierr);
+      ierr         = DMCreateDomainDecomposition(dm,&nasm->n,PETSC_NULL,PETSC_NULL,PETSC_NULL,&subdms);CHKERRQ(ierr);
       if (!subdms) {
         ierr = DMCreateDomainDecompositionDM(dm,"default",&ddm);CHKERRQ(ierr);
         if (!ddm) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
@@ -107,7 +103,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
       ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
       ierr = PetscMalloc(nasm->n*sizeof(SNES),&nasm->subsnes);CHKERRQ(ierr);
 
-      for (i=0;i<nasm->n;i++) {
+      for (i=0; i<nasm->n; i++) {
         ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[i]);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],"sub_");CHKERRQ(ierr);
@@ -124,7 +120,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->y);CHKERRQ(ierr);
   ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->b);CHKERRQ(ierr);
 
-  for (i=0;i<nasm->n;i++) {
+  for (i=0; i<nasm->n; i++) {
     DM subdm;
     ierr = SNESGetFunction(nasm->subsnes[i],&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(F,&nasm->x[i]);CHKERRQ(ierr);
@@ -141,18 +137,18 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 #define __FUNCT__ "SNESSetFromOptions_NASM"
 PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
 {
-  PetscErrorCode ierr;
-  DM             dm,ddm;
-  char           ddm_name[1024];
-  PCASMType      asmtype;
-  const char *const SNESNASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
-  PetscBool      flg;
-  SNES_NASM      *nasm = (SNES_NASM *)snes->data;
-  
+  PetscErrorCode    ierr;
+  DM                dm,ddm;
+  char              ddm_name[1024];
+  PCASMType         asmtype;
+  const char *const SNESNASMTypes[] = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
+  PetscBool         flg;
+  SNES_NASM         *nasm = (SNES_NASM*)snes->data;
+
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Nonlinear Additive Schwartz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
-  if (flg) {nasm->type = asmtype;}
+  if (flg) nasm->type = asmtype;
   ierr = PetscOptionsString("-snes_nasm_decomposition", "Name of the DM defining the composition", "SNESSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (flg) {
@@ -181,7 +177,7 @@ PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScat
 {
   PetscErrorCode ierr;
   PetscErrorCode (*f)(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMSetSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
   ierr = (f)(snes,n,subsnes,iscatter,oscatter,gscatter);CHKERRQ(ierr);
@@ -195,15 +191,15 @@ PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsnes[],Ve
 {
   PetscInt       i;
   PetscErrorCode ierr;
-  SNES_NASM      *nasm = (SNES_NASM *)snes->data;
-  
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
   PetscFunctionBegin;
-  if (snes->setupcalled)SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
+  if (snes->setupcalled) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
 
   /* tear down the previously set things */
   ierr = SNESReset(snes);CHKERRQ(ierr);
 
-  nasm->n        = n;
+  nasm->n = n;
   if (oscatter) {
     for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)oscatter[i]);CHKERRQ(ierr);}
   }
@@ -246,7 +242,7 @@ EXTERN_C_END
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
 PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 {
-  SNES_NASM      *nasm = (SNES_NASM *)snes->data;
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   SNES           subsnes;
   PetscInt       i;
   PetscErrorCode ierr;
@@ -257,18 +253,18 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
-  for (i=0;i<nasm->n;i++) {
+  for (i=0; i<nasm->n; i++) {
     subsnes = nasm->subsnes[i];
-    ierr = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
-    iscat = nasm->iscatter[i];
-    oscat = nasm->oscatter[i];
-    gscat = nasm->gscatter[i];
-    ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    ierr    = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
+    iscat   = nasm->iscatter[i];
+    oscat   = nasm->oscatter[i];
+    gscat   = nasm->gscatter[i];
+    ierr    = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
 
     /* scatter the solution to the local solution */
-    Xl = nasm->x[i];
+    Xl    = nasm->x[i];
     Xlloc = nasm->xl[i];
-    Yl = nasm->y[i];
+    Yl    = nasm->y[i];
 
     ierr = VecScatterBegin(oscat,X,Xl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(oscat,X,Xl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -280,7 +276,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 
     if (B) {
       /* scatter the RHS to the local RHS */
-      Bl = nasm->b[i];
+      Bl   = nasm->b[i];
       ierr = VecScatterBegin(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     } else {
@@ -325,12 +321,12 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   F = snes->vec_func;
   B = snes->vec_rhs;
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->iter = 0;
-  snes->norm = 0.;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter   = 0;
+  snes->norm   = 0.;
+  ierr         = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
-  ierr = SNESGetNormType(snes, &normtype);CHKERRQ(ierr);
+  ierr         = SNESGetNormType(snes, &normtype);CHKERRQ(ierr);
   if (normtype == SNES_NORM_FUNCTION || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
     /* compute the initial function and preconditioned update delX */
     if (!snes->vec_func_init_set) {
@@ -339,22 +335,20 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
         snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
         PetscFunctionReturn(0);
       }
-    } else {
-      snes->vec_func_init_set = PETSC_FALSE;
-    }
+    } else snes->vec_func_init_set = PETSC_FALSE;
 
     /* convergence test */
     if (!snes->norm_init_set) {
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
       if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     } else {
-      fnorm = snes->norm_init;
+      fnorm               = snes->norm_init;
       snes->norm_init_set = PETSC_FALSE;
     }
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
 
@@ -387,10 +381,10 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
       if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     }
     /* Monitor convergence */
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
@@ -406,9 +400,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
       ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
-  } else {
-    if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* NASM is meant to be used as a preconditioner */
-  }
+  } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* NASM is meant to be used as a preconditioner */
   PetscFunctionReturn(0);
 }
 
@@ -425,24 +417,24 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_NASM"
 PetscErrorCode SNESCreate_NASM(SNES snes)
 {
-  SNES_NASM        *nasm;
+  SNES_NASM      *nasm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes, SNES_NASM, &nasm);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes, SNES_NASM, &nasm);CHKERRQ(ierr);
   snes->data = (void*)nasm;
 
-  nasm->n                 = PETSC_DECIDE;
-  nasm->subsnes           = 0;
-  nasm->x                 = 0;
-  nasm->xl                = 0;
-  nasm->y                 = 0;
-  nasm->b                 = 0;
-  nasm->oscatter          = 0;
-  nasm->iscatter          = 0;
-  nasm->gscatter          = 0;
+  nasm->n        = PETSC_DECIDE;
+  nasm->subsnes  = 0;
+  nasm->x        = 0;
+  nasm->xl       = 0;
+  nasm->y        = 0;
+  nasm->b        = 0;
+  nasm->oscatter = 0;
+  nasm->iscatter = 0;
+  nasm->gscatter = 0;
 
-  nasm->type              = PC_ASM_BASIC;
+  nasm->type = PC_ASM_BASIC;
 
   snes->ops->destroy        = SNESDestroy_NASM;
   snes->ops->setup          = SNESSetUp_NASM;
@@ -451,16 +443,16 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
   snes->ops->solve          = SNESSolve_NASM;
   snes->ops->reset          = SNESReset_NASM;
 
-  snes->usesksp             = PETSC_FALSE;
-  snes->usespc              = PETSC_FALSE;
+  snes->usesksp = PETSC_FALSE;
+  snes->usespc  = PETSC_FALSE;
 
   if (!snes->tolerancesset) {
-    snes->max_its             = 10000;
-    snes->max_funcs           = 10000;
+    snes->max_its   = 10000;
+    snes->max_funcs = 10000;
   }
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",
-                  SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
+                                           SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

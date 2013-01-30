@@ -39,7 +39,7 @@ struct _UserCtx {
 static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
 {
   PetscReal hx = 1./info->mx;
-  PetscInt i;
+  PetscInt  i;
 
   PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
@@ -60,10 +60,10 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     const PetscScalar
-      ubar = 0.5*(u[i+1]+u[i]),
+      ubar  = 0.5*(u[i+1]+u[i]),
       gradu = (u[i+1]-u[i])/hx,
-      g = 1. + gradu*gradu,
-      w = 1./(1.+ubar) + 1./g;
+      g     = 1. + gradu*gradu,
+      w     = 1./(1.+ubar) + 1./g;
     f[i] = hx*(PetscExpScalar(k[i]-1.0) + k[i] - 1./w);
   }
   PetscFunctionReturn(0);
@@ -73,13 +73,13 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
 #define __FUNCT__ "FormFunction_All"
 static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
 {
-  User              user = (User)ctx;
-  DM                dau,dak;
-  DMDALocalInfo     infou,infok;
-  PetscScalar       *u,*k;
-  PetscScalar       *fu,*fk;
-  PetscErrorCode    ierr;
-  Vec               Uloc,Kloc,Fu,Fk;
+  User           user = (User)ctx;
+  DM             dau,dak;
+  DMDALocalInfo  infou,infok;
+  PetscScalar    *u,*k;
+  PetscScalar    *fu,*fk;
+  PetscErrorCode ierr;
+  Vec            Uloc,Kloc,Fu,Fk;
 
   PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
@@ -139,11 +139,13 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
 
   PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
-    PetscInt row = i-info->gxs,cols[] = {row-1,row,row+1};
+    PetscInt    row = i-info->gxs,cols[] = {row-1,row,row+1};
     PetscScalar val = 1./hx;
-    if (i == 0) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);}
-    else if (i == info->mx-1) {ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);}
-    else {
+    if (i == 0) {
+      ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+    } else if (i == info->mx-1) {
+      ierr = MatSetValuesLocal(Buu,1,&row,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
       PetscScalar vals[] = {-k[i-1]/hx,(k[i-1]+k[i])/hx,-k[i]/hx};
       ierr = MatSetValuesLocal(Buu,1,&row,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -161,7 +163,7 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
 
   PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
-    PetscInt row = i-info->gxs;
+    PetscInt    row    = i-info->gxs;
     PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+1.)};
     ierr = MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -172,20 +174,20 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
 #define __FUNCT__ "FormJacobianLocal_UK"
 static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Buk)
 {
-  PetscReal hx = 1./info->mx;
+  PetscReal      hx = 1./info->mx;
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscInt row,cols[2];
-  PetscScalar vals[2];
+  PetscInt       row,cols[2];
+  PetscScalar    vals[2];
 
   PetscFunctionBeginUser;
   if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0 || i == info->mx-1) continue;
-    row = i-info->gxs;
+    row     = i-info->gxs;
     cols[0] = i-1-infok->gxs;  vals[0] = (u[i]-u[i-1])/hx;
     cols[1] = i-infok->gxs;    vals[1] = (u[i]-u[i+1])/hx;
-    ierr = MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -201,7 +203,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
   PetscFunctionBeginUser;
   if (!Bku) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=infok->xs; i<infok->xs+infok->xm; i++) {
-    PetscInt row = i-infok->gxs,cols[2];
+    PetscInt    row = i-infok->gxs,cols[2];
     PetscScalar vals[2];
     const PetscScalar
       ubar     = 0.5*(u[i]+u[i+1]),
@@ -220,7 +222,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
       iw_gradu = -w_gradu * PetscSqr(iw);
     cols[0] = i-info->gxs;         vals[0] = -hx*(iw_ubar*ubar_L + iw_gradu*gradu_L);
     cols[1] = i+1-info->gxs;       vals[1] = -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R);
-    ierr = MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -229,12 +231,12 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
 #define __FUNCT__ "FormJacobian_All"
 static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *mstr,void *ctx)
 {
-  User              user = (User)ctx;
-  DM                dau,dak;
-  DMDALocalInfo     infou,infok;
-  PetscScalar       *u,*k;
-  PetscErrorCode    ierr;
-  Vec               Uloc,Kloc;
+  User           user = (User)ctx;
+  DM             dau,dak;
+  DMDALocalInfo  infou,infok;
+  PetscScalar    *u,*k;
+  PetscErrorCode ierr;
+  Vec            Uloc,Kloc;
 
   PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
@@ -316,7 +318,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = DMDAVecGetArray(dak,Xk,&k);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
-  hx = 1./(infok.mx);
+  hx   = 1./(infok.mx);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
   for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*(PetscScalar)sin((double)2*PETSC_PI*i*hx);
   ierr = DMDAVecRestoreArray(dau,Xu,&u);CHKERRQ(ierr);
@@ -367,7 +369,9 @@ int main(int argc, char *argv[])
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
   ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
+
   user->pack = pack;
+
   ierr = DMCompositeGetGlobalISs(pack,&isg);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,user->Uloc,user->Kloc);CHKERRQ(ierr);
@@ -375,6 +379,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
   {
     user->ptype = 0; view_draw = PETSC_FALSE; pass_dm = PETSC_TRUE;
+
     ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,0);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,0);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,0);CHKERRQ(ierr);
@@ -434,10 +439,10 @@ int main(int argc, char *argv[])
   }
   if (view_draw) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
   if (0) {
-    PetscInt col = 0;
+    PetscInt  col      = 0;
     PetscBool mult_dup = PETSC_FALSE,view_dup = PETSC_FALSE;
-    Mat D;
-    Vec Y;
+    Mat       D;
+    Vec       Y;
 
     ierr = PetscOptionsGetInt(0,"-col",&col,0);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(0,"-mult_dup",&mult_dup,0);CHKERRQ(ierr);
@@ -451,8 +456,8 @@ int main(int argc, char *argv[])
     ierr = VecSetValue(X,col,1.0,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-    ierr = MatMult(mult_dup?D:B,X,Y);CHKERRQ(ierr);
-    ierr = MatView(view_dup?D:B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatMult(mult_dup ? D : B,X,Y);CHKERRQ(ierr);
+    ierr = MatView(view_dup ? D : B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);

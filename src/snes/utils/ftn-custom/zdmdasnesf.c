@@ -61,7 +61,7 @@ static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m
 
 void PETSC_STDCALL dmdasnessetjacobianlocal_(DM *da,void (PETSC_STDCALL *jac)(DMDALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  DMSNES sdm;
+  DMSNES   sdm;
   PetscInt dim;
 
   *ierr = DMGetDMSNESWrite(*da,&sdm); if (*ierr) return;
@@ -121,7 +121,7 @@ static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar
 
 void PETSC_STDCALL dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (PETSC_STDCALL *func)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  DMSNES sdm;
+  DMSNES   sdm;
   PetscInt dim;
 
   *ierr = DMGetDMSNESWrite(*da,&sdm); if (*ierr) return;

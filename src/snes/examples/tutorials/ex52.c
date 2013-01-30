@@ -66,7 +66,7 @@ void quadratic_2d_elas(const PetscReal x[], PetscScalar u[])
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *opTypes[2]  = {"laplacian", "elasticity"};
+  const char     *opTypes[2] = {"laplacian", "elasticity"};
   PetscInt       op;
   PetscErrorCode ierr;
 
@@ -100,9 +100,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
+
   op = options->op;
+
   ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,PETSC_NULL);CHKERRQ(ierr);
+
   options->op = (OpType) op;
+
   ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex52.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -125,7 +129,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner     = user->partitioner;
+  const char     *partitioner    = user->partitioner;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -151,6 +155,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -221,7 +226,7 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
   ierr = DMPlexGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateVec(user->dm, &coordinates);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
-    PetscScalar  values[3];
+    PetscScalar values[3];
     PetscScalar *coords;
 
     ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
@@ -245,18 +250,18 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
 PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
 {
   /*PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc; */
-  const PetscInt   debug         = user->debug;
-  const PetscInt   dim           = user->dim;
-  const PetscInt   numQuadPoints = user->q.numQuadPoints;
-  const PetscReal *quadPoints    = user->q.quadPoints;
-  const PetscReal *quadWeights   = user->q.quadWeights;
-  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
-  const PetscReal *basis         = user->q.basis;
-  const PetscReal *basisDer      = user->q.basisDer;
+  const PetscInt  debug         = user->debug;
+  const PetscInt  dim           = user->dim;
+  const PetscInt  numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadPoints   = user->q.quadPoints;
+  const PetscReal *quadWeights  = user->q.quadWeights;
+  const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
+  const PetscReal *basis        = user->q.basis;
+  const PetscReal *basisDer     = user->q.basisDer;
   PetscReal       *coords, *v0, *J, *invJ, detJ;
   PetscScalar     *realSpaceDer, *fieldGrad, *elemVec;
-  PetscInt         cStart, cEnd, c, p;
-  PetscErrorCode   ierr;
+  PetscInt        cStart, cEnd, c, p;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
@@ -266,7 +271,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
-    PetscInt           q, f, d, e;
+    PetscInt          q, f, d, e;
 
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
@@ -280,10 +285,8 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < dim; ++d) {
         fieldGrad[d] = 0.0;
-        coords[d] = v0[d];
-        for (e = 0; e < dim; ++e) {
-          coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
-        }
+        coords[d]    = v0[d];
+        for (e = 0; e < dim; ++e) coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    coords[%d] %g\n", d, coords[d]);CHKERRQ(ierr);}
       }
       for (f = 0; f < numBasisFuncs; ++f) {
@@ -291,16 +294,12 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
 
         for (d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for (e = 0; e < dim; ++e) {
-            realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
-          }
+          for (e = 0; e < dim; ++e) realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           fieldGrad[d] += realSpaceDer[d]*x[f];
         }
       }
       if (debug > 1) {
-        for (d = 0; d < dim; ++d) {
-          PetscPrintf(PETSC_COMM_SELF, "    fieldGrad[%d] %g\n", d, fieldGrad[d]);
-        }
+        for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, "    fieldGrad[%d] %g\n", d, fieldGrad[d]);
       }
       const PetscScalar funcVal = 0.0; /* (*rhsFunc)(coords); */
       for (f = 0; f < numBasisFuncs; ++f) {
@@ -310,9 +309,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
         PetscScalar product = 0.0;
         for (d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for (e = 0; e < dim; ++e) {
-            realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
-          }
+          for (e = 0; e < dim; ++e) realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           product += realSpaceDer[d]*fieldGrad[d];
         }
         elemVec[f] += product*quadWeights[q]*detJ;
@@ -346,19 +343,19 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
 PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 {
   /*PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc;*/
-  const PetscInt   debug         = user->debug;
-  const PetscInt   dim           = user->dim;
-  const PetscInt   numQuadPoints = user->q.numQuadPoints;
-  const PetscReal *quadPoints    = user->q.quadPoints;
-  const PetscReal *quadWeights   = user->q.quadWeights;
-  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
-  const PetscInt   numBasisComps = user->q.numComponents;
-  const PetscReal *basis         = user->q.basis;
-  const PetscReal *basisDer      = user->q.basisDer;
+  const PetscInt  debug         = user->debug;
+  const PetscInt  dim           = user->dim;
+  const PetscInt  numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadPoints   = user->q.quadPoints;
+  const PetscReal *quadWeights  = user->q.quadWeights;
+  const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
+  const PetscInt  numBasisComps = user->q.numComponents;
+  const PetscReal *basis        = user->q.basis;
+  const PetscReal *basisDer     = user->q.basisDer;
   PetscReal       *coords, *v0, *J, *invJ, detJ;
   PetscScalar     *realSpaceDer, *fieldGrad, *elemVec;
-  PetscInt         cStart, cEnd, c, p;
-  PetscErrorCode   ierr;
+  PetscInt        cStart, cEnd, c, p;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
@@ -368,7 +365,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
-    PetscInt           q, d, e, f, comp;
+    PetscInt          q, d, e, f, comp;
 
     ierr = PetscMemzero(elemVec, numBasisFuncs*numBasisComps * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
@@ -381,13 +378,9 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < dim; ++d) {
-        for (comp = 0; comp < numBasisComps; ++comp) {
-          fieldGrad[comp*dim+d] = 0.0;
-        }
+        for (comp = 0; comp < numBasisComps; ++comp) fieldGrad[comp*dim+d] = 0.0;
         coords[d] = v0[d];
-        for (e = 0; e < dim; ++e) {
-          coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
-        }
+        for (e = 0; e < dim; ++e) coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    coords[%d] %g\n", d, coords[d]);CHKERRQ(ierr);}
       }
       for (f = 0; f < numBasisFuncs; ++f) {
@@ -398,9 +391,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 
           for (d = 0; d < dim; ++d) {
             realSpaceDer[d] = 0.0;
-            for (e = 0; e < dim; ++e) {
-              realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
-            }
+            for (e = 0; e < dim; ++e) realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
             fieldGrad[comp*dim+d] += realSpaceDer[d]*x[cidx];
           }
         }
@@ -459,9 +450,7 @@ void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[])
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for (d = 0; d < dim; ++d) {
-    f1[d] = gradU[d];
-  }
+  for (d = 0; d < dim; ++d) f1[d] = gradU[d];
   return;
 }
 
@@ -477,10 +466,10 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
-    const PetscReal  detJ = jacobianDeterminants[e];
+    const PetscReal detJ  = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar      f1[SPATIAL_DIM_0/*1*/]; /* Nq = 1 */
-    PetscInt         q, b, d, f;
+    PetscScalar     f1[SPATIAL_DIM_0 /*1*/]; /* Nq = 1 */
+    PetscInt        q, b, d, f;
 
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
@@ -491,7 +480,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
       PetscScalar u = 0.0;
       PetscScalar gradU[SPATIAL_DIM_0];
 
-      for (d = 0; d < dim; ++d) {gradU[d] = 0.0;}
+      for (d = 0; d < dim; ++d) gradU[d] = 0.0;
       for (b = 0; b < Nb; ++b) {
         PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
@@ -558,10 +547,10 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
-    const PetscReal  detJ = jacobianDeterminants[e];
+    const PetscReal detJ  = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar      f1[SPATIAL_DIM_0*SPATIAL_DIM_0/*1*/]; /* Nq = 1 */
-    PetscInt         q, b, comp, i;
+    PetscScalar     f1[SPATIAL_DIM_0*SPATIAL_DIM_0 /*1*/]; /* Nq = 1 */
+    PetscInt        q, b, comp, i;
 
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
@@ -576,8 +565,8 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
       PetscScalar u[SPATIAL_DIM_0];
       PetscScalar gradU[SPATIAL_DIM_0*SPATIAL_DIM_0];
 
-      for (i = 0; i < dim; ++i) {u[i] = 0.0;}
-      for (i = 0; i < dim*dim; ++i) {gradU[i] = 0.0;}
+      for (i = 0; i < dim; ++i) u[i] = 0.0;
+      for (i = 0; i < dim*dim; ++i) gradU[i] = 0.0;
       for (b = 0; b < Nb; ++b) {
         for (comp = 0; comp < Ncomp; ++comp) {
           const PetscInt cidx = b*Ncomp+comp;
@@ -642,19 +631,19 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
 PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
 {
   /* PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc; */
-  const PetscInt   debug         = user->debug;
-  const PetscInt   dim           = user->dim;
-  const PetscInt   numQuadPoints = user->q.numQuadPoints;
-  const PetscReal *quadPoints    = user->q.quadPoints;
-  const PetscReal *quadWeights   = user->q.quadWeights;
-  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
-  const PetscInt   numBasisComps = user->q.numComponents;
-  const PetscReal *basis         = user->q.basis;
-  const PetscReal *basisDer      = user->q.basisDer;
+  const PetscInt  debug         = user->debug;
+  const PetscInt  dim           = user->dim;
+  const PetscInt  numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadPoints   = user->q.quadPoints;
+  const PetscReal *quadWeights  = user->q.quadWeights;
+  const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
+  const PetscInt  numBasisComps = user->q.numComponents;
+  const PetscReal *basis        = user->q.basis;
+  const PetscReal *basisDer     = user->q.basisDer;
   PetscReal       *coords, *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec;
-  PetscInt         cStart, cEnd, c;
-  PetscErrorCode   ierr;
+  PetscInt        cStart, cEnd, c;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualBatchEvent,0,0,0,0);CHKERRQ(ierr);
@@ -663,12 +652,12 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   const PetscInt numCells = cEnd - cStart;
-  PetscScalar   *u;
+  PetscScalar    *u;
 
   ierr = PetscMalloc4(numCells*numBasisFuncs*numBasisComps,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
-    PetscInt           f;
+    PetscInt          f;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
@@ -738,17 +727,17 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
 */
 PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
 {
-  const PetscInt   debug         = user->debug;
-  const PetscInt   dim           = user->dim;
-  const PetscInt   numQuadPoints = user->q.numQuadPoints;
-  const PetscReal *quadWeights   = user->q.quadWeights;
-  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
-  const PetscReal *basis         = user->q.basis;
-  const PetscReal *basisDer      = user->q.basisDer;
+  const PetscInt  debug         = user->debug;
+  const PetscInt  dim           = user->dim;
+  const PetscInt  numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadWeights  = user->q.quadWeights;
+  const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
+  const PetscReal *basis        = user->q.basis;
+  const PetscReal *basisDer     = user->q.basisDer;
   PetscReal       *v0, *J, *invJ, detJ;
   PetscScalar     *realSpaceTestDer, *realSpaceBasisDer, *elemMat;
-  PetscInt         cStart, cEnd, c;
-  PetscErrorCode   ierr;
+  PetscInt        cStart, cEnd, c;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
@@ -758,7 +747,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
-    PetscInt           q;
+    PetscInt          q;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
@@ -769,9 +758,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
       PetscScalar fieldVal = 0.0;
       PetscInt    f, g, d, e;
 
-      for (f = 0; f < numBasisFuncs; ++f) {
-        fieldVal += x[f]*basis[q*numBasisFuncs+f];
-      }
+      for (f = 0; f < numBasisFuncs; ++f) fieldVal += x[f]*basis[q*numBasisFuncs+f];
       for (f = 0; f < numBasisFuncs; ++f) {
         for (d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
@@ -822,17 +809,17 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
 */
 PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
 {
-  const PetscInt   debug         = user->debug;
-  const PetscInt   dim           = user->dim;
-  const PetscInt   numQuadPoints = user->q.numQuadPoints;
-  const PetscReal *quadWeights   = user->q.quadWeights;
-  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
-  const PetscReal *basis         = user->q.basis;
-  const PetscReal *basisDer      = user->q.basisDer;
+  const PetscInt  debug         = user->debug;
+  const PetscInt  dim           = user->dim;
+  const PetscInt  numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadWeights  = user->q.quadWeights;
+  const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
+  const PetscReal *basis        = user->q.basis;
+  const PetscReal *basisDer     = user->q.basisDer;
   PetscReal       *v0, *J, *invJ, detJ;
   PetscScalar     *realSpaceTestDer, *realSpaceBasisDer, *elemMat;
-  PetscInt         cStart, cEnd, c;
-  PetscErrorCode   ierr;
+  PetscInt        cStart, cEnd, c;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
@@ -842,7 +829,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
-    PetscInt           q;
+    PetscInt          q;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
@@ -853,9 +840,8 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
       PetscScalar fieldVal = 0.0;
       PetscInt    f, g, d, e;
 
-      for (f = 0; f < numBasisFuncs; ++f) {
-        fieldVal += x[f]*basis[q*numBasisFuncs+f];
-      }
+      for (f = 0; f < numBasisFuncs; ++f) fieldVal += x[f]*basis[q*numBasisFuncs+f];
+
       for (f = 0; f < numBasisFuncs; ++f) {
         for (d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
@@ -906,17 +892,17 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
 */
 PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
 {
-  const PetscInt   debug         = user->debug;
-  const PetscInt   dim           = user->dim;
-  const PetscInt   numQuadPoints = user->q.numQuadPoints;
-  const PetscReal *quadWeights   = user->q.quadWeights;
-  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
-  const PetscReal *basis         = user->q.basis;
-  const PetscReal *basisDer      = user->q.basisDer;
+  const PetscInt  debug         = user->debug;
+  const PetscInt  dim           = user->dim;
+  const PetscInt  numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadWeights  = user->q.quadWeights;
+  const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
+  const PetscReal *basis        = user->q.basis;
+  const PetscReal *basisDer     = user->q.basisDer;
   PetscReal       *v0, *J, *invJ, detJ;
   PetscScalar     *realSpaceTestDer, *realSpaceBasisDer, *elemMat;
-  PetscInt         cStart, cEnd, c;
-  PetscErrorCode   ierr;
+  PetscInt        cStart, cEnd, c;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianBatchEvent,0,0,0,0);CHKERRQ(ierr);
@@ -926,7 +912,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
-    PetscInt           q;
+    PetscInt          q;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
@@ -937,9 +923,8 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
       PetscScalar fieldVal = 0.0;
       PetscInt    f, g, d, e;
 
-      for (f = 0; f < numBasisFuncs; ++f) {
-        fieldVal += x[f]*basis[q*numBasisFuncs+f];
-      }
+      for (f = 0; f < numBasisFuncs; ++f) fieldVal += x[f]*basis[q*numBasisFuncs+f];
+
       for (f = 0; f < numBasisFuncs; ++f) {
         for (d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
@@ -1001,7 +986,7 @@ int main(int argc, char **argv)
 
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   if (user.computeFunction) {
-    Vec            X, F;
+    Vec X, F;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
@@ -1014,15 +999,15 @@ int main(int argc, char **argv)
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
-      ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalBatch);CHKERRQ(ierr);
+      ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalBatch);CHKERRQ(ierr);
     } else {
       switch (user.op) {
       case LAPLACIAN:
         ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
-        ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalLaplacian);CHKERRQ(ierr);break;
+        ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalLaplacian);CHKERRQ(ierr);break;
       case ELASTICITY:
         ierr = FormInitialGuess(X, quadratic_2d_elas, INSERT_VALUES, &user);CHKERRQ(ierr);
-        ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalElasticity);CHKERRQ(ierr);break;
+        ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalElasticity);CHKERRQ(ierr);break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
@@ -1032,20 +1017,20 @@ int main(int argc, char **argv)
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
   }
   if (user.computeJacobian) {
-    Vec            X;
-    Mat            J;
-    MatStructure   flag;
+    Vec          X;
+    Mat          J;
+    MatStructure flag;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
     if (user.batch) {
-      ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalBatch);CHKERRQ(ierr);
+      ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*))FormJacobianLocalBatch);CHKERRQ(ierr);
     } else {
       switch (user.op) {
       case LAPLACIAN:
-        ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalLaplacian);CHKERRQ(ierr);break;
+        ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*))FormJacobianLocalLaplacian);CHKERRQ(ierr);break;
       case ELASTICITY:
-        ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*)) FormJacobianLocalElasticity);CHKERRQ(ierr);break;
+        ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*))FormJacobianLocalElasticity);CHKERRQ(ierr);break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }

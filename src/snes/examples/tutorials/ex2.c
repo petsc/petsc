@@ -27,13 +27,13 @@ T*/
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(Vec);
-extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 /*
    User-defined context for monitoring
 */
 typedef struct {
-   PetscViewer viewer;
+  PetscViewer viewer;
 } MonitorCtx;
 
 #undef __FUNCT__
@@ -50,11 +50,11 @@ int main(int argc,char **argv)
   PetscScalar    h,xp,v,none = -1.0;
   PetscReal      abstol,rtol,stol,norm;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  h = 1.0/(n-1);
+  h    = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -140,11 +140,11 @@ int main(int argc,char **argv)
 
   xp = 0.0;
   for (i=0; i<n; i++) {
-    v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    v    = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v= xp*xp*xp;
+    v    = xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    xp += h;
+    xp  += h;
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
      Check the error
   */
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
 
@@ -196,10 +196,10 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormInitialGuess(Vec x)
 {
-   PetscErrorCode ierr;
-   PetscScalar    pfive = .50;
-   ierr = VecSet(x,pfive);CHKERRQ(ierr);
-   return 0;
+  PetscErrorCode ierr;
+  PetscScalar    pfive = .50;
+  ierr = VecSet(x,pfive);CHKERRQ(ierr);
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -224,11 +224,11 @@ PetscErrorCode FormInitialGuess(Vec x)
 
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-   Vec               g = (Vec)ctx;
-   const PetscScalar *xx,*gg;
-   PetscScalar       *ff,d;
-   PetscErrorCode    ierr;
-   PetscInt          i,n;
+  Vec               g = (Vec)ctx;
+  const PetscScalar *xx,*gg;
+  PetscScalar       *ff,d;
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
 
   /*
      Get pointers to vector data.
@@ -237,20 +237,18 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-   ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-   ierr = VecGetArrayRead(g,&gg);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(g,&gg);CHKERRQ(ierr);
 
   /*
      Compute function
   */
-   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-   d = (PetscReal)(n - 1); d = d*d;
-   ff[0]   = xx[0];
-   for (i=1; i<n-1; i++) {
-     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
-   }
-   ff[n-1] = xx[n-1] - 1.0;
+  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  d     = (PetscReal)(n - 1); d = d*d;
+  ff[0] = xx[0];
+  for (i=1; i<n-1; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
+  ff[n-1] = xx[n-1] - 1.0;
 
   /*
      Restore vectors
@@ -277,7 +275,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 .  flag - flag indicating matrix structure
 */
 
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[3],d;
@@ -295,7 +293,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
         row at once.
   */
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (PetscReal)(n - 1); d = d*d;
+  d    = (PetscReal)(n - 1); d = d*d;
 
   /*
      Interior grid points
@@ -310,8 +308,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
      Boundary points
   */
   i = 0;   A[0] = 1.0;
+
   ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+
   i = n-1; A[0] = 1.0;
+
   ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
 
   /*

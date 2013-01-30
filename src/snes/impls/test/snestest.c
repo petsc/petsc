@@ -2,7 +2,7 @@
 #include <petsc-private/snesimpl.h>
 
 typedef struct {
-  PetscBool  complete_print;
+  PetscBool complete_print;
 } SNES_Test;
 
 
@@ -17,7 +17,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   MatStructure   flg;
   PetscReal      nrm,gnorm;
   SNES_Test      *neP = (SNES_Test*)snes->data;
-  PetscErrorCode (*objective)(SNES,Vec,PetscReal *,void*);
+  PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
   void           *ctx;
   PetscReal      fnorm,f1norm,dnorm;
 
@@ -34,13 +34,17 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   for (i=0; i<3; i++) {
     void *functx;
     static const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
-    if (i == 1) {ierr = VecSet(x,-1.0);CHKERRQ(ierr);}
-    else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
+
+    if (i == 1) {
+      ierr = VecSet(x,-1.0);CHKERRQ(ierr);
+    } else if (i == 2) {
+      ierr = VecSet(x,1.0);CHKERRQ(ierr);
+    }
 
     /* evaluate the function at this point because SNESDefaultComputeJacobianColor() assumes that the function has been evaluated and put into snes->vec_func */
     ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
     if (snes->domainerror) {
-      ierr = PetscPrintf(((PetscObject)snes)->comm,"Domain error at %s\n",loc[i]);CHKERRQ(ierr);
+      ierr              = PetscPrintf(((PetscObject)snes)->comm,"Domain error at %s\n",loc[i]);CHKERRQ(ierr);
       snes->domainerror = PETSC_FALSE;
       continue;
     }
@@ -104,7 +108,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       /* compare the two */
       ierr = VecAXPY(f,-1.0,f1);CHKERRQ(ierr);
       ierr = VecNorm(f,NORM_2,&dnorm);CHKERRQ(ierr);
-      if (!fnorm)fnorm = 1.;
+      if (!fnorm) fnorm = 1.;
       ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of function ratio %g difference %g (%s)\n",dnorm/fnorm,dnorm,loc[i]);CHKERRQ(ierr);
       if (neP->complete_print) {
         PetscViewer viewer;
@@ -131,7 +135,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 PetscErrorCode SNESDestroy_Test(SNES snes)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -141,7 +145,7 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 #define __FUNCT__ "SNESSetFromOptions_Test"
 static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 {
-  SNES_Test      *ls = (SNES_Test *)snes->data;
+  SNES_Test      *ls = (SNES_Test*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -177,24 +181,24 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Test"
-PetscErrorCode  SNESCreate_Test(SNES  snes)
+PetscErrorCode  SNESCreate_Test(SNES snes)
 {
   SNES_Test      *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->solve           = SNESSolve_Test;
-  snes->ops->destroy         = SNESDestroy_Test;
-  snes->ops->setfromoptions  = SNESSetFromOptions_Test;
-  snes->ops->view            = 0;
-  snes->ops->setup           = SNESSetUp_Test;
-  snes->ops->reset           = 0;
+  snes->ops->solve          = SNESSolve_Test;
+  snes->ops->destroy        = SNESDestroy_Test;
+  snes->ops->setfromoptions = SNESSetFromOptions_Test;
+  snes->ops->view           = 0;
+  snes->ops->setup          = SNESSetUp_Test;
+  snes->ops->reset          = 0;
 
-  snes->usesksp             = PETSC_FALSE;
+  snes->usesksp = PETSC_FALSE;
 
-  ierr                  = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
-  snes->data            = (void*)neP;
-  neP->complete_print   = PETSC_FALSE;
+  ierr                = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
+  snes->data          = (void*)neP;
+  neP->complete_print = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -284,7 +288,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
     /* compare the two */
     ierr = VecAXPY(f,-1.0,f1);CHKERRQ(ierr);
     ierr = VecNorm(f,NORM_2,&dnorm);CHKERRQ(ierr);
-    if (!fnorm)fnorm = 1.;
+    if (!fnorm) fnorm = 1.;
     ierr = PetscViewerASCIIPrintf(viewer,"    %g = Norm of objective function ratio %g = difference\n",dnorm/fnorm,dnorm);CHKERRQ(ierr);
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Difference\n");CHKERRQ(ierr);

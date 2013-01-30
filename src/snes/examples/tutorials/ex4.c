@@ -43,8 +43,8 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-   PetscReal alpha;          /* parameter controlling linearity */
-   PetscReal lambda;         /* parameter controlling nonlinearity */
+  PetscReal alpha;           /* parameter controlling linearity */
+  PetscReal lambda;          /* parameter controlling nonlinearity */
 } AppCtx;
 
 static PetscScalar Kref[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
@@ -71,26 +71,26 @@ extern PetscErrorCode PrintVector(DM, Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DM                     da;
-  SNES                   snes;                 /* nonlinear solver */
-  AppCtx                *user;                 /* user-defined work context */
-  PetscBag               bag;
-  PetscInt               its;                  /* iterations for convergence */
-  SNESConvergedReason    reason;
-  PetscErrorCode         ierr;
-  PetscReal              lambda_max = 6.81, lambda_min = 0.0;
-  Vec                    x;
+  DM                  da;
+  SNES                snes;                    /* nonlinear solver */
+  AppCtx              *user;                   /* user-defined work context */
+  PetscBag            bag;
+  PetscInt            its;                     /* iterations for convergence */
+  SNESConvergedReason reason;
+  PetscErrorCode      ierr;
+  PetscReal           lambda_max = 6.81, lambda_min = 0.0;
+  Vec                 x;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscBagCreate(PETSC_COMM_WORLD, sizeof(AppCtx), &bag);CHKERRQ(ierr);
-  ierr = PetscBagGetData(bag, (void **) &user);CHKERRQ(ierr);
+  ierr = PetscBagGetData(bag, (void**) &user);CHKERRQ(ierr);
   ierr = PetscBagSetName(bag, "params", "Parameters for SNES example 4");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &user->alpha, 1.0, "alpha", "Linear coefficient");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &user->lambda, 6.0, "lambda", "Nonlinear coefficient");CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "PrintVector"
 PetscErrorCode PrintVector(DM da, Vec U)
 {
-  PetscScalar  **u;
+  PetscScalar    **u;
   PetscInt       i,j,xs,ys,xm,ym;
   PetscErrorCode ierr;
 
@@ -192,7 +192,7 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 */
 PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
-  AppCtx        *user;
+  AppCtx         *user;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;
@@ -203,16 +203,13 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->lambda;
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
-  if (lambda == 0.0) {
-    temp1  = 1.0;
-  } else {
-    temp1  = lambda/(lambda + 1.0);
-  }
+  if (lambda == 0.0) temp1 = 1.0;
+  else temp1 = lambda/(lambda + 1.0);
 
   /*
      Get a pointer to vector data.
@@ -238,12 +235,8 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
     temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
 
-      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
-        /* boundary conditions are all zero Dirichlet */
-        x[j][i] = 0.0;
-      } else {
-        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
-      }
+      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) x[j][i] = 0.0; /* boundary conditions are all zero Dirichlet */
+      else x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
     }
   }
 
@@ -259,7 +252,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, PetscReal hy, PetscScalar r[])
 {
   PetscScalar rLocal[4] = {0.0, 0.0, 0.0};
-  PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscScalar phi[4]    = {0.0, 0.0, 0.0, 0.0};
   /* PetscReal   xI = i*hx, yI = j*hy, x, y; */
   PetscReal   hxhy = hx*hy;
   PetscScalar res;
@@ -275,14 +268,10 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
      x      = xI + quadPoints[q*2]*hx;
      y      = yI + quadPoints[q*2+1]*hy;
      */
-    res    = quadWeights[q]*(2.0);
-    for (k = 0; k < 4; k++) {
-      rLocal[k] += phi[k]*res;
-    }
+    res = quadWeights[q]*(2.0);
+    for (k = 0; k < 4; k++) rLocal[k] += phi[k]*res;
   }
-  for (k = 0; k < 4; k++) {
-    r[k] += lambda*hxhy*rLocal[k];
-  }
+  for (k = 0; k < 4; k++) r[k] += lambda*hxhy*rLocal[k];
   PetscFunctionReturn(0);
 }
 
@@ -292,16 +281,16 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar 
 {
   PetscFunctionBeginUser;
   r[0] += lambda*(48.0*u[0]*u[0]*u[0] + 12.0*u[1]*u[1]*u[1] + 9.0*u[0]*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*u[1]*(9.0*u[2] + 6.0*u[3]) + u[1]*(6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3])
-           + 3.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
-           + 2.0*u[0]*(12.0*u[1]*u[1] + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
+                  + 3.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
+                  + 2.0*u[0]*(12.0*u[1]*u[1] + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
   r[1] += lambda*(12.0*u[0]*u[0]*u[0] + 48.0*u[1]*u[1]*u[1] + 9.0*u[1]*u[1]*(4.0*u[2] + u[3]) + 3.0*u[0]*u[0]*(8.0*u[1] + 2.0*u[2] + 3.0*u[3])
-           + 4.0*u[1]*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]) + 3.0*(4.0*u[2]*u[2]*u[2] + 3.0*u[2]*u[2]*u[3] + 2.0*u[2]*u[3]*u[3] + u[3]*u[3]*u[3])
-           + 2.0*u[0]*((18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3])))/1200.0;
+                  + 4.0*u[1]*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]) + 3.0*(4.0*u[2]*u[2]*u[2] + 3.0*u[2]*u[2]*u[3] + 2.0*u[2]*u[3]*u[3] + u[3]*u[3]*u[3])
+                  + 2.0*u[0]*((18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3])))/1200.0;
   r[2] += lambda*(3.0*u[0]*u[0]*u[0] + u[0]*u[0]*(6.0*u[1] + 4.0*u[2] + 6.0*u[3]) + u[0]*(9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]))
-           + 6.0*(2.0*u[1]*u[1]*u[1] + u[1]*u[1]*(4.0*u[2] + u[3]) + u[1]*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]) + 2.0*(4.0*u[2]*u[2]*u[2] + 3.0*u[2]*u[2]*u[3] + 2.0*u[2]*u[3]*u[3] + u[3]*u[3]*u[3])))/1200.0;
+                  + 6.0*(2.0*u[1]*u[1]*u[1] + u[1]*u[1]*(4.0*u[2] + u[3]) + u[1]*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]) + 2.0*(4.0*u[2]*u[2]*u[2] + 3.0*u[2]*u[2]*u[3] + 2.0*u[2]*u[3]*u[3] + u[3]*u[3]*u[3])))/1200.0;
   r[3] += lambda*(12.0*u[0]*u[0]*u[0] + 3.0*u[1]*u[1]*u[1] + u[1]*u[1]*(6.0*u[2] + 4.0*u[3]) + 3.0*u[0]*u[0]*(3.0*u[1] + 2.0*u[2] + 8.0*u[3])
-           + 3.0*u[1]*(3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + 12.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
-           + 2.0*u[0]*(3.0*u[1]*u[1] + u[1]*(4.0*u[2] + 6.0*u[3]) + 3.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
+                  + 3.0*u[1]*(3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + 12.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
+                  + 2.0*u[0]*(3.0*u[1]*u[1] + u[1]*(4.0*u[2] + 6.0*u[3]) + 3.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
   PetscFunctionReturn(0);
 }
 
@@ -310,17 +299,17 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar 
 PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscScalar r[])
 {
   PetscScalar rLocal[4] = {0.0, 0.0, 0.0, 0.0};
-  PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscScalar phi[4]    = {0.0, 0.0, 0.0, 0.0};
   PetscScalar res;
-  PetscInt q;
+  PetscInt    q;
 
   PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
-    phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
-    phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
-    phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
-    phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
-    res    = quadWeights[q]*PetscExpScalar(u[0]*phi[0]+ u[1]*phi[1] + u[2]*phi[2]+ u[3]*phi[3]);
+    phi[0]     = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
+    phi[1]     =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
+    phi[2]     =  quadPoints[q*2]       * quadPoints[q*2+1];
+    phi[3]     = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
+    res        = quadWeights[q]*PetscExpScalar(u[0]*phi[0]+ u[1]*phi[1] + u[2]*phi[2]+ u[3]*phi[3]);
     rLocal[0] += phi[0]*res;
     rLocal[1] += phi[1]*res;
     rLocal[2] += phi[2]*res;
@@ -384,7 +373,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   hxhy   = hx*hy;
 
   /* Zero the vector */
-  ierr = PetscMemzero((void *) &(f[info->xs][info->ys]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero((void*) &(f[info->xs][info->ys]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid. For each
      vertex (i,j), we consider the element below:
 
@@ -405,31 +394,35 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
       uLocal[3] = x[j+1][i];
       for (k = 0; k < 4; k++) {
         rLocal[k] = 0.0;
-        for (l = 0; l < 4; l++) {
-          rLocal[k] += Kref[k*4 + l]*uLocal[l];
-        }
+        for (l = 0; l < 4; l++) rLocal[k] += Kref[k*4 + l]*uLocal[l];
         rLocal[k] *= hxhy*alpha;
       }
       ierr = constantResidual(1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr);
+
       f[j][i]     += rLocal[0];
       f[j][i+1]   += rLocal[1];
       f[j+1][i+1] += rLocal[2];
       f[j+1][i]   += rLocal[3];
+
       if (i == 0 || j == 0) {
         ierr = ExactSolution(i*hx, j*hy, &uExact);CHKERRQ(ierr);
+
         f[j][i] = x[j][i] - uExact;
       }
       if ((i == info->mx-2) || (j == 0)) {
         ierr = ExactSolution((i+1)*hx, j*hy, &uExact);CHKERRQ(ierr);
+
         f[j][i+1] = x[j][i+1] - uExact;
       }
       if ((i == info->mx-2) || (j == info->my-2)) {
         ierr = ExactSolution((i+1)*hx, (j+1)*hy, &uExact);CHKERRQ(ierr);
+
         f[j+1][i+1] = x[j+1][i+1] - uExact;
       }
       if ((i == 0) || (j == info->my-2)) {
         ierr = ExactSolution(i*hx, (j+1)*hy, &uExact);CHKERRQ(ierr);
+
         f[j+1][i] = x[j+1][i] - uExact;
       }
     }
@@ -475,15 +468,16 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
   */
   for (j=info->ys; j<info->ys+info->ym-1; j++) {
     for (i=info->xs; i<info->xs+info->xm-1; i++) {
-      numRows = 0;
+      numRows   = 0;
       uLocal[0] = x[j][i];
       uLocal[1] = x[j][i+1];
       uLocal[2] = x[j+1][i+1];
       uLocal[3] = x[j+1][i];
       /* i,j */
       if (i == 0 || j == 0) {
-        ident.i = i; ident.j = j;
+        ident.i   = i; ident.j = j;
         JLocal[0] = 1.0;
+
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
@@ -491,14 +485,15 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
         localRows[numRows] = 0;
-        rows[numRows].i = i; rows[numRows].j = j;
+        rows[numRows].i    = i; rows[numRows].j = j;
         numRows++;
       }
       cols[0].i = i; cols[0].j = j;
       /* i+1,j */
       if ((i == info->mx-2) || (j == 0)) {
-        ident.i = i+1; ident.j = j;
+        ident.i   = i+1; ident.j = j;
         JLocal[0] = 1.0;
+
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
@@ -506,14 +501,15 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
         localRows[numRows] = 1;
-        rows[numRows].i = i+1; rows[numRows].j = j;
+        rows[numRows].i    = i+1; rows[numRows].j = j;
         numRows++;
       }
       cols[1].i = i+1; cols[1].j = j;
       /* i+1,j+1 */
       if ((i == info->mx-2) || (j == info->my-2)) {
-        ident.i = i+1; ident.j = j+1;
+        ident.i   = i+1; ident.j = j+1;
         JLocal[0] = 1.0;
+
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
@@ -521,14 +517,15 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
         localRows[numRows] = 2;
-        rows[numRows].i = i+1; rows[numRows].j = j+1;
+        rows[numRows].i    = i+1; rows[numRows].j = j+1;
         numRows++;
       }
       cols[2].i = i+1; cols[2].j = j+1;
       /* i,j+1 */
       if ((i == 0) || (j == info->my-2)) {
-        ident.i = i; ident.j = j+1;
+        ident.i   = i; ident.j = j+1;
         JLocal[0] = 1.0;
+
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
@@ -536,11 +533,11 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
         localRows[numRows] = 3;
-        rows[numRows].i = i; rows[numRows].j = j+1;
+        rows[numRows].i    = i; rows[numRows].j = j+1;
         numRows++;
       }
       cols[3].i = i; cols[3].j = j+1;
-      ierr = nonlinearJacobian(-1.0*sc, uLocal, ELocal);CHKERRQ(ierr);
+      ierr      = nonlinearJacobian(-1.0*sc, uLocal, ELocal);CHKERRQ(ierr);
       for (k = 0; k < numRows; k++) {
         for (l = 0; l < 4; l++) {
           JLocal[k*4 + l] = (hxhy*alpha*Kref[localRows[k]*4 + l] + ELocal[localRows[k]*4 + l]);

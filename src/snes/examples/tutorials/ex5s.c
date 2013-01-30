@@ -83,9 +83,9 @@ T*/
    application-provided call-back routines   FormFunction().
 */
 typedef struct {
-   PetscReal   param;          /* test problem parameter */
-   int         mx,my;          /* discretization in x, y directions */
-   int         rank;           /* processor rank */
+  PetscReal param;             /* test problem parameter */
+  int       mx,my;             /* discretization in x, y directions */
+  int       rank;              /* processor rank */
 } AppCtx;
 
 /*
@@ -118,16 +118,16 @@ int main(int argc,char **argv)
   PetscScalar    zero = 0.0;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -151,11 +151,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
-  if (flg) {
-    fnc = FormFunctionFortran;
-  } else {
-    fnc = FormFunction;
-  }
+  if (flg) fnc = FormFunctionFortran;
+  else     fnc = FormFunction;
 
   /*
      Set function evaluation routine and vector
@@ -177,10 +174,9 @@ int main(int argc,char **argv)
   */
   ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
-  }
-  ierr   = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
+
+  ierr = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /*
@@ -282,9 +278,9 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int          i,j,row,mx,my,ierr;
-  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  *x;
+  int         i,j,row,mx,my,ierr;
+  PetscReal   one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar *x;
 
   /*
       Process 0 has to wait for all other processes to get here
@@ -292,18 +288,19 @@ int FormInitialGuess(AppCtx *user,Vec X)
   */
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
   if (user->rank) {
-     /*
-        All the non-busy processors have to wait here for process 0 to finish
-        evaluating the function; otherwise they will start using the vector values
-        before they have been computed
-     */
-     ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
-     return 0;
+    /*
+       All the non-busy processors have to wait here for process 0 to finish
+       evaluating the function; otherwise they will start using the vector values
+       before they have been computed
+    */
+    ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
+    return 0;
   }
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
+  mx = user->mx;               my = user->my;        lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+
   temp1 = lambda/(lambda + one);
 
   /*
@@ -357,10 +354,10 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j,row,mx,my;
-  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  u,uxx,uyy,*x,*f;
+  AppCtx      *user = (AppCtx*)ptr;
+  int         ierr,i,j,row,mx,my;
+  PetscReal   two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar u,uxx,uyy,*x,*f;
 
   /*
       Process 0 has to wait for all other processes to get here
@@ -369,13 +366,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
 
   if (user->rank) {
-     /*
-        All the non-busy processors have to wait here for process 0 to finish
-        evaluating the function; otherwise they will start using the vector values
-        before they have been computed
-     */
-     ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
-     return 0;
+    /*
+       All the non-busy processors have to wait here for process 0 to finish
+       evaluating the function; otherwise they will start using the vector values
+       before they have been computed
+    */
+    ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
+    return 0;
   }
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -406,9 +403,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-mx] - x[row+mx])*hxdhy;
+      u      = x[row];
+      uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
+      uyy    = (two*u - x[row-mx] - x[row+mx])*hxdhy;
       f[row] = uxx + uyy - sc*exp(u);
     }
   }
@@ -439,9 +436,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr;
-  PetscScalar  *x,*f;
+  AppCtx      *user = (AppCtx*)ptr;
+  int         ierr;
+  PetscScalar *x,*f;
 
   /*
       Process 0 has to wait for all other processes to get here

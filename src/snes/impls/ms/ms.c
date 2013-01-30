@@ -18,7 +18,7 @@ struct _SNESMSTableau {
 typedef struct _SNESMSTableauLink *SNESMSTableauLink;
 struct _SNESMSTableauLink {
   struct _SNESMSTableau tab;
-  SNESMSTableauLink next;
+  SNESMSTableauLink     next;
 };
 static SNESMSTableauLink SNESMSTableauList;
 
@@ -51,8 +51,8 @@ PetscErrorCode SNESMSRegisterAll(void)
 
   {
     PetscReal gamma[3][1] = {{1.0},{0.0},{0.0}};
-    PetscReal delta[1] = {0.0};
-    PetscReal betasub[1] = {1.0};
+    PetscReal delta[1]    = {0.0};
+    PetscReal betasub[1]  = {1.0};
     ierr = SNESMSRegister(SNESMSEULER,1,3,1.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
 
@@ -62,44 +62,44 @@ PetscErrorCode SNESMSRegisterAll(void)
       {1.0000000000000000E+00,  1.1111025767083920E+00,  5.6150921583923230E-01,  7.4151723494934041E-01,  3.1714538168600587E-01,  4.6479276238548706E-01},
       {0.0000000000000000E+00,  0.0000000000000000E+00,  0.0000000000000000E+00,  6.7968174970583317E-01,  -4.1755042846051737E-03, -1.9115668129923846E-01}
     };
-    PetscReal delta[6] = {1.0000000000000000E+00, 5.3275427433201750E-01, 6.0143544663985238E-01, 4.5874077053842177E-01, 2.7544386906104651E-01, 0.0000000000000000E+00};
+    PetscReal delta[6]   = {1.0000000000000000E+00, 5.3275427433201750E-01, 6.0143544663985238E-01, 4.5874077053842177E-01, 2.7544386906104651E-01, 0.0000000000000000E+00};
     PetscReal betasub[6] = {8.4753115429481929E-01, 7.4018896368655618E-01, 6.5963574086583309E-03, 4.6747795645517759E-01, 1.3314545813643919E-01, 5.3260800028018784E-01};
     ierr = SNESMSRegister(SNESMSM62,6,3,1.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   {
     PetscReal gamma[3][4] = {{0,0,0,0},{0,0,0,0},{1,1,1,1}};
-    PetscReal delta[4] = {0,0,0,0};
-    PetscReal betasub[4] = {0.25, 0.5, 0.55, 1.0};
+    PetscReal delta[4]    = {0,0,0,0};
+    PetscReal betasub[4]  = {0.25, 0.5, 0.55, 1.0};
     ierr = SNESMSRegister(SNESMSJAMESON83,4,3,1.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   {                             /* Van Leer, Tai, and Powell (1989) 2 stage, order 1 */
     PetscReal gamma[3][2] = {{0,0},{0,0},{1,1}};
-    PetscReal delta[2] = {0,0};
-    PetscReal betasub[2] = {0.3333,1.0};
+    PetscReal delta[2]    = {0,0};
+    PetscReal betasub[2]  = {0.3333,1.0};
     ierr = SNESMSRegister(SNESMSVLTP21,2,3,1.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   {                             /* Van Leer, Tai, and Powell (1989) 3 stage, order 1 */
     PetscReal gamma[3][3] = {{0,0,0},{0,0,0},{1,1,1}};
-    PetscReal delta[3] = {0,0,0};
-    PetscReal betasub[3] = {0.1481,0.4000,1.0};
+    PetscReal delta[3]    = {0,0,0};
+    PetscReal betasub[3]  = {0.1481,0.4000,1.0};
     ierr = SNESMSRegister(SNESMSVLTP31,3,3,1.5,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   {                             /* Van Leer, Tai, and Powell (1989) 4 stage, order 1 */
     PetscReal gamma[3][4] = {{0,0,0,0},{0,0,0,0},{1,1,1,1}};
-    PetscReal delta[4] = {0,0,0,0};
-    PetscReal betasub[4] = {0.0833,0.2069,0.4265,1.0};
+    PetscReal delta[4]    = {0,0,0,0};
+    PetscReal betasub[4]  = {0.0833,0.2069,0.4265,1.0};
     ierr = SNESMSRegister(SNESMSVLTP41,4,3,2.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   {                             /* Van Leer, Tai, and Powell (1989) 5 stage, order 1 */
     PetscReal gamma[3][5] = {{0,0,0,0,0},{0,0,0,0,0},{1,1,1,1,1}};
-    PetscReal delta[5] = {0,0,0,0,0};
-    PetscReal betasub[5] = {0.0533,0.1263,0.2375,0.4414,1.0};
+    PetscReal delta[5]    = {0,0,0,0,0};
+    PetscReal betasub[5]  = {0.0533,0.1263,0.2375,0.4414,1.0};
     ierr = SNESMSRegister(SNESMSVLTP51,5,3,2.5,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   {                             /* Van Leer, Tai, and Powell (1989) 6 stage, order 1 */
     PetscReal gamma[3][6] = {{0,0,0,0,0,0},{0,0,0,0,0,0},{1,1,1,1,1,1}};
-    PetscReal delta[6] = {0,0,0,0,0,0};
-    PetscReal betasub[6] = {0.0370,0.0851,0.1521,0.2562,0.4512,1.0};
+    PetscReal delta[6]    = {0,0,0,0,0,0};
+    PetscReal betasub[6]  = {0.0370,0.0851,0.1521,0.2562,0.4512,1.0};
     ierr = SNESMSRegister(SNESMSVLTP61,6,3,3.0,&gamma[0][0],delta,betasub);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -119,13 +119,14 @@ PetscErrorCode SNESMSRegisterAll(void)
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   SNESMSTableauLink link;
 
   PetscFunctionBegin;
   while ((link = SNESMSTableauList)) {
     SNESMSTableau t = &link->tab;
     SNESMSTableauList = link->next;
+
     ierr = PetscFree3(t->gamma,t->delta,t->betasub);CHKERRQ(ierr);
     ierr = PetscFree(t->name);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
@@ -156,6 +157,7 @@ PetscErrorCode SNESMSInitializePackage(const char path[])
   PetscFunctionBegin;
   if (SNESMSPackageInitialized) PetscFunctionReturn(0);
   SNESMSPackageInitialized = PETSC_TRUE;
+
   ierr = SNESMSRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(SNESMSFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -178,6 +180,7 @@ PetscErrorCode SNESMSFinalizePackage(void)
 
   PetscFunctionBegin;
   SNESMSPackageInitialized = PETSC_FALSE;
+
   ierr = SNESMSRegisterDestroy();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -208,9 +211,9 @@ PetscErrorCode SNESMSFinalizePackage(void)
 @*/
 PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregisters,PetscReal stability,const PetscReal gamma[],const PetscReal delta[],const PetscReal betasub[])
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   SNESMSTableauLink link;
-  SNESMSTableau t;
+  SNESMSTableau     t;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -220,19 +223,20 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscValidPointer(delta,5);
   PetscValidPointer(betasub,6);
 
-  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
-  t = &link->tab;
-  ierr = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
+  ierr          = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr          = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  t             = &link->tab;
+  ierr          = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->nstages    = nstages;
   t->nregisters = nregisters;
   t->stability  = stability;
+
   ierr = PetscMalloc3(nstages*nregisters,PetscReal,&t->gamma,nstages,PetscReal,&t->delta,nstages,PetscReal,&t->betasub);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->gamma,gamma,nstages*nregisters*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->delta,delta,nstages*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->betasub,betasub,nstages*sizeof(PetscReal));CHKERRQ(ierr);
 
-  link->next = SNESMSTableauList;
+  link->next        = SNESMSTableauList;
   SNESMSTableauList = link;
   PetscFunctionReturn(0);
 }
@@ -245,30 +249,32 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
 */
 static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
 {
-  PetscErrorCode ierr;
-  SNES_MS        *ms = (SNES_MS*)snes->data;
-  SNESMSTableau  t = ms->tableau;
+  PetscErrorCode  ierr;
+  SNES_MS         *ms    = (SNES_MS*)snes->data;
+  SNESMSTableau   t      = ms->tableau;
   const PetscReal *gamma = t->gamma,*delta = t->delta,*betasub = t->betasub;
-  Vec            S1,S2,S3,Y;
-  PetscInt       i,nstages = t->nstages;;
+  Vec             S1,S2,S3,Y;
+  PetscInt        i,nstages = t->nstages;;
 
 
   PetscFunctionBegin;
-  Y = snes->work[0];
-  S1 = X;
-  S2 = snes->work[1];
-  S3 = snes->work[2];
+  Y    = snes->work[0];
+  S1   = X;
+  S2   = snes->work[1];
+  S3   = snes->work[2];
   ierr = VecZeroEntries(S2);CHKERRQ(ierr);
   ierr = VecCopy(X,S3);CHKERRQ(ierr);
   for (i=0; i<nstages; i++) {
-    Vec Ss[4];
+    Vec         Ss[4];
     PetscScalar scoeff[4];
 
     Ss[0] = S1; Ss[1] = S2; Ss[2] = S3; Ss[3] = Y;
+
     scoeff[0] = gamma[0*nstages+i]-(PetscReal)1.0;
     scoeff[1] = gamma[1*nstages+i];
     scoeff[2] = gamma[2*nstages+i];
     scoeff[3] = -betasub[i]*ms->damping;
+
     ierr = VecAXPY(S2,delta[i],S1);CHKERRQ(ierr);
     if (i>0) {
       ierr = SNESComputeFunction(snes,S1,F);CHKERRQ(ierr);
@@ -288,7 +294,7 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
 static PetscErrorCode SNESSolve_MS(SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
-  Vec            X = snes->vec_sol,F = snes->vec_func;
+  Vec            X   = snes->vec_sol,F = snes->vec_func;
   PetscReal      fnorm;
   MatStructure   mstruct;
   PetscInt       i;
@@ -296,19 +302,18 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 
   PetscFunctionBegin;
   snes->reason = SNES_CONVERGED_ITERATING;
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->iter = 0;
-  snes->norm = 0.;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter   = 0;
+  snes->norm   = 0.;
+  ierr         = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
     }
-  } else {
-    snes->vec_func_init_set = PETSC_FALSE;
-  }
+  } else snes->vec_func_init_set = PETSC_FALSE;
+
   if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
     ierr = SNESComputeJacobian(snes,snes->vec_sol,&snes->jacobian,&snes->jacobian_pre,&mstruct);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,mstruct);CHKERRQ(ierr);
@@ -318,14 +323,14 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
       ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
       if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
     } else {
-      fnorm = snes->norm_init;
+      fnorm               = snes->norm_init;
       snes->norm_init_set = PETSC_FALSE;
     }
     /* Monitor convergence */
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
@@ -355,10 +360,10 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
       ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
       if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
       /* Monitor convergence */
-      ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+      ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+      ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
       SNESLogConvHistory(snes,snes->norm,0);
       ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
@@ -380,7 +385,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 #define __FUNCT__ "SNESSetUp_MS"
 static PetscErrorCode SNESSetUp_MS(SNES snes)
 {
-  SNES_MS * ms = (SNES_MS *)snes->data;
+  SNES_MS        *ms = (SNES_MS*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -415,15 +420,15 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
 #define __FUNCT__ "SNESView_MS"
 static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
 {
-  PetscBool        iascii;
-  PetscErrorCode   ierr;
-  SNES_MS          *ms = (SNES_MS*)snes->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+  SNES_MS        *ms = (SNES_MS*)snes->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     SNESMSTableau tab = ms->tableau;
-    ierr = PetscViewerASCIIPrintf(viewer,"  multi-stage method type: %s\n",tab?tab->name:"not yet set");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  multi-stage method type: %s\n",tab ? tab->name : "not yet set");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -439,10 +444,10 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
   ierr = PetscOptionsHead("SNES MS options");CHKERRQ(ierr);
   {
     SNESMSTableauLink link;
-    PetscInt count,choice;
-    PetscBool flg;
-    const char **namelist;
-    char mstype[256];
+    PetscInt          count,choice;
+    PetscBool         flg;
+    const char        **namelist;
+    char              mstype[256];
 
     ierr = PetscStrncpy(mstype,SNESMSDefault,sizeof(mstype));CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) ;
@@ -476,7 +481,7 @@ PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
   for (link = SNESMSTableauList; link; link=link->next) {
     ierr = PetscStrcmp(link->tab.name,mstype,&match);CHKERRQ(ierr);
     if (match) {
-      ierr = SNESReset_MS(snes);CHKERRQ(ierr);
+      ierr        = SNESReset_MS(snes);CHKERRQ(ierr);
       ms->tableau = &link->tab;
       PetscFunctionReturn(0);
     }
@@ -565,8 +570,8 @@ PetscErrorCode  SNESCreate_MS(SNES snes)
   snes->usespc  = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;
 
-  ierr = PetscNewLog(snes,SNES_MS,&ms);CHKERRQ(ierr);
-  snes->data = (void*)ms;
+  ierr        = PetscNewLog(snes,SNES_MS,&ms);CHKERRQ(ierr);
+  snes->data  = (void*)ms;
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;
 

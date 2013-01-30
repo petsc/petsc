@@ -55,12 +55,12 @@ T*/
    FormFunction().
 */
 typedef struct {
-   PetscReal   param;          /* test problem parameter */
-   PetscReal   param2;         /* test problem parameter */
-   PetscInt    mx,my;          /* discretization in x, y directions */
-   Vec         localX,localF; /* ghosted local vector */
-   DM          da;             /* distributed array data structure */
-   PetscMPIInt rank;           /* processor rank */
+  PetscReal   param;           /* test problem parameter */
+  PetscReal   param2;          /* test problem parameter */
+  PetscInt    mx,my;           /* discretization in x, y directions */
+  Vec         localX,localF;   /* ghosted local vector */
+  DM          da;              /* distributed array data structure */
+  PetscMPIInt rank;            /* processor rank */
 } AppCtx;
 
 /*
@@ -74,28 +74,28 @@ extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int main(int argc,char **argv)
 {
   SNES           snes;                /* nonlinear solver */
-  Vec            x,r;                /* solution, residual vectors */
+  Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                   /* Jacobian matrix */
   AppCtx         user;                /* user-defined work context */
   PetscInt       its;                 /* iterations for convergence */
-  PetscInt       Nx,Ny;              /* number of preocessors in x- and y- directions */
+  PetscInt       Nx,Ny;               /* number of preocessors in x- and y- directions */
   PetscBool      matrix_free = PETSC_FALSE;         /* flag - 1 indicates matrix-free version */
   PetscMPIInt    size;                /* number of processors */
   PetscInt       m,N;
   PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  PetscReal      bratu_kappa_max = 10000,bratu_kappa_min = 0.;
+  PetscReal      bratu_kappa_max  = 10000,bratu_kappa_min = 0.;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0; user.param2 = 0.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) SETERRQ(PETSC_COMM_SELF,1,"Kappa is out of range");
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
+  Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
@@ -170,7 +170,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    PetscBool  matrix_free_operator = PETSC_FALSE;
+    PetscBool matrix_free_operator = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
@@ -243,9 +243,9 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscScalar    *x;
   Vec            localX = user->localX;
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+  mx    = user->mx;              my = user->my;            lambda = user->param;
+  hx    = one/(PetscReal)(mx-1); hy = one/(PetscReal)(my-1);
+  sc    = hx*hy*lambda;       hxdhy = hx/hy;                hydhx = hy/hx;
   temp1 = lambda/(lambda + one);
 
   /*
@@ -318,9 +318,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscScalar    u,ux,uxx,uyy,*x,*f,kappa;
   Vec            localX = user->localX,localF = user->localF;
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+  mx    = user->mx;               my = user->my;        lambda = user->param;
+  hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
+  sc    = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
   kappa = user->param2;
 
   /*
@@ -355,10 +355,10 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      ux  = (x[row+1] - x[row-1])*half*hy;
-      uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
+      u      = x[row];
+      ux     = (x[row+1] - x[row-1])*half*hy;
+      uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
+      uyy    = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
       f[row] = uxx + uyy - kappa*ux - sc*exp(u);
     }
   }
@@ -402,8 +402,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat            jac = *B;                /* Jacobian matrix */
+  AppCtx         *user  = (AppCtx*)ptr;   /* user-defined application context */
+  Mat            jac    = *B;             /* Jacobian matrix */
   Vec            localX = user->localX;   /* local vector */
   PetscErrorCode ierr;
   PetscInt       *ltog;                   /* local-to-global mapping */

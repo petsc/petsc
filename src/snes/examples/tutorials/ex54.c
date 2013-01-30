@@ -15,7 +15,7 @@ Runtime options include:\n\
 #include "petscsnes.h"
 #include "petscdmda.h"
 
-typedef struct{
+typedef struct {
   PetscReal   dt,T; /* Time step and end time */
   DM          da;
   Mat         M;    /* Jacobian matrix */
@@ -24,7 +24,7 @@ typedef struct{
   PetscScalar gamma,theta_c; /* physics parameters */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscBool   tsmonitor;
-}AppCtx;
+} AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
@@ -39,15 +39,15 @@ PetscLogEvent event_update_q;
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
-  Vec            x,r;  /* Solution and residual vectors */
-  SNES           snes; /* Nonlinear solver context */
-  AppCtx         user; /* Application context */
-  Vec            xl,xu; /* Upper and lower bounds on variables */
-  Mat            J;
-  PetscReal      t=0.0;
-  PETSC_UNUSED PetscLogStage  stage_timestep;
-  PetscInt       its;
+  PetscErrorCode             ierr;
+  Vec                        x,r; /* Solution and residual vectors */
+  SNES                       snes; /* Nonlinear solver context */
+  AppCtx                     user; /* Application context */
+  Vec                        xl,xu; /* Upper and lower bounds on variables */
+  Mat                        J;
+  PetscReal                  t=0.0;
+  PETSC_UNUSED PetscLogStage stage_timestep;
+  PetscInt                   its;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -88,19 +88,19 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Time stepping",&stage_timestep);
+  ierr = PetscLogStageRegister("Time stepping",&stage_timestep);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Update q",MAT_CLASSID,&event_update_q);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage_timestep);CHKERRQ(ierr);
   /* Begin time loop */
   while (t < user.T) {
-    ierr = Update_q(user.q,user.u,user.M_0,&user);
+    ierr = Update_q(user.q,user.u,user.M_0,&user);CHKERRQ(ierr);
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     if (user.tsmonitor) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);CHKERRQ(ierr);
     }
     ierr = VecStrideGather(x,1,user.u,INSERT_VALUES);CHKERRQ(ierr);
-    t = t + user.dt;
+    t    = t + user.dt;
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
@@ -135,9 +135,7 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
   ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
   ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    q_arr[2*i]=q_arr[2*i+1] = w_arr[i];
-  }
+  for (i=0; i<n; i++) q_arr[2*i]=q_arr[2*i+1] = w_arr[i];
   ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event_update_q,0,0,0,0);CHKERRQ(ierr);
@@ -150,8 +148,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
   PetscErrorCode ierr;
   PetscScalar    *x,*u;
-  PetscInt        n,i;
-  Vec             rand;
+  PetscInt       n,i;
+  Vec            rand;
 
   PetscFunctionBeginUser;
   /* u = -0.4 + 0.05*rand(N,1)*(rand(N,1) - 0.5) */
@@ -168,9 +166,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(user->u,&u);CHKERRQ(ierr);
   /* Set initial guess, only set value for 2nd dof */
-  for (i=0;i<n/2;i++) {
-    x[2*i+1] = u[i];
-  }
+  for (i=0;i<n/2;i++) x[2*i+1] = u[i];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->u,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -178,7 +174,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
@@ -193,7 +189,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
 {
   PetscErrorCode   ierr;
-  AppCtx           *user=(AppCtx*)ctx;
+  AppCtx           *user  =(AppCtx*)ctx;
   static PetscBool copied = PETSC_FALSE;
 
   PetscFunctionBeginUser;
@@ -201,7 +197,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   *flg = SAME_PRECONDITIONER;
   if (!copied) {
-    ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -239,7 +235,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
 #undef __FUNCT__
 #define __FUNCT__ "GetParams"
-PetscErrorCode GetParams(AppCtx* user)
+PetscErrorCode GetParams(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -247,10 +243,10 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscFunctionBeginUser;
   /* Set default parameters */
   user->tsmonitor = PETSC_FALSE;
-  user->xmin = 0.0; user->xmax = 1.0;
-  user->ymin = 0.0; user->ymax = 1.0;
-  user->T = 0.0002;    user->dt = 0.0001;
-  user->gamma = 3.2E-4; user->theta_c = 0;
+  user->xmin      = 0.0;    user->xmax    = 1.0;
+  user->ymin      = 0.0;    user->ymax    = 1.0;
+  user->T         = 0.0002; user->dt      = 0.0001;
+  user->gamma     = 3.2E-4; user->theta_c = 0;
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
@@ -305,7 +301,7 @@ static void ShapefunctionsT3(PetscScalar *phi,PetscScalar phider[][2],PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "SetUpMatrices"
-PetscErrorCode SetUpMatrices(AppCtx* user)
+PetscErrorCode SetUpMatrices(AppCtx *user)
 {
   PetscErrorCode    ierr;
   PetscInt          nele,nen,i;
@@ -317,7 +313,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscInt          idx[3];
   PetscScalar       phi[3],phider[3][2];
   PetscScalar       eM_0[3][3],eM_2[3][3];
-  Mat               M=user->M;
+  Mat               M    =user->M;
   PetscScalar       gamma=user->gamma,theta_c=user->theta_c;
   PetscInt          m;
   PetscInt          j,k;
@@ -333,11 +329,11 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-  for (i=0;i < nele;i++) {
+  for (i=0; i < nele; i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-    x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
-    x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
-    x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
+    x[0]   = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
+    x[1]   = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
+    x[2]   = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
 
     ierr = PetscMemzero(xx,3*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(yy,3*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -351,8 +347,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     eM_2[2][0]=eM_2[2][1]=eM_2[2][2]=0.0;
 
 
-    for (m=0;m<3;m++) {
-      ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (m=0; m<3; m++) {
+      ierr        = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
       phider[0][0]=phider[0][1]=0.0;
       phider[1][0]=phider[1][1]=0.0;
       phider[2][0]=phider[2][1]=0.0;
@@ -367,8 +363,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       }
     }
 
-    for (r=0;r<3;r++) {
-      row = 2*idx[r];
+    for (r=0; r<3; r++) {
+      row     = 2*idx[r];
       cols[0] = 2*idx[0];     vals[0] = dt*eM_2[r][0];
       cols[1] = 2*idx[0]+1;   vals[1] = eM_0[r][0];
       cols[2] = 2*idx[1];     vals[2] = dt*eM_2[r][1];
@@ -377,8 +373,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       cols[5] = 2*idx[2]+1;   vals[5] = eM_0[r][2];
 
       /* Insert values in matrix M for 1st dof */
-      ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-      row = 2*idx[r]+1;
+      ierr    = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+      row     = 2*idx[r]+1;
       cols[0] = 2*idx[0];     vals[0] = -eM_0[r][0];
       cols[1] = 2*idx[0]+1;   vals[1] = gamma*eM_2[r][0]-theta_c*eM_0[r][0];
       cols[2] = 2*idx[1];     vals[2] = -eM_0[r][1];

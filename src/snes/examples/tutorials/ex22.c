@@ -39,8 +39,8 @@ static const char help[] = "Solves PDE optimization problem using full-space met
 */
 
 typedef struct {
-  PetscViewer  u_lambda_viewer;
-  PetscViewer  fu_lambda_viewer;
+  PetscViewer u_lambda_viewer;
+  PetscViewer fu_lambda_viewer;
 } UserCtx;
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*);
@@ -54,19 +54,19 @@ extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
   entry for the control variable is zero which means default SOR will not work.
 
 */
-char  common_options[]      = "-ksp_type fgmres\
-                               -snes_grid_sequence 4 \
-                               -pc_type mg\
-                               -mg_levels_pc_type none \
-                               -mg_coarse_pc_type none \
-                               -pc_mg_type full \
-                               -mg_coarse_ksp_type gmres \
-                               -mg_levels_ksp_type gmres \
-                               -mg_coarse_ksp_max_it 6 \
-                               -mg_levels_ksp_max_it 3";
+char common_options[] = "-ksp_type fgmres\
+                         -snes_grid_sequence 4 \
+                         -pc_type mg\
+                         -mg_levels_pc_type none \
+                         -mg_coarse_pc_type none \
+                         -pc_mg_type full \
+                         -mg_coarse_ksp_type gmres \
+                         -mg_levels_ksp_type gmres \
+                         -mg_coarse_ksp_max_it 6 \
+                         -mg_levels_ksp_max_it 3";
 
-char  matrix_free_options[] = "-mat_mffd_compute_normu no \
-                               -mat_mffd_type wp";
+char matrix_free_options[] = "-mat_mffd_compute_normu no \
+                              -mat_mffd_type wp";
 
 extern PetscErrorCode DMCreateMatrix_MF(DM,MatType,Mat*);
 
@@ -209,11 +209,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
 PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScalar *u)
 {
   PetscInt i;
-  
+
   PetscFunctionBeginUser;
-  for (i=0; i<n; i++) {
-    u[2*i] = x[i]*x[i] - 1.25*x[i] + .25;
-  }
+  for (i=0; i<n; i++) u[2*i] = x[i]*x[i] - 1.25*x[i] + .25;
   PetscFunctionReturn(0);
 }
 

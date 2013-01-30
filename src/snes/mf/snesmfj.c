@@ -41,7 +41,7 @@
 PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ EXTERN_C_END
 PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 {
   PetscErrorCode ierr;
-  MatMFFD        j = (MatMFFD)J->data;
+  MatMFFD        j    = (MatMFFD)J->data;
   SNES           snes = (SNES)j->funcctx;
   Vec            u,f;
 
@@ -89,6 +89,7 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 
   PetscFunctionBegin;
   ierr = MatMFFDSetBase_MFFD(J,U,F);CHKERRQ(ierr);
+
   J->ops->assemblyend = MatAssemblyEnd_MFFD;
   PetscFunctionReturn(0);
 }
@@ -144,7 +145,9 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
   } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   ierr = MatCreateMFFD(((PetscObject)snes)->comm,n,n,N,N,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
+
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

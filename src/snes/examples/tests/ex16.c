@@ -23,35 +23,35 @@ The command line options are:\n\
 */
 
 typedef struct {
-  DM           da;
-  Vec          Bottom, Top, Left, Right;
-  PetscScalar  bheight;
-  PetscInt     mx,my,bmx,bmy;
+  DM          da;
+  Vec         Bottom, Top, Left, Right;
+  PetscScalar bheight;
+  PetscInt    mx,my,bmx,bmy;
 } AppCtx;
 
 
 /* -------- User-defined Routines --------- */
 
-PetscErrorCode MSA_BoundaryConditions(AppCtx *);
-PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
+PetscErrorCode MSA_BoundaryConditions(AppCtx*);
+PetscErrorCode MSA_InitialPoint(AppCtx*, Vec);
 PetscErrorCode MSA_Plate(Vec,Vec,void*);
-PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
-PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *);
+PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
+PetscErrorCode FormJacobian(SNES, Vec, Mat*, Mat*, MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode  info;             /* used to check for functions returning nonzeros */
-  Vec             x,r;              /* solution and residual vectors */
-  Vec             xl,xu;            /* Bounds on the variables */
-  SNES            snes;             /* nonlinear solver context */
-  Mat             J;                /* Jacobian matrix */
-  AppCtx          user;             /* user-defined work context */
-  PetscBool       flg;
+  PetscErrorCode info;              /* used to check for functions returning nonzeros */
+  Vec            x,r;               /* solution and residual vectors */
+  Vec            xl,xu;             /* Bounds on the variables */
+  SNES           snes;              /* nonlinear solver context */
+  Mat            J;                 /* Jacobian matrix */
+  AppCtx         user;              /* user-defined work context */
+  PetscBool      flg;
 
   /* Initialize PETSc */
-  PetscInitialize(&argc, &argv, (char *)0, help);
+  PetscInitialize(&argc, &argv, (char*)0, help);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
@@ -61,12 +61,12 @@ int main(int argc, char **argv)
   info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-10,-10,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
   info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
 
-  user.bheight=0.1;
-  info = PetscOptionsGetScalar(PETSC_NULL,"-bheight",&user.bheight,&flg);CHKERRQ(info);
+  user.bheight = 0.1;
+  info         = PetscOptionsGetScalar(PETSC_NULL,"-bheight",&user.bheight,&flg);CHKERRQ(info);
 
   user.bmx = user.mx/2; user.bmy = user.my/2;
-  info = PetscOptionsGetInt(PETSC_NULL,"-bmx",&user.bmx,&flg);CHKERRQ(info);
-  info = PetscOptionsGetInt(PETSC_NULL,"-bmy",&user.bmy,&flg);CHKERRQ(info);
+  info     = PetscOptionsGetInt(PETSC_NULL,"-bmx",&user.bmx,&flg);CHKERRQ(info);
+  info     = PetscOptionsGetInt(PETSC_NULL,"-bmy",&user.bmy,&flg);CHKERRQ(info);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");
   PetscPrintf(PETSC_COMM_WORLD,"mx:%d, my:%d, bmx:%d, bmy:%d, height:%4.2f\n",
@@ -143,17 +143,17 @@ int main(int argc, char **argv)
 */
 PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 {
-  AppCtx       *user = (AppCtx *) ptr;
-  int          info;
-  PetscInt     i,j;
-  PetscInt     mx=user->mx, my=user->my;
-  PetscScalar  hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
-  PetscScalar  f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscScalar  df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
-  PetscScalar  **g, **x;
-  PetscInt     xs,xm,ys,ym;
-  Vec          localX;
-  PetscScalar  *top,*bottom,*left,*right;
+  AppCtx      *user = (AppCtx*) ptr;
+  int         info;
+  PetscInt    i,j;
+  PetscInt    mx=user->mx, my=user->my;
+  PetscScalar hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
+  PetscScalar f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscScalar df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
+  PetscScalar **g, **x;
+  PetscInt    xs,xm,ys,ym;
+  Vec         localX;
+  PetscScalar *top,*bottom,*left,*right;
 
   PetscFunctionBeginUser;
   /* Initialize vector to zero */
@@ -184,37 +184,25 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       if (i==0) { /* left side */
         xl= left[j-ys+1];
         xlt = left[j-ys+2];
-      } else {
-        xl = x[j][i-1];
-      }
+      } else xl = x[j][i-1];
 
       if (j==0) { /* bottom side */
         xb=bottom[i-xs+1];
         xrb = bottom[i-xs+2];
-      } else {
-        xb = x[j-1][i];
-      }
+      } else xb = x[j-1][i];
 
       if (i+1 == mx) { /* right side */
         xr=right[j-ys+1];
         xrb = right[j-ys];
-      } else {
-        xr = x[j][i+1];
-      }
+      } else xr = x[j][i+1];
 
       if (j+1==0+my) { /* top side */
         xt=top[i-xs+1];
         xlt = top[i-xs];
-      } else {
-        xt = x[j+1][i];
-      }
+      } else xt = x[j+1][i];
 
-      if (i>0 && j+1<my) { /* left top side */
-        xlt = x[j+1][i-1];
-      }
-      if (j>0 && i+1<mx) { /* right bottom */
-        xrb = x[j-1][i+1];
-      }
+      if (i>0 && j+1<my) xlt = x[j+1][i-1]; /* left top side */
+      if (j>0 && i+1<mx) xrb = x[j-1][i+1]; /* right bottom */
 
       d1 = (xc-xl);
       d2 = (xc-xr);
@@ -289,22 +277,22 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure *flag, void *ptr)
 {
-  AppCtx          *user = (AppCtx *) ptr;
-  Mat             H = *tH;
-  PetscErrorCode  info;
-  PetscInt        i,j,k;
-  PetscInt        mx=user->mx, my=user->my;
-  MatStencil      row,col[7];
-  PetscScalar     hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
-  PetscScalar     f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscScalar     hl,hr,ht,hb,hc,htl,hbr;
-  PetscScalar     **x, v[7];
-  PetscBool       assembled;
-  PetscInt        xs,xm,ys,ym;
-  Vec             localX;
-  PetscScalar     *top,*bottom,*left,*right;
+  AppCtx         *user = (AppCtx*) ptr;
+  Mat            H     = *tH;
+  PetscErrorCode info;
+  PetscInt       i,j,k;
+  PetscInt       mx=user->mx, my=user->my;
+  MatStencil     row,col[7];
+  PetscScalar    hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
+  PetscScalar    f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscScalar    hl,hr,ht,hb,hc,htl,hbr;
+  PetscScalar    **x, v[7];
+  PetscBool      assembled;
+  PetscInt       xs,xm,ys,ym;
+  Vec            localX;
+  PetscScalar    *top,*bottom,*left,*right;
 
   PetscFunctionBeginUser;
   /* Set various matrix options */
@@ -335,45 +323,33 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
       /* Left */
       if (i==0) {
-        xl= left[j+1];
+        xl  = left[j+1];
         xlt = left[j+2];
-      } else {
-        xl = x[j][i-1];
-      }
+      } else xl = x[j][i-1];
 
       /* Bottom */
       if (j==0) {
-        xb=bottom[i+1];
+        xb  = bottom[i+1];
         xrb = bottom[i+2];
-      } else {
-        xb = x[j-1][i];
-      }
+      } else xb = x[j-1][i];
 
       /* Right */
       if (i+1 == mx) {
-        xr=right[j+1];
+        xr  = right[j+1];
         xrb = right[j];
-      } else {
-        xr = x[j][i+1];
-      }
+      } else xr = x[j][i+1];
 
       /* Top */
       if (j+1==my) {
-        xt=top[i+1];
+        xt  = top[i+1];
         xlt = top[i];
-      } else {
-        xt = x[j+1][i];
-      }
+      } else xt = x[j+1][i];
 
       /* Top left */
-      if (i>0 && j+1<my) {
-        xlt = x[j+1][i-1];
-      }
+      if (i>0 && j+1<my) xlt = x[j+1][i-1];
 
       /* Bottom right */
-      if (j>0 && i+1<mx) {
-        xrb = x[j-1][i+1];
-      }
+      if (j>0 && i+1<mx) xrb = x[j-1][i+1];
 
       d1 = (xc-xl)/hx;
       d2 = (xc-xr)/hx;
@@ -393,41 +369,41 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-        (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
+           (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-        (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
+           (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
       ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-        (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
+           (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
       hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-        (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+           (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
 
       hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
       htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-        hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-        (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
-        (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
+           hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
+           (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
+           (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
-      k=0;
-      row.i = i;row.j= j;
+      k     = 0;
+      row.i = i;row.j = j;
       /* Bottom */
       if (j>0) {
-        v[k]=hb;
+        v[k]     = hb;
         col[k].i = i; col[k].j=j-1; k++;
       }
 
       /* Bottom right */
       if (j>0 && i < mx -1) {
-        v[k]=hbr;
+        v[k]     = hbr;
         col[k].i = i+1; col[k].j = j-1; k++;
       }
 
       /* left */
       if (i>0) {
-        v[k]= hl;
+        v[k]     = hl;
         col[k].i = i-1; col[k].j = j; k++;
       }
 
@@ -436,19 +412,19 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
       /* Right */
       if (i < mx-1) {
-        v[k]= hr;
+        v[k]    = hr;
         col[k].i= i+1; col[k].j = j;k++;
       }
 
       /* Top left */
       if (i>0 && j < my-1) {
-        v[k]= htl;
+        v[k]     = htl;
         col[k].i = i-1;col[k].j = j+1; k++;
       }
 
       /* Top */
       if (j < my-1) {
-        v[k]= ht;
+        v[k]     = ht;
         col[k].i = i; col[k].j = j+1; k++;
       }
 
@@ -486,19 +462,19 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 */
 PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 {
-  PetscErrorCode  info;
-  PetscInt        i,j,k,limit=0,maxits=5;
-  PetscInt        mx=user->mx,my=user->my;
-  PetscInt        xs,ys,xm,ym;
-  PetscInt        bsize=0, lsize=0, tsize=0, rsize=0;
-  PetscScalar     one=1.0, two=2.0, three=3.0, tol=1e-10;
-  PetscScalar     fnorm,det,hx,hy,xt=0,yt=0;
-  PetscScalar     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
-  PetscScalar     b=-0.5, t=0.5, l=-0.5, r=0.5;
-  PetscScalar     *boundary;
-  Vec             Bottom,Top,Right,Left;
-  PetscScalar     scl=1.0;
-  PetscBool       flg;
+  PetscErrorCode info;
+  PetscInt       i,j,k,limit=0,maxits=5;
+  PetscInt       mx=user->mx,my=user->my;
+  PetscInt       xs,ys,xm,ym;
+  PetscInt       bsize=0, lsize=0, tsize=0, rsize=0;
+  PetscScalar    one  =1.0, two=2.0, three=3.0, tol=1e-10;
+  PetscScalar    fnorm,det,hx,hy,xt=0,yt=0;
+  PetscScalar    u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
+  PetscScalar    b=-0.5, t=0.5, l=-0.5, r=0.5;
+  PetscScalar    *boundary;
+  Vec            Bottom,Top,Right,Left;
+  PetscScalar    scl=1.0;
+  PetscBool      flg;
 
   PetscFunctionBeginUser;
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
@@ -510,33 +486,33 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   info = VecCreateMPI(PETSC_COMM_WORLD,lsize,PETSC_DECIDE,&Left);CHKERRQ(info);
   info = VecCreateMPI(PETSC_COMM_WORLD,rsize,PETSC_DECIDE,&Right);CHKERRQ(info);
 
-  user->Top=Top;
-  user->Left=Left;
-  user->Bottom=Bottom;
-  user->Right=Right;
+  user->Top    = Top;
+  user->Left   = Left;
+  user->Bottom = Bottom;
+  user->Right  = Right;
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
   for (j=0; j<4; j++) {
     if (j==0) {
-      yt=b;
-      xt=l+hx*xs;
-      limit=bsize;
-      info = VecGetArray(Bottom,&boundary);CHKERRQ(info);
+      yt    = b;
+      xt    = l+hx*xs;
+      limit = bsize;
+      info  = VecGetArray(Bottom,&boundary);CHKERRQ(info);
     } else if (j==1) {
-      yt=t;
-      xt=l+hx*xs;
-      limit=tsize;
+      yt   = t;
+      xt   = l+hx*xs;
+      limit= tsize;
       info = VecGetArray(Top,&boundary);CHKERRQ(info);
     } else if (j==2) {
-      yt=b+hy*ys;
-      xt=l;
-      limit=lsize;
+      yt   = b+hy*ys;
+      xt   = l;
+      limit= lsize;
       info = VecGetArray(Left,&boundary);CHKERRQ(info);
     } else { /* if  (j==3) */
-      yt=b+hy*ys;
-      xt=r;
-      limit=rsize;
+      yt   = b+hy*ys;
+      xt   = r;
+      limit= rsize;
       info = VecGetArray(Right,&boundary);CHKERRQ(info);
     }
 
@@ -544,25 +520,22 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       u1=xt;
       u2=-yt;
       for (k=0; k<maxits; k++) {
-        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-        fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
+        nf1   = u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2   = -u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm = PetscSqrtReal(nf1*nf1+nf2*nf2);
         if (fnorm <= tol) break;
-        njac11=one+u2*u2-u1*u1;
-        njac12=two*u1*u2;
-        njac21=-two*u1*u2;
-        njac22=-one - u1*u1 + u2*u2;
-        det = njac11*njac22-njac21*njac12;
-        u1 = u1-(njac22*nf1-njac12*nf2)/det;
-        u2 = u2-(njac11*nf2-njac21*nf1)/det;
+        njac11 = one+u2*u2-u1*u1;
+        njac12 = two*u1*u2;
+        njac21 = -two*u1*u2;
+        njac22 = -one - u1*u1 + u2*u2;
+        det    = njac11*njac22-njac21*njac12;
+        u1     = u1-(njac22*nf1-njac12*nf2)/det;
+        u2     = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
-      if (j==0 || j==1) {
-        xt=xt+hx;
-      } else { /* if (j==2 || j==3) */
-        yt=yt+hy;
-      }
+      if (j==0 || j==1) xt=xt+hx;
+      else yt=yt+hy; /* if (j==2 || j==3) */
     }
 
     if (j==0) {
@@ -616,11 +589,11 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 */
 PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 {
-  PetscErrorCode  info;
-  PetscInt        start=-1,i,j;
-  PetscScalar     zero=0.0;
-  PetscBool       flg;
-  PetscScalar     *left,*right,*bottom,*top;
+  PetscErrorCode info;
+  PetscInt       start =-1,i,j;
+  PetscScalar    zero  =0.0;
+  PetscBool      flg;
+  PetscScalar    *left,*right,*bottom,*top;
 
   PetscFunctionBeginUser;
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
@@ -632,8 +605,8 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
 
   } else { /* Take an average of the boundary conditions */
-    PetscInt     mx=user->mx,my=user->my;
-    PetscScalar  **x;
+    PetscInt    mx=user->mx,my=user->my;
+    PetscScalar **x;
     PetscInt    xs,xm,ys,ym;
 
     info = VecGetArray(user->Top,&top);CHKERRQ(info);
@@ -670,7 +643,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 */
 PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
 {
-  AppCtx         *user=(AppCtx *)ctx;
+  AppCtx         *user=(AppCtx*)ctx;
   PetscErrorCode info;
   PetscInt       i,j;
   PetscInt       xs,ys,xm,ym;
@@ -697,9 +670,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
         t1=(2.0*i-mx)*bmy;
         t2=(2.0*j-my)*bmx;
         t3=bmx*bmx*bmy*bmy;
-        if (t1*t1 + t2*t2 <= t3) {
-          xl[j][i] = user->bheight;
-        }
+        if (t1*t1 + t2*t2 <= t3) xl[j][i] = user->bheight;
       }
     }
   } else {

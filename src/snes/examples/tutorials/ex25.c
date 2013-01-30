@@ -56,13 +56,13 @@ int main(int argc,char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = SNESSolve(snes,0,0);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+  ierr    = SNESSolve(snes,0,0);CHKERRQ(ierr);
+  ierr    = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  ierr    = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((PetscReal)lits)/((PetscReal)its);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -74,40 +74,37 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
 {
-  PetscInt     i,j;
-  PetscScalar  hx,hy;
-  PetscScalar  gradup,graddown,gradleft,gradright,gradx,grady;
-  PetscScalar  coeffup,coeffdown,coeffleft,coeffright;
+  PetscInt    i,j;
+  PetscScalar hx,hy;
+  PetscScalar gradup,graddown,gradleft,gradright,gradx,grady;
+  PetscScalar coeffup,coeffdown,coeffleft,coeffright;
 
   PetscFunctionBeginUser;
-  hx    = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);
+  hx = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);
 
   /* Evaluate function */
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
 
       if (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1) {
-
         f[j][i] = t[j][i] - (1.0 - (2.0*hx*(PetscReal)i - 1.0)*(2.0*hx*(PetscReal)i - 1.0));
-
       } else {
 
-        gradup     = (t[j+1][i] - t[j][i])/hy;
-        graddown   = (t[j][i] - t[j-1][i])/hy;
-        gradright  = (t[j][i+1] - t[j][i])/hx;
-        gradleft   = (t[j][i] - t[j][i-1])/hx;
+        gradup    = (t[j+1][i] - t[j][i])/hy;
+        graddown  = (t[j][i] - t[j-1][i])/hy;
+        gradright = (t[j][i+1] - t[j][i])/hx;
+        gradleft  = (t[j][i] - t[j][i-1])/hx;
 
-        gradx      = .5*(t[j][i+1] - t[j][i-1])/hx;
-        grady      = .5*(t[j+1][i] - t[j-1][i])/hy;
+        gradx = .5*(t[j][i+1] - t[j][i-1])/hx;
+        grady = .5*(t[j+1][i] - t[j-1][i])/hy;
 
-        coeffup    = 1.0/PetscSqrtScalar(1.0 + gradup*gradup + gradx*gradx);
-        coeffdown  = 1.0/PetscSqrtScalar(1.0 + graddown*graddown + gradx*gradx);
+        coeffup   = 1.0/PetscSqrtScalar(1.0 + gradup*gradup + gradx*gradx);
+        coeffdown = 1.0/PetscSqrtScalar(1.0 + graddown*graddown + gradx*gradx);
 
         coeffleft  = 1.0/PetscSqrtScalar(1.0 + gradleft*gradleft + grady*grady);
         coeffright = 1.0/PetscSqrtScalar(1.0 + gradright*gradright + grady*grady);
 
         f[j][i] = (coeffup*gradup - coeffdown*graddown)*hx + (coeffright*gradright - coeffleft*gradleft)*hy;
-
       }
 
     }

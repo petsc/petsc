@@ -54,7 +54,7 @@ PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str
     ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   }
   if (!*A) {
-    *A = *B;
+    *A   = *B;
     ierr = PetscObjectReference((PetscObject)*A);CHKERRQ(ierr);
   }
   if (*A != *B) {
@@ -80,12 +80,12 @@ PetscErrorCode SolveSubproblem(SNES snes)
 
   PetscFunctionBegin;
   ctx.snes = snes;
-  ierr = SNESGetSolution(snes,&solution);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&residual,0,0);CHKERRQ(ierr);
-  ierr = VecNorm(residual,NORM_INFINITY,&rmax);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(residual,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(residual,&r);CHKERRQ(ierr);
-  cnt  = 0;
+  ierr     = SNESGetSolution(snes,&solution);CHKERRQ(ierr);
+  ierr     = SNESGetFunction(snes,&residual,0,0);CHKERRQ(ierr);
+  ierr     = VecNorm(residual,NORM_INFINITY,&rmax);CHKERRQ(ierr);
+  ierr     = VecGetLocalSize(residual,&n);CHKERRQ(ierr);
+  ierr     = VecGetArray(residual,&r);CHKERRQ(ierr);
+  cnt      = 0;
   for (i=0; i<n; i++) {
     if (PetscAbsScalar(r[i]) > .20*rmax) cnt++;
   }
@@ -137,15 +137,15 @@ PetscErrorCode SolveSubproblem(SNES snes)
 }
 
 
-extern PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
-static PetscInt CountGood = 0;
+extern PetscErrorCode SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
+static PetscInt       CountGood = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "MonitorRange"
 PetscErrorCode  MonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
 {
-  PetscErrorCode          ierr;
-  PetscReal               perc;
+  PetscErrorCode ierr;
+  PetscReal      perc;
 
   ierr = SNESMonitorRange_Private(snes,it,&perc);CHKERRQ(ierr);
   if (perc < .20) CountGood++;

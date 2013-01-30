@@ -23,15 +23,15 @@ extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES           snes;         /* nonlinear solver context */
-  Vec            x,r;          /* solution, residual vectors */
-  Mat            J;            /* Jacobian matrix */
-  PetscErrorCode ierr;
-  PetscInt       its;
-  PetscScalar    *xx;
+  SNES                snes;    /* nonlinear solver context */
+  Vec                 x,r;     /* solution, residual vectors */
+  Mat                 J;       /* Jacobian matrix */
+  PetscErrorCode      ierr;
+  PetscInt            its;
+  PetscScalar         *xx;
   SNESConvergedReason reason;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -75,9 +75,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
   xx[0] = -1.2; xx[1] = 1.0;
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
   /*
      Note: The user should initialize the vector, x, with the initial guess
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
      report the reason if the iteration did not converge so that the tests are
      reproducible.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n\n",reason>0?"CONVERGED":SNESConvergedReasons[reason],its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n\n",reason>0 ? "CONVERGED" : SNESConvergedReasons[reason],its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -178,11 +178,11 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0] = 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1];
-  A[1] = -400.0*xx[0];
-  A[2] = -400.0*xx[0];
-  A[3] = 200;
-  ierr = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  A[0]  = 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1];
+  A[1]  = -400.0*xx[0];
+  A[2]  = -400.0*xx[0];
+  A[3]  = 200;
+  ierr  = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*

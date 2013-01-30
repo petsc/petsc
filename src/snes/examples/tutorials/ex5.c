@@ -67,7 +67,7 @@ extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
 extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
+extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
 #endif
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
@@ -82,10 +82,10 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81;
   PetscReal      bratu_lambda_min = 0.;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      flg              = PETSC_FALSE;
   DM             da;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  Vec            r = PETSC_NULL;
+  Vec            r               = PETSC_NULL;
   PetscBool      matlab_function = PETSC_FALSE;
 #endif
 
@@ -93,13 +93,13 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -269,15 +269,17 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         f[j][i] = 2.0*(hydhx+hxdhy)*x[j][i];
       } else {
-        u       = x[j][i];
-        uw      = x[j][i-1];
-        ue      = x[j][i+1];
-        un      = x[j-1][i];
-        us      = x[j+1][i];
+        u  = x[j][i];
+        uw = x[j][i-1];
+        ue = x[j][i+1];
+        un = x[j-1][i];
+        us = x[j+1][i];
+
         if (i-1 == 0) uw = 0.;
         if (i+1 == info->mx-1) ue = 0.;
         if (j-1 == 0) un = 0.;
         if (j+1 == info->my-1) us = 0.;
+
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
         f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
@@ -303,10 +305,10 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc,lobj=0;
   PetscScalar    u,ue,uw,un,us,uxux,uyuy;
   MPI_Comm       comm;
-  
+
   PetscFunctionBeginUser;
-  *obj = 0;
-  comm = ((PetscObject)info->da)->comm;
+  *obj   = 0;
+  comm   = ((PetscObject)info->da)->comm;
   lambda = user->param;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
@@ -321,11 +323,12 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
         lobj += PetscRealPart((hydhx + hxdhy)*x[j][i]*x[j][i]);
       } else {
-        u       = x[j][i];
-        uw      = x[j][i-1];
-        ue      = x[j][i+1];
-        un      = x[j-1][i];
-        us      = x[j+1][i];
+        u  = x[j][i];
+        uw = x[j][i-1];
+        ue = x[j][i+1];
+        un = x[j-1][i];
+        us = x[j+1][i];
+
         if (i-1 == 0) uw = 0.;
         if (i+1 == info->mx-1) ue = 0.;
         if (j-1 == 0) un = 0.;
@@ -333,10 +336,10 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
 
         /* F[u] = 1/2\int_{\omega}\nabla^2u(x)*u(x)*dx */
 
-        uxux     = u*(2.*u - ue - uw)*hydhx;
-        uyuy     = u*(2.*u - un - us)*hxdhy;
+        uxux = u*(2.*u - ue - uw)*hydhx;
+        uyuy = u*(2.*u - un - us)*hxdhy;
 
-        lobj     += PetscRealPart(0.5*(uxux + uyuy) - sc*PetscExpScalar(u));
+        lobj += PetscRealPart(0.5*(uxux + uyuy) - sc*PetscExpScalar(u));
       }
     }
   }
@@ -388,12 +391,12 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
         k = 0;
         /* interior grid points */
         if (j-1 != 0) {
-          v[k] = -hxdhy;
+          v[k]     = -hxdhy;
           col[k].j = j - 1; col[k].i = i;
           k++;
         }
         if (i-1 != 0) {
-          v[k] = -hydhx;
+          v[k]     = -hydhx;
           col[k].j = j;     col[k].i = i-1;
           k++;
         }
@@ -401,12 +404,12 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
         v[k] = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(x[j][i]); col[k].j = row.j; col[k].i = row.i; k++;
 
         if (i+1 != info->mx-1) {
-          v[k] = -hydhx;
+          v[k]     = -hydhx;
           col[k].j = j;     col[k].i = i+1;
           k++;
         }
         if (j+1 != info->mx-1) {
-          v[k] = -hxdhy;
+          v[k]     = -hxdhy;
           col[k].j = j + 1; col[k].i = i;
           k++;
         }
@@ -499,10 +502,10 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
 
   PetscFunctionBeginUser;
   tot_its = 0;
-  ierr = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
-  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
+  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr    = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
@@ -549,25 +552,24 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
           /* boundary conditions are all zero Dirichlet */
           x[j][i] = 0.0;
         } else {
-          if (B) {
-            bij = b[j][i];
-          } else {
-            bij = 0.;
-          }
-          u       = x[j][i];
-          un      = x[j-1][i];
-          us      = x[j+1][i];
-          ue      = x[j][i-1];
-          uw      = x[j][i+1];
+          if (B) bij = b[j][i];
+          else   bij = 0.;
+
+          u  = x[j][i];
+          un = x[j-1][i];
+          us = x[j+1][i];
+          ue = x[j][i-1];
+          uw = x[j][i+1];
+
           for (k=0; k<its; k++) {
-            eu      = PetscExpScalar(u);
-            uxx     = (2.0*u - ue - uw)*hydhx;
-            uyy     = (2.0*u - un - us)*hxdhy;
-            F        = uxx + uyy - sc*eu - bij;
+            eu  = PetscExpScalar(u);
+            uxx = (2.0*u - ue - uw)*hydhx;
+            uyy = (2.0*u - un - us)*hxdhy;
+            F   = uxx + uyy - sc*eu - bij;
             if (k == 0) F0 = F;
-            J       = 2.0*(hydhx + hxdhy) - sc*eu;
-            y       = F/J;
-            u       -= y;
+            J  = 2.0*(hydhx + hxdhy) - sc*eu;
+            y  = F/J;
+            u -= y;
             tot_its++;
 
             if (atol > PetscAbsReal(PetscRealPart(F)) ||

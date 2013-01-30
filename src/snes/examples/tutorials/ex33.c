@@ -35,8 +35,8 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
 {
   DM             cda;
   Vec            c;
-  PetscScalar   *K;
-  PetscScalar   *coords;
+  PetscScalar    *K;
+  PetscScalar    *coords;
   PetscInt       xs, xm, i;
   PetscErrorCode ierr;
 
@@ -51,11 +51,8 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
     K[i] = 1.0;
 #else
     /* Notch */
-    if (i == (xs+xm)/2) {
-      K[i] = 0.00000001;
-    } else {
-      K[i] = 1.0;
-    }
+    if (i == (xs+xm)/2) K[i] = 0.00000001;
+    else K[i] = 1.0;
 #endif
   }
   ierr = DMDAVecRestoreArray(da, Kappa, &K);CHKERRQ(ierr);
@@ -70,16 +67,16 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
 */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx *user)
 {
-  Vec L;
-  PetscReal      phi = user->phi;
-  PetscReal      dt  = user->dt;
-  PetscReal      dx  = 1.0/(PetscReal)(info->mx-1);
-  PetscReal      alpha = 2.0;
-  PetscReal      beta  = 2.0;
+  Vec            L;
+  PetscReal      phi        = user->phi;
+  PetscReal      dt         = user->dt;
+  PetscReal      dx         = 1.0/(PetscReal)(info->mx-1);
+  PetscReal      alpha      = 2.0;
+  PetscReal      beta       = 2.0;
   PetscReal      kappaWet   = user->kappaWet;
   PetscReal      kappaNoWet = user->kappaNoWet;
-  Field         *uold;
-  PetscScalar   *Kappa;
+  Field          *uold;
+  PetscScalar    *Kappa;
   PetscInt       i;
   PetscErrorCode ierr;
 
@@ -142,15 +139,18 @@ int main(int argc, char **argv)
   ierr = DMGetGlobalVector(user.cda, &user.Kappa);CHKERRQ(ierr);
   ierr = FormPermeability(user.cda, user.Kappa, &user);CHKERRQ(ierr);
   /* Setup Problem */
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*)) FormFunctionLocal,&user);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &user.uold);CHKERRQ(ierr);
+
   user.sl  = 1.0;
   user.vl  = 0.1;
   user.pl  = 1.0;
   user.phi = 1.0;
+
   user.kappaWet   = 1.0;
   user.kappaNoWet = 0.3;
+
   /* Time Loop */
   user.dt = 0.1;
   for (n = 0; n < 100; ++n, t += user.dt) {

@@ -48,9 +48,9 @@ T*/
    FormFunction().
 */
 typedef struct {
-      PetscReal   param;        /* test problem parameter */
-      PetscInt    mx;           /* Discretization in x-direction */
-      PetscInt    my;           /* Discretization in y-direction */
+  PetscReal param;              /* test problem parameter */
+  PetscInt  mx;                 /* Discretization in x-direction */
+  PetscInt  my;                 /* Discretization in y-direction */
 } AppCtx;
 
 /*
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   MatFDColoring  fdcoloring;
   PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -83,9 +83,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    PetscBool  matrix_free_operator = PETSC_FALSE;
+    PetscBool matrix_free_operator = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
     efficiently using a coloring of the columns of the matrix.
   */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_fd_coloring",&fd_coloring,PETSC_NULL);CHKERRQ(ierr);
-  if (matrix_free && fd_coloring)  SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
+  if (matrix_free && fd_coloring) SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
     ISColoring   iscoloring;
@@ -273,8 +273,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   my     = user->my;
   lambda = user->param;
 
-  hx    = 1.0 / (PetscReal)(mx-1);
-  hy    = 1.0 / (PetscReal)(my-1);
+  hx = 1.0 / (PetscReal)(mx-1);
+  hy = 1.0 / (PetscReal)(my-1);
 
   /*
      Get a pointer to vector data.
@@ -283,7 +283,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr  = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
@@ -350,13 +350,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      ub = x[row - mx];
-      ul = x[row - 1];
-      ut = x[row + mx];
-      ur = x[row + 1];
-      uxx = (-ur + two*u - ul)*hydhx;
-      uyy = (-ut + two*u - ub)*hxdhy;
+      u      = x[row];
+      ub     = x[row - mx];
+      ul     = x[row - 1];
+      ut     = x[row + mx];
+      ur     = x[row + 1];
+      uxx    = (-ur + two*u - ul)*hydhx;
+      uyy    = (-ut + two*u - ub)*hxdhy;
       f[row] = uxx + uyy - sc*lambda*PetscExpScalar(u);
     }
   }
@@ -387,7 +387,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat            jac = *B;                /* Jacobian matrix */
+  Mat            jac   = *B;             /* Jacobian matrix */
   PetscInt       i,j,row,mx,my,col[5];
   PetscErrorCode ierr;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;

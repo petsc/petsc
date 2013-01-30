@@ -11,7 +11,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 #define __FUNCT__ "SNESSetFromOptions_Anderson"
 PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
 {
-  SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
   PetscBool      debug;
   SNESLineSearch linesearch;
@@ -22,7 +22,7 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
   ierr = PetscOptionsReal("-snes_anderson_beta","Number of directions","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,
                           (PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_anderson_monitor","Monitor actions of NGMRES","SNES",ngmres->monitor ? PETSC_TRUE: PETSC_FALSE,&debug,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_anderson_monitor","Monitor actions of NGMRES","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart",   "Iterations before forced restart",   "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart_it","Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,PETSC_NULL);CHKERRQ(ierr);
   if (debug) {
@@ -41,42 +41,42 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
 #define __FUNCT__ "SNESSolve_Anderson"
 PetscErrorCode SNESSolve_Anderson(SNES snes)
 {
-  SNES_NGMRES        *ngmres = (SNES_NGMRES *) snes->data;
+  SNES_NGMRES *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec                 X,F,B,D;
+  Vec X,F,B,D;
 
   /* candidate linear combination answers */
-  Vec                 XA,FA,XM,FM,FPC;
+  Vec XA,FA,XM,FM,FPC;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal           fnorm,fMnorm;
-  PetscReal           dnorm,dminnorm=0.0,fminnorm;
-  PetscInt            restart_count=0;
-  PetscInt            k,k_restart,l,ivec;
+  PetscReal fnorm,fMnorm;
+  PetscReal dnorm,dminnorm=0.0,fminnorm;
+  PetscInt  restart_count=0;
+  PetscInt  k,k_restart,l,ivec;
 
-  PetscBool           selectRestart;
+  PetscBool selectRestart;
 
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   /* variable initialization */
-  snes->reason  = SNES_CONVERGED_ITERATING;
-  X             = snes->vec_sol;
-  F             = snes->vec_func;
-  B             = snes->vec_rhs;
-  XA            = snes->vec_sol_update;
-  FA            = snes->work[0];
-  D             = snes->work[1];
+  snes->reason = SNES_CONVERGED_ITERATING;
+  X            = snes->vec_sol;
+  F            = snes->vec_func;
+  B            = snes->vec_rhs;
+  XA           = snes->vec_sol_update;
+  FA           = snes->work[0];
+  D            = snes->work[1];
 
   /* work for the line search */
-  XM            = snes->work[3];
-  FM            = snes->work[4];
+  XM = snes->work[3];
+  FM = snes->work[4];
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
 
   /* initialization */
 
@@ -87,29 +87,27 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
     }
-  } else {
-    snes->vec_func_init_set = PETSC_FALSE;
-  }
+  } else snes->vec_func_init_set = PETSC_FALSE;
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
   } else {
-    fnorm = snes->norm_init;
+    fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
   }
   fminnorm = fnorm;
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
   ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
   k_restart = 0;
-  l = 0;
+  l         = 0;
   for (k=1; k < snes->max_its+1; k++) {
     /* select which vector of the stored subspace will be updated */
     ivec = k_restart % ngmres->msize;
@@ -134,9 +132,9 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
         VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X);CHKERRQ(ierr);
       }
     } else {
-      ierr = VecCopy(F,FM);CHKERRQ(ierr);
-      ierr = VecCopy(X,XM);CHKERRQ(ierr);
-      ierr = VecAXPY(XM,-ngmres->andersonBeta,FM);CHKERRQ(ierr);
+      ierr   = VecCopy(F,FM);CHKERRQ(ierr);
+      ierr   = VecCopy(X,XM);CHKERRQ(ierr);
+      ierr   = VecAXPY(XM,-ngmres->andersonBeta,FM);CHKERRQ(ierr);
       fMnorm = fnorm;
     }
 
@@ -145,11 +143,8 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
       ierr = SNESNGMRESCalculateDifferences_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,PETSC_NULL);CHKERRQ(ierr);
       ierr = SNESNGMRESSelectRestart_Private(snes,l,fnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
       /* if the restart conditions persist for more than restart_it iterations, restart. */
-      if (selectRestart) {
-        restart_count++;
-      } else {
-        restart_count = 0;
-      }
+      if (selectRestart) restart_count++;
+      else restart_count = 0;
     } else if (ngmres->restart_type == SNES_NGMRES_RESTART_PERIODIC) {
       if (k_restart > ngmres->restart_periodic) {
         if (ngmres->monitor) ierr = PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart);CHKERRQ(ierr);
@@ -162,10 +157,10 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
         ierr = PetscViewerASCIIPrintf(ngmres->monitor,"Restarted at iteration %d\n",k_restart);CHKERRQ(ierr);
       }
       restart_count = 0;
-      k_restart = 0;
-      l = 0;
+      k_restart     = 0;
+      l             = 0;
     } else {
-      if (l < ngmres->msize)l++;
+      if (l < ngmres->msize) l++;
       k_restart++;
       ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fnorm,XM);CHKERRQ(ierr);
     }
@@ -176,10 +171,10 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
     ierr = VecCopy(XA,X);CHKERRQ(ierr);
     ierr = VecCopy(FA,F);CHKERRQ(ierr);
 
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = k;
     snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,snes->iter);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
@@ -217,7 +212,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_Anderson"
 PetscErrorCode SNESCreate_Anderson(SNES snes)
 {
-  SNES_NGMRES   *ngmres;
+  SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -228,11 +223,11 @@ PetscErrorCode SNESCreate_Anderson(SNES snes)
   snes->ops->solve          = SNESSolve_Anderson;
   snes->ops->reset          = SNESReset_NGMRES;
 
-  snes->usespc          = PETSC_TRUE;
-  snes->usesksp         = PETSC_FALSE;
+  snes->usespc  = PETSC_TRUE;
+  snes->usesksp = PETSC_FALSE;
 
-  ierr = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
-  snes->data = (void*) ngmres;
+  ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
+  snes->data    = (void*) ngmres;
   ngmres->msize = 30;
 
   if (!snes->tolerancesset) {
@@ -242,13 +237,13 @@ PetscErrorCode SNESCreate_Anderson(SNES snes)
 
   ngmres->additive_linesearch = PETSC_NULL;
 
-  ngmres->restart_type   = SNES_NGMRES_RESTART_NONE;
-  ngmres->restart_it = 2;
+  ngmres->restart_type     = SNES_NGMRES_RESTART_NONE;
+  ngmres->restart_it       = 2;
   ngmres->restart_periodic = 30;
-  ngmres->gammaA     = 2.0;
-  ngmres->gammaC     = 2.0;
-  ngmres->deltaB     = 0.9;
-  ngmres->epsilonB   = 0.1;
+  ngmres->gammaA           = 2.0;
+  ngmres->gammaC           = 2.0;
+  ngmres->deltaB           = 0.9;
+  ngmres->epsilonB         = 0.1;
 
   ngmres->andersonBeta = 1.0;
   PetscFunctionReturn(0);

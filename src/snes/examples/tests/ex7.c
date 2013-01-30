@@ -7,15 +7,15 @@ static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
 extern PetscErrorCode   FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode   FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode   FormInitialGuess(SNES,Vec);
-extern PetscErrorCode   Monitor(SNES,PetscInt,PetscReal,void *);
+extern PetscErrorCode   Monitor(SNES,PetscInt,PetscReal,void*);
 
 typedef struct {
-   PetscViewer viewer;
+  PetscViewer viewer;
 } MonitorCtx;
 
 typedef struct {
-  Mat        precond;
-  PetscBool  variant;
+  Mat       precond;
+  PetscBool variant;
 } AppCtx;
 
 #undef __FUNCT__
@@ -32,10 +32,10 @@ int main(int argc,char **argv)
   PetscInt       its,n = 5,i;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRQ(ierr);
-  h = 1.0/(n-1);
+  h    = 1.0/(n-1);
 
   /* Set up data structures */
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
@@ -47,16 +47,16 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
   /* create explict matrix preconditioner */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr         = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B);CHKERRQ(ierr);
   user.precond = B;
 
   /* Store right-hand-side of PDE and exact solution */
   for (i=0; i<n; i++) {
-    v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    v    = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v= xp*xp*xp;
+    v    = xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    xp += h;
+    xp  += h;
   }
 
   /* Create nonlinear solver */
@@ -102,19 +102,17 @@ PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   PetscInt       i,n;
   PetscErrorCode ierr;
 
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecGetArray((Vec) dummy,&FF);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (PetscReal)(n - 1); d = d*d;
-  ff[0]   = xx[0];
-  for (i=1; i<n-1; i++) {
-    ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
-  }
+  ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr  = VecGetArray(f,&ff);CHKERRQ(ierr);
+  ierr  = VecGetArray((Vec) dummy,&FF);CHKERRQ(ierr);
+  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  d     = (PetscReal)(n - 1); d = d*d;
+  ff[0] = xx[0];
+  for (i=1; i<n-1; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   ff[n-1] = xx[n-1] - 1.0;
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(f,&ff);CHKERRQ(ierr);
+  ierr    = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
@@ -123,8 +121,8 @@ PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 #define __FUNCT__ "FormInitialGuess"
 PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 {
-  PetscErrorCode     ierr;
-  PetscScalar pfive = .50;
+  PetscErrorCode ierr;
+  PetscScalar    pfive = .50;
   ierr = VecSet(x,pfive);CHKERRQ(ierr);
   return 0;
 }
@@ -147,26 +145,26 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,v
 
   if (iter%2 ==0) { /* Compute new preconditioner matrix */
     ierr = PetscPrintf(PETSC_COMM_SELF,"iter=%D, computing new preconditioning matrix\n",iter+1);CHKERRQ(ierr);
-    *B = user->precond;
+    *B   = user->precond;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-    d = (PetscReal)(n - 1); d = d*d;
+    d    = (PetscReal)(n - 1); d = d*d;
 
-    i = 0; A[0] = 1.0;
+    i    = 0; A[0] = 1.0;
     ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
     for (i=1; i<n-1; i++) {
       j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
       A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
       ierr = MatSetValues(*B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
     }
-    i = n-1; A[0] = 1.0;
-    ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    i     = n-1; A[0] = 1.0;
+    ierr  = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+    ierr  = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
   }  else { /* reuse preconditioner from last iteration */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"iter=%D, using old preconditioning matrix\n",iter+1);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF,"iter=%D, using old preconditioning matrix\n",iter+1);CHKERRQ(ierr);
     *flag = SAME_PRECONDITIONER;
   }
   if (user->variant) {

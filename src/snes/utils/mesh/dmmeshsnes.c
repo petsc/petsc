@@ -11,6 +11,7 @@ PetscErrorCode DMMeshInterpolationCreate(DM dm, DMMeshInterpolationInfo *ctx)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(ctx, 2);
   ierr = PetscMalloc(sizeof(struct _DMMeshInterpolationInfo), ctx);CHKERRQ(ierr);
+
   (*ctx)->dim    = -1;
   (*ctx)->nInput = 0;
   (*ctx)->points = PETSC_NULL;
@@ -75,8 +76,8 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
   if (ctx->dim < 0) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
   if (ctx->points)  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
   ctx->nInput = n;
-  ierr = PetscMalloc(n*ctx->dim * sizeof(PetscReal), &ctx->points);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ctx->points, points, n*ctx->dim * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr        = PetscMalloc(n*ctx->dim * sizeof(PetscReal), &ctx->points);CHKERRQ(ierr);
+  ierr        = PetscMemcpy(ctx->points, points, n*ctx->dim * sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,11 +86,11 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
 PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, PetscBool redundantPoints)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscScalar   *a;
-  PetscInt       p, q, i;
-  PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
+  MPI_Comm                  comm = ((PetscObject) dm)->comm;
+  PetscScalar               *a;
+  PetscInt                  p, q, i;
+  PetscMPIInt               rank, size;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -105,7 +106,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   PetscMPIInt    *counts, *displs;
   PetscInt       *foundCells;
   PetscMPIInt    *foundProcs, *globalProcs;
-  PetscInt        n = ctx->nInput, N;
+  PetscInt       n = ctx->nInput, N;
 
   if (!redundantPoints) {
     ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
@@ -128,20 +129,15 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
   for (p = 0; p < N; ++p) {
     foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
-    if (foundCells[p] >= 0) {
-      foundProcs[p] = rank;
-    } else {
-      foundProcs[p] = size;
-    }
+    if (foundCells[p] >= 0) foundProcs[p] = rank;
+    else foundProcs[p] = size;
   }
   /* Let the lowest rank process own each point */
-  ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, globalPoints[p*ctx->dim+0], ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0, ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0);
-    else if (globalProcs[p] == rank) {
-      ctx->n++;
-    }
+    else if (globalProcs[p] == rank) ctx->n++;
   }
   /* Create coordinates vector and array of owned cells */
   ierr = PetscMalloc(ctx->n * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
@@ -154,9 +150,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
     if (globalProcs[p] == rank) {
       PetscInt d;
 
-      for (d = 0; d < ctx->dim; ++d, ++i) {
-        a[i] = globalPoints[p*ctx->dim+d];
-      }
+      for (d = 0; d < ctx->dim; ++d, ++i) a[i] = globalPoints[p*ctx->dim+d];
       ctx->cells[q++] = foundCells[p];
     }
   }
@@ -217,17 +211,17 @@ PetscErrorCode DMMeshInterpolationRestoreVector(DM dm, Vec *v, DMMeshInterpolati
 PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Simplex_Private(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx)
 {
 #if defined(PETSC_HAVE_SIEVE)
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscInt       p;
-  PetscErrorCode ierr;
+  PetscInt                                     p;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
-  PetscReal   *v0, *J, *invJ, detJ;
-  PetscScalar *a, *coords;
+  PetscReal                                           *v0, *J, *invJ, detJ;
+  PetscScalar                                         *a, *coords;
 
   ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
@@ -266,22 +260,22 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Simplex_Private(DM dm, Sect
 #define __FUNCT__ "QuadMap_Private"
 PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xreal, void *ctx)
 {
-  const PetscScalar*vertices = (const PetscScalar *) ctx;
-  const PetscScalar x0   = vertices[0];
-  const PetscScalar y0   = vertices[1];
-  const PetscScalar x1   = vertices[2];
-  const PetscScalar y1   = vertices[3];
-  const PetscScalar x2   = vertices[4];
-  const PetscScalar y2   = vertices[5];
-  const PetscScalar x3   = vertices[6];
-  const PetscScalar y3   = vertices[7];
-  const PetscScalar f_1  = x1 - x0;
-  const PetscScalar g_1  = y1 - y0;
-  const PetscScalar f_3  = x3 - x0;
-  const PetscScalar g_3  = y3 - y0;
-  const PetscScalar f_01 = x2 - x1 - x3 + x0;
-  const PetscScalar g_01 = y2 - y1 - y3 + y0;
-  PetscScalar      *ref, *real;
+  const PetscScalar *vertices = (const PetscScalar*) ctx;
+  const PetscScalar x0        = vertices[0];
+  const PetscScalar y0        = vertices[1];
+  const PetscScalar x1        = vertices[2];
+  const PetscScalar y1        = vertices[3];
+  const PetscScalar x2        = vertices[4];
+  const PetscScalar y2        = vertices[5];
+  const PetscScalar x3        = vertices[6];
+  const PetscScalar y3        = vertices[7];
+  const PetscScalar f_1       = x1 - x0;
+  const PetscScalar g_1       = y1 - y0;
+  const PetscScalar f_3       = x3 - x0;
+  const PetscScalar g_3       = y3 - y0;
+  const PetscScalar f_01      = x2 - x1 - x3 + x0;
+  const PetscScalar g_01      = y2 - y1 - y3 + y0;
+  PetscScalar       *ref, *real;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -304,25 +298,25 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
 #define __FUNCT__ "QuadJacobian_Private"
 PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
 {
-  const PetscScalar*vertices = (const PetscScalar *) ctx;
-  const PetscScalar x0   = vertices[0];
-  const PetscScalar y0   = vertices[1];
-  const PetscScalar x1   = vertices[2];
-  const PetscScalar y1   = vertices[3];
-  const PetscScalar x2   = vertices[4];
-  const PetscScalar y2   = vertices[5];
-  const PetscScalar x3   = vertices[6];
-  const PetscScalar y3   = vertices[7];
-  const PetscScalar f_01 = x2 - x1 - x3 + x0;
-  const PetscScalar g_01 = y2 - y1 - y3 + y0;
-  PetscScalar      *ref;
+  const PetscScalar *vertices = (const PetscScalar*) ctx;
+  const PetscScalar x0        = vertices[0];
+  const PetscScalar y0        = vertices[1];
+  const PetscScalar x1        = vertices[2];
+  const PetscScalar y1        = vertices[3];
+  const PetscScalar x2        = vertices[4];
+  const PetscScalar y2        = vertices[5];
+  const PetscScalar x3        = vertices[6];
+  const PetscScalar y3        = vertices[7];
+  const PetscScalar f_01      = x2 - x1 - x3 + x0;
+  const PetscScalar g_01      = y2 - y1 - y3 + y0;
+  PetscScalar       *ref;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Xref,  &ref);CHKERRQ(ierr);
   {
-    const PetscScalar x = ref[0];
-    const PetscScalar y = ref[1];
+    const PetscScalar x         = ref[0];
+    const PetscScalar y         = ref[1];
     const PetscInt    rows[2]   = {0, 1};
     const PetscScalar values[4] = {(x1 - x0 + f_01*y) * 0.5, (x3 - x0 + f_01*x) * 0.5,
                                    (y1 - y0 + g_01*y) * 0.5, (y3 - y0 + g_01*x) * 0.5};
@@ -347,10 +341,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, Section
   Mat         J;
   PetscScalar vertices[8];
 
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscInt       p;
-  PetscErrorCode ierr;
+  PetscInt                                     p;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
@@ -374,13 +368,13 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, Section
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
-  PetscScalar *a, *coords;
+  PetscScalar                                         *a, *coords;
 
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
     PetscScalar *xi;
-    PetscInt     e = ctx->cells[p], comp;
+    PetscInt    e = ctx->cells[p], comp;
 
     if (4*ctx->dof != m->sizeWithBC(s, e)) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), 4*ctx->dof);
     /* Can make this do all points at once */
@@ -389,12 +383,12 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, Section
       for (PetscInt i = 0; i < 8; ++i) vertices[i] = v[i];
     }
     const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
-    ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
+    ierr  = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0] = coords[p*ctx->dim+0];
     xi[1] = coords[p*ctx->dim+1];
-    ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
-    ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
-    ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);
+    ierr  = VecRestoreArray(real, &xi);CHKERRQ(ierr);
+    ierr  = SNESSolve(snes, real, ref);CHKERRQ(ierr);
+    ierr  = VecGetArray(ref, &xi);CHKERRQ(ierr);
     for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] = c[0*ctx->dof+comp]*(1 - xi[0])*(1 - xi[1]) + c[1*ctx->dof+comp]*xi[0]*(1 - xi[1]) + c[2*ctx->dof+comp]*xi[0]*xi[1] + c[3*ctx->dof+comp]*(1 - xi[0])*xi[1];
     }
@@ -418,53 +412,53 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, Section
 #define __FUNCT__ "HexMap_Private"
 PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal, void *ctx)
 {
-  const PetscScalar*vertices = (const PetscScalar *) ctx;
-  const PetscScalar x0 = vertices[0];
-  const PetscScalar y0 = vertices[1];
-  const PetscScalar z0 = vertices[2];
-  const PetscScalar x1 = vertices[3];
-  const PetscScalar y1 = vertices[4];
-  const PetscScalar z1 = vertices[5];
-  const PetscScalar x2 = vertices[6];
-  const PetscScalar y2 = vertices[7];
-  const PetscScalar z2 = vertices[8];
-  const PetscScalar x3 = vertices[9];
-  const PetscScalar y3 = vertices[10];
-  const PetscScalar z3 = vertices[11];
-  const PetscScalar x4 = vertices[12];
-  const PetscScalar y4 = vertices[13];
-  const PetscScalar z4 = vertices[14];
-  const PetscScalar x5 = vertices[15];
-  const PetscScalar y5 = vertices[16];
-  const PetscScalar z5 = vertices[17];
-  const PetscScalar x6 = vertices[18];
-  const PetscScalar y6 = vertices[19];
-  const PetscScalar z6 = vertices[20];
-  const PetscScalar x7 = vertices[21];
-  const PetscScalar y7 = vertices[22];
-  const PetscScalar z7 = vertices[23];
-  const PetscScalar f_1 = x1 - x0;
-  const PetscScalar g_1 = y1 - y0;
-  const PetscScalar h_1 = z1 - z0;
-  const PetscScalar f_3 = x3 - x0;
-  const PetscScalar g_3 = y3 - y0;
-  const PetscScalar h_3 = z3 - z0;
-  const PetscScalar f_4 = x4 - x0;
-  const PetscScalar g_4 = y4 - y0;
-  const PetscScalar h_4 = z4 - z0;
-  const PetscScalar f_01 = x2 - x1 - x3 + x0;
-  const PetscScalar g_01 = y2 - y1 - y3 + y0;
-  const PetscScalar h_01 = z2 - z1 - z3 + z0;
-  const PetscScalar f_12 = x7 - x3 - x4 + x0;
-  const PetscScalar g_12 = y7 - y3 - y4 + y0;
-  const PetscScalar h_12 = z7 - z3 - z4 + z0;
-  const PetscScalar f_02 = x5 - x1 - x4 + x0;
-  const PetscScalar g_02 = y5 - y1 - y4 + y0;
-  const PetscScalar h_02 = z5 - z1 - z4 + z0;
-  const PetscScalar f_012 = x6 - x0 + x1 - x2 + x3 + x4 - x5 - x7;
-  const PetscScalar g_012 = y6 - y0 + y1 - y2 + y3 + y4 - y5 - y7;
-  const PetscScalar h_012 = z6 - z0 + z1 - z2 + z3 + z4 - z5 - z7;
-  PetscScalar      *ref, *real;
+  const PetscScalar *vertices = (const PetscScalar*) ctx;
+  const PetscScalar x0        = vertices[0];
+  const PetscScalar y0        = vertices[1];
+  const PetscScalar z0        = vertices[2];
+  const PetscScalar x1        = vertices[3];
+  const PetscScalar y1        = vertices[4];
+  const PetscScalar z1        = vertices[5];
+  const PetscScalar x2        = vertices[6];
+  const PetscScalar y2        = vertices[7];
+  const PetscScalar z2        = vertices[8];
+  const PetscScalar x3        = vertices[9];
+  const PetscScalar y3        = vertices[10];
+  const PetscScalar z3        = vertices[11];
+  const PetscScalar x4        = vertices[12];
+  const PetscScalar y4        = vertices[13];
+  const PetscScalar z4        = vertices[14];
+  const PetscScalar x5        = vertices[15];
+  const PetscScalar y5        = vertices[16];
+  const PetscScalar z5        = vertices[17];
+  const PetscScalar x6        = vertices[18];
+  const PetscScalar y6        = vertices[19];
+  const PetscScalar z6        = vertices[20];
+  const PetscScalar x7        = vertices[21];
+  const PetscScalar y7        = vertices[22];
+  const PetscScalar z7        = vertices[23];
+  const PetscScalar f_1       = x1 - x0;
+  const PetscScalar g_1       = y1 - y0;
+  const PetscScalar h_1       = z1 - z0;
+  const PetscScalar f_3       = x3 - x0;
+  const PetscScalar g_3       = y3 - y0;
+  const PetscScalar h_3       = z3 - z0;
+  const PetscScalar f_4       = x4 - x0;
+  const PetscScalar g_4       = y4 - y0;
+  const PetscScalar h_4       = z4 - z0;
+  const PetscScalar f_01      = x2 - x1 - x3 + x0;
+  const PetscScalar g_01      = y2 - y1 - y3 + y0;
+  const PetscScalar h_01      = z2 - z1 - z3 + z0;
+  const PetscScalar f_12      = x7 - x3 - x4 + x0;
+  const PetscScalar g_12      = y7 - y3 - y4 + y0;
+  const PetscScalar h_12      = z7 - z3 - z4 + z0;
+  const PetscScalar f_02      = x5 - x1 - x4 + x0;
+  const PetscScalar g_02      = y5 - y1 - y4 + y0;
+  const PetscScalar h_02      = z5 - z1 - z4 + z0;
+  const PetscScalar f_012     = x6 - x0 + x1 - x2 + x3 + x4 - x5 - x7;
+  const PetscScalar g_012     = y6 - y0 + y1 - y2 + y3 + y4 - y5 - y7;
+  const PetscScalar h_012     = z6 - z0 + z1 - z2 + z3 + z4 - z5 - z7;
+  PetscScalar       *ref, *real;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -489,52 +483,52 @@ PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal
 #define __FUNCT__ "HexJacobian_Private"
 PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
 {
-  const PetscScalar*vertices = (const PetscScalar *) ctx;
-  const PetscScalar x0 = vertices[0];
-  const PetscScalar y0 = vertices[1];
-  const PetscScalar z0 = vertices[2];
-  const PetscScalar x1 = vertices[3];
-  const PetscScalar y1 = vertices[4];
-  const PetscScalar z1 = vertices[5];
-  const PetscScalar x2 = vertices[6];
-  const PetscScalar y2 = vertices[7];
-  const PetscScalar z2 = vertices[8];
-  const PetscScalar x3 = vertices[9];
-  const PetscScalar y3 = vertices[10];
-  const PetscScalar z3 = vertices[11];
-  const PetscScalar x4 = vertices[12];
-  const PetscScalar y4 = vertices[13];
-  const PetscScalar z4 = vertices[14];
-  const PetscScalar x5 = vertices[15];
-  const PetscScalar y5 = vertices[16];
-  const PetscScalar z5 = vertices[17];
-  const PetscScalar x6 = vertices[18];
-  const PetscScalar y6 = vertices[19];
-  const PetscScalar z6 = vertices[20];
-  const PetscScalar x7 = vertices[21];
-  const PetscScalar y7 = vertices[22];
-  const PetscScalar z7 = vertices[23];
-  const PetscScalar f_xy = x2 - x1 - x3 + x0;
-  const PetscScalar g_xy = y2 - y1 - y3 + y0;
-  const PetscScalar h_xy = z2 - z1 - z3 + z0;
-  const PetscScalar f_yz = x7 - x3 - x4 + x0;
-  const PetscScalar g_yz = y7 - y3 - y4 + y0;
-  const PetscScalar h_yz = z7 - z3 - z4 + z0;
-  const PetscScalar f_xz = x5 - x1 - x4 + x0;
-  const PetscScalar g_xz = y5 - y1 - y4 + y0;
-  const PetscScalar h_xz = z5 - z1 - z4 + z0;
-  const PetscScalar f_xyz = x6 - x0 + x1 - x2 + x3 + x4 - x5 - x7;
-  const PetscScalar g_xyz = y6 - y0 + y1 - y2 + y3 + y4 - y5 - y7;
-  const PetscScalar h_xyz = z6 - z0 + z1 - z2 + z3 + z4 - z5 - z7;
-  PetscScalar      *ref;
+  const PetscScalar *vertices = (const PetscScalar*) ctx;
+  const PetscScalar x0        = vertices[0];
+  const PetscScalar y0        = vertices[1];
+  const PetscScalar z0        = vertices[2];
+  const PetscScalar x1        = vertices[3];
+  const PetscScalar y1        = vertices[4];
+  const PetscScalar z1        = vertices[5];
+  const PetscScalar x2        = vertices[6];
+  const PetscScalar y2        = vertices[7];
+  const PetscScalar z2        = vertices[8];
+  const PetscScalar x3        = vertices[9];
+  const PetscScalar y3        = vertices[10];
+  const PetscScalar z3        = vertices[11];
+  const PetscScalar x4        = vertices[12];
+  const PetscScalar y4        = vertices[13];
+  const PetscScalar z4        = vertices[14];
+  const PetscScalar x5        = vertices[15];
+  const PetscScalar y5        = vertices[16];
+  const PetscScalar z5        = vertices[17];
+  const PetscScalar x6        = vertices[18];
+  const PetscScalar y6        = vertices[19];
+  const PetscScalar z6        = vertices[20];
+  const PetscScalar x7        = vertices[21];
+  const PetscScalar y7        = vertices[22];
+  const PetscScalar z7        = vertices[23];
+  const PetscScalar f_xy      = x2 - x1 - x3 + x0;
+  const PetscScalar g_xy      = y2 - y1 - y3 + y0;
+  const PetscScalar h_xy      = z2 - z1 - z3 + z0;
+  const PetscScalar f_yz      = x7 - x3 - x4 + x0;
+  const PetscScalar g_yz      = y7 - y3 - y4 + y0;
+  const PetscScalar h_yz      = z7 - z3 - z4 + z0;
+  const PetscScalar f_xz      = x5 - x1 - x4 + x0;
+  const PetscScalar g_xz      = y5 - y1 - y4 + y0;
+  const PetscScalar h_xz      = z5 - z1 - z4 + z0;
+  const PetscScalar f_xyz     = x6 - x0 + x1 - x2 + x3 + x4 - x5 - x7;
+  const PetscScalar g_xyz     = y6 - y0 + y1 - y2 + y3 + y4 - y5 - y7;
+  const PetscScalar h_xyz     = z6 - z0 + z1 - z2 + z3 + z4 - z5 - z7;
+  PetscScalar       *ref;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Xref,  &ref);CHKERRQ(ierr);
   {
-    const PetscScalar x = ref[0];
-    const PetscScalar y = ref[1];
-    const PetscScalar z = ref[2];
+    const PetscScalar x         = ref[0];
+    const PetscScalar y         = ref[1];
+    const PetscScalar z         = ref[2];
     const PetscInt    rows[3]   = {0, 1, 2};
     const PetscScalar values[9] = {
       (x1 - x0 + f_xy*y + f_xz*z + f_xyz*y*z) / 2.0,
@@ -545,7 +539,8 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
       (y4 - y0 + g_yz*y + g_xz*x + g_xyz*x*y) / 2.0,
       (z1 - z0 + h_xy*y + h_xz*z + h_xyz*y*z) / 2.0,
       (z3 - z0 + h_xy*x + h_yz*z + h_xyz*x*z) / 2.0,
-      (z4 - z0 + h_yz*y + h_xz*x + h_xyz*x*y) / 2.0};
+      (z4 - z0 + h_yz*y + h_xz*x + h_xyz*x*y) / 2.0
+    };
     ierr = MatSetValues(*J, 3, rows, 3, rows, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(152);CHKERRQ(ierr);
@@ -567,10 +562,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionR
   Mat         J;
   PetscScalar vertices[24];
 
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscInt       p;
-  PetscErrorCode ierr;
+  PetscInt                                     p;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
@@ -594,13 +589,13 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionR
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
-  PetscScalar *a, *coords;
+  PetscScalar                                         *a, *coords;
 
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
     PetscScalar *xi;
-    PetscInt     e = ctx->cells[p], comp;
+    PetscInt    e = ctx->cells[p], comp;
 
     if (8*ctx->dof != m->sizeWithBC(s, e)) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), 8*ctx->dof);
     /* Can make this do all points at once */
@@ -609,13 +604,13 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionR
       for (PetscInt i = 0; i < 24; ++i) vertices[i] = v[i];
     }
     const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
-    ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
+    ierr  = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0] = coords[p*ctx->dim+0];
     xi[1] = coords[p*ctx->dim+1];
     xi[2] = coords[p*ctx->dim+2];
-    ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
-    ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
-    ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);
+    ierr  = VecRestoreArray(real, &xi);CHKERRQ(ierr);
+    ierr  = SNESSolve(snes, real, ref);CHKERRQ(ierr);
+    ierr  = VecGetArray(ref, &xi);CHKERRQ(ierr);
     for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] =
         c[0*ctx->dof+comp]*(1-xi[0])*(1-xi[1])*(1-xi[2]) +

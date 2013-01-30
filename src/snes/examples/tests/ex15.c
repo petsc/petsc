@@ -14,18 +14,18 @@ minimum of a quadratic function whose variables are bounded below by zero.\n";
 
 typedef struct {
   /* problem parameters */
-  PetscReal      ecc;          /* test problem parameter */
-  PetscReal      b;            /* A dimension of journal bearing */
-  PetscInt       nx,ny;        /* discretization in x, y directions */
-  DM             da;           /* distributed array data structure */
-  Mat            A;            /* Quadratic Objective term */
-  Vec            B;            /* Linear Objective term */
+  PetscReal ecc;               /* test problem parameter */
+  PetscReal b;                 /* A dimension of journal bearing */
+  PetscInt  nx,ny;             /* discretization in x, y directions */
+  DM        da;                /* distributed array data structure */
+  Mat       A;                 /* Quadratic Objective term */
+  Vec       B;                 /* Linear Objective term */
 } AppCtx;
 
 /* User-defined routines */
-static PetscReal p(PetscReal xi, PetscReal ecc);
-PetscErrorCode FormGradient(SNES, Vec, Vec,void *);
-PetscErrorCode FormHessian(SNES,Vec,Mat *, Mat *, MatStructure *, void *);
+static PetscReal p(PetscReal xi,PetscReal ecc);
+PetscErrorCode FormGradient(SNES,Vec,Vec,void*);
+PetscErrorCode FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode ComputeB(AppCtx*);
 
 #undef __FUNCT__
@@ -40,11 +40,11 @@ int main(int argc, char **argv)
   AppCtx              user;               /* user-defined work context */
   SNES                snes;
   Vec                 r;
-  PetscReal         zero=0.0,thnd=1000;
+  PetscReal           zero=0.0,thnd=1000;
 
 
   /* Initialize PETSC */
-  PetscInitialize(&argc, &argv,(char *)0,help);
+  PetscInitialize(&argc, &argv,(char*)0,help);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
@@ -132,7 +132,7 @@ static PetscReal p(PetscReal xi, PetscReal ecc)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeB"
-PetscErrorCode ComputeB(AppCtx* user)
+PetscErrorCode ComputeB(AppCtx *user)
 {
   PetscErrorCode info;
   PetscInt       i,j;
@@ -144,10 +144,10 @@ PetscErrorCode ComputeB(AppCtx* user)
   PetscReal      **b;
 
   PetscFunctionBeginUser;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
+  nx    = user->nx;
+  ny    = user->ny;
+  hx    = two*pi/(nx+1.0);
+  hy    = two*user->b/(ny+1.0);
   ehxhy = ecc*hx*hy;
 
   /* Get pointer to local vector data */
@@ -158,9 +158,7 @@ PetscErrorCode ComputeB(AppCtx* user)
   /* Compute the linear term in the objective function */
   for (i=xs; i<xs+xm; i++) {
     temp=sin((i+1)*hx);
-    for (j=ys; j<ys+ym; j++) {
-      b[j][i] =  - ehxhy*temp;
-    }
+    for (j=ys; j<ys+ym; j++) b[j][i] = -ehxhy*temp;
   }
   /* Restore vectors */
   info = DMDAVecRestoreArray(user->da,user->B,&b);CHKERRQ(info);
@@ -172,7 +170,7 @@ PetscErrorCode ComputeB(AppCtx* user)
 #define __FUNCT__ "FormGradient"
 PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
 {
-  AppCtx*        user=(AppCtx*)ctx;
+  AppCtx         *user=(AppCtx*)ctx;
   PetscErrorCode info;
   PetscInt       i,j,k,kk;
   PetscInt       row[5],col[5];
@@ -188,13 +186,13 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   Vec            localX;
 
   PetscFunctionBeginUser;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  hxhy=hx*hy;
-  hxhx=one/(hx*hx);
-  hyhy=one/(hy*hy);
+  nx   = user->nx;
+  ny   = user->ny;
+  hx   = two*pi/(nx+1.0);
+  hy   = two*user->b/(ny+1.0);
+  hxhy = hx*hy;
+  hxhx = one/(hx*hx);
+  hyhy = one/(hy*hy);
 
   info = VecSet(G, zero);CHKERRQ(info);
 
@@ -210,49 +208,47 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
   for (i=xs; i< xs+xm; i++) {
-    xi=(i+1)*hx;
-    trule1=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
-    trule2=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
-    trule3=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc)) / six; /* U(i+1,j) */
-    trule4=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc)) / six; /* L(i-1,j) */
-    trule5=trule1; /* L(i,j-1) */
-    trule6=trule2; /* U(i,j+1) */
+    xi     = (i+1)*hx;
+    trule1 = hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
+    trule2 = hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
+    trule3 = hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc)) / six; /* U(i+1,j) */
+    trule4 = hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc)) / six; /* L(i-1,j) */
+    trule5 = trule1; /* L(i,j-1) */
+    trule6 = trule2; /* U(i,j+1) */
 
-    vdown=-(trule5+trule2)*hyhy;
-    vleft=-hxhx*(trule2+trule4);
-    vright= -hxhx*(trule1+trule3);
-    vup=-hyhy*(trule1+trule6);
-    vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
+    vdown   = -(trule5+trule2)*hyhy;
+    vleft   = -hxhx*(trule2+trule4);
+    vright  = -hxhx*(trule1+trule3);
+    vup     = -hyhy*(trule1+trule6);
+    vmiddle = (hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
 
     for (j=ys; j<ys+ym; j++) {
 
-       v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
+      v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
 
-       k=0;
-       if (j > 0) {
-         v[k]=vdown; row[k] = i; col[k] = j-1; k++;
-       }
+      k=0;
+      if (j > 0) {
+        v[k]=vdown; row[k] = i; col[k] = j-1; k++;
+      }
 
-       if (i > 0) {
-         v[k]= vleft; row[k] = i-1; col[k] = j; k++;
-       }
+      if (i > 0) {
+        v[k]= vleft; row[k] = i-1; col[k] = j; k++;
+      }
 
-       v[k]= vmiddle; row[k] = i; col[k] = j; k++;
+      v[k]= vmiddle; row[k] = i; col[k] = j; k++;
 
-       if (i+1 < nx) {
-         v[k]= vright; row[k] = i+1; col[k] = j; k++;
-       }
+      if (i+1 < nx) {
+        v[k]= vright; row[k] = i+1; col[k] = j; k++;
+      }
 
-       if (j+1 < ny) {
-         v[k]= vup; row[k] = i; col[k] = j+1; k++;
-       }
-       tt=0;
-       for (kk=0;kk<k;kk++) {
-         tt+=v[kk]*x[col[kk]][row[kk]];
-       }
-       g[j][i] = tt;
+      if (j+1 < ny) {
+        v[k]= vup; row[k] = i; col[k] = j+1; k++;
+      }
+      tt=0;
+      for (kk=0; kk<k; kk++) tt+=v[kk]*x[col[kk]][row[kk]];
+      g[j][i] = tt;
 
-     }
+    }
 
   }
 
@@ -278,7 +274,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
 */
 PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
 {
-  AppCtx*        user=(AppCtx*)ptr;
+  AppCtx         *user=(AppCtx*)ptr;
   PetscErrorCode info;
   PetscInt       i,j,k;
   MatStencil     row,col[5];
@@ -294,13 +290,13 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   Vec            localX;
 
   PetscFunctionBeginUser;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  hxhy=hx*hy;
-  hxhx=one/(hx*hx);
-  hyhy=one/(hy*hy);
+  nx   = user->nx;
+  ny   = user->ny;
+  hx   = two*pi/(nx+1.0);
+  hy   = two*user->b/(ny+1.0);
+  hxhy = hx*hy;
+  hxhx = one/(hx*hx);
+  hyhy = one/(hy*hy);
 
   info = MatAssembled(hes,&assembled);CHKERRQ(info);
   if (assembled) {info = MatZeroEntries(hes);CHKERRQ(info);}
@@ -318,23 +314,24 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
   for (i=xs; i< xs+xm; i++) {
-    xi=(i+1)*hx;
-    trule1=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
-    trule2=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
-    trule3=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc)) / six; /* U(i+1,j) */
-    trule4=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc)) / six; /* L(i-1,j) */
-    trule5=trule1; /* L(i,j-1) */
-    trule6=trule2; /* U(i,j+1) */
+    xi     = (i+1)*hx;
+    trule1 = hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
+    trule2 = hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
+    trule3 = hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc)) / six; /* U(i+1,j) */
+    trule4 = hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc)) / six; /* L(i-1,j) */
+    trule5 = trule1; /* L(i,j-1) */
+    trule6 = trule2; /* U(i,j+1) */
 
-    vdown=-(trule5+trule2)*hyhy;
-    vleft=-hxhx*(trule2+trule4);
-    vright= -hxhx*(trule1+trule3);
-    vup=-hyhy*(trule1+trule6);
-    vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
+    vdown   = -(trule5+trule2)*hyhy;
+    vleft   = -hxhx*(trule2+trule4);
+    vright  = -hxhx*(trule1+trule3);
+    vup     = -hyhy*(trule1+trule6);
+    vmiddle = (hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
+
     v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
 
     for (j=ys; j<ys+ym; j++) {
-      k=0;
+      k     =0;
       row.i = i; row.j = j;
       if (j > 0) {
         v[k]=vdown; col[k].i=i;col[k].j = j-1; k++;

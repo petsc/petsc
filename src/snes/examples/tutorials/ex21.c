@@ -37,10 +37,10 @@ static const char help[] = "Solves PDE optimization problem using full-space met
 */
 
 typedef struct {
-  DM           red1,da1,da2;
-  DM           packer;
-  PetscViewer  u_viewer,lambda_viewer;
-  PetscViewer  fu_viewer,flambda_viewer;
+  DM          red1,da1,da2;
+  DM          packer;
+  PetscViewer u_viewer,lambda_viewer;
+  PetscViewer fu_viewer,flambda_viewer;
 } UserCtx;
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
       Evaluates FU = Gradiant(L(w,u,lambda))
 
 */
-PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
+PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void *dummy)
 {
   UserCtx        *user = (UserCtx*)dummy;
   PetscErrorCode ierr;

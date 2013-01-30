@@ -46,8 +46,8 @@ T*/
 /* User-defined application context */
 
 typedef struct {
-   PetscReal  tleft,tright;  /* Dirichlet boundary conditions */
-   PetscReal  beta,bm1,coef; /* nonlinear diffusivity parameterizations */
+  PetscReal tleft,tright;    /* Dirichlet boundary conditions */
+  PetscReal beta,bm1,coef;   /* nonlinear diffusivity parameterizations */
 } AppCtx;
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
@@ -73,11 +73,11 @@ int main(int argc,char **argv)
   user.tleft  = 1.0;
   user.tright = 0.1;
   user.beta   = 2.5;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
-  user.bm1  = user.beta - 1.0;
-  user.coef = user.beta/2.0;
+  ierr        = PetscOptionsGetReal(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
+  user.bm1    = user.beta - 1.0;
+  user.coef   = user.beta/2.0;
 
 
   /*
@@ -100,13 +100,13 @@ int main(int argc,char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSetComputeInitialGuess(snes,FormInitialGuess,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+  ierr    = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  ierr    = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((PetscReal)lits)/((PetscReal)its);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -127,8 +127,8 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr  = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   tleft = user->tleft;
   /* Get ghost points */
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -160,9 +160,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr  = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr  = DMDAGetInfo(da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);
   hxdhy = hx/hy;               hydhx = hy/hx;
   tleft = user->tleft;         tright = user->tright;
@@ -222,18 +222,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           as = 0.5*(t0 + ts);
           ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
-        } else {
-          fs = zero;
-        }
+        } else fs = zero;
 
         if (j < my-1) {
           tn = x[j+1][i];
           an = 0.5*(t0 + tn);
           dn = PetscPowScalar(an,beta);
           fn = dn*(tn - t0);
-        } else {
-          fn = zero;
-        }
+        } else fn = zero;
 
       } else if (i == mx-1) {
 
@@ -253,18 +249,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           as = 0.5*(t0 + ts);
           ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
-        } else {
-          fs = zero;
-        }
+        } else fs = zero;
 
         if (j < my-1) {
           tn = x[j+1][i];
           an = 0.5*(t0 + tn);
           dn = PetscPowScalar(an,beta);
           fn = dn*(tn - t0);
-        } else {
-          fn = zero;
-        }
+        } else fn = zero;
 
       } else if (j == 0) {
 
@@ -308,7 +300,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
       }
 
-      f[j][i] = - hydhx*(fe-fw) - hxdhy*(fn-fs);
+      f[j][i] = -hydhx*(fe-fw) - hxdhy*(fn-fs);
 
     }
   }
@@ -324,7 +316,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  Mat            jac = *J;
+  Mat            jac   = *J;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xs,ys,xm,ym;
   PetscScalar    one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw;
@@ -336,10 +328,10 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = DMDAGetInfo(da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr  = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  *flg  = SAME_NONZERO_PATTERN;
+  ierr  = DMDAGetInfo(da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy     = one/(PetscReal)(my-1);
   hxdhy = hx/hy;               hydhx  = hy/hx;
   tleft = user->tleft;         tright = user->tright;
@@ -388,11 +380,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         dn = PetscPowScalar(an,beta);
         gn = coef*bn*(tn - t0);
 
-        v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i;
-        v[1] = - hydhx*(dw - gw);                                      col[1].j = j;         col[1].i = i-1;
+        v[0] = -hxdhy*(ds - gs);                                       col[0].j = j-1;       col[0].i = i;
+        v[1] = -hydhx*(dw - gw);                                       col[1].j = j;         col[1].i = i-1;
         v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
-        v[3] = - hydhx*(de + ge);                                      col[3].j = j;         col[3].i = i+1;
-        v[4] = - hxdhy*(dn + gn);                                      col[4].j = j+1;       col[4].i = i;
+        v[3] = -hydhx*(de + ge);                                       col[3].j = j;         col[3].i = i+1;
+        v[4] = -hxdhy*(dn + gn);                                       col[4].j = j+1;       col[4].i = i;
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
       } else if (i == 0) {
@@ -423,11 +415,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           gn = coef*bn*(tn - t0);
 
           v[0] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[0].j = row.j = j; col[0].i = row.i = i;
-          v[1] = - hydhx*(de + ge);                           col[1].j = j;         col[1].i = i+1;
-          v[2] = - hxdhy*(dn + gn);                           col[2].j = j+1;       col[2].i = i;
+          v[1] = -hydhx*(de + ge);                            col[1].j = j;         col[1].i = i+1;
+          v[2] = -hxdhy*(dn + gn);                            col[2].j = j+1;       col[2].i = i;
           ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
-        /* left-hand interior boundary */
+          /* left-hand interior boundary */
         } else if (j < my-1) {
 
           ts = x[j-1][i];
@@ -444,12 +436,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
 
-          v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i;
+          v[0] = -hxdhy*(ds - gs);                                       col[0].j = j-1;       col[0].i = i;
           v[1] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  col[1].j = row.j = j; col[1].i = row.i = i;
-          v[2] = - hydhx*(de + ge);                                      col[2].j = j;         col[2].i = i+1;
-          v[3] = - hxdhy*(dn + gn);                                      col[3].j = j+1;       col[3].i = i;
+          v[2] = -hydhx*(de + ge);                                       col[2].j = j;         col[2].i = i+1;
+          v[3] = -hxdhy*(dn + gn);                                       col[3].j = j+1;       col[3].i = i;
           ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
-        /* left-hand top boundary */
+          /* left-hand top boundary */
         } else {
 
           ts = x[j-1][i];
@@ -459,9 +451,9 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
 
-          v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i;
+          v[0] = -hxdhy*(ds - gs);                             col[0].j = j-1;       col[0].i = i;
           v[1] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  col[1].j = row.j = j; col[1].i = row.i = i;
-          v[2] = - hydhx*(de + ge);                            col[2].j = j;         col[2].i = i+1;
+          v[2] = -hydhx*(de + ge);                             col[2].j = j;         col[2].i = i+1;
           ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
 
@@ -492,12 +484,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
 
-          v[0] = - hydhx*(dw - gw);                           col[0].j = j;         col[0].i = i-1;
+          v[0] = -hydhx*(dw - gw);                            col[0].j = j;         col[0].i = i-1;
           v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[1].j = row.j = j; col[1].i = row.i = i;
-          v[2] = - hxdhy*(dn + gn);                           col[2].j = j+1;       col[2].i = i;
+          v[2] = -hxdhy*(dn + gn);                            col[2].j = j+1;       col[2].i = i;
           ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
-        /* right-hand interior boundary */
+          /* right-hand interior boundary */
         } else if (j < my-1) {
 
           ts = x[j-1][i];
@@ -514,10 +506,10 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
 
-          v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i;
-          v[1] = - hydhx*(dw - gw);                                      col[1].j = j;         col[1].i = i-1;
+          v[0] = -hxdhy*(ds - gs);                                       col[0].j = j-1;       col[0].i = i;
+          v[1] = -hydhx*(dw - gw);                                       col[1].j = j;         col[1].i = i-1;
           v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
-          v[3] = - hxdhy*(dn + gn);                                      col[3].j = j+1;       col[3].i = i;
+          v[3] = -hxdhy*(dn + gn);                                       col[3].j = j+1;       col[3].i = i;
           ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
         /* right-hand top boundary */
         } else {
@@ -529,13 +521,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
 
-          v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i;
-          v[1] = - hydhx*(dw - gw);                            col[1].j = j;         col[1].i = i-1;
+          v[0] = -hxdhy*(ds - gs);                             col[0].j = j-1;       col[0].i = i;
+          v[1] = -hydhx*(dw - gw);                             col[1].j = j;         col[1].i = i-1;
           v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
           ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
 
-      /* bottom boundary,and i <> 0 or mx-1 */
+        /* bottom boundary,and i <> 0 or mx-1 */
       } else if (j == 0) {
 
         tw = x[j][i-1];
@@ -559,13 +551,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         dn = PetscPowScalar(an,beta);
         gn = coef*bn*(tn - t0);
 
-        v[0] = - hydhx*(dw - gw);                           col[0].j = j;         col[0].i = i-1;
+        v[0] = -hydhx*(dw - gw);                            col[0].j = j;         col[0].i = i-1;
         v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[1].j = row.j = j; col[1].i = row.i = i;
-        v[2] = - hydhx*(de + ge);                           col[2].j = j;         col[2].i = i+1;
-        v[3] = - hxdhy*(dn + gn);                           col[3].j = j+1;       col[3].i = i;
+        v[2] = -hydhx*(de + ge);                            col[2].j = j;         col[2].i = i+1;
+        v[3] = -hxdhy*(dn + gn);                            col[3].j = j+1;       col[3].i = i;
         ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
-      /* top boundary,and i <> 0 or mx-1 */
+        /* top boundary,and i <> 0 or mx-1 */
       } else if (j == my-1) {
 
         tw = x[j][i-1];
@@ -585,14 +577,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         ts = x[j-1][i];
         as = 0.5*(t0 + ts);
         bs = PetscPowScalar(as,bm1);
-         /* ds = bs * as; */
+        /* ds = bs * as; */
         ds = PetscPowScalar(as,beta);
         gs = coef*bs*(t0 - ts);
 
-        v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i;
-        v[1] = - hydhx*(dw - gw);                            col[1].j = j;         col[1].i = i-1;
+        v[0] = -hxdhy*(ds - gs);                             col[0].j = j-1;       col[0].i = i;
+        v[1] = -hydhx*(dw - gw);                             col[1].j = j;         col[1].i = i-1;
         v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
-        v[3] = - hydhx*(de + ge);                            col[3].j = j;         col[3].i = i+1;
+        v[3] = -hydhx*(de + ge);                             col[3].j = j;         col[3].i = i+1;
         ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
       }

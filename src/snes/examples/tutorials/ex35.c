@@ -69,19 +69,19 @@ extern PetscErrorCode NonlinearGS(SNES,Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES                   snes;                         /* nonlinear solver */
-  SNES                   psnes;                        /* nonlinear Gauss-Seidel approximate solver */
-  Vec                    x,b;                            /* solution vector */
-  PetscInt               its;                          /* iterations for convergence */
-  PetscErrorCode         ierr;
-  DM                     da;
-  PetscBool              use_ngs = PETSC_FALSE;         /* use the nonlinear Gauss-Seidel approximate solver */
+  SNES           snes;                                 /* nonlinear solver */
+  SNES           psnes;                                /* nonlinear Gauss-Seidel approximate solver */
+  Vec            x,b;                                  /* solution vector */
+  PetscInt       its;                                  /* iterations for convergence */
+  PetscErrorCode ierr;
+  DM             da;
+  PetscBool      use_ngs = PETSC_FALSE;                /* use the nonlinear Gauss-Seidel approximate solver */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -167,7 +167,7 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyComputeJacobian"
-PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void* ctx)
+PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -190,11 +190,11 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   DMDALocalInfo  info;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  hx     = 1.0/(PetscReal)(info.mx-1);
-  hy     = 1.0/(PetscReal)(info.my-1);
-  hxdhy  = hx/hy;
-  hydhx  = hy/hx;
+  ierr  = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  hx    = 1.0/(PetscReal)(info.mx-1);
+  hy    = 1.0/(PetscReal)(info.my-1);
+  hxdhy = hx/hy;
+  hydhx = hy/hx;
 
   ierr = PetscMalloc(info.ym*info.xm*sizeof(MatStencil),&rows);CHKERRQ(ierr);
   /*
@@ -213,12 +213,12 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
       row.j = j; row.i = i;
       /* boundary points */
       if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
-        v[0] = 2.0*(hydhx + hxdhy);
-        ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
-        rows[nrows].i = i;
+        v[0]            = 2.0*(hydhx + hxdhy);
+        ierr            = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        rows[nrows].i   = i;
         rows[nrows++].j = j;
       } else {
-      /* interior grid points */
+        /* interior grid points */
         v[0] = -hxdhy;                                           col[0].j = j - 1; col[0].i = i;
         v[1] = -hydhx;                                           col[1].j = j;     col[1].i = i-1;
         v[2] = 2.0*(hydhx + hxdhy);                              col[2].j = row.j; col[2].i = row.i;
@@ -268,12 +268,12 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
-  hxdhy  = hx/hy;
-  hydhx  = hy/hx;
+  hx    = 1.0/(PetscReal)(Mx-1);
+  hy    = 1.0/(PetscReal)(My-1);
+  hxdhy = hx/hy;
+  hydhx = hy/hx;
 
 
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -305,13 +305,12 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
           /* boundary conditions are all zero Dirichlet */
           x[j][i] = 0.0;
         } else {
-          u       = x[j][i];
-
-          uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
-          uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
-          F        = uxx + uyy;
-          J       = 2.0*(hydhx + hxdhy);
-          u       = u - F/J;
+          u   = x[j][i];
+          uxx = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
+          uyy = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
+          F   = uxx + uyy;
+          J   = 2.0*(hydhx + hxdhy);
+          u   = u - F/J;
 
           x[j][i] = u;
         }

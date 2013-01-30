@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   PetscScalar    pfive = .5,*xx;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example is only for sequential runs");
 
@@ -111,9 +111,9 @@ int main(int argc,char **argv)
   if (!flg) {
     ierr = VecSet(x,pfive);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
     xx[0] = 2.0; xx[1] = 3.0;
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   }
   /*
      Note: The user should initialize the vector, x, with the initial guess
@@ -215,9 +215,9 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
-  A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  ierr = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  A[0]  = 2.0*xx[0] + xx[1]; A[1] = xx[0];
+  A[2]  = xx[1]; A[3] = xx[0] + 2.0*xx[1];
+  ierr  = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*
@@ -289,9 +289,9 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0] = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
-  A[2] = 0.0;                     A[3] = 1.0;
-  ierr = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  A[0]  = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
+  A[2]  = 0.0;                     A[3] = 1.0;
+  ierr  = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*

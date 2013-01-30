@@ -39,26 +39,26 @@ options are:\n\
 /* User-defined application contexts */
 
 typedef struct {
-   PetscInt   mx,my;            /* number grid points in x and y direction */
-   Vec        localX,localF;    /* local vectors with ghost region */
-   DM         da;
-   Vec        x,b,r;            /* global vectors */
-   Mat        J;                /* Jacobian on grid */
+  PetscInt mx,my;               /* number grid points in x and y direction */
+  Vec      localX,localF;       /* local vectors with ghost region */
+  DM       da;
+  Vec      x,b,r;               /* global vectors */
+  Mat      J;                   /* Jacobian on grid */
 } GridCtx;
 
 typedef struct {
-   PetscReal   param;           /* test problem parameter */
-   GridCtx     fine;
-   GridCtx     coarse;
-   KSP         ksp_coarse;
-   KSP         ksp_fine;
-   PetscInt    ratio;
-   Mat         R;               /* restriction fine to coarse */
-   Vec         Rscale;
-   PetscBool   redundant_build; /* build coarse matrix redundantly */
-   Vec         localall;        /* contains entire coarse vector on each processor in NATURAL order*/
-   VecScatter  tolocalall;      /* maps from parallel "global" coarse vector to localall */
-   VecScatter  fromlocalall;    /* maps from localall vector back to global coarse vector */
+  PetscReal  param;             /* test problem parameter */
+  GridCtx    fine;
+  GridCtx    coarse;
+  KSP        ksp_coarse;
+  KSP        ksp_fine;
+  PetscInt   ratio;
+  Mat        R;                 /* restriction fine to coarse */
+  Vec        Rscale;
+  PetscBool  redundant_build;   /* build coarse matrix redundantly */
+  Vec        localall;          /* contains entire coarse vector on each processor in NATURAL order*/
+  VecScatter tolocalall;        /* maps from parallel "global" coarse vector to localall */
+  VecScatter fromlocalall;      /* maps from localall vector back to global coarse vector */
 } AppCtx;
 
 #define COARSE_LEVEL 0
@@ -66,7 +66,7 @@ typedef struct {
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode FormInterpolation(AppCtx *);
+extern PetscErrorCode FormInterpolation(AppCtx*);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -90,12 +90,12 @@ int main(int argc, char **argv)
   */
   PetscInitialize(&argc, &argv,"ex11options",help);
 
-  user.ratio = 2;
+  user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
-  user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
+  ierr           = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+  user.fine.mx   = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-redundant_build",&user.redundant_build);CHKERRQ(ierr);
   if (user.redundant_build) {
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
   /* Set up distributed array for fine grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                      user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 
   /* Set up distributed array for coarse grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                      user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
   ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
   ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
-    PC  rpc;
+    PC rpc;
     ierr = KSPGetPC(user.ksp_coarse,&rpc);CHKERRQ(ierr);
     ierr = PCRedundantSetScatter(rpc,user.tolocalall,user.fromlocalall);CHKERRQ(ierr);
   }
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
   PetscFinalize();
 
   return 0;
-}/* --------------------  Form initial approximation ----------------- */
+} /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess1"
 PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
@@ -234,8 +234,8 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   PetscErrorCode ierr;
   double         one = 1.0, lambda, temp1, temp, hx, hy;
   /* double hxdhy, hydhx,sc; */
-  PetscScalar    *x;
-  Vec            localX = user->fine.localX;
+  PetscScalar *x;
+  Vec         localX = user->fine.localX;
 
   mx = user->fine.mx;       my = user->fine.my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -268,12 +268,12 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   return 0;
 }
 
- /* --------------------  Evaluate Function F(x) --------------------- */
+/* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;
+  AppCtx         *user = (AppCtx*) ptr;
   PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
   PetscErrorCode ierr;
   double         two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
@@ -298,9 +298,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
     for (i=xs; i<xs+xm; i++) {
       row++;
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
-        u = x[row];
-        uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-        uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
+        u      = x[row];
+        uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
+        uyy    = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
         f[row] = uxx + uyy - sc*exp(u);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         f[row] = .5*two*(hydhx + hxdhy)*x[row];
@@ -329,7 +329,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
   Mat            jac = *J;
   PetscErrorCode ierr;
   PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5], nloc, *ltog, grow;
-  PetscScalar    two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
+  PetscScalar    two    = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
   Vec            localX = grid->localX;
 
   mx = grid->mx;            my = grid->my;            lambda = user->param;
@@ -359,10 +359,10 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -411,10 +411,10 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat 
         ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&row,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&row,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&row,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&row,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -430,14 +430,14 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat 
 #define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;
+  AppCtx         *user = (AppCtx*) ptr;
   PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
   PetscBool      ismg;
 
   *flag = SAME_NONZERO_PATTERN;
-  ierr = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
+  ierr  = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner */
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -502,13 +502,13 @@ PetscErrorCode FormInterpolation(AppCtx *user)
   ierr = VecGetSize(user->fine.x,&m_fine);CHKERRQ(ierr);
   ierr = VecGetSize(user->coarse.x,&m_coarse);CHKERRQ(ierr);
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,m_fine_local,m_c_local,m_fine,m_coarse,
-                         5,0,3,0,&mat);CHKERRQ(ierr);
+                      5,0,3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n; j++) {
     for (i=i_start; i<i_start+m; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
-      row    = idx[m_ghost*(j-j_start_ghost) + (i-i_start_ghost)];
+      row = idx[m_ghost*(j-j_start_ghost) + (i-i_start_ghost)];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratio);    /* coarse grid node below fine grid node */
@@ -522,12 +522,8 @@ PetscErrorCode FormInterpolation(AppCtx *user)
       y  = ((double)(j - j_c*ratio))/((double)ratio);
       nc = 0;
       /* one left and below; or we are right on it */
-      if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) {
-        SETERRQ3(PETSC_COMM_SELF,1,"Sorry j %D %D %D",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
-      }
-      if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) {
-        SETERRQ3(PETSC_COMM_SELF,1,"Sorry i %D %D %D",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
-      }
+      if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) SETERRQ3(PETSC_COMM_SELF,1,"Sorry j %D %D %D",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
+      if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) SETERRQ3(PETSC_COMM_SELF,1,"Sorry i %D %D %D",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
       col      = m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c);
       cols[nc] = idx_c[col];
       v[nc++]  = x*y - x - y + 1.0;
@@ -552,12 +548,12 @@ PetscErrorCode FormInterpolation(AppCtx *user)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(user->coarse.x,&Rscale);CHKERRQ(ierr);
-  ierr = VecSet(user->fine.x,one);CHKERRQ(ierr);
-  ierr = MatMultTranspose(mat,user->fine.x,Rscale);CHKERRQ(ierr);
-  ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
+  ierr         = VecDuplicate(user->coarse.x,&Rscale);CHKERRQ(ierr);
+  ierr         = VecSet(user->fine.x,one);CHKERRQ(ierr);
+  ierr         = MatMultTranspose(mat,user->fine.x,Rscale);CHKERRQ(ierr);
+  ierr         = VecReciprocal(Rscale);CHKERRQ(ierr);
   user->Rscale = Rscale;
-  user->R = mat;
+  user->R      = mat;
   return 0;
 }
 
