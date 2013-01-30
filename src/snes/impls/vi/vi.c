@@ -369,6 +369,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X, PetscReal *f
   rnorm = 0.0;
   for (i=0; i<n; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
+  }
   ierr   = VecRestoreArrayRead(F,&f);CHKERRQ(ierr);
   ierr   = VecRestoreArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr   = VecRestoreArrayRead(snes->xu,&xu);CHKERRQ(ierr);
