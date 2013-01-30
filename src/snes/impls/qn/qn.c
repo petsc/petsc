@@ -38,18 +38,14 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
   Vec                *U  = qn->U;
   Vec                *V  = qn->V;
   KSPConvergedReason kspreason;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscInt           k,i,lits;
   PetscInt           m = qn->m;
   PetscScalar        gdot;
   PetscInt           l = m;
-  Mat                jac,jac_pre;
 
   PetscFunctionBegin;
   if (it < m) l = it;
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNESGetJacobian(snes,&jac,&jac_pre,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,jac,jac_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,D,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
@@ -116,12 +112,10 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
 
   /* ksp thing for jacobian scaling */
   KSPConvergedReason kspreason;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscInt           k, i, lits;
   PetscInt           m = qn->m;
   PetscScalar        gdot;
   PetscInt           l = m;
-  Mat                jac, jac_pre;
 
   PetscFunctionBegin;
   if (it < m) l = it;
@@ -157,8 +151,6 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   }
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNESGetJacobian(snes, &jac, &jac_pre, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,jac,jac_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,Y,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
@@ -194,12 +186,10 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 
   /* ksp thing for jacobian scaling */
   KSPConvergedReason kspreason;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscInt           k,i,j,g,lits;
   PetscInt           m = qn->m;
   PetscScalar        t;
   PetscInt           l = m;
-  Mat                jac,jac_pre;
 
   PetscFunctionBegin;
   if (it < m) l = it;
@@ -259,8 +249,6 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   }
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNESGetJacobian(snes, &jac, &jac_pre, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,jac,jac_pre,flg);CHKERRQ(ierr);
     ierr = SNES_KSPSolve(snes,snes->ksp,Y,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
@@ -393,6 +381,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
   }
 
   for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
@@ -489,6 +478,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       }
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
         ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+        ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
       }
     }
     /* general purpose update */
