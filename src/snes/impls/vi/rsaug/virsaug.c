@@ -88,12 +88,14 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS *in
 
 <*/
 typedef struct {
-  PetscInt       n;                                        /* size of vectors in the reduced DM space */
-  IS             inactive;
-  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
+  PetscInt n;                                              /* size of vectors in the reduced DM space */
+  IS       inactive;
+
+  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);  /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
-  DM             dm;                                      /* when destroying this object we need to reset the above function into the base DM */
+
+  DM dm;                                                   /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
 
 #undef __FUNCT__
@@ -216,7 +218,9 @@ PetscErrorCode  DMCoarsen_SNESVIRSAUG(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = ISCreateGeneral(((PetscObject)coarsemarked)->comm,cnt,coarseindex,PETSC_OWN_POINTER,&inactive);CHKERRQ(ierr);
 
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
+
   dm1->ops->createglobalvector = DMCreateGlobalVector_SNESVIRSAUG;
+
   ierr = DMSetVI(*dm2,inactive);CHKERRQ(ierr);
 
   ierr = VecDestroy(&finemarked);CHKERRQ(ierr);
@@ -524,7 +528,7 @@ PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeFunction"
-static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx)
+static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx)
 {
   PetscErrorCode ierr;
   SNES_VIRSAUG   *vi = (SNES_VIRSAUG*)snes->data;
@@ -953,7 +957,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS *ISact)
   ierr = VecGetArrayRead(Xu,&xu);CHKERRQ(ierr);
   ierr = VecGetArrayRead(F,&f);CHKERRQ(ierr);
   /* Compute active set size */
-  for (i=0; i < nlocal;i++) {
+  for (i=0; i < nlocal; i++) {
     if (!vi->ignorefunctionsign) {
       if (!((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) nloc_isact++;
     } else if (!(PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8  && PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8)) nloc_isact++;

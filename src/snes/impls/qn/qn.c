@@ -12,20 +12,20 @@ typedef enum {SNES_QN_LBFGS      = 0,
              } SNESQNType;
 
 typedef struct {
-  Vec                   *U;               /* Stored past states (vary from method to method) */
-  Vec                   *V;               /* Stored past states (vary from method to method) */
-  PetscInt              m;                /* The number of kept previous steps */
-  PetscScalar           *alpha, *beta;
-  PetscScalar           *dXtdF, *dFtdX, *YtdX;
-  PetscBool             singlereduction;  /* Aggregated reduction implementation */
-  PetscScalar           *dXdFmat;         /* A matrix of values for dX_i dot dF_j */
-  PetscViewer           monitor;
-  PetscReal             powell_gamma;     /* Powell angle restart condition */
-  PetscReal             powell_downhill;  /* Powell descent restart condition */
-  PetscReal             scaling;          /* scaling of H0 */
-  SNESQNType            type;             /* the type of quasi-newton method used */
-  SNESQNScaleType       scale_type;       /* the type of scaling used */
-  SNESQNRestartType     restart_type;     /* determine the frequency and type of restart conditions */
+  Vec               *U;                   /* Stored past states (vary from method to method) */
+  Vec               *V;                   /* Stored past states (vary from method to method) */
+  PetscInt          m;                    /* The number of kept previous steps */
+  PetscScalar       *alpha, *beta;
+  PetscScalar       *dXtdF, *dFtdX, *YtdX;
+  PetscBool         singlereduction;      /* Aggregated reduction implementation */
+  PetscScalar       *dXdFmat;             /* A matrix of values for dX_i dot dF_j */
+  PetscViewer       monitor;
+  PetscReal         powell_gamma;         /* Powell angle restart condition */
+  PetscReal         powell_downhill;      /* Powell descent restart condition */
+  PetscReal         scaling;              /* scaling of H0 */
+  SNESQNType        type;                 /* the type of quasi-newton method used */
+  SNESQNScaleType   scale_type;           /* the type of scaling used */
+  SNESQNRestartType restart_type;         /* determine the frequency and type of restart conditions */
 } SNES_QN;
 
 #undef __FUNCT__
@@ -50,7 +50,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
+        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         PetscFunctionReturn(0);
       }

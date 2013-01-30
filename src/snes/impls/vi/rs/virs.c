@@ -34,12 +34,14 @@ PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS *inact)
 
 <*/
 typedef struct {
-  PetscInt       n;                                        /* size of vectors in the reduced DM space */
-  IS             inactive;
-  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
+  PetscInt n;                                              /* size of vectors in the reduced DM space */
+  IS       inactive;
+
+  PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);  /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
-  DM             dm;                                      /* when destroying this object we need to reset the above function into the base DM */
+
+  DM dm;                                                  /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
 
 #undef __FUNCT__
@@ -213,7 +215,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
 
   ierr = PetscObjectReference((PetscObject)inactive);CHKERRQ(ierr);
 
-  ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject*)&isnes);CHKERRQ(ierr);
   if (!isnes) {
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVI);CHKERRQ(ierr);

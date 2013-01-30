@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  
+
   /*
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_p",FILE_MODE_WRITE,&view_p);CHKERRQ(ierr);
@@ -136,8 +136,8 @@ int main(int argc, char **argv)
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_psi",FILE_MODE_WRITE,&view_psi);CHKERRQ(ierr);
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_mat",FILE_MODE_WRITE,&view_mat);CHKERRQ(ierr);
   */
-  
-  PetscInt  j = 0;  
+
+  PetscInt j = 0;
 
   while (t<user.T) {
 
@@ -276,13 +276,13 @@ PetscErrorCode Update_q(AppCtx *user)
   for (i=0; i<n; i++) q_p[3*i]=w1[i];
 
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i+1]=w1[i];
+  for (i=0; i<n; i++) q_p[3*i+1]=w1[i];
 
   ierr = VecCopy(user->DPsieta,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,user->L*user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->eta);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i+2]=w2[i];
+  for (i=0; i<n; i++) q_p[3*i+2]=w2[i];
 
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+  for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
@@ -400,8 +400,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
     {
       s = sqrt((x[k] - xmid)*(x[k] - xmid) + (y[k] - ymid)*(y[k] - ymid) + (z[k] - zmid)*(z[k] - zmid));
       if (s <= xwidth*(5.0/64.0)) {
-        vals_cv[k] = cv_v;
-        vals_eta[k] = eta_v;
+        vals_cv[k]   = cv_v;
+        vals_eta[k]  = eta_v;
         vals_DDcv[k] = 0.0;
       } else if (s> xwidth*(5.0/64.0) && s<= xwidth*(7.0/64.0)) {
         r = (s - xwidth*(6.0/64.0))/(0.5*lambda);
@@ -582,7 +582,7 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Xda,&Yda,&Zda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   if (Xda!=Yda) printf("Currently different Xda and Yda are not supported");
-  
+
   if (user->periodic) {
     hx = (user->xmax-user->xmin)/Xda;
     hy = (user->ymax-user->ymin)/Yda;
@@ -611,13 +611,13 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
       if (i>j) eM_0[i][j] = eM_0[j][i];
     }
   }
-  
+
   for (i = 0; i<8; i++) {
     for (j =0; j<8; j++) {
       eM_0[i][j] = hx*hy*hz/27.0 * eM_0[i][j];
     }
   }
-  
+
   /** blocks of M_2 **/
 
   for (i = 0; i<8; i++) eM_2[i][i] = 12;
@@ -635,7 +635,7 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
       if (i>j) eM_2[i][j] = eM_2[j][i];
     }
   }
-  
+
   for (i = 0; i<8; i++) {
     for (j =0; j<8; j++) {
       eM_2[i][j] = hx*hy*hz/36.0 * eM_2[i][j];
@@ -647,10 +647,10 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   PetscInt    row,cols[16],r,row_M_0,cols3[8];
   PetscScalar vals[16],vals_M_0[8],vals3[8];
 
-  for (i=0;i < nele;i++) {
-    for (j=0; j<8; j++) idx[j] = ele[8*i + j];
+  for (i=0; i < nele; i++) {
+    for (j=0; j < 8; j++) idx[j] = ele[8*i + j];
 
-    for (r=0;r<8;r++) {
+    for (r=0; r < 8; r++) {
       row_M_0 = idx[r];
       for (j=0; j<8; j++) vals_M_0[j]=eM_0[r][j];
 

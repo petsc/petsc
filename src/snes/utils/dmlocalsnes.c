@@ -170,7 +170,7 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
   ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
 
-  dmlocalsnes->residuallocal = func;
+  dmlocalsnes->residuallocal    = func;
   dmlocalsnes->residuallocalctx = ctx;
 
   ierr = DMSNESSetFunction(dm,SNESComputeFunction_DMLocal,dmlocalsnes);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Ma
   ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
 
-  dmlocalsnes->jacobianlocal = func;
+  dmlocalsnes->jacobianlocal    = func;
   dmlocalsnes->jacobianlocalctx = ctx;
 
   ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMLocal,dmlocalsnes);CHKERRQ(ierr);

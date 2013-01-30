@@ -193,7 +193,7 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
   ierr = VecGetLocalSize(u1,&n);CHKERRQ(ierr);
   ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_arr[4*i] = w_arr[i];
+  for (i=0; i<n; i++) q_arr[4*i] = w_arr[i];
   ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
 
@@ -203,7 +203,7 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
 
   ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_arr[4*i+1] = w_arr[i];
+  for (i=0; i<n; i++) q_arr[4*i+1] = w_arr[i];
   ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
 
@@ -213,7 +213,7 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
 
   ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+  for (i=0; i<n; i++) {
     q_arr[4*i+2] = w_arr[i];
     q_arr[4*i+3] = 1.0;
   }
@@ -298,7 +298,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecAXPY(user->work1,1.0,user->work3);CHKERRQ(ierr);
   ierr = VecAXPY(user->work2,1.0,user->work3);CHKERRQ(ierr);
 
-  for (i=0;i<n/4;i++) {
+  for (i=0; i<n/4; i++) {
     xx[4*i] = w1[i];
     if (xx[4*i]>1) xx[4*i]=1;
 

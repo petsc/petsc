@@ -149,11 +149,11 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
 
     /* Map coefficients to values at quadrature points */
     for (int c = 0; c < N_sqc; ++c) {
-      realType  u[N_comp];     // $u(x_q)$, Value of the field at $x_q$
-      vecType   gradU[N_comp]; // $\nabla u(x_q)$, Value of the field gradient at $x_q$
-   // vecType   x             = {0.0, 0.0};           // Quadrature point $x_q$
-      const int cell          = c*N_bl*N_b + blqidx;
-      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;
+      realType u[N_comp];      // $u(x_q)$, Value of the field at $x_q$
+      vecType  gradU[N_comp];  // $\nabla u(x_q)$, Value of the field gradient at $x_q$
+      // vecType   x             = {0.0, 0.0};           // Quadrature point $x_q$
+      const int cell = c*N_bl*N_b + blqidx;
+      const int fidx = (cell*N_q + qidx)*N_comp + cidx;
 
       for (int comp = 0; comp < N_comp; ++comp) {
         //u[comp] = 0.0;
@@ -171,7 +171,7 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
           const int uidx = cell*N_bt + b;
           vecType   realSpaceDer;
 
-       // u[comp] += u_i[uidx]*phi_i[qidx*N_bt+bbidx];
+          // u[comp] += u_i[uidx]*phi_i[qidx*N_bt+bbidx];
 #if SPATIAL_DIM_0 == 2
           realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;
           gradU[comp].x += u_i[uidx]*realSpaceDer.x;

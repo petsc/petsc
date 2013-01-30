@@ -10,8 +10,9 @@
 
 typedef struct {
   PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
-  void           *ctxP; /* user defined check redundancy context */
-  IS             IS_inact_prev;
+
+  void *ctxP;           /* user defined check redundancy context */
+  IS   IS_inact_prev;
 } SNES_VINEWTONRSLS;
 
 #endif

@@ -75,7 +75,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
   ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
-  for (i=0;i < nlocal;i++) {
+  for (i=0; i < nlocal; i++) {
     if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) { /* no constraints on variable */
       phi_arr[i] = f_arr[i];
     } else if (PetscRealPart(l[i]) <= SNES_VI_NINF) {                      /* upper bound on variable only */

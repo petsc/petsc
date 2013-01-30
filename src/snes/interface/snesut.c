@@ -175,15 +175,16 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   ierr = MatDuplicate(J,MAT_COPY_VALUES,&dJ);CHKERRQ(ierr);
   ierr = SNESComputeJacobian(snes,X,&dJ,&dJ,&flg);CHKERRQ(ierr);
   ierr = MatAXPY(dJ,-1.0,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+
   /* compute the spectrum directly */
-  ierr = MatConvert(dJ,MATSEQDENSE,MAT_INITIAL_MATRIX,&dJdense);CHKERRQ(ierr);
-  ierr = MatGetSize(dJ,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
+  ierr  = MatConvert(dJ,MATSEQDENSE,MAT_INITIAL_MATRIX,&dJdense);CHKERRQ(ierr);
+  ierr  = MatGetSize(dJ,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 3*nb;
-  ierr = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);
-  ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(dJdense,&a);CHKERRQ(ierr);
+  ierr  = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
+  ierr  = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);
+  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr  = MatDenseGetArray(dJdense,&a);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
@@ -213,25 +214,25 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 #define __FUNCT__ "SNESMonitorRange_Private"
 PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 {
-  PetscErrorCode          ierr;
-  Vec                     resid;
-  PetscReal               rmax,pwork;
-  PetscInt                i,n,N;
-  PetscScalar             *r;
+  PetscErrorCode ierr;
+  Vec            resid;
+  PetscReal      rmax,pwork;
+  PetscInt       i,n,N;
+  PetscScalar    *r;
 
   PetscFunctionBegin;
-  ierr = SNESGetFunction(snes,&resid,0,0);CHKERRQ(ierr);
-  ierr = VecNorm(resid,NORM_INFINITY,&rmax);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(resid,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(resid,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(resid,&r);CHKERRQ(ierr);
+  ierr  = SNESGetFunction(snes,&resid,0,0);CHKERRQ(ierr);
+  ierr  = VecNorm(resid,NORM_INFINITY,&rmax);CHKERRQ(ierr);
+  ierr  = VecGetLocalSize(resid,&n);CHKERRQ(ierr);
+  ierr  = VecGetSize(resid,&N);CHKERRQ(ierr);
+  ierr  = VecGetArray(resid,&r);CHKERRQ(ierr);
   pwork = 0.0;
   for (i=0; i<n; i++) {
     pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   }
   ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(resid,&r);CHKERRQ(ierr);
-  *per  = *per/N;
+  *per = *per/N;
   PetscFunctionReturn(0);
 }
 
@@ -259,9 +260,9 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 @*/
 PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
 {
-  PetscErrorCode   ierr;
-  PetscReal        perc,rel;
-  PetscViewer      viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
+  PetscErrorCode ierr;
+  PetscReal      perc,rel;
+  PetscViewer    viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
   /* should be in a MonitorRangeContext */
   static PetscReal prev;
 
@@ -375,6 +376,7 @@ PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
     ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
   }
   ctx->viewer = viewer;
+
   ierr = SNESMonitorSet(snes,SNESMonitorRatio,ctx,SNESMonitorRatioDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -461,22 +463,22 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     snes->ttol = fnorm*snes->rtol;
   }
   if (PetscIsInfOrNanReal(fnorm)) {
-    ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm < snes->abstol) {
-    ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
+    ierr    = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (snes->nfuncs >= snes->max_funcs) {
-    ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
+    ierr    = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
 
   if (it && !*reason) {
     if (fnorm <= snes->ttol) {
-      ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
+      ierr    = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
     } else if (snorm < snes->stol*xnorm) {
-      ierr = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
+      ierr    = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_SNORM_RELATIVE;
     }
   }
@@ -522,7 +524,7 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   *reason = SNES_CONVERGED_ITERATING;
 
   if (fnorm != fnorm) {
-    ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (it == snes->max_its) {
     *reason = SNES_CONVERGED_ITS;
@@ -551,6 +553,7 @@ PetscErrorCode SNESDefaultGetWork(SNES snes,PetscInt nw)
   PetscFunctionBegin;
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   snes->nwork = nw;
+
   ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(snes,nw,snes->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -709,8 +709,8 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       for (PetscInt d = 0; d <= dim; ++d)        u[d]     = 0.0;
       for (PetscInt d = 0; d < dim*(dim+1); ++d) gradU[d] = 0.0;
       for (PetscInt f = 0; f < numFields; ++f) {
-        const PetscInt   Nb       = quad[f].numBasisFuncs;
-        const PetscInt   Ncomp    = quad[f].numComponents;
+        const PetscInt  Nb        = quad[f].numBasisFuncs;
+        const PetscInt  Ncomp     = quad[f].numComponents;
         const PetscReal *basis    = quad[f].basis;
         const PetscReal *basisDer = quad[f].basisDer;
 
@@ -765,32 +765,32 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       const PetscReal *basisDer = quad[f].basisDer;
 
       if (f == field) {
-      for (PetscInt b = 0; b < Nb; ++b) {
-        for (int comp = 0; comp < Ncomp; ++comp) {
-          const PetscInt cidx = b*Ncomp+comp;
+        for (PetscInt b = 0; b < Nb; ++b) {
+          for (int comp = 0; comp < Ncomp; ++comp) {
+            const PetscInt cidx = b*Ncomp+comp;
 
-          elemVec[eOffset+cidx] = 0.0;
-          for (PetscInt q = 0; q < Nq; ++q) {
-            PetscScalar realSpaceDer[dim];
+            elemVec[eOffset+cidx] = 0.0;
+            for (PetscInt q = 0; q < Nq; ++q) {
+              PetscScalar realSpaceDer[dim];
 
-            elemVec[eOffset+cidx] += basis[q*Nb*Ncomp+cidx]*f0[q*Ncomp+comp];
-            for (PetscInt d = 0; d < dim; ++d) {
-              realSpaceDer[d] = 0.0;
-              for (PetscInt g = 0; g < dim; ++g) {
-                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
+              elemVec[eOffset+cidx] += basis[q*Nb*Ncomp+cidx]*f0[q*Ncomp+comp];
+              for (PetscInt d = 0; d < dim; ++d) {
+                realSpaceDer[d] = 0.0;
+                for (PetscInt g = 0; g < dim; ++g) {
+                  realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
+                }
+                elemVec[eOffset+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
               }
-              elemVec[eOffset+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
             }
           }
         }
-      }
-      if (debug > 1) {
-        for (PetscInt b = 0; b < Nb; ++b) {
-          for (int comp = 0; comp < Ncomp; ++comp) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "    elemVec[%d,%d]: %g\n", b, comp, elemVec[eOffset+b*Ncomp+comp]);CHKERRQ(ierr);
+        if (debug > 1) {
+          for (PetscInt b = 0; b < Nb; ++b) {
+            for (int comp = 0; comp < Ncomp; ++comp) {
+              ierr = PetscPrintf(PETSC_COMM_SELF, "    elemVec[%d,%d]: %g\n", b, comp, elemVec[eOffset+b*Ncomp+comp]);CHKERRQ(ierr);
+            }
           }
         }
-      }
       }
       eOffset += Nb*Ncomp;
     }

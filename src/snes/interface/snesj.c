@@ -55,7 +55,7 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
   const PetscInt *ranges;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   eval_fct = SNESComputeFunction;
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
@@ -66,6 +66,7 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
   }
   if (!snes->nvwork) {
     snes->nvwork = 3;
+
     ierr = VecDuplicateVecs(x1,snes->nvwork,&snes->vwork);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(snes,snes->nvwork,snes->vwork);CHKERRQ(ierr);
   }
@@ -76,9 +77,8 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
   ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
 
   ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESDefaultComputeJacobian",list,2,"wp",&value,&flg);CHKERRQ(ierr);
-  if (flg && !value) {
-    use_wp = PETSC_FALSE;
-  }
+  if (flg && !value) use_wp = PETSC_FALSE;
+
   if (use_wp) {
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
   }
@@ -90,16 +90,13 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
     ierr = VecCopy(x1,x2);CHKERRQ(ierr);
     if (i>= start && i<end) {
       ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
-      if (use_wp) {
-        dx = 1.0 + unorm;
-      } else {
-        dx = xx[i-start];
-      }
+      if (use_wp) dx = 1.0 + unorm;
+      else        dx = xx[i-start];
       ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;
-      dx *= epsilon;
+      dx    *= epsilon;
       wscale = 1.0/dx;
-      ierr = VecSetValues(x2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
+      ierr   = VecSetValues(x2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
     } else {
       wscale = 0.0;
     }
@@ -126,11 +123,11 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
     }
     ierr = VecRestoreArray(j2a,&y);CHKERRQ(ierr);
   }
-  ierr  = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (*B != *J) {
-    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   *flag =  DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);

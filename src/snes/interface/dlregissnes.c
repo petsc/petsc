@@ -2,7 +2,7 @@
 #include <petsc-private/snesimpl.h>
 #include <petsc-private/linesearchimpl.h>
 
-static PetscBool  SNESPackageInitialized = PETSC_FALSE;
+static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESFinalizePackage"
@@ -42,10 +42,10 @@ PetscErrorCode  SNESFinalizePackage(void)
 @*/
 PetscErrorCode  SNESInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (SNESPackageInitialized) PetscFunctionReturn(0);

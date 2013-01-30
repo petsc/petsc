@@ -154,9 +154,9 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d     **coords;
-  PetscReal      **psi, **u0, **uexact,
-                 x, y, r,
-                 afree = 0.69797, A = 0.68026, B = 0.47152, pi = 3.1415926;
+  PetscReal      **psi, **u0, **uexact;
+  PetscReal      x, y, r;
+  PetscReal      afree = 0.69797, A = 0.68026, B = 0.47152, pi = 3.1415926;
 
   PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);

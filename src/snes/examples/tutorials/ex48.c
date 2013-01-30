@@ -187,7 +187,7 @@ static void HexComputeGeometry(PetscInt q,PetscReal hx,PetscReal hy,const PetscR
   const PetscReal jac[3][3]  = {{hx/2,0,0}, {0,hy/2,0}, {dz[0],dz[1],dz[2]}};
   const PetscReal ijac[3][3] = {{1/jac[0][0],0,0}, {0,1/jac[1][1],0}, {-jac[2][0]/(jac[0][0]*jac[2][2]),-jac[2][1]/(jac[1][1]*jac[2][2]),1/jac[2][2]}};
   const PetscReal jdet       = jac[0][0]*jac[1][1]*jac[2][2];
-  PetscInt i;
+  PetscInt        i;
 
   for (i=0; i<8; i++) {
     const PetscReal *dphir = HexQDeriv[q][i];
@@ -312,9 +312,9 @@ static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 /* Like Z, but with 200 meter cliffs */
 static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
-  Units units = thi->units;
-  PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
-  PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
+  Units     units = thi->units;
+  PetscReal x     = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
+  PetscReal r     = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
 
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
@@ -1529,7 +1529,7 @@ int main(int argc,char *argv[])
     if (thi->coarse2d) {
       ierr = DMDACreate2d(comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-N,-M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
 
-      da->ops->refinehierarchy  = DMRefineHierarchy_THI;
+      da->ops->refinehierarchy     = DMRefineHierarchy_THI;
       da->ops->createinterpolation = DMCreateInterpolation_DA_THI;
 
       ierr = PetscObjectCompose((PetscObject)da,"THI",(PetscObject)thi);CHKERRQ(ierr);

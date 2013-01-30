@@ -424,24 +424,28 @@ PetscReal IntegrateBdDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, co
    FormFunctionLocal().
 */
 typedef struct {
-  DM            dm;                /* The unstructured mesh data structure */
-  PetscInt      debug;             /* The debugging level */
-  PetscMPIInt   rank;              /* The process rank */
-  PetscMPIInt   numProcs;          /* The number of processes */
-  RunType       run;               /* The run type */
-  PetscInt      dim;               /* The topological mesh dimension */
-  PetscBool     interpolate;       /* Generate intermediate mesh elements */
-  PetscReal     refinementLimit;   /* The largest allowable cell volume */
-  char          partitioner[2048]; /* The graph partitioner */
+  DM          dm;                  /* The unstructured mesh data structure */
+  PetscInt    debug;               /* The debugging level */
+  PetscMPIInt rank;                /* The process rank */
+  PetscMPIInt numProcs;            /* The number of processes */
+  RunType     run;                 /* The run type */
+  PetscInt    dim;                 /* The topological mesh dimension */
+  PetscBool   interpolate;         /* Generate intermediate mesh elements */
+  PetscReal   refinementLimit;     /* The largest allowable cell volume */
+  char        partitioner[2048];   /* The graph partitioner */
+
   /* Element quadrature */
   PetscQuadrature q;
+
   /* Problem specific parameters */
-  BCType        bcType;            /* The type of boundary conditions */
-  PetscReal     lambda;            /* The Bratu problem parameter */
+  BCType    bcType;                /* The type of boundary conditions */
+  PetscReal lambda;                /* The Bratu problem parameter */
+
   PetscScalar (*rhsFunc)(const PetscReal []);   /* The rhs function f(x,y,z) */
   PetscScalar (*exactFunc)(const PetscReal []); /* The exact solution function u(x,y,z) */
-  Vec           exactSol;          /* The discrete exact solution */
-  Vec           error;             /* The discrete cell-wise error */
+
+  Vec exactSol;                    /* The discrete exact solution */
+  Vec error;                       /* The discrete cell-wise error */
 } AppCtx;
 
 /*
@@ -551,7 +555,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   if (options->lambda >= bratu_lambda_max || options->lambda < bratu_lambda_min) {
     SETERRQ3(PETSC_COMM_WORLD, 1, "Lambda, %g, is out of range, [%g, %g)", options->lambda, bratu_lambda_min, bratu_lambda_max);
   }
-  ierr = PetscOptionsEnd();
+  ierr   = PetscOptionsEnd();
   lambda = options->lambda;
   PetscFunctionReturn(0);
 };

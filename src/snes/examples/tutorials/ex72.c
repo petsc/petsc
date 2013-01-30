@@ -1002,11 +1002,11 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
   }
   ierr = PetscLogEventBegin(user->integrateJacActionCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
-    const PetscReal  detJ    = jacobianDeterminants[e];
-    const PetscReal *invJ    = &jacobianInverses[e*dim*dim];
-    const PetscInt   Nb_i    = quad[fieldI].numBasisFuncs;
-    const PetscInt   Ncomp_i = quad[fieldI].numComponents;
-    PetscInt         f, fc, g, gc;
+    const PetscReal detJ    = jacobianDeterminants[e];
+    const PetscReal *invJ   = &jacobianInverses[e*dim*dim];
+    const PetscInt  Nb_i    = quad[fieldI].numBasisFuncs;
+    const PetscInt  Ncomp_i = quad[fieldI].numComponents;
+    PetscInt        f, fc, g, gc;
 
     for (f = 0; f < Nb_i; ++f) {
       const PetscInt  Nq           = quad[fieldI].numQuadPoints;
@@ -1384,11 +1384,11 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
           for (d = 0; d <= dim; ++d)        u[d]     = 0.0;
           for (d = 0; d < dim*(dim+1); ++d) gradU[d] = 0.0;
           for (field_q = 0; field_q < numFields; ++field_q) {
-            const PetscInt   Nb          = quad[field_q].numBasisFuncs;
-            const PetscInt   Ncomp       = quad[field_q].numComponents;
-            const PetscReal *basis       = quad[field_q].basis;
-            const PetscReal *basisDer    = quad[field_q].basisDer;
-            PetscInt         b, comp;
+            const PetscInt  Nb        = quad[field_q].numBasisFuncs;
+            const PetscInt  Ncomp     = quad[field_q].numComponents;
+            const PetscReal *basis    = quad[field_q].basis;
+            const PetscReal *basisDer = quad[field_q].basisDer;
+            PetscInt        b, comp;
 
             for (b = 0; b < Nb; ++b) {
               for (comp = 0; comp < Ncomp; ++comp) {
@@ -1677,9 +1677,11 @@ int main(int argc, char **argv)
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    for (k=j=0; j<mlocal; j++)
-      for (i=0; i<SPATIAL_DIM_0; i++,k++)
+    for (k=j=0; j<mlocal; j++) {
+      for (i=0; i<SPATIAL_DIM_0; i++,k++) {
         coords[k] = PetscRealPart(v[k]);
+      }
+    }
     ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
     ierr = PCSetCoordinates(pc, SPATIAL_DIM_0, mlocal, coords);CHKERRQ(ierr);
     ierr = PetscFree(coords);CHKERRQ(ierr);

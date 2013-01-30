@@ -207,7 +207,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
-      ierr = SNES_TR_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr        = SNES_TR_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (!reason) { ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr); }
       if (reason) {
         /* We're not progressing, so return with the current iterate */

@@ -180,7 +180,6 @@ int main(int argc, char **argv)
         ierr = VecView(user.eta,view);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
       }
-
     }
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
     t    = t + user.dt;
@@ -318,7 +317,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,user->L);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0/user->dt,user->eta);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[5*i+4]=w2[i];
+  for (i=0; i<n; i++) q_p[5*i+4]=w2[i];
 
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
@@ -564,7 +563,7 @@ PetscErrorCode SetRandomVectors(AppCtx *user)
   ierr = VecGetArray(user->Pv,&Pv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+  for (i=0; i<n; i++) {
     if (eta_p[i]>=0.8 || w1[i]>user->P_casc) Pv_p[i]=0;
     else {
       Pv_p[i]=w2[i]*user->VG;
@@ -984,8 +983,8 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
     if (uout[i-1][3] && uout[i][3] && uout[i+1][3]) uout[i][2] = 1.0;
   }
 
-  for (i=xs; i < xs+xm;i++) {
-    for (l=0;l<5;l++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (l=0; l < 5; l++) {
       if (uout[i][l]) cnt++;
     }
   }
@@ -996,8 +995,8 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = PetscMalloc(cnt*sizeof(PetscInt),&outindex);CHKERRQ(ierr);
   cnt  = 0;
 
-  for (i=xs; i < xs+xm;i++) {
-    for (l=0;l<5;l++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (l=0; l < 5; l++) {
       if (uout[i][l]) outindex[cnt++] = 5*(i)+l;
     }
   }

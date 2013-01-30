@@ -144,7 +144,7 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetInitialGuess"
-PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
+PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscScalar    *x,*u;
@@ -166,7 +166,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(user->u,&u);CHKERRQ(ierr);
   /* Set initial guess, only set value for 2nd dof */
-  for (i=0;i<n/2;i++) x[2*i+1] = u[i];
+  for (i=0; i<n/2; i++) x[2*i+1] = u[i];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->u,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -355,8 +355,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
 
       ShapefunctionsT3(phi,phider,xx[m],yy[m],x,y);
 
-      for (j=0;j<3;j++) {
-        for (k=0;k<3;k++) {
+      for (j=0; j<3; j++) {
+        for (k=0; k<3; k++) {
           eM_0[k][j] += phi[j]*phi[k]*w;
           eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
         }

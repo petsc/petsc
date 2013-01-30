@@ -22,7 +22,7 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
   if (!f) {ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);}
-  ierr = PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode(*)(SNES,Vec,Vec)),(snes,compute));CHKERRQ(ierr);
+  ierr = PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode (*)(SNES,Vec,Vec)),(snes,compute));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -329,7 +329,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS *ISact)
     if (!((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
   }
 
-   /* Create active set IS */
+  /* Create active set IS */
   ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isact,idx_act,PETSC_OWN_POINTER,ISact);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
