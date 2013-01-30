@@ -3,12 +3,11 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
    p_t = -x_t*p_x -y_t*p_y + f(t)*p_yy
    xmin < x < xmax, ymin < y < ymax;
 
+   Boundary conditions Neumman using mirror values
+
    Note that x_t and y_t in the above are given functions of x and y; they are not derivatives of x and y. 
    x_t = (y - ws)  y_t = (ws/2H)*(Pm - Pmax*sin(x))
 
-   Boundary conditions: -bc_type 0 => Zero dirichlet boundary
-                        -bc_type 1 => Steady state boundary condition
-   Steady state boundary condition found by setting p_t = 0
 */
 
 #include <petscdmda.h>
@@ -64,7 +63,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -79,8 +78,9 @@ int main(int argc, char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,user.da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,PETSC_NULL,PETSC_NULL,IJacobian,&user);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,PETSC_NULL,PETSC_NULL,IJacobian,&user);CHKERRQ(ierr); 
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.tmax);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.t0,.005);CHKERRQ(ierr);
@@ -146,12 +146,9 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   for(i=xs; i < xs+xm; i++) {
     for(j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
-      if (i == 0 || j == 0 || i == M-1 || j == N-1) p[j][i] = 0.0;
-      else p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
+      p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
     }
   }
-  /*  p[N/2+N%2][M/2+M%2] = 1/(user->dx*user->dy); */
-
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,X,&p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -163,21 +160,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt M,PetscScalar *p1,AppCtx *user)
 {
   PetscScalar f;
-  /*  PetscScalar v1,v2,v3,v4,v5,s1,s2,s3; */
   PetscFunctionBegin;
-  /*  if (i > 2 && i < M-2) {
-    v1 = (y-user->ws)*(p[j][i-2] - p[j][i-3])/user->dx;
-    v2 = (y-user->ws)*(p[j][i-1] - p[j][i-2])/user->dx;
-    v3 = (y-user->ws)*(p[j][i] - p[j][i-1])/user->dx;
-    v4 = (y-user->ws)*(p[j][i+1] - p[j][i])/user->dx;
-    v5 = (y-user->ws)*(p[j][i+1] - p[j][i+2])/user->dx;
-
-    s1 = v1/3.0 - (7.0/6.0)*v2 + (11.0/6.0)*v3;
-    s2 =-v2/6.0 + (5.0/6.0)*v3 + (1.0/3.0)*v4;
-    s3 = v3/3.0 + (5.0/6.0)*v4 - (1.0/6.0)*v5;
-
-    *p1 = 0.1*s1 + 0.6*s2 + 0.3*s3;
-    } else *p1 = 0.0; */
   f   =  (y - user->ws);
   *p1 = f*(p[j][i+1] - p[j][i-1])/(2*user->dx);
   PetscFunctionReturn(0);
@@ -189,21 +172,7 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
 PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt N,PetscScalar *p2,AppCtx *user)
 {
   PetscScalar f;
-  /*  PetscScalar v1,v2,v3,v4,v5,s1,s2,s3; */
   PetscFunctionBegin;
-  /*  if (j > 2 && j < N-2) {
-    v1 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j-2][i] - p[j-3][i])/user->dy;
-    v2 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j-1][i] - p[j-2][i])/user->dy;
-    v3 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j][i] - p[j-1][i])/user->dy;
-    v4 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j+1][i] - p[j][i])/user->dy;
-    v5 = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x))*(p[j+2][i] - p[j+1][i])/user->dy;
-
-    s1 = v1/3.0 - (7.0/6.0)*v2 + (11.0/6.0)*v3;
-    s2 =-v2/6.0 + (5.0/6.0)*v3 + (1.0/3.0)*v4;
-    s3 = v3/3.0 + (5.0/6.0)*v4 - (1.0/6.0)*v5;
-
-    *p2 = 0.1*s1 + 0.6*s2 + 0.3*s3;
-    } else *p2 = 0.0; */
   f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x));
   *p2 = f*(p[j+1][i] - p[j-1][i])/(2*user->dy);
   PetscFunctionReturn(0);
@@ -217,40 +186,6 @@ PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscSc
   PetscFunctionBeginUser;
 
   *p_diff = user->disper_coe*((p[j-1][i] - 2*p[j][i] + p[j+1][i])/(user->dy*user->dy));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "BoundaryConditions"
-PetscErrorCode BoundaryConditions(PetscScalar **p,DMDACoor2d **coors,PetscInt i,PetscInt j,PetscInt M, PetscInt N,PetscScalar **f,AppCtx *user)
-{
-  PetscScalar fwc,fthetac;
-  PetscScalar w=coors[j][i].y,theta=coors[j][i].x;
-
-  PetscFunctionBeginUser;
-  if (user->bc == 0) { /* Natural boundary condition */
-    f[j][i] = p[j][i];
-  } else { /* Steady state boundary condition */
-    fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(theta));
-    fwc = (w*w/2.0 - user->ws*w);
-    if (i == 0 && j == 0) { /* left bottom corner */
-      f[j][i] = fwc*(p[j][i+1] - p[j][i])/user->dx + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j][i])/user->dy;
-    } else if (i == 0 && j == N-1) { /* right bottom corner */
-      f[j][i] = fwc*(p[j][i+1] - p[j][i])/user->dx + fthetac*p[j][i] - user->disper_coe*(p[j][i] - p[j-1][i])/user->dy;
-    } else if (i == M-1 && j == 0) { /* left top corner */
-      f[j][i] = fwc*(p[j][i] - p[j][i-1])/user->dx + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j][i])/user->dy;
-    } else if (i == M-1 && j == N-1) { /* right top corner */
-      f[j][i] = fwc*(p[j][i] - p[j][i-1])/user->dx + fthetac*p[j][i] - user->disper_coe*(p[j][i] - p[j-1][i])/user->dy;
-    } else if (i == 0) { /* Bottom edge */
-      f[j][i] = fwc*(p[j][i+1] - p[j][i])/(user->dx) + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j-1][i])/(2*user->dy);
-    } else if (i == M-1) { /* Top edge */
-      f[j][i] = fwc*(p[j][i] - p[j][i-1])/(user->dx) + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j-1][i])/(2*user->dy);
-    } else if (j == 0) { /* Left edge */
-      f[j][i] = fwc*(p[j][i+1] - p[j][i-1])/(2*user->dx) + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j][i])/(user->dy);
-    } else if (j == N-1) { /* Right edge */
-      f[j][i] = fwc*(p[j][i+1] - p[j][i-1])/(2*user->dx) + fthetac*p[j][i] - user->disper_coe*(p[j][i] - p[j-1][i])/(user->dy);
-    }
-  }    
   PetscFunctionReturn(0);
 }
 
@@ -291,14 +226,10 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   user->disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
   for(i=xs; i < xs+xm; i++) {
     for(j=ys; j < ys+ym; j++) {
-      if (i == 0 || j == 0 || i == M-1 || j == N-1) {
-        ierr = BoundaryConditions(p,coors,i,j,M,N,f,user);CHKERRQ(ierr);
-      } else {
-        ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
-        ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
-        ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);
-        f[j][i] = -p_adv1 - p_adv2 + p_diff - pdot[j][i];
-      }
+      ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
+      ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
+      ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);
+      f[j][i] = -p_adv1 - p_adv2 + p_diff - pdot[j][i];
     }
   }
   ierr = DMDAVecRestoreArray(user->da,localX,&p);CHKERRQ(ierr);
@@ -336,64 +267,20 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
-      xi = coors[j][i].x; yi = coors[j][i].y;
       PetscInt nc = 0;
+      PetscScalar fthetac,fwc;
+      xi = coors[j][i].x; yi = coors[j][i].y;
       row.i = i; row.j = j;
-      if (i == 0 || j == 0 || i == M-1 || j == N-1) {
-        if (user->bc == 0) {
-          col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
-        } else {
-          PetscScalar fthetac,fwc;
-          fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(xi));
-          fwc     = (yi*yi/2.0 - user->ws*yi);
-          if (i==0 && j==0) {
-            col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/user->dx;
-            col[nc].i = i;   col[nc].j = j+1; val[nc++] = -user->disper_coe/user->dy;
-            col[nc].i = i;   col[nc].j = j;   val[nc++] = -fwc/user->dx + fthetac + user->disper_coe/user->dy;
-          } else if (i==0 && j == N-1) {
-            col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/user->dx;
-            col[nc].i = i;   col[nc].j = j-1; val[nc++] = user->disper_coe/user->dy;
-            col[nc].i = i;   col[nc].j = j;   val[nc++] = -fwc/user->dx + fthetac - user->disper_coe/user->dy;
-          } else if (i== M-1 && j == 0) {
-            col[nc].i = i-1; col[nc].j = j;   val[nc++] = -fwc/user->dx;
-            col[nc].i = i;   col[nc].j = j+1; val[nc++] = -user->disper_coe/user->dy;
-            col[nc].i = i;   col[nc].j = j;   val[nc++] =  fwc/user->dx + fthetac + user->disper_coe/user->dy;
-          } else if (i == M-1 && j == N-1) {
-            col[nc].i = i-1; col[nc].j = j;   val[nc++] = -fwc/user->dx;
-            col[nc].i = i;   col[nc].j = j-1; val[nc++] =  user->disper_coe/user->dy;
-            col[nc].i = i;   col[nc].j = j;   val[nc++] =  fwc/user->dx + fthetac - user->disper_coe/user->dy;
-          } else if (i==0) {
-            col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/user->dx;
-            col[nc].i = i;   col[nc].j = j+1; val[nc++] = -user->disper_coe/(2*user->dy);
-            col[nc].i = i;   col[nc].j = j-1; val[nc++] =  user->disper_coe/(2*user->dy);
-            col[nc].i = i;   col[nc].j = j;   val[nc++] = -fwc/user->dx + fthetac;
-          } else if (i == M-1) {
-            col[nc].i = i-1; col[nc].j = j;   val[nc++] = -fwc/user->dx;
-            col[nc].i = i;   col[nc].j = j+1; val[nc++] = -user->disper_coe/(2*user->dy);
-            col[nc].i = i;   col[nc].j = j-1; val[nc++] =  user->disper_coe/(2*user->dy);
-            col[nc].i = i;   col[nc].j = j;   val[nc++] = fwc/user->dx + fthetac;
-          } else if (j==0) {
-            col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/(2*user->dx);
-            col[nc].i = i-1; col[nc].j = j;   val[nc++] = -fwc/(2*user->dx);
-            col[nc].i = i;   col[nc].j = j+1; val[nc++] = -user->disper_coe/user->dy;
-            col[nc].i = i;   col[nc].j = j;   val[nc++] = user->disper_coe/user->dy + fthetac;
-          } else if (j == N-1) {
-            col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/(2*user->dx);
-            col[nc].i = i-1; col[nc].j = j;   val[nc++] = -fwc/(2*user->dx);
-            col[nc].i = i;   col[nc].j = j-1; val[nc++] = user->disper_coe/user->dy;
-            col[nc].i = i;   col[nc].j = j;   val[nc++] = -user->disper_coe/user->dy + fthetac;
-          }
-        }
-      } else {
-        c1        = (yi-user->ws)/(2*user->dx);
-        c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
-        c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
-        col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
-        col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1;
-        col[nc].i = i;   col[nc].j = j-1; val[nc++] = c3 + c5;
-        col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c3 + c5;
-        col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c5 -a;
-      }
+      fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(xi));
+      fwc     = (yi*yi/2.0 - user->ws*yi);
+      c1        = (yi-user->ws)/(2*user->dx);
+      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
+      c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
+      col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
+      col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1;
+      col[nc].i = i;   col[nc].j = j-1; val[nc++] = c3 + c5;
+      col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c3 + c5;
+      col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c5 -a;
       ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -429,8 +316,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->t0     = 0.0;  user->tmax = 2.0;
   user->xmin   = -1.0; user->xmax = 10.0;
   user->ymin   = -1.0; user->ymax = 10.0;
-  user->bc     = 0;
-  
+
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-Inertia",&user->H,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-Pmax",&user->Pmax,&flg);CHKERRQ(ierr);
@@ -448,7 +334,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bc_type",&user->bc,&flg);CHKERRQ(ierr);
   user->muy = user->ws;
   PetscFunctionReturn(0);
 }
