@@ -359,10 +359,14 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* Cannot Reset() because it destroys field information */
+  s->setup = PETSC_FALSE;
+  ierr = PetscSectionDestroy(&s->bc);CHKERRQ(ierr);
+  ierr = PetscFree(s->bcIndices);CHKERRQ(ierr);
+  ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
+
   s->atlasLayout.pStart = pStart;
   s->atlasLayout.pEnd   = pEnd;
-
-  ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
   ierr = PetscMalloc2((pEnd - pStart), PetscInt, &s->atlasDof, (pEnd - pStart), PetscInt, &s->atlasOff);CHKERRQ(ierr);
   ierr = PetscMemzero(s->atlasDof, (pEnd - pStart)*sizeof(PetscInt));CHKERRQ(ierr);
   for (f = 0; f < s->numFields; ++f) {
