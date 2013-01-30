@@ -58,12 +58,12 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   PetscViewer    viewer;
 
-  PetscInitialize(&argc,&argv,"petscopt_ex6", help);
+  PetscInitialize(&argc,&argv,"petscopt_ex7", help);
 
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,PETSC_NULL,PETSC_NULL,IJacobian,&user);CHKERRQ(ierr); 
+  /*  ierr = TSSetIJacobian(ts,PETSC_NULL,PETSC_NULL,IJacobian,&user);CHKERRQ(ierr);  */
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.tmax);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.t0,.005);CHKERRQ(ierr);
@@ -229,7 +229,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
       ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
       ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
       ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);
-      f[j][i] = -p_adv1 - p_adv2 + p_diff - pdot[j][i];
+      f[j][i] = -p_adv1 - p_adv2  + p_diff - pdot[j][i];
     }
   }
   ierr = DMDAVecRestoreArray(user->da,localX,&p);CHKERRQ(ierr);
