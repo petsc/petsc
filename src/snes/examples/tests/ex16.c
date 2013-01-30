@@ -182,22 +182,22 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       xlt=xrb=xl=xr=xb=xt=xc;
 
       if (i==0) { /* left side */
-        xl= left[j-ys+1];
+        xl  = left[j-ys+1];
         xlt = left[j-ys+2];
       } else xl = x[j][i-1];
 
       if (j==0) { /* bottom side */
-        xb=bottom[i-xs+1];
+        xb  = bottom[i-xs+1];
         xrb = bottom[i-xs+2];
       } else xb = x[j-1][i];
 
       if (i+1 == mx) { /* right side */
-        xr=right[j-ys+1];
+        xr  = right[j-ys+1];
         xrb = right[j-ys];
       } else xr = x[j][i+1];
 
       if (j+1==0+my) { /* top side */
-        xt=top[i-xs+1];
+        xt  = top[i-xs+1];
         xlt = top[i-xs];
       } else xt = x[j+1][i];
 
@@ -655,6 +655,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);
   user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
+
   bmy=user->bmy, bmx=user->bmx;
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);

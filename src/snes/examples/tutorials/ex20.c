@@ -806,18 +806,18 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               gu = coef*bu*(tu - t0);
 
               c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd);
+              v[0]   = -hxhydhz*(dd - gd);
               c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs);
+              v[1]   = -hzhxdhy*(ds - gs);
               c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
               c[3].k = k; c[3].j = j; c[3].i = i+1;
-              v[3]   = - hyhzdhx*(de + ge);
+              v[3]   = -hyhzdhx*(de + ge);
               c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn);
+              v[4]   = -hzhxdhy*(dn + gn);
               c[5].k = k+1; c[5].j = j; c[5].i = i;
-              v[5]   = - hxhydhz*(du + gu);
-              ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
+              v[5]   = -hxhydhz*(du + gu);
+              ierr   = MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
           }
 
@@ -1046,15 +1046,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               gd = coef*bd*(t0 - td);
 
               c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd);
+              v[0]   = -hxhydhz*(dd - gd);
               c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs);
+              v[1]   = -hzhxdhy*(ds - gs);
               c[2].k = k; c[2].j = j; c[2].i = i-1;
-              v[2]   = - hyhzdhx*(dw - gw);
+              v[2]   = -hyhzdhx*(dw - gw);
               c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
               c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn);
+              v[4]   = -hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
             } else { /* right-hand interior plane */
@@ -1074,18 +1074,18 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
               gu = coef*bu*(tu - t0);
 
               c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd);
+              v[0]   = -hxhydhz*(dd - gd);
               c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs);
+              v[1]   = -hzhxdhy*(ds - gs);
               c[2].k = k; c[2].j = j; c[2].i = i-1;
-              v[2]   = - hyhzdhx*(dw - gw);
+              v[2]   = -hyhzdhx*(dw - gw);
               c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
               c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn);
+              v[4]   = -hzhxdhy*(dn + gn);
               c[5].k = k+1; c[5].j = j; c[5].i = i;
-              v[5]   = - hxhydhz*(du + gu);
-              ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
+              v[5]   = -hxhydhz*(du + gu);
+              ierr   = MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
           }
 
@@ -1173,18 +1173,18 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             gd = coef*bd*(td - t0);
 
             c[0].k = k-1; c[0].j = j; c[0].i = i;
-            v[0]   = - hxhydhz*(dd - gd);
+            v[0]   = -hxhydhz*(dd - gd);
             c[1].k = k; c[1].j = j; c[1].i = i-1;
-            v[1]   = - hyhzdhx*(dw - gw);
+            v[1]   = -hyhzdhx*(dw - gw);
             c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
             c[3].k = k; c[3].j = j; c[3].i = i+1;
-            v[3]   = - hyhzdhx*(de + ge);
+            v[3]   = -hyhzdhx*(de + ge);
             c[4].k = k; c[4].j = j+1; c[4].i = i;
-            v[4]   = - hzhxdhy*(dn + gn);
+            v[4]   = -hzhxdhy*(dn + gn);
             c[5].k = k+1; c[5].j = j; c[5].i = i;
-            v[5]   = - hxhydhz*(du + gu);
-            ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
+            v[5]   = -hxhydhz*(du + gu);
+            ierr   = MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
           }
 
         } else if (j == my-1) {
@@ -1242,15 +1242,15 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
             gd = coef*bd*(td - t0);
 
             c[0].k = k-1; c[0].j = j; c[0].i = i;
-            v[0]   = - hxhydhz*(dd - gd);
+            v[0]   = -hxhydhz*(dd - gd);
             c[1].k = k; c[1].j = j-1; c[1].i = i;
-            v[1]   = - hzhxdhy*(ds - gs);
+            v[1]   = -hzhxdhy*(ds - gs);
             c[2].k = k; c[2].j = j; c[2].i = i-1;
-            v[2]   = - hyhzdhx*(dw - gw);
+            v[2]   = -hyhzdhx*(dw - gw);
             c[3].k = k; c[3].j = j; c[3].i = i;
             v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
             c[4].k = k; c[4].j = j; c[4].i = i+1;
-            v[4]   = - hyhzdhx*(de + ge);
+            v[4]   = -hyhzdhx*(de + ge);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
           } else { /* top interior plane */

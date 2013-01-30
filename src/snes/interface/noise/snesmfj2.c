@@ -13,8 +13,7 @@ typedef struct {  /* default context for matrix-free SNES */
   MatNullSpace sp;               /* null space context */
   PetscReal    error_rel;        /* square root of relative error in computing function */
   PetscReal    umin;             /* minimum allowable u'a value relative to |u|_1 */
-  PetscBool    jorge;            /* flag indicating use of Jorge's method for determining
-                                   the differencing parameter */
+  PetscBool    jorge;            /* flag indicating use of Jorge's method for determining the differencing parameter */
   PetscReal    h;                /* differencing parameter */
   PetscBool    need_h;           /* flag indicating whether we must compute h */
   PetscBool    need_err;         /* flag indicating whether we must currently compute error_rel */
@@ -139,7 +138,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {
-        dot = 1.0;
+        dot  = 1.0;
         norm = 1.0;
       } else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
       else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
@@ -335,7 +334,7 @@ PetscErrorCode  SNESUnSetMatrixFreeParameter(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void**)&ctx);CHKERRQ(ierr);
   if (ctx) ctx->need_h = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

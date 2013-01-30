@@ -5,17 +5,17 @@
 #define __FUNCT__ "SNESLineSearchApply_CP"
 static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 {
-  PetscBool       changed_y, changed_w, domainerror;
-  PetscErrorCode  ierr;
-  Vec             X, Y, F, W;
-  SNES            snes;
-  PetscReal       xnorm, ynorm, gnorm, steptol, atol, rtol, ltol, maxstep;
+  PetscBool      changed_y, changed_w, domainerror;
+  PetscErrorCode ierr;
+  Vec            X, Y, F, W;
+  SNES           snes;
+  PetscReal      xnorm, ynorm, gnorm, steptol, atol, rtol, ltol, maxstep;
 
-  PetscReal       lambda, lambda_old, lambda_update, delLambda;
-  PetscScalar     fty, fty_init, fty_old, fty_mid1, fty_mid2, s;
-  PetscInt        i, max_its;
+  PetscReal   lambda, lambda_old, lambda_update, delLambda;
+  PetscScalar fty, fty_init, fty_old, fty_mid1, fty_mid2, s;
+  PetscInt    i, max_its;
 
-  PetscViewer     monitor;
+  PetscViewer monitor;
 
   PetscFunctionBegin;
   ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
@@ -27,10 +27,10 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
   /* precheck */
-  ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
+  ierr       = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
-  ierr = VecDot(F, Y, &fty_old);CHKERRQ(ierr);
-  fty_init = fty_old;
+  ierr       = VecDot(F, Y, &fty_old);CHKERRQ(ierr);
+  fty_init   = fty_old;
 
   for (i = 0; i < max_its; i++) {
 
@@ -44,7 +44,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 
     ierr = VecDot(F, Y, &fty);CHKERRQ(ierr);
 
-    delLambda    = lambda - lambda_old;
+    delLambda = lambda - lambda_old;
 
     /* check for convergence */
     if (PetscAbsReal(delLambda) < steptol*lambda) break;
@@ -67,7 +67,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       }
       ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid1);CHKERRQ(ierr);
-      s = (3.*fty - 4.*fty_mid1 + fty_old) / delLambda;
+      s    = (3.*fty - 4.*fty_mid1 + fty_old) / delLambda;
     } else {
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -0.5*(lambda + lambda_old), Y);CHKERRQ(ierr);
@@ -83,26 +83,22 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       }
       ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid2);CHKERRQ(ierr);
-      s = (2.*fty_mid2 + 3.*fty - 6.*fty_mid1 + fty_old) / (3.*delLambda);
+      s    = (2.*fty_mid2 + 3.*fty - 6.*fty_mid1 + fty_old) / (3.*delLambda);
     }
     /* if the solve is going in the wrong direction, fix it */
     if (PetscRealPart(s) > 0.) s = -s;
     lambda_update =  lambda - PetscRealPart(fty / s);
 
     /* switch directions if we stepped out of bounds */
-    if (lambda_update < steptol) {
-      lambda_update = lambda + PetscRealPart(fty / s);
-    }
+    if (lambda_update < steptol) lambda_update = lambda + PetscRealPart(fty / s);
 
     if (PetscIsInfOrNanScalar(lambda_update)) break;
-    if (lambda_update > maxstep) {
-      break;
-    }
+    if (lambda_update > maxstep) break;
 
     /* compute the new state of the line search */
     lambda_old = lambda;
-    lambda = lambda_update;
-    fty_old = fty;
+    lambda     = lambda_update;
+    fty_old    = fty;
   }
   /* construct the solution */
   ierr = VecCopy(X, W);CHKERRQ(ierr);
@@ -173,8 +169,8 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
   linesearch->ops->reset          = PETSC_NULL;
   linesearch->ops->view           = PETSC_NULL;
   linesearch->ops->setup          = PETSC_NULL;
-  linesearch->order = SNES_LINESEARCH_ORDER_LINEAR;
+  linesearch->order               = SNES_LINESEARCH_ORDER_LINEAR;
 
-  linesearch->max_its             = 1;
+  linesearch->max_its = 1;
   PetscFunctionReturn(0);
 }

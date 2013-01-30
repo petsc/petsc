@@ -39,7 +39,7 @@ M*/
 
 .seealso: SNESGetObjective(), SNESComputeObjective(), SNESSetFunction(), SNESSetJacobian(), SNESObjectiveFunction
 @*/
-PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void *ctx)
+PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -71,11 +71,11 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 
 .seealso: SNESSetObjective(), SNESGetSolution()
 @*/
-PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void **ctx)
+PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -145,17 +145,14 @@ PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void 
   ierr = VecGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
   ierr = SNESComputeObjective(snes,X,&ob);CHKERRQ(ierr);
 
-  if (fob > 0.) {
-    dx =1e-6*fob;
-  } else {
-    dx = 1e-6;
-  }
+  if (fob > 0.) dx =1e-6*fob;
+  else dx = 1e-6;
 
   for (i=0; i<N; i++) {
     /* compute the 1st value */
     ierr = VecCopy(X,Xh);CHKERRQ(ierr);
     if (i>= start && i<end) {
-      xv = dx;
+      xv   = dx;
       ierr = VecSetValues(Xh,1,&i,&xv,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin(Xh);CHKERRQ(ierr);
@@ -165,7 +162,7 @@ PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void 
     /* compute the 2nd value */
     ierr = VecCopy(X,Xh);CHKERRQ(ierr);
     if (i>= start && i<end) {
-      xv = 2.*dx;
+      xv   = 2.*dx;
       ierr = VecSetValues(Xh,1,&i,&xv,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin(Xh);CHKERRQ(ierr);
@@ -175,7 +172,7 @@ PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void 
     /* compute the 3rd value */
     ierr = VecCopy(X,Xh);CHKERRQ(ierr);
     if (i>= start && i<end) {
-      xv = -dx;
+      xv   = -dx;
       ierr = VecSetValues(Xh,1,&i,&xv,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin(Xh);CHKERRQ(ierr);
@@ -188,7 +185,7 @@ PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void 
       if (PetscAbsScalar(fv) > eps) {
         ierr = VecSetValues(F,1,&i,&fv,INSERT_VALUES);CHKERRQ(ierr);
       } else {
-        fv = 0.;
+        fv   = 0.;
         ierr = VecSetValues(F,1,&i,&fv,INSERT_VALUES);CHKERRQ(ierr);
       }
     }

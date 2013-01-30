@@ -94,14 +94,14 @@ int main(int argc, char **argv)
   Vec                 xl,xu; /* Upper and lower bounds on variables */
   Mat                 J;
   PetscScalar         t=0.0,normq;
-  /*  PetscViewer         view_out, view_q, view_psi, view_mat;*/
-  /*  PetscViewer         view_rand;*/
   IS                  inactiveconstraints;
   PetscInt            ninactiveconstraints,N;
   SNESConvergedReason reason;
-  /*PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;*/
   char                cv_filename[80],eta_filename[80];
+  /*PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;*/
   /*PetscReal           bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0}; */
+  /*  PetscViewer         view_out, view_q, view_psi, view_mat;*/
+  /*  PetscViewer         view_rand;*/
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -407,7 +407,7 @@ PetscErrorCode Update_q(AppCtx *user)
   for (i=0; i<n; i++) q_p[5*i]=w2[i];
 
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[5*i+1]=w1[i];
+  for (i=0; i<n; i++) q_p[5*i+1]=w1[i];
 
   ierr = VecCopy(user->Riv,user->work1);CHKERRQ(ierr);
   if (user->radiation) {
@@ -426,10 +426,10 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->ci);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[5*i+2]=w2[i];
+  for (i=0; i<n; i++) q_p[5*i+2]=w2[i];
 
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[5*i+3]=w1[i];
+  for (i=0; i<n; i++) q_p[5*i+3]=w1[i];
 
   ierr = VecCopy(user->DPsieta,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,user->L);CHKERRQ(ierr);
@@ -438,7 +438,7 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecAXPY(user->work1,-1.0,user->Piv);CHKERRQ(ierr);
   }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[5*i+4]=w2[i];
+  for (i=0; i<n; i++) q_p[5*i+4]=w2[i];
 
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
@@ -478,8 +478,7 @@ PetscErrorCode DPsi(AppCtx *user)
   ierr = VecShift(user->cvi,1.0);CHKERRQ(ierr);
   ierr = Llog(user->cvi,user->logcvi);CHKERRQ(ierr);
 
-  for (i=0;i<n;i++)
-  {
+  for (i=0; i<n; i++) {
     DPsiv_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Evf + kBT*(logcv_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*(cv_p[i]-1);
     DPsii_p[i] = (eta_p[i]-1.0)*(eta_p[i]-1.0)*(Eif + kBT*(logci_p[i] - logcvi_p[i])) + eta_p[i]*eta_p[i]*2*A*ci_p[i];
 
@@ -511,7 +510,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+  for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
@@ -809,8 +808,8 @@ PetscErrorCode GetParams(AppCtx *user)
 
   /* degenerate mobility */
   user->smallnumber = 1.0e-3;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
 
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-domain","Number of domains (0=one domain, 1=two domains, 2=multidomain\n","None",user->domain,&user->domain,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-Dv","Vacancy Diffusivity\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
@@ -1229,7 +1228,7 @@ PetscErrorCode Phi(AppCtx *user)
     xc2 = xmid;
 
     /*ierr = VecSet(user->phi1,0.0);CHKERRQ(ierr);*/
-    for (k=0;k < 3; k++) {
+    for (k=0; k < 3; k++) {
       if (x[k]-xqu > 0) s1 = (x[k] - xqu);
       else s1 = -(x[k] - xqu);
 
@@ -1240,12 +1239,12 @@ PetscErrorCode Phi(AppCtx *user)
       else dist2 = -(x[k] - xc2);
 
       if (dist1 <= 0.5*lambda) {
-        r = (x[k]-xc1)/(0.5*lambda);
-        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        r        = (x[k]-xc1)/(0.5*lambda);
+        hhr      = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals1[k] = hhr;
       } else if (dist2 <= 0.5*lambda) {
-        r = (x[k]-xc2)/(0.5*lambda);
-        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        r        = (x[k]-xc2)/(0.5*lambda);
+        hhr      = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals1[k] = 1.0 - hhr;
       } else if (s1 <= xqu - 2.0*h) vals1[k] = 1.0;
       /*else if (abs(x[k]-(user->xmax-h)) < 0.1*h) {*/
@@ -1279,8 +1278,8 @@ PetscErrorCode Phi(AppCtx *user)
         hhr      = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals2[k] = hhr;
       } else if (dist2 <= 0.5*lambda) {
-        r = -(x[k]-xc2)/(0.5*lambda);
-        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        r        = -(x[k]-xc2)/(0.5*lambda);
+        hhr      = 0.25*(-r*r*r + 3.0*r + 2.0);
         vals2[k] = hhr;
       } else if (s1 <= xqu - 2.0*h)           vals2[k] = 1.0;
       else if (x[k]-(user->xmin) < 0.1*h)     vals2[k] = 0.5;

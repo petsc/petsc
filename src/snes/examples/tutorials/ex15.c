@@ -719,7 +719,7 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
   ierr = PetscMalloc(sizeof(struct _n_PreCheck),precheck);CHKERRQ(ierr);
   ierr = PetscMemzero(*precheck,sizeof(struct _n_PreCheck));CHKERRQ(ierr);
 
-  (*precheck)->comm = comm;
+  (*precheck)->comm  = comm;
   (*precheck)->angle = 10.;     /* only active if angle is less than 10 degrees */
   PetscFunctionReturn(0);
 }
@@ -812,8 +812,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
                 newt_W = e_W+de_W*PetscSqr(ux_W),
                 newt_N = e_N+de_N*PetscSqr(uy_N),
                 newt_S = e_S+de_S*PetscSqr(uy_S),
-                uxx = -hy * (e_E*ux_E - e_W*ux_W),
-                uyy = -hx * (e_N*uy_N - e_S*uy_S);
+                uxx    = -hy * (e_E*ux_E - e_W*ux_W),
+                uyy    = -hx * (e_N*uy_N - e_S*uy_S);
 
               if (sc) eu = PetscExpScalar(u);
               else    eu = 0;

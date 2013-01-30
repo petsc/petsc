@@ -278,9 +278,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
         else if (its<=8) cont_incr = 0.15001;
         else             cont_incr = 0.10001;
 
-        if (param->continuation+cont_incr > 1.0) {
-          cont_incr = 1.0 - param->continuation;
-        }
+        if (param->continuation+cont_incr > 1.0) cont_incr = 1.0 - param->continuation;
       } /* endif reason<0 */
     }
   }
@@ -424,8 +422,7 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
     if (i==j) {
       wN = param->sb;
       uW = param->cb;
-    }
-    else {
+    } else {
       wN = WInterp(x,i,j);
       uW = UInterp(x,i-1,j);
     }
@@ -702,10 +699,15 @@ PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, P
   if (ipos==CELL_CENTER) { /* on cell center */
 
     wE = WInterp(x,i,j-1);
-    if (i==j) { wW = param->sb; uN = param->cb;}
-    else      { wW = WInterp(x,i-1,j-1); uN = UInterp(x,i-1,j); }
-    if (j==grid->jlid+1)  uS = 0.0;
-    else                  uS = UInterp(x,i-1,j-1);
+    if (i==j) {
+      wW = param->sb;
+      uN = param->cb;
+    } else {
+      wW = WInterp(x,i-1,j-1);
+      uN = UInterp(x,i-1,j);
+    }
+    if (j==grid->jlid+1) uS = 0.0;
+    else                 uS = UInterp(x,i-1,j-1);
 
   } else { /* on cell corner */
 
@@ -885,7 +887,9 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   ierr = PetscOptionsGetInt(PETSC_NULL, "-ivisc",&(param->ivisc),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-visc_cutoff",&(param->visc_cutoff),PETSC_NULL);CHKERRQ(ierr);
-  param->output_ivisc  = param->ivisc;
+
+  param->output_ivisc = param->ivisc;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-output_ivisc",&(param->output_ivisc),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-vstar",&(param->dislocation.Vstar),PETSC_NULL);CHKERRQ(ierr);
 
@@ -899,6 +903,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-adv_scheme",&(param->adv_scheme),PETSC_NULL);CHKERRQ(ierr);
 
   /* misc. flags */
@@ -982,8 +987,8 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Full Rheology \n");CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n");CHKERRQ(ierr);
-      ierr_out=1;
+      ierr     = PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n");CHKERRQ(ierr);
+      ierr_out = 1;
     }
 
     PetscPrintf(PETSC_COMM_WORLD,"Boundary condition:");
@@ -994,8 +999,8 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     } else if (param->ibound==BC_EXPERMNT) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"       Experimental boundary condition \n");CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"       Invalid! \n");CHKERRQ(ierr);
-      ierr_out=1;
+      ierr     = PetscPrintf(PETSC_COMM_WORLD,"       Invalid! \n");CHKERRQ(ierr);
+      ierr_out = 1;
     }
 
     if (param->output_to_file)
@@ -1004,8 +1009,9 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 #else
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);
 #endif
-    if (param->output_ivisc != param->ivisc)
+    if (param->output_ivisc != param->ivisc) {
       PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);
+    }
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------END ex30 PARAM REPORT---------------------\n");CHKERRQ(ierr);
   }
@@ -1040,25 +1046,17 @@ PetscErrorCode Initialize(DM da)
   /* Compute initial guess */
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      if (i<j) {
-        x[j][i].u = param->cb;
-      } else if (j<=grid->jlid) {
-        x[j][i].u = 0.0;
-      } else {
-        x[j][i].u = HorizVelocity(i,j,user);
-      }
-      if (i<=j) {
-        x[j][i].w = param->sb;
-      } else if (j<=grid->jlid) {
-        x[j][i].w = 0.0;
-      } else {
-        x[j][i].w = VertVelocity(i,j,user);
-      }
-      if (i<j || j<=grid->jlid) {
-        x[j][i].p = 0.0;
-      } else {
-        x[j][i].p = Pressure(i,j,user);
-      }
+      if (i<j)                x[j][i].u = param->cb;
+      else if (j<=grid->jlid) x[j][i].u = 0.0;
+      else                    x[j][i].u = HorizVelocity(i,j,user);
+
+      if (i<=j)               x[j][i].w = param->sb;
+      else if (j<=grid->jlid) x[j][i].w = 0.0;
+      else                    x[j][i].w = VertVelocity(i,j,user);
+
+      if (i<j || j<=grid->jlid) x[j][i].p = 0.0;
+      else                      x[j][i].p = Pressure(i,j,user);
+
       x[j][i].T = PetscMin(grid->dz*(j-0.5),1.0);
     }
   }
@@ -1190,14 +1188,15 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ierr = DMDAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
 
   /* Parameters */
-  /* dx = grid->dx; */ dz   = grid->dz;
+  /* dx = grid->dx; */ dz = grid->dz;
+
   ilim = grid->ni-1; jlim = grid->nj-1;
 
   /* Compute real temperature, strain rate and viscosity */
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      T  = PetscRealPart(param->potentialT * x[j][i].T * exp((j-0.5)*dz*param->z_scale));
+      T = PetscRealPart(param->potentialT * x[j][i].T * exp((j-0.5)*dz*param->z_scale));
       if (i<ilim && j<jlim) {
         TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * exp(j*dz*param->z_scale));
       } else {
@@ -1215,6 +1214,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ierr = DMDAVecRestoreArray(da,V,(void**)&v);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da, &localX);CHKERRQ(ierr);
+
   param->ivisc = ivt;
   PetscFunctionReturn(0);
 }
@@ -1276,18 +1276,14 @@ PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx
   GridInfo  *grid  = user->grid;
 
   if (c=='U' || c=='u') {
-    if (i<j-1) {
-      return param->cb;
-    } else if (j<=grid->jfault) {
-      return 0.0;
-    } else return param->cb;
+    if (i<j-1) return param->cb;
+    else if (j<=grid->jfault) return 0.0;
+    else return param->cb;
 
   } else {
-    if (i<j) {
-      return param->sb;
-    } else if (j<=grid->jfault) {
-      return 0.0;
-    } else return param->sb;
+    if (i<j) return param->sb;
+    else if (j<=grid->jfault) return 0.0;
+    else return param->sb;
   }
 }
 
@@ -1417,9 +1413,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     for (i=is; i<ie; i++) {
 
       /************* X-MOMENTUM/VELOCITY *************/
-      if (i<j) {
-        f[j][i].u = x[j][i].u - SlabVel('U',i,j,user);
-      } else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
+      if (i<j) f[j][i].u = x[j][i].u - SlabVel('U',i,j,user);
+      else if (j<=grid->jlid || (j<grid->corner+grid->inose && i<grid->corner+grid->inose)) {
         /* in the lithospheric lid */
         f[j][i].u = x[j][i].u - 0.0;
       } else if (i==ilim) {

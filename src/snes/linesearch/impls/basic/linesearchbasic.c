@@ -55,6 +55,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
     if (linesearch->ops->vinorm) {
       linesearch->fnorm = gnorm;
+
       ierr = (*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm);CHKERRQ(ierr);
     } else {
       ierr = VecNorm(F,NORM_2,&linesearch->fnorm);CHKERRQ(ierr);

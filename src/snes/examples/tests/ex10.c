@@ -173,22 +173,22 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr)
       xlt=xrb=xl=xr=xb=xt=xc;
 
       if (i==0) { /* left side */
-        xl= user->left[j+1];
+        xl  = user->left[j+1];
         xlt = user->left[j+2];
       } else xl = x[row-1];
 
       if (j==0) { /* bottom side */
-        xb=user->bottom[i+1];
+        xb  = user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else xb = x[row-mx];
 
       if (i+1 == mx) { /* right side */
-        xr=user->right[j+1];
+        xr  = user->right[j+1];
         xrb = user->right[j];
       } else xr = x[row+1];
 
       if (j+1==0+my) { /* top side */
-        xt=user->top[i+1];
+        xt  = user->top[i+1];
         xlt = user->top[i];
       } else xt = x[row+mx];
 
@@ -294,22 +294,22 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure 
 
       /* Left side */
       if (i==0) {
-        xl= user->left[j+1];
+        xl  = user->left[j+1];
         xlt = user->left[j+2];
       } else xl = x[row-1];
 
       if (j==0) {
-        xb=user->bottom[i+1];
+        xb  = user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else xb = x[row-mx];
 
       if (i+1 == mx) {
-        xr=user->right[j+1];
+        xr  = user->right[j+1];
         xrb = user->right[j];
       } else xr = x[row+1];
 
       if (j+1==my) {
-        xt=user->top[i+1];
+        xt  = user->top[i+1];
         xlt = user->top[i];
       } else xt = x[row+mx];
 

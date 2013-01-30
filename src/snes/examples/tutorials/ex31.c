@@ -93,8 +93,8 @@ typedef struct {
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
   PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
-  BCType        bcType;            /* The type of boundary conditions */
-  ForcingType   forcingType;       /* The type of rhs */
+  BCType      bcType;              /* The type of boundary conditions */
+  ForcingType forcingType;         /* The type of rhs */
 } AppCtx;
 
 PetscScalar zero(const PetscReal coords[])
@@ -225,9 +225,7 @@ void f0_u_constant(const PetscScalar u[], const PetscScalar gradU[], const Petsc
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
 
-  for (comp = 0; comp < Ncomp; ++comp) {
-    f0[comp] = 3.0;
-  }
+  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 3.0;
 }
 
 void f0_u_linear_2d(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
@@ -266,9 +264,7 @@ void f0_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   PetscInt       d;
 
   f0[0] = 0.0;
-  for (d = 0; d < dim; ++d) {
-    f0[0] += gradU[d*dim+d];
-  }
+  for (d = 0; d < dim; ++d) f0[0] += gradU[d*dim+d];
 }
 
 void f1_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[])
@@ -276,9 +272,7 @@ void f1_p(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for (d = 0; d < dim; ++d) {
-    f1[d] = 0.0;
-  }
+  for (d = 0; d < dim; ++d) f1[d] = 0.0;
 }
 
 void f0_T(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
@@ -292,9 +286,7 @@ void f1_T(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   const PetscInt off = SPATIAL_DIM_0*NUM_BASIS_COMPONENTS_0+SPATIAL_DIM_1*NUM_BASIS_COMPONENTS_1;
   PetscInt       d;
 
-  for (d = 0; d < dim; ++d) {
-    f1[d] = gradU[off+d];
-  }
+  for (d = 0; d < dim; ++d) f1[d] = gradU[off+d];
 }
 
 /* < v_t, I t > */
@@ -310,9 +302,7 @@ void g1_pu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for (d = 0; d < dim; ++d) {
-    g1[d*dim+d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
-  }
+  for (d = 0; d < dim; ++d) g1[d*dim+d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
 }
 
 /* -< \nabla\cdot v, p >
@@ -322,9 +312,7 @@ void g2_up(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for (d = 0; d < dim; ++d) {
-    g2[d*dim+d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
-  }
+  for (d = 0; d < dim; ++d) g2[d*dim+d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
 }
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
@@ -645,7 +633,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
       ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
     } else {
       PetscInt *closure = PETSC_NULL;
-      PetscInt  closureSize, q, r;
+      PetscInt closureSize, q, r;
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* Compress out non-vertices */
@@ -1178,9 +1166,11 @@ int main(int argc, char **argv)
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    for (k=j=0; j<mlocal; j++)
-      for (i=0; i<SPATIAL_DIM_0; i++,k++)
+    for (k=j=0; j<mlocal; j++) {
+      for (i=0; i<SPATIAL_DIM_0; i++,k++) {
         coords[k] = PetscRealPart(v[k]);
+      }
+    }
     ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
     ierr = PCSetCoordinates(pc, SPATIAL_DIM_0, mlocal, coords);CHKERRQ(ierr);
     ierr = PetscFree(coords);CHKERRQ(ierr);

@@ -455,6 +455,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,v
 
   if (xs == 0) {  /* left boundary */
     i = 0; A[0] = 1.0;
+
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     xs++;xm--;
   }
@@ -586,7 +587,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   check = (StepCheckCtx*)ctx;
   user  = check->user;
   ierr  = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-  ierr  = SNESLineSearchGetPreCheck(linesearch, PETSC_NULL, (void **)&check);CHKERRQ(ierr);
+  ierr  = SNESLineSearchGetPreCheck(linesearch, PETSC_NULL, (void**)&check);CHKERRQ(ierr);
 
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {

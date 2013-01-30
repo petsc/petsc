@@ -1,8 +1,8 @@
 #include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
 
 static SNESMSType SNESMSDefault = SNESMSM62;
-static PetscBool SNESMSRegisterAllCalled;
-static PetscBool SNESMSPackageInitialized;
+static PetscBool  SNESMSRegisterAllCalled;
+static PetscBool  SNESMSPackageInitialized;
 
 typedef struct _SNESMSTableau *SNESMSTableau;
 struct _SNESMSTableau {

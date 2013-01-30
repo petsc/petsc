@@ -328,10 +328,10 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->cv);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i]=w2[i];
+  for (i=0; i<n; i++) q_p[3*i]=w2[i];
 
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i+1]=w1[i];
+  for (i=0; i<n; i++) q_p[3*i+1]=w1[i];
 
   ierr = VecCopy(user->DPsieta,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,user->L*user->dt);CHKERRQ(ierr);
@@ -340,7 +340,7 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecAXPY(user->work1,-1.0,user->Piv);CHKERRQ(ierr);
   }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i+2]=w2[i];
+  for (i=0; i<n; i++) q_p[3*i+2]=w2[i];
 
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
@@ -849,7 +849,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
 
 
   ierr = PetscMalloc(cnt*sizeof(PetscInt),&outindex);CHKERRQ(ierr);
-  cnt = 0;
+  cnt  = 0;
 
   for (i=xs; i < xs+xm;i++) {
     for (l=0;l<5;l++) {

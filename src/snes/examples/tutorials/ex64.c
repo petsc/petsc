@@ -169,7 +169,6 @@ int main(int argc, char **argv)
         ierr = VecView(user.eta,view);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
       }
-
     }
 
     t = t + user.dt;
@@ -251,16 +250,16 @@ PetscErrorCode Update_q(AppCtx *user)
 
   ierr = MatMult(user->M_0,user->cv,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i]=w1[i];
+  for (i=0; i<n; i++) q_p[3*i]=w1[i];
 
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i+1]=w1[i];
+  for (i=0; i<n; i++) q_p[3*i+1]=w1[i];
 
   ierr = VecCopy(user->DPsieta,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,user->L*user->dt);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->eta);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) q_p[3*i+2]=w2[i];
+  for (i=0; i<n; i++) q_p[3*i+2]=w2[i];
 
   ierr = VecRestoreArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
@@ -324,7 +323,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+  for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
@@ -337,10 +336,10 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 {
   PetscErrorCode ierr;
 
-
   PetscInt          n,i,Mda;
   PetscScalar       *xx,*cv_p,*wv_p,*eta_p;
   PetscViewer       view_out;
+
   /* needed for the void growth case */
   PetscScalar       xmid,cv_v=1.0,cv_m=user->Sv*user->cv0,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscInt          nele,nen,idx[2];
@@ -360,11 +359,11 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   if (user->periodic) h = (user->xmax-user->xmin)/Mda;
   else                h = (user->xmax-user->xmin)/(Mda-1.0);
 
-  xmid = (user->xmax + user->xmin)/2.0;
+  xmid   = (user->xmax + user->xmin)/2.0;
   lambda = 4.0*h;
 
   ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
-  for (i=0;i < nele; i++) {
+  for (i=0; i < nele; i++) {
     idx[0] = ele[2*i]; idx[1] = ele[2*i+1];
 
     x[0] = _coords[idx[0]];
@@ -654,8 +653,8 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
     if (uout[i-1][3] && uout[i][3] && uout[i+1][3]) uout[i][2] = 1.0;
   }
 
-  for (i=xs; i < xs+xm;i++) {
-    for (l=0;l<5;l++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (l=0; l < 5; l++) {
       if (uout[i][l]) cnt++;
     }
   }

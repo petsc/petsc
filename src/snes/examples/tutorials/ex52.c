@@ -1,5 +1,6 @@
 static const char help[] = "Testbed for FEM operations on the GPU.\n\n";
 
+/*
 #if 0
  - Automate testing of different:
    - elements, batches, blocks, operators
@@ -17,6 +18,7 @@ MUST CHECK WITH:
  - Different quadrature (1pt and 3pt)
  - Different basis (linear and quadratic)
 #endif
+*/
 
 #include<petscdmplex.h>
 #include<petscsnes.h>

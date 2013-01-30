@@ -342,18 +342,18 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
-      ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
+      ierr = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
       /* set tabbing and options prefix of KSP inside the MatSchur */
-      ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
-      ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
-      ierr  = PetscSNPrintf(schurprefix,sizeof(schurprefix),"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
-      ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
-      ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
+      ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(schurprefix,sizeof(schurprefix),"%sfieldsplit_%s_",((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "",jac->head->splitname);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
-      ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
-      ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
-      ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
+      ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pc;
         ierr = KSPGetPC(jac->kspschur,&pc);CHKERRQ(ierr);
@@ -649,7 +649,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   ierr = PetscMalloc(n*sizeof(PetscInt), &newblock->fields);CHKERRQ(ierr);
   ierr = PetscMemcpy(newblock->fields, fields, n*sizeof(PetscInt));CHKERRQ(ierr);
 
-  newblock->next    = PETSC_NULL;
+  newblock->next = PETSC_NULL;
 
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
@@ -697,7 +697,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
     ierr = PetscMalloc((len+1)*sizeof(char), &newblock->name);CHKERRQ(ierr);
     ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
   }
-  newblock->is   = is;
+  newblock->is = is;
 
   ierr = PetscObjectReference((PetscObject) is);CHKERRQ(ierr);
 

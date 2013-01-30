@@ -414,7 +414,7 @@ PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscIn
     cols[0]=p; vals[0]=-(ae+awb+asb+an);
     cols[1]=e; vals[1]=ae;
     cols[2]=n; vals[2]=an;
-  } else if (i==0 && j==s->ny-1)  { /* north-west corner */
+  } else if (i==0 && j==s->ny-1) { /* north-west corner */
     *size  =3;
     cols[0]=s2; vals[0]=as;
     cols[1]=p; vals[1]=-(ae+awb+as+anb);
@@ -516,7 +516,7 @@ PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscIn
 
 PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals)
 {
-  PetscInt    p=j*s->nx+i, s2=p-s->nx, n=p+s->nx;
+  PetscInt    p =j*s->nx+i, s2=p-s->nx, n=p+s->nx;
   PetscScalar as=-s->hx/2, asb=0;
   PetscScalar an= s->hx/2, anb=0;
 

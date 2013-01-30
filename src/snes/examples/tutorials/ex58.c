@@ -322,25 +322,25 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure 
 
       /* Left */
       if (i==0) {
-        xl= user->left[j+1];
+        xl  = user->left[j+1];
         xlt = user->left[j+2];
       } else xl = x[j][i-1];
 
       /* Bottom */
       if (j==0) {
-        xb=user->bottom[i+1];
+        xb  =user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else xb = x[j-1][i];
 
       /* Right */
       if (i+1 == mx) {
-        xr=user->right[j+1];
+        xr  =user->right[j+1];
         xrb = user->right[j];
       } else xr = x[j][i+1];
 
       /* Top */
       if (j+1==my) {
-        xt=user->top[i+1];
+        xt  =user->top[i+1];
         xlt = user->top[i];
       } else xt = x[j+1][i];
 

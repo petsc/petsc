@@ -85,7 +85,7 @@ PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 int main(int argc,char **argv)
 {
   SNES                   snes;                 /* SNES context */
-  SNESType               type = SNESNEWTONLS;        /* default nonlinear solution method */
+  SNESType               type = SNESNEWTONLS;  /* default nonlinear solution method */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    Jac;                  /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined application context */
@@ -97,8 +97,7 @@ int main(int argc,char **argv)
   PetscInt               bs = 1;               /* block size for multicomponent systems */
   PetscInt               nvertices;            /* number of local plus ghost nodes of a processor */
   PetscInt               *pordering;           /* PETSc ordering */
-  PetscInt               *vertices;            /* list of all vertices (incl. ghost ones)
-                                                on a processor */
+  PetscInt               *vertices;            /* list of all vertices (incl. ghost ones) on a processor */
   PetscInt               *verticesmask;
   PetscInt               *tmp;
   PetscInt               i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
@@ -109,7 +108,7 @@ int main(int argc,char **argv)
   FILE                   *fptr,*fptr1;
   ISLocalToGlobalMapping isl2g;
   int                    dtmp;
-#if defined (UNUSED_VARIABLES)
+#if defined(UNUSED_VARIABLES)
   PetscDraw              draw;                 /* drawing context */
   PetscScalar            *ff,*gg;
   PetscReal              tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
@@ -192,7 +191,7 @@ int main(int argc,char **argv)
       ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Number of neighbors for the vertex %D is %D\n",inode,nbrs);CHKERRQ(ierr);
 
       user.itot[user.Nvlocal] = nbrs;
-      Nvneighborstotal += nbrs;
+      Nvneighborstotal       += nbrs;
       for (i = 0; i < user.itot[user.Nvlocal]; i++) {
         form[0]='\0';
         for (j=0; j < i+2; j++) {

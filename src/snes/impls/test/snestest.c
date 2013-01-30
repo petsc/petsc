@@ -32,7 +32,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   }
 
   for (i=0; i<3; i++) {
-    void *functx;
+    void                     *functx;
     static const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
 
     if (i == 1) {

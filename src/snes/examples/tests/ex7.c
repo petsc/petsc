@@ -134,7 +134,7 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
     also EXACTLY the Jacobian. In general, it would be some lower
     order, simplified apprioximation */
 
-PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
+PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   PetscScalar    *xx,A[3],d;
   PetscInt       i,n,j[3],iter;
@@ -163,7 +163,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,v
     ierr  = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
-  }  else { /* reuse preconditioner from last iteration */
+  } else { /* reuse preconditioner from last iteration */
     ierr  = PetscPrintf(PETSC_COMM_SELF,"iter=%D, using old preconditioning matrix\n",iter+1);CHKERRQ(ierr);
     *flag = SAME_PRECONDITIONER;
   }

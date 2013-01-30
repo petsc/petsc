@@ -73,35 +73,35 @@ static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 }
 
-static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason*reason,void*ctx)
+static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason *reason,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.test,(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*),(&snes,&it,&a,&d,&c,reason,_ctx,&ierr));
   return 0;
 }
 
-static PetscErrorCode ourdestroy(void*ctx)
+static PetscErrorCode ourdestroy(void *ctx)
 {
   PetscObjectUseFortranCallback(ctx,_cb.destroy,(void*,PetscErrorCode*),(_ctx,&ierr));
   return 0;
 }
 
-static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
+static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat *m,Mat *p,MatStructure *type,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),(&snes,&x,m,p,type,_ctx,&ierr));
   return 0;
 }
 
-static PetscErrorCode oursnesgs(SNES snes,Vec x,Vec b,void*ctx)
+static PetscErrorCode oursnesgs(SNES snes,Vec x,Vec b,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.gs,(SNES*,Vec*,Vec*,void*,PetscErrorCode*),(&snes,&x,&b,_ctx,&ierr));
   return 0;
 }
-static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void*ctx)
+static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.monitor,(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&snes,&i,&d,_ctx,&ierr));
   return 0;
 }
-static PetscErrorCode ourmondestroy(void** ctx)
+static PetscErrorCode ourmondestroy(void **ctx)
 {
   SNES snes = (SNES)*ctx;
   PetscObjectUseFortranCallback(snes,_cb.mondestroy,(void*,PetscErrorCode*),(_ctx,&ierr));
@@ -117,21 +117,22 @@ EXTERN_C_BEGIN
 
   functions, hence no STDCALL
 */
-void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr)
+void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = MatMFFDComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr)
+void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr)
+void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
 
-void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,
-            MatStructure*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
+                                    void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),
+                                    void *ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
   CHKFORTRANNULLFUNCTION(func);
@@ -222,8 +223,7 @@ void snesdefaultconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,Pet
   *ierr = SNESDefaultConverged(*snes,*it,*a,*b,*c,r,ct);
 }
 
-void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
-                                       void *ct,PetscErrorCode *ierr)
+void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
 {
   *ierr = SNESSkipConverged(*snes,*it,*a,*b,*c,r,ct);
 }
