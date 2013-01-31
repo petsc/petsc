@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
@@ -43,14 +43,14 @@ int main(int argc,char **args)
     value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
     for (i=1; i<n-1; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
-    i = n - 1; col[0] = n - 2; col[1] = n - 1;
+    i    = n - 1; col[0] = n - 2; col[1] = n - 1;
     ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+    i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
     ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-    i = 0; col[0] = n-1; value[0] = 0.5; /* make A non-symmetric */
+    i    = 0; col[0] = n-1; value[0] = 0.5; /* make A non-symmetric */
     ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %G, Iterations %D\n",
-                     norm,its);CHKERRQ(ierr);
+                       norm,its);CHKERRQ(ierr);
   }
 
   /* 2. Solve linear system A^T x = b*/
@@ -92,12 +92,12 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"2. Norm of error for A^T x=b: %G, Iterations %D\n",
-                     norm,its);CHKERRQ(ierr);
+                       norm,its);CHKERRQ(ierr);
   }
 
   /* 3. Change A and solve A x = b with an iterative solver using A=LU as a preconditioner*/
   if (!rank) {
-    i = 0; col[0] = n-1; value[0] = 1.e-2;
+    i    = 0; col[0] = n-1; value[0] = 1.e-2;
     ierr = MatSetValues(A,1,&i,1,col,value,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -111,8 +111,7 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %G, Iterations %D\n",
-                     norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
   }
 
   /* Free work space. */

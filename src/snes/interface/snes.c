@@ -2555,8 +2555,12 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes,(PetscObject)snes->pc);CHKERRQ(ierr);
 
     /* default to 1 iteration */
-    ierr = SNESSetTolerances(snes->pc, 0.0, 0.0, 0.0, 1, snes->pc->max_funcs);CHKERRQ(ierr);
-    ierr = SNESSetNormType(snes->pc, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+    ierr = SNESSetTolerances(snes->pc,0.0,0.0,0.0,1,snes->pc->max_funcs);CHKERRQ(ierr);
+    if (snes->pcside==PC_RIGHT) {
+      ierr = SNESSetNormType(snes->pc,SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetNormType(snes->pc,SNES_NORM_NONE);CHKERRQ(ierr);
+    }
     ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
 
     /* copy the line search context over */

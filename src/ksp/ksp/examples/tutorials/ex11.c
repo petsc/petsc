@@ -47,9 +47,9 @@ int main(int argc,char **args)
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
   PetscBool      flg = PETSC_FALSE;
-  PetscScalar    a=1.0+PETSC_i;
+  PetscScalar    a   = 1.0+PETSC_i;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif
@@ -59,7 +59,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  dim = n*n;
+  dim  = n*n;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -93,7 +93,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-norandom",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) use_random = 0;
-  else     use_random = 1;
+  else use_random = 1;
   if (use_random) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ int main(int argc,char **args)
       J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
     }
     if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);}
-    v = 4.0 - sigma1*h2 + sigma2*h2;
+    v    = 4.0 - sigma1*h2 + sigma2*h2;
     ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
@@ -199,7 +199,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);
     for (i=0; i<3; i++) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %G + %G i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
-  }
+    }
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }
 

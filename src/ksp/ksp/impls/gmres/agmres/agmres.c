@@ -157,13 +157,13 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   ierr = KSPSetUp(kspgmres);CHKERRQ(ierr);
 
   kspgmres->max_it = max_k; /* Restrict the maximum number of iterations to one cycle of GMRES */
-  kspgmres->rtol = ksp->rtol;
+  kspgmres->rtol   = ksp->rtol;
 
   ierr = KSPSolve(kspgmres, ksp->vec_rhs, ksp->vec_sol);CHKERRQ(ierr);
 
   ksp->guess_zero = PETSC_FALSE;
-  ksp->rnorm = kspgmres->rnorm;
-  ksp->its = kspgmres->its;
+  ksp->rnorm      = kspgmres->rnorm;
+  ksp->its        = kspgmres->its;
   if (kspgmres->reason == KSP_CONVERGED_RTOL) {
     ksp->reason = KSP_CONVERGED_RTOL;
     PetscFunctionReturn(0);

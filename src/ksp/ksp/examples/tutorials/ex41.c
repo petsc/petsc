@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);

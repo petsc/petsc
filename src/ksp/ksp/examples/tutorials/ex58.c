@@ -24,10 +24,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,n = 20,col[3],its;
   PetscMPIInt    size;
-  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
+  PetscScalar    neg_one      = -1.0,one = 1.0,value[3];
   PetscBool      nonzeroguess = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -69,11 +69,11 @@ int main(int argc,char **args)
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = n - 1; col[0] = n - 2; col[1] = n - 1;
+  i    = n - 1; col[0] = n - 2; col[1] = n - 1;
   ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+  i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
   ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -160,7 +160,7 @@ int main(int argc,char **args)
      Check the error
   */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);

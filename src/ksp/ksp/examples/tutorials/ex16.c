@@ -35,11 +35,11 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       ntimes,i,j,k,Ii,J,Istart,Iend;
-  PetscInt       m = 8,n = 7,its;
+  PetscInt       m   = 8,n = 7,its;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v,one = 1.0,neg_one = -1.0,rhs;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
@@ -143,14 +143,14 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ntimes = 2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ntimes",&ntimes,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(PETSC_NULL,"-ntimes",&ntimes,PETSC_NULL);CHKERRQ(ierr);
   for (k=1; k<ntimes+1; k++) {
 
     /*
        Set exact solution; then compute right-hand-side vector.  We use
        an exact solution of a vector with all elements equal to 1.0*k.
     */
-    rhs = one * (PetscReal)k;
+    rhs  = one * (PetscReal)k;
     ierr = VecSet(u,rhs);CHKERRQ(ierr);
     ierr = MatMult(A,u,b);CHKERRQ(ierr);
 

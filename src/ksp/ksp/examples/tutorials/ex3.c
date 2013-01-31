@@ -44,11 +44,11 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  N = (m+1)*(m+1);
-  M = m*m;
-  h = 1.0/m;
+  N    = (m+1)*(m+1);
+  M    = m*m;
+  h    = 1.0/m;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -60,11 +60,11 @@ int main(int argc,char **args)
   /*
      Create stiffness matrix
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,9,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,9,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr); /* More than necessary */
+  ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
+  ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr  = MatSeqAIJSetPreallocation(A,9,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = MatMPIAIJSetPreallocation(A,9,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr); /* More than necessary */
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -73,12 +73,12 @@ int main(int argc,char **args)
   */
   ierr = FormElementStiffness(h*h,Ke);
   for (i=start; i<end; i++) {
-     /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m);
-     /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + (i % m);
-     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(A,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    /* location of lower left corner of element */
+    x = h*(i % m); y = h*(i/m);
+    /* node numbers for the four corners of element */
+    idx[0] = (m+1)*(i/m) + (i % m);
+    idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
+    ierr   = MatSetValues(A,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -100,13 +100,13 @@ int main(int argc,char **args)
      Assemble right-hand-side vector
   */
   for (i=start; i<end; i++) {
-     /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m);
-     /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + (i % m);
-     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = FormElementRhs(x,y,h*h,r);CHKERRQ(ierr);
-     ierr = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRQ(ierr);
+    /* location of lower left corner of element */
+    x = h*(i % m); y = h*(i/m);
+    /* node numbers for the four corners of element */
+    idx[0] = (m+1)*(i/m) + (i % m);
+    idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
+    ierr   = FormElementRhs(x,y,h*h,r);CHKERRQ(ierr);
+    ierr   = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
@@ -120,18 +120,14 @@ int main(int argc,char **args)
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
   }
   count = m+1; /* left side */
-  for (i=m+1; i<m*(m+1); i+= m+1) {
-    rows[count++] = i;
-  }
+  for (i=m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
   count = 2*m; /* left side */
-  for (i=2*m+1; i<m*(m+1); i+= m+1) {
-    rows[count++] = i;
-  }
+  for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
   for (i=0; i<4*m; i++) {
-     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
-     val = y;
-     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+    x    = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
+    val  = y;
+    ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatZeroRows(A,4*m,rows,1.0,0,0);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
@@ -163,9 +159,9 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-     x = h*(i % (m+1)); y = h*(i/(m+1));
-     val = y;
-     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+    x    = h*(i % (m+1)); y = h*(i/(m+1));
+    val  = y;
+    ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
@@ -195,7 +191,7 @@ int main(int argc,char **args)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
-   /* element stiffness for Laplacian */
+/* element stiffness for Laplacian */
 PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   PetscFunctionBeginUser;

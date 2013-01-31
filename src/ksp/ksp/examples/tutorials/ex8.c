@@ -58,7 +58,7 @@ int main(int argc,char **args)
   PetscScalar    v, one = 1.0;
   PetscReal      e;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ int main(int argc,char **args)
     if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"PCASMCreateSubdomains2D() is currently a uniprocessor routine only!");
     ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
     ierr = PCASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
-    flg = PETSC_FALSE;
+    flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
@@ -204,10 +204,10 @@ int main(int argc,char **args)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomain_solvers",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    KSP        *subksp;       /* array of KSP contexts for local subblocks */
-    PetscInt   nlocal,first;  /* number of local subblocks, first local subblock */
-    PC         subpc;          /* PC context for subblock */
-    PetscBool  isasm;
+    KSP       *subksp;        /* array of KSP contexts for local subblocks */
+    PetscInt  nlocal,first;   /* number of local subblocks, first local subblock */
+    PC        subpc;          /* PC context for subblock */
+    PetscBool isasm;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n");CHKERRQ(ierr);
 

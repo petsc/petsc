@@ -6,7 +6,7 @@ typedef struct {
   PetscReal   *eigi;
   PetscReal   *eigr;
 #if defined(PETSC_HAVE_AMS)
-  AMS_Memory  amem;
+  AMS_Memory amem;
 #endif
 } KSPMonitor_AMS;
 
@@ -36,7 +36,7 @@ PetscErrorCode KSPMonitorAMSCreate(KSP ksp,const char *amscommname,void **ctx)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSPMonitor_AMS,&mon);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscViewerAMSOpen(((PetscObject)ksp)->comm,amscommname,&mon->viewer);CHKERRQ(ierr);
+  ierr      = PetscViewerAMSOpen(((PetscObject)ksp)->comm,amscommname,&mon->viewer);CHKERRQ(ierr);
   mon->amem = -1;
 #endif
   *ctx = (void*)mon;
@@ -65,14 +65,14 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
   if (mon->amem != -1) {
-    ierr = AMS_Memory_destroy(mon->amem);CHKERRQ(ierr);
+    ierr      = AMS_Memory_destroy(mon->amem);CHKERRQ(ierr);
     mon->amem = -1;
   }
 #endif
-  ierr = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);
-  ierr = PetscFree(mon->eigr);CHKERRQ(ierr);
+  ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);
+  ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
   mon->eigi = PETSC_NULL;
-  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  ierr      = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -99,10 +99,10 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {
 #if defined(PETSC_HAVE_AMS)
   PetscErrorCode ierr;
-  KSPMonitor_AMS *mon = (KSPMonitor_AMS*)ctx;
-  PetscViewer viewer = mon->viewer;
-  PetscReal emax,emin;;
-  AMS_Comm acomm;
+  KSPMonitor_AMS *mon   = (KSPMonitor_AMS*)ctx;
+  PetscViewer    viewer = mon->viewer;
+  PetscReal      emax,emin;;
+  AMS_Comm       acomm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -113,8 +113,8 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   if (mon->amem != -1) {ierr = AMS_Memory_destroy(mon->amem);CHKERRQ(ierr);}
   mon->amem = -1;
 
-  ierr = PetscFree(mon->eigr);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*n*sizeof(PetscReal),&mon->eigr);CHKERRQ(ierr);
+  ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
+  ierr      = PetscMalloc(2*n*sizeof(PetscReal),&mon->eigr);CHKERRQ(ierr);
   mon->eigi = mon->eigr + n;
   if (n) {ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);}
 

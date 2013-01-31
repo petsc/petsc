@@ -54,7 +54,7 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
     ierr = VecAXPY(vt2,-1.0,vt1);CHKERRQ(ierr);
-    ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
+    ierr = (ksp->pc_side == PC_RIGHT) ? (VecCopy(vt2,vres)) : (KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);

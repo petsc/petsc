@@ -42,8 +42,8 @@ extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscScalar   nu;
-  BCType        bcType;
+  PetscScalar nu;
+  BCType      bcType;
 } UserContext;
 
 #undef __FUNCT__
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
@@ -66,13 +66,13 @@ int main(int argc,char **argv)
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
 
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   user.nu     = 0.1;
   ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
   bc          = (PetscInt)NEUMANN;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr = PetscOptionsEnd();
+  ierr        = PetscOptionsEnd();
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
@@ -138,14 +138,14 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr  = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(mx);
   Hy    = 1.0 / (PetscReal)(my);
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++)  {
+  ierr  = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
@@ -155,35 +155,35 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
           SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
         } else if (user->bcType == NEUMANN) {
           num = 0; numi=0; numj=0;
-          if (j!=0)  {
+          if (j!=0) {
             v[num] = -HxdHy;
             col[num].i = i;
             col[num].j = j-1;
             num++; numj++;
           }
-          if (i!=0)   {
-            v[num] = -HydHx;
+          if (i!=0) {
+            v[num]     = -HydHx;
             col[num].i = i-1;
             col[num].j = j;
             num++; numi++;
           }
           if (i!=mx-1) {
-            v[num] = -HydHx;
+            v[num]     = -HydHx;
             col[num].i = i+1;
             col[num].j = j;
             num++; numi++;
           }
-          if (j!=my-1)  {
-            v[num] = -HxdHy;
+          if (j!=my-1) {
+            v[num]     = -HxdHy;
             col[num].i = i;
             col[num].j = j+1;
             num++; numj++;
           }
-          v[num]   = (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx; col[num].i = i;   col[num].j = j;
+          v[num] = (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx; col[num].i = i;   col[num].j = j;
           num++;
           ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
-      } else   {
+      } else {
         v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
         v[1] = -HydHx;              col[1].i = i-1; col[1].j = j;
         v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;

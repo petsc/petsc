@@ -16,7 +16,7 @@ void PETSC_STDCALL kspmonitorlgresidualnormcreate_(CHAR host PETSC_MIXED_LEN(len
                     CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,PetscDrawLG *ctx,
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
-  char   *t1,*t2;
+  char *t1,*t2;
 
   FIXCHAR(host,len1,t1);
   FIXCHAR(label,len2,t2);

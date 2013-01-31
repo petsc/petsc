@@ -12,7 +12,7 @@ PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 /*
    Contains the list of registered KSP routines
 */
-PetscFunctionList KSPList = 0;
+PetscFunctionList KSPList              = 0;
 PetscBool         KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -121,23 +121,30 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    if (ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);}
-    else                 {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", ksp->max_it);CHKERRQ(ierr);}
+    if (ksp->guess_zero) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", ksp->max_it);CHKERRQ(ierr);
+    }
     if (ksp->guess_knoll) {ierr = PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%G, absolute=%G, divergence=%G\n",ksp->rtol,ksp->abstol,ksp->divtol);CHKERRQ(ierr);
-    if (ksp->pc_side == PC_RIGHT)          {ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);}
-    else if (ksp->pc_side == PC_SYMMETRIC) {ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
-    else                                   {ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);}
+    if (ksp->pc_side == PC_RIGHT) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);
+    } else if (ksp->pc_side == PC_SYMMETRIC) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);
+    }
     if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess method %D with size %D\n",ksp->guess->method,ksp->guess->maxl);CHKERRQ(ierr);}
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
     if (ksp->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
     if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscInt         classid = KSP_FILE_CLASSID;
-    MPI_Comm         comm;
-    PetscMPIInt      rank;
-    char             type[256];
+    PetscInt    classid = KSP_FILE_CLASSID;
+    MPI_Comm    comm;
+    PetscMPIInt rank;
+    char        type[256];
 
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -159,18 +166,16 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
-      ierr = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
-      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+      ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
+      ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
       bottom = y;
     }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-  } else {
-    if (ksp->ops->view) {
+  } else if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
-    }
   }
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
@@ -296,7 +301,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType(), KSPSetCheckNormIteration()
 @*/
-PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -365,9 +370,10 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
       if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i)
           && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j)
           && (ksp->normsupporttable[i][j] > best)) {
-        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1)
+        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1) {
           continue; /* Skip because we don't want to default to no norms unless set by the KSP (preonly). */
-        best = ksp->normsupporttable[i][j];
+        }
+        best  = ksp->normsupporttable[i][j];
         ibest = i;
         jbest = j;
       }
@@ -380,7 +386,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
     SETERRQ3(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
   }
   *normtype = (KSPNormType)ibest;
-  *pcside = (PCSide)jbest;
+  *pcside   = (PCSide)jbest;
   PetscFunctionReturn(0);
 }
 
@@ -410,7 +416,7 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(normtype,2);
-  ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr      = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *normtype = ksp->normtype;
   PetscFunctionReturn(0);
 }
@@ -659,41 +665,41 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,-1,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
-  ksp->max_it        = 10000;
-  ksp->pc_side       = PC_SIDE_DEFAULT;
-  ksp->rtol          = 1.e-5;
-  ksp->abstol        = 1.e-50;
-  ksp->divtol        = 1.e4;
+  ksp->max_it  = 10000;
+  ksp->pc_side = PC_SIDE_DEFAULT;
+  ksp->rtol    = 1.e-5;
+  ksp->abstol  = 1.e-50;
+  ksp->divtol  = 1.e4;
 
-  ksp->chknorm             = -1;
-  ksp->normtype            = KSP_NORM_DEFAULT;
-  ksp->rnorm               = 0.0;
-  ksp->its                 = 0;
-  ksp->guess_zero          = PETSC_TRUE;
-  ksp->calc_sings          = PETSC_FALSE;
-  ksp->res_hist            = PETSC_NULL;
-  ksp->res_hist_alloc      = PETSC_NULL;
-  ksp->res_hist_len        = 0;
-  ksp->res_hist_max        = 0;
-  ksp->res_hist_reset      = PETSC_TRUE;
-  ksp->numbermonitors      = 0;
+  ksp->chknorm        = -1;
+  ksp->normtype       = KSP_NORM_DEFAULT;
+  ksp->rnorm          = 0.0;
+  ksp->its            = 0;
+  ksp->guess_zero     = PETSC_TRUE;
+  ksp->calc_sings     = PETSC_FALSE;
+  ksp->res_hist       = PETSC_NULL;
+  ksp->res_hist_alloc = PETSC_NULL;
+  ksp->res_hist_len   = 0;
+  ksp->res_hist_max   = 0;
+  ksp->res_hist_reset = PETSC_TRUE;
+  ksp->numbermonitors = 0;
 
-  ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-  ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ierr                    = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+  ksp->ops->buildsolution = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual = KSPDefaultBuildResidual;
 #if defined(PETSC_HAVE_AMS)
-  ((PetscObject)ksp)->bops->publish       = KSPPublish_Petsc;
+  ((PetscObject)ksp)->bops->publish = KSPPublish_Petsc;
 #endif
 
-  ksp->vec_sol         = 0;
-  ksp->vec_rhs         = 0;
-  ksp->pc              = 0;
-  ksp->data            = 0;
-  ksp->nwork           = 0;
-  ksp->work            = 0;
-  ksp->reason          = KSP_CONVERGED_ITERATING;
-  ksp->setupstage      = KSP_SETUP_NEW;
+  ksp->vec_sol    = 0;
+  ksp->vec_rhs    = 0;
+  ksp->pc         = 0;
+  ksp->data       = 0;
+  ksp->nwork      = 0;
+  ksp->work       = 0;
+  ksp->reason     = KSP_CONVERGED_ITERATING;
+  ksp->setupstage = KSP_SETUP_NEW;
 
   ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
 
@@ -755,18 +761,18 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   if (!r) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
-    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
+    ierr              = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
     ksp->ops->destroy = PETSC_NULL;
   }
   /* Reinitialize function pointers in KSPOps structure */
-  ierr = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPDefaultBuildSolution;
   ksp->ops->buildresidual = KSPDefaultBuildResidual;
-  ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
+  ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
-  ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
-  ierr = (*r)(ksp);CHKERRQ(ierr);
+  ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
+  ierr            = (*r)(ksp);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);
@@ -794,7 +800,7 @@ PetscErrorCode  KSPRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
+  ierr                 = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
   KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

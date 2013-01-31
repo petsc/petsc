@@ -147,7 +147,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   v_neighbor = v + dof*dof;
   ierr       = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3         = 0;
-  for (k1=0; k1<dof; k1++)
+  for (k1=0; k1<dof; k1++) {
     for (k2=0; k2<dof; k2++) {
       if (k1 == k2) {
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);

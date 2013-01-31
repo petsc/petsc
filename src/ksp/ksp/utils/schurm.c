@@ -33,8 +33,8 @@ PetscErrorCode MatGetVecs_SchurComplement(Mat N,Vec *right,Vec *left)
 #define __FUNCT__ "MatView_SchurComplement"
 PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
 {
-  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
-  PetscErrorCode       ierr;
+  Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"Schur complement A11 - A10 inv(A00) A01\n");CHKERRQ(ierr);

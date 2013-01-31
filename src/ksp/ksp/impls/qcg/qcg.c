@@ -196,8 +196,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecDotRealPart(W,ASP,&wtasp);CHKERRQ(ierr);
         ierr = VecDotRealPart(BS,P,&bstp);CHKERRQ(ierr);
         ierr = VecCopy(W,X);CHKERRQ(ierr);
-        q1 = step1*(bstp + wtasp + .5*step1*ptasp);
-        q2 = step2*(bstp + wtasp + .5*step2*ptasp);
+        q1   = step1*(bstp + wtasp + .5*step1*ptasp);
+        q2   = step2*(bstp + wtasp + .5*step2*ptasp);
         if (q1 <= q2) {
           ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);
         } else {

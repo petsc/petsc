@@ -1,7 +1,7 @@
 
 static char help[] = "Tests the aSA multigrid code.\n"
-"Parameters:\n"
-"-n n          to use a matrix size of n\n";
+                     "Parameters:\n"
+                     "-n n          to use a matrix size of n\n";
 
 #include <petscdmda.h>
 #include <petscksp.h>
@@ -14,15 +14,15 @@ PetscErrorCode  CalculateRhs(Vec);
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  PetscInt        n = 60;
-  PetscErrorCode  ierr;
-  Mat             cmat;
-  Vec             b,x;
-  KSP             kspmg;
-  PC              pcmg;
-  DM              da;
+  PetscInt       n = 60;
+  PetscErrorCode ierr;
+  Mat            cmat;
+  Vec            b,x;
+  KSP            kspmg;
+  PC             pcmg;
+  DM             da;
 
-  PetscInitialize(&Argc,&Args,(char *)0,help);
+  PetscInitialize(&Argc,&Args,(char*)0,help);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = Create1dLaplacian(n,&cmat);CHKERRQ(ierr);
@@ -97,8 +97,8 @@ PetscErrorCode CalculateRhs(Vec u)
   PetscFunctionBeginUser;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&loc_start,&loc_end);CHKERRQ(ierr);
-  h = 1.0/((PetscReal)(n+1));
-  uu = 2.0*h*h;
+  h    = 1.0/((PetscReal)(n+1));
+  uu   = 2.0*h*h;
   for (i=loc_start; i<loc_end; i++) {
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }

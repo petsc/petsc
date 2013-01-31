@@ -182,7 +182,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) perm[i] = i;
-  for (i=0; i<n; i++) r[i]    = PetscRealPart(eigs[i]);
+  for (i=0; i<n; i++) r[i] = PetscRealPart(eigs[i]);
   ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     r[i] = PetscRealPart(eigs[perm[i]]);
