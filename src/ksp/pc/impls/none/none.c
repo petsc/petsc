@@ -42,7 +42,7 @@ PetscErrorCode  PCCreate_None(PC pc)
   pc->ops->applysymmetricleft  = PCApply_None;
   pc->ops->applysymmetricright = PCApply_None;
 
-  pc->data                     = 0;
+  pc->data = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

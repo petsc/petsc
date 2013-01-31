@@ -32,6 +32,7 @@ void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual
     PetscObjectAllocateFortranPointers(*mat,1);
     /*  Attach the residual computer to the Mat, this is not ideal but the only object/context passed in the residual computer */
     ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)residual;
+
     rr = ourresidualfunction;
   }
   *ierr = PCMGSetResidual(*pc,*l,rr,*mat);

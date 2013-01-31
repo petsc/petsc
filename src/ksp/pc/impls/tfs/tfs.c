@@ -17,7 +17,7 @@ typedef struct {
 #define __FUNCT__ "PCDestroy_TFS"
 PetscErrorCode PCDestroy_TFS(PC pc)
 {
-  PC_TFS *tfs = (PC_TFS*)pc->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -39,7 +39,7 @@ PetscErrorCode PCDestroy_TFS(PC pc)
 #define __FUNCT__ "PCApply_TFS_XXT"
 static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 {
-  PC_TFS *tfs = (PC_TFS*)pc->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
   PetscScalar    *xx,*yy;
   PetscErrorCode ierr;
 
@@ -56,7 +56,7 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_TFS_XYT"
 static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
 {
-  PC_TFS *tfs = (PC_TFS*)pc->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
   PetscScalar    *xx,*yy;
   PetscErrorCode ierr;
 
@@ -73,9 +73,9 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCTFSLocalMult_TFS"
 static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
 {
-  PC_TFS        *tfs = (PC_TFS*)pc->data;
-  Mat           A = pc->pmat;
-  Mat_MPIAIJ    *a = (Mat_MPIAIJ*)A->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
+  Mat            A    = pc->pmat;
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -94,11 +94,11 @@ static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xou
 #define __FUNCT__ "PCSetUp_TFS"
 static PetscErrorCode PCSetUp_TFS(PC pc)
 {
-  PC_TFS        *tfs = (PC_TFS*)pc->data;
-  Mat            A = pc->pmat;
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
+  Mat            A    = pc->pmat;
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt      *localtoglobal,ncol,i;
+  PetscInt       *localtoglobal,ncol,i;
   PetscBool      ismpiaij;
 
   /*
@@ -114,16 +114,13 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   /* generate the local to global mapping */
   ncol = a->A->cmap->n + a->B->cmap->n;
   ierr = PetscMalloc((ncol)*sizeof(PetscInt),&localtoglobal);CHKERRQ(ierr);
-  for (i=0; i<a->A->cmap->n; i++) {
-    localtoglobal[i] = A->cmap->rstart + i + 1;
-  }
-  for (i=0; i<a->B->cmap->n; i++) {
-    localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
-  }
+  for (i=0; i<a->A->cmap->n; i++) localtoglobal[i] = A->cmap->rstart + i + 1;
+  for (i=0; i<a->B->cmap->n; i++) localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
+
   /* generate the vectors needed for the local solves */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->rmap->n,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->cmap->n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
+  ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->rmap->n,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
+  ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->cmap->n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
+  ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
   tfs->nd = a->A->cmap->n;
 
 

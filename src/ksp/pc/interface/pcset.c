@@ -5,7 +5,7 @@
 
 #include <petsc-private/pcimpl.h>      /*I "petscpc.h" I*/
 
-PetscBool  PCRegisterAllCalled = PETSC_FALSE;
+PetscBool PCRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered KSP routines
 */
@@ -67,18 +67,19 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   if (!r) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
-    ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+    ierr             =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
     pc->ops->destroy = PETSC_NULL;
-    pc->data = 0;
+    pc->data         = 0;
   }
   ierr = PetscFunctionListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
   /* Reinitialize function pointers in PCOps structure */
   ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
   /* XXX Is this OK?? */
-  pc->modifysubmatrices        = 0;
-  pc->modifysubmatricesP       = 0;
+  pc->modifysubmatrices  = 0;
+  pc->modifysubmatricesP = 0;
   /* Call the PCCreate_XXX routine for this particular preconditioner */
   pc->setupcalled = 0;
+
   ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
   ierr = (*r)(pc);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
@@ -110,6 +111,7 @@ PetscErrorCode  PCRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PCList);CHKERRQ(ierr);
+
   PCRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -226,7 +228,7 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
-  ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
+  ierr   = DMDestroy(&pc->dm);CHKERRQ(ierr);
   pc->dm = dm;
   PetscFunctionReturn(0);
 }

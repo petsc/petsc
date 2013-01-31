@@ -2,12 +2,12 @@
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 
 typedef struct {
-  PetscBool  allocated;
-  PetscBool  scalediag;
-  KSP        kspL;
-  Vec        scale;
-  Vec        x0,y0,x1;
-  Mat        L;            /* keep a copy to reuse when obtained with L = A10*A01 */
+  PetscBool allocated;
+  PetscBool scalediag;
+  KSP       kspL;
+  Vec       scale;
+  Vec       x0,y0,x1;
+  Mat       L;             /* keep a copy to reuse when obtained with L = A10*A01 */
 } PC_LSC;
 
 #undef __FUNCT__
@@ -15,8 +15,8 @@ typedef struct {
 static PetscErrorCode PCLSCAllocate_Private(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
-  Mat             A;
-  PetscErrorCode  ierr;
+  Mat            A;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
@@ -41,8 +41,8 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
 static PetscErrorCode PCSetUp_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
-  Mat             L,Lp,B,C;
-  PetscErrorCode  ierr;
+  Mat            L,Lp,B,C;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCLSCAllocate_Private(pc);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
 #define __FUNCT__ "PCApply_LSC"
 static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
 {
-  PC_LSC        *lsc = (PC_LSC*)pc->data;
+  PC_LSC         *lsc = (PC_LSC*)pc->data;
   Mat            A,B,C;
   PetscErrorCode ierr;
 
@@ -127,7 +127,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
 static PetscErrorCode PCSetFromOptions_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("LSC options");CHKERRQ(ierr);
@@ -142,9 +142,9 @@ static PetscErrorCode PCSetFromOptions_LSC(PC pc)
 #define __FUNCT__ "PCView_LSC"
 static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
 {
-  PC_LSC           *jac = (PC_LSC*)pc->data;
-  PetscErrorCode   ierr;
-  PetscBool        iascii;
+  PC_LSC         *jac = (PC_LSC*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -229,17 +229,17 @@ PetscErrorCode  PCCreate_LSC(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(pc,PC_LSC,&lsc);CHKERRQ(ierr);
-  pc->data  = (void*)lsc;
+  ierr     = PetscNewLog(pc,PC_LSC,&lsc);CHKERRQ(ierr);
+  pc->data = (void*)lsc;
 
-  pc->ops->apply               = PCApply_LSC;
-  pc->ops->applytranspose      = 0;
-  pc->ops->setup               = PCSetUp_LSC;
-  pc->ops->reset               = PCReset_LSC;
-  pc->ops->destroy             = PCDestroy_LSC;
-  pc->ops->setfromoptions      = PCSetFromOptions_LSC;
-  pc->ops->view                = PCView_LSC;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->apply           = PCApply_LSC;
+  pc->ops->applytranspose  = 0;
+  pc->ops->setup           = PCSetUp_LSC;
+  pc->ops->reset           = PCReset_LSC;
+  pc->ops->destroy         = PCDestroy_LSC;
+  pc->ops->setfromoptions  = PCSetFromOptions_LSC;
+  pc->ops->view            = PCView_LSC;
+  pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

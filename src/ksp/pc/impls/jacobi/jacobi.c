@@ -54,14 +54,13 @@
    Private context (data structure) for the Jacobi preconditioner.
 */
 typedef struct {
-  Vec        diag;               /* vector containing the reciprocals of the diagonal elements
-                                    of the preconditioner matrix */
-  Vec        diagsqrt;           /* vector containing the reciprocals of the square roots of
+  Vec diag;                      /* vector containing the reciprocals of the diagonal elements of the preconditioner matrix */
+  Vec diagsqrt;                  /* vector containing the reciprocals of the square roots of
                                     the diagonal elements of the preconditioner matrix (used
                                     only for symmetric preconditioner application) */
-  PetscBool  userowmax;
-  PetscBool  userowsum;
-  PetscBool  useabs;             /* use the absolute values of the diagonal entries */
+  PetscBool userowmax;
+  PetscBool userowsum;
+  PetscBool useabs;              /* use the absolute values of the diagonal entries */
 } PC_Jacobi;
 
 EXTERN_C_BEGIN
@@ -168,9 +167,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
     if (jac->useabs) {
-      for (i=0; i<n; i++) {
-        x[i]     = PetscAbsScalar(x[i]);
-      }
+      for (i=0; i<n; i++) x[i] = PetscAbsScalar(x[i]);
     }
     for (i=0; i<n; i++) {
       if (x[i] == 0.0) {
@@ -351,11 +348,11 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+  ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
                           &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
+  ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
                           &jac->userowsum,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
+  ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
                           &jac->useabs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -409,18 +406,18 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_Jacobi,&jac);CHKERRQ(ierr);
-  pc->data  = (void*)jac;
+  ierr     = PetscNewLog(pc,PC_Jacobi,&jac);CHKERRQ(ierr);
+  pc->data = (void*)jac;
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store
      diagonal entries of the matrix for fast preconditioner application.
   */
-  jac->diag          = 0;
-  jac->diagsqrt      = 0;
-  jac->userowmax     = PETSC_FALSE;
-  jac->userowsum     = PETSC_FALSE;
-  jac->useabs        = PETSC_FALSE;
+  jac->diag      = 0;
+  jac->diagsqrt  = 0;
+  jac->userowmax = PETSC_FALSE;
+  jac->userowsum = PETSC_FALSE;
+  jac->useabs    = PETSC_FALSE;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -439,6 +436,7 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowSum_C","PCJacobiSetUseRowSum_Jacobi",PCJacobiSetUseRowSum_Jacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);

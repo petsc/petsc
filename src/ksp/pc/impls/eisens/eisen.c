@@ -8,10 +8,10 @@
 #include <petsc-private/pcimpl.h>           /*I "petscpc.h" I*/
 
 typedef struct {
-  Mat        shell,A;
-  Vec        b[2],diag;     /* temporary storage for true right hand side */
-  PetscReal  omega;
-  PetscBool  usediag;    /* indicates preconditioner should include diagonal scaling*/
+  Mat       shell,A;
+  Vec       b[2],diag;   /* temporary storage for true right hand side */
+  PetscReal omega;
+  PetscBool usediag;     /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
 
@@ -24,8 +24,8 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&pc);CHKERRQ(ierr);
-  eis = (PC_Eisenstat*)pc->data;
+  ierr = MatShellGetContext(mat,(void**)&pc);CHKERRQ(ierr);
+  eis  = (PC_Eisenstat*)pc->data;
   ierr = MatSOR(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,1,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -39,7 +39,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PetscBool      hasop;
 
   PetscFunctionBegin;
-  if (eis->usediag)  {
+  if (eis->usediag) {
     ierr = MatHasOperation(pc->pmat,MATOP_MULT_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
     if (hasop) {
       ierr = MatMultDiagonalBlock(pc->pmat,x,y);CHKERRQ(ierr);
@@ -62,8 +62,8 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   if (pc->presolvedone < 2) {
     if (pc->mat != pc->pmat) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cannot have different mat and pmat");
     /* swap shell matrix and true matrix */
-    eis->A    = pc->mat;
-    pc->mat   = eis->shell;
+    eis->A  = pc->mat;
+    pc->mat = eis->shell;
   }
 
   if (!eis->b[pc->presolvedone-1]) {
@@ -100,9 +100,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   /* modify x by (U + D/omega)^{-1} */
   ierr = VecCopy(x,eis->b[pc->presolvedone]);CHKERRQ(ierr);
   ierr = MatSOR(eis->A,eis->b[pc->presolvedone],eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
-  if (!pc->presolvedone) {
-    pc->mat = eis->A;
-  }
+  if (!pc->presolvedone) pc->mat = eis->A;
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +108,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 #define __FUNCT__ "PCReset_Eisenstat"
 static PetscErrorCode PCReset_Eisenstat(PC pc)
 {
-  PC_Eisenstat   *eis = (PC_Eisenstat *)pc->data;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -143,11 +141,11 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -191,7 +189,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     ierr = MatSetUp(eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void(*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void (*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
@@ -209,11 +207,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
 PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
-  PC_Eisenstat  *eis;
+  PC_Eisenstat *eis;
 
   PetscFunctionBegin;
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
-  eis = (PC_Eisenstat*)pc->data;
+  eis        = (PC_Eisenstat*)pc->data;
   eis->omega = omega;
   PetscFunctionReturn(0);
 }
@@ -227,7 +225,7 @@ PetscErrorCode  PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;
-  eis = (PC_Eisenstat*)pc->data;
+  eis          = (PC_Eisenstat*)pc->data;
   eis->usediag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -353,18 +351,18 @@ PetscErrorCode  PCCreate_Eisenstat(PC pc)
   pc->ops->view            = PCView_Eisenstat;
   pc->ops->setup           = PCSetUp_Eisenstat;
 
-  pc->data           = (void*)eis;
-  eis->omega         = 1.0;
-  eis->b[0]          = 0;
-  eis->b[1]          = 0;
-  eis->diag          = 0;
-  eis->usediag       = PETSC_TRUE;
+  pc->data     = (void*)eis;
+  eis->omega   = 1.0;
+  eis->b[0]    = 0;
+  eis->b[1]    = 0;
+  eis->diag    = 0;
+  eis->usediag = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",
-                    PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
+                                           PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",
-                    "PCEisenstatNoDiagonalScaling_Eisenstat",
-                    PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
- PetscFunctionReturn(0);
+                                           "PCEisenstatNoDiagonalScaling_Eisenstat",
+                                           PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END

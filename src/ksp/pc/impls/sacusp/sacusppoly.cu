@@ -21,7 +21,7 @@
    Private context (data structure) for the SACUSPPoly preconditioner.
 */
 typedef struct {
- cuspsaprecond* SACUSPPoly;
+  cuspsaprecond * SACUSPPoly;
   /*int cycles; */
 } PC_SACUSPPoly;
 
@@ -44,14 +44,14 @@ typedef struct {
 #define __FUNCT__ "PCSetUp_SACUSPPoly"
 static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 {
-  PC_SACUSPPoly      *sa = (PC_SACUSPPoly*)pc->data;
+  PC_SACUSPPoly  *sa = (PC_SACUSPPoly*)pc->data;
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  CUSPMATRIX* mat;
+  CUSPMATRIX     *mat;
 #endif
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
   if (pc->setupcalled != 0) {
     try {
       delete sa->SACUSPPoly;
-    } catch(char* ex) {
+    } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
   }
@@ -67,8 +67,8 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 #if defined(PETSC_USE_COMPLEX)
     sa->SACUSPPoly = 0;CHKERRQ(1); /* TODO */
 #else
-    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
-    gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
+    ierr      = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
+    gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);
 #if defined(PETSC_HAVE_TXPETSCGPU)
     ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
 #else
@@ -77,8 +77,8 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 
     sa->SACUSPPoly = new cuspsaprecond(*mat);
 #endif
-  } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+  } catch(char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   /*ierr = PetscOptionsInt("-pc_sacusp_cycles","Number of v-cycles to perform","PCSACUSPSetCycles",sa->cycles,
     &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
@@ -92,7 +92,7 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
 #if !defined(PETSC_USE_COMPLEX)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
-  PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
+  PC_SACUSPPoly *sac = (PC_SACUSPPoly*)pc->data;
 #endif
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
@@ -109,12 +109,9 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
   sac->SACUSPPoly->solve(*barray,*yarray,monitor);
 #endif
   *outits = monitor.iteration_count();
-  if (monitor.converged()) {
-    /* how to discern between converging from RTOL or ATOL?*/
-    *reason = PCRICHARDSON_CONVERGED_RTOL;
-  } else {
-    *reason = PCRICHARDSON_CONVERGED_ITS;
-  }
+  if (monitor.converged()) *reason = PCRICHARDSON_CONVERGED_RTOL; /* how to discern between converging from RTOL or ATOL?*/
+  else *reason = PCRICHARDSON_CONVERGED_ITS;
+
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
@@ -138,7 +135,7 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
 #define __FUNCT__ "PCApply_SACUSPPoly"
 static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 {
-  PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
+  PC_SACUSPPoly  *sac = (PC_SACUSPPoly*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
   CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
@@ -160,8 +157,8 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 #else
     cusp::multiply(*sac->SACUSPPoly,*xarray,*yarray);
 #endif
-  } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+  } catch(char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
@@ -182,17 +179,17 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_SACUSPPoly"
 static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
 {
-  PC_SACUSPPoly      *sac  = (PC_SACUSPPoly*)pc->data;
+  PC_SACUSPPoly  *sac = (PC_SACUSPPoly*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (sac->SACUSPPoly) {
     try {
       delete sac->SACUSPPoly;
-    } catch(char* ex) {
+    } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
-}
+  }
 
   /*
       Free the private data structure that was hanging off the PC
@@ -222,7 +219,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_SACUSPPoly"
 PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
 {
-  PC_SACUSPPoly      *sac;
+  PC_SACUSPPoly  *sac;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -230,14 +227,14 @@ PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_SACUSPPoly,&sac);CHKERRQ(ierr);
-  pc->data  = (void*)sac;
+  ierr     = PetscNewLog(pc,PC_SACUSPPoly,&sac);CHKERRQ(ierr);
+  pc->data = (void*)sac;
 
   /*
      Initialize the pointer to zero
      Initialize number of v-cycles to default (1)
   */
-  sac->SACUSPPoly          = 0;
+  sac->SACUSPPoly = 0;
   /*sac->cycles=1;*/
 
 

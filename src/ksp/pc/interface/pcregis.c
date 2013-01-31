@@ -137,10 +137,10 @@ PetscErrorCode  PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCSACUSP       ,path,"PCCreate_SACUSP",PCCreate_SACUSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCAINVCUSP     ,path,"PCCreate_AINVCUSP",PCCreate_AINVCUSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCBICGSTABCUSP ,path,"PCCreate_BiCGStabCUSP",PCCreate_BiCGStabCUSP);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCSACUSPPOLY    ,path,"PCCreate_SACUSPPoly",PCCreate_SACUSPPoly);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSACUSPPOLY   ,path,"PCCreate_SACUSPPoly",PCCreate_SACUSPPoly);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PARMS)
-  ierr = PCRegisterDynamic(PCPARMS   ,path,"PCCreate_PARMS",PCCreate_PARMS);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCPARMS        ,path,"PCCreate_PARMS",PCCreate_PARMS);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PCBDDC)
   ierr = PCRegisterDynamic(PCBDDC         ,path,"PCCreate_BDDC",PCCreate_BDDC);CHKERRQ(ierr);

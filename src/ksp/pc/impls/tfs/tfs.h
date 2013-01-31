@@ -86,7 +86,7 @@ File Description:
 
 #define LOG2(x)         (PetscScalar)log((double)x)/log(2)
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
-#define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
+#define P_SWAP(a,b)     ptr =(a); (a)=(b); (b)=ptr;
 
 #define MAX_FABS(x,y)   (PetscAbsScalar(x)>PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
 #define MIN_FABS(x,y)   (PetscAbsScalar(x)<PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
@@ -117,8 +117,8 @@ Last Modification:
 ***********************************types.h************************************/
 
 typedef PetscErrorCode (*vfp)(void*,void*,PetscInt,...);
-typedef PetscErrorCode (*rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
-typedef PetscInt (*bfp)(void*, void *, PetscInt *len, MPI_Datatype *dt);
+typedef PetscErrorCode (*rbfp)(PetscScalar*, PetscScalar*, PetscInt len);
+typedef PetscInt (*bfp)(void*, void*, PetscInt *len, MPI_Datatype *dt);
 
 /***********************************comm.h*************************************
 
@@ -316,12 +316,12 @@ ML beliefs/usage: move this to to ML_XXT_factor routine
 
 Usage:
 **************************************xxt.h***********************************/
-extern PetscInt XXT_factor(xxt_ADT xxt_handle,   /* prev. allocated xxt  handle */
-                      PetscInt *local2global,    /* global column mapping       */
-                      PetscInt n,                /* local num rows              */
-                      PetscInt m,                /* local num cols              */
-                      PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*),         /* b_loc=A_local.x_loc         */
-                      void *grid_data);          /* grid data for matvec        */
+extern PetscInt XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle */
+                           PetscInt *local2global, /* global column mapping       */
+                           PetscInt n,             /* local num rows              */
+                           PetscInt m,             /* local num cols              */
+                           PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*),    /* b_loc=A_local.x_loc         */
+                           void *grid_data);       /* grid data for matvec        */
 
 
 /*************************************xxt.h************************************
@@ -430,12 +430,12 @@ ML beliefs/usage: move this to to ML_XYT_factor routine
 
 Usage:
 **************************************xyt.h***********************************/
-extern PetscInt XYT_factor(xyt_ADT xyt_handle,   /* prev. allocated xyt  handle */
-                      PetscInt *local2global,    /* global column mapping       */
-                      PetscInt n,                /* local num rows              */
-                      PetscInt m,                /* local num cols              */
-                      PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*),         /* b_loc=A_local.x_loc         */
-                      void *grid_data);          /* grid data for matvec        */
+extern PetscInt XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle */
+                           PetscInt *local2global, /* global column mapping       */
+                           PetscInt n,             /* local num rows              */
+                           PetscInt m,             /* local num cols              */
+                           PetscErrorCode (*matvec)(void*,PetscScalar*,PetscScalar*), /* b_loc=A_local.x_loc         */
+                           void *grid_data);       /* grid data for matvec        */
 
 
 /*************************************xyt.h************************************

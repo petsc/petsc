@@ -55,10 +55,10 @@
    Private context (data structure) for the SupportGraph preconditioner.
 */
 typedef struct {
-  Mat        pre;      /* Cholesky factored preconditioner matrix */
-  PetscBool  augment;  /* whether to augment the spanning tree */
-  PetscReal  maxCong;  /* create subgraph with at most this much congestion (only used with augment) */
-  PetscReal  tol;      /* throw out entries smaller than this */
+  Mat       pre;       /* Cholesky factored preconditioner matrix */
+  PetscBool augment;   /* whether to augment the spanning tree */
+  PetscReal maxCong;   /* create subgraph with at most this much congestion (only used with augment) */
+  PetscReal tol;       /* throw out entries smaller than this */
 } PC_SupportGraph;
 
 #undef __FUNCT__
@@ -86,7 +86,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool  augment,PetscReal tol,PetscReal& maxCong);
+extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool augment,PetscReal tol,PetscReal& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -106,9 +106,9 @@ extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool
 #define __FUNCT__ "PCSetUp_SupportGraph"
 static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 {
-  PC_SupportGraph  *sg = (PC_SupportGraph*)pc->data;
-  PetscBool        isSym;
-  PetscErrorCode   ierr;
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscBool       isSym;
+  PetscErrorCode  ierr;
   /*
   Vec            diag;
   PetscInt       n,i;
@@ -144,8 +144,8 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 #define __FUNCT__ "PCApply_SupportGraph"
 static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 {
-  PC_SupportGraph      *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode ierr;
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MatSolve(sg->pre,x,y);CHKERRQ(ierr);
@@ -182,13 +182,13 @@ static PetscErrorCode PCDestroy_SupportGraph(PC pc)
 static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 {
   PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SupportGraph options");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_sg_cong","Max congestion","",sg->maxCong,&sg->maxCong,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_sg_tol","Smallest usable value","",sg->tol,&sg->tol,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_sg_cong","Max congestion","",sg->maxCong,&sg->maxCong,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_sg_tol","Smallest usable value","",sg->tol,&sg->tol,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -225,21 +225,21 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_SupportGraph"
 PetscErrorCode  PCCreate_SupportGraph(PC pc)
 {
-  PC_SupportGraph      *sg;
-  PetscErrorCode ierr;
+  PC_SupportGraph *sg;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_SupportGraph,&sg);CHKERRQ(ierr);
-  pc->data  = (void*)sg;
+  ierr     = PetscNewLog(pc,PC_SupportGraph,&sg);CHKERRQ(ierr);
+  pc->data = (void*)sg;
 
-  sg->pre = 0;
+  sg->pre     = 0;
   sg->augment = PETSC_TRUE;
   sg->maxCong = 3.0;
-  sg->tol = 0;
+  sg->tol     = 0;
 
 
   /*

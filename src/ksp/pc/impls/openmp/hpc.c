@@ -27,7 +27,7 @@ typedef struct {
 
 static PetscErrorCode PCView_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
   PetscViewer    viewer;
 
@@ -43,7 +43,7 @@ static PetscErrorCode PCView_HMPI_MP(MPI_Comm comm,void *ctx)
 #define __FUNCT__ "PCView_HMPI"
 static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscMPIInt    size;
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -66,7 +66,7 @@ extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 #define __FUNCT__ "PCApply_HMPI_1"
 static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -79,7 +79,7 @@ static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCSetUp_HMPI_MP"
 static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
   PetscInt       m;
   MatReuse       scal;
@@ -87,6 +87,7 @@ static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 
   PetscFunctionBegin;
   red->comm = comm;
+
   ierr = MPI_Bcast(&red->setupcalled,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast((PetscEnum*)&red->flag,1,MPIU_ENUM,0,comm);CHKERRQ(ierr);
   if (!red->setupcalled) {
@@ -132,7 +133,7 @@ static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 #define __FUNCT__ "PCSetUp_HMPI"
 static PetscErrorCode PCSetUp_HMPI(PC pc)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
@@ -166,7 +167,7 @@ static PetscErrorCode PCSetUp_HMPI(PC pc)
 #define __FUNCT__ "PCApply_HMPI_MP"
 static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -190,13 +191,14 @@ static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
 #define __FUNCT__ "PCApply_HMPI"
 static PetscErrorCode PCApply_HMPI(PC pc,Vec x,Vec y)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   red->xdummy        = x;
   red->ydummy        = y;
   red->nonzero_guess = pc->nonzero_guess;
+
   ierr = PetscHMPIRun(red->comm,PCApply_HMPI_MP,red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -205,7 +207,7 @@ static PetscErrorCode PCApply_HMPI(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_HMPI_MP"
 static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -227,7 +229,7 @@ static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
 #define __FUNCT__ "PCDestroy_HMPI"
 static PetscErrorCode PCDestroy_HMPI(PC pc)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -273,11 +275,11 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCCreate_HMPI(PC pc)
 {
   PetscErrorCode ierr;
-  PC_HMPI      *red;
+  PC_HMPI        *red;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr      = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
   if (!PETSC_COMM_LOCAL_WORLD) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PETSc not initialized for PCMPI see the manual pages for PetscHMPISpawn() and PetscHMPIMerge()");
   /* caste the struct length to a PetscInt for easier MPI calls */

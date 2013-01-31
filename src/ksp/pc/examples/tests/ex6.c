@@ -35,13 +35,13 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  N = (m+1)*(m+1); /* dimension of matrix */
-  M = m*m; /* number of elements */
-  h = 1.0/m;       /* mesh width */
-  x1= (m+1)/2;
-  x2= x1;
+  N    = (m+1)*(m+1); /* dimension of matrix */
+  M    = m*m; /* number of elements */
+  h    = 1.0/m;    /* mesh width */
+  x1   = (m+1)/2;
+  x2   = x1;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-x1",&x1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-x2",&x2,PETSC_NULL);CHKERRQ(ierr);
   /* create stiffness matrix */
@@ -50,12 +50,12 @@ int main(int argc,char **args)
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
-     /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m);
-     /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + (i % m);
-     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    /* location of lower left corner of element */
+    x = h*(i % m); y = h*(i/m);
+    /* node numbers for the four corners of element */
+    idx[0] = (m+1)*(i/m) + (i % m);
+    idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
+    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

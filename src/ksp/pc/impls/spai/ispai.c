@@ -31,25 +31,25 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 extern PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
-extern PetscErrorCode ConvertMatrixToMat(MPI_Comm,matrix *,Mat *);
+extern PetscErrorCode ConvertMatrixToMat(MPI_Comm,matrix*,Mat*);
 extern PetscErrorCode ConvertVectorToVec(MPI_Comm,vector *v,Vec *Pv);
-extern PetscErrorCode MM_to_PETSC(char *,char *,char *);
+extern PetscErrorCode MM_to_PETSC(char*,char*,char*);
 
 typedef struct {
 
-  matrix   *B;              /* matrix in SPAI format */
-  matrix   *BT;             /* transpose of matrix in SPAI format */
-  matrix   *M;              /* the approximate inverse in SPAI format */
+  matrix *B;                /* matrix in SPAI format */
+  matrix *BT;               /* transpose of matrix in SPAI format */
+  matrix *M;                /* the approximate inverse in SPAI format */
 
-  Mat      PM;              /* the approximate inverse PETSc format */
+  Mat PM;                   /* the approximate inverse PETSc format */
 
-  double   epsilon;         /* tolerance */
-  int      nbsteps;         /* max number of "improvement" steps per line */
-  int      max;             /* max dimensions of is_I, q, etc. */
-  int      maxnew;          /* max number of new entries per step */
-  int      block_size;      /* constant block size */
-  int      cache_size;      /* one of (1,2,3,4,5,6) indicting size of cache */
-  int      verbose;         /* SPAI prints timing and statistics */
+  double epsilon;           /* tolerance */
+  int    nbsteps;           /* max number of "improvement" steps per line */
+  int    max;               /* max dimensions of is_I, q, etc. */
+  int    maxnew;            /* max number of new entries per step */
+  int    block_size;        /* constant block size */
+  int    cache_size;        /* one of (1,2,3,4,5,6) indicting size of cache */
+  int    verbose;           /* SPAI prints timing and statistics */
 
   int      sp;              /* symmetric nonzero pattern */
   MPI_Comm comm_spai;     /* communicator to be used with spai */
@@ -89,8 +89,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   /* int block_size */     /* block_size == 1 specifies scalar elments
                               block_size == n specifies nxn constant-block elements
                               block_size == 0 specifies variable-block elements */
-  /* int cache_size */     /* one of (1,2,3,4,5,6) indicting size of cache */
-                           /* cache_size == 0 indicates no caching */
+  /* int cache_size */     /* one of (1,2,3,4,5,6) indicting size of cache. cache_size == 0 indicates no caching */
   /* int    verbose    */  /* verbose == 0 specifies that SPAI is silent
                               verbose == 1 prints timing and matrix statistics */
 
@@ -175,7 +174,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->epsilon = epsilon1;
   PetscFunctionReturn(0);
@@ -190,7 +189,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->nbsteps = nbsteps1;
   PetscFunctionReturn(0);
@@ -206,7 +205,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetMax_SPAI(PC pc,int max1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->max = max1;
   PetscFunctionReturn(0);
@@ -221,7 +220,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->maxnew = maxnew1;
   PetscFunctionReturn(0);
@@ -236,7 +235,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->block_size = block_size1;
   PetscFunctionReturn(0);
@@ -251,7 +250,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->cache_size = cache_size;
   PetscFunctionReturn(0);
@@ -265,8 +264,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetVerbose_SPAI"
 PetscErrorCode  PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
-  
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
+
   PetscFunctionBegin;
   ispai->verbose = verbose;
   PetscFunctionReturn(0);
@@ -281,7 +280,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  
+
   PetscFunctionBegin;
   ispai->sp = sp;
   PetscFunctionReturn(0);
@@ -314,7 +313,7 @@ EXTERN_C_END
 PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetEpsilon_C",(PC,double),(pc,epsilon1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -346,7 +345,7 @@ PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetNBSteps_C",(PC,int),(pc,nbsteps1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -372,7 +371,7 @@ PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
 PetscErrorCode  PCSPAISetMax(PC pc,int max1)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetMax_C",(PC,int),(pc,max1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -397,7 +396,7 @@ PetscErrorCode  PCSPAISetMax(PC pc,int max1)
 PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetMaxNew_C",(PC,int),(pc,maxnew1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -439,7 +438,7 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetBlockSize_C",(PC,int),(pc,block_size1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -468,7 +467,7 @@ PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetCacheSize_C",(PC,int),(pc,cache_size));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -494,7 +493,7 @@ PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetVerbose_C",(PC,int),(pc,verbose));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -526,7 +525,7 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(pc,"PCSPAISetSp_C",(PC,int),(pc,sp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -548,39 +547,39 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetEpsilon(pc,epsilon1);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps1,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetNBSteps(pc,nbsteps1);CHKERRQ(ierr);
-    }
-    /* added 1/7/99 g.h. */
-    ierr = PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max1,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetMax(pc,max1);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew1,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetMaxNew(pc,maxnew1);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size1,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetBlockSize(pc,block_size1);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetCacheSize(pc,cache_size);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-pc_spai_verbose","","PCSPAISetVerbose",ispai->verbose,&verbose,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetVerbose(pc,verbose);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsInt("-pc_spai_sp","","PCSPAISetSp",ispai->sp,&sp,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSPAISetSp(pc,sp);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetEpsilon(pc,epsilon1);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps1,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetNBSteps(pc,nbsteps1);CHKERRQ(ierr);
+  }
+  /* added 1/7/99 g.h. */
+  ierr = PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max1,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetMax(pc,max1);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew1,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetMaxNew(pc,maxnew1);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size1,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetBlockSize(pc,block_size1);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetCacheSize(pc,cache_size);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_spai_verbose","","PCSPAISetVerbose",ispai->verbose,&verbose,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetVerbose(pc,verbose);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_spai_sp","","PCSPAISetSp",ispai->sp,&sp,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSPAISetSp(pc,sp);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -621,8 +620,8 @@ PetscErrorCode  PCCreate_SPAI(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr               = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
-  pc->data           = ispai;
+  ierr     = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
+  pc->data = ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
   pc->ops->apply           = PCApply_SPAI;
@@ -639,33 +638,33 @@ PetscErrorCode  PCCreate_SPAI(PC pc)
   ispai->cache_size = 5;
   ispai->verbose    = 0;
 
-  ispai->sp         = 1;
-  ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(ispai->comm_spai));CHKERRQ(ierr);
+  ispai->sp = 1;
+  ierr      = MPI_Comm_dup(((PetscObject)pc)->comm,&(ispai->comm_spai));CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetEpsilon_C",
-                    "PCSPAISetEpsilon_SPAI",
-                     PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetEpsilon_SPAI",
+                                           PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetNBSteps_C",
-                    "PCSPAISetNBSteps_SPAI",
-                     PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetNBSteps_SPAI",
+                                           PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetMax_C",
-                    "PCSPAISetMax_SPAI",
-                     PCSPAISetMax_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetMax_SPAI",
+                                           PCSPAISetMax_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetMaxNew_CC",
-                    "PCSPAISetMaxNew_SPAI",
-                     PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetMaxNew_SPAI",
+                                           PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetBlockSize_C",
-                    "PCSPAISetBlockSize_SPAI",
-                     PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetBlockSize_SPAI",
+                                           PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetCacheSize_C",
-                    "PCSPAISetCacheSize_SPAI",
-                     PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetCacheSize_SPAI",
+                                           PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetVerbose_C",
-                    "PCSPAISetVerbose_SPAI",
-                     PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetVerbose_SPAI",
+                                           PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetSp_C",
-                    "PCSPAISetSp_SPAI",
-                     PCSPAISetSp_SPAI);CHKERRQ(ierr);
+                                           "PCSPAISetSp_SPAI",
+                                           PCSPAISetSp_SPAI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -704,8 +703,8 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
   M = new_matrix((SPAI_Comm)comm);
 
-  M->n = n;
-  M->bs = 1;
+  M->n              = n;
+  M->bs             = 1;
   M->max_block_size = 1;
 
   M->mnls          = (int*)malloc(sizeof(int)*size);
@@ -717,17 +716,14 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,comm);CHKERRQ(ierr);
 
   M->start_indices[0] = 0;
-  for (i=1; i<size; i++) {
-    M->start_indices[i] = M->start_indices[i-1] + M->mnls[i-1];
-  }
+  for (i=1; i<size; i++) M->start_indices[i] = M->start_indices[i-1] + M->mnls[i-1];
 
-  M->mnl = M->mnls[M->myid];
+  M->mnl            = M->mnls[M->myid];
   M->my_start_index = M->start_indices[M->myid];
 
   for (i=0; i<size; i++) {
     start_indx = M->start_indices[i];
-    for (j=0; j<M->mnls[i]; j++)
-      M->pe[start_indx+j] = i;
+    for (j=0; j<M->mnls[i]; j++) M->pe[start_indx+j] = i;
   }
 
   if (AT) {
@@ -785,10 +781,12 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     for (j=0; j<nz; j++) {
       col = cols[j];
       len = rows->len[row_indx]++;
+
       rows->ptrs[row_indx][len] = mapping[col];
       rows->A[row_indx][len]    = vals[j];
     }
     rows->slen[row_indx] = rows->len[row_indx];
+
     ierr = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
   }
 
@@ -814,6 +812,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     for (i=rstart; i<rend; i++) {
       row_indx = i-rstart;
       len      = num_ptr[row_indx];
+
       rows->rptrs[row_indx] = (int*)malloc(len*sizeof(int));
     }
 
@@ -824,6 +823,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
       for (j=0; j<nz; j++) {
         col = cols[j];
         len = rows->rlen[row_indx]++;
+
         rows->rptrs[row_indx][len] = mapping[col];
       }
       ierr = MatRestoreRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
@@ -835,7 +835,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
   order_pointers(M);
   M->maxnz = calc_maxnz(M);
-  *B = M;
+  *B       = M;
   PetscFunctionReturn(0);
 }
 
@@ -862,7 +862,7 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  m = n = B->mnls[rank];
+  m    = n = B->mnls[rank];
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
@@ -870,7 +870,7 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   ierr = PetscMalloc(m*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
-  last_diag_col = first_diag_col + B->mnls[rank];
+  last_diag_col  = first_diag_col + B->mnls[rank];
   for (i=0; i<B->mnls[rank]; i++) {
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
@@ -891,7 +891,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
     global_row = B->start_indices[rank]+i;
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
-      val = B->lines->A[i][k];
+
+      val  = B->lines->A[i][k];
       ierr = MatSetValues(*PB,1,&global_row,1,&global_col,&val,ADD_VALUES);CHKERRQ(ierr);
     }
   }
@@ -931,13 +932,12 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   ierr = MPI_Allgather(&v->mnl,1,MPI_INT,mnls,1,MPI_INT,comm);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(int),&start_indices);CHKERRQ(ierr);
+
   start_indices[0] = 0;
-  for (i=1; i<size; i++)
-    start_indices[i] = start_indices[i-1] +mnls[i-1];
+  for (i=1; i<size; i++) start_indices[i] = start_indices[i-1] +mnls[i-1];
 
   ierr = PetscMalloc(v->mnl*sizeof(int),&global_indices);CHKERRQ(ierr);
-  for (i=0; i<v->mnl; i++)
-    global_indices[i] = start_indices[rank] + i;
+  for (i=0; i<v->mnl; i++) global_indices[i] = start_indices[rank] + i;
 
   ierr = PetscFree(mnls);CHKERRQ(ierr);
   ierr = PetscFree(start_indices);CHKERRQ(ierr);

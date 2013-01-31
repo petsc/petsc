@@ -45,13 +45,9 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   ierr = PetscMalloc(cp->n*sizeof(PetscInt),&colcnt);CHKERRQ(ierr);
   ierr = PetscMemzero(colcnt,cp->n*sizeof(PetscInt));CHKERRQ(ierr);
 
-  for (i=0; i<aij->nz; i++) {
-    colcnt[aij->j[i]]++;
-  }
+  for (i=0; i<aij->nz; i++) colcnt[aij->j[i]]++;
   cp->i[0] = 0;
-  for (i=0; i<cp->n; i++) {
-    cp->i[i+1] = cp->i[i] + colcnt[i];
-  }
+  for (i=0; i<cp->n; i++) cp->i[i+1] = cp->i[i] + colcnt[i];
   ierr = PetscMemzero(colcnt,cp->n*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<cp->m; i++) {  /* over rows */
     for (j=aij->i[i]; j<aij->i[i+1]; j++) {  /* over columns in row */
@@ -64,9 +60,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   /* compute sum of squares of each column d[] */
   for (i=0; i<cp->n; i++) {  /* over columns */
     cp->d[i] = 0.;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column */
-      cp->d[i] += cp->a[j]*cp->a[j];
-    }
+    for (j=cp->i[i]; j<cp->i[i+1]; j++) cp->d[i] += cp->a[j]*cp->a[j]; /* over rows in column */
     cp->d[i] = 1.0/cp->d[i];
   }
   PetscFunctionReturn(0);
@@ -88,25 +82,17 @@ static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
 
   for (i=0; i<cp->n; i++) {  /* over columns */
     xt = 0.;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column */
-        xt   += cp->a[j]*b[cp->j[j]];
-    }
-    xt   *= cp->d[i];
+    for (j=cp->i[i]; j<cp->i[i+1]; j++) xt += cp->a[j]*b[cp->j[j]]; /* over rows in column */
+    xt  *= cp->d[i];
     x[i] = xt;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column updating b*/
-      b[cp->j[j]] -= xt*cp->a[j];
-    }
+    for (j=cp->i[i]; j<cp->i[i+1]; j++) b[cp->j[j]] -= xt*cp->a[j]; /* over rows in column updating b*/
   }
   for (i=cp->n-1; i>-1; i--) {  /* over columns */
     xt = 0.;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column */
-        xt   += cp->a[j]*b[cp->j[j]];
-    }
-    xt   *= cp->d[i];
+    for (j=cp->i[i]; j<cp->i[i+1]; j++) xt += cp->a[j]*b[cp->j[j]]; /* over rows in column */
+    xt  *= cp->d[i];
     x[i] = xt;
-    for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column updating b*/
-      b[cp->j[j]] -= xt*cp->a[j];
-    }
+    for (j=cp->i[i]; j<cp->i[i+1]; j++) b[cp->j[j]] -= xt*cp->a[j]; /* over rows in column updating b*/
   }
 
   ierr = VecRestoreArray(cp->work,&b);CHKERRQ(ierr);
@@ -200,17 +186,17 @@ PetscErrorCode  PCCreate_CP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(pc,PC_CP,&cp);CHKERRQ(ierr);
-  pc->data  = (void*)cp;
+  ierr     = PetscNewLog(pc,PC_CP,&cp);CHKERRQ(ierr);
+  pc->data = (void*)cp;
 
-  pc->ops->apply               = PCApply_CP;
-  pc->ops->applytranspose      = PCApply_CP;
-  pc->ops->setup               = PCSetUp_CP;
-  pc->ops->reset               = PCReset_CP;
-  pc->ops->destroy             = PCDestroy_CP;
-  pc->ops->setfromoptions      = PCSetFromOptions_CP;
-  pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
+  pc->ops->apply           = PCApply_CP;
+  pc->ops->applytranspose  = PCApply_CP;
+  pc->ops->setup           = PCSetUp_CP;
+  pc->ops->reset           = PCReset_CP;
+  pc->ops->destroy         = PCDestroy_CP;
+  pc->ops->setfromoptions  = PCSetFromOptions_CP;
+  pc->ops->view            = 0;
+  pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

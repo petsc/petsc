@@ -3,9 +3,9 @@
 #include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct {
-  PetscBool  use_true_matrix;       /* use mat rather than pmat in inner linear solve */
-  KSP        ksp;
-  PetscInt   its;                   /* total number of iterations KSP uses */
+  PetscBool use_true_matrix;        /* use mat rather than pmat in inner linear solve */
+  KSP       ksp;
+  PetscInt  its;                    /* total number of iterations KSP uses */
 } PC_KSP;
 
 
@@ -15,10 +15,10 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
 {
   PetscErrorCode ierr;
   const char     *prefix;
-  PC_KSP         *jac = (PC_KSP *)pc->data;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
- ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
@@ -154,9 +154,9 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCKSPSetUseTrue(pc);CHKERRQ(ierr);
-    }
+  if (flg) {
+    ierr = PCKSPSetUseTrue(pc);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -168,7 +168,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCKSPSetUseTrue_KSP"
 PetscErrorCode  PCKSPSetUseTrue_KSP(PC pc)
 {
-  PC_KSP   *jac;
+  PC_KSP *jac;
 
   PetscFunctionBegin;
   jac                  = (PC_KSP*)pc->data;
@@ -187,7 +187,7 @@ PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 
   PetscFunctionBegin;
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
-  *ksp        = jac->ksp;
+  *ksp = jac->ksp;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -296,25 +296,26 @@ PetscErrorCode  PCCreate_KSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_KSP,&jac);CHKERRQ(ierr);
-  pc->ops->apply              = PCApply_KSP;
-  pc->ops->applytranspose     = PCApplyTranspose_KSP;
-  pc->ops->setup              = PCSetUp_KSP;
-  pc->ops->reset              = PCReset_KSP;
-  pc->ops->destroy            = PCDestroy_KSP;
-  pc->ops->setfromoptions     = PCSetFromOptions_KSP;
-  pc->ops->view               = PCView_KSP;
-  pc->ops->applyrichardson    = 0;
 
-  pc->data               = (void*)jac;
+  pc->ops->apply           = PCApply_KSP;
+  pc->ops->applytranspose  = PCApplyTranspose_KSP;
+  pc->ops->setup           = PCSetUp_KSP;
+  pc->ops->reset           = PCReset_KSP;
+  pc->ops->destroy         = PCDestroy_KSP;
+  pc->ops->setfromoptions  = PCSetFromOptions_KSP;
+  pc->ops->view            = PCView_KSP;
+  pc->ops->applyrichardson = 0;
+
+  pc->data = (void*)jac;
 
 
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPSetUseTrue_C","PCKSPSetUseTrue_KSP",
-                    PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
+                                           PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",
-                    PCKSPGetKSP_KSP);CHKERRQ(ierr);
+                                           PCKSPGetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

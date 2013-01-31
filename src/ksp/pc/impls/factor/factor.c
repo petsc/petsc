@@ -488,7 +488,7 @@ PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 
 .seealso: PCILUSetMatOrdering(), PCFactorSetColumnPivot()
 @*/
-PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool  pivot)
+PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 {
   PetscErrorCode ierr;
 
@@ -520,7 +520,7 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool  pivot)
 
 .seealso: PCFactorSetReuseOrdering()
 @*/
-PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool  flag)
+PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
 {
   PetscErrorCode ierr;
 

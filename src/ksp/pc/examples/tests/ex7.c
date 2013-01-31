@@ -15,22 +15,22 @@ int main(int argc,char **args)
   PC             pc;
   Vec            xtmp;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&xtmp);CHKERRQ(ierr);
-  i = 0; j = 0; v = 4;
+  i    = 0; j = 0; v = 4;
   ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 0; j = 2; v = 1;
+  i    = 0; j = 2; v = 1;
   ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 1; j = 0; v = 1;
+  i    = 1; j = 0; v = 1;
   ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 1; j = 1; v = 4;
+  i    = 1; j = 1; v = 4;
   ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 2; j = 1; v = 1;
+  i    = 2; j = 1; v = 1;
   ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

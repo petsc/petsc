@@ -26,9 +26,7 @@ void PETSC_STDCALL pcasmcreatesubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscErr
   IS       *insubs;
 
   *ierr = PCASMCreateSubdomains(*mat,*n,&insubs);if (*ierr) return;
-  for (i=0; i<*n; i++) {
-    subs[i] = insubs[i];
-  }
+  for (i=0; i<*n; i++) subs[i] = insubs[i];
   *ierr = PetscFree(insubs);
 }
 
@@ -44,17 +42,15 @@ void PETSC_STDCALL pcasmdestroysubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscEr
 
 void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
-  KSP *tksp;
-  PetscInt  i,nloc;
+  KSP      *tksp;
+  PetscInt i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
   CHKFORTRANNULLOBJECT(ksp);
   *ierr = PCASMGetSubKSP(*pc,&nloc,first_local,&tksp);
   if (n_local) *n_local = nloc;
   if (ksp) {
-    for (i=0; i<nloc; i++) {
-      ksp[i] = tksp[i];
-    }
+    for (i=0; i<nloc; i++) ksp[i] = tksp[i];
   }
 }
 
@@ -75,35 +71,29 @@ void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,PetscInt *N,IS *is,IS *is_loc
 void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,PetscInt *n,Mat *mat, PetscErrorCode *ierr)
 {
   PetscInt nloc,i;
-  Mat  *tmat;
+  Mat      *tmat;
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubmatrices(*pc,&nloc,&tmat);
   if (n) *n = nloc;
   if (mat) {
-    for (i=0; i<nloc; i++) {
-      mat[i] = tmat[i];
-    }
+    for (i=0; i<nloc; i++) mat[i] = tmat[i];
   }
 }
 void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *is,IS *is_local, PetscErrorCode *ierr)
 {
   PetscInt nloc,i;
-  IS  *tis, *tis_local;
+  IS       *tis, *tis_local;
   CHKFORTRANNULLOBJECT(is);
   CHKFORTRANNULLOBJECT(is_local);
   CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubdomains(*pc,&nloc,&tis,&tis_local);
   if (n) *n = nloc;
   if (is) {
-    for (i=0; i<nloc; i++) {
-      is[i] = tis[i];
-    }
+    for (i=0; i<nloc; i++) is[i] = tis[i];
   }
   if (is_local && tis_local) {
-    for (i=0; i<nloc; i++) {
-      is[i] = tis_local[i];
-    }
+    for (i=0; i<nloc; i++) is[i] = tis_local[i];
   }
 }
 

@@ -10,8 +10,8 @@
 EXTERN_C_BEGIN
 void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
-  KSP *tksp;
-  PetscInt  i,nloc;
+  KSP      *tksp;
+  PetscInt i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
   *ierr = PCBJacobiGetSubKSP(*pc,&nloc,first_local,&tksp); if (*ierr) return;

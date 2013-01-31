@@ -9,7 +9,8 @@
 
 EXTERN_C_BEGIN
 typedef struct {
-  void           *ctx;                     /* user provided contexts for preconditioner */
+  void *ctx;                     /* user provided contexts for preconditioner */
+
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*setup)(PC);
   PetscErrorCode (*apply)(PC,Vec,Vec);
@@ -18,8 +19,9 @@ typedef struct {
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*view)(PC,PetscViewer);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
-  PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
-  char           *name;
+  PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*);
+
+  char *name;
 } PC_Shell;
 EXTERN_C_END
 
@@ -80,16 +82,14 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
 @*/
 PetscErrorCode  PCShellSetContext(PC pc,void *ctx)
 {
-  PC_Shell      *shell = (PC_Shell*)pc->data;
+  PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
-  if (flg) {
-    shell->ctx = ctx;
-  }
+  if (flg) shell->ctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +173,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardson_Shell"
-static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscBool  guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr;
   PC_Shell       *shell = (PC_Shell*)pc->data;
@@ -193,9 +193,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscFree(shell->name);CHKERRQ(ierr);
-  if (shell->destroy) {
-    PetscStackCall("PCSHELL user function destroy()",ierr  = (*shell->destroy)(pc);CHKERRQ(ierr));
-  }
+  if (shell->destroy) PetscStackCall("PCSHELL user function destroy()",ierr  = (*shell->destroy)(pc);CHKERRQ(ierr));
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -211,12 +209,15 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (shell->name) {ierr = PetscViewerASCIIPrintf(viewer,"  Shell: %s\n",shell->name);CHKERRQ(ierr);}
-    else             {ierr = PetscViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);}
+    if (shell->name) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Shell: %s\n",shell->name);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);
+    }
   }
   if (shell->view) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr  = (*shell->view)(pc,viewer);CHKERRQ(ierr);
+    ierr = (*shell->view)(pc,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -346,8 +347,8 @@ PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich
 
   PetscFunctionBegin;
   shell->applyrich = applyrich;
-  if (applyrich) pc->ops->applyrichardson  = PCApplyRichardson_Shell;
-  else           pc->ops->applyrichardson  = 0;
+  if (applyrich) pc->ops->applyrichardson = PCApplyRichardson_Shell;
+  else           pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -375,7 +376,7 @@ PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
   PC_Shell *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  *name  = shell->name;
+  *name = shell->name;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -749,7 +750,7 @@ PetscErrorCode  PCShellGetName(PC pc,const char *name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
-  ierr = PetscUseMethod(pc,"PCShellGetName_C",(PC,const char *[]),(pc,name));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCShellGetName_C",(PC,const char*[]),(pc,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -787,13 +788,13 @@ PetscErrorCode  PCShellGetName(PC pc,const char *name[])
 
 .seealso: PCShellSetApply(), PCShellSetContext()
 @*/
-PetscErrorCode  PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*))
+PetscErrorCode  PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCShellSetApplyRichardson_C",(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*)),(pc,apply));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCShellSetApplyRichardson_C",(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool,PetscInt*,PCRichardsonConvergedReason*)),(pc,apply));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -836,8 +837,8 @@ PetscErrorCode  PCCreate_Shell(PC pc)
   PC_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Shell,&shell);CHKERRQ(ierr);
-  pc->data  = (void*)shell;
+  ierr     = PetscNewLog(pc,PC_Shell,&shell);CHKERRQ(ierr);
+  pc->data = (void*)shell;
 
   pc->ops->destroy         = PCDestroy_Shell;
   pc->ops->view            = PCView_Shell;
@@ -860,27 +861,27 @@ PetscErrorCode  PCCreate_Shell(PC pc)
   shell->destroy        = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetDestroy_C","PCShellSetDestroy_Shell",
-                    PCShellSetDestroy_Shell);CHKERRQ(ierr);
+                                           PCShellSetDestroy_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
-                    PCShellSetSetUp_Shell);CHKERRQ(ierr);
+                                           PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
-                    PCShellSetApply_Shell);CHKERRQ(ierr);
+                                           PCShellSetApply_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyBA_C","PCShellSetApplyBA_Shell",
-                    PCShellSetApplyBA_Shell);CHKERRQ(ierr);
+                                           PCShellSetApplyBA_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetPreSolve_C","PCShellSetPreSolve_Shell",
-                    PCShellSetPreSolve_Shell);CHKERRQ(ierr);
+                                           PCShellSetPreSolve_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetPostSolve_C","PCShellSetPostSolve_Shell",
-                    PCShellSetPostSolve_Shell);CHKERRQ(ierr);
+                                           PCShellSetPostSolve_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetView_C","PCShellSetView_Shell",
-                    PCShellSetView_Shell);CHKERRQ(ierr);
+                                           PCShellSetView_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyTranspose_C","PCShellSetApplyTranspose_Shell",
-                    PCShellSetApplyTranspose_Shell);CHKERRQ(ierr);
+                                           PCShellSetApplyTranspose_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetName_C","PCShellSetName_Shell",
-                    PCShellSetName_Shell);CHKERRQ(ierr);
+                                           PCShellSetName_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellGetName_C","PCShellGetName_Shell",
-                    PCShellGetName_Shell);CHKERRQ(ierr);
+                                           PCShellGetName_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyRichardson_C","PCShellSetApplyRichardson_Shell",
-                    PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
+                                           PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

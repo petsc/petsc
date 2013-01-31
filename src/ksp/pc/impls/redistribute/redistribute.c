@@ -6,13 +6,13 @@
 #include <petscksp.h>
 
 typedef struct {
-  KSP          ksp;
-  Vec          x,b;
-  VecScatter   scatter;
-  IS           is;
-  PetscInt     dcnt,*drows;   /* these are the local rows that have only diagonal entry */
-  PetscScalar  *diag;
-  Vec          work;
+  KSP         ksp;
+  Vec         x,b;
+  VecScatter  scatter;
+  IS          is;
+  PetscInt    dcnt,*drows;    /* these are the local rows that have only diagonal entry */
+  PetscScalar *diag;
+  Vec         work;
 } PC_Redistribute;
 
 #undef __FUNCT__
@@ -86,7 +86,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscMalloc((rend - rstart - cnt)*sizeof(PetscInt),&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
-    cnt  = 0; dcnt = 0;
+    cnt = 0; dcnt = 0;
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       if (nz > 1) rows[cnt++] = i;
@@ -95,10 +95,10 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     }
 
     /* create PetscLayout for non-diagonal rows on each process */
-    ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(map,cnt);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+    ierr   = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
+    ierr   = PetscLayoutSetLocalSize(map,cnt);CHKERRQ(ierr);
+    ierr   = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
+    ierr   = PetscLayoutSetUp(map);CHKERRQ(ierr);
     rstart = map->rstart;
     rend   = map->rend;
 
@@ -117,8 +117,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
         load balance the non-diagonal rows
     */
     /*  count number of contributors to each processor */
-    ierr = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
-    ierr = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+    ierr   = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
+    ierr   = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
     j      = 0;
     nsends = 0;
     for (i=rstart; i<rend; i++) {
@@ -132,16 +132,16 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       }
     }
     /* inform other processors of number of messages and max length*/
-    ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
-    ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
-    ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
+    ierr      = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
+    ierr      = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
+    ierr      = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
     recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
     /* post receives:  rvalues - rows I will own; count - nu */
-    ierr = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
-    count  = 0;
+    ierr  = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
+    count = 0;
     for (i=0; i<nrecvs; i++) {
-      ierr  = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
+      ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
       count += olengths1[i];
     }
 
@@ -149,19 +149,17 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
        1) starts[i] gives the starting index in svalues for stuff going to
        the ith processor
     */
-    ierr = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
-    starts[0]  = 0;
-    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];}
-    for (i=0; i<cnt; i++) {
-      svalues[starts[owner[i]]++] = rows[i];
-    }
-    for (i=0; i<cnt; i++) rows[i] = rows[i] - rstart;
+    ierr      = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
+    starts[0] = 0;
+    for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[i-1];
+    for (i=0; i<cnt; i++)  svalues[starts[owner[i]]++] = rows[i];
+    for (i=0; i<cnt; i++)  rows[i] = rows[i] - rstart;
     red->drows = drows;
     red->dcnt  = dcnt;
-    ierr = PetscFree(rows);CHKERRQ(ierr);
+    ierr       = PetscFree(rows);CHKERRQ(ierr);
 
     starts[0] = 0;
-    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];}
+    for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[i-1];
     count = 0;
     for (i=0; i<size; i++) {
       if (nprocs[i]) {
@@ -170,12 +168,12 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     }
 
     /*  wait on receives */
-    count  = nrecvs;
-    slen   = 0;
+    count = nrecvs;
+    slen  = 0;
     while (count) {
       ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
       /* unpack receives into our local space */
-      ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
+      ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
       slen += n;
       count--;
     }
@@ -212,9 +210,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   ierr = MatGetVecs(pc->pmat,&diag,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
   ierr = VecGetArrayRead(diag,&d);CHKERRQ(ierr);
-  for (i=0; i<red->dcnt; i++) {
-    red->diag[i] = 1.0/d[red->drows[i]];
-  }
+  for (i=0; i<red->dcnt; i++) red->diag[i] = 1.0/d[red->drows[i]];
   ierr = VecRestoreArrayRead(diag,&d);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
@@ -227,7 +223,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
 {
   PC_Redistribute   *red = (PC_Redistribute*)pc->data;
   PetscErrorCode    ierr;
-  PetscInt          dcnt = red->dcnt,i;
+  PetscInt          dcnt   = red->dcnt,i;
   const PetscInt    *drows = red->drows;
   PetscScalar       *xwork;
   const PetscScalar *bwork,*diag = red->diag;
@@ -240,9 +236,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);         /* x = diag(A)^{-1} b */
   ierr = VecGetArray(x,&xwork);CHKERRQ(ierr);
   ierr = VecGetArrayRead(b,&bwork);CHKERRQ(ierr);
-  for (i=0; i<dcnt; i++) {
-    xwork[drows[i]] = diag[i]*bwork[drows[i]];
-  }
+  for (i=0; i<dcnt; i++) xwork[drows[i]] = diag[i]*bwork[drows[i]];
   ierr = PetscLogFlops(dcnt);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->work,&xwork);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(b,&bwork);CHKERRQ(ierr);
@@ -348,15 +342,15 @@ PetscErrorCode  PCCreate_Redistribute(PC pc)
   const char      *prefix;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Redistribute,&red);CHKERRQ(ierr);
-  pc->data            = (void*)red;
+  ierr     = PetscNewLog(pc,PC_Redistribute,&red);CHKERRQ(ierr);
+  pc->data = (void*)red;
 
-  pc->ops->apply           = PCApply_Redistribute;
-  pc->ops->applytranspose  = 0;
-  pc->ops->setup           = PCSetUp_Redistribute;
-  pc->ops->destroy         = PCDestroy_Redistribute;
-  pc->ops->setfromoptions  = PCSetFromOptions_Redistribute;
-  pc->ops->view            = PCView_Redistribute;
+  pc->ops->apply          = PCApply_Redistribute;
+  pc->ops->applytranspose = 0;
+  pc->ops->setup          = PCSetUp_Redistribute;
+  pc->ops->destroy        = PCDestroy_Redistribute;
+  pc->ops->setfromoptions = PCSetFromOptions_Redistribute;
+  pc->ops->view           = PCView_Redistribute;
 
   ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);

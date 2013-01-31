@@ -11,7 +11,7 @@
 PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
 {
   const PetscScalar *vals;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   int               i,j,n,size,nz;
   const int         *cols;
   MPI_Comm          comm;
@@ -26,11 +26,9 @@ PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
   /* print the matrix */
   fprintf(file,"%d\n",n);
   for (i=0; i<n; i++) {
-    ierr     = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
-    for (j=0; j<nz; j++) {
-      fprintf(file,"%d %d %16.14e\n",i+1,cols[j]+1,vals[j]);
-    }
-    ierr     = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    for (j=0; j<nz; j++) fprintf(file,"%d %d %16.14e\n",i+1,cols[j]+1,vals[j]);
+    ierr = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -38,15 +36,13 @@ PetscErrorCode  MatDumpSPAI(Mat A,FILE *file)
 PetscErrorCode  VecDumpSPAI(Vec b,FILE *file)
 {
   PetscErrorCode ierr;
-  int    n,i;
-  PetscScalar *array;
+  int            n,i;
+  PetscScalar    *array;
 
   ierr = VecGetSize(b,&n);CHKERRQ(ierr);
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
 
   fprintf(file,"%d\n",n);
-  for (i=0; i<n; i++) {
-    fprintf(file,"%d %16.14e\n",i+1,array[i]);
-  }
+  for (i=0; i<n; i++) fprintf(file,"%d %16.14e\n",i+1,array[i]);
   PetscFunctionReturn(0);
 }

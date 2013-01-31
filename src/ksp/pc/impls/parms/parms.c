@@ -60,18 +60,16 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   MPI_Comm_size(((PetscObject)pmat)->comm,&npro);
   MPI_Comm_rank(((PetscObject)pmat)->comm,&rank);
 
-  ierr = MatGetSize(pmat,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc((npro+1)*sizeof(int),&mapptr);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&maptmp);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRanges(pmat,&mapptr0);CHKERRQ(ierr);
-  low = mapptr0[rank];
-  high = mapptr0[rank+1];
+  ierr  = MatGetSize(pmat,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscMalloc((npro+1)*sizeof(int),&mapptr);CHKERRQ(ierr);
+  ierr  = PetscMalloc(n*sizeof(int),&maptmp);CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRanges(pmat,&mapptr0);CHKERRQ(ierr);
+  low   = mapptr0[rank];
+  high  = mapptr0[rank+1];
   lsize = high - low;
 
-  for (i=0; i<npro+1; i++)
-    mapptr[i] = mapptr0[i]+1;
-  for (i = 0; i<n; i++)
-    maptmp[i] = i+1;
+  for (i=0; i<npro+1; i++) mapptr[i] = mapptr0[i]+1;
+  for (i = 0; i<n; i++) maptmp[i] = i+1;
 
   /* if created, destroy the previous map */
   if (parms->map) {
@@ -92,28 +90,28 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatCreate(&parms->A,parms->map);
 
   /* setup and copy csr data structure for pARMS */
-  ierr = PetscMalloc((lsize+1)*sizeof(int),&ia);CHKERRQ(ierr);
-  ia[0] = 1;
-  ierr = MatGetInfo(pmat,MAT_LOCAL,&matinfo);CHKERRQ(ierr);
+  ierr   = PetscMalloc((lsize+1)*sizeof(int),&ia);CHKERRQ(ierr);
+  ia[0]  = 1;
+  ierr   = MatGetInfo(pmat,MAT_LOCAL,&matinfo);CHKERRQ(ierr);
   length = matinfo.nz_used;
-  ierr = PetscMalloc(length*sizeof(int),&ja);CHKERRQ(ierr);
-  ierr = PetscMalloc(length*sizeof(PetscScalar),&aa);CHKERRQ(ierr);
+  ierr   = PetscMalloc(length*sizeof(int),&ja);CHKERRQ(ierr);
+  ierr   = PetscMalloc(length*sizeof(PetscScalar),&aa);CHKERRQ(ierr);
 
   for (i = low; i<high; i++) {
-    pos = ia[i-low]-1;
-    ierr = MatGetRow(pmat,i,&ncols,&cols,&values);CHKERRQ(ierr);
+    pos         = ia[i-low]-1;
+    ierr        = MatGetRow(pmat,i,&ncols,&cols,&values);CHKERRQ(ierr);
     ia[i-low+1] = ia[i-low] + ncols;
 
     if (ia[i-low+1] >= length) {
       length += ncols;
-      ierr = PetscMalloc(length*sizeof(int),&ja1);CHKERRQ(ierr);
-      ierr = PetscMemcpy(ja1,ja,(ia[i-low]-1)*sizeof(int));CHKERRQ(ierr);
-      ierr = PetscFree(ja);CHKERRQ(ierr);
-      ja = ja1;
-      ierr = PetscMalloc(length*sizeof(PetscScalar),&aa1);CHKERRQ(ierr);
-      ierr = PetscMemcpy(aa1,aa,(ia[i-low]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscFree(aa);CHKERRQ(ierr);
-      aa = aa1;
+      ierr    = PetscMalloc(length*sizeof(int),&ja1);CHKERRQ(ierr);
+      ierr    = PetscMemcpy(ja1,ja,(ia[i-low]-1)*sizeof(int));CHKERRQ(ierr);
+      ierr    = PetscFree(ja);CHKERRQ(ierr);
+      ja      = ja1;
+      ierr    = PetscMalloc(length*sizeof(PetscScalar),&aa1);CHKERRQ(ierr);
+      ierr    = PetscMemcpy(aa1,aa,(ia[i-low]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr    = PetscFree(aa);CHKERRQ(ierr);
+      aa      = aa1;
     }
     ierr = PetscMemcpy(&ja[pos],cols,ncols*sizeof(int));CHKERRQ(ierr);
     ierr = PetscMemcpy(&aa[pos],values,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -125,8 +123,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   ierr = PetscMemcpy(im,&maptmp[mapptr[rank]-1],lsize*sizeof(int));CHKERRQ(ierr);
 
   /* 1-based indexing */
-  for (i=0; i<ia[lsize]-1; i++)
-    ja[i] = ja[i]+1;
+  for (i=0; i<ia[lsize]-1; i++) ja[i] = ja[i]+1;
 
   /* Now copy csr matrix to parms_mat object */
   parms_MatSetValues(parms->A,(int)lsize,im,ia,ja,aa,INSERT);
@@ -153,24 +150,24 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
   /* Transfer options from PC to pARMS */
   switch (parms->global) {
-    case 0: parms_PCSetType(parms->pc, PCRAS); break;
-    case 1: parms_PCSetType(parms->pc, PCSCHUR); break;
-    case 2: parms_PCSetType(parms->pc, PCBJ); break;
+  case 0: parms_PCSetType(parms->pc, PCRAS); break;
+  case 1: parms_PCSetType(parms->pc, PCSCHUR); break;
+  case 2: parms_PCSetType(parms->pc, PCBJ); break;
   }
   switch (parms->local) {
-    case 0: parms_PCSetILUType(parms->pc, PCILU0); break;
-    case 1: parms_PCSetILUType(parms->pc, PCILUK); break;
-    case 2: parms_PCSetILUType(parms->pc, PCILUT); break;
-    case 3: parms_PCSetILUType(parms->pc, PCARMS); break;
+  case 0: parms_PCSetILUType(parms->pc, PCILU0); break;
+  case 1: parms_PCSetILUType(parms->pc, PCILUK); break;
+  case 2: parms_PCSetILUType(parms->pc, PCILUT); break;
+  case 3: parms_PCSetILUType(parms->pc, PCARMS); break;
   }
   parms_PCSetInnerEps(parms->pc, parms->solvetol);
   parms_PCSetNlevels(parms->pc, parms->levels);
-  parms_PCSetPermType(parms->pc, parms->nonsymperm?1:0);
+  parms_PCSetPermType(parms->pc, parms->nonsymperm ? 1 : 0);
   parms_PCSetBsize(parms->pc, parms->blocksize);
   parms_PCSetTolInd(parms->pc, parms->indtol);
   parms_PCSetInnerKSize(parms->pc, parms->maxdim);
   parms_PCSetInnerMaxits(parms->pc, parms->maxits);
-  for (i=0; i<8; i++) meth[i] = parms->meth[i]?1:0;
+  for (i=0; i<8; i++) meth[i] = parms->meth[i] ? 1 : 0;
   parms_PCSetPermScalOptions(parms->pc, &meth[0], 1);
   parms_PCSetPermScalOptions(parms->pc, &meth[4], 0);
   parms_PCSetFill(parms->pc, parms->lfil);
@@ -190,11 +187,11 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 #define __FUNCT__ "PCView_PARMS"
 static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
 {
-  PetscErrorCode       ierr;
-  PetscBool            iascii;
-  PC_PARMS             *parms = (PC_PARMS*)pc->data;
-  char                 *str;
-  double               fill_fact;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+  PC_PARMS       *parms = (PC_PARMS*)pc->data;
+  char           *str;
+  double         fill_fact;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -256,15 +253,9 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (parms->map) {
-    parms_MapFree(&parms->map);
-  }
-   if (parms->A) {
-    parms_MatFree(&parms->A);
-  }
-  if (parms->pc) {
-    parms_PCFree(&parms->pc);
-  }
+  if (parms->map) parms_MapFree(&parms->map);
+  if (parms->A) parms_MatFree(&parms->A);
+  if (parms->pc) parms_PCFree(&parms->pc);
   if (parms->lvec0) {
     ierr = PetscFree(parms->lvec0);CHKERRQ(ierr);
   }
@@ -357,7 +348,7 @@ PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
 
   PetscFunctionBegin;
   if (type != parms->global) {
-    parms->global = type;
+    parms->global   = type;
     pc->setupcalled = 0;
   }
   PetscFunctionReturn(0);
@@ -410,7 +401,7 @@ PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
 
   PetscFunctionBegin;
   if (type != parms->local) {
-    parms->local = type;
+    parms->local    = type;
     pc->setupcalled = 0;
   }
   PetscFunctionReturn(0);
@@ -472,7 +463,7 @@ PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxi
     pc->setupcalled = 0;
   }
   if (maxits != parms->maxits) {
-    parms->maxits = maxits;
+    parms->maxits   = maxits;
     pc->setupcalled = 0;
   }
   PetscFunctionReturn(0);
@@ -522,7 +513,7 @@ PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
 
   PetscFunctionBegin;
   if (restart != parms->maxdim) {
-    parms->maxdim = restart;
+    parms->maxdim   = restart;
     pc->setupcalled = 0;
   }
   PetscFunctionReturn(0);
@@ -571,7 +562,7 @@ PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
   PetscFunctionBegin;
   if ((nonsym && !parms->nonsymperm) || (!nonsym && parms->nonsymperm)) {
     parms->nonsymperm = nonsym;
-    pc->setupcalled = 0;
+    pc->setupcalled   = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -619,15 +610,15 @@ PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt
 
   PetscFunctionBegin;
   if (lfil0 != parms->lfil[0] || lfil0 != parms->lfil[1] || lfil0 != parms->lfil[2] || lfil0 != parms->lfil[3]) {
-    parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = parms->lfil[0] = lfil0;
+    parms->lfil[1]  = parms->lfil[2] = parms->lfil[3] = parms->lfil[0] = lfil0;
     pc->setupcalled = 0;
   }
   if (lfil1 != parms->lfil[4]) {
-    parms->lfil[4] = lfil1;
+    parms->lfil[4]  = lfil1;
     pc->setupcalled = 0;
   }
   if (lfil2 != parms->lfil[5] || lfil2 != parms->lfil[6]) {
-    parms->lfil[5] = parms->lfil[6] = lfil2;
+    parms->lfil[5]  = parms->lfil[6] = lfil2;
     pc->setupcalled = 0;
   }
   PetscFunctionReturn(0);
@@ -715,42 +706,45 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_PARMS"
 PetscErrorCode PCCreate_PARMS(PC pc)
 {
-  PC_PARMS *parms;
-  PetscErrorCode       ierr;
+  PC_PARMS       *parms;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_PARMS,&parms);CHKERRQ(ierr);
-  parms->map  = 0;
-  parms->A    = 0;
-  parms->pc   = 0;
-  parms->global = PC_PARMS_GLOBAL_RAS;
-  parms->local = PC_PARMS_LOCAL_ARMS;
-  parms->levels = 10;
+
+  parms->map        = 0;
+  parms->A          = 0;
+  parms->pc         = 0;
+  parms->global     = PC_PARMS_GLOBAL_RAS;
+  parms->local      = PC_PARMS_LOCAL_ARMS;
+  parms->levels     = 10;
   parms->nonsymperm = PETSC_TRUE;
-  parms->blocksize = 250;
-  parms->maxdim = 0;
-  parms->maxits = 0;
-  parms->meth[0] = PETSC_FALSE;
-  parms->meth[1] = PETSC_FALSE;
-  parms->meth[2] = PETSC_FALSE;
-  parms->meth[3] = PETSC_FALSE;
-  parms->meth[4] = PETSC_FALSE;
-  parms->meth[5] = PETSC_FALSE;
-  parms->meth[6] = PETSC_FALSE;
-  parms->meth[7] = PETSC_FALSE;
-  parms->solvetol = 0.01;
-  parms->indtol = 0.4;
-  parms->lfil[0] = parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = 20;
-  parms->lfil[4] = parms->lfil[5] = parms->lfil[6] = 20;
+  parms->blocksize  = 250;
+  parms->maxdim     = 0;
+  parms->maxits     = 0;
+  parms->meth[0]    = PETSC_FALSE;
+  parms->meth[1]    = PETSC_FALSE;
+  parms->meth[2]    = PETSC_FALSE;
+  parms->meth[3]    = PETSC_FALSE;
+  parms->meth[4]    = PETSC_FALSE;
+  parms->meth[5]    = PETSC_FALSE;
+  parms->meth[6]    = PETSC_FALSE;
+  parms->meth[7]    = PETSC_FALSE;
+  parms->solvetol   = 0.01;
+  parms->indtol     = 0.4;
+  parms->lfil[0]    = parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = 20;
+  parms->lfil[4]    = parms->lfil[5] = parms->lfil[6] = 20;
   parms->droptol[0] = parms->droptol[1] = parms->droptol[2] = parms->droptol[3] = 0.00001;
   parms->droptol[4] = 0.001;
   parms->droptol[5] = parms->droptol[6] = 0.001;
-  pc->data                 = parms;
-  pc->ops->destroy         = PCDestroy_PARMS;
-  pc->ops->setfromoptions  = PCSetFromOptions_PARMS;
-  pc->ops->setup           = PCSetUp_PARMS;
-  pc->ops->apply           = PCApply_PARMS;
-  pc->ops->view            = PCView_PARMS;
+
+  pc->data                = parms;
+  pc->ops->destroy        = PCDestroy_PARMS;
+  pc->ops->setfromoptions = PCSetFromOptions_PARMS;
+  pc->ops->setup          = PCSetUp_PARMS;
+  pc->ops->apply          = PCApply_PARMS;
+  pc->ops->view           = PCView_PARMS;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetGlobal_C","PCPARMSSetGlobal_PARMS",PCPARMSSetGlobal_PARMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetLocal_C","PCPARMSSetLocal_PARMS",PCPARMSSetLocal_PARMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveTolerances_C","PCPARMSSetSolveTolerances_PARMS",PCPARMSSetSolveTolerances_PARMS);CHKERRQ(ierr);
