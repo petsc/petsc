@@ -165,6 +165,7 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
   fpos = PetscMax(f,0);
   fneg = PetscMin(f,0);
   *p1 = fpos*(p[j][i] - p[j][i-1])/user->dx + fneg*(p[j][i+1] - p[j][i])/user->dx;
+  *p1 = f*(p[j][i+1] - p[j][i-1])/user->dy;
   PetscFunctionReturn(0);
 }
 
@@ -179,6 +180,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
   fpos = PetscMax(f,0);
   fneg = PetscMin(f,0);
   *p2 = fpos*(p[j][i] - p[j-1][i])/user->dy + fneg*(p[j+1][i] - p[j][i])/user->dy;
+  *p2 = f*(p[j+1][i] - p[j-1][i])/user->dy;
   PetscFunctionReturn(0);
 }
 
