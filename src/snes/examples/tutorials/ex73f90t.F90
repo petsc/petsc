@@ -194,7 +194,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create B, C, & D matrices
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -      
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call MatCreate(PETSC_COMM_WORLD,Cmat,ierr)
       call MatSetSizes(Cmat,PETSC_DECIDE,PETSC_DECIDE,solver%my,N1,ierr)
       call MatSetFromOptions(Cmat,ierr)
@@ -216,7 +216,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set fake B and C
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -      
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       one    = 1.0
       hx     = one/dble(solver%mx-1)
       hy     = one/dble(solver%my-1)
@@ -271,6 +271,7 @@
       call PetscObjectSetName(daphi,"phi",ierr) 
       call PetscObjectSetName(dalam,"lambda",ierr)
       call DMSetFromOptions(solver%da,ierr)
+      call DMSetUp(solver%da,ierr)
       
 !     cache matrices
       solver%Amat = Amat
@@ -299,6 +300,8 @@
       call SNESSetDM(mysnes,solver%da,ierr)
 
       call SNESSetApplicationContext(mysnes,solver,ierr)
+
+      call SNESSetDM(mysnes,solver%da,ierr)
 
 !  Set function evaluation routine and vector
       call SNESSetFunction(mysnes,r,FormFunction,solver,ierr)
