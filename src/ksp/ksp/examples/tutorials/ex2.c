@@ -37,10 +37,10 @@ int main(int argc,char **args)
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage stage;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

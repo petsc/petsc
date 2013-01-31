@@ -56,6 +56,7 @@ PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputerhs_(DM *dm,void (PETSC_STDCALL
   *ierr = DMGetDMKSP(*dm,&kdm);
   if (!*ierr) {
     kdm->fortran_func_pointers[0] = (PetscVoidFunction)func;
+
     *ierr = DMKSPSetComputeRHS(*dm,ourkspcomputerhs,ctx);
   }
 }
@@ -67,6 +68,7 @@ PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeinitialguess_(DM *dm,void (PETS
   *ierr = DMGetDMKSP(*dm,&kdm);
   if (!*ierr) {
     kdm->fortran_func_pointers[2] = (PetscVoidFunction)func;
+
     *ierr = DMKSPSetComputeInitialGuess(*dm,ourkspcomputeinitialguess,ctx);
   }
 }

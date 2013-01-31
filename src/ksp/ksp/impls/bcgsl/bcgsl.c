@@ -336,7 +336,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 @*/
 PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 {
-  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -406,7 +406,7 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
 
 .seealso: @()
 @*/
-PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
+PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
   PetscErrorCode ierr;

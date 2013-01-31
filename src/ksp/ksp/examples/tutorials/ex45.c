@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   Vec            x,b,r;
   Mat            A;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
@@ -76,12 +76,12 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscScalar    ***barray;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
+  ierr    = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,b,&barray);CHKERRQ(ierr);
+  ierr    = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr    = DMDAVecGetArray(dm,b,&barray);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -120,11 +120,11 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
   MatStencil     row,col[7];
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
+  ierr    = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr    = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -146,8 +146,8 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
       }
     }
   }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr   = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr   = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *stflg = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

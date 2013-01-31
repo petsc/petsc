@@ -75,19 +75,19 @@ int main(int argc,char **argv)
   UserContext    user;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
-    user.phi = 0.5;
-    ierr = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
-    user.dt  = 0.1;
-    ierr = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
+  user.phi = 0.5;
+  ierr     = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
+  user.dt  = 0.1;
+  ierr     = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsEnd();
 
   ierr = CreateStructures(da, &user);CHKERRQ(ierr);
   ierr = ComputePredictor(da, &user);CHKERRQ(ierr);
@@ -114,8 +114,8 @@ int main(int argc,char **argv)
 PetscErrorCode CreateStructures(DM da, UserContext *user)
 {
   const PetscInt *necon;
-  PetscInt        ne,nc;
-  PetscErrorCode  ierr;
+  PetscInt       ne,nc;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMDAGetElements(da,&ne,&nc,&necon);CHKERRQ(ierr);
@@ -187,8 +187,8 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
   PetscScalar    *u_n,   *v_n;
   PetscScalar    *u_phi, *v_phi;
   const PetscInt *necon;
-  PetscInt        j, e, ne, nc;
-  PetscErrorCode  ierr;
+  PetscInt       j, e, ne, nc;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
@@ -234,17 +234,17 @@ and the x and y components of the convective fluxes F are
 */
 PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
 {
-  PetscScalar     phi_dt = user->phi*user->dt;
+  PetscScalar    phi_dt = user->phi*user->dt;
   PetscScalar    *u_n,     *v_n;
   PetscScalar    *rho_n,   *rho_u_n,   *rho_v_n;
   PetscScalar    *rho_phi, *rho_u_phi, *rho_v_phi;
-  PetscScalar     Fx_x, Fy_y;
-  PetscScalar     psi_x[3], psi_y[3];
-  PetscInt        idx[3];
-  PetscReal       hx, hy;
+  PetscScalar    Fx_x, Fy_y;
+  PetscScalar    psi_x[3], psi_y[3];
+  PetscInt       idx[3];
+  PetscReal      hx, hy;
   const PetscInt *necon;
-  PetscInt        j, e, ne, nc, mx, my;
-  PetscErrorCode  ierr;
+  PetscInt       j, e, ne, nc, mx, my;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
   for (e = 0; e < ne; e++) {
     /* Average the existing fields over the element */
     for (j = 0; j < 3; j++) {
-      idx[j] = necon[3*e+j];
+      idx[j]        = necon[3*e+j];
       rho_phi[e]   += rho_n[idx[j]];
       rho_u_phi[e] += rho_u_n[idx[j]];
       rho_v_phi[e] += rho_v_n[idx[j]];
@@ -327,25 +327,25 @@ The element stiffness matrix for the identity in linear elements is
   no matter what the shape of the triangle. */
 PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
 {
-  MPI_Comm        comm;
-  KSP             ksp;
-  Mat             mat;
-  Vec             rhs_u, rhs_v;
-  PetscScalar     identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
-                                 0.08333333333, 0.16666666667, 0.08333333333,
-                                 0.08333333333, 0.08333333333, 0.16666666667};
+  MPI_Comm       comm;
+  KSP            ksp;
+  Mat            mat;
+  Vec            rhs_u, rhs_v;
+  PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
+                                0.08333333333, 0.16666666667, 0.08333333333,
+                                0.08333333333, 0.08333333333, 0.16666666667};
   PetscScalar    *u_n,       *v_n,      *mu_n;
   PetscScalar    *u_phi,     *v_phi;
   PetscScalar    *rho_u_phi, *rho_v_phi;
-  PetscInt        idx[3];
-  PetscScalar     values_u[3];
-  PetscScalar     values_v[3];
-  PetscScalar     psi_x[3], psi_y[3];
-  PetscScalar     mu, tau_xx, tau_xy, tau_yy;
-  PetscReal       hx, hy, area;
+  PetscInt       idx[3];
+  PetscScalar    values_u[3];
+  PetscScalar    values_v[3];
+  PetscScalar    psi_x[3], psi_y[3];
+  PetscScalar    mu, tau_xx, tau_xy, tau_yy;
+  PetscReal      hx, hy, area;
   const PetscInt *necon;
-  PetscInt        j, k, e, ne, nc, mx, my;
-  PetscErrorCode  ierr;
+  PetscInt       j, k, e, ne, nc, mx, my;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
@@ -370,7 +370,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
   for (e = 0; e < ne; e++) {
     for (j = 0; j < 3; j++) {
-      idx[j] = necon[3*e+j];
+      idx[j]      = necon[3*e+j];
       values_u[j] = 0.0;
       values_v[j] = 0.0;
     }
@@ -402,10 +402,10 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
         tau_xy +=     psi_y[k]*u_n[idx[k]] + psi_x[k]*v_n[idx[k]];
         tau_yy += 2.0*psi_y[k]*v_n[idx[k]] - psi_x[k]*u_n[idx[k]];
       }
-      mu     /= 3.0;
-      tau_xx *= (2.0/3.0)*mu;
-      tau_xy *= mu;
-      tau_yy *= (2.0/3.0)*mu;
+      mu          /= 3.0;
+      tau_xx      *= (2.0/3.0)*mu;
+      tau_xy      *= mu;
+      tau_yy      *= (2.0/3.0)*mu;
       values_u[j] -= area*(psi_x[j]*tau_xx + psi_y[j]*tau_xy);
       values_v[j] -= area*(psi_x[j]*tau_xy + psi_y[j]*tau_yy);
     }
@@ -455,27 +455,27 @@ The element stiffness matrix for the identity in linear elements is
   no matter what the shape of the triangle. */
 PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 {
-  MPI_Comm        comm;
-  Mat             mat;
-  Vec             rhs_m, rhs_e;
-  PetscScalar     identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
-                                 0.08333333333, 0.16666666667, 0.08333333333,
-                                 0.08333333333, 0.08333333333, 0.16666666667};
+  MPI_Comm       comm;
+  Mat            mat;
+  Vec            rhs_m, rhs_e;
+  PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
+                                0.08333333333, 0.16666666667, 0.08333333333,
+                                0.08333333333, 0.08333333333, 0.16666666667};
   PetscScalar    *u_n,       *v_n,     *p_n,     *t_n,     *mu_n,    *kappa_n;
   PetscScalar    *rho_n,     *rho_u_n, *rho_v_n, *rho_e_n;
   PetscScalar    *u_phi,     *v_phi;
   PetscScalar    *rho_u_np1, *rho_v_np1;
-  PetscInt        idx[3];
-  PetscScalar     psi_x[3], psi_y[3];
-  PetscScalar     values_m[3];
-  PetscScalar     values_e[3];
-  PetscScalar     phi = user->phi;
-  PetscScalar     mu, kappa, tau_xx, tau_xy, tau_yy, q_x, q_y;
-  PetscReal       hx, hy, area;
-  KSP             ksp;
+  PetscInt       idx[3];
+  PetscScalar    psi_x[3], psi_y[3];
+  PetscScalar    values_m[3];
+  PetscScalar    values_e[3];
+  PetscScalar    phi = user->phi;
+  PetscScalar    mu, kappa, tau_xx, tau_xy, tau_yy, q_x, q_y;
+  PetscReal      hx, hy, area;
+  KSP            ksp;
   const PetscInt *necon;
-  PetscInt        j, k, e, ne, nc, mx, my;
-  PetscErrorCode  ierr;
+  PetscInt       j, k, e, ne, nc, mx, my;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
@@ -507,7 +507,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
   for (e = 0; e < ne; e++) {
     for (j = 0; j < 3; j++) {
-      idx[j] = necon[3*e+j];
+      idx[j]      = necon[3*e+j];
       values_m[j] = 0.0;
       values_e[j] = 0.0;
     }
@@ -549,11 +549,11 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
         q_x    += psi_x[k]*t_n[idx[k]];
         q_y    += psi_y[k]*t_n[idx[k]];
       }
-      mu     /= 3.0;
-      kappa  /= 3.0;
-      tau_xx *= (2.0/3.0)*mu;
-      tau_xy *= mu;
-      tau_yy *= (2.0/3.0)*mu;
+      mu          /= 3.0;
+      kappa       /= 3.0;
+      tau_xx      *= (2.0/3.0)*mu;
+      tau_xy      *= mu;
+      tau_yy      *= (2.0/3.0)*mu;
       values_e[j] -= area*(psi_x[j]*(u_phi[e]*tau_xx + v_phi[e]*tau_xy + q_x) + psi_y[j]*(u_phi[e]*tau_xy + v_phi[e]*tau_yy + q_y));
     }
     /* Accumulate to global structures */
@@ -601,8 +601,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 PetscErrorCode ComputePredictor(DM da, UserContext *user)
 {
   Vec            uOldLocal, uLocal,uOld;
-  PetscScalar   *pOld;
-  PetscScalar   *p;
+  PetscScalar    *pOld;
+  PetscScalar    *p;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -654,9 +654,9 @@ PetscErrorCode ComputePredictor(DM da, UserContext *user)
 */
 PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
 {
-  UserContext   *user = (UserContext*)ctx;
-  PetscScalar    phi  = user->phi;
-  PetscScalar   *array;
+  UserContext    *user = (UserContext*)ctx;
+  PetscScalar    phi   = user->phi;
+  PetscScalar    *array;
   PetscInt       ne,nc,i;
   const PetscInt *e;
   PetscErrorCode ierr;
@@ -667,7 +667,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   /* access a local vector with room for the ghost points */
   ierr = DMGetLocalVector(da,&blocal);CHKERRQ(ierr);
-  ierr = VecGetArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
+  ierr = VecGetArray(blocal, (PetscScalar**) &array);CHKERRQ(ierr);
 
   /* access the list of elements on this processor and loop over them */
   ierr = DMDAGetElements(da,&ne,&nc,&e);CHKERRQ(ierr);
@@ -678,7 +678,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
     array[e[3*i+1]] = phi;
     array[e[3*i+2]] = phi;
   }
-  ierr = VecRestoreArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
+  ierr = VecRestoreArray(blocal, (PetscScalar**) &array);CHKERRQ(ierr);
   ierr = DMDARestoreElements(da,&ne,&nc,&e);CHKERRQ(ierr);
 
   /* add our partial sums over all processors into b */
@@ -719,7 +719,7 @@ where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
 PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *ctx)
 {
-  UserContext   *user = (UserContext*)ctx;
+  UserContext *user = (UserContext*)ctx;
   /* not being used!
   PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
                                 0.08333333333, 0.16666666667, 0.08333333333,
@@ -735,12 +735,12 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *c
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  hx   = 1.0 / (mx-1);
-  hy   = 1.0 / (my-1);
-  area = 0.5*hx*hy;
+  ierr    = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr    = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  hx      = 1.0 / (mx-1);
+  hy      = 1.0 / (my-1);
+  area    = 0.5*hx*hy;
   phi_dt2 = user->phi*user->dt*user->dt;
   hx2     = hx*hx/area*phi_dt2;
   hy2     = hy*hy/area*phi_dt2;
@@ -755,7 +755,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *c
     idx[0] = e[3*i];
     idx[1] = e[3*i+1];
     idx[2] = e[3*i+2];
-    ierr = MatSetValuesLocal(jac,3,idx,3,idx,(PetscScalar*)values,ADD_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValuesLocal(jac,3,idx,3,idx,(PetscScalar*)values,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = DMDARestoreElements(da,&ne,&nc,&e);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

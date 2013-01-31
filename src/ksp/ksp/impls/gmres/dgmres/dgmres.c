@@ -1018,7 +1018,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESImproveEig_DGMRES"
 PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 {
-  KSP_DGMRES   *dgmres    = (KSP_DGMRES*) ksp->data;
+  KSP_DGMRES   *dgmres = (KSP_DGMRES*) ksp->data;
   PetscInt     j,r_old, r = dgmres->r;
   PetscBLASInt i     = 0;
   PetscInt     neig1 = dgmres->neig + EIG_OFFSET;

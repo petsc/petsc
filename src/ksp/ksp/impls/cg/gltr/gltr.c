@@ -737,7 +737,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
         /*********************************************************************/
 
         cg->o_fcn += step * (0.5 * step * kappa - rz);
-      } else if (cg->radius)  {
+      } else if (cg->radius) {
         /*********************************************************************/
         /* The norm of the direction is zero; there is nothing to follow.    */
         /*********************************************************************/
@@ -972,7 +972,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     if (0 == info) break;
 
-    pert += pert;
+    pert      += pert;
     cg->lambda = cg->lambda * (1.0 + pert) + pert;
 #endif
   }

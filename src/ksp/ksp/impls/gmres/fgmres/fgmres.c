@@ -178,8 +178,8 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     /* new entry in hessenburg is the 2-norm of our new direction */
     ierr = VecNorm(VEC_VV(loc_it+1),NORM_2,&tt);CHKERRQ(ierr);
 
-    *HH(loc_it+1,loc_it)   = tt;
-    *HES(loc_it+1,loc_it)  = tt;
+    *HH(loc_it+1,loc_it)  = tt;
+    *HES(loc_it+1,loc_it) = tt;
 
     /* Happy Breakdown Check */
     hapbnd = PetscAbsScalar((tt) / *RS(loc_it));

@@ -52,7 +52,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = PetscMalloc(m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {rows[i] = start + i;}
+  for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
@@ -128,15 +128,15 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 @*/
 PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c)
 {
-  Mat                BA;
-  PetscErrorCode     ierr;
-  PetscMPIInt        size,rank;
-  MPI_Comm           comm = ((PetscObject)ksp)->comm;
-  PetscScalar        *array;
-  Mat                A;
-  PetscInt           m,row,nz,i,n,dummy;
-  const PetscInt     *cols;
-  const PetscScalar  *vals;
+  Mat               BA;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size,rank;
+  MPI_Comm          comm = ((PetscObject)ksp)->comm;
+  PetscScalar       *array;
+  Mat               A;
+  PetscInt          m,row,nz,i,n,dummy;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
 
   PetscFunctionBegin;
   ierr = KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     lwork  = 5*n;
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    ierr   = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     LAPACKgeev_(&zero,array,&bn,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 #else
     {
       PetscBLASInt lierr;
-      PetscScalar sdummy;
+      PetscScalar  sdummy;
       PetscBLASInt bn;
 
       ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
@@ -253,7 +253,8 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 #endif
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
-    for (i=0; i<n; i++) { perm[i] = i;}
+
+    for (i=0; i<n; i++)  perm[i] = i;
     ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       r[i] = realpart[perm[i]];
@@ -269,11 +270,11 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     PetscBLASInt idummy,lwork;
     PetscInt     *perm;
 
-    idummy   = n;
-    lwork    = 5*n;
-    ierr = PetscMalloc(5*n*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-    ierr = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&eigs);CHKERRQ(ierr);
+    idummy = n;
+    lwork  = 5*n;
+    ierr   = PetscMalloc(5*n*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr   = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
+    ierr   = PetscMalloc(n*sizeof(PetscScalar),&eigs);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
@@ -291,8 +292,8 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
-    for (i=0; i<n; i++) { perm[i] = i;}
-    for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
+    for (i=0; i<n; i++) perm[i] = i;
+    for (i=0; i<n; i++) r[i]    = PetscRealPart(eigs[i]);
     ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       r[i] = PetscRealPart(eigs[perm[i]]);
@@ -316,7 +317,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 #define __FUNCT__ "PolyEval"
 static PetscErrorCode PolyEval(PetscInt nroots,const PetscReal *r,const PetscReal *c,PetscReal x,PetscReal y,PetscReal *px,PetscReal *py)
 {
-  PetscInt i;
+  PetscInt  i;
   PetscReal rprod = 1,iprod = 0;
 
   PetscFunctionBegin;
@@ -336,19 +337,19 @@ static PetscErrorCode PolyEval(PetscInt nroots,const PetscReal *r,const PetscRea
 /* collective on KSP */
 PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscReal *r,const PetscReal *c)
 {
-  PetscErrorCode      ierr;
-  PetscReal           xmin,xmax,ymin,ymax,*xloc,*yloc,*value,px0,py0,rscale,iscale;
-  PetscInt            M,N,i,j;
-  PetscMPIInt         rank;
-  PetscViewer         viewer;
-  PetscDraw           draw;
-  PetscDrawAxis       drawaxis;
+  PetscErrorCode ierr;
+  PetscReal      xmin,xmax,ymin,ymax,*xloc,*yloc,*value,px0,py0,rscale,iscale;
+  PetscInt       M,N,i,j;
+  PetscMPIInt    rank;
+  PetscViewer    viewer;
+  PetscDraw      draw;
+  PetscDrawAxis  drawaxis;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
-  M = 80;
-  N = 80;
+  M    = 80;
+  N    = 80;
   xmin = r[0]; xmax = r[0];
   ymin = c[0]; ymax = c[0];
   for (i=1; i<neig; i++) {
@@ -360,15 +361,15 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
   ierr = PetscMalloc3(M,PetscReal,&xloc,N,PetscReal,&yloc,M*N,PetscReal,&value);CHKERRQ(ierr);
   for (i=0; i<M; i++) xloc[i] = xmin - 0.1*(xmax-xmin) + 1.2*(xmax-xmin)*i/(M-1);
   for (i=0; i<N; i++) yloc[i] = ymin - 0.1*(ymax-ymin) + 1.2*(ymax-ymin)*i/(N-1);
-  ierr = PolyEval(neig,r,c,0,0,&px0,&py0);CHKERRQ(ierr);
+  ierr   = PolyEval(neig,r,c,0,0,&px0,&py0);CHKERRQ(ierr);
   rscale = px0/(PetscSqr(px0)+PetscSqr(py0));
   iscale = -py0/(PetscSqr(px0)+PetscSqr(py0));
   for (j=0; j<N; j++) {
     for (i=0; i<M; i++) {
       PetscReal px,py,tx,ty,tmod;
       ierr = PolyEval(neig,r,c,xloc[i],yloc[j],&px,&py);CHKERRQ(ierr);
-      tx = px*rscale - py*iscale;
-      ty = py*rscale + px*iscale;
+      tx   = px*rscale - py*iscale;
+      ty   = py*rscale + px*iscale;
       tmod = PetscSqr(tx) + PetscSqr(ty); /* modulus of the complex polynomial */
       if (tmod > 1) tmod = 1.0;
       if (tmod > 0.5 && tmod < 1) tmod = 0.5;

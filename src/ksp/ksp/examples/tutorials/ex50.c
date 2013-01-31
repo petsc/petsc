@@ -34,8 +34,8 @@ extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscScalar  uu, tt;
-  BCType       bcType;
+  PetscScalar uu, tt;
+  BCType      bcType;
 } UserContext;
 
 #undef __FUNCT__
@@ -48,15 +48,15 @@ int main(int argc,char **argv)
   PetscInt       bc;
   PetscErrorCode ierr;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
-  user.uu = 1.0;
-  user.tt = 1.0;
-  bc   = (PetscInt)NEUMANN; /* Use Neumann Boundary Conditions */
+  user.uu     = 1.0;
+  user.tt     = 1.0;
+  bc          = (PetscInt)NEUMANN; /* Use Neumann Boundary Conditions */
   user.bcType = (BCType)bc;
 
 
@@ -77,16 +77,16 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
-  PetscInt       i, j, M, N, xm ,ym ,xs, ys;
-  PetscScalar    Hx, Hy, pi, uu, tt;
+  PetscInt       i,j,M,N,xm,ym,xs,ys;
+  PetscScalar    Hx,Hy,pi,uu,tt;
   PetscScalar    **array;
   DM             da;
 
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  uu = user->uu; tt = user->tt;
-  pi = 4*atan(1.0);
+  uu   = user->uu; tt = user->tt;
+  pi   = 4*atan(1.0);
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
@@ -126,21 +126,20 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr  = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr  = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
 
       if (i==0 || j==0 || i==M-1 || j==N-1) {
-        if (user->bcType == DIRICHLET) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
-        } else if (user->bcType == NEUMANN) {
+        if (user->bcType == DIRICHLET) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
+        else if (user->bcType == NEUMANN) {
           num=0; numi=0; numj=0;
           if (j!=0) {
             v[num] = -HxdHy;              col[num].i = i;   col[num].j = j-1;

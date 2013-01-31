@@ -59,7 +59,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      user_defined_pc = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
@@ -152,7 +152,7 @@ int main(int argc,char **args)
   */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-         PETSC_DEFAULT);CHKERRQ(ierr);
+                          PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*
      Set a user-defined "shell" preconditioner if desired
@@ -278,8 +278,8 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
   ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pmat,diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
-  shell->diag = diag;
 
+  shell->diag = diag;
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -303,8 +303,8 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
 */
 PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
 {
-  SampleShellPC   *shell;
-  PetscErrorCode  ierr;
+  SampleShellPC  *shell;
+  PetscErrorCode ierr;
 
   ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
   ierr = VecPointwiseMult(y,x,shell->diag);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
 */
 PetscErrorCode SampleShellPCDestroy(PC pc)
 {
-  SampleShellPC *shell;
+  SampleShellPC  *shell;
   PetscErrorCode ierr;
 
   ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);

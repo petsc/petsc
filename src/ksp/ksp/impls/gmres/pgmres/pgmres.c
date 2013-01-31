@@ -260,7 +260,7 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
   PetscScalar    tt;
   PetscErrorCode ierr;
   PetscInt       k,j;
-  KSP_PGMRES     *pgmres = (KSP_PGMRES *)(ksp->data);
+  KSP_PGMRES     *pgmres = (KSP_PGMRES*)(ksp->data);
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */

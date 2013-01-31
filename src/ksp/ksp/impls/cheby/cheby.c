@@ -369,7 +369,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     else X = ksp->work[0];
 
     if (cheb->random) {
-      B = ksp->work[1];
+      B    = ksp->work[1];
       ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
     } else {
       B = ksp->vec_rhs;
@@ -443,6 +443,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
+
       cheb->estimate_current = PETSC_TRUE;
       if (purification <= 1) { /* no purification here */
         X    = ksp->vec_sol;
@@ -477,8 +478,11 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
     /* calculate residual norm if requested */
     if (ksp->normtype != KSP_NORM_NONE || ksp->numbermonitors) {
-      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
-      else {ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);}
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+      } else {
+        ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
+      }
       ierr         = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
       ierr         = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);

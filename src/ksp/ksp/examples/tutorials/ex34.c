@@ -32,7 +32,7 @@ extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  BCType        bcType;
+  BCType bcType;
 } UserContext;
 
 #undef __FUNCT__
@@ -47,13 +47,13 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc;
 
-  PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
-  PetscScalar    Hx,Hy,Hz;
-  PetscScalar    ***array;
-  Vec            x,b,r;
-  Mat            J;
+  PetscInt    i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
+  PetscScalar Hx,Hy,Hz;
+  PetscScalar ***array;
+  Vec         x,b,r;
+  Mat         J;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
@@ -61,11 +61,11 @@ int main(int argc,char **argv)
 
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   bc          = (PetscInt)NEUMANN;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex34.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr = PetscOptionsEnd();
+  ierr        = PetscOptionsEnd();
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
@@ -138,11 +138,11 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
-        array[k][j][i] = 12*PETSC_PI*PETSC_PI
-          *PetscCosScalar(2*PETSC_PI*(((PetscReal)i+0.5)*Hx))
-          *PetscCosScalar(2*PETSC_PI*(((PetscReal)j+0.5)*Hy))
-          *PetscCosScalar(2*PETSC_PI*(((PetscReal)k+0.5)*Hz))
-          *Hx*Hy*Hz;
+        array[k][j][i] = 12 * PETSC_PI * PETSC_PI
+                         * PetscCosScalar(2*PETSC_PI*(((PetscReal)i+0.5)*Hx))
+                         * PetscCosScalar(2*PETSC_PI*(((PetscReal)j+0.5)*Hy))
+                         * PetscCosScalar(2*PETSC_PI*(((PetscReal)k+0.5)*Hz))
+                         * Hx * Hy * Hz;
       }
     }
   }
@@ -175,15 +175,15 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  Hx    = 1.0 / (PetscReal)(mx);
-  Hy    = 1.0 / (PetscReal)(my);
-  Hz    = 1.0 / (PetscReal)(mz);
+  ierr    = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  Hx      = 1.0 / (PetscReal)(mx);
+  Hy      = 1.0 / (PetscReal)(my);
+  Hz      = 1.0 / (PetscReal)(mz);
   HyHzdHx = Hy*Hz/Hx;
   HxHzdHy = Hx*Hz/Hy;
   HxHydHz = Hx*Hy/Hz;
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr    = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
@@ -196,48 +196,48 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
           } else if (user->bcType == NEUMANN) {
             num = 0; numi=0; numj=0; numk=0;
             if (k!=0) {
-              v[num] = -HxHydHz;
+              v[num]     = -HxHydHz;
               col[num].i = i;
               col[num].j = j;
               col[num].k = k-1;
               num++; numk++;
             }
             if (j!=0) {
-              v[num] = -HxHzdHy;
+              v[num]     = -HxHzdHy;
               col[num].i = i;
               col[num].j = j-1;
               col[num].k = k;
               num++; numj++;
             }
             if (i!=0) {
-              v[num] = -HyHzdHx;
+              v[num]     = -HyHzdHx;
               col[num].i = i-1;
               col[num].j = j;
               col[num].k = k;
               num++; numi++;
             }
             if (i!=mx-1) {
-              v[num] = -HyHzdHx;
+              v[num]     = -HyHzdHx;
               col[num].i = i+1;
               col[num].j = j;
               col[num].k = k;
               num++; numi++;
             }
             if (j!=my-1) {
-              v[num] = -HxHzdHy;
+              v[num]     = -HxHzdHy;
               col[num].i = i;
               col[num].j = j+1;
               col[num].k = k;
               num++; numj++;
             }
             if (k!=mz-1) {
-              v[num] = -HxHydHz;
+              v[num]     = -HxHydHz;
               col[num].i = i;
               col[num].j = j;
               col[num].k = k+1;
               num++; numk++;
             }
-            v[num]   = (PetscReal)(numk)*HxHydHz + (PetscReal)(numj)*HxHzdHy + (PetscReal)(numi)*HyHzdHx;
+            v[num]     = (PetscReal)(numk)*HxHydHz + (PetscReal)(numj)*HxHzdHy + (PetscReal)(numi)*HyHzdHx;
             col[num].i = i;   col[num].j = j;   col[num].k = k;
             num++;
             ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);

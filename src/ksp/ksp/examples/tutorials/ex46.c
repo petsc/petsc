@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscLogStage  stage;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
@@ -70,11 +70,11 @@ int main(int argc,char **argv)
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
-      PetscReal hx   = 1./info.mx,hy = 1./info.my;
-      MatStencil row = {0},col[5] = {{0}};
+      PetscReal   hx  = 1./info.mx,hy = 1./info.my;
+      MatStencil  row = {0},col[5] = {{0}};
       PetscScalar v[5];
-      PetscInt ncols = 0;
-      row.j = j; row.i = i;
+      PetscInt    ncols = 0;
+      row.j        = j; row.i = i;
       col[ncols].j = j; col[ncols].i = i; v[ncols++] = 2*(hx/hy + hy/hx);
       /* boundaries */
       if (i>0)         {col[ncols].j = j;   col[ncols].i = i-1; v[ncols++] = -hy/hx;}

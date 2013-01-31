@@ -1,9 +1,9 @@
 
 static char help[] = "Lattice Gauge 2D model.\n"
-"Parameters:\n"
-"-size n          to use a grid size of n, i.e n space and n time steps\n"
-"-beta b          controls the randomness of the gauge field\n"
-"-rho r           the quark mass (?)";
+                     "Parameters:\n"
+                     "-size n          to use a grid size of n, i.e n space and n time steps\n"
+                     "-beta b          controls the randomness of the gauge field\n"
+                     "-rho r           the quark mass (?)";
 
 #include <petscksp.h>
 #include <petscpcasa.h>
@@ -15,34 +15,34 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig);
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  PetscBool       flg;
-  PetscInt        n = -6;
-  PetscScalar     rho = 1.0;
-  PetscReal       h;
-  PetscReal       beta = 1.0;
-  DM              da;
-  PetscRandom     rctx;
-  PetscMPIInt     comm_size;
-  Mat             H,HtH;
-  PetscInt        x, y, xs, ys, xm, ym;
-  PetscReal       r1, r2;
-  PetscScalar     uxy1, uxy2;
-  MatStencil      sxy, sxy_m;
-  PetscScalar     val, valconj;
-  Vec             b, Htb,xvec;
-  KSP             kspmg;
-  PC              pcmg;
-  PetscErrorCode  ierr;
-  PetscInt        ix[1] = {0};
-  PetscScalar     vals[1] = {1.0};
+  PetscBool      flg;
+  PetscInt       n   = -6;
+  PetscScalar    rho = 1.0;
+  PetscReal      h;
+  PetscReal      beta = 1.0;
+  DM             da;
+  PetscRandom    rctx;
+  PetscMPIInt    comm_size;
+  Mat            H,HtH;
+  PetscInt       x, y, xs, ys, xm, ym;
+  PetscReal      r1, r2;
+  PetscScalar    uxy1, uxy2;
+  MatStencil     sxy, sxy_m;
+  PetscScalar    val, valconj;
+  Vec            b, Htb,xvec;
+  KSP            kspmg;
+  PC             pcmg;
+  PetscErrorCode ierr;
+  PetscInt       ix[1]   = {0};
+  PetscScalar    vals[1] = {1.0};
 
-  PetscInitialize(&Argc,&Args,(char *)0,help);
+  PetscInitialize(&Argc,&Args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&n,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&beta,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-rho",&rho,&flg);CHKERRQ(ierr);
 
   /* Set the fudge parameters, we scale the whole thing by 1/(2*h) later */
-  h = 1.;
+  h    = 1.;
   rho *= 1./(2.*h);
 
   /* Geometry info */
@@ -76,7 +76,7 @@ int main(int Argc,char **Args)
          we also have to set the corresponding backward pointing entries. */
       /* Compute some normally distributed random numbers via Box-Muller */
       ierr = PetscRandomGetValueReal(rctx, &r1);CHKERRQ(ierr);
-      r1 = 1.-r1; /* to change from [0,1) to (0,1], which we need for the log */
+      r1   = 1.-r1; /* to change from [0,1) to (0,1], which we need for the log */
       ierr = PetscRandomGetValueReal(rctx, &r2);CHKERRQ(ierr);
       PetscReal R = sqrt(-2.*log(r1));
       PetscReal c = cos(2.*PETSC_PI*r2);
@@ -90,46 +90,46 @@ int main(int Argc,char **Args)
 
       /* center action */
       sxy.c = 0; /* spin 0, 0 */
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &rho, ADD_VALUES);CHKERRQ(ierr);
+      ierr  = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &rho, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 1; /* spin 1, 1 */
-      val = -rho;
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      val   = -rho;
+      ierr  = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
 
       sxy_m.i = x+1; sxy_m.j = y; /* right action */
-      sxy.c = 0; sxy_m.c = 0; /* spin 0, 0 */
-      val = -uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
-      sxy.c = 0; sxy_m.c = 1; /* spin 0, 1 */
-      val = -uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
-      sxy.c = 1; sxy_m.c = 0; /* spin 1, 0 */
-      val = uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
-      sxy.c = 1; sxy_m.c = 1; /* spin 1, 1 */
-      val = uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 0; sxy_m.c = 0; /* spin 0, 0 */
+      val     = -uxy1; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 0; sxy_m.c = 1; /* spin 0, 1 */
+      val     = -uxy1; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 1; sxy_m.c = 0; /* spin 1, 0 */
+      val     = uxy1; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 1; sxy_m.c = 1; /* spin 1, 1 */
+      val     = uxy1; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
 
       sxy_m.i = x; sxy_m.j = y+1; /* down action */
-      sxy.c = 0; sxy_m.c = 0; /* spin 0, 0 */
-      val = -uxy2; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
-      sxy.c = 0; sxy_m.c = 1; /* spin 0, 1 */
-      val = -PETSC_i*uxy2; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
-      sxy.c = 1; sxy_m.c = 0; /* spin 1, 0 */
-      val = -PETSC_i*uxy2; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
-      sxy.c = 1; sxy_m.c = 1; /* spin 1, 1 */
-      val = PetscConj(uxy2); valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 0; sxy_m.c = 0; /* spin 0, 0 */
+      val     = -uxy2; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 0; sxy_m.c = 1; /* spin 0, 1 */
+      val     = -PETSC_i*uxy2; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 1; sxy_m.c = 0; /* spin 1, 0 */
+      val     = -PETSC_i*uxy2; valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
+      sxy.c   = 1; sxy_m.c = 1; /* spin 1, 1 */
+      val     = PetscConj(uxy2); valconj = PetscConj(val);
+      ierr    = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -225,13 +225,13 @@ int main(int Argc,char **Args)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "computeMaxEigVal"
-PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) 
+PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig)
 {
-  PetscErrorCode  ierr;
-  PetscRandom     rctx;     /* random number generator context */
-  Vec             x0, x, x_1, tmp;
-  PetscScalar     lambda_its, lambda_its_1;
-  PetscInt        i;
+  PetscErrorCode ierr;
+  PetscRandom    rctx;      /* random number generator context */
+  Vec            x0, x, x_1, tmp;
+  PetscScalar    lambda_its, lambda_its_1;
+  PetscInt       i;
 
   PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig)
 
   ierr = MatMult(A, x, x_1);CHKERRQ(ierr);
   for (i=0; i<its; i++) {
-    tmp = x; x = x_1; x_1 = tmp;
+    tmp  = x; x = x_1; x_1 = tmp;
     ierr = MatMult(A, x, x_1);CHKERRQ(ierr);
   }
   ierr = VecDot(x0, x, &lambda_its);CHKERRQ(ierr);

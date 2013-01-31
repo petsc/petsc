@@ -807,8 +807,8 @@ PetscErrorCode  KSPCreate_LGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_LGMRES,&lgmres);CHKERRQ(ierr);
 
-  ksp->data                              = (void*)lgmres;
-  ksp->ops->buildsolution                = KSPBuildSolution_LGMRES;
+  ksp->data               = (void*)lgmres;
+  ksp->ops->buildsolution = KSPBuildSolution_LGMRES;
 
   ksp->ops->setup                        = KSPSetUp_LGMRES;
   ksp->ops->solve                        = KSPSolve_LGMRES;

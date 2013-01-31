@@ -23,10 +23,10 @@ int main(int argc,char **args)
   PetscBool      flg,flg_ilu,flg_ch;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage stage;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -148,8 +148,8 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MUMPS)
   flg    = PETSC_FALSE;
   flg_ch = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
   if (flg || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
@@ -179,12 +179,12 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_SUPERLU)
   flg_ilu = PETSC_FALSE;
   flg     = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(PETSC_NULL,"-use_superlu_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
   if (flg || flg_ilu) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC       pc;
-    Mat      F;
+    PC  pc;
+    Mat F;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
@@ -205,13 +205,13 @@ int main(int argc,char **args)
   flg     = PETSC_FALSE;
   flg_ilu = PETSC_FALSE;
   flg_ch  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
   if (flg || flg_ilu || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC       pc;
-    Mat      F;
+    PC  pc;
+    Mat F;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);

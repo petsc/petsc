@@ -49,11 +49,11 @@ TO ADD:
 PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats)
 {
   DMDALocalInfo  info;
-  PetscInt      *er;
-  PetscScalar   *em;
+  PetscInt       *er;
+  PetscScalar    *em;
   PetscInt       X, Y, dof;
   PetscInt       nl, nxe, nye, ne;
-  PetscInt       k  = 0, m  = 0;
+  PetscInt       k = 0, m  = 0;
   PetscInt       i, j;
   PetscLogEvent  integrationEvent;
   PetscErrorCode ierr;
@@ -89,12 +89,12 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
       er[k+0] = rowA; em[m+0*nl+0] =  1.0; em[m+0*nl+1] = -0.5; em[m+0*nl+2] = -0.5;
       er[k+1] = rowB; em[m+1*nl+0] = -0.5; em[m+1*nl+1] =  0.5; em[m+1*nl+2] =  0.0;
       er[k+2] = rowC; em[m+2*nl+0] = -0.5; em[m+2*nl+1] =  0.0; em[m+2*nl+2] =  0.5;
-      k += nl; m += nl*nl;
+      k      += nl; m += nl*nl;
       /* Upper triangle */
       er[k+0] = rowD; em[m+0*nl+0] =  1.0; em[m+0*nl+1] = -0.5; em[m+0*nl+2] = -0.5;
       er[k+1] = rowC; em[m+1*nl+0] = -0.5; em[m+1*nl+1] =  0.5; em[m+1*nl+2] =  0.0;
       er[k+2] = rowB; em[m+2*nl+0] = -0.5; em[m+2*nl+1] =  0.0; em[m+2*nl+2] =  0.5;
-      k += nl; m += nl*nl;
+      k      += nl; m += nl*nl;
     }
   }
   ierr = PetscLogEventEnd(integrationEvent,0,0,0,0);CHKERRQ(ierr);
@@ -112,8 +112,8 @@ int main(int argc, char **argv)
   Vec            x, b;
   PetscViewer    viewer;
   PetscInt       Nl, Ne;
-  PetscInt      *elemRows;
-  PetscScalar   *elemMats;
+  PetscInt       *elemRows;
+  PetscScalar    *elemMats;
   PetscBool      doGPU = PETSC_TRUE, doCPU = PETSC_TRUE, doSolve = PETSC_FALSE, doView = PETSC_TRUE;
   PetscLogStage  gpuStage, cpuStage;
   PetscErrorCode ierr;

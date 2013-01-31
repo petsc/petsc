@@ -8,13 +8,13 @@ static char help[] = " * Example code testing SeqDense matrices with an LDA (lea
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP         solver;
-  PC          pc;
-  Mat         A,B;
-  Vec         X,Y,Z;
-  MatScalar   *a;
-  PetscScalar *b,*x,*y,*z;
-  PetscReal   nrm;
+  KSP            solver;
+  PC             pc;
+  Mat            A,B;
+  Vec            X,Y,Z;
+  MatScalar      *a;
+  PetscScalar    *b,*x,*y,*z;
+  PetscReal      nrm;
   PetscErrorCode ierr,size=8,lda=10, i,j;
 
   PetscInitialize(&argc,&argv,0,help);
@@ -49,9 +49,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&x);CHKERRQ(ierr);
-  for (i=0; i<size; i++) {
-    x[i] = 1.0;
-  }
+  for (i=0; i<size; i++) x[i] = 1.0;
   ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
