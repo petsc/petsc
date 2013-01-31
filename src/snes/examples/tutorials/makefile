@@ -263,6 +263,9 @@ ex72.h:
 ex72: ex72.h ex72.o  chkopts
 	-${CLINKER} -o ex72 ex72.o ${PETSC_SNES_LIB}
 	${RM} ex72.o
+ex73f90t: ex73f90t.o  chkopts
+	-${FLINKER} -o ex73f90t ex73f90t.o ${PETSC_SNES_LIB}
+	${RM} ex73f90t.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
@@ -921,6 +924,11 @@ runex58_2:
 	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_2.out ex58.tmp || echo  ${PWD} "\nPossible problem with ex58_2, diffs above \n========================================="; \
 	   ${RM} -f ex58.tmp
+runex73f90t:
+	-@${MPIEXEC} -n 1 ./ex73f90t -par 0.0 -snes_converged_reason -snes_monitor_short -da_grid_x 10 -da_grid_y 10 -snes_view -ksp_monitor -pc_type fieldsplit
+#-pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -fieldsplit_phi_ksp_type preonly -fieldsplit_phi_pc_type lu -fieldsplit_lam_ksp_type preonly -fieldsplit_lam_pc_type jacobi
+
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
