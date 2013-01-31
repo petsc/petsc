@@ -26,13 +26,13 @@ struct _AOOps {
 
 struct _p_AO {
   PETSCHEADER(struct _AOOps);
-  PetscInt      N,n;             /* global, local ao size */
-  IS            isapp;           /* index set that defines an application ordering provided by user */
-  IS            ispetsc;         /* index set that defines petsc ordering provided by user */
-  void          *data;           /* implementation-specific data */
+  PetscInt N,n;                  /* global, local ao size */
+  IS       isapp;                /* index set that defines an application ordering provided by user */
+  IS       ispetsc;              /* index set that defines petsc ordering provided by user */
+  void     *data;                /* implementation-specific data */
 };
 
-extern PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
+extern PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
 
 #endif

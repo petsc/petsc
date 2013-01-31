@@ -9,6 +9,7 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_DMLabel, label);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, &(*label)->name);CHKERRQ(ierr);
+
   (*label)->refct          = 1;
   (*label)->stratumValues  = PETSC_NULL;
   (*label)->stratumOffsets = PETSC_NULL;
@@ -22,9 +23,9 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
 #define __FUNCT__ "DMLabelView_Ascii"
 static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 {
-  PetscInt        v;
-  PetscMPIInt     rank;
-  PetscErrorCode  ierr;
+  PetscInt       v;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
@@ -66,7 +67,7 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (--(*label)->refct > 0) {PetscFunctionReturn(0);}
+  if (--(*label)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree((*label)->name);CHKERRQ(ierr);
   ierr = PetscFree3((*label)->stratumValues,(*label)->stratumOffsets,(*label)->stratumSizes);CHKERRQ(ierr);
   ierr = PetscFree((*label)->points);CHKERRQ(ierr);
@@ -117,12 +118,13 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
       tmpO[v] = label->stratumOffsets[v];
       tmpS[v] = label->stratumSizes[v];
     }
-    tmpV[v] = value;
-    tmpO[v] = v == 0 ? 0 : label->stratumOffsets[v];
-    tmpS[v] = 0;
+    tmpV[v]   = value;
+    tmpO[v]   = v == 0 ? 0 : label->stratumOffsets[v];
+    tmpS[v]   = 0;
     tmpO[v+1] = tmpO[v];
     ++label->numStrata;
     ierr = PetscFree3(label->stratumValues,label->stratumOffsets,label->stratumSizes);CHKERRQ(ierr);
+
     label->stratumValues  = tmpV;
     label->stratumOffsets = tmpO;
     label->stratumSizes   = tmpS;
@@ -133,12 +135,12 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     PetscInt off = label->stratumOffsets[v] - (loc+1); /* decode insert location */
     /* Check for reallocation */
     if (label->stratumSizes[v] >= label->stratumOffsets[v+1]-label->stratumOffsets[v]) {
-      PetscInt  oldSize   = label->stratumOffsets[v+1]-label->stratumOffsets[v];
-      PetscInt  newSize   = PetscMax(10, 2*oldSize); /* Double the size, since 2 is the optimal base for this online algorithm */
-      PetscInt  shift     = newSize - oldSize;
-      PetscInt  allocSize = label->stratumOffsets[label->numStrata] + shift;
+      PetscInt oldSize   = label->stratumOffsets[v+1]-label->stratumOffsets[v];
+      PetscInt newSize   = PetscMax(10, 2*oldSize);  /* Double the size, since 2 is the optimal base for this online algorithm */
+      PetscInt shift     = newSize - oldSize;
+      PetscInt allocSize = label->stratumOffsets[label->numStrata] + shift;
       PetscInt *newPoints;
-      PetscInt  w, q;
+      PetscInt w, q;
 
       ierr = PetscMalloc(allocSize * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
       for (q = 0; q < label->stratumOffsets[v]+label->stratumSizes[v]; ++q) {
@@ -151,10 +153,12 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
         label->stratumOffsets[w] += shift;
       }
       label->stratumOffsets[label->numStrata] += shift;
-      ierr = PetscFree(label->points);CHKERRQ(ierr);
+
+      ierr          = PetscFree(label->points);CHKERRQ(ierr);
       label->points = newPoints;
     }
     ierr = PetscMemmove(&label->points[off+1], &label->points[off], (label->stratumSizes[v]+(loc+1)) * sizeof(PetscInt));CHKERRQ(ierr);
+
     label->points[off] = point;
     ++label->stratumSizes[v];
   }
@@ -177,7 +181,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
   for (p = label->stratumOffsets[v]; p < label->stratumOffsets[v]+label->stratumSizes[v]; ++p) {
     if (label->points[p] == point) {
       /* Found point */
-      PetscInt  q;
+      PetscInt q;
 
       for (q = p+1; q < label->stratumOffsets[v]+label->stratumSizes[v]; ++q) {
         label->points[q-1] = label->points[q];
@@ -283,9 +287,9 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 @*/
 PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
 {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
+  PetscBool      flg   = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -298,7 +302,9 @@ PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
   }
   if (!flg) {
     DMLabel tmpLabel = mesh->labels;
+
     ierr = DMLabelCreate(name, &mesh->labels);CHKERRQ(ierr);
+
     mesh->labels->next = tmpLabel;
   }
   PetscFunctionReturn(0);
@@ -437,7 +443,7 @@ PetscErrorCode DMPlexGetLabelSize(DM dm, const char name[], PetscInt *size)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(size, 3);
-  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr  = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *size = 0;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetNumValues(label, size);CHKERRQ(ierr);
@@ -508,7 +514,7 @@ PetscErrorCode DMPlexGetStratumSize(DM dm, const char name[], PetscInt value, Pe
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(size, 4);
-  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr  = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *size = 0;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetStratumSize(label, value, size);CHKERRQ(ierr);
@@ -544,7 +550,7 @@ PetscErrorCode DMPlexGetStratumIS(DM dm, const char name[], PetscInt value, IS *
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(points, 4);
-  ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr    = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   *points = PETSC_NULL;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetStratumIS(label, value, points);CHKERRQ(ierr);
@@ -642,9 +648,9 @@ PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 @*/
 PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
-  DMLabel     next = mesh->labels;
-  PetscInt    l    = 0;
+  DM_Plex  *mesh = (DM_Plex*) dm->data;
+  DMLabel  next  = mesh->labels;
+  PetscInt l     = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -681,8 +687,8 @@ PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 @*/
 PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
-  DMLabel        next = mesh->labels;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -719,8 +725,8 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 @*/
 PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
-  DMLabel        next = mesh->labels;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -758,7 +764,7 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 @*/
 PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -792,15 +798,15 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 @*/
 PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
-  DMLabel        next = mesh->labels;
-  DMLabel        last = PETSC_NULL;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
+  DMLabel        last  = PETSC_NULL;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
+  ierr   = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   *label = PETSC_NULL;
   if (!hasLabel) PetscFunctionReturn(0);
   while (next) {
@@ -808,7 +814,7 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
     if (hasLabel) {
       if (last) last->next = next->next;
       next->next = PETSC_NULL;
-      *label = next;
+      *label     = next;
       break;
     }
     last = next;

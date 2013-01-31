@@ -6,7 +6,7 @@
 #include <petsc-private/meshimpl.h>
 #endif
 
-static PetscBool  AOPackageInitialized = PETSC_FALSE;
+static PetscBool AOPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "AOFinalizePackage"
@@ -42,10 +42,10 @@ PetscErrorCode  AOFinalizePackage(void)
 @*/
 PetscErrorCode  AOInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (AOPackageInitialized) PetscFunctionReturn(0);
@@ -77,7 +77,7 @@ PetscErrorCode  AOInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-static PetscBool  DMPackageInitialized = PETSC_FALSE;
+static PetscBool DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "DMFinalizePackage"
 /*@C
@@ -128,10 +128,10 @@ EXTERN_C_END
 @*/
 PetscErrorCode  DMInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (DMPackageInitialized) PetscFunctionReturn(0);

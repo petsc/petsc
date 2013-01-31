@@ -37,9 +37,9 @@ int main(int argc,char **argv)
   ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRQ(ierr);
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %D %D %D %D\n",
-          rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRQ(ierr);
+                                 rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %D %D %D\n",
-          rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRQ(ierr);
+                                 rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
@@ -55,10 +55,12 @@ int main(int argc,char **argv)
   ierr = AOApplicationToPetsc(ao,3,getpetsc1);CHKERRQ(ierr);
 
   /* Check accuracy */;
-  for (i=0; i<4;i++)
+  for (i=0; i<4; i++) {
     if (getapp1[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp1 %d != getapp %d",getapp1[i],getapp[i]);
-  for (i=0; i<3;i++)
+  }
+  for (i=0; i<3; i++) {
     if (getpetsc1[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc1 %d != getpetsc %d",getpetsc1[i],getpetsc[i]);
+  }
 
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
@@ -75,10 +77,12 @@ int main(int argc,char **argv)
   ierr = AOApplicationToPetsc(ao,3,getpetsc2);CHKERRQ(ierr);
 
   /* Check accuracy */;
-  for (i=0; i<4;i++)
+  for (i=0; i<4; i++) {
     if (getapp2[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp2 %d != getapp %d",getapp2[i],getapp[i]);
-  for (i=0; i<3;i++)
+  }
+  for (i=0; i<3; i++) {
     if (getpetsc2[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc2 %d != getpetsc %d",getpetsc2[i],getpetsc[i]);
+  }
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test AOCreateMemoryScalable() ao: */
@@ -90,10 +94,12 @@ int main(int argc,char **argv)
   ierr = AOApplicationToPetsc(ao,3,getpetsc4);CHKERRQ(ierr);
 
   /* Check accuracy */;
-  for (i=0; i<4;i++)
+  for (i=0; i<4; i++) {
     if (getapp4[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp4 %d != getapp %d",getapp4[i],getapp[i]);
-  for (i=0; i<3;i++)
+  }
+  for (i=0; i<3; i++) {
     if (getpetsc4[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc4 %d != getpetsc %d",getpetsc4[i],getpetsc[i]);
+  }
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test general API */
@@ -114,17 +120,18 @@ int main(int argc,char **argv)
   ierr = AOApplicationToPetsc(ao,3,getpetsc3);CHKERRQ(ierr);
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %D %D %D %D\n",
-          rank,getapp3[0],getapp3[1],getapp3[2],getapp3[3]);CHKERRQ(ierr);
+                                 rank,getapp3[0],getapp3[1],getapp3[2],getapp3[3]);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %D %D %D\n",
-          rank,getpetsc3[0],getpetsc3[1],getpetsc3[2]);CHKERRQ(ierr);
+                                 rank,getpetsc3[0],getpetsc3[1],getpetsc3[2]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* Check accuracy */;
-  for (i=0; i<4;i++)
-
+  for (i=0; i<4; i++) {
     if (getapp3[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp3 %d != getapp %d",getapp3[i],getapp[i]);
-  for (i=0; i<3;i++)
+  }
+  for (i=0; i<3; i++) {
     if (getpetsc3[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc3 %d != getpetsc %d",getpetsc3[i],getpetsc[i]);
+  }
 
   ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = PetscFinalize();

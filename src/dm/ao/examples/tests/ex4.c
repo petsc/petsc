@@ -13,12 +13,12 @@ int main(int argc,char **argv)
   PetscInt       *localvert=PETSC_NULL, nlocal;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscMalloc(4*sizeof(PetscInt),&localvert);CHKERRQ(ierr);
 
   if (!rank) {
-    nlocal = 4;
+    nlocal       = 4;
     localvert[0] = 0;
     localvert[1] = 1;
     localvert[2] = 2;
@@ -36,6 +36,6 @@ int main(int argc,char **argv)
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   ierr = PetscFree(localvert);CHKERRQ(ierr);
-  ierr=PetscFinalize();
+  ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

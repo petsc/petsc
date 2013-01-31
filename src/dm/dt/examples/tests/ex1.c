@@ -37,22 +37,24 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Discretization tools test options",PETSC_NULL);CHKERRQ(ierr);
   {
-    ndegrees = 1000;
+    ndegrees   = 1000;
     degrees[0] = 0;
     degrees[1] = 1;
     degrees[2] = 2;
-    ierr = PetscOptionsIntArray("-degrees","list of degrees to evaluate","",degrees,&ndegrees,&flg);CHKERRQ(ierr);
+    ierr       = PetscOptionsIntArray("-degrees","list of degrees to evaluate","",degrees,&ndegrees,&flg);CHKERRQ(ierr);
+
     if (!flg) ndegrees = 3;
-    npoints = 1000;
+    npoints   = 1000;
     points[0] = 0.0;
     points[1] = -0.5;
     points[2] = 1.0;
-    ierr = PetscOptionsRealArray("-points","list of points at which to evaluate","",points,&npoints,&flg);CHKERRQ(ierr);
+    ierr      = PetscOptionsRealArray("-points","list of points at which to evaluate","",points,&npoints,&flg);CHKERRQ(ierr);
+
     if (!flg) npoints = 3;
-    two = 2;
+    two         = 2;
     interval[0] = -1.;
     interval[1] = 1.;
-    ierr = PetscOptionsRealArray("-interval","interval on which to construct quadrature","",interval,&two,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsRealArray("-interval","interval on which to construct quadrature","",interval,&two,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = CheckPoints("User-provided points",npoints,points,ndegrees,degrees);CHKERRQ(ierr);
@@ -64,11 +66,11 @@ int main(int argc,char **argv)
     PetscReal a = interval[0],b = interval[1],zeroth,first,second;
     PetscInt  i;
     zeroth = b - a;
-    first = (b*b - a*a)/2;
+    first  = (b*b - a*a)/2;
     second = (b*b*b - a*a*a)/3;
     for (i=0; i<npoints; i++) {
       zeroth -= weights[i];
-      first -= weights[i] * points[i];
+      first  -= weights[i] * points[i];
       second -= weights[i] * PetscSqr(points[i]);
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Moment error: zeroth=%G, first=%G, second=%G\n",-zeroth,-first,-second);CHKERRQ(ierr);
