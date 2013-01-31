@@ -42,8 +42,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>       /*I "petscksp.h" I*/
-extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
+extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method.
@@ -57,7 +57,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt        maxit = ksp->max_it,nwork = 3;
+  PetscInt       maxit = ksp->max_it,nwork = 3;
 
   PetscFunctionBegin;
   /* get work vectors needed by CG */
@@ -72,6 +72,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
     /* get space to store tridiagonal matrix for Lanczos */
     ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
@@ -94,7 +95,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
   PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold;
-  PetscReal      dp = 0.0;
+  PetscReal      dp  = 0.0;
   Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
   Mat            Amat,Pmat;
@@ -102,7 +103,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   cg            = (KSP_CG*)ksp->data;
@@ -114,11 +115,11 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   Z             = ksp->work[1];
   P             = ksp->work[2];
   if (cg->singlereduction) {
-    S           = ksp->work[3];
-    W           = ksp->work[4];
+    S = ksp->work[3];
+    W = ksp->work[4];
   } else {
-    S           = 0;            /* unused */
-    W           = Z;
+    S = 0;                      /* unused */
+    W = Z;
   }
 
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
@@ -158,7 +159,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   default: SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
   KSPLogResidualHistory(ksp,dp);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
 
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
@@ -181,18 +182,18 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     ksp->its = i+1;
     if (beta == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
-      ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
+      ierr        = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
       break;
 #if !defined(PETSC_USE_COMPLEX)
     } else if ((i > 0) && (beta*betaold < 0.0)) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
+      ierr        = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
       break;
 #endif
     }
     if (!i) {
       ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
-      b = 0.0;
+      b    = 0.0;
     } else {
       b = beta/betaold;
       if (eigs) {
@@ -207,20 +208,18 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
     } else {
       ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Ap         */
-      dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
+      dpi  = delta - beta*beta*dpiold/(betaold*betaold);             /*     dpi <- p'w     */
     }
     betaold = beta;
     if (PetscIsInfOrNanScalar(dpi)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-      ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
+      ierr        = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
       break;
     }
     a = beta/dpi;                                 /*     a = beta/p'w   */
-    if (eigs) {
-      d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
-    }
+    if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
     ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
     ierr = VecAXPY(R,-a,W);CHKERRQ(ierr);                      /*     r <- r - aw    */
     if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
@@ -237,10 +236,10 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
         PetscScalar tmp[2];
         Vec         vecs[2];
         vecs[0] = S; vecs[1] = R;
-        ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
+        ierr    = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
         /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
           ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
-        ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+        ierr  = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
         delta = tmp[0]; beta = tmp[1];
       } else {
         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
@@ -269,7 +268,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
         vecs[0] = S; vecs[1] = R;
         /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
         /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
-        ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+        ierr  = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
         delta = tmp[0]; beta = tmp[1];
       } else {
         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
@@ -279,9 +278,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
     i++;
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -316,7 +313,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
 PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
-  KSP_CG         *cg = (KSP_CG *)ksp->data;
+  KSP_CG         *cg = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
@@ -324,7 +321,7 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  CG or CGNE: variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
-  } 
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -338,7 +335,7 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_CG         *cg = (KSP_CG *)ksp->data;
+  KSP_CG         *cg = (KSP_CG*)ksp->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP CG and CGNE options");CHKERRQ(ierr);
@@ -347,7 +344,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
                           (PetscEnum*)&cg->type,PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()",
-                           "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,PETSC_NULL);CHKERRQ(ierr);
+                          "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -364,7 +361,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCGSetType_CG"
 PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
-  KSP_CG *cg = (KSP_CG *)ksp->data;
+  KSP_CG *cg = (KSP_CG*)ksp->data;
 
   PetscFunctionBegin;
   cg->type = type;
@@ -375,9 +372,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGUseSingleReduction_CG"
-PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 {
-  KSP_CG *cg  = (KSP_CG *)ksp->data;
+  KSP_CG *cg = (KSP_CG*)ksp->data;
 
   PetscFunctionBegin;
   cg->singlereduction = flg;
@@ -430,11 +427,11 @@ PetscErrorCode  KSPCreate_CG(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  cg->type                       = KSP_CG_SYMMETRIC;
+  cg->type = KSP_CG_SYMMETRIC;
 #else
-  cg->type                       = KSP_CG_HERMITIAN;
+  cg->type = KSP_CG_HERMITIAN;
 #endif
-  ksp->data                      = (void*)cg;
+  ksp->data = (void*)cg;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
@@ -445,13 +442,13 @@ PetscErrorCode  KSPCreate_CG(KSP ksp)
        Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
-  ksp->ops->setup                = KSPSetUp_CG;
-  ksp->ops->solve                = KSPSolve_CG;
-  ksp->ops->destroy              = KSPDestroy_CG;
-  ksp->ops->view                 = KSPView_CG;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_CG;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_CG;
+  ksp->ops->solve          = KSPSolve_CG;
+  ksp->ops->destroy        = KSPDestroy_CG;
+  ksp->ops->view           = KSPView_CG;
+  ksp->ops->setfromoptions = KSPSetFromOptions_CG;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
 
   /*
       Attach the function KSPCGSetType_CG() to this object. The routine

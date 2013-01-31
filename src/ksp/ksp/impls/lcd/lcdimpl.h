@@ -22,6 +22,6 @@ typedef struct {
   PetscReal haptol;
   Vec       *P;
   Vec       *Q;
-}KSP_LCD;
+} KSP_LCD;
 
 #endif

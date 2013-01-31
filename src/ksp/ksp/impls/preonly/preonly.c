@@ -17,12 +17,12 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   if (!ksp->guess_zero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   ksp->its    = 0;
-  ierr        = PCSetInitialGuessNonzero(ksp->pc,(PetscBool)!(int)ksp->guess_zero);CHKERRQ(ierr);
+  ierr        = PCSetInitialGuessNonzero(ksp->pc,(PetscBool) !(int)ksp->guess_zero);CHKERRQ(ierr);
   ierr        = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   ksp->its    = 1;
   ksp->reason = KSP_CONVERGED_ITS;
@@ -54,14 +54,15 @@ PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr); /* LEFT/RIGHT is arbitrary, so "support" both */
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
-  ksp->data                      = (void*)0;
-  ksp->ops->setup                = KSPSetUp_PREONLY;
-  ksp->ops->solve                = KSPSolve_PREONLY;
-  ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = 0;
-  ksp->ops->view                 = 0;
+
+  ksp->data                = (void*)0;
+  ksp->ops->setup          = KSPSetUp_PREONLY;
+  ksp->ops->solve          = KSPSolve_PREONLY;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

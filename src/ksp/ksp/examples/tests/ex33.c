@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -41,7 +41,7 @@ int main(int argc,char **args)
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
       ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
-      ierr  = MatLoad(B,viewer);CHKERRQ(ierr);
+      ierr = MatLoad(B,viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
   }
@@ -50,7 +50,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,&flag);CHKERRQ(ierr);
     if (!flag) m=n;
-    N = n*m;
+    N    = n*m;
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-sigma",&sigma,&flag);CHKERRQ(ierr);
   if (flag) {
     sigma = -1.0 * sigma;
-    ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */
+    ierr  = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */
     /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   }
 

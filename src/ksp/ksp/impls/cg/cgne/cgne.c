@@ -5,8 +5,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>       /*I "petscksp.h" I*/
-extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
+extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
 
 /*
@@ -65,7 +65,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   PetscBool      diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   ierr = PCApplyTransposeExists(ksp->pc,&transpose_pc);CHKERRQ(ierr);
 
@@ -85,7 +85,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
-  ierr = MatMultTranspose(Amat,B,T);CHKERRQ(ierr);
+  ierr     = MatMultTranspose(Amat,B,T);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
@@ -106,82 +106,78 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
-    dp = PetscSqrtReal(PetscAbsScalar(beta));
+    dp   = PetscSqrtReal(PetscAbsScalar(beta));
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
+  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {
     ksp->its = i+1;
-    ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
+    ierr     = VecXDot(Z,R,&beta);CHKERRQ(ierr); /*     beta <- r'z     */
     if (beta == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
-      ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
+      ierr        = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
       break;
 #if !defined(PETSC_USE_COMPLEX)
     } else if (beta < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
+      ierr        = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
       break;
 #endif
-     }
-     if (!i) {
-       ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
-       b = 0.0;
-     } else {
-       b = beta/betaold;
-       if (eigs) {
-         if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-         e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
-       }
-       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
-     }
-     betaold = beta;
-     ierr = MatMult(Amat,P,T);CHKERRQ(ierr);
-     ierr = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
-     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
-     a = beta/dpi;                                 /*     a = beta/p'z    */
-     if (eigs) {
-       d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
-     }
-     ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
-     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-       ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
-       if (transpose_pc) {
-         ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
-       } else {
-         ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
-       }
-       ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
-     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-     } else if (ksp->normtype == KSP_NORM_NATURAL) {
-       dp = PetscSqrtReal(PetscAbsScalar(beta));
-     } else {
-       dp = 0.0;
-     }
-     ksp->rnorm = dp;
-     KSPLogResidualHistory(ksp,dp);
-     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
-     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-     if (ksp->reason) break;
-     if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
-       if (transpose_pc) {
-         ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
-       } else {
-         ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
-       }
-     }
-     i++;
+    }
+    if (!i) {
+      ierr = VecCopy(Z,P);CHKERRQ(ierr);          /*     p <- z          */
+      b    = 0.0;
+    } else {
+      b = beta/betaold;
+      if (eigs) {
+        if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+        e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
+      }
+      ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);     /*     p <- z + b* p   */
+    }
+    betaold = beta;
+    ierr    = MatMult(Amat,P,T);CHKERRQ(ierr);
+    ierr    = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
+    ierr    = VecXDot(P,Z,&dpi);CHKERRQ(ierr);    /*     dpi <- z'p      */
+    a       = beta/dpi;                            /*     a = beta/p'z    */
+    if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
+    ierr = VecAXPY(X,a,P);CHKERRQ(ierr);           /*     x <- x + ap     */
+    ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                       /*     r <- r - az     */
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
+      ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
+      if (transpose_pc) {
+        ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+      } else {
+        ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+      }
+      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
+    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    } else if (ksp->normtype == KSP_NORM_NATURAL) {
+      dp = PetscSqrtReal(PetscAbsScalar(beta));
+    } else {
+      dp = 0.0;
+    }
+    ksp->rnorm = dp;
+    KSPLogResidualHistory(ksp,dp);
+    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
+    if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
+      if (transpose_pc) {
+        ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+      } else {
+        ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+      }
+    }
+    i++;
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -246,26 +242,26 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  cg->type                       = KSP_CG_SYMMETRIC;
+  cg->type = KSP_CG_SYMMETRIC;
 #else
-  cg->type                       = KSP_CG_HERMITIAN;
+  cg->type = KSP_CG_HERMITIAN;
 #endif
-  ksp->data                      = (void*)cg;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ksp->data = (void*)cg;
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
-  ksp->ops->setup                = KSPSetUp_CGNE;
-  ksp->ops->solve                = KSPSolve_CGNE;
-  ksp->ops->destroy              = KSPDestroy_CG;
-  ksp->ops->view                 = KSPView_CG;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_CG;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_CGNE;
+  ksp->ops->solve          = KSPSolve_CGNE;
+  ksp->ops->destroy        = KSPDestroy_CG;
+  ksp->ops->view           = KSPView_CG;
+  ksp->ops->setfromoptions = KSPSetFromOptions_CG;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
 
   /*
       Attach the function KSPCGSetType_CGNE() to this object. The routine

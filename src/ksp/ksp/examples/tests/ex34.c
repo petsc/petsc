@@ -51,7 +51,7 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
   /* allocates memory on each process, both masters and workers */
   ierr = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,sizeof(int),&subctx);CHKERRQ(ierr);
   /* runs MyMult() function on each process, both masters and workers */
-  ierr = PetscHMPIRunCtx(PETSC_COMM_LOCAL_WORLD,(PetscErrorCode (*)(MPI_Comm,void*,void *))MyMult,subctx);CHKERRQ(ierr);
+  ierr = PetscHMPIRunCtx(PETSC_COMM_LOCAL_WORLD,(PetscErrorCode (*)(MPI_Comm,void*,void*))MyMult,subctx);CHKERRQ(ierr);
   ierr = PetscHMPIFree(PETSC_COMM_LOCAL_WORLD,subctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -69,11 +69,11 @@ int main(int argc,char **args)
   PetscInt       i,rstart,n = 0;   /* length of vector ctx.xr on this process */
   IS             is;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ctx.comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nodesize",&nodesize,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr     = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(PETSC_NULL,"-nodesize",&nodesize,PETSC_NULL);CHKERRQ(ierr);
   if (size % nodesize) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPI_COMM_WORLD size must be divisible by nodesize");
 
   /* Read matrix */

@@ -22,8 +22,8 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   PetscFunctionBegin;
   ksp->its = 0;
 
-  ierr  = KSPInitialResidual(ksp,x,u,v,r,b);CHKERRQ(ierr);
-  ierr  = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
+  ierr = KSPInitialResidual(ksp,x,u,v,r,b);CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);          /*  rnorm0 = ||r|| */
 
   ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -71,10 +71,10 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     ierr   = VecCopy(z,utmp);CHKERRQ(ierr);    /* up1 = (A-alpha*I)*
                                                 (z-2*beta*p) + f*beta*
                                                 beta*um1 */
-    ierr = VecAXPY(utmp,-2.0*beta,p);CHKERRQ(ierr);
+    ierr   = VecAXPY(utmp,-2.0*beta,p);CHKERRQ(ierr);
     ierr   = KSP_PCApplyBAorAB(ksp,utmp,up1,vtmp);CHKERRQ(ierr);
-    ierr = VecAXPY(up1,-alpha,utmp);CHKERRQ(ierr);
-    ierr = VecAXPY(up1,f*beta*beta,um1);CHKERRQ(ierr);
+    ierr   = VecAXPY(up1,-alpha,utmp);CHKERRQ(ierr);
+    ierr   = VecAXPY(up1,f*beta*beta,um1);CHKERRQ(ierr);
     ierr   = VecNorm(up1,NORM_2,&dp1);CHKERRQ(ierr);
     f      = 1.0 / dp1;
     ierr   = VecScale(up1,f);CHKERRQ(ierr);
@@ -85,17 +85,17 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     beta   = beta/Gamma;
     eptmp  = beta;
     ierr   = KSP_PCApplyBAorAB(ksp,v,vp1,vtmp);CHKERRQ(ierr);
-    ierr = VecAXPY(vp1,-alpha,v);CHKERRQ(ierr);
-    ierr = VecAXPY(vp1,-beta,vm1);CHKERRQ(ierr);
+    ierr   = VecAXPY(vp1,-alpha,v);CHKERRQ(ierr);
+    ierr   = VecAXPY(vp1,-beta,vm1);CHKERRQ(ierr);
     ierr   = VecNorm(vp1,NORM_2,&Gamma);CHKERRQ(ierr);
-    ierr = VecScale(vp1,1.0/Gamma);CHKERRQ(ierr);
+    ierr   = VecScale(vp1,1.0/Gamma);CHKERRQ(ierr);
     ierr   = VecCopy(v,vm1);CHKERRQ(ierr);
     ierr   = VecCopy(vp1,v);CHKERRQ(ierr);
 
-  /*
-     SOLVE  Ax = b
-   */
-  /* Apply last two Given's (Gl-1 and Gl) rotations to (beta,alpha,Gamma) */
+    /*
+       SOLVE  Ax = b
+     */
+    /* Apply last two Given's (Gl-1 and Gl) rotations to (beta,alpha,Gamma) */
     if (ksp->its > 2) {
       theta =  sl1*beta;
       eptmp = -cl1*beta;
@@ -114,14 +114,14 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
       s  = c*ta;
     }
 
-    delta  = -c*deltmp + s*Gamma;
-    tau_n  = -c*tau_n1; tau_n1 = -s*tau_n1;
-    ierr   = VecCopy(vm1,pvec);CHKERRQ(ierr);
-    ierr = VecAXPY(pvec,-theta,pvec2);CHKERRQ(ierr);
-    ierr = VecAXPY(pvec,-ep,pvec1);CHKERRQ(ierr);
-    ierr = VecScale(pvec,1.0/delta);CHKERRQ(ierr);
-    ierr   = VecAXPY(x,tau_n,pvec);CHKERRQ(ierr);
-    cl1    = cl; sl1 = sl; cl = c; sl = s;
+    delta = -c*deltmp + s*Gamma;
+    tau_n = -c*tau_n1; tau_n1 = -s*tau_n1;
+    ierr  = VecCopy(vm1,pvec);CHKERRQ(ierr);
+    ierr  = VecAXPY(pvec,-theta,pvec2);CHKERRQ(ierr);
+    ierr  = VecAXPY(pvec,-ep,pvec1);CHKERRQ(ierr);
+    ierr  = VecScale(pvec,1.0/delta);CHKERRQ(ierr);
+    ierr  = VecAXPY(x,tau_n,pvec);CHKERRQ(ierr);
+    cl1   = cl; sl1 = sl; cl = c; sl = s;
 
     ierr = VecCopy(pvec1,pvec2);CHKERRQ(ierr);
     ierr = VecCopy(pvec,pvec1);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
     rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * PetscRealPart(sprod);
-    ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    ierr  = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->its >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
@@ -185,6 +185,7 @@ PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+
   ksp->data                = (void*)0;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;

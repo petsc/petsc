@@ -31,29 +31,29 @@ int main(int argc,char **args)
   KSP          ksp;
   MatNullSpace nullsp;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  N = (m+1)*(m+1); /* dimension of matrix */
-  M = m*m; /* number of elements */
-  h = 1.0/m;       /* mesh width */
+  N    = (m+1)*(m+1); /* dimension of matrix */
+  M    = m*m; /* number of elements */
+  h    = 1.0/m;    /* mesh width */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* Create stiffness matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr  = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr  = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
+  ierr  = MatSetFromOptions(C);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
   ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
   for (i=start; i<end; i++) {
-     /* location of lower left corner of element */
-     /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + (i % m);
-     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    /* location of lower left corner of element */
+    /* node numbers for the four corners of element */
+    idx[0] = (m+1)*(i/m) + (i % m);
+    idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
+    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

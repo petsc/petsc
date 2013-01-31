@@ -49,7 +49,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   x = ksp->vec_sol;
@@ -97,9 +97,9 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   default: SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
   KSPLogResidualHistory(ksp,dp);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
+  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
@@ -115,9 +115,9 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = VecDotEnd(p,s,&t);CHKERRQ(ierr);
 
     alpha = gamma / t;
-    ierr = VecAXPY(x, alpha,p);CHKERRQ(ierr);    /*     x <- x + alpha * p   */
-    ierr = VecAXPY(r,-alpha,s);CHKERRQ(ierr);    /*     r <- r - alpha * s   */
-    ierr = VecAXPY(z,-alpha,S);CHKERRQ(ierr);    /*     z <- z - alpha * S   */
+    ierr  = VecAXPY(x, alpha,p);CHKERRQ(ierr);   /*     x <- x + alpha * p   */
+    ierr  = VecAXPY(r,-alpha,s);CHKERRQ(ierr);   /*     r <- r - alpha * s   */
+    ierr  = VecAXPY(z,-alpha,S);CHKERRQ(ierr);   /*     z <- z - alpha * S   */
 
     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNormBegin(r,NORM_2,&dp);CHKERRQ(ierr);
@@ -148,15 +148,14 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
 
-    beta = gammaNew / gamma;
+    beta  = gammaNew / gamma;
     gamma = gammaNew;
-    ierr = VecAYPX(p,beta,z);CHKERRQ(ierr);    /*     p <- z + beta * p   */
-    ierr = VecAYPX(s,beta,Z);CHKERRQ(ierr);    /*     s <- Z + beta * s   */
+    ierr  = VecAYPX(p,beta,z);CHKERRQ(ierr);   /*     p <- z + beta * p   */
+    ierr  = VecAYPX(s,beta,Z);CHKERRQ(ierr);   /*     s <- Z + beta * s   */
 
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -172,12 +171,12 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
-  ksp->ops->setup                = KSPSetUp_GROPPCG;
-  ksp->ops->solve                = KSPSolve_GROPPCG;
-  ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->ops->view                 = 0;
-  ksp->ops->setfromoptions       = 0;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_GROPPCG;
+  ksp->ops->solve          = KSPSolve_GROPPCG;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->view           = 0;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }

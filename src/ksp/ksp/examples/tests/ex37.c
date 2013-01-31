@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscScalar    *barray,*xarray,*uarray,*array,one=1.0;
   PetscInt       type=1;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   /* Load the matrix */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
@@ -60,14 +60,14 @@ int main(int argc,char **args)
 
   ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
-  if (type == PETSC_SUBCOMM_GENERAL) {/* user provides color, subrank and duprank */
+  if (type == PETSC_SUBCOMM_GENERAL) { /* user provides color, subrank and duprank */
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
     if (subsize*nsubcomm != size) SETERRQ2(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides nproc %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
-    ierr = PetscSubcommSetTypeGeneral(psubcomm,color,subrank,duprank);CHKERRQ(ierr);
+    ierr    = PetscSubcommSetTypeGeneral(psubcomm,color,subrank,duprank);CHKERRQ(ierr);
   } else if (type == PETSC_SUBCOMM_CONTIGUOUS) {
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
   } else if (type == PETSC_SUBCOMM_INTERLACED) {

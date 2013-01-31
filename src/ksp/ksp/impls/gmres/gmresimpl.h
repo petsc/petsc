@@ -27,18 +27,18 @@
   PetscInt  max_k;                                        /* number of vectors in Krylov space, restart size */ \
   PetscInt  nextra_vecs;                                  /* number of extra vecs needed, e.g. for a pipeline */ \
                                                                         \
-  PetscErrorCode            (*orthog)(KSP,PetscInt);                    \
+  PetscErrorCode (*orthog)(KSP,PetscInt);                    \
   KSPGMRESCGSRefinementType cgstype;                                    \
                                                                         \
-  Vec         *vecs;                                     /* the work vectors */ \
-  PetscInt    q_preallocate; /* 0=don't preallocate space for work vectors */ \
-  PetscInt    delta_allocate; /* number of vectors to preallocaate in each block if not preallocated */ \
-  PetscInt    vv_allocated;   /* number of allocated gmres direction vectors */ \
-  PetscInt    vecs_allocated;                           /*   total number of vecs available */ \
+  Vec      *vecs;                                        /* the work vectors */ \
+  PetscInt q_preallocate;    /* 0=don't preallocate space for work vectors */ \
+  PetscInt delta_allocate;    /* number of vectors to preallocaate in each block if not preallocated */ \
+  PetscInt vv_allocated;      /* number of allocated gmres direction vectors */ \
+  PetscInt vecs_allocated;                              /*   total number of vecs available */ \
   /* Since we may call the user "obtain_work_vectors" several times, we have to keep track of the pointers that it has returned */ \
-  Vec         **user_work;                                              \
-  PetscInt    *mwork_alloc;    /* Number of work vectors allocated as part of  a work-vector chunck */ \
-  PetscInt    nwork_alloc;     /* Number of work vector chunks allocated */ \
+  Vec      **user_work;                                              \
+  PetscInt *mwork_alloc;       /* Number of work vectors allocated as part of  a work-vector chunck */ \
+  PetscInt nwork_alloc;        /* Number of work vector chunks allocated */ \
                                                                         \
   /* Information for building solution */                               \
   PetscInt    it;              /* Current iteration: inside restart */  \
@@ -52,8 +52,8 @@ typedef struct {
 extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 extern PetscErrorCode KSPSetUp_GMRES(KSP);
 extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
-extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
+extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
+extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 extern PetscErrorCode KSPReset_GMRES(KSP);
 extern PetscErrorCode KSPDestroy_GMRES(KSP);
 extern PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);

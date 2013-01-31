@@ -124,7 +124,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   if (ksp->transpose_solve) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Currently does not support transpose solve");
 
@@ -152,11 +152,11 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   /* Compute:  BS = D^{-1} B */
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
 
-  ierr = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-  ksp->its    = 0;
-  ksp->rnorm  = bsnrm;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ksp->its   = 0;
+  ksp->rnorm = bsnrm;
+  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,bsnrm);
   ierr = KSPMonitor(ksp,0,bsnrm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
     ierr = PCApplySymmetricLeft(pc,WA2,ASP);CHKERRQ(ierr);
 
     /* Check for negative curvature */
-    ierr  = VecDotRealPart(P,ASP,&ptasp);CHKERRQ(ierr);
+    ierr = VecDotRealPart(P,ASP,&ptasp);CHKERRQ(ierr);
     if (ptasp <= dzero) {
 
       /* Scaled negative curvature direction:  Compute a step so that
@@ -198,8 +198,11 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecCopy(W,X);CHKERRQ(ierr);
         q1 = step1*(bstp + wtasp + .5*step1*ptasp);
         q2 = step2*(bstp + wtasp + .5*step2*ptasp);
-        if (q1 <= q2) {ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);}
-        else          {ierr = VecAXPY(X,step2,P);CHKERRQ(ierr);}
+        if (q1 <= q2) {
+          ierr = VecAXPY(X,step1,P);CHKERRQ(ierr);
+        } else {
+          ierr = VecAXPY(X,step2,P);CHKERRQ(ierr);
+        }
       }
       pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
@@ -217,10 +220,10 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       ierr = VecNorm(X,NORM_2,&pcgP->ltsnrm);CHKERRQ(ierr);
 
       if (pcgP->ltsnrm > pcgP->delta) {
-          /* Since the trial iterate is outside the trust region,
-              evaluate a constrained step along p so that
-                      ||w + step*p|| = delta
-            The positive step is always better in this case. */
+        /* Since the trial iterate is outside the trust region,
+            evaluate a constrained step along p so that
+                    ||w + step*p|| = delta
+          The positive step is always better in this case. */
         if (!i) {
           scal = pcgP->delta / pcgP->ltsnrm;
           ierr = VecScale(X,scal);CHKERRQ(ierr);
@@ -244,9 +247,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
         ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
-        ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-        ksp->rnorm                                    = rnrm;
-        ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+        ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+        ksp->rnorm = rnrm;
+        ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
         KSPLogResidualHistory(ksp,rnrm);
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -260,12 +263,10 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       ierr = VecDot(R,R,&rntrn);CHKERRQ(ierr);
       beta = rntrn/rtr;
       ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);  /*  p <- r + beta*p  */
-      rtr = PetscRealPart(rntrn);
+      rtr  = PetscRealPart(rntrn);
     }
   }
-  if (!ksp->reason) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   /* Unscale x */
   ierr = VecCopy(X,WA2);CHKERRQ(ierr);
@@ -274,6 +275,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
   ierr = VecDotRealPart(B,X,&btx);CHKERRQ(ierr);
   ierr = VecDotRealPart(X,WA,&xtax);CHKERRQ(ierr);
+
   pcgP->quadratic = btx + .5*xtax;
   PetscFunctionReturn(0);
 }
@@ -419,25 +421,26 @@ PetscErrorCode  KSPCreate_QCG(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,2);CHKERRQ(ierr);
   ierr = PetscNewLog(ksp,KSP_QCG,&cgP);CHKERRQ(ierr);
-  ksp->data                      = (void*)cgP;
-  ksp->ops->setup                = KSPSetUp_QCG;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_QCG;
-  ksp->ops->solve                = KSPSolve_QCG;
-  ksp->ops->destroy              = KSPDestroy_QCG;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = 0;
-  ksp->ops->view                 = 0;
+
+  ksp->data                = (void*)cgP;
+  ksp->ops->setup          = KSPSetUp_QCG;
+  ksp->ops->setfromoptions = KSPSetFromOptions_QCG;
+  ksp->ops->solve          = KSPSolve_QCG;
+  ksp->ops->destroy        = KSPDestroy_QCG;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetQuadratic_C",
-                                    "KSPQCGGetQuadratic_QCG",
-                                     KSPQCGGetQuadratic_QCG);CHKERRQ(ierr);
+                                           "KSPQCGGetQuadratic_QCG",
+                                           KSPQCGGetQuadratic_QCG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",
-                                    "KSPQCGGetTrialStepNorm_QCG",
-                                     KSPQCGGetTrialStepNorm_QCG);CHKERRQ(ierr);
+                                           "KSPQCGGetTrialStepNorm_QCG",
+                                           KSPQCGGetTrialStepNorm_QCG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
-                                    "KSPQCGSetTrustRegionRadius_QCG",
-                                     KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
+                                           "KSPQCGSetTrustRegionRadius_QCG",
+                                           KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
   cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
   PetscFunctionReturn(0);
 }

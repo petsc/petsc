@@ -36,9 +36,9 @@ extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscReal   rho;
-  PetscReal   nu;
-  BCType      bcType;
+  PetscReal rho;
+  PetscReal nu;
+  BCType    bcType;
 } UserContext;
 
 #undef __FUNCT__
@@ -53,22 +53,22 @@ int main(int argc,char **argv)
   PetscInt       bc;
   Vec            b,x;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0,1,0,1,0,0);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Pressure");CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
-    user.rho    = 1.0;
-    ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
-    user.nu     = 0.1;
-    ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, PETSC_NULL);CHKERRQ(ierr);
-    bc          = (PetscInt)DIRICHLET;
-    ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
-    user.bcType = (BCType)bc;
-  ierr = PetscOptionsEnd();
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
+  user.rho    = 1.0;
+  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
+  user.nu     = 0.1;
+  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+  bc          = (PetscInt)DIRICHLET;
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
+  user.bcType = (BCType)bc;
+  ierr        = PetscOptionsEnd();
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
@@ -153,21 +153,21 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr      = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   centerRho = user->rho;
-  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  Hx    = 1.0 / (PetscReal)(mx-1);
-  Hy    = 1.0 / (PetscReal)(my-1);
-  HxdHy = Hx/Hy;
-  HydHx = Hy/Hx;
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr      = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  Hx        = 1.0 / (PetscReal)(mx-1);
+  Hy        = 1.0 / (PetscReal)(my-1);
+  HxdHy     = Hx/Hy;
+  HydHx     = Hy/Hx;
+  ierr      = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       row.i = i; row.j = j;
-      ierr = ComputeRho(i, j, mx, my, centerRho, &rho);CHKERRQ(ierr);
+      ierr  = ComputeRho(i, j, mx, my, centerRho, &rho);CHKERRQ(ierr);
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
         if (user->bcType == DIRICHLET) {
-           v[0] = 2.0*rho*(HxdHy + HydHx);
+          v[0] = 2.0*rho*(HxdHy + HydHx);
           ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else if (user->bcType == NEUMANN) {
           PetscInt numx = 0, numy = 0, num = 0;
@@ -187,7 +187,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
             v[num] = -rho*HxdHy;              col[num].i = i;   col[num].j = j+1;
             numy++; num++;
           }
-          v[num]   = numx*rho*HydHx + numy*rho*HxdHy; col[num].i = i;   col[num].j = j;
+          v[num] = numx*rho*HydHx + numy*rho*HxdHy; col[num].i = i;   col[num].j = j;
           num++;
           ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }

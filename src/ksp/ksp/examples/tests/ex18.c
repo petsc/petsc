@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   PetscLogStage  stage1;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = VecGetSize(b,&mvec);CHKERRQ(ierr);
   if (m > mvec) {
-    Vec    tmp;
+    Vec         tmp;
     PetscScalar *bold,*bnew;
     /* create a new vector b by padding the old one */
     ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
     ierr = PetscMemcpy(bnew,bold,mvec*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
-    b = tmp;
+    b    = tmp;
   }
 
   /* Set up solution */

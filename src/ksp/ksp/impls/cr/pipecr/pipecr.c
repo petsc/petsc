@@ -26,7 +26,7 @@
 PetscErrorCode KSPSetUp_PIPECR(KSP ksp)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   /* get work vectors needed by PIPECR */
   ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    alpha=0.0,beta=0.0,gamma,gammaold=0.0,delta;
-  PetscReal      dp = 0.0;
+  PetscReal      dp   = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N;
   Mat            Amat,Pmat;
   MatStructure   pflag;
@@ -88,14 +88,14 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     break;
   case KSP_NORM_NONE:
     ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);
-    dp = 0.0;
+    dp   = 0.0;
     break;
   default: SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
   KSPLogResidualHistory(ksp,dp);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
+  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
@@ -118,9 +118,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     ierr = VecDotEnd(M,W,&delta);CHKERRQ(ierr);
 
     if (i > 0) {
-      if (ksp->normtype == KSP_NORM_NONE) {
-        dp = 0.0;
-      }
+      if (ksp->normtype == KSP_NORM_NONE) dp = 0.0;
       ksp->rnorm = dp;
       KSPLogResidualHistory(ksp,dp);
       ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
@@ -130,19 +128,19 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
 
     if (i == 0) {
       alpha = gamma / delta;
-      ierr = VecCopy(N,Z);CHKERRQ(ierr);         /*     z <- n          */
-      ierr = VecCopy(M,Q);CHKERRQ(ierr);         /*     q <- m          */
-      ierr = VecCopy(U,P);CHKERRQ(ierr);         /*     p <- u          */
+      ierr  = VecCopy(N,Z);CHKERRQ(ierr);        /*     z <- n          */
+      ierr  = VecCopy(M,Q);CHKERRQ(ierr);        /*     q <- m          */
+      ierr  = VecCopy(U,P);CHKERRQ(ierr);        /*     p <- u          */
     } else {
-      beta = gamma / gammaold;
+      beta  = gamma / gammaold;
       alpha = gamma / (delta - beta / alpha * gamma);
-      ierr = VecAYPX(Z,beta,N);CHKERRQ(ierr);    /*     z <- n + beta * z   */
-      ierr = VecAYPX(Q,beta,M);CHKERRQ(ierr);    /*     q <- m + beta * q   */
-      ierr = VecAYPX(P,beta,U);CHKERRQ(ierr);    /*     p <- u + beta * p   */
+      ierr  = VecAYPX(Z,beta,N);CHKERRQ(ierr);   /*     z <- n + beta * z   */
+      ierr  = VecAYPX(Q,beta,M);CHKERRQ(ierr);   /*     q <- m + beta * q   */
+      ierr  = VecAYPX(P,beta,U);CHKERRQ(ierr);   /*     p <- u + beta * p   */
     }
-    ierr = VecAXPY(X, alpha,P);CHKERRQ(ierr);    /*     x <- x + alpha * p   */
-    ierr = VecAXPY(U,-alpha,Q);CHKERRQ(ierr);    /*     u <- u - alpha * q   */
-    ierr = VecAXPY(W,-alpha,Z);CHKERRQ(ierr);    /*     w <- w - alpha * z   */
+    ierr     = VecAXPY(X, alpha,P);CHKERRQ(ierr); /*     x <- x + alpha * p   */
+    ierr     = VecAXPY(U,-alpha,Q);CHKERRQ(ierr); /*     u <- u - alpha * q   */
+    ierr     = VecAXPY(W,-alpha,Z);CHKERRQ(ierr); /*     w <- w - alpha * z   */
     gammaold = gamma;
     i++;
     ksp->its = i;
@@ -155,9 +153,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     /* } */
 
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -171,12 +167,12 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_PIPECR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
-  ksp->ops->setup                = KSPSetUp_PIPECR;
-  ksp->ops->solve                = KSPSolve_PIPECR;
-  ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->ops->view                 = 0;
-  ksp->ops->setfromoptions       = 0;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_PIPECR;
+  ksp->ops->solve          = KSPSolve_PIPECR;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->view           = 0;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }

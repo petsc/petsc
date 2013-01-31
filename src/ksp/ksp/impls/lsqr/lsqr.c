@@ -8,14 +8,14 @@
 #include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 
 typedef struct {
-  PetscInt   nwork_n,nwork_m;
-  Vec        *vwork_m;  /* work vectors of length m, where the system is size m x n */
-  Vec        *vwork_n;  /* work vectors of length n */
-  Vec        se;        /* Optional standard error vector */
-  PetscBool  se_flg;   /* flag for -ksp_lsqr_set_standard_error */
-  PetscReal  arnorm;   /* Norm of the vector A.r */
-  PetscReal  anorm;    /* Frobenius norm of the matrix A */
-  PetscReal  rhs_norm; /* Norm of the right hand side */
+  PetscInt  nwork_n,nwork_m;
+  Vec       *vwork_m;   /* work vectors of length m, where the system is size m x n */
+  Vec       *vwork_n;   /* work vectors of length n */
+  Vec       se;         /* Optional standard error vector */
+  PetscBool se_flg;     /* flag for -ksp_lsqr_set_standard_error */
+  PetscReal arnorm;     /* Norm of the vector A.r */
+  PetscReal anorm;      /* Frobenius norm of the matrix A */
+  PetscReal rhs_norm;   /* Norm of the right hand side */
 } KSP_LSQR;
 
 extern PetscErrorCode  VecSquare(Vec);
@@ -36,11 +36,9 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   }
-  if (nopreconditioner) {
-     lsqr->nwork_n = 4;
-  } else {
-     lsqr->nwork_n = 5;
-  }
+  if (nopreconditioner) lsqr->nwork_n = 4;
+  else lsqr->nwork_n = 5;
+
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
   }
@@ -48,9 +46,9 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   if (lsqr->se_flg && !lsqr->se) {
     /* lsqr->se is not set by user, get it from pmat */
     Vec *se;
-    ierr = KSPGetVecs(ksp,1,&se,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = KSPGetVecs(ksp,1,&se,0,PETSC_NULL);CHKERRQ(ierr);
     lsqr->se = *se;
-    ierr = PetscFree(se);CHKERRQ(ierr);
+    ierr     = PetscFree(se);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -70,10 +68,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscBool      diagonalscale,nopreconditioner;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
   /*  nopreconditioner =PETSC_FALSE; */
@@ -84,25 +82,23 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   lsqr->anorm = -1.0;
 
   /* vectors of length m, where system size is mxn */
-  B        = ksp->vec_rhs;
-  U        = lsqr->vwork_m[0];
-  U1       = lsqr->vwork_m[1];
+  B  = ksp->vec_rhs;
+  U  = lsqr->vwork_m[0];
+  U1 = lsqr->vwork_m[1];
 
   /* vectors of length n */
-  X        = ksp->vec_sol;
-  W        = lsqr->vwork_n[0];
-  V        = lsqr->vwork_n[1];
-  V1       = lsqr->vwork_n[2];
-  W2       = lsqr->vwork_n[3];
-  if (!nopreconditioner) {
-     Z     = lsqr->vwork_n[4];
-  }
+  X  = ksp->vec_sol;
+  W  = lsqr->vwork_n[0];
+  V  = lsqr->vwork_n[1];
+  V1 = lsqr->vwork_n[2];
+  W2 = lsqr->vwork_n[3];
+  if (!nopreconditioner) Z = lsqr->vwork_n[4];
 
   /* standard error vector */
   SE = lsqr->se;
   if (SE) {
     ierr = VecGetSize(SE,&size1);CHKERRQ(ierr);
-    ierr = VecGetSize(X ,&size2);CHKERRQ(ierr);
+    ierr = VecGetSize(X,&size2);CHKERRQ(ierr);
     if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %d) does not match solution vector (size %d)",size1,size2);
     ierr = VecSet(SE,0.0);CHKERRQ(ierr);
   }
@@ -116,11 +112,11 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   }
 
   /* Test for nothing to do */
-  ierr = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,rnorm);
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -130,7 +126,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
   ierr = KSP_MatMultTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
   if (nopreconditioner) {
-     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
+    ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   } else {
     ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
     ierr = VecDotRealPart(V,Z,&alpha);CHKERRQ(ierr);
@@ -139,7 +135,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       PetscFunctionReturn(0);
     }
     alpha = PetscSqrtReal(alpha);
-    ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
+    ierr  = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
   }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
 
@@ -150,14 +146,14 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   }
 
   lsqr->arnorm = alpha * beta;
-  phibar = beta;
-  rhobar = alpha;
-  i = 0;
+  phibar       = beta;
+  rhobar       = alpha;
+  i            = 0;
   do {
     if (nopreconditioner) {
-       ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
+      ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
     } else {
-       ierr = KSP_MatMult(ksp,Amat,Z,U1);CHKERRQ(ierr);
+      ierr = KSP_MatMult(ksp,Amat,Z,U1);CHKERRQ(ierr);
     }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
@@ -179,14 +175,14 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
         break;
       }
       alpha = PetscSqrtReal(alpha);
-      ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
+      ierr  = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
     ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
     theta  = s * alpha;
-    rhobar = - c * alpha;
+    rhobar = -c * alpha;
     phi    = c * phibar;
     phibar = s * phibar;
     tau    = s * phi;
@@ -200,18 +196,18 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       ierr = VecAXPY(SE, 1.0, W2);CHKERRQ(ierr); /* SE <- SE + (w^2/rho^2) */
     }
     if (nopreconditioner) {
-       ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr); /* w <- v - (theta/rho) w */
+      ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr);  /* w <- v - (theta/rho) w */
     } else {
-       ierr = VecAYPX(W,-theta/rho,Z);CHKERRQ(ierr);  /* w <- z - (theta/rho) w */
+      ierr = VecAYPX(W,-theta/rho,Z);CHKERRQ(ierr);   /* w <- z - (theta/rho) w */
     }
 
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
-    rnorm = PetscRealPart(phibar);
+    rnorm        = PetscRealPart(phibar);
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = rnorm;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     ierr = KSPMonitor(ksp,i+1,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -221,16 +217,14 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
     i++;
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it && !ksp->reason) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   /* Finish off the standard error estimates */
   if (SE) {
-    tmp = 1.0;
+    tmp  = 1.0;
     ierr = MatGetSize(Amat,&size1,&size2);CHKERRQ(ierr);
     if (size1 > size2) tmp = size1 - size2;
-    tmp = rnorm / PetscSqrtScalar(tmp);
+    tmp  = rnorm / PetscSqrtScalar(tmp);
     ierr = VecSqrtAbs(SE);CHKERRQ(ierr);
     ierr = VecScale(SE,tmp);CHKERRQ(ierr);
   }
@@ -268,7 +262,7 @@ PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP ksp, Vec se)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
+  ierr     = VecDestroy(&lsqr->se);CHKERRQ(ierr);
   lsqr->se = se;
   PetscFunctionReturn(0);
 }
@@ -286,13 +280,13 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetArnorm"
-PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
+PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *arnorm   = lsqr->arnorm;
+  *arnorm = lsqr->arnorm;
   if (anorm) {
     if (lsqr->anorm < 0.0) {
       PC  pc;
@@ -301,11 +295,9 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm 
       ierr = PCGetOperators(pc,&Amat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
     }
-    *anorm    = lsqr->anorm;
+    *anorm = lsqr->anorm;
   }
-  if (rhs_norm) {
-    *rhs_norm = lsqr->rhs_norm;
-  }
+  if (rhs_norm) *rhs_norm = lsqr->rhs_norm;
   PetscFunctionReturn(0);
 }
 
@@ -330,9 +322,9 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm 
 @*/
 PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
-  PetscErrorCode   ierr;
-  PetscViewer      viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
-  KSP_LSQR         *lsqr = (KSP_LSQR*)ksp->data;
+  PetscErrorCode ierr;
+  PetscViewer    viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
+  KSP_LSQR       *lsqr  = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
@@ -422,18 +414,14 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 @*/
 PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
-  PetscErrorCode         ierr;
-  KSP_LSQR               *lsqr = (KSP_LSQR*)ksp->data;
+  PetscErrorCode ierr;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (!n || *reason) PetscFunctionReturn(0);
-  if (lsqr->arnorm/lsqr->rhs_norm < ksp->rtol) {
-    *reason = KSP_CONVERGED_RTOL_NORMAL;
-  }
-  if (lsqr->arnorm < ksp->abstol) {
-    *reason = KSP_CONVERGED_ATOL_NORMAL;
-  }
+  if (lsqr->arnorm/lsqr->rhs_norm < ksp->rtol) *reason = KSP_CONVERGED_RTOL_NORMAL;
+  if (lsqr->arnorm < ksp->abstol) *reason = KSP_CONVERGED_ATOL_NORMAL;
   PetscFunctionReturn(0);
 }
 
@@ -481,21 +469,21 @@ PetscErrorCode  KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
   lsqr->se     = PETSC_NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
-  ksp->data                      = (void*)lsqr;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ksp->data    = (void*)lsqr;
+  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
 
-  ksp->ops->setup                = KSPSetUp_LSQR;
-  ksp->ops->solve                = KSPSolve_LSQR;
-  ksp->ops->destroy              = KSPDestroy_LSQR;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_LSQR;
-  ksp->ops->view                 = KSPView_LSQR;
-  ksp->converged                 = KSPLSQRDefaultConverged;
+  ksp->ops->setup          = KSPSetUp_LSQR;
+  ksp->ops->solve          = KSPSolve_LSQR;
+  ksp->ops->destroy        = KSPDestroy_LSQR;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = KSPSetFromOptions_LSQR;
+  ksp->ops->view           = KSPView_LSQR;
+  ksp->converged           = KSPLSQRDefaultConverged;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -511,9 +499,7 @@ PetscErrorCode  VecSquare(Vec v)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
   ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-  for (i = 0; i < n; i++) {
-    x[i] *= x[i];
-  }
+  for (i = 0; i < n; i++) x[i] *= x[i];
   ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

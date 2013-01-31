@@ -24,30 +24,30 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
   Vec            X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
 
   PetscFunctionBegin;
-  X        = ksp->vec_sol;
-  B        = ksp->vec_rhs;
-  R        = ksp->work[0];
-  RP       = ksp->work[1];
-  V        = ksp->work[2];
-  T        = ksp->work[3];
-  Q        = ksp->work[4];
-  P        = ksp->work[5];
-  U        = ksp->work[6];
-  D        = ksp->work[7];
-  T1       = ksp->work[8];
-  AUQ      = V;
+  X   = ksp->vec_sol;
+  B   = ksp->vec_rhs;
+  R   = ksp->work[0];
+  RP  = ksp->work[1];
+  V   = ksp->work[2];
+  T   = ksp->work[3];
+  Q   = ksp->work[4];
+  P   = ksp->work[5];
+  U   = ksp->work[6];
+  D   = ksp->work[7];
+  T1  = ksp->work[8];
+  AUQ = V;
 
   /* Compute initial preconditioned residual */
   ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-  ksp->rnorm  = dp;
-  ksp->its    = 0;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr       = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ksp->rnorm = dp;
+  ksp->its   = 0;
+  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
@@ -71,18 +71,15 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
     ksp->its++;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);          /* s <- (v,rp)          */
-    a = rhoold / s;                                 /* a <- rho / s         */
+    a    = rhoold / s;                              /* a <- rho / s         */
     ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);  /* q <- u - a v         */
     ierr = VecWAXPY(T,1.0,U,Q);CHKERRQ(ierr);     /* t <- u + q           */
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,T1);CHKERRQ(ierr);
     ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);      /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     for (m=0; m<2; m++) {
-      if (!m) {
-        w = PetscSqrtReal(dp*dpold);
-      } else {
-        w = dp;
-      }
+      if (!m) w = PetscSqrtReal(dp*dpold);
+      else w = dp;
       psi = w / tau;
       cm  = 1.0 / PetscSqrtReal(1.0 + psi * psi);
       tau = tau * psi * cm;
@@ -95,10 +92,10 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       }
       ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
 
-      dpest = PetscSqrtReal(m + 1.0) * tau;
-      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-      ksp->rnorm                                    = dpest;
-      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      dpest      = PetscSqrtReal(m + 1.0) * tau;
+      ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ksp->rnorm = dpest;
+      ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dpest);
       ierr = KSPMonitor(ksp,i+1,dpest);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i+1,dpest,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -110,7 +107,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
     if (ksp->reason) break;
 
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);        /* rho <- (r,rp)       */
-    b = rho / rhoold;                               /* b <- rho / rhoold   */
+    b    = rho / rhoold;                            /* b <- rho / rhoold   */
     ierr = VecWAXPY(U,b,Q,R);CHKERRQ(ierr);       /* u <- r + b q        */
     ierr = VecAXPY(Q,b,P);CHKERRQ(ierr);
     ierr = VecWAXPY(P,b,Q,U);CHKERRQ(ierr);       /* p <- u + b(q + b p) */
@@ -121,9 +118,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
     i++;
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -157,14 +152,15 @@ PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
-  ksp->data                      = (void*)0;
-  ksp->ops->setup                = KSPSetUp_TFQMR;
-  ksp->ops->solve                = KSPSolve_TFQMR;
-  ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = 0;
-  ksp->ops->view                 = 0;
+
+  ksp->data                = (void*)0;
+  ksp->ops->setup          = KSPSetUp_TFQMR;
+  ksp->ops->solve          = KSPSolve_TFQMR;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

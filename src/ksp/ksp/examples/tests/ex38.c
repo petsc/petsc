@@ -44,10 +44,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v, co1, co2;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage stage;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   n1 = 64;
   n2 = 64;
@@ -55,9 +55,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n1",&n1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n2",&n2,PETSC_NULL);CHKERRQ(ierr);
 
-  h = 1.0/n1;
+  h     = 1.0/n1;
   gamma = 4.0/h;
-  beta = 0.01/(h*h);
+  beta  = 0.01/(h*h);
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-h",&h,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-gamma",&gamma,PETSC_NULL);CHKERRQ(ierr);
@@ -99,27 +99,27 @@ int main(int argc,char **args)
    */
   ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  co1 = gamma * h * h / 2.0;
-  co2 = beta * h * h;
+  co1  = gamma * h * h / 2.0;
+  co2  = beta * h * h;
   for (Ii=Istart; Ii<Iend; Ii++) {
     i = Ii/n2; j = Ii - i*n2;
-    if (i>0)   {
-      J = Ii - n2;  v = -1.0 + co1*(PetscScalar)i;
+    if (i>0) {
+      J    = Ii - n2;  v = -1.0 + co1*(PetscScalar)i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (i<n1-1) {
-      J = Ii + n2;  v = -1.0 + co1*(PetscScalar)i;
+      J    = Ii + n2;  v = -1.0 + co1*(PetscScalar)i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (j>0)   {
-      J = Ii - 1;  v = -1.0 + co1*(PetscScalar)j;
+    if (j>0) {
+      J    = Ii - 1;  v = -1.0 + co1*(PetscScalar)j;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j<n2-1) {
-      J = Ii + 1;  v = -1.0 + co1*(PetscScalar)j;
+      J    = Ii + 1;  v = -1.0 + co1*(PetscScalar)j;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
-    v = 4.0 + co2;
+    v    = 4.0 + co2;
     ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 

@@ -51,7 +51,7 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool  scale)
+PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool scale)
 {
   PetscErrorCode ierr;
 

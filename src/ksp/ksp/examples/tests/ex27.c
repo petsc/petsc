@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PC             pc;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -64,13 +64,13 @@ int main(int argc,char **args)
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
     for (j=0; j<mvec; j++) {
       indx = start+j;
-      ierr  = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
-    b = tmp;
+    b    = tmp;
   }
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **args)
 
   /* Now, set X=inv(A) as a preconditioner */
   ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
-  ierr = PCShellSetContext(pc,(void *)X);CHKERRQ(ierr);
+  ierr = PCShellSetContext(pc,(void*)X);CHKERRQ(ierr);
   ierr = PCShellSetApply(pc,PCShellApply_Matinv);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 

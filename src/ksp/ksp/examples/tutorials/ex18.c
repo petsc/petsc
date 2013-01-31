@@ -36,25 +36,25 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      random_exact_sol,view_exact_sol,permute;
   char           ordering[256] = MATORDERINGRCM;
-  IS             rowperm = PETSC_NULL,colperm = PETSC_NULL;
+  IS             rowperm       = PETSC_NULL,colperm = PETSC_NULL;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage stage;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Poisson example options","");CHKERRQ(ierr);
   {
-    m = 8;
-    ierr = PetscOptionsInt("-m","Number of grid points in x direction","",m,&m,PETSC_NULL);CHKERRQ(ierr);
-    n = m-1;
-    ierr = PetscOptionsInt("-n","Number of grid points in y direction","",n,&n,PETSC_NULL);CHKERRQ(ierr);
+    m                = 8;
+    ierr             = PetscOptionsInt("-m","Number of grid points in x direction","",m,&m,PETSC_NULL);CHKERRQ(ierr);
+    n                = m-1;
+    ierr             = PetscOptionsInt("-n","Number of grid points in y direction","",n,&n,PETSC_NULL);CHKERRQ(ierr);
     random_exact_sol = PETSC_FALSE;
-    ierr = PetscOptionsBool("-random_exact_sol","Choose a random exact solution","",random_exact_sol,&random_exact_sol,PETSC_NULL);CHKERRQ(ierr);
-    view_exact_sol = PETSC_FALSE;
-    ierr = PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,PETSC_NULL);CHKERRQ(ierr);
-    permute = PETSC_FALSE;
-    ierr = PetscOptionsList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
+    ierr             = PetscOptionsBool("-random_exact_sol","Choose a random exact solution","",random_exact_sol,&random_exact_sol,PETSC_NULL);CHKERRQ(ierr);
+    view_exact_sol   = PETSC_FALSE;
+    ierr             = PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,PETSC_NULL);CHKERRQ(ierr);
+    permute          = PETSC_FALSE;
+    ierr             = PetscOptionsList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -171,7 +171,7 @@ int main(int argc,char **args)
     ierr = MatPermute(A,rowperm,colperm,&Aperm);CHKERRQ(ierr);
     ierr = VecPermute(b,colperm,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
-    A = Aperm;                  /* Replace original operator with permuted version */
+    A    = Aperm;               /* Replace original operator with permuted version */
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscInt       dof=1,M=-8;
   PetscBool      flg,trans=PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-trans",&trans,PETSC_NULL);CHKERRQ(ierr);
@@ -64,17 +64,15 @@ int main(int argc,char **argv)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-test_sbaij1", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    Mat sA;
+    Mat       sA;
     PetscBool issymm;
     ierr = MatIsTranspose(A,A,0.0,&issymm);CHKERRQ(ierr);
     if (issymm) {
       ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    } else {
-      printf("Warning: A is non-symmetric\n");
-    }
+    } else printf("Warning: A is non-symmetric\n");
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
-    A = sA;
+    A    = sA;
   }
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -93,8 +91,8 @@ int main(int argc,char **argv)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    Vec            b1;
-    PetscReal      norm;
+    Vec       b1;
+    PetscReal norm;
     ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&b1);CHKERRQ(ierr);
     ierr = MatMult(A,x,b1);CHKERRQ(ierr);
@@ -142,20 +140,20 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   /* For simplicity, this example only works on mx=my=mz */
   if (mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
-  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
+  Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
 
-  ierr = PetscMalloc((2*dof*dof+1)*sizeof(PetscScalar),&v);CHKERRQ(ierr);
+  ierr       = PetscMalloc((2*dof*dof+1)*sizeof(PetscScalar),&v);CHKERRQ(ierr);
   v_neighbor = v + dof*dof;
-  ierr = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  k3 = 0;
-  for (k1=0; k1<dof; k1++) {
+  ierr       = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  k3         = 0;
+  for (k1=0; k1<dof; k1++)
     for (k2=0; k2<dof; k2++) {
       if (k1 == k2) {
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
-        v[k3] = k1/(dof*dof); ;
+        v[k3]          = k1/(dof*dof);;
         v_neighbor[k3] = k2/(dof*dof);
       }
       k3++;
@@ -172,25 +170,25 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
         } else { /* interior points */
           /* center */
           col.i = i; col.j = j; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);
 
           /* x neighbors */
           col.i = i-1; col.j = j; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
           col.i = i+1; col.j = j; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-        
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+
           /* y neighbors */
           col.i = i; col.j = j-1; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
           col.i = i; col.j = j+1; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-        
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+
           /* z neighbors */
           col.i = i; col.j = j; col.k = k-1;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
           col.i = i; col.j = j; col.k = k+1;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+          ierr  = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }

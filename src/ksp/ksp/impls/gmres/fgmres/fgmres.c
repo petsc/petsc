@@ -18,7 +18,7 @@
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static PetscErrorCode KSPFGMRESGetNewVectors(KSP,PetscInt);
-static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP,PetscInt,PetscBool ,PetscReal *);
+static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP,PetscInt,PetscBool,PetscReal*);
 static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 /*
@@ -35,10 +35,10 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       max_k,k;
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
 
   PetscFunctionBegin;
-  max_k         = fgmres->max_k;
+  max_k = fgmres->max_k;
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
@@ -61,7 +61,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 #define __FUNCT__ "KSPFGMRESResidual"
 static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)(ksp->data);
   Mat            Amat,Pmat;
   MatStructure   pflag;
   PetscErrorCode ierr;
@@ -100,7 +100,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
 
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)(ksp->data);
   PetscReal      res_norm;
   PetscReal      hapbnd,tt;
   PetscBool      hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
@@ -122,7 +122,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   fgmres->it = (loc_it - 1);
 
   /* initial residual is in VEC_VV(0)  - compute its norm*/
-  ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  ierr = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
 
   /* first entry in right-hand-side of hessenberg system is just
      the initial residual norm */
@@ -147,7 +147,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
     if (loc_it) KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
-    ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
+    ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 
     /* see if more space is needed for work vectors */
     if (fgmres->vv_allocated <= loc_it + VEC_OFFSET + 1) {
@@ -177,21 +177,22 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* new entry in hessenburg is the 2-norm of our new direction */
     ierr = VecNorm(VEC_VV(loc_it+1),NORM_2,&tt);CHKERRQ(ierr);
+
     *HH(loc_it+1,loc_it)   = tt;
     *HES(loc_it+1,loc_it)  = tt;
 
     /* Happy Breakdown Check */
-    hapbnd  = PetscAbsScalar((tt) / *RS(loc_it));
+    hapbnd = PetscAbsScalar((tt) / *RS(loc_it));
     /* RS(loc_it) contains the res_norm from the last iteration  */
     hapbnd = PetscMin(fgmres->haptol,hapbnd);
     if (tt > hapbnd) {
-        /* scale new direction by its norm */
-        ierr = VecScale(VEC_VV(loc_it+1),1.0/tt);CHKERRQ(ierr);
+      /* scale new direction by its norm */
+      ierr = VecScale(VEC_VV(loc_it+1),1.0/tt);CHKERRQ(ierr);
     } else {
-        /* This happens when the solution is exactly reached. */
-        /* So there is no new direction... */
-          ierr   = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
-          hapend = PETSC_TRUE;
+      /* This happens when the solution is exactly reached. */
+      /* So there is no new direction... */
+      ierr   = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr);     /* set VEC_TEMP to 0 */
+      hapend = PETSC_TRUE;
     }
     /* note that for FGMRES we could get HES(loc_it+1, loc_it)  = 0 and the
        current solution would not be exact if HES was singular.  Note that
@@ -207,12 +208,12 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     if (ksp->reason) break;
 
     loc_it++;
-    fgmres->it  = (loc_it-1);  /* Add this here in case it has converged */
+    fgmres->it = (loc_it-1);   /* Add this here in case it has converged */
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res_norm;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
@@ -231,7 +232,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
   }
 
-  if (itcount) *itcount    = loc_it;
+  if (itcount) *itcount = loc_it;
 
   /*
     Down here we have to solve for the "best" coefficients of the Krylov
@@ -265,16 +266,16 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       cycle_its = 0; /* iterations done in a call to KSPFGMRESCycle */
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
+  KSP_FGMRES     *fgmres   = (KSP_FGMRES*)ksp->data;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   /* Compute the initial (NOT preconditioned) residual */
   if (!ksp->guess_zero) {
@@ -285,11 +286,11 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   /* now the residual is in VEC_VV(0) - which is what
      KSPFGMRESCycle expects... */
 
-  ierr    = KSPFGMRESCycle(&cycle_its,ksp);CHKERRQ(ierr);
+  ierr = KSPFGMRESCycle(&cycle_its,ksp);CHKERRQ(ierr);
   while (!ksp->reason) {
-    ierr     = KSPFGMRESResidual(ksp);CHKERRQ(ierr);
+    ierr = KSPFGMRESResidual(ksp);CHKERRQ(ierr);
     if (ksp->its >= ksp->max_it) break;
-    ierr     = KSPFGMRESCycle(&cycle_its,ksp);CHKERRQ(ierr);
+    ierr = KSPFGMRESCycle(&cycle_its,ksp);CHKERRQ(ierr);
   }
   /* mark lack of convergence */
   if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
@@ -330,12 +331,12 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESBuildSoln"
-static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
+static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
   PetscErrorCode ierr;
   PetscInt       ii,k,j;
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)(ksp->data);
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -356,10 +357,10 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
     nrs[it] = 0.0;
   }
   for (ii=1; ii<=it; ii++) {
-    k   = it - ii;
-    tt  = *RS(k);
-    for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
-    nrs[k]   = tt / *HH(k,k);
+    k  = it - ii;
+    tt = *RS(k);
+    for (j=k+1; j<=it; j++) tt = tt - *HH(k,j) * nrs[j];
+    nrs[k] = tt / *HH(k,k);
   }
 
   /* Accumulate the correction to the soln of the preconditioned prob. in
@@ -371,7 +372,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
   if (vdest != vguess) {
     ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
     ierr = VecAXPY(vdest,1.0,vguess);CHKERRQ(ierr);
-  } else  {/* replace guess with solution */
+  } else { /* replace guess with solution */
     ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -395,17 +396,17 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESUpdateHessenberg"
-static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
+static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool hapend,PetscReal *res)
 {
-  PetscScalar   *hh,*cc,*ss,tt;
-  PetscInt      j;
-  KSP_FGMRES    *fgmres = (KSP_FGMRES *)(ksp->data);
+  PetscScalar *hh,*cc,*ss,tt;
+  PetscInt    j;
+  KSP_FGMRES  *fgmres = (KSP_FGMRES*)(ksp->data);
 
   PetscFunctionBegin;
-  hh  = HH(0,it);  /* pointer to beginning of column to update - so
+  hh = HH(0,it);   /* pointer to beginning of column to update - so
                       incrementing hh "steps down" the (it+1)th col of HH*/
-  cc  = CC(0);     /* beginning of cosine rotations */
-  ss  = SS(0);     /* beginning of sine rotations */
+  cc = CC(0);      /* beginning of cosine rotations */
+  ss = SS(0);      /* beginning of sine rotations */
 
   /* Apply all the previously computed plane rotations to the new column
      of the Hessenberg matrix */
@@ -433,22 +434,22 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
   /* compute new plane rotation */
 
   if (!hapend) {
-    tt        = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
+    tt = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
     if (tt == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
       PetscFunctionReturn(0);
     }
 
-    *cc       = *hh / tt;   /* new cosine value */
-    *ss       = *(hh+1) / tt;  /* new sine value */
+    *cc = *hh / tt;         /* new cosine value */
+    *ss = *(hh+1) / tt;        /* new sine value */
 
     /* apply to 1) and 2) */
-    *RS(it+1) = - (*ss * *RS(it));
+    *RS(it+1) = -(*ss * *RS(it));
     *RS(it)   = PetscConj(*cc) * *RS(it);
     *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
 
     /* residual is the last element (it+1) of right-hand side! */
-    *res      = PetscAbsScalar(*RS(it+1));
+    *res = PetscAbsScalar(*RS(it+1));
 
   } else { /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply
             another rotation matrix (so RH doesn't change).  The new residual is
@@ -473,8 +474,8 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
 #define __FUNCT__ "KSPFGMRESGetNewVectors"
 static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
-  PetscInt       nwork = fgmres->nwork_alloc; /* number of work vector chunks allocated */
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
+  PetscInt       nwork   = fgmres->nwork_alloc; /* number of work vector chunks allocated */
   PetscInt       nalloc;                      /* number to allocate */
   PetscErrorCode ierr;
   PetscInt       k;
@@ -532,7 +533,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
 #define __FUNCT__ "KSPBuildSolution_FGMRES"
 PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 {
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -581,9 +582,9 @@ PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
-  ((KSP_FGMRES *)ksp->data)->modifydestroy = d;
-  ((KSP_FGMRES *)ksp->data)->modifyctx     = ctx;
+  ((KSP_FGMRES*)ksp->data)->modifypc      = fcn;
+  ((KSP_FGMRES*)ksp->data)->modifydestroy = d;
+  ((KSP_FGMRES*)ksp->data)->modifyctx     = ctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -614,7 +615,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPGMRESSetRestart_FGMRES"
 PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
 {
-  KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
+  KSP_FGMRES     *gmres = (KSP_FGMRES*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -622,10 +623,10 @@ PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
   if (!ksp->setupstage) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {
-     gmres->max_k = max_k;
-     ksp->setupstage = KSP_SETUP_NEW;
-     /* free the data structures, then create them again */
-     ierr = KSPReset_FGMRES(ksp);CHKERRQ(ierr);
+    gmres->max_k    = max_k;
+    ksp->setupstage = KSP_SETUP_NEW;
+    /* free the data structures, then create them again */
+    ierr = KSPReset_FGMRES(ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -636,7 +637,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPGMRESGetRestart_FGMRES"
 PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 {
-  KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
+  KSP_FGMRES *gmres = (KSP_FGMRES*)ksp->data;
 
   PetscFunctionBegin;
   *max_k = gmres->max_k;
@@ -690,6 +691,7 @@ PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_FGMRES,&fgmres);CHKERRQ(ierr);
+
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
   ksp->ops->setup                        = KSPSetUp_FGMRES;
@@ -705,44 +707,44 @@ PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,0);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
-                                    "KSPGMRESSetPreAllocateVectors_GMRES",
-                                     KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetPreAllocateVectors_GMRES",
+                                           KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
-                                    "KSPGMRESSetOrthogonalization_GMRES",
-                                     KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetOrthogonalization_GMRES",
+                                           KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",
-                                    "KSPGMRESGetOrthogonalization_GMRES",
-                                     KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESGetOrthogonalization_GMRES",
+                                           KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
-                                    "KSPGMRESSetRestart_FGMRES",
-                                     KSPGMRESSetRestart_FGMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetRestart_FGMRES",
+                                           KSPGMRESSetRestart_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C",
-                                    "KSPGMRESGetRestart_FGMRES",
-                                     KSPGMRESGetRestart_FGMRES);CHKERRQ(ierr);
+                                           "KSPGMRESGetRestart_FGMRES",
+                                           KSPGMRESGetRestart_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
-                                    "KSPFGMRESSetModifyPC_FGMRES",
-                                     KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
+                                           "KSPFGMRESSetModifyPC_FGMRES",
+                                           KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",
-                                    "KSPGMRESSetCGSRefinementType_GMRES",
-                                     KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetCGSRefinementType_GMRES",
+                                           KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",
-                                    "KSPGMRESGetCGSRefinementType_GMRES",
-                                     KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESGetCGSRefinementType_GMRES",
+                                           KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
 
-  fgmres->haptol              = 1.0e-30;
-  fgmres->q_preallocate       = 0;
-  fgmres->delta_allocate      = FGMRES_DELTA_DIRECTIONS;
-  fgmres->orthog              = KSPGMRESClassicalGramSchmidtOrthogonalization;
-  fgmres->nrs                 = 0;
-  fgmres->sol_temp            = 0;
-  fgmres->max_k               = FGMRES_DEFAULT_MAXK;
-  fgmres->Rsvd                = 0;
-  fgmres->orthogwork          = 0;
-  fgmres->modifypc            = KSPFGMRESModifyPCNoChange;
-  fgmres->modifyctx           = PETSC_NULL;
-  fgmres->modifydestroy       = PETSC_NULL;
-  fgmres->cgstype             = KSP_GMRES_CGS_REFINE_NEVER;
+  fgmres->haptol         = 1.0e-30;
+  fgmres->q_preallocate  = 0;
+  fgmres->delta_allocate = FGMRES_DELTA_DIRECTIONS;
+  fgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
+  fgmres->nrs            = 0;
+  fgmres->sol_temp       = 0;
+  fgmres->max_k          = FGMRES_DEFAULT_MAXK;
+  fgmres->Rsvd           = 0;
+  fgmres->orthogwork     = 0;
+  fgmres->modifypc       = KSPFGMRESModifyPCNoChange;
+  fgmres->modifyctx      = PETSC_NULL;
+  fgmres->modifydestroy  = PETSC_NULL;
+  fgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -27,25 +27,25 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 /* User-defined application contexts */
 
 typedef struct {
-   PetscInt   mx,my;            /* number grid points in x and y direction */
-   Vec        localX,localF;    /* local vectors with ghost region */
-   DM         da;
-   Vec        x,b,r;            /* global vectors */
-   Mat        J;                /* Jacobian on grid */
+  PetscInt mx,my;               /* number grid points in x and y direction */
+  Vec      localX,localF;       /* local vectors with ghost region */
+  DM       da;
+  Vec      x,b,r;               /* global vectors */
+  Mat      J;                   /* Jacobian on grid */
 } GridCtx;
 
 typedef struct {
-   GridCtx     fine;
-   GridCtx     coarse;
-   KSP         ksp_coarse;
-   PetscInt    ratio;
-   Mat         Ii;              /* interpolation from coarse to fine */
+  GridCtx  fine;
+  GridCtx  coarse;
+  KSP      ksp_coarse;
+  PetscInt ratio;
+  Mat      Ii;                  /* interpolation from coarse to fine */
 } AppCtx;
 
 #define COARSE_LEVEL 0
 #define FINE_LEVEL   1
 
-extern int FormJacobian_Grid(AppCtx *,GridCtx *,Mat *);
+extern int FormJacobian_Grid(AppCtx*,GridCtx*,Mat*);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -64,11 +64,13 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
-  user.ratio = 2;
+  user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
   PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my);
@@ -82,7 +84,7 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for fine grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                      user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
@@ -93,7 +95,7 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for coarse grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                      user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
@@ -185,9 +187,9 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   PetscInt       nloc,*ltog,grow;
   PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
-  mx = grid->mx;            my = grid->my;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
-  hxdhy = hx/hy;            hydhx = hy/hx;
+  mx    = grid->mx;               my = grid->my;
+  hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
+  hxdhy = hx/hy;               hydhx = hy/hx;
 
   /* Get ghost points */
   ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -209,10 +211,10 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }

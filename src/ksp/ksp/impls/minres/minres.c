@@ -35,20 +35,20 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  X       = ksp->vec_sol;
-  B       = ksp->vec_rhs;
-  R       = ksp->work[0];
-  Z       = ksp->work[1];
-  U       = ksp->work[2];
-  V       = ksp->work[3];
-  W       = ksp->work[4];
-  UOLD    = ksp->work[5];
-  VOLD    = ksp->work[6];
-  WOLD    = ksp->work[7];
-  WOOLD   = ksp->work[8];
+  X     = ksp->vec_sol;
+  B     = ksp->vec_rhs;
+  R     = ksp->work[0];
+  Z     = ksp->work[1];
+  U     = ksp->work[2];
+  V     = ksp->work[3];
+  W     = ksp->work[4];
+  UOLD  = ksp->work[5];
+  VOLD  = ksp->work[6];
+  WOLD  = ksp->work[7];
+  WOOLD = ksp->work[8];
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
@@ -71,7 +71,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscAbsScalar(dp) < minres->haptol) {
     ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
-    dp = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
+    dp   = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
     if (dp == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
       PetscFunctionReturn(0);
@@ -88,18 +88,18 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
   eta  = beta;
 
-  ierr = VecCopy(R,V);CHKERRQ(ierr);
-  ierr = VecCopy(Z,U);CHKERRQ(ierr);
+  ierr  = VecCopy(R,V);CHKERRQ(ierr);
+  ierr  = VecCopy(Z,U);CHKERRQ(ierr);
   ibeta = 1.0 / beta;
-  ierr = VecScale(V,ibeta);CHKERRQ(ierr);         /*    v <- r / beta     */
-  ierr = VecScale(U,ibeta);CHKERRQ(ierr);         /*    u <- z / beta     */
+  ierr  = VecScale(V,ibeta);CHKERRQ(ierr);        /*    v <- r / beta     */
+  ierr  = VecScale(U,ibeta);CHKERRQ(ierr);        /*    u <- z / beta     */
 
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
 
   KSPLogResidualHistory(ksp,np);
-  ierr = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
   ksp->rnorm = np;
-  ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
+  ierr       = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
@@ -122,7 +122,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
     if (PetscAbsScalar(dp) < minres->haptol) {
       ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
-      dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
+      dp   = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
     }
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -152,25 +152,25 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     ierr = VecCopy(WOLD,WOOLD);CHKERRQ(ierr);     /*  w_oold <- w_old      */
     ierr = VecCopy(W,WOLD);CHKERRQ(ierr);         /*  w_old  <- w          */
 
-    ierr = VecCopy(U,W);CHKERRQ(ierr);            /*  w      <- u          */
-    mrho2 = - rho2;
-    ierr = VecAXPY(W,mrho2,WOLD);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
-    mrho3 = - rho3;
-    ierr = VecAXPY(W,mrho3,WOOLD);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
+    ierr  = VecCopy(U,W);CHKERRQ(ierr);           /*  w      <- u          */
+    mrho2 = -rho2;
+    ierr  = VecAXPY(W,mrho2,WOLD);CHKERRQ(ierr); /*  w <- w - rho2 w_old  */
+    mrho3 = -rho3;
+    ierr  = VecAXPY(W,mrho3,WOOLD);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
     irho1 = 1.0 / rho1;
-    ierr = VecScale(W,irho1);CHKERRQ(ierr);      /*  w <- w / rho1        */
+    ierr  = VecScale(W,irho1);CHKERRQ(ierr);     /*  w <- w / rho1        */
 
     ceta = c * eta;
     ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */
-    eta = - s * eta;
+    eta  = -s * eta;
 
-    ierr = VecCopy(V,VOLD);CHKERRQ(ierr);
-    ierr = VecCopy(U,UOLD);CHKERRQ(ierr);
-    ierr = VecCopy(R,V);CHKERRQ(ierr);
-    ierr = VecCopy(Z,U);CHKERRQ(ierr);
+    ierr  = VecCopy(V,VOLD);CHKERRQ(ierr);
+    ierr  = VecCopy(U,UOLD);CHKERRQ(ierr);
+    ierr  = VecCopy(R,V);CHKERRQ(ierr);
+    ierr  = VecCopy(Z,U);CHKERRQ(ierr);
     ibeta = 1.0 / beta;
-    ierr = VecScale(V,ibeta);CHKERRQ(ierr);      /*  v <- r / beta       */
-    ierr = VecScale(U,ibeta);CHKERRQ(ierr);      /*  u <- z / beta       */
+    ierr  = VecScale(V,ibeta);CHKERRQ(ierr);     /*  v <- r / beta       */
+    ierr  = VecScale(U,ibeta);CHKERRQ(ierr);     /*  u <- z / beta       */
 
     np = ksp->rnorm * PetscAbsScalar(s);
 
@@ -181,9 +181,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     if (ksp->reason) break;
     i++;
   } while (i<ksp->max_it);
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -214,7 +212,7 @@ PetscErrorCode  KSPCreate_MINRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr           = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;
   ksp->data      = (void*)minres;
@@ -223,12 +221,12 @@ PetscErrorCode  KSPCreate_MINRES(KSP ksp)
        Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
-  ksp->ops->setup                = KSPSetUp_MINRES;
-  ksp->ops->solve                = KSPSolve_MINRES;
-  ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->ops->setfromoptions       = 0;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_MINRES;
+  ksp->ops->solve          = KSPSolve_MINRES;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -25,7 +25,7 @@ typedef struct {
   PetscReal *beta;             /* Record of beta values from CG             */
   PetscReal *norm_r;           /* Record of residual values from CG         */
 
-  PetscReal *rwork;            /* Real workspace for solver computations    */
+  PetscReal    *rwork;         /* Real workspace for solver computations    */
   PetscBLASInt *iwork;         /* Integer workspace for solver computations */
 
   PetscReal radius;

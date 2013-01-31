@@ -23,16 +23,16 @@ T*/
     in the linear solution process.
 */
 typedef struct {
-   Vec         x,b;      /* solution vector, right-hand-side vector */
-   Mat         A;         /* sparse matrix */
-   KSP         ksp;      /* linear solver context */
-   PetscInt    m,n;      /* grid dimensions */
-   PetscScalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+  Vec         x,b;       /* solution vector, right-hand-side vector */
+  Mat         A;          /* sparse matrix */
+  KSP         ksp;       /* linear solver context */
+  PetscInt    m,n;       /* grid dimensions */
+  PetscScalar hx2,hy2;   /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 } UserCtx;
 
-extern PetscErrorCode UserInitializeLinearSolver(PetscInt,PetscInt,UserCtx *);
-extern PetscErrorCode UserFinalizeLinearSolver(UserCtx *);
-extern PetscErrorCode UserDoLinearSolver(PetscScalar *,UserCtx *userctx,PetscScalar *b,PetscScalar *x);
+extern PetscErrorCode UserInitializeLinearSolver(PetscInt,PetscInt,UserCtx*);
+extern PetscErrorCode UserFinalizeLinearSolver(UserCtx*);
+extern PetscErrorCode UserDoLinearSolver(PetscScalar*,UserCtx *userctx,PetscScalar *b,PetscScalar *x);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -46,7 +46,7 @@ int main(int argc,char **args)
   /*
      Initialize the PETSc libraries
   */
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /*
      The next two lines are for testing only; these allow the user to
@@ -91,8 +91,8 @@ int main(int argc,char **args)
     for (i=0; i<m; i++) {
       rho[Ii]      = x;
       solution[Ii] = PetscSinScalar(2.*PETSC_PI*x)*PetscSinScalar(2.*PETSC_PI*y);
-      userb[Ii]    = -2*PETSC_PI*PetscCosScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y) +
-                    8*PETSC_PI*PETSC_PI*x*PetscSinScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y);
+      userb[Ii]    = -2*PETSC_PI*PetscCosScalar(2*PETSC_PI *x)*PetscSinScalar(2*PETSC_PI*y) +
+                     8*PETSC_PI*PETSC_PI*x*PetscSinScalar(2*PETSC_PI *x)*PetscSinScalar(2*PETSC_PI*y);
       x += hx;
       Ii++;
     }
@@ -116,11 +116,9 @@ int main(int argc,char **args)
         PETSc.
     */
     enorm = 0.0;
-    for (i=0; i<N; i++) {
-      enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
-    }
+    for (i=0; i<N; i++) enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     enorm *= PetscRealPart(hx*hy);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %G\n",m,n,enorm);CHKERRQ(ierr);
+    ierr   = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %G\n",m,n,enorm);CHKERRQ(ierr);
   }
 
   /*
@@ -211,7 +209,7 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
   Ii = 0;
   for (j=0; j<n; j++) {
     for (i=0; i<m; i++) {
-      if (j>0)   {
+      if (j>0) {
         J    = Ii - m;
         v    = -.5*(rho[Ii] + rho[J])*hy2;
         ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
@@ -221,7 +219,7 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
         v    = -.5*(rho[Ii] + rho[J])*hy2;
         ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if (i>0)   {
+      if (i>0) {
         J    = Ii - 1;
         v    = -.5*(rho[Ii] + rho[J])*hx2;
         ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);

@@ -5,9 +5,9 @@
 
 PetscErrorCode KSPSetUp_LCD(KSP ksp)
 {
-  KSP_LCD         *lcd = (KSP_LCD*)ksp->data;
+  KSP_LCD        *lcd = (KSP_LCD*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt        restart = lcd->restart;
+  PetscInt       restart = lcd->restart;
 
   PetscFunctionBegin;
   /* get work vectors needed by LCD */
@@ -48,13 +48,13 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  lcd            = (KSP_LCD*)ksp->data;
-  X              = ksp->vec_sol;
-  B              = ksp->vec_rhs;
-  R              = ksp->work[0];
-  Z              = ksp->work[1];
-  max_k          = lcd->restart;
-  mone = -1;
+  lcd   = (KSP_LCD*)ksp->data;
+  X     = ksp->vec_sol;
+  B     = ksp->vec_rhs;
+  R     = ksp->work[0];
+  Z     = ksp->work[1];
+  max_k = lcd->restart;
+  mone  = -1;
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
@@ -69,10 +69,10 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   ierr = KSP_PCApply(ksp,Z,R);CHKERRQ(ierr);                   /*     r <- M^-1z         */
   ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,rnorm);
-  ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ksp->rnorm = rnorm;
 
-   /* test for convergence */
+  /* test for convergence */
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -80,7 +80,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   VecCopy(R,lcd->P[0]);
 
   while (!ksp->reason && ksp->its < ksp->max_it) {
-    it = 0;
+    it   = 0;
     ierr = KSP_MatMult(ksp,Amat,lcd->P[it],Z);CHKERRQ(ierr);
     ierr = KSP_PCApply(ksp,Z,lcd->Q[it]);CHKERRQ(ierr);
 
@@ -107,7 +107,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
       for (j = 0; j <= it; j++) {
         ierr = VecDot(lcd->P[j],lcd->Q[it+1],&num);CHKERRQ(ierr);
         ierr = VecDot(lcd->P[j],lcd->Q[j],&den);CHKERRQ(ierr);
-        beta = - num/den;
+        beta = -num/den;
         ierr = VecAXPY(lcd->P[it+1],beta,lcd->P[j]);CHKERRQ(ierr);
         ierr = VecAXPY(lcd->Q[it+1],beta,lcd->Q[j]);CHKERRQ(ierr);
       }
@@ -127,7 +127,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 #define __FUNCT__ "KSPReset_LCD"
 PetscErrorCode KSPReset_LCD(KSP ksp)
 {
-  KSP_LCD         *lcd = (KSP_LCD*)ksp->data;
+  KSP_LCD        *lcd = (KSP_LCD*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -162,15 +162,15 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
 PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
 {
 
-  KSP_LCD         *lcd = (KSP_LCD *)ksp->data;
+  KSP_LCD        *lcd = (KSP_LCD*)ksp->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  LCD: restart=%d\n",lcd->restart);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  LCD: happy breakdown tolerance %g\n",lcd->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  LCD: restart=%d\n",lcd->restart);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  LCD: happy breakdown tolerance %g\n",lcd->haptol);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -185,7 +185,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  KSP_LCD        *lcd = (KSP_LCD *)ksp->data;
+  KSP_LCD        *lcd = (KSP_LCD*)ksp->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LCD options");CHKERRQ(ierr);
@@ -238,27 +238,27 @@ EXTERN_C_BEGIN
 PetscErrorCode KSPCreate_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_LCD         *lcd;
+  KSP_LCD        *lcd;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
-  ksp->data                      = (void*)lcd;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  lcd->restart                   = 30;
-  lcd->haptol                    = 1.0e-30;
+  ierr         = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
+  ksp->data    = (void*)lcd;
+  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  lcd->restart = 30;
+  lcd->haptol  = 1.0e-30;
 
   /*
        Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
-  ksp->ops->setup                = KSPSetUp_LCD;
-  ksp->ops->solve                = KSPSolve_LCD;
-  ksp->ops->reset                = KSPReset_LCD;
-  ksp->ops->destroy              = KSPDestroy_LCD;
-  ksp->ops->view                 = KSPView_LCD;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_LCD;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_LCD;
+  ksp->ops->solve          = KSPSolve_LCD;
+  ksp->ops->reset          = KSPReset_LCD;
+  ksp->ops->destroy        = KSPDestroy_LCD;
+  ksp->ops->view           = KSPView_LCD;
+  ksp->ops->setfromoptions = KSPSetFromOptions_LCD;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

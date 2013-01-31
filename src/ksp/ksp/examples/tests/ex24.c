@@ -19,12 +19,12 @@ int main(int argc,char **args)
   PC             pc;
   KSP            ksp;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  N = m*n;
+  N    = m*n;
 
 
   /* Generate matrix */
@@ -99,7 +99,7 @@ int main(int argc,char **args)
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  /* Check error */
+    /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr);
     ierr = VecAXPY(u_tmp,none,x);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRQ(ierr);

@@ -28,21 +28,19 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
 
   PetscFunctionBegin;
   /* initialize perm vector */
-  for (j = 0; j < size; j++) {
-    perm[j] = j;
-  }
+  for (j = 0; j < size; j++) perm[j] = j;
 
   deb[0] = 0;
   fin[0] = size;
-  i = 0;
+  i      = 0;
   while (i >= 0) {
     L = deb[i];
     R = fin[i] - 1;
     if (L < R) {
-      pivot_r = val_r[L];
-      pivot_i = val_i[L];
+      pivot_r   = val_r[L];
+      pivot_i   = val_i[L];
       abs_pivot = PetscSqrtReal(pivot_r * pivot_r + pivot_i * pivot_i);
-      ipivot = perm[L];
+      ipivot    = perm[L];
       if (i == DEPTH - 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
       while (L < R) {
         abs_val = PetscSqrtReal(val_r[R] * val_r[R] + val_i[R] * val_i[R]);
@@ -53,8 +51,8 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
         if (L < R) {
           val_r[L] = val_r[R];
           val_i[L] = val_i[R];
-          perm[L] = perm[R];
-          L += 1;
+          perm[L]  = perm[R];
+          L       += 1;
         }
         abs_val = PetscSqrtReal(val_r[L] * val_r[L] + val_i[L] * val_i[L]);
         while (abs_val <= abs_pivot && L < R) {
@@ -64,17 +62,17 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
         if (L < R) {
           val_r[R] = val_r[L];
           val_i[R] = val_i[L];
-          perm[R] = perm[L];
-          R -= 1;
+          perm[R]  = perm[L];
+          R       -= 1;
         }
       }
       val_r[L] = pivot_r;
       val_i[L] = pivot_i;
-      perm[L] = ipivot;
+      perm[L]  = ipivot;
       deb[i+1] = L + 1;
       fin[i+1] = fin[i];
-      fin[i] = L;
-      i += 1;
+      fin[i]   = L;
+      i       += 1;
       if (i == DEPTH - 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
     } else i--;
   }
@@ -96,12 +94,12 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESSchurForm"
-static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscScalar *A, PetscBLASInt ldA, PetscScalar *B, PetscBLASInt ldB, PetscBool IsReduced, PetscScalar *Sr, PetscInt *CurNeig)
+static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscScalar *A, PetscBLASInt ldA, PetscScalar *B, PetscBLASInt ldB, PetscBool IsReduced, PetscScalar *Sr, PetscInt *CurNeig)
 {
-  KSP_AGMRES     *agmres = (KSP_AGMRES *)ksp->data;
-  PetscInt        max_k  = agmres->max_k;
-  PetscBLASInt    r;
-  PetscInt        neig   = agmres->neig;
+  KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
+  PetscInt       max_k   = agmres->max_k;
+  PetscBLASInt   r;
+  PetscInt       neig    = agmres->neig;
   PetscScalar    *wr     = agmres->wr;
   PetscScalar    *wi     = agmres->wi;
   PetscScalar    *beta   = agmres->beta;
@@ -110,25 +108,25 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
   PetscScalar    *work   = agmres->work;
   PetscInt       *select = agmres->select;
   PetscInt       *perm   = agmres->perm;
-  PetscInt        sdim   = 0;
-  PetscInt        i,j, info;
-  PetscErrorCode  ierr;
-  PetscInt       *iwork  = agmres->iwork;
-  PetscBLASInt    N;
-  PetscBLASInt    lwork,liwork;
-  PetscBLASInt    ilo,ihi;
-  PetscBLASInt    ijob,wantQ,wantZ;
-  PetscScalar     Dif[2];
+  PetscInt       sdim    = 0;
+  PetscInt       i,j, info;
+  PetscErrorCode ierr;
+  PetscInt       *iwork = agmres->iwork;
+  PetscBLASInt   N;
+  PetscBLASInt   lwork,liwork;
+  PetscBLASInt   ilo,ihi;
+  PetscBLASInt   ijob,wantQ,wantZ;
+  PetscScalar    Dif[2];
 
   PetscFunctionBegin;
-  ijob   = 2;
-  wantQ  = 1;
-  wantZ  = 1;
-  ierr   = PetscBLASIntCast(PetscMax(8*N+16,4*neig*(N-neig)),&lwork);CHKERRQ(ierr);
-  ierr   = PetscBLASIntCast(2*N*neig,&liwork);CHKERRQ(ierr);
-  ilo    = 1;
-  ierr   = PetscBLASIntCast(KspSize,&ihi);CHKERRQ(ierr);
-  N      = MAXKSPSIZE;
+  ijob  = 2;
+  wantQ = 1;
+  wantZ = 1;
+  ierr  = PetscBLASIntCast(PetscMax(8*N+16,4*neig*(N-neig)),&lwork);CHKERRQ(ierr);
+  ierr  = PetscBLASIntCast(2*N*neig,&liwork);CHKERRQ(ierr);
+  ilo   = 1;
+  ierr  = PetscBLASIntCast(KspSize,&ihi);CHKERRQ(ierr);
+  N     = MAXKSPSIZE;
 
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
@@ -203,23 +201,23 @@ static PetscErrorCode KSPAGMRESSchurForm (KSP ksp, PetscBLASInt KspSize, PetscSc
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESComputeDeflationData"
-PetscErrorCode KSPAGMRESComputeDeflationData (KSP ksp)
+PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
 {
-  KSP_AGMRES     *agmres   = (KSP_AGMRES *)ksp->data;
-  Vec            *U        = agmres->U;
-  Vec            *TmpU     = agmres->TmpU;
-  PetscScalar    *MatEigL  = agmres->MatEigL;
-  PetscScalar    *MatEigR  = agmres->MatEigR;
-  PetscScalar    *Sr       = agmres->Sr;
-  PetscScalar     alpha, beta;
-  PetscInt        i,j;
-  PetscErrorCode  ierr;
-  PetscInt        max_k    = agmres->max_k; /* size of the non - augmented subspace */
-  PetscInt        CurNeig ;     /* CUrrent number of extracted eigenvalues */
-  PetscInt        N        = MAXKSPSIZE;
-  PetscInt        lC       = N + 1;
-  PetscInt        KspSize  = KSPSIZE;
-  PetscInt        PrevNeig = agmres->r;
+  KSP_AGMRES     *agmres  = (KSP_AGMRES*)ksp->data;
+  Vec            *U       = agmres->U;
+  Vec            *TmpU    = agmres->TmpU;
+  PetscScalar    *MatEigL = agmres->MatEigL;
+  PetscScalar    *MatEigR = agmres->MatEigR;
+  PetscScalar    *Sr      = agmres->Sr;
+  PetscScalar    alpha, beta;
+  PetscInt       i,j;
+  PetscErrorCode ierr;
+  PetscInt       max_k = agmres->max_k;     /* size of the non - augmented subspace */
+  PetscInt       CurNeig;       /* CUrrent number of extracted eigenvalues */
+  PetscInt       N        = MAXKSPSIZE;
+  PetscInt       lC       = N + 1;
+  PetscInt       KspSize  = KSPSIZE;
+  PetscInt       PrevNeig = agmres->r;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_AGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
@@ -257,7 +255,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData (KSP ksp)
 
   if (agmres->DeflPrecond) { /* Switch to DGMRES to improve the basis of the invariant subspace associated to the deflation */
     agmres->HasSchur = PETSC_TRUE;
-    ierr = KSPDGMRESComputeDeflationData_DGMRES(ksp, &CurNeig);CHKERRQ(ierr);
+    ierr             = KSPDGMRESComputeDeflationData_DGMRES(ksp, &CurNeig);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   /* Form the Schur vectors in the entire subspace: U = W * Sr where W = [VEC_V(1:max_k); U]*/
@@ -271,6 +269,6 @@ PetscErrorCode KSPAGMRESComputeDeflationData (KSP ksp)
     ierr = VecMAXPY(U[j], PrevNeig, &Sr[j*(N+1)+max_k], TmpU);CHKERRQ(ierr);
   }
   agmres->r = CurNeig;
-  ierr = PetscLogEventEnd(KSP_AGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
+  ierr      = PetscLogEventEnd(KSP_AGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

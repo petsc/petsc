@@ -54,37 +54,37 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
      Note for developers that does not effect the code. Intel's long double is implemented by storing the 80 bits of extended double
      precision into a 16 byte space (the rest of the space is ignored)  */
-  long double    insums[7],outsums[7];
+  long double insums[7],outsums[7];
 #else
-  PetscScalar    insums[7],outsums[7];
+  PetscScalar insums[7],outsums[7];
 #endif
-  PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
-  PetscScalar    taun_1, taun, rhon, alphan_1, alphan, omegan_1, omegan;
+  PetscScalar                       sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
+  PetscScalar                       taun_1, taun, rhon, alphan_1, alphan, omegan_1, omegan;
   const PetscScalar *PETSC_RESTRICT r0, *PETSC_RESTRICT f0, *PETSC_RESTRICT qn, *PETSC_RESTRICT b, *PETSC_RESTRICT un;
-  PetscScalar    *PETSC_RESTRICT rn, *PETSC_RESTRICT xn, *PETSC_RESTRICT vn, *PETSC_RESTRICT zn;
+  PetscScalar *PETSC_RESTRICT       rn, *PETSC_RESTRICT xn, *PETSC_RESTRICT vn, *PETSC_RESTRICT zn;
   /* the rest do not have to keep n_1 values */
-  PetscScalar    kappan, thetan, etan, gamman, betan, deltan;
+  PetscScalar                       kappan, thetan, etan, gamman, betan, deltan;
   const PetscScalar *PETSC_RESTRICT tn;
-  PetscScalar    *PETSC_RESTRICT sn;
-  Vec            R0,Rn,Xn,F0,Vn,Zn,Qn,Tn,Sn,B,Un;
-  Mat            A;
+  PetscScalar *PETSC_RESTRICT       sn;
+  Vec                               R0,Rn,Xn,F0,Vn,Zn,Qn,Tn,Sn,B,Un;
+  Mat                               A;
 
   PetscFunctionBegin;
   if (!ksp->vec_rhs->petscnative) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
-  Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,PETSC_NULL);CHKERRQ(ierr);
-  B  = ksp->vec_rhs;ierr = VecGetArrayRead(B,(const PetscScalar**)&b);CHKERRQ(ierr);ierr = VecRestoreArrayRead(B,PETSC_NULL);CHKERRQ(ierr);
-  R0 = ksp->work[0];ierr = VecGetArrayRead(R0,(const PetscScalar**)&r0);CHKERRQ(ierr);ierr = VecRestoreArrayRead(R0,PETSC_NULL);CHKERRQ(ierr);
-  Rn = ksp->work[1];ierr = VecGetArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,PETSC_NULL);CHKERRQ(ierr);
-  Un = ksp->work[2];ierr = VecGetArrayRead(Un_1,(const PetscScalar**)&un_1);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Un_1,PETSC_NULL);CHKERRQ(ierr);
-  F0 = ksp->work[3];ierr = VecGetArrayRead(F0,(const PetscScalar**)&f0);CHKERRQ(ierr);ierr = VecRestoreArrayRead(F0,PETSC_NULL);CHKERRQ(ierr);
-  Vn = ksp->work[4];ierr = VecGetArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,PETSC_NULL);CHKERRQ(ierr);
-  Zn = ksp->work[5];ierr = VecGetArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,PETSC_NULL);CHKERRQ(ierr);
-  Qn = ksp->work[6];ierr = VecGetArrayRead(Qn_1,(const PetscScalar**)&qn_1);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Qn_1,PETSC_NULL);CHKERRQ(ierr);
-  Tn = ksp->work[7];ierr = VecGetArrayRead(Tn,(const PetscScalar**)&tn);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Tn,PETSC_NULL);CHKERRQ(ierr);
-  Sn = ksp->work[8];ierr = VecGetArrayRead(Sn,(const PetscScalar**)&sn);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Sn,PETSC_NULL);CHKERRQ(ierr);
+  Xn   = ksp->vec_sol; ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr); ierr = VecRestoreArray(Xn_1,PETSC_NULL);CHKERRQ(ierr);
+  B    = ksp->vec_rhs; ierr = VecGetArrayRead(B,(const PetscScalar**)&b);CHKERRQ(ierr); ierr = VecRestoreArrayRead(B,PETSC_NULL);CHKERRQ(ierr);
+  R0   = ksp->work[0]; ierr = VecGetArrayRead(R0,(const PetscScalar**)&r0);CHKERRQ(ierr); ierr = VecRestoreArrayRead(R0,PETSC_NULL);CHKERRQ(ierr);
+  Rn   = ksp->work[1]; ierr = VecGetArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr); ierr = VecRestoreArray(Rn_1,PETSC_NULL);CHKERRQ(ierr);
+  Un   = ksp->work[2]; ierr = VecGetArrayRead(Un_1,(const PetscScalar**)&un_1);CHKERRQ(ierr); ierr = VecRestoreArrayRead(Un_1,PETSC_NULL);CHKERRQ(ierr);
+  F0   = ksp->work[3]; ierr = VecGetArrayRead(F0,(const PetscScalar**)&f0);CHKERRQ(ierr); ierr = VecRestoreArrayRead(F0,PETSC_NULL);CHKERRQ(ierr);
+  Vn   = ksp->work[4]; ierr = VecGetArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr); ierr = VecRestoreArray(Vn_1,PETSC_NULL);CHKERRQ(ierr);
+  Zn   = ksp->work[5]; ierr = VecGetArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr); ierr = VecRestoreArray(Zn_1,PETSC_NULL);CHKERRQ(ierr);
+  Qn   = ksp->work[6]; ierr = VecGetArrayRead(Qn_1,(const PetscScalar**)&qn_1);CHKERRQ(ierr); ierr = VecRestoreArrayRead(Qn_1,PETSC_NULL);CHKERRQ(ierr);
+  Tn   = ksp->work[7]; ierr = VecGetArrayRead(Tn,(const PetscScalar**)&tn);CHKERRQ(ierr); ierr = VecRestoreArrayRead(Tn,PETSC_NULL);CHKERRQ(ierr);
+  Sn   = ksp->work[8]; ierr = VecGetArrayRead(Sn,(const PetscScalar**)&sn);CHKERRQ(ierr); ierr = VecRestoreArrayRead(Sn,PETSC_NULL);CHKERRQ(ierr);
 
   /* r0 = rn_1 = b - A*xn_1; */
   /* ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
@@ -126,15 +126,15 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   alphan_1 = omegan_1 = 1.0;
 
   for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
-    rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
+    rhon = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
     /*    if (rhon == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n); */
     if (ksp->its == 1) deltan = rhon;
     else deltan = rhon/taun_1;
-    betan  = deltan/omegan_1;
-    taun   = sigman_1 + betan*taun_1  - deltan*pin_1;
+    betan = deltan/omegan_1;
+    taun  = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
     alphan = rhon/taun;
-    ierr = PetscLogFlops(15.0);CHKERRQ(ierr);
+    ierr   = PetscLogFlops(15.0);CHKERRQ(ierr);
 
     /*
         zn = alphan*rn_1 + (alphan/alphan_1)betan*zn_1 - alphan*deltan*vn_1
@@ -176,8 +176,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
     phin = pin = gamman = etan = thetan = kappan = 0.0;
     for (i=0; i<N; i++) {
-      phin += r0[i]*sn[i];
-      pin  += r0[i]*qn[i];
+      phin   += r0[i]*sn[i];
+      pin    += r0[i]*qn[i];
       gamman += f0[i]*sn[i];
       etan   += f0[i]*tn[i];
       thetan += sn[i]*tn[i];
@@ -185,6 +185,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     }
     ierr = PetscLogFlops(12.0*N);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
+
     insums[0] = phin;
     insums[1] = pin;
     insums[2] = gamman;
@@ -192,6 +193,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[4] = thetan;
     insums[5] = kappan;
     insums[6] = rnormin;
+
     ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
     if (ksp->lagnorm && ksp->its > 1) {
@@ -206,13 +208,13 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     }
 #endif
-    ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-    phin     = outsums[0];
-    pin      = outsums[1];
-    gamman   = outsums[2];
-    etan     = outsums[3];
-    thetan   = outsums[4];
-    kappan   = outsums[5];
+    ierr   = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    phin   = outsums[0];
+    pin    = outsums[1];
+    gamman = outsums[2];
+    etan   = outsums[3];
+    thetan = outsums[4];
+    kappan = outsums[5];
     if (ksp->lagnorm && ksp->its > 1) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
 
     if (kappan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
@@ -224,7 +226,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         rn = sn - omegan*tn
         xn = xn_1 + zn + omegan*sn
     */
-    ierr = PetscLogEventBegin(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
+    ierr    = PetscLogEventBegin(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
     rnormin = 0.0;
     for (i=0; i<N; i++) {
       rn[i]    = sn[i] - omegan*tn[i];
@@ -236,9 +238,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
     if (!ksp->lagnorm && ksp->chknorm < ksp->its) {
-      ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-      ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr  = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr  = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr  = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       rnorm = PetscSqrtReal(rnorm);
     }
 
@@ -259,9 +261,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     taun_1   = taun;
     omegan_1 = omegan;
   }
-  if (ksp->its >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   ierr = KSPUnwindPreconditioner(ksp,Xn,Tn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -304,16 +304,18 @@ PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ksp->data                 = (void*)0;
+  ksp->data = (void*)0;
+
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
-  ksp->ops->setup           = KSPSetUp_IBCGS;
-  ksp->ops->solve           = KSPSolve_IBCGS;
-  ksp->ops->destroy         = KSPDefaultDestroy;
-  ksp->ops->buildsolution   = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual   = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions  = 0;
-  ksp->ops->view            = 0;
+
+  ksp->ops->setup          = KSPSetUp_IBCGS;
+  ksp->ops->solve          = KSPSolve_IBCGS;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = 0;
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"This is not supported for complex numbers");
 #endif

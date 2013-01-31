@@ -32,7 +32,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscScalar    v;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -43,14 +43,14 @@ int main(int argc,char **args)
   ierr = MatSetUp(C);CHKERRQ(ierr);
   if (!rank) {
     rowidx = 0; colidx = 0; v = 1.0;
-    ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
     rowidx = 0; colidx = 1; v = 2.0;
-    ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
 
     rowidx = 1; colidx = 0; v = 2.0;
-    ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
     rowidx = 1; colidx = 1; v = 3.0;
-    ierr = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

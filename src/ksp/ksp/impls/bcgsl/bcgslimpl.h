@@ -7,26 +7,26 @@
 #include <petscsys.h>
 
 typedef struct {
-  PetscInt        ell;         /* Number of search directions. */
-  PetscReal     delta;         /* Threshold for recomputing exact residual norm */
-  PetscBool     bConvex;       /* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
-  PetscBool     pinv;          /* Use pseudoinverse to calculate polynomial correction when set 
+  PetscInt  ell;               /* Number of search directions. */
+  PetscReal delta;             /* Threshold for recomputing exact residual norm */
+  PetscBool bConvex;           /* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
+  PetscBool pinv;              /* Use pseudoinverse to calculate polynomial correction when set
                                   to PETSC_TRUE */
-  
+
   /* Workspace Vectors */
-  Vec    vB;
-  Vec    vRt;
-  Vec    vXr;
-  Vec    vTm;
-  Vec   *vvR;
-  Vec   *vvU;
+  Vec vB;
+  Vec vRt;
+  Vec vXr;
+  Vec vTm;
+  Vec *vvR;
+  Vec *vvU;
 
   /* Workspace Arrays */
-  PetscScalar   *vY0c, *vYlc, *vYtc;
-  PetscScalar   *mZa, *mZb;
-  PetscScalar   *u, *v, *work;
-  PetscReal     *s, *realwork;
-  PetscBLASInt  lwork;
+  PetscScalar  *vY0c, *vYlc, *vYtc;
+  PetscScalar  *mZa, *mZb;
+  PetscScalar  *u, *v, *work;
+  PetscReal    *s, *realwork;
+  PetscBLASInt lwork;
 } KSP_BCGSL;
 
 /* predefined shorthands */

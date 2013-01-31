@@ -27,7 +27,7 @@ PetscInt main(PetscInt argc,char **args)
   Mat            F;
   PetscInt       nneg, nzero, npos;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
 #endif
@@ -46,7 +46,7 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) use_random = 0;
-  else     use_random = 1;
+  else use_random = 1;
   if (use_random) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ PetscInt main(PetscInt argc,char **args)
     if (j<n-1) {
       J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
     }
-    v = 4.0 - sigma1*h2;
+    v    = 4.0 - sigma1*h2;
     ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -92,18 +92,18 @@ PetscInt main(PetscInt argc,char **args)
   /* make A complex Hermitian */
   Ii = 0; J = dim-1;
   if (Ii >= rstart && Ii < rend) {
-    v = sigma2*h2; /* RealPart(v) = 0.0 */
+    v    = sigma2*h2; /* RealPart(v) = 0.0 */
     ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
-    v = -sigma2*h2;
+    v    = -sigma2*h2;
     ierr = MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
 
   Ii = dim-2; J = dim-1;
   if (Ii >= rstart && Ii < rend) {
-  v = sigma2*h2; /* RealPart(v) = 0.0 */
-  ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
-  v = -sigma2*h2;
-  ierr = MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    v    = sigma2*h2; /* RealPart(v) = 0.0 */
+    ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+    v    = -sigma2*h2;
+    ierr = MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -13,16 +13,16 @@ typedef struct {
   KSPDGMRESHEADER
 
   /* Data specific to AGMRES */
-  PetscReal     bgv;            /* large multiple of the remaining allowed number of steps -- used for the adaptive strategy */
-  PetscBool     ritz;           /* Compute the Harmonic Ritz vectors instead of the Ritz vectors */
-  PetscBool     DeflPrecond;    /* Apply deflation by building adaptively a preconditioner, otherwise augment the basis */
+  PetscReal    bgv;             /* large multiple of the remaining allowed number of steps -- used for the adaptive strategy */
+  PetscBool    ritz;            /* Compute the Harmonic Ritz vectors instead of the Ritz vectors */
+  PetscBool    DeflPrecond;     /* Apply deflation by building adaptively a preconditioner, otherwise augment the basis */
   PetscScalar  *Qloc;           /* Orthogonal reflectors from the QR of the basis */
   PetscScalar  *Rloc;           /* triangular matrix obtained from the QR of the basis */
   PetscScalar  *Rshift, *Ishift; /* Real and Imaginary parts of the shifts in the Newton basis */
   PetscScalar  *Scale;          /* Norm of the vectors in the Newton basis */
-  PetscBool     HasShifts;      /* Estimation of shifts exists */
-  PetscMPIInt   rank,size;      /* Rank and size of the current process; to be used in RODDEC*/
-  PetscMPIInt   First, Last, Ileft, Iright; /* Create a ring of processors for RODDEC */
+  PetscBool    HasShifts;       /* Estimation of shifts exists */
+  PetscMPIInt  rank,size;       /* Rank and size of the current process; to be used in RODDEC*/
+  PetscMPIInt  First, Last, Ileft, Iright;  /* Create a ring of processors for RODDEC */
   PetscScalar  *MatEigL, *MatEigR; /* matrices for the eigenvalue problem */
   PetscScalar  *sgn;            /* Sign of the rotation in the QR factorization of the basis */
   PetscScalar  *tloc;           /* */
@@ -46,8 +46,8 @@ PETSC_EXTERN PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis,
 #define RLOC(a,b) (agmres->Rloc + (b)*(MAXKSPSIZE + 1)+(a))
 
 PetscErrorCode KSPAGMRESRoddec(KSP, PetscInt);
-PetscErrorCode KSPAGMRESRodvec(KSP, PetscInt, PetscScalar *, Vec);
-PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscInt);
+PetscErrorCode KSPAGMRESRodvec(KSP, PetscInt, PetscScalar*, Vec);
+PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar*, PetscScalar*, PetscScalar*, PetscScalar*, PetscInt);
 PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP);
 PetscErrorCode KSPAGMRESComputeDeflationData (KSP);
 #endif

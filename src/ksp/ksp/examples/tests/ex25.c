@@ -11,17 +11,17 @@ See ~petsc/matrices/indefinite/readme \n\n";
 int main(int argc,char **args)
 {
   Mat         C;
-  PetscScalar      v,none = -1.0;
+  PetscScalar v,none = -1.0;
   int         i,j,ierr,Istart,Iend,N,rank,size,its,k;
   double      err_norm,res_norm;
   Vec         x,b,u,u_tmp;
   PetscRandom r;
   PC          pc;
   KSP         ksp;
-  PetscViewer      view;
+  PetscViewer view;
   char        filein[128];     /* input file name */
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -88,7 +88,7 @@ int main(int argc,char **args)
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
-  /* Check error */
+    /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr);
     ierr = VecAXPY(u_tmp,none,x);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRQ(ierr);

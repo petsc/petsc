@@ -33,18 +33,18 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   PetscInt       i;
   PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1;
   Vec            X,B,V,P,R,RP,T,S;
-  PetscReal      dp = 0.0,d2;
+  PetscReal      dp    = 0.0,d2;
   KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
 
   PetscFunctionBegin;
-  X       = ksp->vec_sol;
-  B       = ksp->vec_rhs;
-  R       = ksp->work[0];
-  RP      = ksp->work[1];
-  V       = ksp->work[2];
-  T       = ksp->work[3];
-  S       = ksp->work[4];
-  P       = ksp->work[5];
+  X  = ksp->vec_sol;
+  B  = ksp->vec_rhs;
+  R  = ksp->work[0];
+  RP = ksp->work[1];
+  V  = ksp->work[2];
+  T  = ksp->work[3];
+  S  = ksp->work[4];
+  P  = ksp->work[5];
 
   /* Compute initial preconditioned residual */
   ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
@@ -62,10 +62,10 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -77,8 +77,8 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   rhoold   = 1.0;
   alpha    = 1.0;
   omegaold = 1.0;
-  ierr = VecSet(P,0.0);CHKERRQ(ierr);
-  ierr = VecSet(V,0.0);CHKERRQ(ierr);
+  ierr     = VecSet(P,0.0);CHKERRQ(ierr);
+  ierr     = VecSet(V,0.0);CHKERRQ(ierr);
 
   i=0;
   do {
@@ -89,9 +89,9 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
-    ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
-    ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
-    ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
+    ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);     /*   s <- r - a v       */
+    ierr  = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr); /*   t <- K s    */
+    ierr  = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
          may be our solution.  Give it a try? */
@@ -105,13 +105,13 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ierr        = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dp);
       ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
-    ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P,S);CHKERRQ(ierr); /* x <- alpha * p + omega * s + x */
+    ierr  = VecAXPBYPCZ(X,alpha,omega,1.0,P,S);CHKERRQ(ierr); /* x <- alpha * p + omega * s + x */
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
     if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -135,9 +135,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     i++;
   } while (i<ksp->max_it);
 
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   if (bcgs->guess) {
@@ -163,8 +161,9 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
       *V = v;
     } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Not working with right preconditioner");
   } else {
-    if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
-    else { *V = ksp->vec_sol; }
+    if (v) {
+      ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;
+    } else *V = ksp->vec_sol;
   }
   PetscFunctionReturn(0);
 }
@@ -218,14 +217,15 @@ PetscErrorCode  KSPCreate_BCGS(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_BCGS,&bcgs);CHKERRQ(ierr);
-  ksp->data                 = bcgs;
-  ksp->ops->setup           = KSPSetUp_BCGS;
-  ksp->ops->solve           = KSPSolve_BCGS;
-  ksp->ops->destroy         = KSPDestroy_BCGS;
-  ksp->ops->reset           = KSPReset_BCGS;
-  ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
-  ksp->ops->buildresidual   = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
+
+  ksp->data                = bcgs;
+  ksp->ops->setup          = KSPSetUp_BCGS;
+  ksp->ops->solve          = KSPSolve_BCGS;
+  ksp->ops->destroy        = KSPDestroy_BCGS;
+  ksp->ops->reset          = KSPReset_BCGS;
+  ksp->ops->buildsolution  = KSPBuildSolution_BCGS;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);

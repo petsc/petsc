@@ -30,15 +30,15 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
 
 /* User-defined application contexts */
 typedef struct {
-  PetscInt   mx,my;            /* number grid points in x and y direction */
-  Vec        localX,localF;    /* local vectors with ghost region */
-  DM         da;
-  Vec        x,b,r;            /* global vectors */
-  Mat        J;                /* Jacobian on grid */
-  Mat        A,P,R;
-  KSP        ksp;
+  PetscInt mx,my;              /* number grid points in x and y direction */
+  Vec      localX,localF;      /* local vectors with ghost region */
+  DM       da;
+  Vec      x,b,r;              /* global vectors */
+  Mat      J;                  /* Jacobian on grid */
+  Mat      A,P,R;
+  KSP      ksp;
 } GridCtx;
-extern int FormJacobian_Grid(GridCtx *,Mat *);
+extern int FormJacobian_Grid(GridCtx*,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -58,19 +58,19 @@ int main(int argc,char **argv)
   /* set up discretization matrix for fine grid */
   /* ML requires input of fine-grid matrix. It determines nlevels. */
   fine_ctx.mx = 9; fine_ctx.my = 9;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
   if (flg) fine_ctx.mx = mx;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRQ(ierr);
   if (flg) fine_ctx.my = my;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
-  n = fine_ctx.mx*fine_ctx.my;
+  n    = fine_ctx.mx*fine_ctx.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,
-                    fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
+                      fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
@@ -125,9 +125,9 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   PetscInt       nloc,*ltog,grow;
   PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
-  mx = grid->mx;            my = grid->my;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
-  hxdhy = hx/hy;            hydhx = hy/hx;
+  mx    = grid->mx;               my = grid->my;
+  hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
+  hxdhy = hx/hy;               hydhx = hy/hx;
 
   /* Get ghost points */
   ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -149,10 +149,10 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }

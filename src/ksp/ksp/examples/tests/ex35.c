@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   PetscScalar    zero=0.0;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
@@ -50,14 +50,14 @@ int main(int argc,char **argv)
   ierr = VecSet(b,zero);CHKERRQ(ierr);
 
   /* Test sbaij matrix */
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-test_sbaij",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     Mat sA;
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
-    A = sA;
+    A    = sA;
   }
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -72,8 +72,8 @@ int main(int argc,char **argv)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    Vec            b1;
-    PetscReal      norm;
+    Vec       b1;
+    PetscReal norm;
     ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&b1);CHKERRQ(ierr);
     ierr = MatMult(A,x,b1);CHKERRQ(ierr);

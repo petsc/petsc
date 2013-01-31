@@ -33,9 +33,9 @@
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESClassicalGramSchmidtOrthogonalization"
-PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt it)
+PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
 {
-  KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES      *gmres = (KSP_GMRES*)(ksp->data);
   PetscErrorCode ierr;
   PetscInt       j;
   PetscScalar    *hh,*hes,*lhh;
@@ -64,9 +64,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt 
      as pointer to rows
   */
   ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
-  for (j=0; j<=it; j++) {
-    lhh[j] = - lhh[j];
-  }
+  for (j=0; j<=it; j++) lhh[j] = -lhh[j];
 
   /*
          This is really a matrix vector product:
@@ -85,20 +83,19 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt 
    */
   if (gmres->cgstype == KSP_GMRES_CGS_REFINE_IFNEEDED) {
     hnrm = 0.0;
-    for (j=0; j<=it; j++) {
-      hnrm  +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));
-    }
+    for (j=0; j<=it; j++) hnrm +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));
+
     hnrm = PetscSqrtReal(hnrm);
     ierr = VecNorm(VEC_VV(it+1),NORM_2, &wnrm);CHKERRQ(ierr);
     if (wnrm < 1.0286 * hnrm) {
       refine = PETSC_TRUE;
-      ierr = PetscInfo2(ksp,"Performing iterative refinement wnorm %G hnorm %G\n",wnrm,hnrm);CHKERRQ(ierr);
+      ierr   = PetscInfo2(ksp,"Performing iterative refinement wnorm %G hnorm %G\n",wnrm,hnrm);CHKERRQ(ierr);
     }
   }
 
   if (refine) {
     ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
-    for (j=0; j<=it; j++) lhh[j] = - lhh[j];
+    for (j=0; j<=it; j++) lhh[j] = -lhh[j];
     ierr = VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0));CHKERRQ(ierr);
     /* note lhh[j] is -<v,vnew> , hence the subtraction */
     for (j=0; j<=it; j++) {

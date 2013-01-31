@@ -80,14 +80,14 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   bis[0]   = is_u; bis[1]   = is_p;
   bA[0][0] = Auu;  bA[0][1] = Aup;
   bA[1][0] = Apu;  bA[1][1] = App;
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,bis,2,bis,&bA[0][0],&A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr     = MatCreateNest(PETSC_COMM_WORLD,2,bis,2,bis,&bA[0][0],&A);CHKERRQ(ierr);
+  ierr     = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr     = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Pull f,h into b */
-  ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
+  ierr  = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
   bX[0] = f;  bX[1] = h;
-  ierr = PetscMalloc(sizeof(VecScatter)*2,&vscat);CHKERRQ(ierr);
+  ierr  = PetscMalloc(sizeof(VecScatter)*2,&vscat);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
     ierr = VecScatterCreate(b,bis[i],bX[i],PETSC_NULL,&vscat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -110,9 +110,9 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
 
   *_isu = is_u;
   *_isp = is_p;
-  *_A = A;
-  *_x = x;
-  *_b = b;
+  *_A   = A;
+  *_x   = x;
+  *_b   = b;
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +144,7 @@ PetscErrorCode port_lsd_bfbt(void)
   ierr = KSPSetFromOptions(ksp_A);CHKERRQ(ierr);
   ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
 
-    /* Pull u,p out of x */
+  /* Pull u,p out of x */
   {
     PetscInt    loc;
     PetscReal   max,norm;

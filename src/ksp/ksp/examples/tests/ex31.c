@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscScalar    one = 1.0;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -97,9 +97,7 @@ int main(int argc,char **args)
     if (displayIS && !rank) {
       PetscInt i;
       printf("[ %d ] count:\n",rank);
-      for (i=0; i<size; i++) {
-        printf(" %d",count[i]);
-      }
+      for (i=0; i<size; i++) printf(" %d",count[i]);
       printf("\n");
     }
 

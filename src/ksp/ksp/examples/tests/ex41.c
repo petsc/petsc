@@ -17,17 +17,17 @@ static char help[] ="Tests sequential and parallel MatMatMatMult() and MatPtAP()
 
 /* User-defined application contexts */
 typedef struct {
-   PetscInt   mx,my,mz;         /* number grid points in x, y and z direction */
-   Vec        localX,localF;    /* local vectors with ghost region */
-   DM         da;
-   Vec        x,b,r;            /* global vectors */
-   Mat        J;                /* Jacobian on grid */
+  PetscInt mx,my,mz;            /* number grid points in x, y and z direction */
+  Vec      localX,localF;       /* local vectors with ghost region */
+  DM       da;
+  Vec      x,b,r;               /* global vectors */
+  Mat      J;                   /* Jacobian on grid */
 } GridCtx;
 typedef struct {
-   GridCtx     fine;
-   GridCtx     coarse;
-   PetscInt    ratio;
-   Mat         Ii;              /* interpolation from coarse to fine */
+  GridCtx  fine;
+  GridCtx  coarse;
+  PetscInt ratio;
+  Mat      Ii;                  /* interpolation from coarse to fine */
 } AppCtx;
 
 #define COARSE_LEVEL 0
@@ -56,8 +56,9 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Get size of fine grids and coarse grids */
-  user.ratio = 2;
+  user.ratio     = 2;
   user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mz",&user.coarse.mz,PETSC_NULL);CHKERRQ(ierr);
@@ -79,11 +80,11 @@ int main(int argc,char **argv)
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                    user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
   /* Create and set A at fine grids */
@@ -105,7 +106,7 @@ int main(int argc,char **argv)
     ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
   } else {
     Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-    Mat_SeqAIJ *a=(Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
+    Mat_SeqAIJ *a   = (Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
     /* A_part */
     for (i=0; i<a->i[m]; i++) a->a[i] = one;
     /* B_part */
@@ -118,11 +119,11 @@ int main(int argc,char **argv)
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                    user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the fine and coarse grids */

@@ -103,13 +103,13 @@ PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
 #define __FUNCT__ "KSPSetUp_DGMRES"
 PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
 {
-  PetscErrorCode  ierr;
-  KSP_DGMRES     *dgmres = (KSP_DGMRES *) ksp->data;
-  PetscInt        neig   = dgmres->neig+EIG_OFFSET;
-  PetscInt        max_k  = dgmres->max_k+1;
+  PetscErrorCode ierr;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
+  PetscInt       neig    = dgmres->neig+EIG_OFFSET;
+  PetscInt       max_k   = dgmres->max_k+1;
 
   PetscFunctionBegin;
-  ierr          = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
   if (!dgmres->neig) PetscFunctionReturn(0);
 
   /* Allocate workspace for the Schur vectors*/
@@ -159,31 +159,31 @@ PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
 #define __FUNCT__ "KSPDGMRESCycle"
 PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 {
-  KSP_DGMRES     *dgmres = (KSP_DGMRES *)(ksp->data);
-  PetscReal       res_norm,res,hapbnd,tt;
-  PetscErrorCode  ierr;
-  PetscInt        it     = 0;
-  PetscInt        max_k  = dgmres->max_k;
-  PetscBool       hapend = PETSC_FALSE;
-  PetscReal       res_old;
-  PetscInt        test   = 0;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*)(ksp->data);
+  PetscReal      res_norm,res,hapbnd,tt;
+  PetscErrorCode ierr;
+  PetscInt       it     = 0;
+  PetscInt       max_k  = dgmres->max_k;
+  PetscBool      hapend = PETSC_FALSE;
+  PetscReal      res_old;
+  PetscInt       test = 0;
 
   PetscFunctionBegin;
-  ierr     = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
-  res      = res_norm;
+  ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
+  res     = res_norm;
   *GRS(0) = res_norm;
 
   /* check for the convergence */
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   dgmres->it = (it - 1);
-  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+  ierr       = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
-    ierr = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
+    ierr        = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   /* record the residual norm to test if deflation is needed */
@@ -219,20 +219,20 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     /* vv(i+1) . vv(i+1) */
     ierr = VecNormalize(VEC_VV(it+1),&tt);CHKERRQ(ierr);
     /* save the magnitude */
-    *HH(it+1,it)    = tt;
-    *HES(it+1,it)   = tt;
+    *HH(it+1,it)  = tt;
+    *HES(it+1,it) = tt;
 
     /* check for the happy breakdown */
-    hapbnd  = PetscAbsScalar(tt / *GRS(it));
+    hapbnd = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > dgmres->haptol) hapbnd = dgmres->haptol;
     if (tt < hapbnd) {
-      ierr = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt);CHKERRQ(ierr);
+      ierr   = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt);CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
     ierr = KSPDGMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
 
     it++;
-    dgmres->it  = (it-1);    /* For converged */
+    dgmres->it = (it-1);     /* For converged */
     ksp->its++;
     ksp->rnorm = res;
     if (ksp->reason) break;
@@ -251,7 +251,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   }
-  if (itcount) *itcount    = it;
+  if (itcount) *itcount = it;
 
   /*
    Down here we have to solve for the "best" coefficients of the Krylov
@@ -276,23 +276,23 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 #define __FUNCT__ "KSPSolve_DGMRES"
 PetscErrorCode KSPSolve_DGMRES(KSP ksp)
 {
-  PetscErrorCode  ierr;
-  PetscInt        its,itcount;
-  KSP_DGMRES     *dgmres     = (KSP_DGMRES *) ksp->data;
-  PetscBool       guess_zero = ksp->guess_zero;
+  PetscErrorCode ierr;
+  PetscInt       its,itcount;
+  KSP_DGMRES     *dgmres    = (KSP_DGMRES*) ksp->data;
+  PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !dgmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-  ksp->its = 0;
+  ierr            = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ksp->its        = 0;
   dgmres->matvecs = 0;
-  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr            = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
-    ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
+    ierr = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     if (ksp->pc_side == PC_LEFT) {
       dgmres->matvecs += 1;
       if (dgmres->r > 0) {
@@ -318,10 +318,10 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
 #define __FUNCT__ "KSPDestroy_DGMRES"
 PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
 {
-  PetscErrorCode  ierr;
-  KSP_DGMRES     *dgmres   = (KSP_DGMRES*) ksp->data;
-  PetscInt        neig1    = dgmres->neig+EIG_OFFSET;
-  PetscInt        max_neig = dgmres->max_neig;
+  PetscErrorCode ierr;
+  KSP_DGMRES     *dgmres  = (KSP_DGMRES*) ksp->data;
+  PetscInt       neig1    = dgmres->neig+EIG_OFFSET;
+  PetscInt       max_neig = dgmres->max_neig;
 
   PetscFunctionBegin;
   if (dgmres->r) {
@@ -370,12 +370,12 @@ PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESBuildSoln"
-static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
+static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
   PetscErrorCode ierr;
   PetscInt       ii,k,j;
-  KSP_DGMRES      *dgmres = (KSP_DGMRES *) (ksp->data);
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) (ksp->data);
 
   /* Solve for solution vector that minimizes the residual */
 
@@ -386,17 +386,15 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP k
     PetscFunctionReturn(0);
   }
   if (*HH(it,it) == 0.0) SETERRQ2(((PetscObject)ksp)->comm, PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
-  if (*HH(it,it) != 0.0) {
-    nrs[it] = *GRS(it) / *HH(it,it);
-  } else {
-    nrs[it] = 0.0;
-  }
+  if (*HH(it,it) != 0.0) nrs[it] = *GRS(it) / *HH(it,it);
+  else nrs[it] = 0.0;
+
   for (ii=1; ii<=it; ii++) {
-    k   = it - ii;
-    tt  = *GRS(k);
-    for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
+    k  = it - ii;
+    tt = *GRS(k);
+    for (j=k+1; j<=it; j++) tt = tt - *HH(k,j) * nrs[j];
     if (*HH(k,k) == 0.0) SETERRQ2(((PetscObject)ksp)->comm, PETSC_ERR_CONV_FAILED,"Likely your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
-    nrs[k]   = tt / *HH(k,k);
+    nrs[k] = tt / *HH(k,k);
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
@@ -426,12 +424,12 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool ha
 {
   PetscScalar *hh,*cc,*ss,tt;
   PetscInt    j;
-  KSP_DGMRES   *dgmres = (KSP_DGMRES *) (ksp->data);
+  KSP_DGMRES  *dgmres = (KSP_DGMRES*) (ksp->data);
 
   PetscFunctionBegin;
-  hh  = HH(0,it);
-  cc  = CC(0);
-  ss  = SS(0);
+  hh = HH(0,it);
+  cc = CC(0);
+  ss = SS(0);
 
   /* Apply all the previously computed plane rotations to the new column
    of the Hessenberg matrix */
@@ -449,17 +447,17 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool ha
    thus obtaining the updated value of the residual
    */
   if (!hapend) {
-    tt        = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
+    tt = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
     if (tt == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
       PetscFunctionReturn(0);
     }
-    *cc       = *hh / tt;
-    *ss       = *(hh+1) / tt;
+    *cc        = *hh / tt;
+    *ss        = *(hh+1) / tt;
     *GRS(it+1) = -(*ss * *GRS(it));
     *GRS(it)   = PetscConj(*cc) * *GRS(it);
-    *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
-    *res      = PetscAbsScalar(*GRS(it+1));
+    *hh        = PetscConj(*cc) * *hh + *ss * *(hh+1);
+    *res       = PetscAbsScalar(*GRS(it+1));
   } else {
     /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply
      another rotation matrix (so RH doesn't change).  The new residual is
@@ -479,7 +477,7 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool ha
 #define __FUNCT__ "KSPDGMRESGetNewVectors"
 static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
-  KSP_DGMRES    *dgmres = (KSP_DGMRES *) ksp->data;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscErrorCode ierr;
   PetscInt       nwork = dgmres->nwork_alloc,k,nalloc;
 
@@ -493,8 +491,10 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
   if (!nalloc) PetscFunctionReturn(0);
 
   dgmres->vv_allocated += nalloc;
+
   ierr = KSPGetVecs(ksp,nalloc,&dgmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,dgmres->user_work[nwork]);CHKERRQ(ierr);
+
   dgmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {
     dgmres->vecs[it+VEC_OFFSET+k] = dgmres->user_work[nwork][k];
@@ -505,9 +505,9 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_DGMRES"
-PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec  ptr,Vec *result)
+PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec ptr,Vec *result)
 {
-  KSP_DGMRES      *dgmres = (KSP_DGMRES *) ksp->data;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -533,9 +533,9 @@ PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec  ptr,Vec *result)
 #define __FUNCT__ "KSPView_DGMRES"
 PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
 {
-  KSP_DGMRES     *dgmres = (KSP_DGMRES *) ksp->data;
-  PetscErrorCode  ierr;
-  PetscBool       iascii,isharmonic;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii,isharmonic;
 
   PetscFunctionBegin;
   ierr = KSPView_GMRES(ksp,viewer);CHKERRQ(ierr);
@@ -564,7 +564,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESSetEigen_DGMRES"
 PetscErrorCode  KSPDGMRESSetEigen_DGMRES(KSP ksp,PetscInt neig)
 {
-  KSP_DGMRES  *dgmres = (KSP_DGMRES *) ksp->data;
+  KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
   if (neig< 0 && neig >dgmres->max_k) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"The value of neig must be positive and less than the restart value ");
@@ -578,7 +578,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESSetMaxEigen_DGMRES"
 PetscErrorCode  KSPDGMRESSetMaxEigen_DGMRES(KSP ksp,PetscInt max_neig)
 {
-  KSP_DGMRES *dgmres = (KSP_DGMRES *) ksp->data;
+  KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
   if (max_neig < 0 && max_neig >dgmres->max_k) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"The value of max_neig must be positive and less than the restart value ");
@@ -593,7 +593,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESSetRatio_DGMRES"
 PetscErrorCode  KSPDGMRESSetRatio_DGMRES(KSP ksp,PetscReal ratio)
 {
-  KSP_DGMRES *dgmres = (KSP_DGMRES *) ksp->data;
+  KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
   if (ratio <= 0) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"The relaxation parameter value must be positive");
@@ -607,7 +607,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESForce_DGMRES"
 PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscInt force)
 {
-  KSP_DGMRES *dgmres = (KSP_DGMRES *) ksp->data;
+  KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
   if (force != 0 && force != 1) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"Value must be 0 or 1");
@@ -622,13 +622,13 @@ extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
 #define __FUNCT__ "KSPSetFromOptions_DGMRES"
 PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
 {
-  PetscErrorCode  ierr;
-  PetscInt        neig;
-  PetscInt        max_neig;
+  PetscErrorCode ierr;
+  PetscInt       neig;
+  PetscInt       max_neig;
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
-  PetscBool       flg;
-  PetscReal       smv;
-  PetscInt        input;
+  PetscBool      flg;
+  PetscReal      smv;
+  PetscInt       input;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
@@ -656,24 +656,24 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESComputeDeflationData_DGMRES"
 PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
 {
-  KSP_DGMRES     *dgmres   = (KSP_DGMRES*) ksp->data;
-  PetscErrorCode  ierr;
-  PetscInt        i,j, k;
-  PetscBLASInt    nr, bmax;
-  PetscInt        r        = dgmres->r;
-  PetscInt        neig;         /* number of eigenvalues to extract at each restart */
-  PetscInt        neig1    = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
-  PetscInt        max_neig = dgmres->max_neig; /* Max number of eigenvalues to extract during the iterative process */
-  PetscInt        N        = dgmres->max_k+1;
-  PetscInt        n        = dgmres->it+1;
-  PetscReal       alpha;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j, k;
+  PetscBLASInt   nr, bmax;
+  PetscInt       r = dgmres->r;
+  PetscInt       neig;          /* number of eigenvalues to extract at each restart */
+  PetscInt       neig1    = dgmres->neig + EIG_OFFSET;  /* max number of eig that can be extracted at each restart */
+  PetscInt       max_neig = dgmres->max_neig;  /* Max number of eigenvalues to extract during the iterative process */
+  PetscInt       N        = dgmres->max_k+1;
+  PetscInt       n        = dgmres->it+1;
+  PetscReal      alpha;
 #if !defined(PETSC_MISSING_LAPACK_GETRF)
-  PetscBLASInt    info;
+  PetscBLASInt info;
 #endif
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_DGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
-  if (dgmres->neig == 0)  PetscFunctionReturn(0);
+  if (dgmres->neig == 0) PetscFunctionReturn(0);
   if (max_neig < (r+neig1) && !dgmres->improve) {
     ierr = PetscLogEventEnd(KSP_DGMRESComputeDeflationData, ksp, 0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -765,8 +765,8 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   }
 
   dgmres->r += neig;
-  r    = dgmres->r;
-  ierr = PetscBLASIntCast(r,&nr);CHKERRQ(ierr);
+  r          = dgmres->r;
+  ierr       = PetscBLASIntCast(r,&nr);CHKERRQ(ierr);
   /*LU Factorize T with Lapack xgetrf routine */
 
   ierr = PetscBLASIntCast(max_neig,&bmax);CHKERRQ(ierr);
@@ -804,33 +804,33 @@ EXTERN_C_BEGIN
 PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
-  PetscErrorCode  ierr;
-  PetscInt        N = dgmres->max_k + 1, n=dgmres->it+1;
-  PetscBLASInt    bn, bN;
+  PetscErrorCode ierr;
+  PetscInt       N = dgmres->max_k + 1, n=dgmres->it+1;
+  PetscBLASInt   bn, bN;
   PetscReal      *A;
-  PetscBLASInt    ihi;
-  PetscBLASInt    ldA;         /* leading dimension of A */
-  PetscBLASInt    ldQ;         /* leading dimension of Q */
+  PetscBLASInt   ihi;
+  PetscBLASInt   ldA;          /* leading dimension of A */
+  PetscBLASInt   ldQ;          /* leading dimension of Q */
   PetscReal      *Q;           /*  orthogonal matrix of  (left) schur vectors */
   PetscReal      *work;        /* working vector */
-  PetscBLASInt    lwork;       /* size of the working vector */
+  PetscBLASInt   lwork;        /* size of the working vector */
   PetscInt       *perm;        /* Permutation vector to sort eigenvalues */
-  PetscInt        i, j;
-  PetscBLASInt    NbrEig;      /* Number of eigenvalues really extracted */
+  PetscInt       i, j;
+  PetscBLASInt   NbrEig;       /* Number of eigenvalues really extracted */
   PetscReal      *wr, *wi, *modul; /* Real and imaginary part and modul of the eigenvalues of A*/
   PetscBLASInt   *select;
   PetscBLASInt   *iwork;
-  PetscBLASInt    liwork;
+  PetscBLASInt   liwork;
   PetscScalar    *Ht;           /* Transpose of the Hessenberg matrix */
   PetscScalar    *t;            /* Store the result of the solution of H^T*t=h_{m+1,m}e_m */
-  PetscBLASInt    nrhs = 1;     /* Number of right hand side */
+  PetscBLASInt   nrhs = 1;      /* Number of right hand side */
   PetscBLASInt   *ipiv;         /* Permutation vector to be used in LAPACK */
 #if !defined(PETSC_MISSING_LAPACK_HSEQR) || !defined(PETSC_MISSING_LAPACK_TRSEN)
-  PetscBLASInt    ilo  = 1;
-  PetscBLASInt    info;
-  PetscReal       CondEig;      /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
-  PetscReal       CondSub;      /* estimated reciprocal condition number of the specified invariant subspace. */
-  PetscBool       flag;         /* determine whether to use Ritz vectors or harmonic Ritz vectors */
+  PetscBLASInt ilo = 1;
+  PetscBLASInt info;
+  PetscReal    CondEig;         /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
+  PetscReal    CondSub;         /* estimated reciprocal condition number of the specified invariant subspace. */
+  PetscBool    flag;            /* determine whether to use Ritz vectors or harmonic Ritz vectors */
 #endif
 
   PetscFunctionBegin;
@@ -851,8 +851,8 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     ierr = PetscMalloc(n*sizeof(PetscReal), &dgmres->wr);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscReal), &dgmres->wi);CHKERRQ(ierr);
   }
-  wr = dgmres->wr;
-  wi = dgmres->wi;
+  wr   = dgmres->wr;
+  wi   = dgmres->wi;
   ierr = PetscMalloc(n*sizeof(PetscReal),&modul);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   /* copy the Hessenberg matrix to work space */
@@ -862,16 +862,17 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     /* Transpose the Hessenberg matrix */
     ierr = PetscMalloc(bn*bn*sizeof(PetscScalar), &Ht);CHKERRQ(ierr);
-    for (i = 0; i < bn; i++)
+    for (i = 0; i < bn; i++) {
       for (j = 0; j < bn; j++) {
         Ht[i * bn + j] = dgmres->hes_origin[j * ldA + i];
       }
+    }
 
     /* Solve the system H^T*t = h_{m+1,m}e_m */
-    ierr = PetscMalloc(bn*sizeof(PetscScalar), &t);CHKERRQ(ierr);
-    ierr = PetscMemzero(t, bn*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr    = PetscMalloc(bn*sizeof(PetscScalar), &t);CHKERRQ(ierr);
+    ierr    = PetscMemzero(t, bn*sizeof(PetscScalar));CHKERRQ(ierr);
     t[bn-1] = dgmres->hes_origin[(bn -1) * ldA + bn]; /* Pick the last element H(m+1,m) */
-    ierr = PetscMalloc(bn*sizeof(PetscBLASInt), &ipiv);CHKERRQ(ierr);
+    ierr    = PetscMalloc(bn*sizeof(PetscBLASInt), &ipiv);CHKERRQ(ierr);
     /* Call the LAPACK routine dgesv to solve the system Ht^-1 * t */
 #if   defined(PETSC_MISSING_LAPACK_GESV)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GESV - Lapack routine is unavailable.");
@@ -880,8 +881,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     if (info) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "Error while calling the Lapack routine DGESV");
 #endif
     /* Now form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
-    for (i = 0; i < bn; i++)
-      A[(bn-1)*bn+i] += t[i];
+    for (i = 0; i < bn; i++) A[(bn-1)*bn+i] += t[i];
     ierr = PetscFree(t);CHKERRQ(ierr);
     ierr = PetscFree(Ht);CHKERRQ(ierr);
   }
@@ -893,20 +893,17 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   if (info) SETERRQ1(((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XHSEQR %d",(int) info);
 #endif
   ierr = PetscFree(work);CHKERRQ(ierr);
+
   /* sort the eigenvalues */
-  for (i=0; i<n; i++)  {
-    modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
-  }
-  for (i=0; i<n; i++) {
-    perm[i] = i;
-  }
+  for (i=0; i<n; i++) modul[i] = PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
+  for (i=0; i<n; i++) perm[i] = i;
+
   ierr = PetscSortRealWithPermutation(n, modul, perm);CHKERRQ(ierr);
   /* save the complex modulus of the largest eigenvalue in magnitude */
   if (dgmres->lambdaN < modul[perm[n-1]]) dgmres->lambdaN=modul[perm[n-1]];
   /* count the number of extracted eigenvalues (with complex conjugates) */
   NbrEig = 0;
-  while (NbrEig < dgmres->neig)
-  {
+  while (NbrEig < dgmres->neig) {
     if (wi[perm[NbrEig]] != 0) NbrEig += 2;
     else NbrEig += 1;
   }
@@ -918,14 +915,13 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   if (!dgmres->GreatestEig) {
     for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
   } else {
-    for (j = 0; j < NbrEig; j++)
-      select[perm[n-j-1]] = 1;
+    for (j = 0; j < NbrEig; j++) select[perm[n-j-1]] = 1;
   }
   /* call Lapack dtrsen */
   lwork  =  PetscMax(1, 4 * NbrEig *(bn-NbrEig));
   liwork = PetscMax(1, 2 * NbrEig *(bn-NbrEig));
-  ierr = PetscMalloc(lwork * sizeof(PetscScalar), &work);CHKERRQ(ierr);
-  ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);CHKERRQ(ierr);
+  ierr   = PetscMalloc(lwork * sizeof(PetscScalar), &work);CHKERRQ(ierr);
+  ierr   = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_TRSEN)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"TRSEN - Lapack routine is unavailable.");
 #else
@@ -956,17 +952,17 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESApplyDeflation_DGMRES"
 PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 {
-  KSP_DGMRES     *dgmres   = (KSP_DGMRES*) ksp->data;
-  PetscInt        i, r     = dgmres->r;
-  PetscErrorCode  ierr;
-  PetscBLASInt    nrhs     = 1;
-  PetscReal       alpha    = 1.0;
-  PetscInt        max_neig = dgmres->max_neig;
-  PetscBLASInt    br,bmax;
-  PetscInt        lambda   = dgmres->lambdaN;
+  KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
+  PetscInt       i, r     = dgmres->r;
+  PetscErrorCode ierr;
+  PetscBLASInt   nrhs     = 1;
+  PetscReal      alpha    = 1.0;
+  PetscInt       max_neig = dgmres->max_neig;
+  PetscBLASInt   br,bmax;
+  PetscInt       lambda = dgmres->lambdaN;
 #if !defined(PETSC_MISSING_LAPACK_GETRS)
-  PetscReal       berr, ferr;
-  PetscBLASInt    info;
+  PetscReal    berr, ferr;
+  PetscBLASInt info;
 #endif
 
   PetscFunctionBegin;
@@ -1001,13 +997,11 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GERFS - Lapack routine is unavailable.");
 #else
   LAPACKgerfs_("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,
-                X1, &bmax, &ferr, &berr, WORK, IWORK, &info);
+               X1, &bmax, &ferr, &berr, WORK, IWORK, &info);
   if (info) SETERRQ1(((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGERFS %d", (int) info);
 #endif
 
-  for (i = 0; i < r; i++) {
-    X2[i] =  X1[i]/lambda - X2[i];
-  }
+  for (i = 0; i < r; i++) X2[i] =  X1[i]/lambda - X2[i];
 
   /* Compute X2=U*X2 */
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
@@ -1024,30 +1018,30 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPDGMRESImproveEig_DGMRES"
 PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 {
-  KSP_DGMRES   *dgmres     = (KSP_DGMRES*) ksp->data;
-  PetscInt      j,r_old, r = dgmres->r;
-  PetscBLASInt  i          = 0;
-  PetscInt      neig1      = dgmres->neig + EIG_OFFSET;
-  PetscInt      bmax       = dgmres->max_neig;
-  PetscInt      aug        = r + neig;   /* actual size of the augmented invariant basis */
-  PetscInt      aug1       = bmax+neig1; /* maximum size of the augmented invariant basis */
-  PetscBLASInt  ldA;           /* leading dimension of AUAU and AUU*/
-  PetscBLASInt  N;             /* size of AUAU */
+  KSP_DGMRES   *dgmres    = (KSP_DGMRES*) ksp->data;
+  PetscInt     j,r_old, r = dgmres->r;
+  PetscBLASInt i     = 0;
+  PetscInt     neig1 = dgmres->neig + EIG_OFFSET;
+  PetscInt     bmax  = dgmres->max_neig;
+  PetscInt     aug   = r + neig;         /* actual size of the augmented invariant basis */
+  PetscInt     aug1  = bmax+neig1;       /* maximum size of the augmented invariant basis */
+  PetscBLASInt ldA;            /* leading dimension of AUAU and AUU*/
+  PetscBLASInt N;              /* size of AUAU */
   PetscReal    *Q;             /*  orthogonal matrix of  (left) schur vectors */
   PetscReal    *Z;             /*  orthogonal matrix of  (right) schur vectors */
   PetscReal    *work;          /* working vector */
-  PetscBLASInt  lwork;         /* size of the working vector */
-  PetscBLASInt  info;          /* Output info from Lapack routines */
+  PetscBLASInt lwork;          /* size of the working vector */
+  PetscBLASInt info;           /* Output info from Lapack routines */
   PetscInt     *perm;          /* Permutation vector to sort eigenvalues */
   PetscReal    *wr, *wi, *beta, *modul; /* Real and imaginary part and modul of the eigenvalues of A*/
-  PetscInt      ierr;
-  PetscBLASInt  NbrEig = 0,nr,bm;
+  PetscInt     ierr;
+  PetscBLASInt NbrEig = 0,nr,bm;
   PetscBLASInt *select;
-  PetscBLASInt  liwork, *iwork;
+  PetscBLASInt liwork, *iwork;
 #if !defined(PETSC_MISSING_LAPACK_TGSEN)
-  PetscReal     Dif[2];
-  PetscBLASInt  ijob = 2;
-  PetscBLASInt  wantQ = 1, wantZ = 1;
+  PetscReal    Dif[2];
+  PetscBLASInt ijob  = 2;
+  PetscBLASInt wantQ = 1, wantZ = 1;
 #endif
 
   PetscFunctionBegin;
@@ -1097,14 +1091,14 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   ierr  = PetscBLASIntCast(aug1,&ldA);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(aug,&N);CHKERRQ(ierr);
   lwork = 8 * N + 20; /* sizeof the working space */
-  ierr = PetscMalloc(N*sizeof(PetscReal), &wr);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscReal), &wi);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscReal), &beta);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscReal), &modul);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscInt), &perm);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*N*sizeof(PetscReal), &Q);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*N*sizeof(PetscReal), &Z);CHKERRQ(ierr);
-  ierr = PetscMalloc(lwork*sizeof(PetscReal), &work);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*sizeof(PetscReal), &wr);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*sizeof(PetscReal), &wi);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*sizeof(PetscReal), &beta);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*sizeof(PetscReal), &modul);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*sizeof(PetscInt), &perm);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*N*sizeof(PetscReal), &Q);CHKERRQ(ierr);
+  ierr  = PetscMalloc(N*N*sizeof(PetscReal), &Z);CHKERRQ(ierr);
+  ierr  = PetscMalloc(lwork*sizeof(PetscReal), &work);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GGES)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
@@ -1118,12 +1112,8 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     }
   }
   /* sort the eigenvalues */
-  for (i=0; i<N; i++)  {
-    modul[i]=PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
-  }
-  for (i=0; i<N; i++) {
-    perm[i] = i;
-  }
+  for (i=0; i<N; i++) modul[i]=PetscSqrtReal(wr[i]*wr[i]+wi[i]*wi[i]);
+  for (i=0; i<N; i++) perm[i] = i;
   ierr = PetscSortRealWithPermutation(N, modul, perm);CHKERRQ(ierr);
   /* Save the norm of the largest eigenvalue */
   if (dgmres->lambdaN < modul[perm[N-1]]) dgmres->lambdaN = modul[perm[N-1]];
@@ -1137,25 +1127,23 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     else NbrEig += 2;
   }
   if (NbrEig > bmax) NbrEig = bmax - 1;
-  r_old=r; /* previous size of r */
+  r_old     = r; /* previous size of r */
   dgmres->r = r = NbrEig;
 
   /* Select the eigenvalues to reorder */
   ierr = PetscMalloc(N * sizeof(PetscBLASInt), &select);CHKERRQ(ierr);
   ierr = PetscMemzero(select, N * sizeof(PetscBLASInt));CHKERRQ(ierr);
   if (!dgmres->GreatestEig) {
-    for (j = 0; j < NbrEig; j++)
-      select[perm[j]] = 1;
+    for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
   } else {
-    for (j = 0; j < NbrEig; j++)
-      select[perm[N-j-1]] = 1;
+    for (j = 0; j < NbrEig; j++) select[perm[N-j-1]] = 1;
   }
   /* Reorder and extract the new <r> schur vectors */
   lwork  = PetscMax(4 * N + 16,  2 * NbrEig *(N - NbrEig));
   liwork = PetscMax(N + 6,  2 * NbrEig *(N - NbrEig));
-  ierr = PetscFree(work);CHKERRQ(ierr);
-  ierr = PetscMalloc(lwork * sizeof(PetscReal), &work);CHKERRQ(ierr);
-  ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);CHKERRQ(ierr);
+  ierr   = PetscFree(work);CHKERRQ(ierr);
+  ierr   = PetscMalloc(lwork * sizeof(PetscReal), &work);CHKERRQ(ierr);
+  ierr   = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_TGSEN)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"TGSEN - Lapack routine is unavailable.");
 #else
@@ -1185,7 +1173,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     ierr = VecMDot(MU[j], r, UU, &TT[j*bmax]);CHKERRQ(ierr);
   }
   /* Factorize T */
-  ierr = PetscMemcpy(TTF, TT, bmax*r*sizeof (PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(TTF, TT, bmax*r*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscBLASIntCast(r,&nr);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(bmax,&bm);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GETRF)
@@ -1251,12 +1239,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_DGMRES"
 PetscErrorCode  KSPCreate_DGMRES(KSP ksp)
 {
-  KSP_DGMRES      *dgmres;
+  KSP_DGMRES     *dgmres;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_DGMRES,&dgmres);CHKERRQ(ierr);
-  ksp->data                              = (void*) dgmres;
+  ierr      = PetscNewLog(ksp,KSP_DGMRES,&dgmres);CHKERRQ(ierr);
+  ksp->data = (void*) dgmres;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
@@ -1271,20 +1259,20 @@ PetscErrorCode  KSPCreate_DGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C",
-                                             "KSPGMRESSetPreAllocateVectors_GMRES",
-                                             KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetPreAllocateVectors_GMRES",
+                                           KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) ksp,"KSPGMRESSetOrthogonalization_C",
-                                             "KSPGMRESSetOrthogonalization_GMRES",
-                                             KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetOrthogonalization_GMRES",
+                                           KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) ksp,"KSPGMRESSetRestart_C",
-                                             "KSPGMRESSetRestart_GMRES",
-                                             KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetRestart_GMRES",
+                                           KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) ksp,"KSPGMRESSetHapTol_C",
-                                             "KSPGMRESSetHapTol_GMRES",
-                                             KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetHapTol_GMRES",
+                                           KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C",
-                                             "KSPGMRESSetCGSRefinementType_GMRES",
-                                             KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+                                           "KSPGMRESSetCGSRefinementType_GMRES",
+                                           KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
   /* -- New functions defined in DGMRES -- */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) ksp, "KSPDGMRESSetEigen_C",
                                            "KSPDGMRESSetEigen_DGMRES",

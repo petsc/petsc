@@ -43,16 +43,16 @@ int main(int argc,char **args)
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
-#if defined (PETSC_USE_LOG)
-  PetscLogStage  stages[3];
+#if defined(PETSC_USE_LOG)
+  PetscLogStage stages[3];
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   /*
      Register various stages for profiling
@@ -65,7 +65,7 @@ int main(int argc,char **args)
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PetscLogEventRegister("Check Error",KSP_CLASSID,&CHECK_ERROR);CHKERRQ(ierr);
+  ierr        = PetscLogEventRegister("Check Error",KSP_CLASSID,&CHECK_ERROR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup
@@ -142,8 +142,8 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (PetscScalar)(i + 100*rank);
-    ierr = VecSetValues(u,1,&iglobal,&v,ADD_VALUES);CHKERRQ(ierr);
+    v       = (PetscScalar)(i + 100*rank);
+    ierr    = VecSetValues(u,1,&iglobal,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
@@ -285,17 +285,17 @@ int main(int argc,char **args)
     */
     if (t > 0) {ierr = MatZeroEntries(C2);CHKERRQ(ierr);}
 
-   /*
-      Assemble matrix in parallel. Also, log the number of flops
-      for computing matrix entries.
-       - To illustrate the features of parallel matrix assembly, we
-         intentionally set the values differently from the way in
-         which the matrix is distributed across the processors.  Each
-         entry that is not owned locally will be sent to the appropriate
-         processor during MatAssemblyBegin() and MatAssemblyEnd().
-       - For best efficiency the user should strive to set as many
-         entries locally as possible.
-    */
+    /*
+       Assemble matrix in parallel. Also, log the number of flops
+       for computing matrix entries.
+        - To illustrate the features of parallel matrix assembly, we
+          intentionally set the values differently from the way in
+          which the matrix is distributed across the processors.  Each
+          entry that is not owned locally will be sent to the appropriate
+          processor during MatAssemblyBegin() and MatAssemblyEnd().
+        - For best efficiency the user should strive to set as many
+          entries locally as possible.
+     */
     for (i=0; i<m; i++) {
       for (j=2*rank; j<2*rank+2; j++) {
         v = -1.0;  Ii = j + n*i;

@@ -50,16 +50,16 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   PC             pc;
 
   PetscFunctionBegin;
-  X       = ksp->vec_sol;
-  B       = ksp->vec_rhs;
-  R       = ksp->work[0];
-  RP      = ksp->work[1];
-  V       = ksp->work[2];
-  T       = ksp->work[3];
-  S       = ksp->work[4];
-  P       = ksp->work[5];
-  S2      = ksp->work[6];
-  P2      = ksp->work[7];
+  X  = ksp->vec_sol;
+  B  = ksp->vec_rhs;
+  R  = ksp->work[0];
+  RP = ksp->work[1];
+  V  = ksp->work[2];
+  T  = ksp->work[3];
+  S  = ksp->work[4];
+  P  = ksp->work[5];
+  S2 = ksp->work[6];
+  P2 = ksp->work[7];
 
   /* Only supports right preconditioning */
   if (ksp->pc_side != PC_RIGHT) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
@@ -87,10 +87,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -102,8 +102,8 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   rhoold   = 1.0;
   alpha    = 1.0;
   omegaold = 1.0;
-  ierr = VecSet(P,0.0);CHKERRQ(ierr);
-  ierr = VecSet(V,0.0);CHKERRQ(ierr);
+  ierr     = VecSet(P,0.0);CHKERRQ(ierr);
+  ierr     = VecSet(V,0.0);CHKERRQ(ierr);
 
   i=0;
   do {
@@ -117,7 +117,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
-    ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);  /* s <- r - alpha v */
+    ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr); /* s <- r - alpha v */
 
     ierr = PCApply(pc,S,S2);CHKERRQ(ierr); /* s2 <- K s */
     ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
@@ -135,15 +135,15 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ierr        = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dp);
       ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
     }
     omega = d1 / d2; /* omega <- (t's) / (t't) */
-    ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2);CHKERRQ(ierr); /* x <- alpha * p2 + omega * s2 + x */
+    ierr  = VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2);CHKERRQ(ierr); /* x <- alpha * p2 + omega * s2 + x */
 
-    ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr); /* r <- s - omega t */
+    ierr = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);  /* r <- s - omega t */
     if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
@@ -154,7 +154,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -166,9 +166,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     i++;
   } while (i<ksp->max_it);
 
-  if (i >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
+  if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
@@ -194,15 +192,16 @@ PetscErrorCode  KSPCreate_FBCGS(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_BCGS,&bcgs);CHKERRQ(ierr);
-  ksp->data                 = bcgs;
-  ksp->ops->setup           = KSPSetUp_FBCGS;
-  ksp->ops->solve           = KSPSolve_FBCGS;
-  ksp->ops->destroy         = KSPDestroy_BCGS;
-  ksp->ops->reset           = KSPReset_BCGS;
-  ksp->ops->buildsolution   = KSPBuildSolution_FBCGS;
-  ksp->ops->buildresidual   = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
-  ksp->pc_side              = PC_RIGHT; /* set default PC side */
+
+  ksp->data                = bcgs;
+  ksp->ops->setup          = KSPSetUp_FBCGS;
+  ksp->ops->solve          = KSPSolve_FBCGS;
+  ksp->ops->destroy        = KSPDestroy_BCGS;
+  ksp->ops->reset          = KSPReset_BCGS;
+  ksp->ops->buildsolution  = KSPBuildSolution_FBCGS;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
+  ksp->pc_side             = PC_RIGHT;  /* set default PC side */
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);

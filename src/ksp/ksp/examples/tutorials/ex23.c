@@ -31,7 +31,7 @@ int main(int argc,char **args)
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,12 +87,12 @@ int main(int argc,char **args)
 
   if (!rstart) {
     rstart = 1;
-    i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    i      = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+    ierr   = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
   if (rend == n) {
     rend = n-1;
-    i = n-1; col[0] = n-2; col[1] = n-1; value[0] = -1.0; value[1] = 2.0;
+    i    = n-1; col[0] = n-2; col[1] = n-1; value[0] = -1.0; value[1] = 2.0;
     ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -100,7 +100,7 @@ int main(int argc,char **args)
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=rstart; i<rend; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* Assemble the matrix */

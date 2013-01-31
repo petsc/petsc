@@ -19,7 +19,7 @@ typedef struct {
   PetscReal radius;
   PetscReal norm_d;
   PetscReal o_fcn;
-  PetscInt dtype;
+  PetscInt  dtype;
 } KSP_NASH;
 
 #endif

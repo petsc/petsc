@@ -39,12 +39,12 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      nrm;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   user.k = 1;
   user.e = .99;
-  ierr = PetscOptionsGetInt(0,"-k",&user.k,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(0,"-k",&user.k,0);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-3,1,1,0,&da);CHKERRQ(ierr);
@@ -116,12 +116,12 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void
       v[0] = 2.0;
       ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {
-       xlow  = h*(PetscReal)i - .5*h;
-       xhigh = xlow + h;
-       v[0] = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow))/h;col[0].i = i-1;
-       v[1] = (2.0 + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow) + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[1].i = row.i;
-       v[2] = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[2].i = i+1;
-      ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      xlow  = h*(PetscReal)i - .5*h;
+      xhigh = xlow + h;
+      v[0]  = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow))/h;col[0].i = i-1;
+      v[1]  = (2.0 + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow) + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[1].i = row.i;
+      v[2]  = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[2].i = i+1;
+      ierr  = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

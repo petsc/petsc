@@ -2,9 +2,9 @@
 #include <petsc-private/kspimpl.h>
 
 typedef struct {
-  KSP kspest;                   /* KSP capable of estimating eigenvalues */
-  KSP kspcheap;                 /* Cheap smoother (should have few dot products) */
-  PC  pcnone;                   /* Dummy PC to drop in so PCSetFromOptions doesn't get called extra times */
+  KSP       kspest;             /* KSP capable of estimating eigenvalues */
+  KSP       kspcheap;           /* Cheap smoother (should have few dot products) */
+  PC        pcnone;             /* Dummy PC to drop in so PCSetFromOptions doesn't get called extra times */
   PetscReal min,max;            /* Singular value estimates */
   PetscReal radius;             /* Spectral radius of 1-B where B is the preconditioned operator */
   PetscBool current;            /* Eigenvalue estimates are current */
@@ -28,7 +28,8 @@ static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
   ierr = KSPSetInitialGuessNonzero(spec->kspcheap,nonzero);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(spec->kspest,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetUp(spec->kspest);CHKERRQ(ierr);
-  spec->current    = PETSC_FALSE;
+
+  spec->current = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -71,11 +72,13 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
       rad = PetscMax(rad,PetscRealPart(PetscSqrtScalar((PetscScalar)(PetscSqr(real[i]-1.) + PetscSqr(imag[i])))));
     }
     ierr = PetscFree2(real,imag);CHKERRQ(ierr);
+
     spec->radius = rad;
 
     ierr = KSPChebyshevSetEigenvalues(spec->kspcheap,spec->max*spec->maxfactor,spec->min*spec->minfactor);CHKERRQ(ierr);
     ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);CHKERRQ(ierr);
     ierr = PetscInfo3(ksp,"Estimated singular value min=%G max=%G, spectral radius=%G",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
+
     spec->current = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -125,9 +128,9 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
   ierr = KSPSetPC(spec->kspest,spec->pcnone);CHKERRQ(ierr);
   ierr = KSPSetPC(spec->kspcheap,spec->pcnone);CHKERRQ(ierr);
 
-  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspecest_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspecest_",((PetscObject)ksp)->prefix ? ((PetscObject)ksp)->prefix : "");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspest,prefix);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspeccheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspeccheap_",((PetscObject)ksp)->prefix ? ((PetscObject)ksp)->prefix : "");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspcheap,prefix);CHKERRQ(ierr);
 
   if (!((PetscObject)spec->kspest)->type_name) {
@@ -200,17 +203,17 @@ PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
 
   ierr = PetscNewLog(ksp,KSP_SpecEst,&spec);CHKERRQ(ierr);
 
-  ksp->data                      = (void*)spec;
-  ksp->ops->setup                = KSPSetUp_SpecEst;
-  ksp->ops->solve                = KSPSolve_SpecEst;
-  ksp->ops->destroy              = KSPDestroy_SpecEst;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_SpecEst;
-  ksp->ops->view                 = KSPView_SpecEst;
+  ksp->data                = (void*)spec;
+  ksp->ops->setup          = KSPSetUp_SpecEst;
+  ksp->ops->solve          = KSPSolve_SpecEst;
+  ksp->ops->destroy        = KSPDestroy_SpecEst;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions = KSPSetFromOptions_SpecEst;
+  ksp->ops->view           = KSPView_SpecEst;
 
-  spec->minfactor = 0.9;
-  spec->maxfactor = 1.1;
+  spec->minfactor  = 0.9;
+  spec->maxfactor  = 1.1;
   spec->richfactor = 1.0;
 
   ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspest);CHKERRQ(ierr);

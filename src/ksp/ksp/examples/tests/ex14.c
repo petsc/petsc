@@ -64,11 +64,11 @@ T*/
    ComputeFunction().
 */
 typedef struct {
-   PetscReal   param;          /* test problem parameter */
-   PetscInt    mx,my;          /* discretization in x,y directions */
-   Vec         localX,localF; /* ghosted local vector */
-   DM          da;             /* distributed array data structure */
-   PetscInt    rank;           /* processor rank */
+  PetscReal param;             /* test problem parameter */
+  PetscInt  mx,my;             /* discretization in x,y directions */
+  Vec       localX,localF;    /* ghosted local vector */
+  DM        da;                /* distributed array data structure */
+  PetscInt  rank;              /* processor rank */
 } AppCtx;
 
 /*
@@ -94,18 +94,18 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   /* --------------- Data to define nonlinear solver -------------- */
-  PetscReal      rtol = 1.e-8;        /* relative convergence tolerance */
-  PetscReal      xtol = 1.e-8;        /* step convergence tolerance */
-  PetscReal      ttol;                /* convergence tolerance */
-  PetscReal      fnorm,ynorm,xnorm; /* various vector norms */
-  PetscInt       max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
-  PetscInt       max_functions = 50;  /* maximum number of function evaluations */
-  PetscInt       lin_its;             /* number of linear solver iterations for each step */
-  PetscInt       i;                   /* nonlinear solve iteration number */
-  MatStructure   mat_flag;        /* flag indicating structure of preconditioner matrix */
-  PetscBool      no_output = PETSC_FALSE;           /* flag indicating whether to surpress output */
+  PetscReal    rtol = 1.e-8;          /* relative convergence tolerance */
+  PetscReal    xtol = 1.e-8;          /* step convergence tolerance */
+  PetscReal    ttol;                  /* convergence tolerance */
+  PetscReal    fnorm,ynorm,xnorm;     /* various vector norms */
+  PetscInt     max_nonlin_its = 10;   /* maximum number of iterations for nonlinear solver */
+  PetscInt     max_functions  = 50;   /* maximum number of function evaluations */
+  PetscInt     lin_its;               /* number of linear solver iterations for each step */
+  PetscInt     i;                     /* nonlinear solve iteration number */
+  MatStructure mat_flag;              /* flag indicating structure of preconditioner matrix */
+  PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-no_output",&no_output,PETSC_NULL);CHKERRQ(ierr);
@@ -114,6 +114,7 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
@@ -134,7 +135,7 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
+  Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
@@ -252,13 +253,13 @@ int main(int argc,char **argv)
      */
     if (fnorm <= ttol) {
       if (!no_output) {
-         ierr = PetscPrintf(comm,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
       }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
       if (!no_output) {
-         ierr = PetscPrintf(comm,"Converged due to small update length: %G < %G * %G\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to small update length: %G < %G * %G\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
       }
       break;
     }
@@ -299,13 +300,13 @@ int main(int argc,char **argv)
  */
 PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  PetscInt     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
-  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy;
-  PetscScalar  *x;
-  Vec          localX = user->localX;
+  PetscInt    i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  PetscReal   one = 1.0,lambda,temp1,temp,hx,hy;
+  PetscScalar *x;
+  Vec         localX = user->localX;
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
+  mx    = user->mx;            my = user->my;            lambda = user->param;
+  hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   temp1 = lambda/(lambda + one);
 
   /*
@@ -411,9 +412,9 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
+      u      = x[row];
+      uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
+      uyy    = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
       f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }

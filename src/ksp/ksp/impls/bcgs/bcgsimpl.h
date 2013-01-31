@@ -9,7 +9,7 @@
 #include <petsc-private/kspimpl.h>        /*I "petscksp.h" I*/
 
 typedef struct {
-  Vec  guess;  /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */
+  Vec guess;   /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */
 } KSP_BCGS;
 
 extern PetscErrorCode KSPSetFromOptions_BCGS(KSP);

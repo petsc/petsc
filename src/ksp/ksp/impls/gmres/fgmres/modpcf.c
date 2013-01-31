@@ -38,7 +38,7 @@
 .seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
 
 @*/
-PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void* ctx,PetscErrorCode (*d)(void*))
+PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void *ctx,PetscErrorCode (*d)(void*))
 {
   PetscErrorCode ierr;
 
@@ -74,7 +74,7 @@ You can use this as a template!
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
-PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void* dummy)
+PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -126,11 +126,8 @@ PetscErrorCode  KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
     ierr = KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
-    if (!loc_its) {
-      rtol = .1;
-    } else {
-      rtol *= .9;
-    }
+    if (!loc_its) rtol = .1;
+    else rtol *= .9;
     ierr = KSPSetTolerances(sub_ksp,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
