@@ -1210,7 +1210,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
    Perhaps some impls can have a well-defined decomposition before DMSetUp?
    This, however, follows the general principle that accessors are not well-behaved until the object is set up.
    */
-  if(!dm->setupcalled) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Decomposition defined only after DMSetUp");
+  if (!dm->setupcalled) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Decomposition defined only after DMSetUp");
   if (!dm->ops->createfielddecomposition) {
     PetscSection section;
     PetscInt     numFields, f;
@@ -1356,7 +1356,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
    Perhaps some impls can have a well-defined decomposition before DMSetUp?
    This, however, follows the general principle that accessors are not well-behaved until the object is set up.
    */
-  if(!dm->setupcalled) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Decomposition defined only after DMSetUp");
+  if (!dm->setupcalled) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Decomposition defined only after DMSetUp");
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
     /* copy subdomain hooks and context over to the subdomain DMs */
