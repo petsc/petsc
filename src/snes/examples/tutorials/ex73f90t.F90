@@ -296,6 +296,8 @@
 
       call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr)
 
+      call SNESSetDM(mysnes,solver%da,ierr)
+
       call SNESSetApplicationContext(mysnes,solver,ierr)
 
 !  Set function evaluation routine and vector

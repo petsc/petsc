@@ -925,7 +925,7 @@ runex58_2:
 	   ${DIFF} output/ex58_2.out ex58.tmp || echo  ${PWD} "\nPossible problem with ex58_2, diffs above \n========================================="; \
 	   ${RM} -f ex58.tmp
 runex73f90t:
-	-@${MPIEXEC} -n 1 ./ex73f90t -par 0.0 -snes_converged_reason -snes_monitor_short -da_grid_x 10 -da_grid_y 10 -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_block_size 2
+	-@${MPIEXEC} -n 1 ./ex73f90t -par 0.0 -snes_converged_reason -snes_monitor_short -da_grid_x 10 -da_grid_y 10 -snes_view -ksp_monitor -pc_type fieldsplit
 #-pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -fieldsplit_phi_ksp_type preonly -fieldsplit_phi_pc_type lu -fieldsplit_lam_ksp_type preonly -fieldsplit_lam_pc_type jacobi
 
 
