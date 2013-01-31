@@ -1205,6 +1205,12 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   if (namelist) {PetscValidPointer(namelist,3); *namelist = 0;}
   if (islist)   {PetscValidPointer(islist,4);   *islist   = 0;}
   if (dmlist)   {PetscValidPointer(dmlist,5);   *dmlist   = 0;}
+  /*
+   Is it a good idea to apply the following check across all impls?
+   Perhaps some impls can have a well-defined decomposition before DMSetUp?
+   This, however, follows the general principle that accessors are not well-behaved until the object is set up.
+   */
+  if(!dm->setupcalled) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Decomposition defined only after DMSetUp");
   if (!dm->ops->createfielddecomposition) {
     PetscSection section;
     PetscInt     numFields, f;
@@ -1345,6 +1351,12 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = PETSC_NULL;}
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
+  /*
+   Is it a good idea to apply the following check across all impls?
+   Perhaps some impls can have a well-defined decomposition before DMSetUp?
+   This, however, follows the general principle that accessors are not well-behaved until the object is set up.
+   */
+  if(!dm->setupcalled) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Decomposition defined only after DMSetUp");
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
     /* copy subdomain hooks and context over to the subdomain DMs */
