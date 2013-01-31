@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -113,7 +113,7 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = VecSum(X,&sum);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",t,sum*user->dx*user->dy);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",(double)t,(double)(sum*user->dx*user->dy));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

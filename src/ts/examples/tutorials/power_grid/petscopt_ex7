@@ -14,9 +14,9 @@
 -t0 0.0
 -tmax 4.0
 -xmin -1
--xmax 10
--ymin -1
--ymax 10
+-xmax 2
+-ymin -.5
+-ymax 2.5
 -da_grid_x 110
 -da_grid_y 110
 

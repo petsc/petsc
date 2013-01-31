@@ -2969,6 +2969,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_TSMonitorDrawCtx,ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
 
   (*ctx)->showinitial = PETSC_FALSE;
   (*ctx)->howoften    = howoften;

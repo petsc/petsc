@@ -414,6 +414,26 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerSetFromOptions_Draw"
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v)
+{
+  PetscErrorCode ierr;
+  PetscReal      bounds[16];
+  PetscInt       nbounds = 16;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("Draw PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-draw_bounds","Bounds to put on plots axis","PetscViewerDrawSetBounds",bounds,&nbounds,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerDrawSetBounds(v,nbounds/2,bounds);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Draw"
@@ -429,6 +449,7 @@ PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
 
   viewer->ops->flush            = PetscViewerFlush_Draw;
   viewer->ops->destroy          = PetscViewerDestroy_Draw;
+  viewer->ops->setfromoptions   = PetscViewerSetFromOptions_Draw;
   viewer->ops->getsingleton     = PetscViewerGetSingleton_Draw;
   viewer->ops->restoresingleton = PetscViewerRestoreSingleton_Draw;
   viewer->format                = PETSC_VIEWER_NOFORMAT;
@@ -695,6 +716,10 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 +   viewer - the PetscViewer (created with PetscViewerDrawOpen())
 .   nbounds - number of plots that can be made with this viewer, for example the dof passed to DMDACreate()
 -   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+
+
+    Options Database:
+.   -draw_bounds  minF0,maxF0,minF1,maxF1
 
     Level: intermediate
 
