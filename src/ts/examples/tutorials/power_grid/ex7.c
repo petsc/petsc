@@ -159,10 +159,12 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 #define __FUNCT__ "adv1"
 PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt M,PetscScalar *p1,AppCtx *user)
 {
-  PetscScalar f;
+  PetscScalar f,fpos,fneg;
   PetscFunctionBegin;
   f   =  (y - user->ws);
-  *p1 = f*(p[j][i+1] - p[j][i-1])/(2*user->dx);
+  fpos = PetscMax(f,0);
+  fneg = PetscMin(f,0);
+  *p1 = fpos*(p[j][i] - p[j][i-1])/user->dx + fneg*(p[j][i+1] - p[j][i])/user->dx;
   PetscFunctionReturn(0);
 }
 
@@ -171,10 +173,12 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
 #define __FUNCT__ "adv2"
 PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt N,PetscScalar *p2,AppCtx *user)
 {
-  PetscScalar f;
+  PetscScalar f,fpos,fneg;
   PetscFunctionBegin;
   f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x));
-  *p2 = f*(p[j+1][i] - p[j-1][i])/(2*user->dy);
+  fpos = PetscMax(f,0);
+  fneg = PetscMin(f,0);
+  *p2 = fpos*(p[j][i] - p[j-1][i])/user->dy + fneg*(p[j+1][i] - p[j][i])/user->dy;
   PetscFunctionReturn(0);
 }
 
@@ -255,7 +259,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
   Vec            gc;
   PetscScalar    val[5],xi,yi;
   MatStencil     row,col[5];
-  PetscScalar    c1,c3,c5;
+  PetscScalar    c1,c3,c5,c1pos,c1neg,c3pos,c3neg;
 
   PetscFunctionBeginUser;
   *flg = SAME_NONZERO_PATTERN;
@@ -268,19 +272,20 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
       PetscInt nc = 0;
-      PetscScalar fthetac,fwc;
       xi = coors[j][i].x; yi = coors[j][i].y;
       row.i = i; row.j = j;
-      fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(xi));
-      fwc     = (yi*yi/2.0 - user->ws*yi);
-      c1        = (yi-user->ws)/(2*user->dx);
-      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
+      c1        = (yi-user->ws)/user->dx;
+      c1pos    = PetscMax(c1,0);
+      c1neg    = PetscMin(c1,0);
+      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/user->dy;
+      c3pos    = PetscMax(c3,0);
+      c3neg    = PetscMin(c3,0);
       c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
-      col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
-      col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1;
-      col[nc].i = i;   col[nc].j = j-1; val[nc++] = c3 + c5;
-      col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c3 + c5;
-      col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c5 -a;
+      col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1pos;
+      col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1neg;
+      col[nc].i = i;   col[nc].j = j-1; val[nc++] = c3pos + c5;
+      col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c3neg + c5;
+      col[nc].i = i;   col[nc].j = j;   val[nc++] = -c1pos + c1neg -c3pos + c3neg -2*c5 -a;
       ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
