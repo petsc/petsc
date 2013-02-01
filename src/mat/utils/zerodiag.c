@@ -80,12 +80,14 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
   row  = ((IS_General*)ris->data)->idx;
   col  = ((IS_General*)cis->data)->idx;
   ierr = ISInvertPermutation(cis,PETSC_DECIDE,&icis);CHKERRQ(ierr);
-  icol  = ((IS_General*)icis->data)->idx;
+  icol = ((IS_General*)icis->data)->idx;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
   for (prow=0; prow<n; prow++) {
     ierr = MatGetRow_SeqAIJ(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
-    for (k=0; k<nz; k++) {if (icol[j[k]] == prow) break;}
+    for (k=0; k<nz; k++) {
+      if (icol[j[k]] == prow) break;
+    }
     if (k >= nz || PetscAbsScalar(v[k]) <= abstol) {
       /* Element too small or zero; find the best candidate */
       repla = (k >= nz) ? 0.0 : PetscAbsScalar(v[k]);
@@ -95,7 +97,7 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
       for (k=0; k<nz; k++) {
         if (icol[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
           /* found a suitable later column */
-          repl  = icol[j[k]];
+          repl = icol[j[k]];
           SWAP(icol[col[prow]],icol[col[repl]]);
           SWAP(col[prow],col[repl]);
           goto found;
@@ -109,7 +111,7 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
       for (k=0; k<nz; k++) {
         if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
           /* See if this one will work */
-          repl  = icol[j[k]];
+          repl = icol[j[k]];
           ierr = MatGetRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
           for (kk=0; kk<nnz; kk++) {
             if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > abstol) {
@@ -138,7 +140,7 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
         ierr = MatRestoreRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
       }
 
-      found:;
+found:;
     }
     ierr = MatRestoreRow_SeqAIJ(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
   }

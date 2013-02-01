@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   Vec              local,global;
   PetscScalar      value;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx    = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   PetscScalar      *lv;
 
@@ -36,15 +36,15 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
   value = -3.0;
-  ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr  = VecSet(global,value);CHKERRQ(ierr);
+  ierr  = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr  = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   ierr = DMDASetElementType(da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
   ierr = DMDAGetElements(da,&ne,&nc,&e);CHKERRQ(ierr);
   ierr = VecGetArray(local,&lv);CHKERRQ(ierr);
   for (i=0; i<ne; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);
+    ierr       = PetscPrintf(PETSC_COMM_WORLD,"i %D e[3*i] %D %D %D\n",i,e[3*i],e[3*i+1],e[3*i+2]);
     lv[e[3*i]] = i;
   }
   ierr = VecRestoreArray(local,&lv);CHKERRQ(ierr);

@@ -185,7 +185,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   }
 
   start[0] = 0;
-  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];}
+  for (i=1; i<size; i++) start[i] = start[i-1] + nprocs[2*i-2];
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
       /* send my request to others */

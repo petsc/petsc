@@ -41,8 +41,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEnd();
 
   options->patchSize.i = options->patchSize.j = options->patchSize.k = 1;
-  options->commSize.i = options->commSize.j = options->commSize.k = 1;
-  options->gridSize.i = options->gridSize.j = options->gridSize.k = 1;
+  options->commSize.i  = options->commSize.j  = options->commSize.k = 1;
+  options->gridSize.i  = options->gridSize.j  = options->gridSize.k = 1;
   if (options->dim > 0) {options->patchSize.i = patchSize; options->commSize.i = commSize; options->gridSize.i = gridSize;}
   if (options->dim > 1) {options->patchSize.j = patchSize; options->commSize.j = commSize; options->gridSize.j = gridSize;}
   if (options->dim > 2) {options->patchSize.k = patchSize; options->commSize.k = commSize; options->gridSize.k = gridSize;}

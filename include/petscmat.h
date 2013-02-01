@@ -1811,13 +1811,14 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
-    matrices.
+    matrices. Requires the txpetscgpu package to use. Configure with 
+    --download-txpetscgpu to build/install petsc with the txpetscgpu library.
 
     Not Collective
 
-+   MAT_CUSPARSE_CSR : Compressed Sparse Row
-.   MAT_CUSPARSE_ELL : Ellpack
--   MAT_CUSPARSE_HYB : Hybrid, a combination of Ellpack and Coordinate format.
++   MAT_CUSPARSE_CSR - Compressed Sparse Row
+.   MAT_CUSPARSE_ELL - Ellpack
+-   MAT_CUSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format.
 
     Level: intermediate
 
@@ -1833,15 +1834,17 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
 /*E
     MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU)
-    matrices whose operation should use a particular storage format.
+    matrices whose operation should use a particular storage format. Requires
+    the txpetscgpu package to use. Configure with --download-txpetscgpu to 
+    build/install petsc with the txpetscgpu library.
 
     Not Collective
 
-+   MAT_CUSPARSE_MULT_DIAG : sets the storage format for the diagonal matrix in the parallel MatMult
-.   MAT_CUSPARSE_MULT_OFFDIAG : sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   MAT_CUSPARSE_MULT : sets the storage format for the entire matrix in the serial (single GPU) MatMult
-.   MAT_CUSPARSE_SOLVE : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
--   MAT_CUSPARSE_ALL : sets the storage format for all CUSPARSE (GPU) matrices
++   MAT_CUSPARSE_MULT_DIAG - sets the storage format for the diagonal matrix in the parallel MatMult
+.   MAT_CUSPARSE_MULT_OFFDIAG - sets the storage format for the offdiagonal matrix in the parallel MatMult
+.   MAT_CUSPARSE_MULT - sets the storage format for the entire matrix in the serial (single GPU) MatMult
+.   MAT_CUSPARSE_SOLVE - sets the storage format for the triangular factors in the serial (single GPU) MatSolve
+-   MAT_CUSPARSE_ALL - sets the storage format for all CUSPARSE (GPU) matrices
 
     Level: intermediate
 
@@ -1861,13 +1864,14 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt
 
 /*E
     MatCUSPStorageFormat - indicates the storage format for CUSP (GPU)
-    matrices.
+    matrices. Requires the txpetscgpu package to use. Configure with 
+    --download-txpetscgpu to build/install petsc with the txpetscgpu library.
 
     Not Collective
 
-+   MAT_CUSP_CSR : Compressed Sparse Row
-.   MAT_CUSP_DIA : Diagonal
--   MAT_CUSP_ELL : Ellpack
++   MAT_CUSP_CSR - Compressed Sparse Row
+.   MAT_CUSP_DIA - Diagonal
+-   MAT_CUSP_ELL - Ellpack
 
     Level: intermediate
 
@@ -1882,15 +1886,17 @@ PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
 /*E
     MatCUSPFormatOperation - indicates the operation of CUSP (GPU)
-    matrices whose operation should use a particular storage format.
+    matrices whose operation should use a particular storage format. Requires
+    the txpetscgpu package to use. Configure with --download-txpetscgpu to 
+    build/install petsc with the txpetscgpu library.
 
     Not Collective
 
-+   MAT_CUSP_MULT_DIAG : sets the storage format for the diagonal matrix in the parallel MatMult
-.   MAT_CUSP_MULT_OFFDIAG : sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   MAT_CUSP_MULT : sets the storage format for the entire matrix in the serial (single GPU) MatMult
-.   MAT_CUSP_SOLVE : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
--   MAT_CUSP_ALL : sets the storage format for all CUSP (GPU) matrices
++   MAT_CUSP_MULT_DIAG - sets the storage format for the diagonal matrix in the parallel MatMult
+.   MAT_CUSP_MULT_OFFDIAG - sets the storage format for the offdiagonal matrix in the parallel MatMult
+.   MAT_CUSP_MULT - sets the storage format for the entire matrix in the serial (single GPU) MatMult
+.   MAT_CUSP_SOLVE - sets the storage format for the triangular factors in the serial (single GPU) MatSolve
+-   MAT_CUSP_ALL - sets the storage format for all CUSP (GPU) matrices
 
     Level: intermediate
 

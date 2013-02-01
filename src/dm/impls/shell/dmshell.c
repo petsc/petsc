@@ -46,7 +46,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
-    *J = A;
+    *J   = A;
   } else {                      /* Need to create a copy, could use MAT_SHARE_NONZERO_PATTERN in most cases */
     ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,J);CHKERRQ(ierr);
     ierr = MatZeroEntries(*J);CHKERRQ(ierr);
@@ -66,11 +66,11 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
-  X = shell->Xglobal;
+  X     = shell->Xglobal;
   if (!X) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
   if (((PetscObject)X)->refct < 2) { /* We have an exclusive reference so we can give it out */
-    ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
-    ierr = VecZeroEntries(X);CHKERRQ(ierr);
+    ierr  = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
+    ierr  = VecZeroEntries(X);CHKERRQ(ierr);
     *gvec = X;
   } else {                      /* Need to create a copy, could use MAT_SHARE_NONZERO_PATTERN in most cases */
     ierr = VecDuplicate(X,gvec);CHKERRQ(ierr);
@@ -92,11 +92,11 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
-  X = shell->Xlocal;
+  X     = shell->Xlocal;
   if (!X) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
   if (((PetscObject)X)->refct < 2) { /* We have an exclusive reference so we can give it out */
-    ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
-    ierr = VecZeroEntries(X);CHKERRQ(ierr);
+    ierr  = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
+    ierr  = VecZeroEntries(X);CHKERRQ(ierr);
     *gvec = X;
   } else {                      /* Need to create a copy, could use MAT_SHARE_NONZERO_PATTERN in most cases */
     ierr = VecDuplicate(X,gvec);CHKERRQ(ierr);
@@ -123,17 +123,17 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
 @*/
 PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
 {
-  DM_Shell *shell = (DM_Shell*)dm->data;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
-  PetscBool isshell;
+  PetscBool      isshell;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(J,MAT_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
-  ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
-  ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
+  ierr     = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+  ierr     = MatDestroy(&shell->A);CHKERRQ(ierr);
   shell->A = J;
   PetscFunctionReturn(0);
 }
@@ -179,17 +179,17 @@ PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,MatType,Ma
 @*/
 PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
 {
-  DM_Shell *shell = (DM_Shell*)dm->data;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
-  PetscBool isshell;
+  PetscBool      isshell;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
-  ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
-  ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
+  ierr           = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
+  ierr           = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
   shell->Xglobal = X;
   PetscFunctionReturn(0);
 }
@@ -235,9 +235,9 @@ PetscErrorCode DMShellSetCreateGlobalVector(DM dm,PetscErrorCode (*func)(DM,Vec*
 @*/
 PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
 {
-  DM_Shell *shell = (DM_Shell*)dm->data;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
-  PetscBool isshell;
+  PetscBool      isshell;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -320,13 +320,14 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
 PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
 {
   PetscErrorCode ierr;
-  DM_Shell      *shell;
+  DM_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(dm,DM_Shell,&shell);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,DM_Shell,&shell);CHKERRQ(ierr);
   dm->data = shell;
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);
+
   dm->ops->destroy            = DMDestroy_Shell;
   dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
   dm->ops->createlocalvector  = DMCreateLocalVector_Shell;

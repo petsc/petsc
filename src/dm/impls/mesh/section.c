@@ -3,11 +3,11 @@
 
 /* Logging support */
 PetscClassId  SECTIONREAL_CLASSID;
-PetscLogEvent  SectionReal_View;
+PetscLogEvent SectionReal_View;
 PetscClassId  SECTIONINT_CLASSID;
-PetscLogEvent  SectionInt_View;
+PetscLogEvent SectionInt_View;
 PetscClassId  SECTIONPAIR_CLASSID;
-PetscLogEvent  SectionPair_View;
+PetscLogEvent SectionPair_View;
 
 #undef __FUNCT__
 #define __FUNCT__ "SectionRealView_Sieve"
@@ -257,9 +257,10 @@ PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
   *section = PETSC_NULL;
 
   ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_CLASSID,0,"SectionReal","Section","DM",comm,SectionRealDestroy,0);CHKERRQ(ierr);
-  s->ops->view     = SectionRealView_Sieve;
+
+  s->ops->view            = SectionRealView_Sieve;
   s->ops->restrictClosure = SectionRealRestrict;
-  s->ops->update   = SectionRealUpdate;
+  s->ops->update          = SectionRealUpdate;
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
@@ -317,8 +318,8 @@ PetscErrorCode  SectionRealDestroy(SectionReal *section)
 PetscErrorCode SectionRealDistribute(SectionReal serialSection, DM parallelMesh, SectionReal *parallelSection)
 {
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> oldSection;
-  ALE::Obj<PETSC_MESH_TYPE>               m;
-  PetscErrorCode ierr;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(serialSection, oldSection);CHKERRQ(ierr);
@@ -364,7 +365,7 @@ PetscErrorCode  SectionRealRestrict(SectionReal section, PetscInt point, PetscSc
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidScalarPointer(values,3);
   try {
-    *values = (PetscScalar *) section->s->restrictPoint(point);
+    *values = (PetscScalar*) section->s->restrictPoint(point);
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
@@ -401,9 +402,7 @@ PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const Pet
       section->b->update(section->s, point, values);
     } else if (mode == ADD_VALUES) {
       section->b->updateAdd(section->s, point, values);
-    } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
-    }
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
@@ -433,9 +432,9 @@ PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const Pet
 @*/
 PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt point, const PetscScalar *values[])
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode            ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -476,9 +475,9 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 @*/
 PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt point, PetscInt n, PetscScalar values[])
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode            ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -519,9 +518,9 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 @*/
 PetscErrorCode SectionRealUpdateClosure(SectionReal section, DM dm, PetscInt point, PetscScalar values[], InsertMode mode)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode            ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -534,9 +533,7 @@ PetscErrorCode SectionRealUpdateClosure(SectionReal section, DM dm, PetscInt poi
       m->update(s, point, values);
     } else if (mode == ADD_VALUES) {
       m->updateAdd(s, point, values);
-    } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
-    }
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
@@ -562,7 +559,7 @@ PetscErrorCode SectionRealComplete(SectionReal section)
 {
   Obj<PETSC_MESH_TYPE::real_section_type> s;
   Obj<PETSC_MESH_TYPE>                    b;
-  PetscErrorCode ierr;
+  PetscErrorCode                          ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -592,7 +589,7 @@ PetscErrorCode SectionRealComplete(SectionReal section)
 PetscErrorCode SectionRealZero(SectionReal section)
 {
   Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                          ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -695,11 +692,11 @@ PetscErrorCode  SectionRealSetFiberDimensionField(SectionReal section, PetscInt 
 PetscErrorCode SectionRealGetSize(SectionReal section, PetscInt *size)
 {
   Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                          ierr;
 
   PetscFunctionBegin;
   PetscValidIntPointer(size,2);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr  = SectionRealGetSection(section, s);CHKERRQ(ierr);
   *size = s->size();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -747,7 +744,7 @@ PetscErrorCode  SectionRealAllocate(SectionReal section)
 PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
 {
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -776,7 +773,7 @@ PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
 PetscErrorCode  SectionRealAddSpace(SectionReal section)
 {
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -807,8 +804,8 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
   ALE::Obj<PETSC_MESH_TYPE>                    b;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> t;
-  MPI_Comm       comm;
-  PetscErrorCode ierr;
+  MPI_Comm                                     comm;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) section, &comm);CHKERRQ(ierr);
@@ -936,7 +933,7 @@ PetscErrorCode  SectionRealClear(SectionReal section)
 PetscErrorCode  SectionRealSet(SectionReal section, PetscReal val)
 {
   Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                          ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -971,10 +968,10 @@ $     NORM_INFINITY denotes max_i |x_i|
 @*/
 PetscErrorCode  SectionRealNorm(SectionReal section, DM dm, NormType type, PetscReal *val)
 {
-  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE>                    m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
-  Vec            v;
-  PetscErrorCode ierr;
+  Vec                                     v;
+  PetscErrorCode                          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -1011,11 +1008,11 @@ PetscErrorCode  SectionRealNorm(SectionReal section, DM dm, NormType type, Petsc
 @*/
 PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, SectionReal X)
 {
-  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE>                    m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
   Obj<PETSC_MESH_TYPE::real_section_type> sX;
-  Vec            v, x;
-  PetscErrorCode ierr;
+  Vec                                     v, x;
+  PetscErrorCode                          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
@@ -1058,9 +1055,9 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
 @*/
 PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fiberDim, SectionReal *section)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode      ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1097,9 +1094,9 @@ PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fib
 @*/
 PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiberDim, SectionReal *section)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode      ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1138,12 +1135,12 @@ PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiber
 @*/
 PetscErrorCode DMMeshCreateSectionRealIS(DM dm,IS is,const char name[],PetscInt fiberDim,SectionReal *section)
 {
-  MPI_Comm        comm;
-  PetscSection    s;
-  PetscInt        pStart,pEnd;
+  MPI_Comm       comm;
+  PetscSection   s;
+  PetscInt       pStart,pEnd;
   const PetscInt *points;
-  PetscInt        numpoints,p;
-  PetscErrorCode  ierr;
+  PetscInt       numpoints,p;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm,&comm);CHKERRQ(ierr);
@@ -1185,10 +1182,10 @@ PetscErrorCode DMMeshCreateSectionRealIS(DM dm,IS is,const char name[],PetscInt 
 @*/
 PetscErrorCode DMMeshCreateGlobalRealVector(DM dm, SectionReal section, Vec *gvec)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  const char    *name;
-  PetscErrorCode ierr;
+  const char                                   *name;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1405,16 +1402,17 @@ PetscErrorCode  SectionIntSetBundle(SectionInt section, const ALE::Obj<PETSC_MES
 PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
 {
   PetscErrorCode ierr;
-  SectionInt    s;
+  SectionInt     s;
 
   PetscFunctionBegin;
   PetscValidPointer(section,2);
   *section = PETSC_NULL;
 
   ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_CLASSID,0,"SectionInt","Section","DM",comm,SectionIntDestroy,0);CHKERRQ(ierr);
-  s->ops->view     = SectionIntView_Sieve;
+
+  s->ops->view            = SectionIntView_Sieve;
   s->ops->restrictClosure = SectionIntRestrict;
-  s->ops->update   = SectionIntUpdate;
+  s->ops->update          = SectionIntUpdate;
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
@@ -1472,8 +1470,8 @@ PetscErrorCode  SectionIntDestroy(SectionInt *section)
 PetscErrorCode SectionIntDistribute(SectionInt serialSection, DM parallelMesh, SectionInt *parallelSection)
 {
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> oldSection;
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode      ierr;
+  ALE::Obj<PETSC_MESH_TYPE>                   m;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(serialSection, oldSection);CHKERRQ(ierr);
@@ -1518,7 +1516,7 @@ PetscErrorCode  SectionIntRestrict(SectionInt section, PetscInt point, PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   PetscValidPointer(values,3);
-  *values = (PetscInt *) section->b->restrictClosure(section->s, point);
+  *values = (PetscInt*) section->b->restrictClosure(section->s, point);
   PetscFunctionReturn(0);
 }
 
@@ -1548,9 +1546,7 @@ PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const Petsc
     section->b->update(section->s, point, values);
   } else if (mode == ADD_VALUES) {
     section->b->updateAdd(section->s, point, values);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   PetscFunctionReturn(0);
 }
 
@@ -1578,9 +1574,9 @@ PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const Petsc
 @*/
 PetscErrorCode SectionIntRestrictClosure(SectionInt section, DM dm, PetscInt point, PetscInt n, PetscInt values[])
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                   m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode            ierr;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1613,9 +1609,9 @@ PetscErrorCode SectionIntRestrictClosure(SectionInt section, DM dm, PetscInt poi
 @*/
 PetscErrorCode SectionIntUpdateClosure(SectionInt section, DM dm, PetscInt point, PetscInt values[], InsertMode mode)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                   m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode            ierr;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1624,9 +1620,7 @@ PetscErrorCode SectionIntUpdateClosure(SectionInt section, DM dm, PetscInt point
     m->update(s, point, values);
   } else if (mode == ADD_VALUES) {
     m->updateAdd(s, point, values);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   PetscFunctionReturn(0);
 }
 
@@ -1648,7 +1642,7 @@ PetscErrorCode SectionIntComplete(SectionInt section)
 {
   Obj<PETSC_MESH_TYPE::int_section_type> s;
   Obj<PETSC_MESH_TYPE>                   b;
-  PetscErrorCode ierr;
+  PetscErrorCode                         ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
@@ -1678,7 +1672,7 @@ PetscErrorCode SectionIntComplete(SectionInt section)
 PetscErrorCode SectionIntZero(SectionInt section)
 {
   Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                         ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
@@ -1781,11 +1775,11 @@ PetscErrorCode  SectionIntSetFiberDimensionField(SectionInt section, PetscInt po
 PetscErrorCode SectionIntGetSize(SectionInt section, PetscInt *size)
 {
   Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                         ierr;
 
   PetscFunctionBegin;
   PetscValidIntPointer(size,2);
-  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  ierr  = SectionIntGetSection(section, s);CHKERRQ(ierr);
   *size = s->size();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1852,7 +1846,7 @@ PetscErrorCode  SectionIntClear(SectionInt section)
 PetscErrorCode  SectionIntSet(SectionInt section, PetscInt val)
 {
   Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                         ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
@@ -1877,7 +1871,7 @@ PetscErrorCode  SectionIntSet(SectionInt section, PetscInt val)
 PetscErrorCode  SectionIntAddSpace(SectionInt section)
 {
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode ierr;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
@@ -1908,8 +1902,8 @@ PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field,
   ALE::Obj<PETSC_MESH_TYPE>                   b;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> t;
-  MPI_Comm       comm;
-  PetscErrorCode ierr;
+  MPI_Comm                                    comm;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) section, &comm);CHKERRQ(ierr);
@@ -1943,9 +1937,9 @@ PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field,
 @*/
 PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                   m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode      ierr;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1983,9 +1977,9 @@ PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fibe
 @*/
 PetscErrorCode DMMeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                   m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode      ierr;
+  PetscErrorCode                              ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -2022,9 +2016,9 @@ PetscErrorCode DMMeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberD
 @*/
 PetscErrorCode DMMeshSetupSection(DM dm, SectionReal section)
 {
-  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode      ierr;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);

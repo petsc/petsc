@@ -38,7 +38,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscCheckSameComm(A,1,B,2);
 
 #if defined(PETSC_USE_REAL_SINGLE)
-  tol  = 1.e-5;
+  tol = 1.e-5;
 #endif
   ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     } else {
       ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
-      r1 /= r2;
+      r1  /= r2;
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
@@ -134,7 +134,7 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     } else {
       ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
-      r1 /= r2;
+      r1  /= r2;
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
@@ -205,7 +205,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     } else {
       ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
-      r1 /= r2;
+      r1  /= r2;
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
@@ -277,7 +277,7 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
     } else {
       ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
-      r1 /= r2;
+      r1  /= r2;
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;

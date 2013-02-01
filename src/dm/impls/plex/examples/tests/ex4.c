@@ -48,8 +48,8 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
 {
   Vec            coordinates;
   PetscSection   coordSection;
-  PetscScalar   *coords;
-  PetscInt       numVertices  = 0, numEdges = 0, numCells = 0, cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
+  PetscScalar    *coords;
+  PetscInt       numVertices = 0, numEdges = 0, numCells = 0, cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
   PetscInt       firstVertex, firstEdge, coordSize;
   PetscInt       v, e;
   PetscMPIInt    rank;
@@ -64,9 +64,9 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
     cMax        = 2;
     fMax        = 15;
   }
-  firstVertex  = numCells;
-  firstEdge    = numCells + numVertices;
-  ierr = DMPlexSetChart(dm, 0, numCells+numEdges+numVertices);CHKERRQ(ierr);
+  firstVertex = numCells;
+  firstEdge   = numCells + numVertices;
+  ierr        = DMPlexSetChart(dm, 0, numCells+numEdges+numVertices);CHKERRQ(ierr);
   if (numCells) {
     ierr = DMPlexSetConeSize(dm, 0, 3);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(dm, 1, 3);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim               = user->dim;
   PetscBool      refinementUniform = user->refinementUniform;
   PetscBool      cellSimplex       = user->cellSimplex;
-  const char    *partitioner       = "chaco";
+  const char     *partitioner      = "chaco";
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -203,9 +203,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   case 2:
     if (cellSimplex) {
       ierr = CreateSimplexHybrid_2D(comm, *dm);CHKERRQ(ierr);
-    } else {
-      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for quadrilaterals");
-    }
+    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for quadrilaterals");
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
@@ -237,8 +235,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }

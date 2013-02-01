@@ -6,17 +6,17 @@
 #define __FUNCT__ "DMSetFromOptions_Plex"
 PetscErrorCode  DMSetFromOptions_Plex(DM dm)
 {
-  DM_Plex    *mesh = (DM_Plex *) dm->data;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscOptionsHead("DMPlex Options");CHKERRQ(ierr);
-    /* Handle DMPlex refinement */
-    /* Handle associated vectors */
-    /* Handle viewing */
-    ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, PETSC_NULL);CHKERRQ(ierr);
+  /* Handle DMPlex refinement */
+  /* Handle associated vectors */
+  /* Handle viewing */
+  ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -38,8 +38,8 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
 */
 PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
-  PetscInt       numVertices = (edges[0]+1)*(edges[1]+1);
-  PetscInt       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
+  PetscInt       numVertices    = (edges[0]+1)*(edges[1]+1);
+  PetscInt       numEdges       = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
   PetscInt       markerRight    = 1;
@@ -47,7 +47,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   PetscBool      markerSeparate = PETSC_FALSE;
   Vec            coordinates;
   PetscSection   coordSection;
-  PetscScalar   *coords;
+  PetscScalar    *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
   PetscInt       v, vx, vy;
@@ -72,12 +72,12 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     for (vx = 0; vx <= edges[0]; vx++) {
       for (ey = 0; ey < edges[1]; ey++) {
-        PetscInt edge    = vx*edges[1] + ey + edges[0]*(edges[1]+1);
-        PetscInt vertex  = ey*(edges[0]+1) + vx + numEdges;
+        PetscInt edge   = vx*edges[1] + ey + edges[0]*(edges[1]+1);
+        PetscInt vertex = ey*(edges[0]+1) + vx + numEdges;
         PetscInt cone[2];
-        
+
         cone[0] = vertex; cone[1] = vertex+edges[0]+1;
-        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vx == edges[0]) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
@@ -95,12 +95,12 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
     }
     for (vy = 0; vy <= edges[1]; vy++) {
       for (ex = 0; ex < edges[0]; ex++) {
-        PetscInt edge    = vy*edges[0]     + ex;
-        PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
+        PetscInt edge   = vy*edges[0]     + ex;
+        PetscInt vertex = vy*(edges[0]+1) + ex + numEdges;
         PetscInt cone[2];
-        
+
         cone[0] = vertex; cone[1] = vertex+1;
-        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vy == edges[1]) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscInt       numFaces    = 6;
   Vec            coordinates;
   PetscSection   coordSection;
-  PetscScalar   *coords;
+  PetscScalar    *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
   PetscInt       v, vx, vy, vz;
@@ -187,32 +187,32 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
     { /* Side 0 (Front) */
       PetscInt cone[4];
       cone[0] = numFaces+4; cone[1] = numFaces+5; cone[2] = numFaces+7; cone[3] = numFaces+6;
-      ierr = DMPlexSetCone(dm, 0, cone);CHKERRQ(ierr);
+      ierr    = DMPlexSetCone(dm, 0, cone);CHKERRQ(ierr);
     }
     { /* Side 1 (Back) */
       PetscInt cone[4];
       cone[0] = numFaces+1; cone[1] = numFaces+0; cone[2] = numFaces+2; cone[3] = numFaces+3;
-      ierr = DMPlexSetCone(dm, 1, cone);CHKERRQ(ierr);
+      ierr    = DMPlexSetCone(dm, 1, cone);CHKERRQ(ierr);
     }
     { /* Side 2 (Bottom) */
       PetscInt cone[4];
       cone[0] = numFaces+0; cone[1] = numFaces+1; cone[2] = numFaces+5; cone[3] = numFaces+4;
-      ierr = DMPlexSetCone(dm, 2, cone);CHKERRQ(ierr);
+      ierr    = DMPlexSetCone(dm, 2, cone);CHKERRQ(ierr);
     }
     { /* Side 3 (Top) */
       PetscInt cone[4];
       cone[0] = numFaces+6; cone[1] = numFaces+7; cone[2] = numFaces+3; cone[3] = numFaces+2;
-      ierr = DMPlexSetCone(dm, 3, cone);CHKERRQ(ierr);
+      ierr    = DMPlexSetCone(dm, 3, cone);CHKERRQ(ierr);
     }
     { /* Side 4 (Left) */
       PetscInt cone[4];
       cone[0] = numFaces+0; cone[1] = numFaces+4; cone[2] = numFaces+6; cone[3] = numFaces+2;
-      ierr = DMPlexSetCone(dm, 4, cone);CHKERRQ(ierr);
+      ierr    = DMPlexSetCone(dm, 4, cone);CHKERRQ(ierr);
     }
     { /* Side 5 (Right) */
       PetscInt cone[4];
       cone[0] = numFaces+5; cone[1] = numFaces+1; cone[2] = numFaces+3; cone[3] = numFaces+7;
-      ierr = DMPlexSetCone(dm, 5, cone);CHKERRQ(ierr);
+      ierr    = DMPlexSetCone(dm, 5, cone);CHKERRQ(ierr);
     }
   }
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     const PetscInt firstYEdge   = numFaces + numVertices + numTotXEdges;
     Vec            coordinates;
     PetscSection   coordSection;
-    PetscScalar   *coords;
+    PetscScalar    *coords;
     PetscInt       coordSize;
     PetscInt       v, vx, vy;
     PetscInt       f, fx, fy, e, ex, ey;
@@ -314,22 +314,22 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
         const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
         const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
         const PetscInt ornt[4] = {0,     0,               -2,              -2};
-        PetscInt cone[4];
-        
+        PetscInt       cone[4];
+
         cone[0] = edgeB; cone[1] = edgeL+numYEdges; cone[2] = edgeB+numXEdges; cone[3] = edgeL;
-        ierr = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
-        ierr = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
+        ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
+        ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
       }
     }
     /* Build Y edges*/
     for (vx = 0; vx < numXVertices; vx++) {
       for (ey = 0; ey < numYEdges; ey++) {
-        const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
-        const PetscInt vertex  = firstVertex + ey*numXVertices + vx;
-        PetscInt cone[2];
-        
+        const PetscInt edge   = firstYEdge  + vx*numYEdges + ey;
+        const PetscInt vertex = firstVertex + ey*numXVertices + vx;
+        PetscInt       cone[2];
+
         cone[0] = vertex; cone[1] = vertex+numXVertices;
-        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vx == numXVertices-1) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
@@ -348,12 +348,12 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build X edges*/
     for (vy = 0; vy < numYVertices; vy++) {
       for (ex = 0; ex < numXEdges; ex++) {
-        const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
-        const PetscInt vertex  = firstVertex + vy*numXVertices + ex;
-        PetscInt cone[2];
-        
+        const PetscInt edge   = firstXEdge  + vy*numXEdges + ex;
+        const PetscInt vertex = firstVertex + vy*numXVertices + ex;
+        PetscInt       cone[2];
+
         cone[0] = vertex; cone[1] = vertex+1;
-        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vy == numYVertices-1) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
@@ -493,7 +493,7 @@ static PetscErrorCode DMCreateGlobalVector_Plex(DM dm,Vec *vec)
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector_Section_Private(dm,vec);CHKERRQ(ierr);
   /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
-  ierr = VecSetOperation(*vec, VECOP_VIEW, (void(*)(void)) VecView_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -518,31 +518,32 @@ PetscErrorCode DMInitialize_Plex(DM dm)
 
   PetscFunctionBegin;
   ierr = PetscStrallocpy(VECSTANDARD, (char**)&dm->vectype);CHKERRQ(ierr);
-  dm->ops->view               = DMView_Plex;
-  dm->ops->setfromoptions     = DMSetFromOptions_Plex;
-  dm->ops->setup              = DMSetUp_Plex;
-  dm->ops->createglobalvector = DMCreateGlobalVector_Plex;
-  dm->ops->createlocalvector  = DMCreateLocalVector_Plex;
+
+  dm->ops->view                            = DMView_Plex;
+  dm->ops->setfromoptions                  = DMSetFromOptions_Plex;
+  dm->ops->setup                           = DMSetUp_Plex;
+  dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
+  dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
   dm->ops->createlocaltoglobalmapping      = PETSC_NULL;
   dm->ops->createlocaltoglobalmappingblock = PETSC_NULL;
-  dm->ops->createfieldis      = PETSC_NULL;
-  dm->ops->createcoordinatedm = DMCreateCoordinateDM_Plex;
-  dm->ops->getcoloring        = 0;
-  dm->ops->creatematrix       = DMCreateMatrix_Plex;
-  dm->ops->createinterpolation= 0;
-  dm->ops->getaggregates      = 0;
-  dm->ops->getinjection       = 0;
-  dm->ops->refine             = DMRefine_Plex;
-  dm->ops->coarsen            = 0;
-  dm->ops->refinehierarchy    = 0;
-  dm->ops->coarsenhierarchy   = 0;
-  dm->ops->globaltolocalbegin = PETSC_NULL;
-  dm->ops->globaltolocalend   = PETSC_NULL;
-  dm->ops->localtoglobalbegin = PETSC_NULL;
-  dm->ops->localtoglobalend   = PETSC_NULL;
-  dm->ops->destroy            = DMDestroy_Plex;
-  dm->ops->createsubdm        = DMCreateSubDM_Plex;
-  dm->ops->locatepoints       = DMLocatePoints_Plex;
+  dm->ops->createfieldis                   = PETSC_NULL;
+  dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
+  dm->ops->getcoloring                     = 0;
+  dm->ops->creatematrix                    = DMCreateMatrix_Plex;
+  dm->ops->createinterpolation             = 0;
+  dm->ops->getaggregates                   = 0;
+  dm->ops->getinjection                    = 0;
+  dm->ops->refine                          = DMRefine_Plex;
+  dm->ops->coarsen                         = 0;
+  dm->ops->refinehierarchy                 = 0;
+  dm->ops->coarsenhierarchy                = 0;
+  dm->ops->globaltolocalbegin              = PETSC_NULL;
+  dm->ops->globaltolocalend                = PETSC_NULL;
+  dm->ops->localtoglobalbegin              = PETSC_NULL;
+  dm->ops->localtoglobalend                = PETSC_NULL;
+  dm->ops->destroy                         = DMDestroy_Plex;
+  dm->ops->createsubdm                     = DMCreateSubDM_Plex;
+  dm->ops->locatepoints                    = DMLocatePoints_Plex;
   PetscFunctionReturn(0);
 }
 
@@ -551,50 +552,46 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DMCreate_Plex"
 PetscErrorCode DMCreate_Plex(DM dm)
 {
-  DM_Plex       *mesh;
+  DM_Plex        *mesh;
   PetscInt       unit, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscNewLog(dm, DM_Plex, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm, DM_Plex, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
   mesh->refct             = 1;
   mesh->dim               = 0;
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
+  ierr                    = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
   mesh->maxConeSize       = 0;
   mesh->cones             = PETSC_NULL;
   mesh->coneOrientations  = PETSC_NULL;
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
+  ierr                    = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
   mesh->maxSupportSize    = 0;
   mesh->supports          = PETSC_NULL;
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
 
-  mesh->facesTmp         = PETSC_NULL;
+  mesh->facesTmp = PETSC_NULL;
 
-  mesh->subpointMap      = PETSC_NULL;
+  mesh->subpointMap = PETSC_NULL;
 
-  for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) {
-    mesh->scale[unit]    = 1.0;
-  }
+  for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
-  mesh->labels               = PETSC_NULL;
-  mesh->globalVertexNumbers  = PETSC_NULL;
-  mesh->globalCellNumbers    = PETSC_NULL;
-  for (d = 0; d < 8; ++d) {
-    mesh->hybridPointMax[d]  = PETSC_DETERMINE;
-  }
-  mesh->vtkCellHeight        = 0;
-  mesh->preallocCenterDim    = -1;
+  mesh->labels              = PETSC_NULL;
+  mesh->globalVertexNumbers = PETSC_NULL;
+  mesh->globalCellNumbers   = PETSC_NULL;
+  for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
+  mesh->vtkCellHeight     = 0;
+  mesh->preallocCenterDim = -1;
 
   mesh->integrateResidualFEM       = PETSC_NULL;
   mesh->integrateJacobianActionFEM = PETSC_NULL;
   mesh->integrateJacobianFEM       = PETSC_NULL;
 
-  mesh->printSetValues       = PETSC_FALSE;
-  mesh->printFEM             = 0;
+  mesh->printSetValues = PETSC_FALSE;
+  mesh->printFEM       = 0;
 
   ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -648,23 +645,23 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 @*/
 PetscErrorCode DMPlexClone(DM dm, DM *newdm)
 {
-  DM_Plex    *mesh;
-  void          *ctx;
+  DM_Plex        *mesh;
+  void           *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
-  ierr = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&(*newdm)->sf);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) dm->sf);CHKERRQ(ierr);
+  ierr         = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
+  ierr         = PetscSFDestroy(&(*newdm)->sf);CHKERRQ(ierr);
+  ierr         = PetscObjectReference((PetscObject) dm->sf);CHKERRQ(ierr);
   (*newdm)->sf = dm->sf;
-  mesh = (DM_Plex *) dm->data;
+  mesh         = (DM_Plex*) dm->data;
   mesh->refct++;
   (*newdm)->data = mesh;
-  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMInitialize_Plex(*newdm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  ierr           = PetscObjectChangeTypeName((PetscObject) *newdm, DMPLEX);CHKERRQ(ierr);
+  ierr           = DMInitialize_Plex(*newdm);CHKERRQ(ierr);
+  ierr           = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  ierr           = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

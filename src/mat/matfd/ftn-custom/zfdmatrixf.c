@@ -45,14 +45,16 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (void*) f;
-  (*fd)->ftn_func_cntx = ctx;
+  (*fd)->ftn_func_cntx    = ctx;
+
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionts,*fd);
 }
 
 void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (void*) f;
-  (*fd)->ftn_func_cntx = ctx;
+  (*fd)->ftn_func_cntx    = ctx;
+
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,*fd);
 }
 

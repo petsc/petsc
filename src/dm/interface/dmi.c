@@ -7,25 +7,25 @@ extern PetscErrorCode VecView_MPI(Vec, PetscViewer);
 #define __FUNCT__ "DMCreateGlobalVector_Section_Private"
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 {
+  PetscSection   gSection;
+  PetscInt       localSize, blockSize = -1, pStart, pEnd, p;
   PetscErrorCode ierr;
-  PetscSection gSection;
-  PetscInt     localSize, blockSize = -1, pStart, pEnd, p;
 
   PetscFunctionBegin;
   ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(dm->defaultSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(gSection, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof;
 
-    ierr = PetscSectionGetDof(dm->defaultSection, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(dm->defaultSection, p, &cdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(gSection, p, &cdof);CHKERRQ(ierr);
     if ((blockSize < 0) && (dof > 0)) blockSize = dof-cdof;
     if ((dof > 0) && (dof-cdof != blockSize)) {
       blockSize = 1;
       break;
     }
   }
-  ierr = PetscSectionGetConstrainedStorageSize(dm->defaultGlobalSection, &localSize);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gSection, &localSize);CHKERRQ(ierr);
   if (localSize%blockSize) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);
   ierr = VecCreate(((PetscObject) dm)->comm, vec);CHKERRQ(ierr);
   ierr = VecSetSizes(*vec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
@@ -42,22 +42,24 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 #define __FUNCT__ "DMCreateLocalVector_Section_Private"
 PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 {
+  PetscSection   section;
+  PetscInt       localSize, blockSize = -1, pStart, pEnd, p;
   PetscErrorCode ierr;
-  PetscInt localSize, blockSize = -1, pStart, pEnd, p;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetChart(dm->defaultSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof;
 
-    ierr = PetscSectionGetDof(dm->defaultSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     if ((blockSize < 0) && (dof > 0)) blockSize = dof;
     if ((dof > 0) && (dof != blockSize)) {
       blockSize = 1;
       break;
     }
   }
-  ierr = PetscSectionGetStorageSize(dm->defaultSection, &localSize);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &localSize);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, vec);CHKERRQ(ierr);
   ierr = VecSetSizes(*vec, localSize, localSize);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);

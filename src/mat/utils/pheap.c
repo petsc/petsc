@@ -34,24 +34,24 @@ PETSC_STATIC_INLINE PetscInt Parent(PetscInt loc)
 PETSC_STATIC_INLINE void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
 {
   PetscInt id,val;
-  id = Id(h,loc);
-  val = Value(h,loc);
-  h->base[loc].id = Id(h,loc2);
-  h->base[loc].value = Value(h,loc2);
-  h->base[loc2].id = id;
+  id                  = Id(h,loc);
+  val                 = Value(h,loc);
+  h->base[loc].id     = Id(h,loc2);
+  h->base[loc].value  = Value(h,loc2);
+  h->base[loc2].id    = id;
   h->base[loc2].value = val;
 }
 PETSC_STATIC_INLINE PetscInt MinChild(PetscHeap h,PetscInt loc)
 {
   PetscInt min,chld,left,right;
-  left = loc << B;
+  left  = loc << B;
   right = PetscMin(left+ARITY-1,h->end-1);
-  chld = 0;
-  min = PETSC_MAX_INT;
+  chld  = 0;
+  min   = PETSC_MAX_INT;
   for (; left <= right; left++) {
     PetscInt val = Value(h,left);
     if (val < min) {
-      min = val;
+      min  = val;
       chld = left;
     }
   }
@@ -63,19 +63,19 @@ PETSC_STATIC_INLINE PetscInt MinChild(PetscHeap h,PetscInt loc)
 PetscErrorCode PetscHeapCreate(PetscInt maxsize,PetscHeap *heap)
 {
   PetscErrorCode ierr;
-  PetscHeap h;
+  PetscHeap      h;
 
   PetscFunctionBegin;
-  *heap = PETSC_NULL;
-  ierr = PetscMalloc(sizeof(*h),&h);CHKERRQ(ierr);
-  h->end = 1;
-  h->alloc = maxsize+ARITY;     /* We waste all but one slot (loc=1) in the first ARITY slots */
-  h->stash = h->alloc;
-  ierr = PetscMalloc(h->alloc*sizeof(HeapNode),&h->base);CHKERRQ(ierr);
-  ierr = PetscMemzero(h->base,h->alloc*sizeof(HeapNode));CHKERRQ(ierr);
+  *heap            = PETSC_NULL;
+  ierr             = PetscMalloc(sizeof(*h),&h);CHKERRQ(ierr);
+  h->end           = 1;
+  h->alloc         = maxsize+ARITY; /* We waste all but one slot (loc=1) in the first ARITY slots */
+  h->stash         = h->alloc;
+  ierr             = PetscMalloc(h->alloc*sizeof(HeapNode),&h->base);CHKERRQ(ierr);
+  ierr             = PetscMemzero(h->base,h->alloc*sizeof(HeapNode));CHKERRQ(ierr);
   h->base[0].id    = -1;
   h->base[0].value = PETSC_MIN_INT;
-  *heap = h;
+  *heap            = h;
   PetscFunctionReturn(0);
 }
 
@@ -108,18 +108,18 @@ PetscErrorCode PetscHeapPop(PetscHeap h,PetscInt *id,PetscInt *val)
 
   PetscFunctionBegin;
   if (h->end == 1) {
-    *id = h->base[0].id;
+    *id  = h->base[0].id;
     *val = h->base[0].value;
     PetscFunctionReturn(0);
   }
 
-  *id = h->base[1].id;
+  *id  = h->base[1].id;
   *val = h->base[1].value;
 
   /* rotate last entry into first position */
   loc = --h->end;
   if (h->end == ARITY) h->end = 2; /* Skip over hole */
-  h->base[1].id   = Id(h,loc);
+  h->base[1].id    = Id(h,loc);
   h->base[1].value = Value(h,loc);
 
   /* move down until min heap condition is satisfied */
@@ -137,12 +137,12 @@ PetscErrorCode PetscHeapPeek(PetscHeap h,PetscInt *id,PetscInt *val)
 {
   PetscFunctionBegin;
   if (h->end == 1) {
-    *id = h->base[0].id;
+    *id  = h->base[0].id;
     *val = h->base[0].value;
     PetscFunctionReturn(0);
   }
 
-  *id = h->base[1].id;
+  *id  = h->base[1].id;
   *val = h->base[1].value;
   PetscFunctionReturn(0);
 }
@@ -154,8 +154,8 @@ PetscErrorCode PetscHeapStash(PetscHeap h,PetscInt id,PetscInt val)
   PetscInt loc;
 
   PetscFunctionBegin;
-  loc = --h->stash;
-  h->base[loc].id = id;
+  loc                = --h->stash;
+  h->base[loc].id    = id;
   h->base[loc].value = val;
   PetscFunctionReturn(0);
 }
@@ -192,7 +192,7 @@ PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
 PetscErrorCode PetscHeapView(PetscHeap h,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   if (!viewer) {

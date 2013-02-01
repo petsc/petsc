@@ -11,6 +11,7 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(struct _Space),&a);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&(a->array_head));CHKERRQ(ierr);
+
   a->array            = a->array_head;
   a->local_remaining  = n;
   a->local_used       = 0;
@@ -23,7 +24,7 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
   }
 
   a->total_array_size += n;
-  *list               =  a;
+  *list                =  a;
   PetscFunctionReturn(0);
 }
 
@@ -36,12 +37,12 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 
   PetscFunctionBegin;
   while ((*head)) {
-    a     =  (*head)->more_space;
-    ierr  =  PetscMemcpy(space,(*head)->array_head,((*head)->local_used)*sizeof(PetscInt));CHKERRQ(ierr);
+    a      =  (*head)->more_space;
+    ierr   =  PetscMemcpy(space,(*head)->array_head,((*head)->local_used)*sizeof(PetscInt));CHKERRQ(ierr);
     space += (*head)->local_used;
-    ierr  =  PetscFree((*head)->array_head);CHKERRQ(ierr);
-    ierr  =  PetscFree(*head);CHKERRQ(ierr);
-    *head =  a;
+    ierr   =  PetscFree((*head)->array_head);CHKERRQ(ierr);
+    ierr   =  PetscFree(*head);CHKERRQ(ierr);
+    *head  =  a;
   }
   PetscFunctionReturn(0);
 }
@@ -74,9 +75,9 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
 
   PetscFunctionBegin;
   bi_temp = bi[n];
-  row       = 0;
-  total     = 0;
-  nnzL  = bdiag[0];
+  row     = 0;
+  total   = 0;
+  nnzL    = bdiag[0];
   while ((*head)) {
     total += (*head)->local_used;
     array  = (*head)->array_head;
@@ -84,7 +85,7 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
     while (row < n) {
       if (bi[row+1] > total) break;
       /* copy array entries into bj for this row */
-      nnz  = bi[row+1] - bi[row];
+      nnz = bi[row+1] - bi[row];
       /* set bi[row] for new datastruct */
       if (row == 0) {
         bi[row] = 0;
@@ -98,15 +99,15 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
       ierr = PetscMemcpy(bj,array,nnzL*sizeof(PetscInt));CHKERRQ(ierr);
 
       /* diagonal entry */
-      bdiag[row] = bi_temp - 1;
+      bdiag[row]        = bi_temp - 1;
       space[bdiag[row]] = row;
 
       /* U part */
-      nnzU        = nnz - nnzL;
+      nnzU    = nnz - nnzL;
       bi_temp = bi_temp - nnzU;
-      nnzU --;      /* exclude diagonal */
-      bj = space + bi_temp;
-      ierr = PetscMemcpy(bj,array+nnzL+1,nnzU*sizeof(PetscInt));CHKERRQ(ierr);
+      nnzU--;       /* exclude diagonal */
+      bj     = space + bi_temp;
+      ierr   = PetscMemcpy(bj,array+nnzL+1,nnzU*sizeof(PetscInt));CHKERRQ(ierr);
       array += nnz;
       row++;
     }
@@ -117,7 +118,7 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
     *head = a;
   }
   if (n) {
-    bi[n] = bi[n-1] + nnzL;
+    bi[n]    = bi[n-1] + nnzL;
     bdiag[n] = bdiag[n-1]-1;
   }
   PetscFunctionReturn(0);
@@ -160,11 +161,11 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscI
     while (row < n) {
       if (ui[row+1] > total) break;
       udiag[row] = ui[row+1] - 1;     /* points to the last entry of U(row,:) */
-      nnz  = ui[row+1] - ui[row] - 1; /* exclude diagonal */
-      uj   = space + ui[row];
-      ierr = PetscMemcpy(uj,array+1,nnz*sizeof(PetscInt));CHKERRQ(ierr);
-      uj[nnz] = array[0]; /* diagonal */
-      array += nnz + 1;
+      nnz        = ui[row+1] - ui[row] - 1; /* exclude diagonal */
+      uj         = space + ui[row];
+      ierr       = PetscMemcpy(uj,array+1,nnz*sizeof(PetscInt));CHKERRQ(ierr);
+      uj[nnz]    = array[0]; /* diagonal */
+      array     += nnz + 1;
       row++;
     }
 

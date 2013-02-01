@@ -20,9 +20,9 @@ PetscErrorCode MemTest()
   PetscFunctionReturn(0);
 }
 
-struct source{};
-struct target{};
-struct color{};
+struct source {};
+struct target {};
+struct color {};
 #undef __FUNCT__
 #define __FUNCT__ "ArrowTest"
 PetscErrorCode ArrowTest()
@@ -30,16 +30,16 @@ PetscErrorCode ArrowTest()
   typedef ALE::def::Point Point;
   typedef ALE::def::Arrow<int> SieveArrow;
   typedef ::boost::multi_index::multi_index_container<
-    SieveArrow,
-    ::boost::multi_index::indexed_by<
-      ::boost::multi_index::ordered_non_unique<
-        ::boost::multi_index::tag<source>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source)>,
-      ::boost::multi_index::ordered_non_unique<
-        ::boost::multi_index::tag<target>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target)>,
-      ::boost::multi_index::ordered_non_unique<
-        ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,int,color)>
-      >
-    > ArrowSet;
+      SieveArrow,
+      ::boost::multi_index::indexed_by<
+        ::boost::multi_index::ordered_non_unique<
+          ::boost::multi_index::tag<source>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source)>,
+        ::boost::multi_index::ordered_non_unique<
+          ::boost::multi_index::tag<target>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target)>,
+        ::boost::multi_index::ordered_non_unique<
+          ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,int,color)>
+        >
+      > ArrowSet;
   ArrowSet arrows;
 
   PetscFunctionBegin;
@@ -131,17 +131,17 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
 
-  MPI_Comm  comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "", "Options for ALE memory management and logging testing", "Mesh");
-    memTest = PETSC_TRUE;
-    ierr = PetscOptionsBool("-mem_test", "Perform the mem test", "ex0.c", PETSC_TRUE, &memTest, PETSC_NULL);CHKERRQ(ierr);
-    arrowTest = PETSC_TRUE;
-    ierr = PetscOptionsBool("-arrow_test", "Perform the arrow test", "ex0.c", PETSC_TRUE, &arrowTest, PETSC_NULL);CHKERRQ(ierr);
-    coneTest = PETSC_TRUE;
-    ierr = PetscOptionsBool("-cone_test", "Perform the cone test", "ex0.c", PETSC_TRUE, &coneTest, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  MPI_Comm comm = PETSC_COMM_WORLD;
+  ierr      = PetscOptionsBegin(comm, "", "Options for ALE memory management and logging testing", "Mesh");
+  memTest   = PETSC_TRUE;
+  ierr      = PetscOptionsBool("-mem_test", "Perform the mem test", "ex0.c", PETSC_TRUE, &memTest, PETSC_NULL);CHKERRQ(ierr);
+  arrowTest = PETSC_TRUE;
+  ierr      = PetscOptionsBool("-arrow_test", "Perform the arrow test", "ex0.c", PETSC_TRUE, &arrowTest, PETSC_NULL);CHKERRQ(ierr);
+  coneTest  = PETSC_TRUE;
+  ierr      = PetscOptionsBool("-cone_test", "Perform the cone test", "ex0.c", PETSC_TRUE, &coneTest, PETSC_NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsEnd();
   try {
     if (memTest) {
       ierr = MemTest();CHKERRQ(ierr);

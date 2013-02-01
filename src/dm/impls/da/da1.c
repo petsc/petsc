@@ -17,7 +17,7 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
   PetscBool      iascii,isdraw,isbinary;
   DM_DA          *dd = (DM_DA*)da->data;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscBool      ismatlab;
+  PetscBool ismatlab;
 #endif
 
   PetscFunctionBegin;
@@ -45,11 +45,11 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
       ierr = DMView_DA_VTK(da, viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
-    PetscDraw  draw;
-    double     ymin = -1,ymax = 1,xmin = -1,xmax = dd->M,x;
-    PetscInt   base;
-    char       node[10];
-    PetscBool  isnull;
+    PetscDraw draw;
+    double    ymin = -1,ymax = 1,xmin = -1,xmax = dd->M,x;
+    PetscInt  base;
+    char      node[10];
+    PetscBool isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -63,7 +63,7 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
       ymin = 0.0; ymax = 0.3;
 
       for (xmin_tmp=0; xmin_tmp < dd->M; xmin_tmp++) {
-         ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
 
       xmin = 0.0; xmax = dd->M - 1;
@@ -105,13 +105,13 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 #define __FUNCT__ "DMSetUp_DA_1D"
 PetscErrorCode  DMSetUp_DA_1D(DM da)
 {
-  DM_DA            *dd = (DM_DA*)da->data;
+  DM_DA            *dd   = (DM_DA*)da->data;
   const PetscInt   M     = dd->M;
   const PetscInt   dof   = dd->w;
   const PetscInt   s     = dd->s;
   const PetscInt   sDist = s*dof;  /* absolute stencil distance */
-  const PetscInt   *lx    = dd->lx;
-  DMDABoundaryType bx  = dd->bx;
+  const PetscInt   *lx   = dd->lx;
+  DMDABoundaryType bx    = dd->bx;
   MPI_Comm         comm;
   Vec              local, global;
   VecScatter       ltog, gtol;
@@ -131,7 +131,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   if (s > 0) {
     /* if not communicating data then should be ok to have nothing on some processes */
-    if (M < m)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
+    if (M < m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
     if ((M-1) < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
   }
 
@@ -148,13 +148,13 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
       x  = (rank + 1)*M/m - xs;
     } else if (flg2) { /* The odd nodes are evenly distributed across last nodes */
       x = (M + rank)/m;
-      if (M/m == x) { xs = rank*x; }
-      else          { xs = rank*(x-1) + (M+rank)%(x*m); }
+      if (M/m == x) xs = rank*x;
+      else          xs = rank*(x-1) + (M+rank)%(x*m);
     } else { /* The odd nodes are evenly distributed across the first k nodes */
       /* Regular PETSc Distribution */
       x = M/m + ((M % m) > rank);
-      if (rank >= (M % m)) {xs = (rank * (PetscInt)(M/m) + M % m);}
-      else                 {xs = rank * (PetscInt)(M/m) + rank;}
+      if (rank >= (M % m)) xs = (rank * (PetscInt)(M/m) + M % m);
+      else                 xs = rank * (PetscInt)(M/m) + rank;
     }
     ierr = MPI_Allgather(&xs,1,MPIU_INT,dd->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) dd->lx[i] = dd->lx[i+1] - dd->lx[i];
@@ -162,14 +162,10 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   } else {
     x  = lx[rank];
     xs = 0;
-    for (i=0; i<rank; i++) {
-      xs += lx[i];
-    }
+    for (i=0; i<rank; i++) xs += lx[i];
     /* verify that data user provided is consistent */
     left = xs;
-    for (i=rank; i<size; i++) {
-      left += lx[i];
-    }
+    for (i=rank; i<size; i++) left += lx[i];
     if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M %D %D",left,M);
   }
 
@@ -186,40 +182,34 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   /* determine ghost region (Xs) and region scattered into (IXs)  */
   if (xs-sDist > 0) {
-    Xs = xs - sDist;
+    Xs  = xs - sDist;
     IXs = xs - sDist;
   } else {
-    if (bx) {
-      Xs = xs - sDist;
-    } else {
-      Xs = 0;
-    }
+    if (bx) Xs = xs - sDist;
+    else Xs = 0;
     IXs = 0;
   }
   if (xe+sDist <= M*dof) {
-    Xe = xe + sDist;
+    Xe  = xe + sDist;
     IXe = xe + sDist;
   } else {
-    if (bx) {
-      Xe = xe + sDist;
-    } else {
-      Xe = M*dof;
-    }
+    if (bx) Xe = xe + sDist;
+    else Xe = M*dof;
     IXe = M*dof;
   }
 
   if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
-    Xs = xs - sDist;
-    Xe = xe + sDist;
+    Xs  = xs - sDist;
+    Xe  = xe + sDist;
     IXs = xs - sDist;
     IXe = xe + sDist;
   }
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x;
-  ierr = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   dd->nlocal = (Xe-Xs);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
+  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
 
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
@@ -238,45 +228,51 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   ierr = PetscMalloc((x+2*(sDist))*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
 
-  for (i=0; i<IXs-Xs; i++) {idx[i] = -1; } /* prepend with -1s if needed for ghosted case*/
+  for (i=0; i<IXs-Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/
 
   nn = IXs-Xs;
   if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
     for (i=0; i<sDist; i++) {  /* Left ghost points */
-      if ((xs-sDist+i)>=0) {idx[nn++] = xs-sDist+i;}
-      else                 {idx[nn++] = M*dof+(xs-sDist+i);}
+      if ((xs-sDist+i)>=0) idx[nn++] = xs-sDist+i;
+      else                 idx[nn++] = M*dof+(xs-sDist+i);
     }
 
-    for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
+    for (i=0; i<x; i++) idx [nn++] = xs + i;  /* Non-ghost points */
 
     for (i=0; i<sDist; i++) { /* Right ghost points */
-      if ((xe+i)<M*dof) {idx [nn++] =  xe+i; }
-      else              {idx [nn++] = (xe+i) - M*dof;}
+      if ((xe+i)<M*dof) idx [nn++] =  xe+i;
+      else              idx [nn++] = (xe+i) - M*dof;
     }
   } else if (bx == DMDA_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
     for (i=0; i<(sDist)/dof; i++) {  /* Left ghost points */
       for (j=0; j<dof; j++) {
-        if ((xs-sDist+i*dof + j)>=0) {idx[nn++] = xs-sDist+i*dof +j;}
-        else                         {idx[nn++] = sDist - dof*(i) + j;}
+        if ((xs-sDist+i*dof + j)>=0) idx[nn++] = xs-sDist+i*dof +j;
+        else                         idx[nn++] = sDist - dof*(i) + j;
       }
     }
 
-    for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
+    for (i=0; i<x; i++) idx [nn++] = xs + i;  /* Non-ghost points */
 
     for (i=0; i<(sDist)/dof; i++) { /* Right ghost points */
       for (j=0; j<dof; j++) {
-        if ((xe+i)<M*dof) {idx[nn++] =  xe+i*dof+j; }
-        else              {idx[nn++] = M*dof - dof*(i + 2) + j ;}
+        if ((xe+i)<M*dof) idx[nn++] =  xe+i*dof+j;
+        else              idx[nn++] = M*dof - dof*(i + 2) + j;
       }
     }
   } else {      /* Now do all cases with no periodicity */
-    if (0 <= xs-sDist) {for (i=0; i<sDist; i++) {idx[nn++] = xs - sDist + i;}}
-    else               {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
+    if (0 <= xs-sDist) {
+      for (i=0; i<sDist; i++) idx[nn++] = xs - sDist + i;
+    } else {
+      for (i=0; i<xs; i++) idx[nn++] = i;
+    }
 
-    for (i=0; i<x; i++) { idx [nn++] = xs + i;}
+    for (i=0; i<x; i++) idx [nn++] = xs + i;
 
-    if ((xe+sDist)<=M*dof) {for (i=0;  i<sDist;   i++) {idx[nn++]=xe+i;}}
-    else                   {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
+    if ((xe+sDist)<=M*dof) {
+      for (i=0; i<sDist; i++) idx[nn++]=xe+i;
+    } else {
+      for (i=xe; i<(M*dof); i++) idx[nn++]=i;
+    }
   }
 
   ierr = ISCreateGeneral(comm,nn-IXs+Xs,&idx[IXs-Xs],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
@@ -301,7 +297,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  for (i=0; i<Xe-IXe; i++) {idx[nn++] = -1; } /* pad with -1s if needed for ghosted case*/
+  for (i=0; i<Xe-IXe; i++) idx[nn++] = -1; /* pad with -1s if needed for ghosted case*/
 
   ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);

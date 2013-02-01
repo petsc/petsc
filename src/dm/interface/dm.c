@@ -67,12 +67,12 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
 
 
-  v->ltogmap      = PETSC_NULL;
-  v->ltogmapb     = PETSC_NULL;
-  v->bs           = 1;
-  v->coloringtype = IS_COLORING_GLOBAL;
-  ierr = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
-  ierr = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
+  v->ltogmap              = PETSC_NULL;
+  v->ltogmapb             = PETSC_NULL;
+  v->bs                   = 1;
+  v->coloringtype         = IS_COLORING_GLOBAL;
+  ierr                    = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
+  ierr                    = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
   v->defaultSection       = PETSC_NULL;
   v->defaultGlobalSection = PETSC_NULL;
   {
@@ -141,7 +141,7 @@ PetscErrorCode VecGetDM(Vec v, DM *dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidPointer(dm,2);
-  ierr = PetscObjectQuery((PetscObject) v, "__PETSc_dm", (PetscObject *) dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) v, "__PETSc_dm", (PetscObject*) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -224,7 +224,7 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(dm,2);
-  ierr = PetscObjectQuery((PetscObject) A, "__PETSc_dm", (PetscObject *) dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) A, "__PETSc_dm", (PetscObject*) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +249,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  if (dm) {PetscValidHeaderSpecific(dm,DM_CLASSID,2);}
+  if (dm) PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectCompose((PetscObject) A, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,8 +313,8 @@ PetscErrorCode  DMDestroy(DM *dm)
 
   /* count all the circular references of DM and its contained Vecs */
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if ((*dm)->localin[i])  {cnt++;}
-    if ((*dm)->globalin[i]) {cnt++;}
+    if ((*dm)->localin[i])  cnt++;
+    if ((*dm)->globalin[i]) cnt++;
   }
   for (nlink=(*dm)->namedglobal; nlink; nlink=nlink->next) cnt++;
   if ((*dm)->x) {
@@ -501,21 +501,21 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype?dm->mattype:typeName,typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
-    if (dm->ops->setfromoptions) {
-      ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
-    }
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype ? dm->mattype : typeName,typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
+  if (dm->ops->setfromoptions) {
+    ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
+  }
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -549,8 +549,8 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   }
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
-    PetscInt         classid = DM_FILE_CLASSID;
-    char             type[256];
+    PetscInt classid = DM_FILE_CLASSID;
+    char     type[256];
 
     ierr = PetscViewerBinaryWrite(v,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscStrncpy(type,((PetscObject)dm)->type_name,256);CHKERRQ(ierr);
@@ -651,8 +651,8 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     if (section) {
-      PetscInt      *ltog;
-      PetscInt       pStart, pEnd, size, p, l;
+      PetscInt *ltog;
+      PetscInt pStart, pEnd, size, p, l;
 
       ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
@@ -947,26 +947,26 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem)
 {
   PetscErrorCode ierr;
-  DMWorkLink link;
-  size_t size;
+  DMWorkLink     link;
+  size_t         size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mem,4);
   if (dm->workin) {
-    link = dm->workin;
+    link       = dm->workin;
     dm->workin = dm->workin->next;
   } else {
     ierr = PetscNewLog(dm,struct _DMWorkLink,&link);CHKERRQ(ierr);
   }
   ierr = PetscDataTypeGetSize(dtype,&size);CHKERRQ(ierr);
   if (size*count > link->bytes) {
-    ierr = PetscFree(link->mem);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*count,&link->mem);CHKERRQ(ierr);
+    ierr        = PetscFree(link->mem);CHKERRQ(ierr);
+    ierr        = PetscMalloc(size*count,&link->mem);CHKERRQ(ierr);
     link->bytes = size*count;
   }
-  link->next = dm->workout;
-  dm->workout = link;
+  link->next   = dm->workout;
+  dm->workout  = link;
   *(void**)mem = link->mem;
   PetscFunctionReturn(0);
 }
@@ -999,9 +999,9 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void 
   PetscValidPointer(mem,4);
   for (p=&dm->workout; (link=*p); p=&link->next) {
     if (link->mem == *(void**)mem) {
-      *p = link->next;
-      link->next = dm->workin;
-      dm->workin = link;
+      *p           = link->next;
+      link->next   = dm->workin;
+      dm->workin   = link;
       *(void**)mem = PETSC_NULL;
       PetscFunctionReturn(0);
     }
@@ -1067,11 +1067,11 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     PetscInt *fieldSizes, **fieldIndices;
-    PetscInt  nF, f, pStart, pEnd, p;
+    PetscInt nF, f, pStart, pEnd, p;
 
     ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-    ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt*,&fieldIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (f = 0; f < nF; ++f) {
       fieldSizes[f] = 0;
@@ -1084,14 +1084,14 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
         for (f = 0; f < nF; ++f) {
           PetscInt fdof, fcdof;
 
-          ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-          ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+          ierr           = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+          ierr           = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
           fieldSizes[f] += fdof-fcdof;
         }
       }
     }
     for (f = 0; f < nF; ++f) {
-      ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
+      ierr          = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
       fieldSizes[f] = 0;
     }
     for (p = pStart; p < pEnd; ++p) {
@@ -1111,14 +1111,14 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
         }
       }
     }
-    if (numFields) {*numFields = nF;}
+    if (numFields) *numFields = nF;
     if (fieldNames) {
-      ierr = PetscMalloc(nF * sizeof(char *), fieldNames);CHKERRQ(ierr);
+      ierr = PetscMalloc(nF * sizeof(char*), fieldNames);CHKERRQ(ierr);
       for (f = 0; f < nF; ++f) {
         const char *fieldName;
 
         ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(fieldName, (char **) &(*fieldNames)[f]);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(fieldName, (char**) &(*fieldNames)[f]);CHKERRQ(ierr);
       }
     }
     if (fields) {
@@ -1128,8 +1128,8 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
       }
     }
     ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
-  } else {
-    if (dm->ops->createfieldis) {ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);}
+  } else if (dm->ops->createfieldis) {
+    ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1152,7 +1152,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
 .seealso DMDestroy(), DMCreate(), DMCreateFieldDecomposition(), DMCreateDomainDecompositionDM()
 @*/
-PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
+PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char *name, DM *ddm)
 {
   PetscErrorCode ierr;
 
@@ -1201,10 +1201,22 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len)      {PetscValidPointer(len,2);      *len      = 0;}
-  if (namelist) {PetscValidPointer(namelist,3); *namelist = 0;}
-  if (islist)   {PetscValidPointer(islist,4);   *islist   = 0;}
-  if (dmlist)   {PetscValidPointer(dmlist,5);   *dmlist   = 0;}
+  if (len) {
+    PetscValidPointer(len,2);
+    *len = 0;
+  }
+  if (namelist) {
+    PetscValidPointer(namelist,3);
+    *namelist = 0;
+  }
+  if (islist) {
+    PetscValidPointer(islist,4);
+    *islist = 0;
+  }
+  if (dmlist) {
+    PetscValidPointer(dmlist,5);
+    *dmlist = 0;
+  }
   /*
    Is it a good idea to apply the following check across all impls?
    Perhaps some impls can have a well-defined decomposition before DMSetUp?
@@ -1225,15 +1237,14 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
         ierr = DMCreateSubDM(dm, 1, &f, &(*islist)[f], &(*dmlist)[f]);CHKERRQ(ierr);
         ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(fieldName, (char **) &(*namelist)[f]);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(fieldName, (char**) &(*namelist)[f]);CHKERRQ(ierr);
       }
     } else {
       ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
       /* By default there are no DMs associated with subproblems. */
       if (dmlist) *dmlist = PETSC_NULL;
     }
-  }
-  else {
+  } else {
     ierr = (*dm->ops->createfielddecomposition)(dm,len,namelist,islist,dmlist);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1267,8 +1278,8 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(fields,3);
-  if (is) {PetscValidPointer(is,4);}
-  if (subdm) {PetscValidPointer(subdm,5);}
+  if (is) PetscValidPointer(is,4);
+  if (subdm) PetscValidPointer(subdm,5);
   if (dm->ops->createsubdm) {
     ierr = (*dm->ops->createsubdm)(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateSubDM implementation defined");
@@ -1293,7 +1304,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
 
 .seealso DMDestroy(), DMCreate(), DMCreateFieldDecomposition(), DMCreateDomainDecompositionDM()
 @*/
-PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
+PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char *name, DM *ddm)
 {
   PetscErrorCode ierr;
 
@@ -1340,7 +1351,7 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
 @*/
 PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   DMSubDomainHookLink link;
   PetscInt            i,l;
 
@@ -1439,7 +1450,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 @*/
 PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   DMRefineHookLink link;
 
   PetscFunctionBegin;
@@ -1447,13 +1458,18 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
     (*dmf)->ops->creatematrix = dm->ops->creatematrix;
+
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
+
     (*dmf)->ctx       = dm->ctx;
     (*dmf)->leveldown = dm->leveldown;
     (*dmf)->levelup   = dm->levelup + 1;
+
     ierr = DMSetMatType(*dmf,dm->mattype);CHKERRQ(ierr);
     for (link=dm->refinehook; link; link=link->next) {
-      if (link->refinehook) {ierr = (*link->refinehook)(dm,*dmf,link->ctx);CHKERRQ(ierr);}
+      if (link->refinehook) {
+        ierr = (*link->refinehook)(dm,*dmf,link->ctx);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -1498,18 +1514,18 @@ $    interphook(DM coarse,Mat interp,DM fine,void *ctx)
 @*/
 PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void*),PetscErrorCode (*interphook)(DM,Mat,DM,void*),void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   DMRefineHookLink link,*p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,DM_CLASSID,1);
   for (p=&coarse->refinehook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
-  ierr = PetscMalloc(sizeof(struct _DMRefineHookLink),&link);CHKERRQ(ierr);
+  ierr             = PetscMalloc(sizeof(struct _DMRefineHookLink),&link);CHKERRQ(ierr);
   link->refinehook = refinehook;
   link->interphook = interphook;
-  link->ctx = ctx;
-  link->next = PETSC_NULL;
-  *p = link;
+  link->ctx        = ctx;
+  link->next       = PETSC_NULL;
+  *p               = link;
   PetscFunctionReturn(0);
 }
 
@@ -1531,12 +1547,14 @@ PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void
 @*/
 PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   DMRefineHookLink link;
 
   PetscFunctionBegin;
   for (link=fine->refinehook; link; link=link->next) {
-    if (link->interphook) {ierr = (*link->interphook)(coarse,interp,fine,link->ctx);CHKERRQ(ierr);}
+    if (link->interphook) {
+      ierr = (*link->interphook)(coarse,interp,fine,link->ctx);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1610,18 +1628,18 @@ $    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 @*/
 PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*endhook)(DM,Vec,InsertMode,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode          ierr;
   DMGlobalToLocalHookLink link,*p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (p=&dm->gtolhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
-  ierr = PetscMalloc(sizeof(struct _DMGlobalToLocalHookLink),&link);CHKERRQ(ierr);
+  ierr            = PetscMalloc(sizeof(struct _DMGlobalToLocalHookLink),&link);CHKERRQ(ierr);
   link->beginhook = beginhook;
-  link->endhook = endhook;
-  link->ctx = ctx;
-  link->next = PETSC_NULL;
-  *p = link;
+  link->endhook   = endhook;
+  link->ctx       = ctx;
+  link->next      = PETSC_NULL;
+  *p              = link;
   PetscFunctionReturn(0);
 }
 
@@ -1646,14 +1664,16 @@ PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
 @*/
 PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 {
-  PetscSF        sf;
-  PetscErrorCode ierr;
+  PetscSF                 sf;
+  PetscErrorCode          ierr;
   DMGlobalToLocalHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (link=dm->gtolhook; link; link=link->next) {
-    if (link->beginhook) {ierr = (*link->beginhook)(dm,g,mode,l,link->ctx);CHKERRQ(ierr);}
+    if (link->beginhook) {
+      ierr = (*link->beginhook)(dm,g,mode,l,link->ctx);CHKERRQ(ierr);
+    }
   }
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
@@ -1692,16 +1712,16 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 @*/
 PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 {
-  PetscSF        sf;
-  PetscErrorCode ierr;
-  PetscScalar    *lArray, *gArray;
+  PetscSF                 sf;
+  PetscErrorCode          ierr;
+  PetscScalar             *lArray, *gArray;
   DMGlobalToLocalHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
-  if (mode == ADD_VALUES) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+    if (mode == ADD_VALUES) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
 
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
@@ -1749,7 +1769,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
-    MPI_Op       op;
+    MPI_Op      op;
     PetscScalar *lArray, *gArray;
 
     switch (mode) {
@@ -1805,7 +1825,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
-    MPI_Op       op;
+    MPI_Op      op;
     PetscScalar *lArray, *gArray;
 
     switch (mode) {
@@ -1854,18 +1874,18 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 @*/
 PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   DMCoarsenHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  ierr                      = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   (*dmc)->ops->creatematrix = dm->ops->creatematrix;
-  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
-  (*dmc)->ctx       = dm->ctx;
-  (*dmc)->levelup   = dm->levelup;
-  (*dmc)->leveldown = dm->leveldown + 1;
-  ierr = DMSetMatType(*dmc,dm->mattype);CHKERRQ(ierr);
+  ierr                      = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
+  (*dmc)->ctx               = dm->ctx;
+  (*dmc)->levelup           = dm->levelup;
+  (*dmc)->leveldown         = dm->leveldown + 1;
+  ierr                      = DMSetMatType(*dmc,dm->mattype);CHKERRQ(ierr);
   for (link=dm->coarsenhook; link; link=link->next) {
     if (link->coarsenhook) {ierr = (*link->coarsenhook)(dm,*dmc,link->ctx);CHKERRQ(ierr);}
   }
@@ -1916,18 +1936,18 @@ $    restricthook(DM fine,Mat mrestrict,Vec rscale,Mat inject,DM coarse,void *ct
 @*/
 PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*),void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   DMCoarsenHookLink link,*p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fine,DM_CLASSID,1);
   for (p=&fine->coarsenhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
-  ierr = PetscMalloc(sizeof(struct _DMCoarsenHookLink),&link);CHKERRQ(ierr);
-  link->coarsenhook = coarsenhook;
+  ierr               = PetscMalloc(sizeof(struct _DMCoarsenHookLink),&link);CHKERRQ(ierr);
+  link->coarsenhook  = coarsenhook;
   link->restricthook = restricthook;
-  link->ctx = ctx;
-  link->next = PETSC_NULL;
-  *p = link;
+  link->ctx          = ctx;
+  link->next         = PETSC_NULL;
+  *p                 = link;
   PetscFunctionReturn(0);
 }
 
@@ -1950,12 +1970,14 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
 @*/
 PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   DMCoarsenHookLink link;
 
   PetscFunctionBegin;
   for (link=fine->coarsenhook; link; link=link->next) {
-    if (link->restricthook) {ierr = (*link->restricthook)(fine,restrct,rscale,inject,coarse,link->ctx);CHKERRQ(ierr);}
+    if (link->restricthook) {
+      ierr = (*link->restricthook)(fine,restrct,rscale,inject,coarse,link->ctx);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -2001,12 +2023,12 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
   PetscFunctionBegin;
   PetscValidHeaderSpecific(global,DM_CLASSID,1);
   for (p=&global->subdomainhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
-  ierr = PetscMalloc(sizeof(struct _DMSubDomainHookLink),&link);CHKERRQ(ierr);
+  ierr               = PetscMalloc(sizeof(struct _DMSubDomainHookLink),&link);CHKERRQ(ierr);
   link->restricthook = restricthook;
-  link->ddhook = ddhook;
-  link->ctx = ctx;
-  link->next = PETSC_NULL;
-  *p = link;
+  link->ddhook       = ddhook;
+  link->ctx          = ctx;
+  link->next         = PETSC_NULL;
+  *p                 = link;
   PetscFunctionReturn(0);
 }
 
@@ -2029,12 +2051,14 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
 @*/
 PetscErrorCode DMSubDomainRestrict(DM global,VecScatter oscatter,VecScatter gscatter,DM subdm)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   DMSubDomainHookLink link;
 
   PetscFunctionBegin;
   for (link=global->subdomainhook; link; link=link->next) {
-    if (link->restricthook) {ierr = (*link->restricthook)(global,oscatter,gscatter,subdm,link->ctx);CHKERRQ(ierr);}
+    if (link->restricthook) {
+      ierr = (*link->restricthook)(global,oscatter,gscatter,subdm,link->ctx);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -2326,14 +2350,13 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,2);
   if (dm->ops->computevariablebounds) {
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu);CHKERRQ(ierr);
-  }
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
   PetscFunctionReturn(0);
 }
 
@@ -2381,22 +2404,21 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 PetscErrorCode  DMSetVec(DM dm,Vec x)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (x) {
     if (!dm->x) {
       ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
     }
     ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
-  }
-  else if (dm->x) {
+  } else if (dm->x) {
     ierr = VecDestroy(&dm->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-PetscFunctionList DMList                       = PETSC_NULL;
-PetscBool         DMRegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList DMList              = PETSC_NULL;
+PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetType"
@@ -2436,7 +2458,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   if (!r) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
-    ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+    ierr             = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
     dm->ops->destroy = PETSC_NULL;
   }
   ierr = (*r)(dm);CHKERRQ(ierr);
@@ -2513,7 +2535,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
   ierr = PetscObjectTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr);
   {
-    PetscErrorCode (*conv)(DM, DMType, DM *) = PETSC_NULL;
+    PetscErrorCode (*conv)(DM, DMType, DM*) = PETSC_NULL;
 
     /*
        Order of precedence:
@@ -2563,7 +2585,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     /* 5) Use a really basic converter. */
     SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "No conversion possible between DM types %s and %s", ((PetscObject) dm)->type_name, newtype);
 
-    foundconv:
+foundconv:
     ierr = PetscLogEventBegin(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(dm,newtype,M);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
@@ -2583,14 +2605,14 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
 @*/
 PetscErrorCode  DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
 {
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&DMList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&DMList, sname, fullname, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2613,7 +2635,7 @@ PetscErrorCode  DMRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
+  ierr                = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
   DMRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -2755,10 +2777,10 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr               = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
+  ierr               = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   dm->defaultSection = section;
-  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
+  ierr               = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
   if (numFields) {
     ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
@@ -2828,6 +2850,7 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
+
   dm->defaultGlobalSection = section;
   PetscFunctionReturn(0);
 }
@@ -2897,7 +2920,7 @@ PetscErrorCode DMSetDefaultSF(DM dm, PetscSF sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
-  ierr = PetscSFDestroy(&dm->defaultSF);CHKERRQ(ierr);
+  ierr          = PetscSFDestroy(&dm->defaultSF);CHKERRQ(ierr);
   dm->defaultSF = sf;
   PetscFunctionReturn(0);
 }
@@ -2919,14 +2942,14 @@ PetscErrorCode DMSetDefaultSF(DM dm, PetscSF sf)
 @*/
 PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection globalSection)
 {
-  MPI_Comm        comm = ((PetscObject) dm)->comm;
-  PetscLayout     layout;
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscLayout    layout;
   const PetscInt *ranges;
   PetscInt       *local;
   PetscSFNode    *remote;
-  PetscInt        pStart, pEnd, p, nroots, nleaves, l;
-  PetscMPIInt     size, rank;
-  PetscErrorCode  ierr;
+  PetscInt       pStart, pEnd, p, nroots, nleaves, l;
+  PetscMPIInt    size, rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -2942,15 +2965,15 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   for (p = pStart, nleaves = 0; p < pEnd; ++p) {
     PetscInt gdof, gcdof;
 
-    ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
+    ierr     = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
+    ierr     = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
     nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
   }
   ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
   for (p = pStart, l = 0; p < pEnd; ++p) {
     const PetscInt *cind;
-    PetscInt        dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
+    PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
 
     ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
@@ -3037,8 +3060,8 @@ PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
-  ierr = PetscSFDestroy(&dm->sf);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) sf);CHKERRQ(ierr);
+  ierr   = PetscSFDestroy(&dm->sf);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject) sf);CHKERRQ(ierr);
   dm->sf = sf;
   PetscFunctionReturn(0);
 }
@@ -3066,11 +3089,11 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
   for (f = 0; f < dm->numFields; ++f) {
     ierr = PetscObjectDestroy(&dm->fields[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(dm->fields);CHKERRQ(ierr);
+  ierr          = PetscFree(dm->fields);CHKERRQ(ierr);
   dm->numFields = numFields;
-  ierr = PetscMalloc(dm->numFields * sizeof(PetscObject), &dm->fields);CHKERRQ(ierr);
+  ierr          = PetscMalloc(dm->numFields * sizeof(PetscObject), &dm->fields);CHKERRQ(ierr);
   for (f = 0; f < dm->numFields; ++f) {
-    ierr = PetscContainerCreate(((PetscObject) dm)->comm, (PetscContainer *) &dm->fields[f]);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(((PetscObject) dm)->comm, (PetscContainer*) &dm->fields[f]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3114,10 +3137,10 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject) c);CHKERRQ(ierr);
-  ierr = VecDestroy(&dm->coordinates);CHKERRQ(ierr);
+  ierr            = PetscObjectReference((PetscObject) c);CHKERRQ(ierr);
+  ierr            = VecDestroy(&dm->coordinates);CHKERRQ(ierr);
   dm->coordinates = c;
-  ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+  ierr            = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3151,7 +3174,9 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject) c);CHKERRQ(ierr);
   ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+
   dm->coordinatesLocal = c;
+
   ierr = VecDestroy(&dm->coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

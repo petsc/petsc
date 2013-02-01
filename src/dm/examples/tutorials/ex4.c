@@ -22,7 +22,7 @@ PetscErrorCode myfunction(void *ctx,PetscInt n,const PetscScalar *xy,PetscScalar
 
   PetscFunctionBeginUser;
   for (i=0; i<n; i++) {
-    u[2*i] = xy[2*i];
+    u[2*i]   = xy[2*i];
     u[2*i+1] = xy[2*i+1];
   }
   PetscFunctionReturn(0);

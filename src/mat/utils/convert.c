@@ -11,12 +11,12 @@
  */
 PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *newmat)
 {
-  Mat                M;
-  const PetscScalar  *vwork;
-  PetscErrorCode     ierr;
-  PetscInt           i,nz,m,n,rstart,rend,lm,ln;
-  const PetscInt     *cwork;
-  PetscBool          isseqsbaij,ismpisbaij;
+  Mat               M;
+  const PetscScalar *vwork;
+  PetscErrorCode    ierr;
+  PetscInt          i,nz,m,n,rstart,rend,lm,ln;
+  const PetscInt    *cwork;
+  PetscBool         isseqsbaij,ismpisbaij;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);

@@ -38,7 +38,7 @@ PetscErrorCode SetCoordinates2d(DM da)
   PetscErrorCode ierr;
   PetscInt       i,j,mstart,m,nstart,n;
   Vec            gc,global;
-  DMDACoor2d       **coors;
+  DMDACoor2d     **coors;
   DM             cda;
 
   PetscFunctionBeginUser;
@@ -71,7 +71,7 @@ PetscErrorCode SetCoordinates3d(DM da)
   PetscErrorCode ierr;
   PetscInt       i,j,mstart,m,nstart,n,pstart,p,k;
   Vec            gc,global;
-  DMDACoor3d       ***coors;
+  DMDACoor3d     ***coors;
   DM             cda;
 
   PetscFunctionBeginUser;
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   PetscInt         M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
   PetscErrorCode   ierr;
   DM               dac,daf;
-  DMDABoundaryType bx=DMDA_BOUNDARY_NONE,by=DMDA_BOUNDARY_NONE,bz=DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx    = DMDA_BOUNDARY_NONE,by=DMDA_BOUNDARY_NONE,bz=DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   Mat              A;
 

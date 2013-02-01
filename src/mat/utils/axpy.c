@@ -318,7 +318,7 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
   ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
   ierr = PetscMalloc(m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {rows[i] = start + i;}
+  for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
@@ -362,7 +362,7 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
 
   PetscFunctionBegin;
   ierr = PetscMalloc(xi[m]*sizeof(PetscInt),&x2y);CHKERRQ(ierr);
-  i = 0;
+  i    = 0;
   for (row=0; row<m; row++) {
     nz = xi[1] - xi[0];
     jy = 0;
@@ -409,8 +409,8 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
  @*/
 PetscErrorCode MatChop(Mat A, PetscReal tol)
 {
-  PetscScalar   *newVals;
-  PetscInt      *newCols;
+  PetscScalar    *newVals;
+  PetscInt       *newCols;
   PetscInt       rStart, rEnd, numRows, maxRows, r, colMax = 0;
   PetscErrorCode ierr;
 
@@ -419,17 +419,17 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
   for (r = rStart; r < rEnd; ++r) {
     PetscInt ncols;
 
-    ierr = MatGetRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatGetRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatRestoreRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   }
   numRows = rEnd - rStart;
-  ierr = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
+  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
   for (r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
-    PetscInt           ncols, c;
+    PetscInt          ncols, c;
 
     if (r < rEnd) {
       ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);

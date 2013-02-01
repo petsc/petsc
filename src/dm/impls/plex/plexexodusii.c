@@ -39,9 +39,9 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   PetscInt       coordSize, v;
   PetscErrorCode ierr;
   /* Read from ex_get_init() */
-  char           title[PETSC_MAX_PATH_LEN+1];
-  int            dim = 0, numVertices = 0, numCells = 0;
-  int            num_cs = 0, num_vs = 0, num_fs = 0;
+  char title[PETSC_MAX_PATH_LEN+1];
+  int  dim    = 0, numVertices = 0, numCells = 0;
+  int  num_cs = 0, num_vs = 0, num_fs = 0;
 #endif
 
   PetscFunctionBegin;

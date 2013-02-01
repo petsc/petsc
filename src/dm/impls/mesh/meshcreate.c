@@ -12,30 +12,30 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscOptionsHead("DMMesh Options");CHKERRQ(ierr);
-    /* Handle DMMesh refinement */
-    /* Handle associated vectors */
-    /* Handle viewing */
-    ierr = PetscOptionsBool("-dm_mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
+  /* Handle DMMesh refinement */
+  /* Handle associated vectors */
+  /* Handle viewing */
+  ierr = PetscOptionsBool("-dm_mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer viewer;
 
-      ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
-      ierr = DMView(dm, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsBool("-dm_mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
+    ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
+    ierr = DMView(dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsBool("-dm_mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer viewer;
 
-      ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
-      ierr = DMView(dm, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = DMView(dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -59,10 +59,10 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 */
 PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
-  DM_Mesh       *mesh        = (DM_Mesh *) dm->data;
+  DM_Mesh        *mesh       = (DM_Mesh*) dm->data;
   PetscInt       numVertices = (edges[0]+1)*(edges[1]+1);
   PetscInt       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
-  PetscScalar   *coords;
+  PetscScalar    *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
   PetscInt       v, vx, vy;
@@ -148,10 +148,10 @@ PetscErrorCode DMMeshCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 */
 PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
-  DM_Mesh       *mesh        = (DM_Mesh *) dm->data;
+  DM_Mesh        *mesh       = (DM_Mesh*) dm->data;
   PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
   PetscInt       numFaces    = 6;
-  PetscScalar   *coords;
+  PetscScalar    *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
   PetscInt       v, vx, vy, vz;
@@ -224,7 +224,7 @@ PetscErrorCode DMMeshCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateBoxMesh"
-PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) 
+PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
 {
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -300,10 +300,10 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 .seealso DMMESH, DMMeshCreateMeshFromAdjacencyHybrid(), DMMeshCreateBoxMesh()
 @*/
-PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners, PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) 
+PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners, PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm)
 {
-  PetscInt      *cone;
-  PetscInt      *coneO;
+  PetscInt       *cone;
+  PetscInt       *coneO;
   PetscInt       debug = 0;
   PetscErrorCode ierr;
 
@@ -317,15 +317,11 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
   mesh->setSieve(sieve);
-  for (PetscInt c = 0; c < numCells; ++c) {
-    sieve->setConeSize(c, numCorners);
-  }
+  for (PetscInt c = 0; c < numCells; ++c) sieve->setConeSize(c, numCorners);
   sieve->symmetrizeSizes(numCells, numCorners, cellVertices, numCells);
   sieve->allocate();
   ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
-  for (PetscInt v = 0; v < numCorners; ++v) {
-    coneO[v] = 1;
-  }
+  for (PetscInt v = 0; v < numCorners; ++v) coneO[v] = 1;
   for (PetscInt c = 0; c < numCells; ++c) {
     for (PetscInt v = 0; v < numCorners; ++v) {
       cone[v] = cellVertices[c*numCorners+v]+numCells;
@@ -345,7 +341,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMeshFromAdjacencyHybrid"
-PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners[], PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm) 
+PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numCorners[], PetscInt cellVertices[], PetscInt spatialDim, PetscInt numVertices, const PetscReal coordinates[], PetscBool interpolate, DM *dm)
 {
   PetscInt       debug = 0;
   PetscErrorCode ierr;
@@ -397,7 +393,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   DM             cda;
   DMDALocalInfo  info;
   Vec            coordinates;
-  PetscInt      *cone, *coneO;
+  PetscInt       *cone, *coneO;
   PetscInt       dim, M, N, P, numCells, numGlobalCells, numCorners, numVertices, c = 0, v = 0;
   PetscInt       ye, ze;
   PetscInt       debug = 0;
@@ -412,14 +408,14 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
      and also higher numbered ghost vertices (vertices to the right and up) */
   numCorners  = 1 << dim;
   numCells    = ((info.gxm+info.gxs - info.xs) - 1);
-  if (dim > 1) {numCells *= ((info.gym+info.gys - info.ys) - 1);}
-  if (dim > 2) {numCells *= ((info.gzm+info.gzs - info.zs) - 1);}
+  if (dim > 1) numCells *= ((info.gym+info.gys - info.ys) - 1);
+  if (dim > 2) numCells *= ((info.gzm+info.gzs - info.zs) - 1);
   numVertices = (info.gxm+info.gxs - info.xs);
-  if (dim > 1) {numVertices *= (info.gym+info.gys - info.ys);}
-  if (dim > 2) {numVertices *= (info.gzm+info.gzs - info.zs);}
+  if (dim > 1) numVertices *= (info.gym+info.gys - info.ys);
+  if (dim > 2) numVertices *= (info.gzm+info.gzs - info.zs);
   numGlobalCells = M-1;
-  if (dim > 1) {numGlobalCells *= N-1;}
-  if (dim > 2) {numGlobalCells *= P-1;}
+  if (dim > 1) numGlobalCells *= N-1;
+  if (dim > 2) numGlobalCells *= P-1;
 
   ALE::Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(((PetscObject) dm)->comm, info.dim, debug);
   ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(((PetscObject) dm)->comm, 0, numCells+numVertices, debug);
@@ -427,8 +423,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
 
   mesh->setSieve(sieve);
   /* Number each cell for the vertex in the lower left corner */
-  if (dim < 3) {ze = 1; P = 1;} else {ze = info.gzs+info.gzm-1;}
-  if (dim < 2) {ye = 1; N = 1;} else {ye = info.gys+info.gym-1;}
+  if (dim < 3) {ze = 1; P = 1;} else ze = info.gzs+info.gzm-1;
+  if (dim < 2) {ye = 1; N = 1;} else ye = info.gys+info.gym-1;
   for (PetscInt k = info.zs; k < ze; ++k) {
     for (PetscInt j = info.ys; j < ye; ++j) {
       for (PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i, ++c) {
@@ -469,9 +465,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   }
   sieve->allocate();
   ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
-  for (PetscInt v = 0; v < numCorners; ++v) {
-    coneO[v] = 1;
-  }
+  for (PetscInt v = 0; v < numCorners; ++v) coneO[v] = 1;
   for (PetscInt k = info.zs; k < ze; ++k) {
     for (PetscInt j = info.ys; j < ye; ++j) {
       for (PetscInt i = info.xs; i < info.gxs+info.gxm-1; ++i) {
@@ -639,12 +633,12 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
 #define __FUNCT__ "DMCreate_Mesh"
 PetscErrorCode DMCreate_Mesh(DM dm)
 {
-  DM_Mesh       *mesh;
+  DM_Mesh        *mesh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscNewLog(dm, DM_Mesh, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm, DM_Mesh, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
   new(&mesh->m) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
@@ -657,51 +651,57 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->useNewImpl     = PETSC_FALSE;
   mesh->dim            = 0;
   mesh->sf             = PETSC_NULL;
+
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
+
   mesh->maxConeSize    = 0;
   mesh->cones          = PETSC_NULL;
+
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
+
   mesh->maxSupportSize = 0;
   mesh->supports       = PETSC_NULL;
+
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
 
-  mesh->meetTmpA       = PETSC_NULL;
-  mesh->meetTmpB       = PETSC_NULL;
-  mesh->joinTmpA       = PETSC_NULL;
-  mesh->joinTmpB       = PETSC_NULL;
-  mesh->closureTmpA    = PETSC_NULL;
-  mesh->closureTmpB    = PETSC_NULL;
+  mesh->meetTmpA    = PETSC_NULL;
+  mesh->meetTmpB    = PETSC_NULL;
+  mesh->joinTmpA    = PETSC_NULL;
+  mesh->joinTmpB    = PETSC_NULL;
+  mesh->closureTmpA = PETSC_NULL;
+  mesh->closureTmpB = PETSC_NULL;
 
   ierr = DMSetVecType(dm,VECSTANDARD);CHKERRQ(ierr);
-  dm->ops->view               = DMView_Mesh;
-  dm->ops->setfromoptions     = DMSetFromOptions_Mesh;
-  dm->ops->setup              = 0;
-  dm->ops->createglobalvector = DMCreateGlobalVector_Mesh;
-  dm->ops->createlocalvector  = DMCreateLocalVector_Mesh;
+
+  dm->ops->view                            = DMView_Mesh;
+  dm->ops->setfromoptions                  = DMSetFromOptions_Mesh;
+  dm->ops->setup                           = 0;
+  dm->ops->createglobalvector              = DMCreateGlobalVector_Mesh;
+  dm->ops->createlocalvector               = DMCreateLocalVector_Mesh;
   dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Mesh;
   dm->ops->createlocaltoglobalmappingblock = 0;
 
-  dm->ops->getcoloring        = 0;
-  dm->ops->creatematrix          = DMCreateMatrix_Mesh;
-  dm->ops->createinterpolation   = DMCreateInterpolation_Mesh;
-  dm->ops->getaggregates      = 0;
-  dm->ops->getinjection       = 0;
+  dm->ops->getcoloring         = 0;
+  dm->ops->creatematrix        = DMCreateMatrix_Mesh;
+  dm->ops->createinterpolation = DMCreateInterpolation_Mesh;
+  dm->ops->getaggregates       = 0;
+  dm->ops->getinjection        = 0;
 
-  dm->ops->refine             = DMRefine_Mesh;
-  dm->ops->coarsen            = 0;
-  dm->ops->refinehierarchy    = 0;
-  dm->ops->coarsenhierarchy   = DMCoarsenHierarchy_Mesh;
+  dm->ops->refine           = DMRefine_Mesh;
+  dm->ops->coarsen          = 0;
+  dm->ops->refinehierarchy  = 0;
+  dm->ops->coarsenhierarchy = DMCoarsenHierarchy_Mesh;
 
   dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Mesh;
   dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Mesh;
   dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Mesh;
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Mesh;
 
-  dm->ops->destroy            = DMDestroy_Mesh;
+  dm->ops->destroy = DMDestroy_Mesh;
 
-  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void)) DMConvert_DA_Mesh);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void))DMConvert_DA_Mesh);CHKERRQ(ierr);
 
   /* NEW_MESH_IMPL */
   ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMCreate", PETSC_FALSE, &mesh->useNewImpl, PETSC_NULL);CHKERRQ(ierr);

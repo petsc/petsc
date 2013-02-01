@@ -10,11 +10,11 @@ int main(int argc,char **argv)
   PetscMPIInt      rank;
   PetscErrorCode   ierr;
   PetscInt         M = 10,N = 8,m = PETSC_DECIDE;
-  PetscInt         s=2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
+  PetscInt         s =2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
   PetscInt         Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
-  PetscInt         *lx = PETSC_NULL,*ly = PETSC_NULL;
+  PetscInt         *lx       = PETSC_NULL,*ly = PETSC_NULL;
   PetscBool        testorder = PETSC_FALSE,flg;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by= DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx        = DMDA_BOUNDARY_NONE,by= DMDA_BOUNDARY_NONE;
   DM               da;
   PetscViewer      viewer;
   Vec              local,global;

@@ -13,11 +13,11 @@ typedef struct {
   PetscInt      debug;             /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt      dim;               /* The topological mesh dimension */
-  PetscBool     interpolate;       /* Generate intermediate mesh elements */
-  PetscReal     refinementLimit;   /* The largest allowable cell volume */
+  PetscInt  dim;                   /* The topological mesh dimension */
+  PetscBool interpolate;           /* Generate intermediate mesh elements */
+  PetscReal refinementLimit;       /* The largest allowable cell volume */
   /* Testing space */
-  PetscInt      order;             /* Order of polynomials to test */
+  PetscInt order;                  /* Order of polynomials to test */
 } AppCtx;
 
 PetscScalar constant(const PetscReal coords[])
@@ -87,7 +87,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner     = "chaco";
+  const char     *partitioner    = "chaco";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -111,9 +111,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -153,9 +153,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "CheckFunctions"
 PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
+  PetscScalar     (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL]) (const PetscReal x[]);
   MPI_Comm        comm = ((PetscObject) dm)->comm;
   PetscInt        dim  = user->dim;
-  PetscScalar   (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]);
   PetscQuadrature q[NUM_FIELDS];
   PetscReal       error, tol = 1.0e-10;
   PetscErrorCode  ierr;
@@ -169,7 +169,7 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   q[0].numComponents = NUM_BASIS_COMPONENTS_0;
   q[0].basis         = Basis_0;
   q[0].basisDer      = BasisDerivatives_0;
-  user->fem.quad     = (PetscQuadrature *) &q;
+  user->fem.quad     = (PetscQuadrature*) &q;
   /* Setup functions to approximate */
   switch (dim) {
   case 2:

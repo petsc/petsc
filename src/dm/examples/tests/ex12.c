@@ -43,12 +43,14 @@ int main(int argc,char **argv)
   /* Initialize the Array */
   ierr = VecGetLocalSize (local,&localsize);CHKERRQ(ierr);
   ierr = VecGetArray (local,&localptr);CHKERRQ(ierr);
+
   localptr[0] = copyptr[0] = 0.0;
+
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
-    j=(i-1)+mybase;
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M)
-                        + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
+    j = (i-1) + mybase;
+
+    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
   ierr = VecRestoreArray (copy,&copyptr);CHKERRQ(ierr);
@@ -73,8 +75,7 @@ int main(int argc,char **argv)
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
     for (i=1; i< localsize-1; i++) {
-      copyptr[i] = localptr[i] + (k/(h*h)) *
-                           (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
+      copyptr[i] = localptr[i] + (k/(h*h)) * (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
     }
 
     ierr = VecRestoreArray (copy,&copyptr);CHKERRQ(ierr);
@@ -85,7 +86,7 @@ int main(int argc,char **argv)
     ierr = DMLocalToGlobalEnd(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
 
     /* View Wave */
-  /* Set Up Display to Show Heat Graph */
+    /* Set Up Display to Show Heat Graph */
 #if defined(PETSC_USE_SOCKET_VIEWER)
     ierr = VecView(global,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif

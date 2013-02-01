@@ -24,7 +24,7 @@ static struct {
 
 static PetscErrorCode ourcreatematrix(DM dm,MatType type,Mat *A)
 {
-  int len;
+  int  len;
   char *ftype = (char*)type;
   if (type) {
     size_t slen;
@@ -32,7 +32,7 @@ static PetscErrorCode ourcreatematrix(DM dm,MatType type,Mat *A)
     len = (int)slen;
   } else {
     type = PETSC_NULL_CHARACTER_Fortran;
-    len = 0;
+    len  = 0;
   }
   PetscObjectUseFortranCallback(dm,_cb.creatematrix,(DM*,CHAR PETSC_MIXED_LEN_PROTO,Mat*,PetscErrorCode* PETSC_END_LEN_PROTO),
                                 (&dm,ftype PETSC_MIXED_LEN_CALL(len),A,&ierr PETSC_END_LEN_CALL(len)));

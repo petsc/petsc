@@ -30,10 +30,10 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
       if (i == 0 || j == 0 || i == info.mx-1 || j == info.my-1) {
-        g[j][2*i] = i*i + j*j;
+        g[j][2*i]   = i*i + j*j;
         g[j][2*i+1] = rank;
       } else {
-        g[j][2*i] = i*i + j*j;
+        g[j][2*i]   = i*i + j*j;
         g[j][2*i+1] = rank;
       }
     }
@@ -47,20 +47,20 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode   ierr;
-  DM               da,*subda;
+  PetscErrorCode ierr;
+  DM             da,*subda;
 
-  PetscInt         i;
-  PetscMPIInt      size,rank;
+  PetscInt    i;
+  PetscMPIInt size,rank;
 
-  Vec              v;
-  Vec              slvec,sgvec;
+  Vec v;
+  Vec slvec,sgvec;
 
-  IS               *ois,*iis;
-  VecScatter       oscata;
-  VecScatter       *iscat,*oscat,*gscat;
+  IS         *ois,*iis;
+  VecScatter oscata;
+  VecScatter *iscat,*oscat,*gscat;
 
-  DMDALocalInfo    info;
+  DMDALocalInfo info;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
@@ -77,11 +77,11 @@ int main(int argc,char **argv)
 
   {
     DMDALocalInfo subinfo;
-    MatStencil lower,upper;
-    IS         patchis;
-    Vec        smallvec;
-    Vec        largevec;
-    VecScatter patchscat;
+    MatStencil    lower,upper;
+    IS            patchis;
+    Vec           smallvec;
+    Vec           largevec;
+    VecScatter    patchscat;
 
     ierr = DMDAGetLocalInfo(subda[0],&subinfo);CHKERRQ(ierr);
 

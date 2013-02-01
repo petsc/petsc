@@ -24,16 +24,14 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
 
   comm_f = PETSC_COMM_WORLD;
-  ierr = DMDASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);
+  ierr   = DMDASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);
 
   /* Set up the array */
   if (dim == 2) {
     ierr = DMDACreate2d(comm_c,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
     M    = ratio*(M-1) + 1;
     ierr = DMDACreate2d(comm_f,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_f);CHKERRQ(ierr);
-  } else if (dim == 3) {
-    ;
-  }
+  } 
 
   ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);

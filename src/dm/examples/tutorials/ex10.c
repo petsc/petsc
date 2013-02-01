@@ -21,10 +21,10 @@ int main(int argc,char **argv)
   DM             da2D;
   PetscInt       i,j,ixs, ixm, iys, iym;;
   PetscViewer    H5viewer;
-  PetscScalar    xm=-1.0, xp=1.0;
-  PetscScalar    ym=-1.0, yp=1.0;
-  PetscScalar    value=1.0,dx,dy;
-  PetscInt       Nx=40, Ny=40;
+  PetscScalar    xm    = -1.0, xp=1.0;
+  PetscScalar    ym    = -1.0, yp=1.0;
+  PetscScalar    value = 1.0,dx,dy;
+  PetscInt       Nx    = 40, Ny=40;
   Vec            gauss;
   PetscScalar    **gauss_ptr;
 

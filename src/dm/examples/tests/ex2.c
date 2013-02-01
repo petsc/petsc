@@ -8,7 +8,7 @@ static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
-  PetscInt         M = 13,s=1,dof=1;
+  PetscInt         M  = 13,s=1,dof=1;
   DMDABoundaryType bx = DMDA_BOUNDARY_PERIODIC;
   PetscErrorCode   ierr;
   DM               da;
@@ -39,16 +39,16 @@ int main(int argc,char **argv)
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;
-  ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr  = VecSet(global,value);CHKERRQ(ierr);
+  ierr  = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr  = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank+1;
-  ierr = VecScale(local,value);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr  = VecScale(local,value);CHKERRQ(ierr);
+  ierr  = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr  = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   ierr = VecView(global,viewer);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");CHKERRQ(ierr);

@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   Vec            local,global,copy;
   PetscScalar    *localptr,*copyptr;
-  PetscReal       h,k;
+  PetscReal      h,k;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
@@ -46,12 +46,14 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize (local,&localsize);CHKERRQ(ierr);
   ierr = VecGetArray (local,&localptr);CHKERRQ(ierr);
   ierr = VecGetArray (copy,&copyptr);CHKERRQ(ierr);
+
   localptr[0] = copyptr[0] = 0.0;
+
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
-    j=(i-1)+mybase;
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M)
-                        + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
+    j = (i-1) + mybase;
+
+    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
@@ -76,8 +78,7 @@ int main(int argc,char **argv)
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
     for (i=1; i< localsize-1; i++) {
-      copyptr[i] = localptr[i] + (k/(h*h)) *
-                           (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
+      copyptr[i] = localptr[i] + (k/(h*h)) * (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
     }
 
     ierr = VecRestoreArray(copy,&copyptr);CHKERRQ(ierr);

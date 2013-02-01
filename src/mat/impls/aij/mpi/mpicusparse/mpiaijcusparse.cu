@@ -322,7 +322,7 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
    MATAIJCUSPARSE - MATMPIAIJCUSPARSE = "aijcusparse" = "mpiaijcusparse" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be in CSR format.
-   All matrix calculations are performed on Nvidia GPUs using the CUSPARSE library. Use of the
+   All matrix calculations are performed using the Nvidia CUSPARSE library. Use of the
    CUSPARSE library REQUIRES the 'txpetscgpu' package. ELL and HYB formats are also available
    in the txpetscgpu package. Use --download-txpetscgpu to build/install PETSc to use different
    GPU storage formats with CUSPARSE matrix types.
@@ -335,11 +335,12 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
 
    Options Database Keys:
 +  -mat_type mpiaijcusparse - sets the matrix type to "mpiaijcusparse" during a call to MatSetFromOptions()
-.  -mat_cusparse_storage_format csr (ell (ellpack) or hyb (hybrid)) sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions().
-.  -mat_cusparse_mult_diag_storage_format csr (ell (ellpack) or hyb (hybrid)) sets the storage format of diagonal matrix during a call to MatSetFromOptions().
--  -mat_cusparse_mult_offdiag_storage_format csr (ell (ellpack) or hyb (hybrid)) sets the storage format of off-diagonal matrix during a call to MatSetFromOptions().
+.  -mat_cusparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
+.  -mat_cusparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
+-  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSPARSE, MATSEQAIJCUSPARSE, MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+ .seealso: MatCreateAIJCUSPARSE(), MATSEQAIJCUSPARSE, MatCreateSeqAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+M
 M*/

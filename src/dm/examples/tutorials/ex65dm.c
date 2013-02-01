@@ -12,14 +12,14 @@ static char help[] = "Tests coarsening with DM.\n";
 int main(int argc, char **argv)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  PetscErrorCode      ierr;
-  Vec                 x,yp1,yp2,yp3,yp4,ym1,ym2,ym3,ym4;
-  PetscReal           *values;
-  PetscViewer         viewer_in,viewer_outp1,viewer_outp2,viewer_outp3,viewer_outp4;
-  PetscViewer         viewer_outm1,viewer_outm2,viewer_outm3,viewer_outm4;
-  DM                  daf,dac1,dac2,dac3,dac4,daf1,daf2,daf3,daf4;
-  Vec                 scaling_p1,scaling_p2,scaling_p3,scaling_p4;
-  Mat                 interp_p1,interp_p2,interp_p3,interp_p4,interp_m1,interp_m2,interp_m3,interp_m4;
+  PetscErrorCode ierr;
+  Vec            x,yp1,yp2,yp3,yp4,ym1,ym2,ym3,ym4;
+  PetscReal      *values;
+  PetscViewer    viewer_in,viewer_outp1,viewer_outp2,viewer_outp3,viewer_outp4;
+  PetscViewer    viewer_outm1,viewer_outm2,viewer_outm3,viewer_outm4;
+  DM             daf,dac1,dac2,dac3,dac4,daf1,daf2,daf3,daf4;
+  Vec            scaling_p1,scaling_p2,scaling_p3,scaling_p4;
+  Mat            interp_p1,interp_p2,interp_p3,interp_p4,interp_m1,interp_m2,interp_m3,interp_m4;
 #endif
 
   PetscInitialize(&argc,&argv, (char*)0, help);

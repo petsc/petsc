@@ -25,8 +25,8 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
   *done = PETSC_FALSE;
 
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localin[i])  {cnt++;}
-    if (dm->globalin[i]) {cnt++;}
+    if (dm->localin[i])  cnt++;
+    if (dm->globalin[i]) cnt++;
   }
 
   if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);

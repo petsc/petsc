@@ -7,11 +7,11 @@ typedef struct {
   PetscInt      debug;             /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt      dim;               /* The topological mesh dimension */
-  PetscBool     interpolate;       /* Generate intermediate mesh elements */
-  PetscBool     refinementUniform; /* Uniformly refine the mesh */
-  PetscReal     refinementLimit;   /* The largest allowable cell volume */
-  PetscBool     cellSimplex;       /* Use simplices or hexes */
+  PetscInt  dim;                   /* The topological mesh dimension */
+  PetscBool interpolate;           /* Generate intermediate mesh elements */
+  PetscBool refinementUniform;     /* Uniformly refine the mesh */
+  PetscReal refinementLimit;       /* The largest allowable cell volume */
+  PetscBool cellSimplex;           /* Use simplices or hexes */
 } AppCtx;
 
 #undef __FUNCT__
@@ -50,7 +50,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      refinementUniform = user->refinementUniform;
   PetscReal      refinementLimit   = user->refinementLimit;
   PetscBool      cellSimplex       = user->cellSimplex;
-  const char    *partitioner       = "chaco";
+  const char     *partitioner      = "chaco";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -89,9 +89,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }

@@ -103,7 +103,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, MatType mtype, Mat *mat)
 PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, MatType mtype, Mat *mat)
 {
   PetscErrorCode ierr;
-  DM_ADDA        *dd = (DM_ADDA*)dm->data;
+  DM_ADDA        *dd  = (DM_ADDA*)dm->data;
   DM_ADDA        *ddc = (DM_ADDA*)dmc->data;
 
   PetscFunctionBegin;
@@ -190,7 +190,7 @@ PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx)
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   ierr = PetscMemcpy(idx, lc, sizeof(PetscInt)*dim);
   if (ierr) {
@@ -198,9 +198,7 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
     return PETSC_FALSE;
   }
   for (i=0; i<dim; i++) {
-    if (lc[i] > uc[i]) {
-      return PETSC_FALSE;
-    }
+    if (lc[i] > uc[i]) return PETSC_FALSE;
   }
   return PETSC_TRUE;
 }
@@ -270,7 +268,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   PetscValidPointer(rest,3);
   if (ddc->dim != ddf->dim) SETERRQ2(((PetscObject)dmf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", ddc->dim, ddf->dim);CHKERRQ(ierr);
 /*   if (dmc->dof != dmf->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", dmc->dof, dmf->dof);CHKERRQ(ierr); */
-  dim = ddc->dim;
+  dim  = ddc->dim;
   dofc = ddc->dof;
   doff = ddf->dof;
 
@@ -301,7 +299,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   ierr = PetscMalloc(sizeof(PetscScalar)*max_agg_size, &one_vec);CHKERRQ(ierr);
   /* initialize */
   for (i=0; i<max_agg_size; i++) {
-    ierr = PetscMalloc(sizeof(PetscInt)*dim, &(fine_nodes[i].x));CHKERRQ(ierr);
+    ierr       = PetscMalloc(sizeof(PetscInt)*dim, &(fine_nodes[i].x));CHKERRQ(ierr);
     one_vec[i] = 1.0;
   }
 
@@ -335,6 +333,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
             /* loop over all corresponding fine grid dof */
             for (iter_f.d=fgdofs; iter_f.d<fgdofe; iter_f.d++) {
               ierr = PetscMemcpy(fine_nodes[fn_idx].x, iter_f.x, sizeof(PetscInt)*dim);CHKERRQ(ierr);
+
               fine_nodes[fn_idx].d = iter_f.d;
               fn_idx++;
             }
@@ -390,7 +389,7 @@ PetscErrorCode  DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(refine,3);
-  ierr = PetscMemcpy(dd->refine, refine, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr          = PetscMemcpy(dd->refine, refine, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   dd->dofrefine = dofrefine;
   PetscFunctionReturn(0);
 }
@@ -513,8 +512,7 @@ PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucor
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), ADDAMatSetValuesBlocked(),
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
-PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
-                                   const PetscScalar v[], InsertMode addv)
+PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],const PetscScalar v[], InsertMode addv)
 {
   DM_ADDA        *ddm = (DM_ADDA*)dmm->data;
   DM_ADDA        *ddn = (DM_ADDA*)dmn->data;
@@ -528,6 +526,7 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   PetscFunctionBegin;
   /* find correct multiplying factors */
   ierr = PetscMalloc(ddm->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
+
   nodemult[ddm->dim-1] = 1;
   for (j=ddm->dim-2; j>=0; j--) {
     nodemult[j] = nodemult[j+1]*(ddm->nodes[j+1]);
@@ -535,7 +534,7 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   /* convert each coordinate in idxm to the matrix row index */
   ierr = PetscMalloc(m*sizeof(PetscInt), &matidxm);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    x = idxm[i].x; d = idxm[i].d;
+    x   = idxm[i].x; d = idxm[i].d;
     idx = 0;
     for (j=ddm->dim-1; j>=0; j--) {
       if (x[j] < 0) { /* "left", "below", etc. of boundary */
@@ -564,6 +563,7 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
 
   /* find correct multiplying factors */
   ierr = PetscMalloc(ddn->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
+
   nodemult[ddn->dim-1] = 1;
   for (j=ddn->dim-2; j>=0; j--) {
     nodemult[j] = nodemult[j+1]*(ddn->nodes[j+1]);
@@ -571,7 +571,7 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   /* convert each coordinate in idxn to the matrix colum index */
   ierr = PetscMalloc(n*sizeof(PetscInt), &matidxn);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    x = idxn[i].x; d = idxn[i].d;
+    x   = idxn[i].x; d = idxn[i].d;
     idx = 0;
     for (j=ddn->dim-1; j>=0; j--) {
       if (x[j] < 0) { /* "left", "below", etc. of boundary */
@@ -593,7 +593,7 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
       idx += x[j]*nodemult[j];
     }
     matidxn[i] = idx*(ddn->dof) + d;
-  endofloop_n:
+endofloop_n:
     ;
   }
   /* call original MatSetValues() */
@@ -626,8 +626,8 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
   /* total number of nodes */
   nodes_total = 1;
   for (i=0; i<dim; i++) nodes_total *= nodes[i];
-  dd->dim = dim;
-  dd->dof = dof;
+  dd->dim      = dim;
+  dd->dof      = dof;
   dd->periodic = periodic;
 
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->nodes));CHKERRQ(ierr);
@@ -681,13 +681,13 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   PetscBool      *periodic;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  procs = dd->procs;
-  nodes = dd->nodes;
-  dim   = dd->dim;
-  dof   = dd->dof;
+  ierr     = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr     = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr     = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  procs    = dd->procs;
+  nodes    = dd->nodes;
+  dim      = dd->dim;
+  dof      = dd->dof;
   periodic = dd->periodic;
 
   /* check for validity */
@@ -700,15 +700,15 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
 
 
   /* find out local region */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lcs));CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lce));CHKERRQ(ierr);
-  procsdimi=size;
-  ranki=rank;
+  ierr      = PetscMalloc(dim*sizeof(PetscInt), &(dd->lcs));CHKERRQ(ierr);
+  ierr      = PetscMalloc(dim*sizeof(PetscInt), &(dd->lce));CHKERRQ(ierr);
+  procsdimi = size;
+  ranki     = rank;
   for (i=0; i<dim; i++) {
     /* What is the number of processor for dimensions i+1, ..., dim-1? */
     procsdimi /= procs[i];
     /* these are all nodes that come before our region */
-    rpq = ranki / procsdimi;
+    rpq        = ranki / procsdimi;
     dd->lcs[i] = rpq * (nodes[i]/procs[i]);
     if (rpq + 1 < procs[i]) {
       dd->lce[i] = (rpq + 1) * (nodes[i]/procs[i]);
@@ -768,20 +768,20 @@ PetscErrorCode  DMCreate_ADDA(DM dm)
   DM_ADDA        *dd;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(dm,DM_ADDA,&dd);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,DM_ADDA,&dd);CHKERRQ(ierr);
   dm->data = (void*)dd;
 
-  dm->ops->view = DMView;
-  dm->ops->createglobalvector = DMCreateGlobalVector_ADDA;
-  dm->ops->getcoloring = DMCreateColoring_ADDA;
-  dm->ops->creatematrix = DMCreateMatrix_ADDA;
+  dm->ops->view                = DMView;
+  dm->ops->createglobalvector  = DMCreateGlobalVector_ADDA;
+  dm->ops->getcoloring         = DMCreateColoring_ADDA;
+  dm->ops->creatematrix        = DMCreateMatrix_ADDA;
   dm->ops->createinterpolation = DMCreateInterpolation_ADDA;
-  dm->ops->refine = DMRefine_ADDA;
-  dm->ops->coarsen = DMCoarsen_ADDA;
-  dm->ops->getinjection = DMCreateInjection_ADDA;
-  dm->ops->getaggregates = DMCreateAggregates_ADDA;
-  dm->ops->setup = DMSetUp_ADDA;
-  dm->ops->destroy = DMDestroy_ADDA;
+  dm->ops->refine              = DMRefine_ADDA;
+  dm->ops->coarsen             = DMCoarsen_ADDA;
+  dm->ops->getinjection        = DMCreateInjection_ADDA;
+  dm->ops->getaggregates       = DMCreateAggregates_ADDA;
+  dm->ops->setup               = DMSetUp_ADDA;
+  dm->ops->destroy             = DMDestroy_ADDA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

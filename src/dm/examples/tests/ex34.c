@@ -7,10 +7,10 @@ static const char help[] = "Test DMDAGetOwnershipRanges()\n";
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;
-  DM da;
-  PetscInt dim = 2,m,n,p,i;
+  DM             da;
+  PetscInt       dim = 2,m,n,p,i;
   const PetscInt *lx,*ly,*lz;
-  PetscMPIInt rank,size;
+  PetscMPIInt    rank,size;
 
   PetscInitialize(&argc,&argv,0,help);
   ierr = PetscOptionsGetInt(0,"-dim",&dim,0);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ int main(int argc,char *argv[])
   for (i=0; i<size; i++) {
     ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     if (i == rank) {
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"[%d] lx ly%s\n",rank,dim>2?" lz":"");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"[%d] lx ly%s\n",rank,dim>2 ? " lz" : "");CHKERRQ(ierr);
       ierr = PetscIntView(m,lx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       ierr = PetscIntView(n,ly,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       if (dim > 2) {ierr = PetscIntView(n,lz,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}

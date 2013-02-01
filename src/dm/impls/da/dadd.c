@@ -23,7 +23,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   PetscFunctionBegin;
   comm = ((PetscObject)da)->comm;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  dd = (DM_DA *)da->data;
+  dd   = (DM_DA*)da->data;
 
   /* construct the natural mapping */
   ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
@@ -43,11 +43,11 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   ierr = PetscMalloc(sizeof(PetscInt)*n,&natidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&globidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&leafidx);CHKERRQ(ierr);
-  idx = 0;
-  for (k=dd->zs;k<dd->ze;k++) {
-    for (j=dd->ys;j<dd->ye;j++) {
-      for (i=dd->xs;i<dd->xe;i++) {
-        natidx[idx] = i + dd->w*(j*dd->M + k*dd->M*dd->N);
+  idx  = 0;
+  for (k=dd->zs; k<dd->ze; k++) {
+    for (j=dd->ys; j<dd->ye; j++) {
+      for (i=dd->xs; i<dd->xe; i++) {
+        natidx[idx]  = i + dd->w*(j*dd->M + k*dd->M*dd->N);
         globidx[idx] = base + idx;
         leafidx[idx] = 0;
         idx++;
@@ -68,13 +68,13 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
 
-  pn = dd->w*(upper->k - lower->k)*(upper->j - lower->j)*(upper->i - lower->i);
+  pn   = dd->w*(upper->k - lower->k)*(upper->j - lower->j)*(upper->i - lower->i);
   ierr = PetscMalloc(sizeof(PetscInt)*pn,&pnatidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*pn,&pleafidx);CHKERRQ(ierr);
-  idx = 0;
-  for (k=lower->k-oz;k<upper->k-oz;k++) {
-    for (j=lower->j-oy;j<upper->j-oy;j++) {
-      for (i=dd->w*(lower->i-ox);i<dd->w*(upper->i-ox);i++) {
+  idx  = 0;
+  for (k=lower->k-oz; k<upper->k-oz; k++) {
+    for (j=lower->j-oy; j<upper->j-oy; j++) {
+      for (i=dd->w*(lower->i-ox); i<dd->w*(upper->i-ox); i++) {
         ii = i % (dd->w*dd->M);
         jj = j % dd->N;
         kk = k % dd->P;
@@ -115,13 +115,13 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
 #define __FUNCT__ "DMDASubDomainDA_Private"
 PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
 {
-  DM               da;
-  DM_DA            *dd;
-  PetscErrorCode   ierr;
-  DMDALocalInfo    info;
-  PetscReal        lmin[3],lmax[3];
-  PetscInt         xsize,ysize,zsize;
-  PetscInt         xo,yo,zo;
+  DM             da;
+  DM_DA          *dd;
+  PetscErrorCode ierr;
+  DMDALocalInfo  info;
+  PetscReal      lmin[3],lmax[3];
+  PetscInt       xsize,ysize,zsize;
+  PetscInt       xo,yo,zo;
 
   PetscFunctionBegin;
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
   ierr = DMDASetStencilType(da,info.st);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da,info.sw);CHKERRQ(ierr);
 
-  dd = (DM_DA *)dm->data;
+  dd = (DM_DA*)dm->data;
 
   /* local with overlap */
   xsize = info.xm;
@@ -145,7 +145,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
   zo    = info.zs;
   if (info.bx == DMDA_BOUNDARY_PERIODIC || (info.xs != 0)) {
     xsize += dd->overlap;
-    xo -= dd->overlap;
+    xo    -= dd->overlap;
   }
   if (info.by == DMDA_BOUNDARY_PERIODIC || (info.ys != 0)) {
     ysize += dd->overlap;
@@ -156,15 +156,10 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
     zo    -= dd->overlap;
   }
 
-  if (info.bx == DMDA_BOUNDARY_PERIODIC || (info.xs+info.xm != info.mx)) {
-    xsize += dd->overlap;
-  }
-  if (info.by == DMDA_BOUNDARY_PERIODIC || (info.ys+info.ym != info.my)) {
-    ysize += dd->overlap;
-  }
-  if (info.bz == DMDA_BOUNDARY_PERIODIC || (info.zs+info.zm != info.mz)) {
-    zsize += dd->overlap;
-  }
+  if (info.bx == DMDA_BOUNDARY_PERIODIC || (info.xs+info.xm != info.mx)) xsize += dd->overlap;
+  if (info.by == DMDA_BOUNDARY_PERIODIC || (info.ys+info.ym != info.my)) ysize += dd->overlap;
+  if (info.bz == DMDA_BOUNDARY_PERIODIC || (info.zs+info.zm != info.mz)) zsize += dd->overlap;
+
   ierr = DMDASetSizes(da, xsize, ysize, zsize);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da, 1, 1, 1);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED);CHKERRQ(ierr);
@@ -193,24 +188,24 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
  */
 PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM *subdms,VecScatter **iscat,VecScatter **oscat, VecScatter **lscat)
 {
-  PetscErrorCode   ierr;
-  DMDALocalInfo    info,subinfo;
-  DM               subdm;
-  MatStencil       upper,lower;
-  IS               idis,isis,odis,osis,gdis;
-  Vec              svec,dvec,slvec;
+  PetscErrorCode ierr;
+  DMDALocalInfo  info,subinfo;
+  DM             subdm;
+  MatStencil     upper,lower;
+  IS             idis,isis,odis,osis,gdis;
+  Vec            svec,dvec,slvec;
 
   PetscFunctionBegin;
   if (nsubdms != 1) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot have more than one subdomain per processor (yet)");
 
   /* allocate the arrays of scatters */
-  if (iscat) {ierr = PetscMalloc(sizeof(VecScatter *),iscat);CHKERRQ(ierr);}
-  if (oscat) {ierr = PetscMalloc(sizeof(VecScatter *),oscat);CHKERRQ(ierr);}
-  if (lscat) {ierr = PetscMalloc(sizeof(VecScatter *),lscat);CHKERRQ(ierr);}
+  if (iscat) {ierr = PetscMalloc(sizeof(VecScatter*),iscat);CHKERRQ(ierr);}
+  if (oscat) {ierr = PetscMalloc(sizeof(VecScatter*),oscat);CHKERRQ(ierr);}
+  if (lscat) {ierr = PetscMalloc(sizeof(VecScatter*),lscat);CHKERRQ(ierr);}
 
-  ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  ierr  = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   subdm = subdms[0];
-  ierr = DMDAGetLocalInfo(subdm,&subinfo);CHKERRQ(ierr);
+  ierr  = DMDAGetLocalInfo(subdm,&subinfo);CHKERRQ(ierr);
 
   /* create the global and subdomain index sets for the inner domain */
   /* TODO - make this actually support multiple subdomains -- subdomain needs to provide where it's nonoverlapping portion belongs */
@@ -220,8 +215,8 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   upper.i = info.xs+info.xm;
   upper.j = info.ys+info.ym;
   upper.k = info.zs+info.zm;
-  ierr = DMDACreatePatchIS(dm,&lower,&upper,&idis);CHKERRQ(ierr);
-  ierr = DMDACreatePatchIS(subdm,&lower,&upper,&isis);CHKERRQ(ierr);
+  ierr    = DMDACreatePatchIS(dm,&lower,&upper,&idis);CHKERRQ(ierr);
+  ierr    = DMDACreatePatchIS(subdm,&lower,&upper,&isis);CHKERRQ(ierr);
 
   /* create the global and subdomain index sets for the outer subdomain */
   lower.i = subinfo.xs;
@@ -230,8 +225,8 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   upper.i = subinfo.xs+subinfo.xm;
   upper.j = subinfo.ys+subinfo.ym;
   upper.k = subinfo.zs+subinfo.zm;
-  ierr = DMDACreatePatchIS(dm,&lower,&upper,&odis);CHKERRQ(ierr);
-  ierr = DMDACreatePatchIS(subdm,&lower,&upper,&osis);CHKERRQ(ierr);
+  ierr    = DMDACreatePatchIS(dm,&lower,&upper,&odis);CHKERRQ(ierr);
+  ierr    = DMDACreatePatchIS(subdm,&lower,&upper,&osis);CHKERRQ(ierr);
 
   /* global and subdomain ISes for the local indices of the subdomain */
   /* todo - make this not loop over at nonperiodic boundaries, which will be more involved */
@@ -290,9 +285,9 @@ Therefore, for each point in the overall, we must check if it's:
 
 PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
 {
-  PetscErrorCode   ierr;
-  DMDALocalInfo    info,subinfo;
-  MatStencil       lower,upper;
+  PetscErrorCode ierr;
+  DMDALocalInfo  info,subinfo;
+  MatStencil     lower,upper;
 
   PetscFunctionBegin;
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
@@ -315,7 +310,7 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
   upper.i = subinfo.xs+subinfo.xm;
   upper.j = subinfo.ys+subinfo.ym;
   upper.k = subinfo.zs+subinfo.zm;
-  ierr = DMDACreatePatchIS(dm,&lower,&upper,ois);CHKERRQ(ierr);
+  ierr    = DMDACreatePatchIS(dm,&lower,&upper,ois);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -331,30 +326,28 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   PetscFunctionBegin;
   /* fix to enable PCASM default behavior as taking overlap from the matrix */
   if (!dd->decompositiondm) {
-    if (len)*len=0;
-    if (names)*names=0;
-    if (iis)*iis=0;
-    if (ois)*ois=0;
-    if (subdm)*subdm=0;
+    if (len) *len=0;
+    if (names) *names=0;
+    if (iis) *iis=0;
+    if (ois) *ois=0;
+    if (subdm) *subdm=0;
     PetscFunctionReturn(0);
   }
 
-  if (len)*len = 1;
+  if (len) *len = 1;
 
-  if (iis) {ierr = PetscMalloc(sizeof(IS *),iis);CHKERRQ(ierr);}
-  if (ois) {ierr = PetscMalloc(sizeof(IS *),ois);CHKERRQ(ierr);}
-  if (subdm) {ierr = PetscMalloc(sizeof(DM *),subdm);CHKERRQ(ierr);}
-  if (names) {ierr = PetscMalloc(sizeof(char *),names);CHKERRQ(ierr);}
+  if (iis) {ierr = PetscMalloc(sizeof(IS*),iis);CHKERRQ(ierr);}
+  if (ois) {ierr = PetscMalloc(sizeof(IS*),ois);CHKERRQ(ierr);}
+  if (subdm) {ierr = PetscMalloc(sizeof(DM*),subdm);CHKERRQ(ierr);}
+  if (names) {ierr = PetscMalloc(sizeof(char*),names);CHKERRQ(ierr);}
   ierr = DMDASubDomainDA_Private(dm,&subdm0);CHKERRQ(ierr);
   ierr = DMDASubDomainIS_Private(dm,subdm0,&iis0,&ois0);CHKERRQ(ierr);
-  if (iis) {
-    (*iis)[0] = iis0;
-  } else {
+  if (iis) (*iis)[0] = iis0;
+  else {
     ierr = ISDestroy(&iis0);CHKERRQ(ierr);
   }
-  if (ois) {
-    (*ois)[0] = ois0;
-  } else {
+  if (ois) (*ois)[0] = ois0;
+  else {
     ierr = ISDestroy(&ois0);CHKERRQ(ierr);
   }
   if (subdm) (*subdm)[0] = subdm0;
@@ -375,8 +368,6 @@ PetscErrorCode DMCreateDomainDecompositionDM_DA(DM dm,const char *name,DM *ddm)
   if (flg) {
     dd->decompositiondm = PETSC_TRUE;
     *ddm = dm;
-  } else {
-    dd->decompositiondm = PETSC_FALSE;
-  }
+  } else dd->decompositiondm = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

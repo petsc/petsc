@@ -57,9 +57,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = PETSC_NULL;
-    DM distributedMesh = PETSC_NULL;
-    const char *partitioner = user->partitioner;
+    DM         refinedMesh     = PETSC_NULL;
+    DM         distributedMesh = PETSC_NULL;
+    const char *partitioner    = user->partitioner;
 
     /* Refine mesh using a volume constraint */
     ierr = DMMeshRefine(*dm, refinementLimit, interpolate, &refinedMesh);CHKERRQ(ierr);
@@ -74,8 +74,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -85,10 +85,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
 {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
-  PetscInt      *local;
-  PetscSFNode   *remote;
-  PetscInt       numPoints;
-  PetscErrorCode ierr;
+  PetscInt                  *local;
+  PetscSFNode               *remote;
+  PetscInt                  numPoints;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = PetscSFCreate(((PetscObject) dm)->comm, sf);CHKERRQ(ierr);
@@ -100,8 +100,8 @@ PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
     ALE::Obj<PETSC_MESH_TYPE::recv_overlap_type> overlap = mesh->getRecvOverlap();
 
     numPoints = overlap->getNumPoints();
-    ierr = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
-    ierr = PetscMalloc(numPoints * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
+    ierr      = PetscMalloc(numPoints * sizeof(PetscInt), &local);CHKERRQ(ierr);
+    ierr      = PetscMalloc(numPoints * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
     for (PetscInt r = 0, i = 0; r < overlap->getNumRanks(); ++r) {
       const PetscInt                                                      rank   = overlap->getRank(r);
       const PETSC_MESH_TYPE::recv_overlap_type::supportSequence::iterator cBegin = overlap->supportBegin(rank);
@@ -124,23 +124,23 @@ PetscErrorCode DMMeshConvertOverlapToSF(DM dm, PetscSF *sf)
 #define __FUNCT__ "PetscSFCreateSectionSF"
 PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection section, PetscSF *sectionSF)
 {
-  PetscInt           numRanks;
+  PetscInt          numRanks;
   const PetscInt    *ranks, *rankOffsets;
   const PetscMPIInt *localPoints, *remotePoints;
-  PetscInt           numPoints, numIndices = 0;
+  PetscInt          numPoints, numIndices = 0;
   PetscInt          *remoteOffsets;
   PetscInt          *localIndices;
   PetscSFNode       *remoteIndices;
-  PetscInt           i, r, ind;
-  PetscErrorCode     ierr;
+  PetscInt          i, r, ind;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
+  ierr      = PetscSFGetRanks(sf, &numRanks, &ranks, &rankOffsets, &localPoints, &remotePoints);CHKERRQ(ierr);
   numPoints = rankOffsets[numRanks];
   for (i = 0; i < numPoints; ++i) {
     PetscInt dof;
 
-    ierr = PetscSectionGetDof(section, localPoints[i], &dof);CHKERRQ(ierr);
+    ierr        = PetscSectionGetDof(section, localPoints[i], &dof);CHKERRQ(ierr);
     numIndices += dof;
   }
   /* Communicate offsets for ghosted points */
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);

@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr      = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
-  comm = PETSC_COMM_WORLD;
+  ierr      = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  comm      = PETSC_COMM_WORLD;
 
   try {
     ierr = CreateSieve(comm, verbosity);CHKERRQ(ierr);

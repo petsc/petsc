@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt         N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,M=8,dof=1,stencil_width=1,P=5,pt = 0,st = 0;
   PetscErrorCode   ierr;
   PetscBool        flg2,flg3;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da;
   Vec              global1,global2,global3,global4;
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   if (pt == 3) {bx = DMDA_BOUNDARY_PERIODIC; by = DMDA_BOUNDARY_PERIODIC;}
   if (pt == 4) bz = DMDA_BOUNDARY_PERIODIC;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-one",&flg2);CHKERRQ(ierr);

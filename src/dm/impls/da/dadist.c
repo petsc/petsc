@@ -7,7 +7,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPI_DA"
-PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec* gg)
+PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec *gg)
 {
   PetscErrorCode ierr;
   DM             da;
@@ -22,7 +22,7 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec* gg)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_DA"
-PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec* g)
+PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -42,9 +42,9 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec* g)
     ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
   }
-  ierr = VecSetOperation(*g,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(*g,VECOP_LOAD,(void(*)(void))VecLoad_Default_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(*g,VECOP_DUPLICATE,(void(*)(void))VecDuplicate_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_VIEW,(void (*)(void))VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_LOAD,(void (*)(void))VecLoad_Default_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_DUPLICATE,(void (*)(void))VecDuplicate_MPI_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +78,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec* g)
           DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
           DMGlobalToLocalEnd(), DMDALocalToGlobalBegin()
 @*/
-PetscErrorCode  DMDACreateNaturalVector(DM da,Vec* g)
+PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
 {
   PetscErrorCode ierr;
   PetscInt       cnt;
@@ -101,6 +101,7 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec* g)
     ierr = VecSetBlockSize(*g, dd->w);CHKERRQ(ierr);
     ierr = VecSetType(*g,VECMPI);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
+
     dd->natural = *g;
   }
   PetscFunctionReturn(0);

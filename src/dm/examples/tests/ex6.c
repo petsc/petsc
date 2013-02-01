@@ -11,13 +11,13 @@ int main(int argc,char **argv)
   PetscInt         M = 3,N = 5,P=3,s=1,w=2,nloc,l,i,j,k,kk,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
   PetscErrorCode   ierr;
   PetscInt         Xs,Xm,Ys,Ym,Zs,Zm,iloc,*ltog,*iglobal;
-  PetscInt         *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscInt         *lx        = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscBool        test_order = PETSC_FALSE;
   DM               da;
   PetscViewer      viewer;
   Vec              local,global;
   PetscScalar      value;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   AO               ao;
   PetscBool        flg = PETSC_FALSE;
@@ -34,38 +34,38 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-box",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_BOX;
 
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bx = DMDA_BOUNDARY_PERIODIC;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bx = DMDA_BOUNDARY_GHOSTED;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-xnonghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
 
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) by = DMDA_BOUNDARY_PERIODIC;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) by = DMDA_BOUNDARY_GHOSTED;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ynonghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
 
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-zperiodic",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bz = DMDA_BOUNDARY_PERIODIC;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-zghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bz = DMDA_BOUNDARY_GHOSTED;
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-znonghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testorder",&test_order,PETSC_NULL);CHKERRQ(ierr);
@@ -75,15 +75,15 @@ int main(int argc,char **argv)
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    for (i=0; i<m-1; i++) { lx[i] = 4;}
+    for (i=0; i<m-1; i++) lx[i] = 4;
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -n option with -distribute option");
     ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
-    for (i=0; i<n-1; i++) { ly[i] = 2;}
+    for (i=0; i<n-1; i++) ly[i] = 2;
     ly[n-1] = N - 2*(n-1);
     if (p == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -p option with -distribute option");
     ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
-    for (i=0; i<p-1; i++) { lz[i] = 2;}
+    for (i=0; i<p-1; i++) lz[i] = 2;
     lz[p-1] = P - 2*(p-1);
   }
 

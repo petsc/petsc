@@ -2,9 +2,9 @@
 #include <petsc-private/matimpl.h>               /*I "petscmat.h" I*/
 
 /* Logging support */
-PetscClassId  MAT_COARSEN_CLASSID;
+PetscClassId MAT_COARSEN_CLASSID;
 
-PetscFunctionList MatCoarsenList = 0;
+PetscFunctionList MatCoarsenList              = 0;
 PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -39,6 +39,7 @@ PetscErrorCode  MatCoarsenRegisterDestroy(void)
 
   PetscFunctionBegin;
   MatCoarsenRegisterAllCalled = PETSC_FALSE;
+
   ierr = PetscFunctionListDestroy(&MatCoarsenList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -265,8 +266,8 @@ PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
 @*/
 PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 {
-  MatCoarsen agg;
-  PetscErrorCode  ierr;
+  MatCoarsen     agg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *newcrs = 0;
@@ -311,8 +312,8 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 @*/
 PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
 {
-  PetscErrorCode            ierr;
-  PetscBool                 iascii;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(agg,MAT_COARSEN_CLASSID,1);
@@ -361,7 +362,7 @@ $      (for instance, mis)
 PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 {
   PetscErrorCode ierr,(*r)(MatCoarsen);
-  PetscBool  match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
@@ -372,17 +373,19 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 
   if (coarser->setupcalled) {
     ierr =  (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
+
     coarser->ops->destroy = PETSC_NULL;
     coarser->subctx       = 0;
-    coarser->setupcalled = 0;
+    coarser->setupcalled  = 0;
   }
 
   ierr =  PetscFunctionListFind(((PetscObject)coarser)->comm,MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(((PetscObject)coarser)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
 
-  coarser->ops->destroy      = (PetscErrorCode (*)(MatCoarsen)) 0;
-  coarser->ops->view         = (PetscErrorCode (*)(MatCoarsen,PetscViewer)) 0;
+  coarser->ops->destroy = (PetscErrorCode (*)(MatCoarsen)) 0;
+  coarser->ops->view    = (PetscErrorCode (*)(MatCoarsen,PetscViewer)) 0;
+
   ierr = (*r)(coarser);CHKERRQ(ierr);
 
   ierr = PetscFree(((PetscObject)coarser)->type_name);CHKERRQ(ierr);
@@ -443,7 +446,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   if (!coarser->agg_lists) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
-  *llist = coarser->agg_lists;
+  *llist             = coarser->agg_lists;
   coarser->agg_lists = 0; /* giving up ownership */
   PetscFunctionReturn(0);
 }

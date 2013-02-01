@@ -38,7 +38,7 @@
 @*/
 PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
 {
-  FILE          *info;
+  FILE           *info;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -68,7 +68,7 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
 #define __FUNCT__ "PetscViewerBinaryMatlabDestroy"
 PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer *viewer)
 {
-  FILE          *info;
+  FILE           *info;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
@@ -100,7 +100,7 @@ PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer *viewer)
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputBag"
 PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char name[], PetscBag bag)
 {
-  FILE          *info;
+  FILE           *info;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
@@ -131,7 +131,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char n
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVec"
 PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char name[], Vec vec)
 {
-  FILE          *info;
+  FILE           *info;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
@@ -166,8 +166,8 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char n
 PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char name[], Vec vec, DM da)
 {
   MPI_Comm       comm;
-  FILE          *info;
-  const char    *fieldname;
+  FILE           *info;
+  const char     *fieldname;
   PetscInt       dim,ni,nj,nk,pi,pj,pk,dof,n;
   PetscBool      flg;
   PetscErrorCode ierr;

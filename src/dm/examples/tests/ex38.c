@@ -7,11 +7,11 @@ static char help[] = "Tests DMGlobalToLocal() for 3d DA with stencil width of 2.
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt         N = 3,M=2,P=4,dof=1,rstart,rend,i;
-  PetscInt         stencil_width=2;
+  PetscInt         N             = 3,M=2,P=4,dof=1,rstart,rend,i;
+  PetscInt         stencil_width = 2;
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da;
   Vec              global,local;

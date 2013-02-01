@@ -72,7 +72,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
     PetscInt    rstart,rend,*indices;
     PetscScalar *values;
 
-    mA    = com->N;
+    mA   = com->N;
     ierr = MatMPIAIJSetPreallocation(*J,mA,PETSC_NULL,mA-m,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*J,mA,PETSC_NULL);CHKERRQ(ierr);
 
@@ -141,10 +141,10 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
     const PetscScalar *values;
     PetscMPIInt       proc;
 
-    ierr = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
+    ierr  = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
+    ierr  = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
     maxnc = 0;
     for (i=0; i<mA; i++) {
       ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
     }
     ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
     for (i=0; i<mA; i++) {
-      ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+      ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt**)&cols,&values);CHKERRQ(ierr);
       for (j=0; j<nc; j++) {
         proc = 0;
         while (cols[j] >= rstarts[proc+1]) proc++;
@@ -161,7 +161,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
       }
       row  = com->rstart+next->rstart+i;
       ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt**)&cols,&values);CHKERRQ(ierr);
     }
     ierr = PetscFree(ccols);CHKERRQ(ierr);
     ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,MatType mtype,Mat *J)
   if (usenest) {
     ierr = DMCreateMatrix_Composite_Nest(dm,mtype,J);CHKERRQ(ierr);
   } else {
-    ierr = DMCreateMatrix_Composite_AIJ(dm,mtype?mtype:MATAIJ,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_Composite_AIJ(dm,mtype ? mtype : MATAIJ,J);CHKERRQ(ierr);
   }
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);

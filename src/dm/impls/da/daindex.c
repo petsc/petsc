@@ -53,11 +53,11 @@
 @*/
 PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 {
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (n)   *n   = dd->Nl;
+  if (n) *n = dd->Nl;
   if (idx) *idx = dd->idx;
   PetscFunctionReturn(0);
 }
@@ -77,12 +77,8 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 
   PetscFunctionBegin;
   Nlocal = (dd->xe-dd->xs);
-  if (dd->dim > 1) {
-    Nlocal *= (dd->ye-dd->ys);
-  }
-  if (dd->dim > 2) {
-    Nlocal *= (dd->ze-dd->zs);
-  }
+  if (dd->dim > 1) Nlocal *= (dd->ye-dd->ys);
+  if (dd->dim > 2) Nlocal *= (dd->ze-dd->zs);
 
   ierr = PetscMalloc(Nlocal*sizeof(PetscInt),&lidx);CHKERRQ(ierr);
 
@@ -108,7 +104,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
     }
   }
   *outNlocal = Nlocal;
-  ierr = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
+  ierr       = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -66,9 +66,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Serial Mesh");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = PetscObjectSetName((PetscObject) *dm, "Serial Mesh");CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -83,20 +83,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
  */
 PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *parallelDM)
 {
-  MPI_Comm       comm   = ((PetscObject) dm)->comm;
-  const PetscInt height = 0;
-  PetscInt       dim, numRemoteRanks;
-  IS             cellPart,        part;
-  PetscSection   cellPartSection, partSection;
-  PetscSFNode   *remoteRanks;
-  PetscSF        partSF;
+  MPI_Comm               comm   = ((PetscObject) dm)->comm;
+  const PetscInt         height = 0;
+  PetscInt               dim, numRemoteRanks;
+  IS                     cellPart,        part;
+  PetscSection           cellPartSection, partSection;
+  PetscSFNode            *remoteRanks;
+  PetscSF                partSF;
   ISLocalToGlobalMapping renumbering;
-  PetscSF        coneSF;
-  PetscSection   originalConeSection, newConeSection;
-  PetscInt      *remoteOffsets, newConesSize;
-  PetscInt      *cones, *newCones;
-  PetscMPIInt    numProcs, rank, p;
-  PetscErrorCode ierr;
+  PetscSF                coneSF;
+  PetscSection           originalConeSection, newConeSection;
+  PetscInt               *remoteOffsets, newConesSize;
+  PetscInt               *cones, *newCones;
+  PetscMPIInt            numProcs, rank, p;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
@@ -105,11 +105,8 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
   ierr = DMMeshCreatePartition(dm, &cellPartSection, &cellPart, height);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
-  if (!rank) {
-    numRemoteRanks = numProcs;
-  } else {
-    numRemoteRanks = 0;
-  }
+  if (!rank) numRemoteRanks = numProcs;
+  else numRemoteRanks = 0;
   ierr = PetscMalloc(numRemoteRanks * sizeof(PetscSFNode), &remoteRanks);CHKERRQ(ierr);
   for (p = 0; p < numRemoteRanks; ++p) {
     remoteRanks[p].rank  = p;
@@ -177,8 +174,8 @@ PetscErrorCode DistributeCoordinates(DM dm, PetscSF pointSF, DM parallelDM)
   PetscSF        coordSF;
   PetscSection   originalCoordSection, newCoordSection;
   Vec            coordinates, newCoordinates;
-  PetscScalar   *coords,     *newCoords;
-  PetscInt      *remoteOffsets, coordSize;
+  PetscScalar    *coords,     *newCoords;
+  PetscInt       *remoteOffsets, coordSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -214,7 +211,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);

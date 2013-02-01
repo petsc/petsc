@@ -11,7 +11,7 @@
 PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (F) {
     ierr = VecCopy(F,fd->w1);CHKERRQ(ierr);
@@ -35,8 +35,8 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
   /* loop over colors  */
   for (i=0; i<fd->ncolors; i++) {
     for (j=0; j<fd->nrows[i]; j++) {
-      y = fd->M - fd->rows[i][j] - fd->rstart;
-      x = fd->columnsforrow[i][j];
+      y    = fd->M - fd->rows[i][j] - fd->rstart;
+      x    = fd->columnsforrow[i][j];
       ierr = PetscDrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
     }
   }
@@ -58,8 +58,8 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
 
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
 
-  xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0;
-  xr += w;     yr += h;    xl = -w;     yl = -h;
+  xr   = fd->N; yr  = fd->M; h = yr/10.0; w = xr/10.0;
+  xr  += w;     yr += h;    xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
@@ -297,16 +297,16 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)matfd);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,3,&flg);CHKERRQ(ierr);
-    if (flg) {
-      if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
-      else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
-      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
-    }
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)matfd);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,3,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
+    else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
+    else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
+  }
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)matfd);CHKERRQ(ierr);
   PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -377,15 +377,15 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   ierr = VecDuplicate(c->w1,&c->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(c,c->w2);CHKERRQ(ierr);
 
-  c->error_rel         = PETSC_SQRT_MACHINE_EPSILON;
-  c->umin              = 100.0*PETSC_SQRT_MACHINE_EPSILON;
-  c->currentcolor      = -1;
-  c->htype             = "wp";
-  c->fset              = PETSC_FALSE;
+  c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;
+  c->umin         = 100.0*PETSC_SQRT_MACHINE_EPSILON;
+  c->currentcolor = -1;
+  c->htype        = "wp";
+  c->fset         = PETSC_FALSE;
 
   *color = c;
-  ierr = PetscObjectCompose((PetscObject)mat,"SNESMatFDColoring",(PetscObject)c);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
+  ierr   = PetscObjectCompose((PetscObject)mat,"SNESMatFDColoring",(PetscObject)c);CHKERRQ(ierr);
+  ierr   = PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -510,16 +510,16 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStruct
 #define __FUNCT__ "MatFDColoringApply_AIJ"
 PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
+  PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
   PetscInt       k,start,end,l,row,col,srow,**vscaleforrow;
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm;
-  Vec            w1=coloring->w1,w2=coloring->w2,w3;
-  void           *fctx = coloring->fctx;
-  PetscBool      flg = PETSC_FALSE;
-  PetscInt       ctype=coloring->ctype,N,col_start=0,col_end=0;
+  Vec            w1      = coloring->w1,w2=coloring->w2,w3;
+  void           *fctx   = coloring->fctx;
+  PetscBool      flg     = PETSC_FALSE;
+  PetscInt       ctype   = coloring->ctype,N,col_start=0,col_end=0;
   Vec            x1_tmp;
 
   PetscFunctionBegin;
@@ -534,7 +534,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
-    PetscBool  assembled;
+    PetscBool assembled;
     ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
     if (assembled) {
       ierr = MatZeroEntries(J);CHKERRQ(ierr);
@@ -573,16 +573,16 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   if (ctype == IS_COLORING_GHOSTED) {
     col_start = 0; col_end = N;
   } else if (ctype == IS_COLORING_GLOBAL) {
-    xx = xx - start;
+    xx           = xx - start;
     vscale_array = vscale_array - start;
-    col_start = start; col_end = N + start;
+    col_start    = start; col_end = N + start;
   }
   for (col=col_start; col<col_end; col++) {
     /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
     if (coloring->htype[0] == 'w') {
       dx = 1.0 + unorm;
     } else {
-      dx  = xx[col];
+      dx = xx[col];
     }
     if (dx == (PetscScalar)0.0) dx = 1.0;
     if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
@@ -590,7 +590,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     dx               *= epsilon;
     vscale_array[col] = (PetscScalar)1.0/dx;
   }
-  if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;
+  if (ctype == IS_COLORING_GLOBAL) vscale_array = vscale_array + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -619,7 +619,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       if (coloring->htype[0] == 'w') {
         dx = 1.0 + unorm;
       } else {
-        dx  = xx[col];
+        dx = xx[col];
       }
       if (dx == (PetscScalar)0.0) dx = 1.0;
       if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
@@ -645,11 +645,11 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     */
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
-      row    = coloring->rows[k][l];             /* local row index */
-      col    = coloring->columnsforrow[k][l];    /* global column index */
+      row     = coloring->rows[k][l];            /* local row index */
+      col     = coloring->columnsforrow[k][l];   /* global column index */
       y[row] *= vscale_array[vscaleforrow[k][l]];
-      srow   = row + start;
-      ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+      srow    = row + start;
+      ierr    = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } /* endof for each color */
@@ -658,8 +658,9 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);
 
   coloring->currentcolor = -1;
-  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
   ierr = MatFDColoringViewFromOptions(coloring,"-mat_fd_coloring_view");CHKERRQ(ierr);

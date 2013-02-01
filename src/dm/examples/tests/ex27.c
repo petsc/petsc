@@ -14,7 +14,7 @@ static char help[] = "Test sequential USFFT interface on a uniform DMDA and comp
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
-  const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
+  const char     *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
   Mat            A, AA;
   PetscMPIInt    size;
   PetscInt       N,i, stencil=1,dof=1;
@@ -30,29 +30,29 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool      view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
-    function = (FuncType) func;
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
+  ierr     = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
+  function = (FuncType) func;
+  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr);
 
 
 
   ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                    dim[0], dim[1], dim[2],
-                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                    dof, stencil,
-                    PETSC_NULL, PETSC_NULL, PETSC_NULL,
-                    &da);CHKERRQ(ierr);
+                      dim[0], dim[1], dim[2],
+                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
+                      dof, stencil,
+                      PETSC_NULL, PETSC_NULL, PETSC_NULL,
+                      &da);CHKERRQ(ierr);
   /* Coordinates */
   ierr = DMGetCoordinateDM(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF, "%3-D: USFFT on vector of ");CHKERRQ(ierr);
   for (i = 0, N = 1; i < 3; i++) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ",i,dim[i]);CHKERRQ(ierr);
-    N *= dim[i];
+    N   *= dim[i];
   }
   ierr = PetscPrintf(PETSC_COMM_SELF, "; total size %d \n",N);CHKERRQ(ierr);
 
@@ -155,14 +155,14 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   /* compare x and z. USFFT computes an unnormalized DFT, thus z = N*x */
-  s = 1.0/(PetscReal)N;
+  s    = 1.0/(PetscReal)N;
   ierr = VecScale(z,s);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&enorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|x-z| = %g\n",enorm);CHKERRQ(ierr);
 
   /* compare xx and zz. FFTW computes an unnormalized DFT, thus zz = N*x */
-  s = 1.0/(PetscReal)N;
+  s    = 1.0/(PetscReal)N;
   ierr = VecScale(zz,s);CHKERRQ(ierr);
   ierr = VecAXPY(xx,-1.0,zz);CHKERRQ(ierr);
   ierr = VecNorm(xx,NORM_1,&enorm);CHKERRQ(ierr);
