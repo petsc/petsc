@@ -30,16 +30,16 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
 #define __FUNCT__ "main"
 int main (int argc,char ** argv)
 {
-  DM             dmBody,dmFS;
-  DM             dmBodyDist,dmFSDist;
+  DM                        dmBody,dmFS;
+  DM                        dmBodyDist,dmFSDist;
   ALE::Obj<PETSC_MESH_TYPE> meshBody,meshBodyDist,meshFS,meshFSDist;
-  PetscBool      inflag,outflag;
-  char           infilename[PETSC_MAX_PATH_LEN+1],outfilename[PETSC_MAX_PATH_LEN+1];
-  PetscViewer    viewer;
-  int            rank,numproc;
-  PetscErrorCode ierr;
+  PetscBool                 inflag,outflag;
+  char                      infilename[PETSC_MAX_PATH_LEN+1],outfilename[PETSC_MAX_PATH_LEN+1];
+  PetscViewer               viewer;
+  int                       rank,numproc;
+  PetscErrorCode            ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-i",infilename,PETSC_MAX_PATH_LEN,&inflag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&numproc);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -126,24 +126,26 @@ PetscErrorCode MyDMMeshCreateExodus(MPI_Comm comm,const char filename[],DM *dmBo
 #define __FUNCT__ "MyPetscReadExodusII"
 PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody,DM dmFS)
 {
-  ALE::Obj<PETSC_MESH_TYPE>               meshBody,meshFS;
+  ALE::Obj<PETSC_MESH_TYPE> meshBody,meshFS;
+
   typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
   //typedef std::set<FlexMesh::point_type>  PointSet;
   //ALE::Obj<FlexMesh>  boundarymesh;
-  PetscMPIInt         rank;
-  int                 CPU_word_size = 0;
-  int                 IO_word_size  = 0;
-  PetscBool           interpolate   = PETSC_FALSE;
-  int               **connect = PETSC_NULL;
-  int                 exoid;
-  char                title[MAX_LINE_LENGTH+1];
-  float               version;
-  int                 num_dim,num_nodes = 0,num_elem = 0;
-  int                 num_eb = 0,num_ns = 0,num_ss = 0;
-  PetscErrorCode      ierr;
+  PetscMPIInt    rank;
+  int            CPU_word_size = 0;
+  int            IO_word_size  = 0;
+  PetscBool      interpolate   = PETSC_FALSE;
+  int            **connect     = PETSC_NULL;
+  int            exoid;
+  char           title[MAX_LINE_LENGTH+1];
+  float          version;
+  int            num_dim,num_nodes = 0,num_elem = 0;
+  int            num_eb = 0,num_ns = 0,num_ss = 0;
+  PetscErrorCode ierr;
+
   //const char          known_elements[] = "tri,tri3,triangle,triangle3,quad,quad4,tet,tet4,tetra,tetra4,hex,hex8";
-  float              *x = PETSC_NULL,*y = PETSC_NULL,*z = PETSC_NULL;
-  PetscBool           debug = PETSC_FALSE;
+  float     *x    = PETSC_NULL,*y = PETSC_NULL,*z = PETSC_NULL;
+  PetscBool debug = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-interpolate",&interpolate,PETSC_NULL);CHKERRQ(ierr);
@@ -162,9 +164,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   if (!rank) {
     exoid = ex_open(filename,EX_READ,&CPU_word_size,&IO_word_size,&version);CHKERRQ(!exoid);
     ierr = ex_get_init(exoid,title,&num_dim,&num_nodes,&num_elem,&num_eb,&num_ns,&num_ss);CHKERRQ(ierr);
-    if (num_eb == 0) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any element block\n");
-    }
+    if (num_eb == 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any element block\n");
     ierr = PetscMalloc3(num_nodes,float,&x,num_nodes,float,&y,num_nodes,float,&z);CHKERRQ(ierr);
     ierr = ex_get_coord(exoid,x,y,z);CHKERRQ(ierr);
   }
@@ -179,7 +179,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read element connectivity
   */
-  int       *eb_ids = PETSC_NULL,*num_elem_in_block = PETSC_NULL,*num_nodes_per_elem = PETSC_NULL,*num_attr = PETSC_NULL;
+  int       *eb_ids   = PETSC_NULL,*num_elem_in_block = PETSC_NULL,*num_nodes_per_elem = PETSC_NULL,*num_attr = PETSC_NULL;
   char      **eb_name = PETSC_NULL,**eb_elemtype = PETSC_NULL;
   PetscBool eb_hasnoname;
   char      *elem_sig = PETSC_NULL;
@@ -192,9 +192,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
                       num_eb,char*,&eb_elemtype);CHKERRQ(ierr);
 
   for (int eb = 0; eb < num_eb; eb++) {
-    num_elem_in_block[eb] = 0;
+    num_elem_in_block[eb]  = 0;
     num_nodes_per_elem[eb] = 0;
-    num_attr[eb] = 0;
+    num_attr[eb]           = 0;
+
     ierr = PetscMalloc2(MAX_STR_LENGTH+1,char,&eb_name[eb],MAX_STR_LENGTH+1,char,&eb_elemtype[eb]);CHKERRQ(ierr);
   }
   if (!rank) {
@@ -217,9 +218,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
       ierr = ex_get_elem_block(exoid,eb_ids[eb],eb_elemtype[eb],&num_elem_in_block[eb],&num_nodes_per_elem[eb],&num_attr[eb]);CHKERRQ(ierr);
       ierr = PetscStrtolower(eb_elemtype[eb]);CHKERRQ(ierr);
       ierr = PetscStrstr(exo_KnownElements,eb_elemtype[eb],&elem_sig);CHKERRQ(ierr);
-      if (!elem_sig) {
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported element type: %s.\nSupported elements types are %s",eb_elemtype[eb],exo_KnownElements);
-      }
+      if (!elem_sig) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported element type: %s.\nSupported elements types are %s",eb_elemtype[eb],exo_KnownElements);
     }
 
     /*
@@ -241,9 +240,9 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read side sets
   */
-  int       *ss_ids = PETSC_NULL,*num_sides_in_set = PETSC_NULL;
+  int       *ss_ids              = PETSC_NULL,*num_sides_in_set = PETSC_NULL;
   int       **side_set_elem_list = PETSC_NULL,**side_set_side_list = PETSC_NULL;
-  char      **ss_name = PETSC_NULL;
+  char      **ss_name            = PETSC_NULL;
   PetscBool ss_hasnoname;
   int       num_df_in_sset;
   int       num_faces = 0;
@@ -255,7 +254,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
                       num_ss,char*,&ss_name);CHKERRQ(ierr);
   for (int ss = 0; ss < num_ss; ++ss) {
     num_sides_in_set[ss] = 0;
-    ierr = PetscMalloc((MAX_STR_LENGTH+1)*sizeof(char),&ss_name[ss]);CHKERRQ(ierr);
+    ierr                 = PetscMalloc((MAX_STR_LENGTH+1)*sizeof(char),&ss_name[ss]);CHKERRQ(ierr);
   }
   if (num_ss > 0) {
     ierr = ex_get_side_set_ids(exoid,ss_ids);CHKERRQ(ierr);
@@ -279,16 +278,16 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
 #if 0 // We do no currently make sections for the side sets, and num_ss is not broadcast
   /* Broadcast side sets names. This will be needed later when creating the matching sections */
   for (int ss = 0; ss < num_ss; ++ss) {
-    ierr = MPI_Bcast(ss_name[ss],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);
+    ierr = MPI_Bcast(ss_name[ss],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
   }
 #endif
 
   /*
     Read node sets
   */
-  int       *ns_ids = PETSC_NULL,*num_nodes_in_set = PETSC_NULL;
+  int       *ns_ids     = PETSC_NULL,*num_nodes_in_set = PETSC_NULL;
   int       **node_list = PETSC_NULL;
-  char      **ns_name = PETSC_NULL;
+  char      **ns_name   = PETSC_NULL;
   PetscBool ns_hasnoname;
   ierr = PetscMalloc4(num_ns,int,&ns_ids,
                       num_ns,int,&num_nodes_in_set,
@@ -296,7 +295,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
                       num_ns,char*,&ns_name);CHKERRQ(ierr);
   for (int ns = 0; ns < num_ns; ++ns) {
     num_nodes_in_set[ns] = 0;
-    ierr = PetscMalloc((MAX_STR_LENGTH+1)*sizeof(char),&ns_name[ns]);CHKERRQ(ierr);
+    ierr                 = PetscMalloc((MAX_STR_LENGTH+1)*sizeof(char),&ns_name[ns]);CHKERRQ(ierr);
   }
   if (num_ns > 0) {
     ierr = ex_get_node_set_ids(exoid,ns_ids);CHKERRQ(ierr);
@@ -315,7 +314,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
 #if 0 // We do no currently make sections for the node sets, and num_ns is not broadcast
   /* Broadcast node sets names. This will be needed later when creating the matching sections */
   for (int ns = 0; ns < num_ns; ++ns) {
-    ierr = MPI_Bcast(ns_name[ns],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);
+    ierr = MPI_Bcast(ns_name[ns],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
   }
 #endif
   /* Done reading EXO,closing file */
@@ -326,9 +325,9 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Build mesh topology
   */
-  int  *cells = PETSC_NULL;
+  int *cells               = PETSC_NULL;
   int **connectivity_table = PETSC_NULL;
-  int   num_local_corners = 0;
+  int num_local_corners    = 0;
 
   for (int eb = 0; eb < num_eb; ++eb) {
     num_local_corners += num_nodes_per_elem[eb] * num_elem_in_block[eb];
@@ -355,9 +354,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
     that all elements in the mesh are of the same type.
   */
   int numCorners = 0;
-  if (!rank) {
-    numCorners = num_nodes_per_elem[0];
-  }
+  if (!rank) numCorners = num_nodes_per_elem[0];
 
   ALE::SieveBuilder<FlexMesh>::buildTopology(s,num_dim,num_elem,cells,num_nodes,interpolate,numCorners,PETSC_DECIDE,m->getArrowSection("orientation"));
 
@@ -372,9 +369,15 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   */
   double *coords = PETSC_NULL;
   ierr = PetscMalloc(num_dim*num_nodes * sizeof(double), &coords);CHKERRQ(ierr);
-  if (num_dim > 0) {for (int v = 0; v < num_nodes; ++v) {coords[v*num_dim+0] = x[v];}}
-  if (num_dim > 1) {for (int v = 0; v < num_nodes; ++v) {coords[v*num_dim+1] = y[v];}}
-  if (num_dim > 2) {for (int v = 0; v < num_nodes; ++v) {coords[v*num_dim+2] = z[v];}}
+  if (num_dim > 0) {
+    for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+0] = x[v];
+  }
+  if (num_dim > 1) {
+    for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+1] = y[v];
+  }
+  if (num_dim > 2) {
+    for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+2] = z[v];
+  }
   ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(meshBody,num_dim,coords);
   ierr = PetscFree(coords);CHKERRQ(ierr);
 
@@ -387,7 +390,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
       meshBody->setValue(cellBlocks,k,eb_ids[eb]);
     }
   }
-  if (debug) {cellBlocks->view("Cell Blocks");}
+  if (debug) cellBlocks->view("Cell Blocks");
 
   /*
     Initialize parent block mapping needed to build face sets
@@ -410,7 +413,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
       meshBody->addValue(vertexSets,node_list[ns][n]+num_elem-1,ns_ids[ns]);
     }
   }
-  if (debug) {vertexSets->view("Vertex Sets");}
+  if (debug) vertexSets->view("Vertex Sets");
 
   for (int ns = 0; ns < num_ns; ns++) {
     ierr = PetscFree(node_list[ns]);CHKERRQ(ierr);
@@ -421,10 +424,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Build face sets mesh
   */
-  const PetscInt    *faceVertex = PETSC_NULL;
-  PetscInt          *faces = PETSC_NULL,faceNumVertex,faceCell,faceNum,faceParentBlock;
-  PetscInt           faceCount = 0,vertexCount = 0;
-  EXO_ELEM_TYPE      cell_type;
+  const PetscInt *faceVertex = PETSC_NULL;
+  PetscInt       *faces      = PETSC_NULL,faceNumVertex,faceCell,faceNum,faceParentBlock;
+  PetscInt       faceCount   = 0,vertexCount = 0;
+  EXO_ELEM_TYPE  cell_type;
 
   ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieveFS = new PETSC_MESH_TYPE::sieve_type(meshFS->comm(), meshFS->debug());
   ALE::Obj<FlexMesh>                    mFS     = new FlexMesh(meshBody->comm(),meshBody->debug());
@@ -435,8 +438,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
      The type of parent cells for all faces in a face set has to be identical.
      We trust that this is the case and do not do any test.
     */
-    faceParentBlock  = cellParentBlock[side_set_elem_list[ss][0]-1];
-    ierr = EXOGetElemType(eb_elemtype[faceParentBlock],&cell_type);CHKERRQ(ierr);
+    faceParentBlock = cellParentBlock[side_set_elem_list[ss][0]-1];
+    ierr            = EXOGetElemType(eb_elemtype[faceParentBlock],&cell_type);CHKERRQ(ierr);
     switch (cell_type) {
     case EXO_TRI:
       faceNumVertex = 2;
@@ -462,15 +465,15 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
      The type of parent cells for all faces in a face set has to be identical.
      We trust that this is the case and do not do any test.
     */
-    faceParentBlock  = cellParentBlock[side_set_elem_list[ss][0]-1];
-    ierr = EXOGetElemType(eb_elemtype[faceParentBlock],&cell_type);CHKERRQ(ierr);
+    faceParentBlock = cellParentBlock[side_set_elem_list[ss][0]-1];
+    ierr            = EXOGetElemType(eb_elemtype[faceParentBlock],&cell_type);CHKERRQ(ierr);
     for (int s = 0; s < num_sides_in_set[ss]; ++s) {
       /*
        Get the point number of the faces described by vertices side_set_side_list[ss][s]
        initialize side_set_point_list from side_set_elem_list and side_set_side_list
       */
-      faceCell  = side_set_elem_list[ss][s]-1;
-      faceNum   = side_set_side_list[ss][s]-1;
+      faceCell = side_set_elem_list[ss][s]-1;
+      faceNum  = side_set_side_list[ss][s]-1;
       switch (cell_type) {
       case EXO_TRI:
         faceNumVertex = 2;
@@ -519,9 +522,15 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
    Build coordinates for meshFS
   */
   ierr = PetscMalloc((num_dim*num_nodes+num_elem) * sizeof(double), &coords);CHKERRQ(ierr);
-  if (num_dim > 0) {for (int v = 0; v < num_nodes; ++v) {coords[v*num_dim+0+num_elem] = x[v];}}
-  if (num_dim > 1) {for (int v = 0; v < num_nodes; ++v) {coords[v*num_dim+1+num_elem] = y[v];}}
-  if (num_dim > 2) {for (int v = 0; v < num_nodes; ++v) {coords[v*num_dim+2+num_elem] = z[v];}}
+  if (num_dim > 0) {
+    for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+0+num_elem] = x[v];
+  }
+  if (num_dim > 1) {
+    for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+1+num_elem] = y[v];
+  }
+  if (num_dim > 2) {
+    for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+2+num_elem] = z[v];
+  }
   ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(meshFS,num_dim,coords);
   ierr = PetscFree(coords);CHKERRQ(ierr);
 
@@ -530,13 +539,13 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   */
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& faceSets = meshFS->createLabel("FaceSets");
   for (int k=0,ss = 0; ss < num_ss; ++ss) {
-    faceParentBlock  = cellParentBlock[side_set_elem_list[ss][0]-1];
+    faceParentBlock = cellParentBlock[side_set_elem_list[ss][0]-1];
     ierr = EXOGetElemType(eb_elemtype[faceParentBlock],&cell_type);CHKERRQ(ierr);
     for (int s = 0; s < num_sides_in_set[ss]; ++s,++k) {
       meshFS->addValue(faceSets,k,ss_ids[ss]);
     }
   }
-  if (debug) {faceSets->view("Face Sets");}
+  if (debug) faceSets->view("Face Sets");
 
   /*
     Free remaining element block temporary variables
@@ -549,8 +558,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   ierr = PetscFree(cellParentBlock);CHKERRQ(ierr);
   ierr = PetscFree3(x,y,z);CHKERRQ(ierr);
 
-  //if (debug) {meshBody->view("Mesh");}
-  if (debug) {meshFS->view("MeshFS");}
+  //if (debug) meshBody->view("Mesh");
+  if (debug) meshFS->view("MeshFS");
   PetscFunctionReturn(0);
 }
 
@@ -560,22 +569,14 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
 PetscErrorCode EXOGetElemType(const char *name,EXO_ELEM_TYPE *elem_type)
 {
   PetscErrorCode ierr;
-  char     *elem_sig;
+  char           *elem_sig;
   ierr = PetscStrstr("tri,tri3,triangle,triangle3",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig) {
-    *elem_type = EXO_TRI;
-  }
+  if (elem_sig) *elem_type = EXO_TRI;
   ierr = PetscStrstr("tet,tet4,tetra,tetra4",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig) {
-    *elem_type = EXO_TET;
-  }
+  if (elem_sig) *elem_type = EXO_TET;
   ierr = PetscStrstr("quad,quad4",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig) {
-    *elem_type = EXO_QUAD;
-  }
+  if (elem_sig) *elem_type = EXO_QUAD;
   ierr = PetscStrstr("hex,hex8",name,&elem_sig);CHKERRQ(ierr);
-  if (elem_sig) {
-    *elem_type = EXO_HEX;
-  }
+  if (elem_sig) *elem_type = EXO_HEX;
   PetscFunctionReturn(0);
 }

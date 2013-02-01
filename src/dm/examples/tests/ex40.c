@@ -11,10 +11,10 @@ int main(int argc,char **argv)
   PetscInt       M = -8, N = -8,stencil_width = 1, dof = 1,m,n,xstart,ystart,i,j,c;
   DM             da;
   Vec            global,local;
-  PetscScalar     ***vglobal;
+  PetscScalar    ***vglobal;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  
+
   PetscFunctionBeginUser;
   ierr = PetscOptionsGetInt(0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);

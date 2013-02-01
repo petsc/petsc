@@ -19,30 +19,30 @@ typedef struct {
   HYPRE_StructVector  hb,hx;
   hypre_Box           hbox;
 
-  PetscBool           needsinitialization;
+  PetscBool needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
-  PetscInt            *gindices,rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
+  PetscInt *gindices,rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
 } Mat_HYPREStruct;
 
 typedef struct {
-  MPI_Comm               hcomm;
-  DM                     da;
-  HYPRE_SStructGrid      ss_grid;
-  HYPRE_SStructGraph     ss_graph;
-  HYPRE_SStructStencil   ss_stencil;
-  HYPRE_SStructMatrix    ss_mat;
-  HYPRE_SStructVector    ss_b, ss_x;
-  hypre_Box              hbox;
+  MPI_Comm             hcomm;
+  DM                   da;
+  HYPRE_SStructGrid    ss_grid;
+  HYPRE_SStructGraph   ss_graph;
+  HYPRE_SStructStencil ss_stencil;
+  HYPRE_SStructMatrix  ss_mat;
+  HYPRE_SStructVector  ss_b, ss_x;
+  hypre_Box            hbox;
 
-  int                    ss_object_type;
-  int                    nvars;
-  int                    dofs_order;
+  int ss_object_type;
+  int nvars;
+  int dofs_order;
 
-  PetscBool              needsinitialization;
+  PetscBool needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
-  PetscInt              *gindices,rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;
+  PetscInt *gindices,rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;
 } Mat_HYPRESStruct;
 
 

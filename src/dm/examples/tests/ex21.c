@@ -19,7 +19,9 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   bx = DMDA_BOUNDARY_NONE;
   by = DMDA_BOUNDARY_NONE;
   bz = DMDA_BOUNDARY_NONE;
+
   periodicity = 0;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic", &periodicity, PETSC_NULL);CHKERRQ(ierr);
   if (periodicity==1) {
     bx = DMDA_BOUNDARY_PERIODIC;
@@ -105,12 +107,12 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt mx,my,mz;
+  PetscInt       mx,my,mz;
 
   ierr = PetscInitialize(&argc,&argv,0,help);
-  mx = 2;
-  my = 2;
-  mz = 2;
+  mx   = 2;
+  my   = 2;
+  mz   = 2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0);CHKERRQ(ierr);

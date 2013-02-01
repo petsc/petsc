@@ -8,11 +8,11 @@ static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMD
 int main(int argc,char **argv)
 {
   PetscMPIInt      rank,size;
-  PetscInt         N = 6,M=8,P=5,dof=1;
+  PetscInt         N            = 6,M=8,P=5,dof=1;
   PetscInt         stencil_width=1,pt=0,st=0;
   PetscErrorCode   ierr;
   PetscBool        flg2,flg3,isbinary,mpiio;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da,da2;
   Vec              global1,global2;
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   PetscRandom      rdm;
 #if defined(PETSC_HAVE_HDF5)
-  PetscBool        ishdf5;
+  PetscBool ishdf5;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   if (pt == 2) by = DMDA_BOUNDARY_PERIODIC;
   if (pt == 4) {bx = DMDA_BOUNDARY_PERIODIC; by = DMDA_BOUNDARY_PERIODIC;}
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-oned",&flg2);CHKERRQ(ierr);

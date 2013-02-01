@@ -251,8 +251,8 @@ PetscErrorCode DataRead(GridData *gdata)
     /*
        Broadcast number of elements to all processors
     */
-    ierr = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    mlocal_ele  = n_ele/size + ((n_ele % size) > 0);
+    ierr       = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    mlocal_ele = n_ele/size + ((n_ele % size) > 0);
 
     /*
       Allocate enough room for the first processor to keep track of how many

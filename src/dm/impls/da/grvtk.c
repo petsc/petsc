@@ -6,11 +6,11 @@
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 {
 #if defined(PETSC_USE_REAL_SINGLE)
-  const char precision[]  = "Float32";
+  const char precision[] = "Float32";
 #elif defined(PETSC_USE_REAL_DOUBLE)
-  const char precision[]  = "Float64";
+  const char precision[] = "Float64";
 #else
-  const char precision[]  = "UnknownPrecision";
+  const char precision[] = "UnknownPrecision";
 #endif
   MPI_Comm                 comm = ((PetscObject)da)->comm;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
@@ -51,20 +51,20 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   rloc[3] = info.ym;
   rloc[4] = info.zs;
   rloc[5] = info.zm;
-  ierr = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr    = MPI_Gather(rloc,6,MPIU_INT,&grloc[0][0],6,MPIU_INT,0,comm);CHKERRQ(ierr);
 
   /* Write XML header */
   maxnnodes = 0;                /* Used for the temporary array size on rank 0 */
-  boffset = 0;                  /* Offset into binary file */
+  boffset   = 0;                /* Offset into binary file */
   for (r=0; r<size; r++) {
     PetscInt xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
     if (!rank) {
-      xs = grloc[r][0];
-      xm = grloc[r][1];
-      ys = grloc[r][2];
-      ym = grloc[r][3];
-      zs = grloc[r][4];
-      zm = grloc[r][5];
+      xs     = grloc[r][0];
+      xm     = grloc[r][1];
+      ys     = grloc[r][2];
+      ym     = grloc[r][3];
+      zs     = grloc[r][4];
+      zm     = grloc[r][5];
       nnodes = xm*ym*zm;
     }
     maxnnodes = PetscMax(maxnnodes,nnodes);
@@ -82,28 +82,28 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     default: SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"No support for dimension %D",dim);
     }
 #endif
-    ierr = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"      <Points>\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
+    ierr     = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
+    ierr     = PetscFPrintf(comm,fp,"      <Points>\n");CHKERRQ(ierr);
+    ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",precision,boffset);CHKERRQ(ierr);
     boffset += 3*nnodes*sizeof(PetscScalar) + sizeof(int);
-    ierr = PetscFPrintf(comm,fp,"      </Points>\n");CHKERRQ(ierr);
+    ierr     = PetscFPrintf(comm,fp,"      </Points>\n");CHKERRQ(ierr);
 
     ierr = PetscFPrintf(comm,fp,"      <PointData Scalars=\"ScalarPointData\">\n");CHKERRQ(ierr);
     for (link=vtk->link; link; link=link->next) {
-      Vec X = (Vec)link->vec;
+      Vec        X        = (Vec)link->vec;
       const char *vecname = "";
       if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
         ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
       }
       for (i=0; i<bs; i++) {
-        char buf[256];
+        char       buf[256];
         const char *fieldname;
         ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr);
         if (!fieldname) {
-          ierr = PetscSNPrintf(buf,sizeof(buf),"Unnamed%D",i);CHKERRQ(ierr);
+          ierr      = PetscSNPrintf(buf,sizeof(buf),"Unnamed%D",i);CHKERRQ(ierr);
           fieldname = buf;
         }
-        ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+        ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
         boffset += nnodes*sizeof(PetscScalar) + sizeof(int);
       }
     }
@@ -119,14 +119,14 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   ierr = PetscMalloc2(maxnnodes*PetscMax(3,bs),PetscScalar,&array,maxnnodes*3,PetscScalar,&array2);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     MPI_Status status;
-    PetscInt xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
+    PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
     if (!rank) {
-      xs = grloc[r][0];
-      xm = grloc[r][1];
-      ys = grloc[r][2];
-      ym = grloc[r][3];
-      zs = grloc[r][4];
-      zm = grloc[r][5];
+      xs     = grloc[r][0];
+      xm     = grloc[r][1];
+      ys     = grloc[r][2];
+      ym     = grloc[r][3];
+      zs     = grloc[r][4];
+      zm     = grloc[r][5];
       nnodes = xm*ym*zm;
     } else if (r == rank) {
       nnodes = info.xm*info.ym*info.zm;
@@ -179,7 +179,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
     /* Write each of the objects queued up for this file */
     for (link=vtk->link; link; link=link->next) {
-      Vec X = (Vec)link->vec;
+      Vec               X = (Vec)link->vec;
       const PetscScalar *x;
 
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
@@ -242,9 +242,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 @*/
 PetscErrorCode DMDAVTKWriteAll(PetscObject odm,PetscViewer viewer)
 {
-  DM              dm   = (DM)odm;
-  PetscBool       isvtk;
-  PetscErrorCode  ierr;
+  DM             dm = (DM)odm;
+  PetscBool      isvtk;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);

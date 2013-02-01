@@ -46,9 +46,10 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     if (dir == DMDA_Y) {
-      ierr = PetscMalloc(dd->w*dd->M*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+      ierr       = PetscMalloc(dd->w*dd->M*sizeof(PetscInt),&indices);CHKERRQ(ierr);
       indices[0] = gp*dd->M*dd->w;
-      for (i=1; i<dd->M*dd->w; i++) {indices[i] = indices[i-1] + 1;}
+      for (i=1; i<dd->M*dd->w; i++) indices[i] = indices[i-1] + 1;
+
       ierr = AOApplicationToPetsc(ao,dd->M*dd->w,indices);CHKERRQ(ierr);
       ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
@@ -56,12 +57,12 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
       ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
     } else if (dir == DMDA_X) {
-      ierr = PetscMalloc(dd->w*dd->N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+      ierr       = PetscMalloc(dd->w*dd->N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
       indices[0] = dd->w*gp;
       for (j=1; j<dd->w; j++) indices[j] = indices[j-1] + 1;
       for (i=1; i<dd->N; i++) {
-         indices[i*dd->w] = indices[i*dd->w-1] + dd->w*dd->M - dd->w + 1;
-         for (j=1; j<dd->w; j++) indices[i*dd->w + j] = indices[i*dd->w + j - 1] + 1;
+        indices[i*dd->w] = indices[i*dd->w-1] + dd->w*dd->M - dd->w + 1;
+        for (j=1; j<dd->w; j++) indices[i*dd->w + j] = indices[i*dd->w + j - 1] + 1;
       }
       ierr = AOApplicationToPetsc(ao,dd->w*dd->N,indices);CHKERRQ(ierr);
       ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
@@ -142,7 +143,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      ierr = PetscInfo1(da,"%D ",i);CHKERRQ(ierr);
+      ierr       = PetscInfo1(da,"%D ",i);CHKERRQ(ierr);
     }
   }
   ierr = PetscInfo(da,"\n");CHKERRQ(ierr);
@@ -183,7 +184,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   MPI_Comm       comm;
   MPI_Group      group, subgroup;
   PetscInt       subgroupSize = 0;
-  PetscInt      *firstPoints;
+  PetscInt       *firstPoints;
   PetscMPIInt    size, *subgroupRanks = PETSC_NULL;
   PetscInt       xs, xm, ys, ym, zs, zm, firstPoint, p;
   PetscErrorCode ierr;

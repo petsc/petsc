@@ -14,10 +14,11 @@ void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *i
 {
   const PetscMPIInt *r;
   PetscInt          n;
-  DM_DA            *dd = (DM_DA*)(*da)->data;
+  DM_DA             *dd = (DM_DA*)(*da)->data;
 
   *ierr = DMDAGetNeighbors(*da,&r);if (*ierr) return;
-  if (dd->dim == 2) n = 9; else n = 27;
+  if (dd->dim == 2) n = 9;
+  else n = 27;
   *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));
 }
 
@@ -31,9 +32,15 @@ void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],Pe
   CHKFORTRANNULLINTEGER(lz);
   *ierr = DMDAGetInfo(*da,0,0,0,0,&M,&N,&P,0,0,0,0,0,0);if (*ierr) return;
   *ierr = DMDAGetOwnershipRanges(*da,&gx,&gy,&gz);if (*ierr) return;
-  if (lx) {for (i=0; i<M; i++) {lx[i] = gx[i];}}
-  if (ly) {for (i=0; i<N; i++) {ly[i] = gy[i];}}
-  if (lz) {for (i=0; i<P; i++) {lz[i] = gz[i];}}
+  if (lx) {
+    for (i=0; i<M; i++) lx[i] = gx[i];
+  }
+  if (ly) {
+    for (i=0; i<N; i++) ly[i] = gy[i];
+  }
+  if (lz) {
+    for (i=0; i<P; i++) lz[i] = gz[i];
+  }
 }
 
 EXTERN_C_END

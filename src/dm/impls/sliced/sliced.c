@@ -24,7 +24,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
   DM_Sliced              *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
-  bs = slice->bs;
+  bs   = slice->bs;
   ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,slice->n*bs,slice->n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);
@@ -63,9 +63,8 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
   /* Set up the local to global map.  For the scalar map, we have to translate to entry-wise indexing instead of block-wise. */
   ierr = PetscMalloc((slice->n+slice->Nghosts)*bs*sizeof(PetscInt),&globals);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*J,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  for (i=0; i<slice->n*bs; i++) {
-    globals[i] = rstart + i;
-  }
+  for (i=0; i<slice->n*bs; i++) globals[i] = rstart + i;
+
   for (i=0; i<slice->Nghosts*bs; i++) {
     globals[slice->n*bs+i] = slice->ghosts[i/bs]*bs + i%bs;
   }
@@ -105,9 +104,9 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
-  ierr = PetscMalloc(Nghosts*sizeof(PetscInt),&slice->ghosts);CHKERRQ(ierr);
-  ierr = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr           = PetscFree(slice->ghosts);CHKERRQ(ierr);
+  ierr           = PetscMalloc(Nghosts*sizeof(PetscInt),&slice->ghosts);CHKERRQ(ierr);
+  ierr           = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
   slice->bs      = bs;
   slice->n       = nlocal;
   slice->Nghosts = Nghosts;
@@ -170,7 +169,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
   if (*inf) {ierr = PetscFree3((*inf)->i,(*inf)->j,*inf);CHKERRQ(ierr);}
   if (!fill) PetscFunctionReturn(0);
   for (i=0,nz=0; i<bs*bs; i++) if (fill[i]) nz++;
-  ierr = PetscMalloc3(1,DMSlicedBlockFills,&f,bs+1,PetscInt,&fi,nz,PetscInt,&fj);CHKERRQ(ierr);
+  ierr  = PetscMalloc3(1,DMSlicedBlockFills,&f,bs+1,PetscInt,&fi,nz,PetscInt,&fj);CHKERRQ(ierr);
   f->bs = bs;
   f->nz = nz;
   f->i  = fi;
@@ -180,7 +179,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
     for (j=0; j<bs; j++) if (fill[i*bs+j]) fj[nz++] = j;
   }
   fi[i] = nz;
-  *inf = f;
+  *inf  = f;
   PetscFunctionReturn(0);
 }
 
@@ -237,15 +236,15 @@ static PetscErrorCode  DMDestroy_Sliced(DM dm)
 #define __FUNCT__ "DMCreateGlobalVector_Sliced"
 static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 {
-  PetscErrorCode     ierr;
-  DM_Sliced          *slice = (DM_Sliced*)dm->data;
+  PetscErrorCode ierr;
+  DM_Sliced      *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
-  ierr = VecCreateGhostBlock(((PetscObject)dm)->comm,slice->bs,slice->n*slice->bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,gvec);CHKERRQ(ierr);
-  ierr = VecSetDM(*gvec,dm);CHKERRQ(ierr);
+  ierr  = VecCreateGhostBlock(((PetscObject)dm)->comm,slice->bs,slice->n*slice->bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,gvec);CHKERRQ(ierr);
+  ierr  = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -297,10 +296,11 @@ PetscErrorCode  DMCreate_Sliced(DM p)
   DM_Sliced      *slice;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
+  ierr    = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
   p->data = slice;
 
   ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);
+
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
   p->ops->creatematrix       = DMCreateMatrix_Sliced;
   p->ops->globaltolocalbegin = DMGlobalToLocalBegin_Sliced;

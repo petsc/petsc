@@ -41,10 +41,10 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr      = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
-  comm = PETSC_COMM_WORLD;
+  ierr      = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  comm      = PETSC_COMM_WORLD;
 
   ierr = PetscPrintf(comm, "Creating a doublet Sieve bottom-up\n");CHKERRQ(ierr);
   ierr = createDoubletSieveBottomUp(comm, &doublet);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
-}/* main() */
+} /* main() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "createDoubletSieveBottomUp"
@@ -81,7 +81,7 @@ PetscErrorCode createDoubletSieveBottomUp(MPI_Comm comm, ALE::Sieve **doublet_p)
   cone.clear(); cone.insert(ALE::Point(0,4)); cone.insert(ALE::Point(0,5)); cone.insert(ALE::Point(0,6)); p = ALE::Point(0,1);
   doublet->addCone(cone,p);
   PetscFunctionReturn(0);
-}/* createDoubletSieveBottomUp() */
+} /* createDoubletSieveBottomUp() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "createDoubletSieveTopDown"
@@ -102,7 +102,7 @@ PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p)
   cone.clear(); cone.insert(ALE::Point(0,8)); cone.insert(ALE::Point(0,10)); p = ALE::Point(0,5); doublet->addCone(cone,p);
   cone.clear(); cone.insert(ALE::Point(0,9)); cone.insert(ALE::Point(0,10)); p = ALE::Point(0,6); doublet->addCone(cone,p);
   PetscFunctionReturn(0);
-}/* createDoubletSieveTopDown() */
+} /* createDoubletSieveTopDown() */
 
 
 #undef  __FUNCT__
@@ -110,14 +110,12 @@ PetscErrorCode createDoubletSieveTopDown(MPI_Comm comm, ALE::Sieve **doublet_p)
 PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ostringstream txt;
 
   txt << "Viewing strata of";
-  if (name != NULL) {
-    txt << " " << name;
-  }
+  if (name != NULL) txt << " " << name;
   txt << " sieve of diameter " << sieve->diameter() << "\n";
   ierr = PetscPrintf(sieve->getComm(), txt.str().c_str());CHKERRQ(ierr);
 
@@ -132,4 +130,4 @@ PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name)
     stratum.view();
   }
   PetscFunctionReturn(0);
-}/* viewStrata() */
+} /* viewStrata() */

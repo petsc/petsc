@@ -119,7 +119,7 @@ void PETSC_STDCALL  mdmeshgetcellsectionint_(DM *mesh, CHAR name PETSC_MIXED_LEN
 void PETSC_STDCALL  vertexsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN))
 {
   SectionReal section;
-  char *pN;
+  char        *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetVertexSectionReal(*mesh, pN, *fiberDim, &section);
   *ierr = DMMeshSetSectionReal(*mesh, pN, section);
@@ -129,7 +129,7 @@ void PETSC_STDCALL  vertexsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN
 void PETSC_STDCALL  vertexsectionintcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN))
 {
   SectionInt section;
-  char *pN;
+  char       *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetVertexSectionInt(*mesh, pN, *fiberDim, &section);
   *ierr = DMMeshSetSectionInt(*mesh, section);
@@ -139,7 +139,7 @@ void PETSC_STDCALL  vertexsectionintcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(
 void PETSC_STDCALL  cellsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN))
 {
   SectionReal section;
-  char *pN;
+  char        *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetCellSectionReal(*mesh, pN, *fiberDim, &section);
   *ierr = DMMeshSetSectionReal(*mesh, pN, section);
@@ -224,7 +224,7 @@ void PETSC_STDCALL  dmmeshcreatematrix_(DM *mesh, SectionReal *section, CHAR mat
 void PETSC_STDCALL  alestagepush_(CHAR name PETSC_MIXED_LEN(lenN), PetscInt *debug, int *ierr PETSC_END_LEN(lenN))
 {
   ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
-  char *pN;
+  char               *pN;
 
   FIXCHAR(name,lenN,pN);
   logger.setDebug(*debug);
@@ -243,7 +243,7 @@ void PETSC_STDCALL  alestagepop_(PetscInt *debug, int *ierr)
 void PETSC_STDCALL  alestageprintmemory_(MPI_Fint * comm,CHAR name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN))
 {
   ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
-  char *pN;
+  char               *pN;
 
   FIXCHAR(name,lenN,pN);
   *ierr = PetscPrintf(MPI_Comm_f2c(*(comm)), "%s %d allocations %d bytes\n", pN, logger.getNumAllocations(pN), logger.getAllocationTotal(pN));

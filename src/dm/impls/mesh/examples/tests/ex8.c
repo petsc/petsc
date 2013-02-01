@@ -5,22 +5,22 @@ static char help[] = "test2.c: test of the new generation ExodusII readers: load
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main (int argc,char ** argv)
+int main(int argc,char ** argv)
 {
-  DM              dmBody,dmFS;
-  PetscBool       inflag;
-  char            infilename[PETSC_MAX_PATH_LEN+1];
-  PetscErrorCode  ierr;
-  SectionReal     sec1;
-  Mat             mat1;
-  PetscInt        dof=1;
-  int             rank;
-  PetscInt        cell,face,conesize,my_num_cells,my_num_faces,my_num_vertices;
-  PetscInt        i,j,c,d,k;
+  DM             dmBody,dmFS;
+  PetscBool      inflag;
+  char           infilename[PETSC_MAX_PATH_LEN+1];
+  PetscErrorCode ierr;
+  SectionReal    sec1;
+  Mat            mat1;
+  PetscInt       dof=1;
+  int            rank;
+  PetscInt       cell,face,conesize,my_num_cells,my_num_faces,my_num_vertices;
+  PetscInt       i,j,c,d,k;
   PetscReal      *m_array;
 
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-i",infilename,PETSC_MAX_PATH_LEN,&inflag);CHKERRQ(ierr);
@@ -44,8 +44,10 @@ int main (int argc,char ** argv)
   */
   {
     ALE::Obj<PETSC_MESH_TYPE> meshBody,meshFS;
+
     ierr = DMMeshGetMesh(dmBody,meshBody);CHKERRQ(ierr);
     ierr = DMMeshGetMesh(dmFS,meshFS);CHKERRQ(ierr);
+
     my_num_cells    = meshBody->heightStratum(0)->size();
     my_num_vertices = meshBody->depthStratum(0)->size();
     my_num_faces    = meshFS->heightStratum(0)->size();

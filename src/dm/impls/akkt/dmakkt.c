@@ -1,11 +1,11 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
-#include <../src/dm/impls/akkt/dmakkt.h>          
+#include <../src/dm/impls/akkt/dmakkt.h>
 #include <petsc-private/dmimpl.h>
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTSetDM"
 PetscErrorCode DMAKKTSetDM(DM dm, DM ddm)
- {
+{
   PetscBool      iskkt;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
   PetscErrorCode ierr;
@@ -19,9 +19,9 @@ PetscErrorCode DMAKKTSetDM(DM dm, DM ddm)
   if (kkt->dm) {
     ierr = DMDestroy(&(kkt->dm));CHKERRQ(ierr);
   }
-  kkt->dm = ddm;
-  ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
-  ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
+  kkt->dm         = ddm;
+  ierr            = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
+  ierr            = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -64,15 +64,15 @@ PetscErrorCode DMAKKTSetMatrix(DM dm, Mat Aff)
   }
   kkt->Aff = Aff;
 
-  ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
-  ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
+  ierr            = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
+  ierr            = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTGetMatrix"
-PetscErrorCode DMAKKTGetMatrix(DM dm, Mat *Aff) 
+PetscErrorCode DMAKKTGetMatrix(DM dm, Mat *Aff)
 {
   PetscBool      iskkt;
   PetscErrorCode ierr;
@@ -91,7 +91,7 @@ PetscErrorCode DMAKKTGetMatrix(DM dm, Mat *Aff)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTSetFieldDecompositionName"
-PetscErrorCode DMAKKTSetFieldDecompositionName(DM dm, const char* dname) 
+PetscErrorCode DMAKKTSetFieldDecompositionName(DM dm, const char *dname)
 {
   PetscBool      iskkt;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
@@ -107,13 +107,14 @@ PetscErrorCode DMAKKTSetFieldDecompositionName(DM dm, const char* dname)
   }
   ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
   ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
+
   dm->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTGetFieldDecompositionName"
-PetscErrorCode DMAKKTGetFieldDecompositionName(DM dm, char** dname) 
+PetscErrorCode DMAKKTGetFieldDecompositionName(DM dm, char **dname)
 {
   PetscBool      iskkt;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
@@ -136,7 +137,7 @@ PetscErrorCode DMAKKTGetFieldDecompositionName(DM dm, char** dname)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTSetFieldDecomposition"
-PetscErrorCode DMAKKTSetFieldDecomposition(DM dm, PetscInt n, const char* const *names, IS *iss, DM *dms) 
+PetscErrorCode DMAKKTSetFieldDecomposition(DM dm, PetscInt n, const char* const *names, IS *iss, DM *dms)
 {
   PetscBool      iskkt;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
@@ -175,13 +176,14 @@ PetscErrorCode DMAKKTSetFieldDecomposition(DM dm, PetscInt n, const char* const 
   }
   ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
   ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
+
   dm->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMAKKTGetFieldDecomposition"
-PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char*** names, IS **iss, DM **dms) 
+PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char ***names, IS **iss, DM **dms)
 {
   PetscBool      iskkt;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
@@ -222,11 +224,11 @@ PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char*** names, IS
       ierr = PetscStrallocpy(kkt->names[i],(*names)+i);CHKERRQ(ierr);
     }
     if (iss && kkt->isf) {
-      ierr = PetscObjectReference((PetscObject)kkt->isf[i]);CHKERRQ(ierr);
+      ierr      = PetscObjectReference((PetscObject)kkt->isf[i]);CHKERRQ(ierr);
       (*iss)[i] = kkt->isf[i];
     }
     if (dms && kkt->dmf) {
-      ierr = PetscObjectReference((PetscObject)kkt->dmf[i]);CHKERRQ(ierr);
+      ierr      = PetscObjectReference((PetscObject)kkt->dmf[i]);CHKERRQ(ierr);
       (*dms)[i] = kkt->dmf[i];
     }
   }
@@ -236,7 +238,7 @@ PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char*** names, IS
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_AKKT"
-PetscErrorCode DMSetFromOptions_AKKT(DM dm) 
+PetscErrorCode DMSetFromOptions_AKKT(DM dm)
 {
   PetscErrorCode ierr;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
@@ -267,7 +269,7 @@ PetscErrorCode DMSetFromOptions_AKKT(DM dm)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMSetUp_AKKT"
-PetscErrorCode DMSetUp_AKKT(DM dm) 
+PetscErrorCode DMSetUp_AKKT(DM dm)
 {
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
   PetscErrorCode ierr;
@@ -281,7 +283,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
   }
   if (!kkt->isf[0] && !kkt->isf[0]) {
     if (kkt->detect_saddle_point) {
-        ierr = MatFindZeroDiagonals(kkt->Aff,&kkt->isf[1]);CHKERRQ(ierr);
+      ierr = MatFindZeroDiagonals(kkt->Aff,&kkt->isf[1]);CHKERRQ(ierr);
     } else if (kkt->dm && kkt->dname) {
       DM       ddm;
       PetscInt n;
@@ -295,7 +297,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
       if (n < 1 || n > 2) SETERRQ2(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition %s must be between 1 and 2.  Got %D instead",kkt->dname, n);
       for (i = 0; i < n; ++i) {
         if (!iss[i] && dms[i]) {
-          const char* label;
+          const char *label;
           if (!i) label = "primal";
           else    label = "dual";
           SETERRQ1(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Decomposition defines %s subDM, but no embedding IS is given", label);
@@ -344,15 +346,15 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
  */
 #undef  __FUNCT__
 #define __FUNCT__ "DMCoarsen_AKKT_GAMG11"
-PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out) 
+PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out)
 {
   PetscErrorCode   ierr;
   DM_AKKT          *kkt = (DM_AKKT*)(dm->data);
-  Mat              Aff   = kkt->Aff;   /* fine-level KKT matrix */
+  Mat              Aff  = kkt->Aff;    /* fine-level KKT matrix */
   Mat              A1f0f;              /* fine-level dual (constraint) Jacobian */
   Mat              A1f0c;              /* = A1f0f*P0f0c coarsen only primal indices */
   Mat              B1f1f;              /* = A1f0c'*A1f0c */
-  PC               gamg11;/* Use PCGAMG internally to get access to some of its methods to operate on B1f1f = A1f0c*A1f0c', where A1f0c = A1f0f*P0f0c. */
+  PC               gamg11; /* Use PCGAMG internally to get access to some of its methods to operate on B1f1f = A1f0c*A1f0c', where A1f0c = A1f0f*P0f0c. */
   PC_GAMG          *pc_gamg11;
   Mat              G1f1f; /* = Graph(B1f1f) */
   Mat              P1f1c; /* = Prolongator(G1f1f); */
@@ -388,9 +390,9 @@ PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out)
   ierr = PCSetOperators(gamg11, B1f1f, B1f1f, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   /* FIX: Currently there is no way to tell GAMG to coarsen onto a give comm, but it shouldn't be hard to hack that stuff in. */
   pc_gamg11 = (PC_GAMG*)(gamg11->data);
-  ierr = pc_gamg11->graph(gamg11, B1f1f, &G1f1f);CHKERRQ(ierr);
-  ierr = pc_gamg11->coarsen(gamg11, &G1f1f, &coarsening);CHKERRQ(ierr);
-  ierr = pc_gamg11->prolongator(gamg11, B1f1f, G1f1f, coarsening, &P1f1c);CHKERRQ(ierr);
+  ierr      = pc_gamg11->graph(gamg11, B1f1f, &G1f1f);CHKERRQ(ierr);
+  ierr      = pc_gamg11->coarsen(gamg11, &G1f1f, &coarsening);CHKERRQ(ierr);
+  ierr      = pc_gamg11->prolongator(gamg11, B1f1f, G1f1f, coarsening, &P1f1c);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A1f0f);CHKERRQ(ierr);
   ierr = MatDestroy(&A1f0c);CHKERRQ(ierr);
@@ -404,7 +406,7 @@ PetscErrorCode DMCoarsen_AKKT_GAMG11(DM dm, Mat P0f0c, Mat *P1f1c_out)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMCoarsen_AKKT"
-PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm) 
+PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
 {
   PetscErrorCode ierr;
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
@@ -436,8 +438,8 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
   else         kkt->transposeP = PETSC_FALSE;
   /* See if the 11 block can be coarsened with an attached DM. If so, we are done. Otherwise, use GAMG to coarsen 11. */
   if (kkt->dmf[1]) {
-     ierr = DMCoarsen(kkt->dmf[1], comm, &dmc[1]);CHKERRQ(ierr);
-     ierr = DMCreateInterpolation(dmc[1], kkt->dmf[1], &P1f1c, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCoarsen(kkt->dmf[1], comm, &dmc[1]);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(dmc[1], kkt->dmf[1], &P1f1c, PETSC_NULL);CHKERRQ(ierr);
   } else {
     ierr = DMCoarsen_AKKT_GAMG11(dm, P0f0c, &P1f1c);CHKERRQ(ierr);
   }
@@ -446,16 +448,16 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
   if (M1 == N1) SETERRQ1(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Dual prlongator is square with size %D: cannot distinguish coarse from fine", M1);
   if ((M1 < N1 && !kkt->transposeP) || (M1 >= N1 && kkt->transposeP)) {
     Mat P1f1ct;
-    ierr = MatTranspose(P1f1c, MAT_INITIAL_MATRIX, &P1f1ct);CHKERRQ(ierr);
-    ierr = MatDestroy(&P1f1c);CHKERRQ(ierr);
+    ierr  = MatTranspose(P1f1c, MAT_INITIAL_MATRIX, &P1f1ct);CHKERRQ(ierr);
+    ierr  = MatDestroy(&P1f1c);CHKERRQ(ierr);
     P1f1c = P1f1ct;
   }
   /* MatNest P0f0c, P1f1c together into Pfc. */
   mats[0] = P0f0c; mats[3] = P1f1c;
-  ierr = MatGetOwnershipRange(P0f0c, &start0, &end0);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(P1f1c, &start1, &end1);CHKERRQ(ierr);
-  ierr = ISCreateStride(((PetscObject)dm)->comm, end0-start0,start0,1,isc+0);CHKERRQ(ierr);
-  ierr = ISCreateStride(((PetscObject)dm)->comm, end1-start1,start1,1,isc+1);CHKERRQ(ierr);
+  ierr    = MatGetOwnershipRange(P0f0c, &start0, &end0);CHKERRQ(ierr);
+  ierr    = MatGetOwnershipRange(P1f1c, &start1, &end1);CHKERRQ(ierr);
+  ierr    = ISCreateStride(((PetscObject)dm)->comm, end0-start0,start0,1,isc+0);CHKERRQ(ierr);
+  ierr    = ISCreateStride(((PetscObject)dm)->comm, end1-start1,start1,1,isc+1);CHKERRQ(ierr);
   if (kkt->transposeP) {
     ierr = MatCreateNest(((PetscObject)dm)->comm,2,isc,2,kkt->isf,mats,&(kkt->Pfc));CHKERRQ(ierr);
   } else {
@@ -489,7 +491,7 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_AKKT"
-PetscErrorCode DMCreateInterpolation_AKKT(DM cdm, DM fdm, Mat *interp, Vec* rscale) 
+PetscErrorCode DMCreateInterpolation_AKKT(DM cdm, DM fdm, Mat *interp, Vec * rscale)
 {
   PetscBool      iskkt;
   PetscErrorCode ierr;
@@ -504,7 +506,7 @@ PetscErrorCode DMCreateInterpolation_AKKT(DM cdm, DM fdm, Mat *interp, Vec* rsca
   if (!iskkt) SETERRQ(((PetscObject)fdm)->comm, PETSC_ERR_ARG_WRONG, "Fine   DM not of type DMAKKT");
   if (fkkt->cdm != cdm) SETERRQ(((PetscObject)cdm)->comm, PETSC_ERR_ARG_WRONG, "Coarse DM must be obtained from fine via DMCoarsen");
   if (interp) {
-    ierr = PetscObjectReference((PetscObject)(fkkt->Pfc));CHKERRQ(ierr);
+    ierr    = PetscObjectReference((PetscObject)(fkkt->Pfc));CHKERRQ(ierr);
     *interp = fkkt->Pfc;
   }
   if (rscale) *rscale = PETSC_NULL;
@@ -513,7 +515,7 @@ PetscErrorCode DMCreateInterpolation_AKKT(DM cdm, DM fdm, Mat *interp, Vec* rsca
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_AKKT"
-PetscErrorCode DMCreateMatrix_AKKT(DM dm, MatType type, Mat *A) 
+PetscErrorCode DMCreateMatrix_AKKT(DM dm, MatType type, Mat *A)
 {
   PetscBool      iskkt;
   PetscErrorCode ierr;
@@ -528,7 +530,7 @@ PetscErrorCode DMCreateMatrix_AKKT(DM dm, MatType type, Mat *A)
       ierr = MatDuplicate(kkt->Aff, MAT_SHARE_NONZERO_PATTERN, A);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectReference((PetscObject)(kkt->Aff));CHKERRQ(ierr);
-      *A = kkt->Aff;
+      *A   = kkt->Aff;
     }
   }
   PetscFunctionReturn(0);
@@ -536,11 +538,11 @@ PetscErrorCode DMCreateMatrix_AKKT(DM dm, MatType type, Mat *A)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_AKKT"
-PetscErrorCode DMCreateGlobalVector_AKKT(DM dm, Vec *v) 
+PetscErrorCode DMCreateGlobalVector_AKKT(DM dm, Vec *v)
 {
   PetscBool      iskkt;
   PetscErrorCode ierr;
-  DM_AKKT*       kkt = (DM_AKKT*)(dm->data);
+  DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
@@ -576,7 +578,7 @@ PetscErrorCode DMDestroy_AKKT(DM dm)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMView_AKKT"
-PetscErrorCode DMView_AKKT(DM dm, PetscViewer v) 
+PetscErrorCode DMView_AKKT(DM dm, PetscViewer v)
 {
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
   PetscErrorCode ierr;
@@ -610,7 +612,7 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v)
       ierr = PetscViewerASCIIPrintf(v, "Decomposition, name %s:\n");CHKERRQ(ierr);
     }
     for (i = 0; i < 2; ++i) {
-      const char* label;
+      const char *label;
       if (!i == 0) label = "Primal";
       else         label = "Dual";
 
@@ -643,17 +645,17 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v)
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMCreate_AKKT"
-PetscErrorCode DMCreate_AKKT(DM dm) 
+PetscErrorCode DMCreate_AKKT(DM dm)
 {
   DM_AKKT        *kkt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(dm, DM_AKKT, &kkt);
-  dm->data = kkt;
-  ierr = PetscObjectChangeTypeName((PetscObject)kkt,DMAKKT);CHKERRQ(ierr);
-  kkt->dmf[0] = kkt->dmf[1] = PETSC_NULL;
-  kkt->isf[0] = kkt->isf[1] = PETSC_NULL;
+  ierr          = PetscNewLog(dm, DM_AKKT, &kkt);
+  dm->data      = kkt;
+  ierr          = PetscObjectChangeTypeName((PetscObject)kkt,DMAKKT);CHKERRQ(ierr);
+  kkt->dmf[0]   = kkt->dmf[1] = PETSC_NULL;
+  kkt->isf[0]   = kkt->isf[1] = PETSC_NULL;
   kkt->names[0] = kkt->names[1] = PETSC_NULL;
 
   kkt->duplicate_mat       = PETSC_FALSE;

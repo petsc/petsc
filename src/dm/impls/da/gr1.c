@@ -123,7 +123,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   }
   if (dim == 1) {
     if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/M;
-    else                         hx = (xmax-xmin)/(M-1);
+    else hx = (xmax-xmin)/(M-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     for (i=0; i<isize; i++) {
       coors[i] = xmin + hx*(i+istart);
@@ -131,9 +131,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
     if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
-    else                       hx = (xmax-xmin)/(M-1);
+    else hx = (xmax-xmin)/(M-1);
     if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
-    else                       hy = (ymax-ymin)/(N-1);
+    else hy = (ymax-ymin)/(N-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
     for (j=0; j<jsize; j++) {
@@ -145,11 +145,11 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
     if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
-    else                       hx = (xmax-xmin)/(M-1);
+    else hx = (xmax-xmin)/(M-1);
     if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
-    else                       hy = (ymax-ymin)/(N-1);
+    else hy = (ymax-ymin)/(N-1);
     if (bz == DMDA_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P);
-    else                       hz_ = (zmax-zmin)/(P-1);
+    else hz_ = (zmax-zmin)/(P-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
     for (k=0; k<ksize; k++) {
@@ -182,7 +182,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
   ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
   if (!ndisplayfields) ndisplayfields = step;
   if (!flg) {
     char       **fields;
@@ -201,7 +201,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
           }
         }
         SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_USER,"Unknown fieldname %s",fields[k]);
-        found: displayfields[ndisplayfields++] = j;
+found:  displayfields[ndisplayfields++] = j;
       }
     }
     for (k=0; k<nfields; k++) {
@@ -278,7 +278,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 
   ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
   for (k=0; k<ndisplayfields; k++) {
-    j = displayfields[k];
+    j    = displayfields[k];
     ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
 

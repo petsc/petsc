@@ -36,7 +36,8 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
    if there are more processors then z plans the extra processors get 0
    elements in their slice.
   */
-  if (rank < P) {nslice = M*N;} else nslice = 0;
+  if (rank < P) nslice = M*N;
+  else nslice = 0;
 
   /*
      Generate the local vector to hold this processors slice
@@ -81,14 +82,14 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
 int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
-  PetscInt         m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
+  PetscInt         m   = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
   PetscInt         *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   Vec              local,global,vslice;
   PetscScalar      value;
-  DMDABoundaryType wrap = DMDA_XYPERIODIC;
+  DMDABoundaryType wrap         = DMDA_XYPERIODIC;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter       scatter;
 
@@ -108,7 +109,7 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
-                    lx,ly,lz,&da);CHKERRQ(ierr);
+                      lx,ly,lz,&da);CHKERRQ(ierr);
   ierr = DMView(da,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
@@ -117,9 +118,9 @@ int main(int argc,char **argv)
 
   /* Put the value rank+1 into all locations of vslice and transfer back to global vector */
   value = 1.0 + rank;
-  ierr = VecSet(vslice,value);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter,vslice,global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter,vslice,global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr  = VecSet(vslice,value);CHKERRQ(ierr);
+  ierr  = VecScatterBegin(scatter,vslice,global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr  = VecScatterEnd(scatter,vslice,global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 

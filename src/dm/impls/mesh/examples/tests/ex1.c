@@ -110,7 +110,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = PETSC_NULL;
+    DM refinedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
     ierr = DMMeshRefine(*dm, refinementLimit, interpolate, &refinedMesh);CHKERRQ(ierr);
@@ -119,8 +119,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -129,11 +129,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "ReadFEAPMesh"
 PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, Vec *coordinates, Vec *elements)
 {
-  FILE          *fp;
+  FILE           *fp;
   int            fd;
-  char          *ret, line[1024];
-  PetscScalar   *coords;
-  PetscScalar   *elem;
+  char           *ret, line[1024];
+  PetscScalar    *coords;
+  PetscScalar    *elem;
   PetscViewer    viewer;
   PetscInt       numNodes, numLocalNodes, firstNode, numElems, numLocalElems, firstElem, nmat, ndm, numDof, numCorners, tmp;
   size_t         coordLineSize = 0, elemLineSize = 0;
@@ -159,9 +159,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
   } while (!match);
   // Read sizes
   ret = fgets(line, 256, fp);
-  if (6 != sscanf(line, "%d %d %d %d %d %d", &numNodes, &numElems, &nmat, &ndm, &numDof, &numCorners)) {
-    SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Malformed header in FEAP file");
-  }
+  if (6 != sscanf(line, "%d %d %d %d %d %d", &numNodes, &numElems, &nmat, &ndm, &numDof, &numCorners)) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Malformed header in FEAP file");
   ierr = VecCreate(comm, coordinates);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*coordinates, dim);CHKERRQ(ierr);
   ierr = VecSetSizes(*coordinates, PETSC_DETERMINE, numNodes*dim);CHKERRQ(ierr);
@@ -185,15 +183,15 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     //ierr = PetscBinarySeek(fd, -coordLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
     fseek(fp, -coordLineSize, SEEK_CUR);
   }
-  tmp = coordLineSize;
-  ierr = MPI_Bcast(&coordLineSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  tmp           = coordLineSize;
+  ierr          = MPI_Bcast(&coordLineSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   coordLineSize = tmp;
   // Read coordinates
-  ierr = VecGetLocalSize(*coordinates, &numLocalNodes);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(*coordinates, &firstNode, PETSC_NULL);CHKERRQ(ierr);
+  ierr           = VecGetLocalSize(*coordinates, &numLocalNodes);CHKERRQ(ierr);
+  ierr           = VecGetOwnershipRange(*coordinates, &firstNode, PETSC_NULL);CHKERRQ(ierr);
   numLocalNodes /= dim;
   firstNode     /= dim;
-  ierr = VecGetArray(*coordinates, &coords);CHKERRQ(ierr);
+  ierr           = VecGetArray(*coordinates, &coords);CHKERRQ(ierr);
   //ierr = PetscBinarySeek(fd, firstNode*coordLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
   fseek(fp, firstNode*coordLineSize, SEEK_CUR);
   for (PetscInt n = 0; n < numLocalNodes; ++n) {
@@ -201,9 +199,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
 
     ret = fgets(line, 1023, fp);
     if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad coordinate line");
-    if (5 != sscanf(line, "%d %d %le %le %le", &num, &id, &coords[n*dim+0], &coords[n*dim+1], &coords[n*dim+2])) {
-      SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Malformed coordinate line in FEAP file <%s>", line);
-    }
+    if (5 != sscanf(line, "%d %d %le %le %le", &num, &id, &coords[n*dim+0], &coords[n*dim+1], &coords[n*dim+2])) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Malformed coordinate line in FEAP file <%s>", line);
   }
   ierr = VecRestoreArray(*coordinates, &coords);CHKERRQ(ierr);
   // Skip everything until "elements"
@@ -223,15 +219,15 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     //ierr = PetscBinarySeek(fd, -elemLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
     fseek(fp, -elemLineSize, SEEK_CUR);
   }
-  tmp = elemLineSize;
-  ierr = MPI_Bcast(&elemLineSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  tmp          = elemLineSize;
+  ierr         = MPI_Bcast(&elemLineSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   elemLineSize = tmp;
   // Read in elements
-  ierr = VecGetLocalSize(*elements, &numLocalElems);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(*elements, &firstElem, PETSC_NULL);CHKERRQ(ierr);
+  ierr           = VecGetLocalSize(*elements, &numLocalElems);CHKERRQ(ierr);
+  ierr           = VecGetOwnershipRange(*elements, &firstElem, PETSC_NULL);CHKERRQ(ierr);
   numLocalElems /= numCorners;
   firstElem     /= numCorners;
-  ierr = VecGetArray(*elements, &elem);CHKERRQ(ierr);
+  ierr           = VecGetArray(*elements, &elem);CHKERRQ(ierr);
   //ierr = PetscBinarySeek(fd, firstElem*elemLineSize, PETSC_BINARY_SEEK_CUR, &offset);CHKERRQ(ierr);
   fseek(fp, firstElem*elemLineSize, SEEK_CUR);
   for (PetscInt n = 0; n < numLocalElems; ++n) {
@@ -243,16 +239,12 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
     if (!ret) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Bad element line in FEAP file");
     switch (numCorners) {
     case 8:
-      if (3+8 != sscanf(line, "%d %d %d %d %d %d %d %d %d %d %d", &num, &id, &matid, &e[0], &e[1], &e[2], &e[3], &e[4], &e[5], &e[6], &e[7])) {
-        SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Malformed element line in FEAP file");
-      }
+      if (3+8 != sscanf(line, "%d %d %d %d %d %d %d %d %d %d %d", &num, &id, &matid, &e[0], &e[1], &e[2], &e[3], &e[4], &e[5], &e[6], &e[7])) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Malformed element line in FEAP file");
       break;
     default:
       SETERRQ1(comm, PETSC_ERR_SUP, "We do not support %d nodes per element", numCorners);
     }
-    for (PetscInt c = 0; c < numCorners; ++c) {
-      elem[n*numCorners+c] = e[c]-1;
-    }
+    for (PetscInt c = 0; c < numCorners; ++c) elem[n*numCorners+c] = e[c]-1;
   }
   ierr = VecRestoreArray(*elements, &elem);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -264,7 +256,7 @@ PetscErrorCode ReadFEAPMesh(MPI_Comm comm, const char *filename, AppCtx *user, V
 PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
 {
   Vec            coordinates, elements;
-  PetscScalar   *coords, *elems;
+  PetscScalar    *coords, *elems;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -273,20 +265,20 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
   try {
     typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
     PetscInt *cells, *cone, *coneO, *idx;
-    PetscInt  dim, numCells, numTotalCells, numCorners, newV = 0;
+    PetscInt dim, numCells, numTotalCells, numCorners, newV = 0;
 
     ierr = DMMeshCreate(comm, dm);CHKERRQ(ierr);
     ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
     ierr = VecGetSize(elements,         &numTotalCells);CHKERRQ(ierr);
     ierr = VecGetLocalSize(elements,    &numCells);CHKERRQ(ierr);
     ierr = VecGetBlockSize(elements,    &numCorners);CHKERRQ(ierr);
+
     numCells      /= numCorners;
     numTotalCells /= numCorners;
+
     ierr = PetscMalloc(numCells*numCorners * sizeof(PetscInt), &cells);CHKERRQ(ierr);
     ierr = VecGetArray(elements,    &elems);CHKERRQ(ierr);
-    for (PetscInt c = 0; c < numCells*numCorners; ++c) {
-      cells[c] = elems[c];
-    }
+    for (PetscInt c = 0; c < numCells*numCorners; ++c) cells[c] = elems[c];
     ierr = VecRestoreArray(elements,    &elems);CHKERRQ(ierr);
     ALE::Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, 0);
     ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0);
@@ -297,9 +289,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
       for (PetscInt v = 0; v < numCorners; ++v) {
         PetscInt vertex = cells[c*numCorners+v]+numTotalCells;
 
-        if (renumbering.find(vertex) == renumbering.end()) {
-          renumbering[vertex] = numCells + newV++;
-        }
+        if (renumbering.find(vertex) == renumbering.end()) renumbering[vertex] = numCells + newV++;
       }
     }
     ierr = PetscMalloc(newV*dim * sizeof(PetscInt), &idx);CHKERRQ(ierr);
@@ -313,17 +303,13 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
     // Set chart
     sieve->setChart(PETSC_MESH_TYPE::sieve_type::chart_type(0, numCells+newV));
     // Set cone and support sizes
-    for (PetscInt c = 0; c < numCells; ++c) {
-      sieve->setConeSize(c, numCorners);
-    }
+    for (PetscInt c = 0; c < numCells; ++c) sieve->setConeSize(c, numCorners);
     sieve->symmetrizeSizes(numCells, numCorners, cells, numCells);
     // Allocate point storage
     sieve->allocate();
     // Fill up cones
     ierr = PetscMalloc2(numCorners,PetscInt,&cone,numCorners,PetscInt,&coneO);CHKERRQ(ierr);
-    for (PetscInt v = 0; v < numCorners; ++v) {
-      coneO[v] = 1;
-    }
+    for (PetscInt v = 0; v < numCorners; ++v) coneO[v] = 1;
     for (PetscInt c = 0; c < numCells; ++c) {
       for (PetscInt v = 0; v < numCorners; ++v) {
         cone[v] = renumbering[cells[c*numCorners+v]+numTotalCells];
@@ -375,9 +361,9 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid mesh: %s", e.message());
   }
-  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&elements);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr     = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr     = VecDestroy(&elements);CHKERRQ(ierr);
+  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -392,7 +378,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   if (user.filename[0]) {
@@ -400,14 +386,14 @@ int main(int argc, char *argv[])
   } else {
     ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
     {
-      DM          distributedMesh = PETSC_NULL;
-      const char *partitioner     = user.partitioner;
+      DM         distributedMesh = PETSC_NULL;
+      const char *partitioner    = user.partitioner;
 
       /* Distribute mesh over processes */
       ierr = DMMeshDistribute(dm, partitioner, &distributedMesh);CHKERRQ(ierr);
       if (distributedMesh) {
         ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        dm  = distributedMesh;
+        dm   = distributedMesh;
         ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
       }
     }

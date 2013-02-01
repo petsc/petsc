@@ -3,18 +3,18 @@ static char help[] = "Tests DMDAVecGetArrayDOF()\n";
 
 int main(int argc, char *argv[])
 {
-  DM              da, daX, daY;
-  DMDALocalInfo     info;
-  MPI_Comm        commX, commY;
-  Vec             basisX, basisY;
-  PetscScalar   **arrayX, **arrayY;
+  DM             da, daX, daY;
+  DMDALocalInfo  info;
+  MPI_Comm       commX, commY;
+  Vec            basisX, basisY;
+  PetscScalar    **arrayX, **arrayY;
   const PetscInt *lx, *ly;
-  PetscInt        M = 3, N = 3;
-  PetscInt        p = 1;
-  PetscInt        numGP = 3;
-  PetscInt        dof = 2*(p+1)*numGP;
-  PetscMPIInt     rank, subsize, subrank;
-  PetscErrorCode  ierr;
+  PetscInt       M     = 3, N = 3;
+  PetscInt       p     = 1;
+  PetscInt       numGP = 3;
+  PetscInt       dof   = 2*(p+1)*numGP;
+  PetscMPIInt    rank, subsize, subrank;
+  PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);

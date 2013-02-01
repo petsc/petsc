@@ -163,7 +163,7 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(da,dof,2);
   if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  dd->w = dof;
+  dd->w  = dof;
   da->bs = dof;
   PetscFunctionReturn(0);
 }
@@ -495,7 +495,7 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
 PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 {
   DM_DA *dd = (DM_DA*)da->data;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   *ranks = dd->neighbors;
@@ -678,9 +678,9 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
       if (want < 0 || want > remaining || ((startf+want)/ratio < nextc - stencil_width)
           || ((startf+want-1+ratio-1)/ratio > nextc-1+stencil_width)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible refined ownership range");
     }
-    lf[i] = want;
-    startc += lc[i];
-    startf += lf[i];
+    lf[i]      = want;
+    startc    += lc[i];
+    startf    += lf[i];
     remaining -= lf[i];
   }
   PetscFunctionReturn(0);
@@ -721,9 +721,9 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
       if (want < 0 || want > remaining
           || (nextf/ratio < startc+want-stencil_width) || ((nextf-1+ratio-1)/ratio > startc+want-1+stencil_width)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Could not find a compatible coarsened ownership range");
     }
-    lc[i] = want;
-    startc += lc[i];
-    startf += lf[i];
+    lc[i]      = want;
+    startc    += lc[i];
+    startf    += lf[i];
     remaining -= lc[i];
   }
   PetscFunctionReturn(0);
@@ -799,10 +799,10 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   dd2 = (DM_DA*)da2->data;
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
-  da2->ops->creatematrix        = da->ops->creatematrix;
+  da2->ops->creatematrix = da->ops->creatematrix;
   /* da2->ops->createinterpolation = da->ops->createinterpolation; this causes problem with SNESVI */
-  da2->ops->getcoloring      = da->ops->getcoloring;
-  dd2->interptype            = dd->interptype;
+  da2->ops->getcoloring = da->ops->getcoloring;
+  dd2->interptype       = dd->interptype;
 
   /* copy fill information if given */
   if (dd->dfill) {
@@ -827,6 +827,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   da2->leveldown = da->leveldown;
   da2->levelup   = da->levelup + 1;
+
   ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
   ierr = DMSetUp(da2);CHKERRQ(ierr);
   ierr = DMViewFromOptions(da2,"-dm_view");CHKERRQ(ierr);
@@ -930,9 +931,9 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones; why are only some inherited and not all? */
   /* da2->ops->createinterpolation = da->ops->createinterpolation; copying this one causes trouble for DMSetVI */
-  da2->ops->creatematrix        = da->ops->creatematrix;
-  da2->ops->getcoloring      = da->ops->getcoloring;
-  dd2->interptype            = dd->interptype;
+  da2->ops->creatematrix = da->ops->creatematrix;
+  da2->ops->getcoloring  = da->ops->getcoloring;
+  dd2->interptype        = dd->interptype;
 
   /* copy fill information if given */
   if (dd->dfill) {
@@ -957,6 +958,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
   da2->leveldown = da->leveldown + 1;
   da2->levelup   = da->levelup;
+
   ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
   ierr = DMSetUp(da2);CHKERRQ(ierr);
   ierr = DMViewFromOptions(da2,"-dm_view");CHKERRQ(ierr);
@@ -976,7 +978,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   }
 
@@ -1008,11 +1010,11 @@ PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
   for (i=0; i<nlevels; i++) {
     ierr = DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
   }
-  n = nlevels;
+  n    = nlevels;
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
-  n = nlevels;
+  n    = nlevels;
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
-  n = nlevels;
+  n    = nlevels;
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMDASetRefinementFactor(da,refx[0],refy[0],refz[0]);CHKERRQ(ierr);

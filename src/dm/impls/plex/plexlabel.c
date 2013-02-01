@@ -287,9 +287,9 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 @*/
 PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
 {
-  DM_Plex       *mesh = (DM_Plex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
+  PetscBool      flg   = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -612,9 +612,9 @@ PetscErrorCode DMPlexClearLabelStratum(DM dm, const char name[], PetscInt value)
 @*/
 PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
-  DMLabel  next = mesh->labels;
-  PetscInt n    = 0;
+  DM_Plex  *mesh = (DM_Plex*) dm->data;
+  DMLabel  next  = mesh->labels;
+  PetscInt n     = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -648,9 +648,9 @@ PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 @*/
 PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 {
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-  DMLabel  next = mesh->labels;
-  PetscInt l    = 0;
+  DM_Plex  *mesh = (DM_Plex*) dm->data;
+  DMLabel  next  = mesh->labels;
+  PetscInt l     = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -687,8 +687,8 @@ PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 @*/
 PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next = mesh->labels;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -725,8 +725,8 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 @*/
 PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next = mesh->labels;
+  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DMLabel        next  = mesh->labels;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 

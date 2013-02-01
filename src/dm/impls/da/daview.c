@@ -24,7 +24,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
-    mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
+    mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
     if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA informations");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
     mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
@@ -151,37 +151,28 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (dim)  *dim  = dd->dim;
+  if (dim) *dim = dd->dim;
   if (M) {
-    if (dd->Mo < 0) {
-      *M    = dd->M;
-    } else {
-      *M    = dd->Mo;
-    }
+    if (dd->Mo < 0) *M = dd->M;
+    else *M = dd->Mo;
   }
   if (N) {
-    if (dd->No < 0) {
-      *N    = dd->N;
-    } else {
-      *N    = dd->No;
-    }
+    if (dd->No < 0) *N = dd->N;
+    else *N = dd->No;
   }
   if (P) {
-    if (dd->Po < 0) {
-      *P    = dd->P;
-    } else {
-      *P    = dd->Po;
-    }
+    if (dd->Po < 0) *P = dd->P;
+    else *P = dd->Po;
   }
-  if (m)    *m    = dd->m;
-  if (n)    *n    = dd->n;
-  if (p)    *p    = dd->p;
-  if (dof)  *dof  = dd->w;
-  if (s)    *s    = dd->s;
+  if (m) *m = dd->m;
+  if (n) *n = dd->n;
+  if (p) *p = dd->p;
+  if (dof) *dof = dd->w;
+  if (s) *s = dd->s;
   if (bx) *bx = dd->bx;
   if (by) *by = dd->by;
   if (bz) *bz = dd->bz;
-  if (st)   *st   = dd->stencil_type;
+  if (st) *st = dd->stencil_type;
   PetscFunctionReturn(0);
 }
 
@@ -212,33 +203,24 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(info,2);
-  info->da   = da;
-  info->dim  = dd->dim;
-  if (dd->Mo < 0) {
-    info->mx   = dd->M;
-  } else {
-    info->mx   = dd->Mo;
-  }
-  if (dd->No < 0) {
-    info->my   = dd->N;
-  } else {
-    info->my   = dd->No;
-  }
-  if (dd->Po < 0) {
-    info->mz   = dd->P;
-  } else {
-    info->mz   = dd->Po;
-  }
-  info->dof  = dd->w;
-  info->sw   = dd->s;
-  info->bx   = dd->bx;
-  info->by   = dd->by;
-  info->bz   = dd->bz;
-  info->st   = dd->stencil_type;
+  info->da  = da;
+  info->dim = dd->dim;
+  if (dd->Mo < 0) info->mx = dd->M;
+  else info->mx = dd->Mo;
+  if (dd->No < 0) info->my = dd->N;
+  else info->my = dd->No;
+  if (dd->Po < 0) info->mz = dd->P;
+  else info->mz = dd->Po;
+  info->dof = dd->w;
+  info->sw  = dd->s;
+  info->bx  = dd->bx;
+  info->by  = dd->by;
+  info->bz  = dd->bz;
+  info->st  = dd->stencil_type;
 
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
-  w = dd->w;
+  w        = dd->w;
   info->xs = dd->xs/w + dd->xo;
   info->xm = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */

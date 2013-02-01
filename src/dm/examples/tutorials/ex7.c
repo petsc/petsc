@@ -10,10 +10,10 @@ T*/
 #include <petscbag.h>
 
 typedef struct {
-  char          filename[PETSC_MAX_PATH_LEN];
-  PetscReal     ra;
-  PetscInt      ia;
-  PetscBool     ta;
+  char      filename[PETSC_MAX_PATH_LEN];
+  PetscReal ra;
+  PetscInt  ia;
+  PetscBool ta;
 } Parameter;
 
 #undef __FUNCT__
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Create a DMDA and an associated vector */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,10,10,
@@ -54,13 +54,13 @@ int main(int argc,char **argv)
 
   /* Create an empty bag */
   ierr = PetscBagCreate(PETSC_COMM_WORLD,sizeof(Parameter),&bag);CHKERRQ(ierr);
-  ierr = PetscBagGetData(bag,(void **)&params);CHKERRQ(ierr);
+  ierr = PetscBagGetData(bag,(void**)&params);CHKERRQ(ierr);
 
   /* fill bag: register variables, defaults, names, help strings */
   ierr = PetscBagSetName(bag,"ParameterBag","contains problem parameters");CHKERRQ(ierr);
   ierr = PetscBagRegisterString(bag,&params->filename,PETSC_MAX_PATH_LEN,"output_file","filename","Name of secret file");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->ra,1.0,"param_1","The first parameter");CHKERRQ(ierr);
-  ierr = PetscBagRegisterInt   (bag,&params->ia,5  ,"param_2","The second parameter");CHKERRQ(ierr);
+  ierr = PetscBagRegisterInt   (bag,&params->ia,5,"param_2","The second parameter");CHKERRQ(ierr);
   ierr = PetscBagRegisterBool (bag,&params->ta,PETSC_TRUE,"do_output","Write output file (true/false)");CHKERRQ(ierr);
 
   /*

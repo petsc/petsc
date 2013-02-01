@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
-    for (i=0; i<size-1; i++) { localnodes[i] = 2;}
+    for (i=0; i<size-1; i++) localnodes[i] = 2;
     localnodes[size-1] = M - 2*(size-1);
   }
 
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
   /* set up display to show my portion of the wave */
   xbase = (int)((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
   width = (int)((myend-mybase)*800./M);
-  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
-                         width,200,&viewer_private);CHKERRQ(ierr);
+  ierr  = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
+                              width,200,&viewer_private);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer_private,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
@@ -61,12 +61,12 @@ int main(int argc,char **argv)
   /* Initialize the array */
   ierr = VecGetLocalSize(local,&localsize);CHKERRQ(ierr);
   ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
+
   localptr[0] = 0.0;
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
-    j=(i-1)+mybase;
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M)
-                        + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 2;
+    j           = (i-1)+mybase;
+    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 2;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
@@ -94,8 +94,7 @@ int main(int argc,char **argv)
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
     for (i=1; i< localsize-1; i++) {
-      copyptr[i] = .5*(localptr[i+1]+localptr[i-1]) -
-                    (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
+      copyptr[i] = .5*(localptr[i+1]+localptr[i-1]) - (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
     }
     ierr = VecRestoreArray(copy,&copyptr);CHKERRQ(ierr);
     ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);

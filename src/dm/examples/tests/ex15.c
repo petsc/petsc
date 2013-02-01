@@ -31,7 +31,7 @@ int main(int argc,char **argv)
     if (dim > 2) bz = DMDA_BOUNDARY_PERIODIC;
   }
   if (bx == DMDA_BOUNDARY_NONE) {
-    M2   = ratio*(M1-1) + 1;
+    M2 = ratio*(M1-1) + 1;
   } else {
     M2 = ratio*M1;
   }

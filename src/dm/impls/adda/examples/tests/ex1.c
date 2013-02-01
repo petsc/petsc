@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   ADDA           adda;
-  PetscInt       nodes[4] = {20, 20, 10, 10};
+  PetscInt       nodes[4]    = {20, 20, 10, 10};
   PetscBool      periodic[4] = {PETSC_TRUE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE};
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);

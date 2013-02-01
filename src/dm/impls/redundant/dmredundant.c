@@ -72,14 +72,14 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
-  ierr = VecCreate(((PetscObject)dm)->comm,gvec);CHKERRQ(ierr);
-  ierr = VecSetSizes(*gvec,red->n,red->N);CHKERRQ(ierr);
-  ierr = VecSetType(*gvec,dm->vectype);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMapping(*gvec,ltog);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(*gvec,ltog);CHKERRQ(ierr);
-  ierr = VecSetDM(*gvec,dm);CHKERRQ(ierr);
+  ierr  = VecCreate(((PetscObject)dm)->comm,gvec);CHKERRQ(ierr);
+  ierr  = VecSetSizes(*gvec,red->n,red->N);CHKERRQ(ierr);
+  ierr  = VecSetType(*gvec,dm->vectype);CHKERRQ(ierr);
+  ierr  = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+  ierr  = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
+  ierr  = VecSetLocalToGlobalMapping(*gvec,ltog);CHKERRQ(ierr);
+  ierr  = VecSetLocalToGlobalMappingBlock(*gvec,ltog);CHKERRQ(ierr);
+  ierr  = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -94,10 +94,10 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm,Vec *lvec)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(lvec,2);
   *lvec = 0;
-  ierr = VecCreate(PETSC_COMM_SELF,lvec);CHKERRQ(ierr);
-  ierr = VecSetSizes(*lvec,red->N,red->N);CHKERRQ(ierr);
-  ierr = VecSetType(*lvec,dm->vectype);CHKERRQ(ierr);
-  ierr = VecSetDM(*lvec,dm);CHKERRQ(ierr);
+  ierr  = VecCreate(PETSC_COMM_SELF,lvec);CHKERRQ(ierr);
+  ierr  = VecSetSizes(*lvec,red->N,red->N);CHKERRQ(ierr);
+  ierr  = VecSetType(*lvec,dm->vectype);CHKERRQ(ierr);
+  ierr  = VecSetDM(*lvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,28 +123,26 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
     PetscScalar *buffer;
     PetscInt    i;
     if (rank == red->rank) {
-#if defined (PETSC_HAVE_MPI_IN_PLACE)
+#if defined(PETSC_HAVE_MPI_IN_PLACE)
       buffer = gv;
       source = MPI_IN_PLACE;
 #else
-      ierr = PetscMalloc(red->N*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
+      ierr   = PetscMalloc(red->N*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
       source = buffer;
 #endif
       if (imode == ADD_VALUES) for (i=0; i<red->N; i++) buffer[i] = gv[i] + lv[i];
 #if !defined(PETSC_USE_COMPLEX)
       if (imode == MAX_VALUES) for (i=0; i<red->N; i++) buffer[i] = PetscMax(gv[i],lv[i]);
 #endif
-    } else {
-      source = (void*)lv;
-    }
-    ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES)?MPI_SUM:MPI_MAX,red->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    } else source = (void*)lv;
+    ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES) ? MPI_SUM : MPI_MAX,red->rank,((PetscObject)dm)->comm);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IN_PLACE)
     if (rank == red->rank) {ierr = PetscFree(buffer);CHKERRQ(ierr);}
 #endif
   } break;
   case INSERT_VALUES:
-  ierr = PetscMemcpy(gv,lv,red->n*sizeof(PetscScalar));CHKERRQ(ierr);
-  break;
+    ierr = PetscMemcpy(gv,lv,red->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    break;
   default: SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"InsertMode not supported");
   }
   ierr = VecRestoreArrayRead(l,&lv);CHKERRQ(ierr);
@@ -203,8 +201,8 @@ static PetscErrorCode DMSetUp_Redundant(DM dm)
   PetscFunctionBegin;
   ierr = PetscMalloc(red->N*sizeof(PetscInt),&globals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) globals[i] = i;
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)dm->ltogmap);CHKERRQ(ierr);
+  ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  ierr         = PetscObjectReference((PetscObject)dm->ltogmap);CHKERRQ(ierr);
   dm->ltogmapb = dm->ltogmap;
   PetscFunctionReturn(0);
 }
@@ -379,10 +377,10 @@ PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
   PetscMPIInt    myrank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&myrank);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(((PetscObject)dm)->comm,&myrank);CHKERRQ(ierr);
   red->rank = rank;
-  red->N = N;
-  red->n = (myrank == rank) ? N : 0;
+  red->N    = N;
+  red->n    = (myrank == rank) ? N : 0;
   PetscFunctionReturn(0);
 }
 
@@ -390,7 +388,7 @@ PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
 #define __FUNCT__ "DMRedundantGetSize_Redundant"
 PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
 {
-  DM_Redundant   *red = (DM_Redundant*)dm->data;
+  DM_Redundant *red = (DM_Redundant*)dm->data;
 
   PetscFunctionBegin;
   if (rank) *rank = red->rank;
@@ -422,10 +420,11 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   DM_Redundant   *red;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(dm,DM_Redundant,&red);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,DM_Redundant,&red);CHKERRQ(ierr);
   dm->data = red;
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMREDUNDANT);CHKERRQ(ierr);
+
   dm->ops->setup              = DMSetUp_Redundant;
   dm->ops->view               = DMView_Redundant;
   dm->ops->createglobalvector = DMCreateGlobalVector_Redundant;
@@ -440,6 +439,7 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->coarsen            = DMCoarsen_Redundant;
   dm->ops->createinterpolation= DMCreateInterpolation_Redundant;
   dm->ops->getcoloring        = DMCreateColoring_Redundant;
+
   ierr = PetscStrallocpy(VECSTANDARD,(char**)&dm->vectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);

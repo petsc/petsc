@@ -30,13 +30,13 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(m,n,mxREAL);
+  mat = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
-  mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
+  mat = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
-  engPutVariable((Engine *)mengine,obj->name,mat);
+  engPutVariable((Engine*)mengine,obj->name,mat);
 
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -47,7 +47,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateLocalVector_DA"
-PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
+PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -76,7 +76,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
 #define __FUNCT__ "DMDAGetNumCells"
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
 {
-  DM_DA         *da  = (DM_DA *) dm->data;
+  DM_DA          *da = (DM_DA*) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
@@ -93,7 +93,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
 #define __FUNCT__ "DMDAGetNumVertices"
 PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
 {
-  DM_DA         *da  = (DM_DA *) dm->data;
+  DM_DA          *da = (DM_DA*) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nVx = mx+1;
@@ -125,7 +125,7 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
 #define __FUNCT__ "DMDAGetNumFaces"
 PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
 {
-  DM_DA         *da  = (DM_DA *) dm->data;
+  DM_DA          *da = (DM_DA*) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nxF = (dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
@@ -167,33 +167,33 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
 #define __FUNCT__ "DMDAGetHeightStratum"
 PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
 {
-  DM_DA         *da  = (DM_DA *) dm->data;
+  DM_DA          *da = (DM_DA*) dm->data;
   const PetscInt dim = da->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (pStart) {PetscValidIntPointer(pStart,3);}
-  if (pEnd)   {PetscValidIntPointer(pEnd,4);}
+  if (pStart) PetscValidIntPointer(pStart,3);
+  if (pEnd)   PetscValidIntPointer(pEnd,4);
   ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
   ierr = DMDAGetNumVertices(dm, PETSC_NULL, PETSC_NULL, PETSC_NULL, &nV);CHKERRQ(ierr);
   ierr = DMDAGetNumFaces(dm, PETSC_NULL, &nXF, PETSC_NULL, &nYF, PETSC_NULL, &nZF);CHKERRQ(ierr);
   if (height == 0) {
     /* Cells */
-    if (pStart) {*pStart = 0;}
-    if (pEnd)   {*pEnd   = nC;}
+    if (pStart) *pStart = 0;
+    if (pEnd)   *pEnd   = nC;
   } else if (height == 1) {
     /* Faces */
-    if (pStart) {*pStart = nC+nV;}
-    if (pEnd)   {*pEnd   = nC+nV+nXF+nYF+nZF;}
+    if (pStart) *pStart = nC+nV;
+    if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
   } else if (height == dim) {
     /* Vertices */
-    if (pStart) {*pStart = nC;}
-    if (pEnd)   {*pEnd   = nC+nV;}
+    if (pStart) *pStart = nC;
+    if (pEnd)   *pEnd   = nC+nV;
   } else if (height < 0) {
     /* All points */
-    if (pStart) {*pStart = 0;}
-    if (pEnd)   {*pEnd   = nC+nV+nXF+nYF+nZF;}
+    if (pStart) *pStart = 0;
+    if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
   } else SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
   PetscFunctionReturn(0);
 }
@@ -227,30 +227,30 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
 @*/
 PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
 {
-  DM_DA         *da  = (DM_DA *) dm->data;
-  const PetscInt dim = da->dim;
-  PetscInt       numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
-  PetscSF        sf;
-  PetscMPIInt    rank;
+  DM_DA             *da = (DM_DA*) dm->data;
+  const PetscInt    dim = da->dim;
+  PetscInt          numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
+  PetscSF           sf;
+  PetscMPIInt       rank;
   const PetscMPIInt *neighbors;
-  PetscInt      *localPoints;
-  PetscSFNode   *remotePoints;
-  PetscInt       nleaves = 0,  nleavesCheck = 0, nL = 0;
-  PetscInt       nC, nVx, nVy, nVz, nV, nxF, nXF, nyF, nYF, nzF, nZF;
-  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart, zfEnd;
-  PetscInt       f, v, c, xf, yf, zf, xn, yn, zn;
-  PetscErrorCode ierr;
+  PetscInt          *localPoints;
+  PetscSFNode       *remotePoints;
+  PetscInt          nleaves = 0,  nleavesCheck = 0, nL = 0;
+  PetscInt          nC, nVx, nVy, nVz, nV, nxF, nXF, nyF, nYF, nzF, nZF;
+  PetscInt          pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart, zfEnd;
+  PetscInt          f, v, c, xf, yf, zf, xn, yn, zn;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
-  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
-  ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
-  ierr = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr    = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr    = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
+  ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
+  ierr    = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
+  ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
+  ierr    = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
+  ierr    = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
   xfStart = vEnd;  xfEnd = xfStart+nXF;
   yfStart = xfEnd; yfEnd = yfStart+nYF;
   zfStart = yfEnd; zfEnd = zfStart+nZF;
@@ -258,12 +258,13 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    if (numVertexDof) {numVertexTotDof  += numVertexDof[f];}
-    if (numCellDof)   {numCellTotDof    += numCellDof[f];}
-    if (numFaceDof)   {numFaceTotDof[0] += numFaceDof[f*dim+0];
-                       numFaceTotDof[1] += dim > 1 ? numFaceDof[f*dim+1] : 0;
-                       numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
-                      }
+    if (numVertexDof) numVertexTotDof  += numVertexDof[f];
+    if (numCellDof)   numCellTotDof    += numCellDof[f];
+    if (numFaceDof) {
+      numFaceTotDof[0] += numFaceDof[f*dim+0];
+      numFaceTotDof[1] += dim > 1 ? numFaceDof[f*dim+1] : 0;
+      numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
+    }
   }
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &dm->defaultSection);CHKERRQ(ierr);
   if (numFields > 1) {
@@ -323,7 +324,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {
-        const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
+        const PetscInt xp       = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
         if (neighbor >= 0 && neighbor < rank) {
@@ -343,7 +344,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {
-        const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
+        const PetscInt xp       = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
         PetscInt       xv, yv, zv;
 
@@ -737,13 +738,13 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
 .seealso: DMDARestoreArray()
 
 @*/
-PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
+PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA          *dd    = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -784,53 +785,51 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
   }
 
   switch (dd->dim) {
-    case 1: {
-      void *ptr;
+  case 1: {
+    void *ptr;
 
-      ierr  = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+    ierr = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
-      ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
-      *iptr = (void*)ptr;
-      break;}
-    case 2: {
-      void **ptr;
+    ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
+    *iptr = (void*)ptr;
+    break;
+  }
+  case 2: {
+    void **ptr;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+    ierr = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
-      ptr  = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
-      for (j=ys;j<ys+ym;j++) {
-        ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
+    ptr = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
+    for (j=ys; j<ys+ym; j++) ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
+    *iptr = (void*)ptr;
+    break;
+  }
+  case 3: {
+    void ***ptr,**bptr;
+
+    ierr = PetscMalloc((zm+1)*sizeof(void**)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+
+    ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
+    bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));
+    for (i=zs; i<zs+zm; i++) ptr[i] = bptr + ((i-zs)*ym - ys);
+    for (i=zs; i<zs+zm; i++) {
+      for (j=ys; j<ys+ym; j++) {
+        ptr[i][j] = iarray_start + sizeof(PetscScalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr;
-      break;}
-    case 3: {
-      void ***ptr,**bptr;
-
-      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
-
-      ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
-      bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));
-      for (i=zs;i<zs+zm;i++) {
-        ptr[i] = bptr + ((i-zs)*ym - ys);
-      }
-      for (i=zs; i<zs+zm; i++) {
-        for (j=ys; j<ys+ym; j++) {
-          ptr[i][j] = iarray_start + sizeof(PetscScalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
-        }
-      }
-
-      *iptr = (void*)ptr;
-      break;}
-    default:
-      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
+    }
+    *iptr = (void*)ptr;
+    break;
+  }
+  default:
+    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
-  done:
+done:
   /* add arrays to the checked out list */
   if (ghosted) {
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayghostedout[i]) {
-        dd->arrayghostedout[i] = *iptr ;
+        dd->arrayghostedout[i] = *iptr;
         dd->startghostedout[i] = iarray_start;
         break;
       }
@@ -838,7 +837,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
   } else {
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayout[i]) {
-        dd->arrayout[i] = *iptr ;
+        dd->arrayout[i] = *iptr;
         dd->startout[i] = iarray_start;
         break;
       }
@@ -862,11 +861,11 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
 .seealso: DMDAGetArray()
 
 @*/
-PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
+PetscErrorCode  DMDARestoreArray(DM da,PetscBool ghosted,void *vptr)
 {
-  PetscInt  i;
-  void      **iptr = (void**)vptr,*iarray_start = 0;
-  DM_DA     *dd = (DM_DA*)da->data;
+  PetscInt i;
+  void     **iptr = (void**)vptr,*iarray_start = 0;
+  DM_DA    *dd    = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -897,8 +896,8 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
     }
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (!dd->arrayin[i]) {
-        dd->arrayin[i]  = *iptr;
-        dd->startin[i]  = iarray_start;
+        dd->arrayin[i] = *iptr;
+        dd->startin[i] = iarray_start;
         break;
       }
     }

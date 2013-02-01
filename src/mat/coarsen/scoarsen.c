@@ -36,6 +36,7 @@ PetscErrorCode  MatCoarsenRegisterAll(const char path[])
 
   PetscFunctionBegin;
   MatCoarsenRegisterAllCalled = PETSC_TRUE;
+
   ierr = MatCoarsenRegisterDynamic(MATCOARSENMIS,path,"MatCoarsenCreate_MIS",MatCoarsenCreate_MIS);CHKERRQ(ierr);
   ierr = MatCoarsenRegisterDynamic(MATCOARSENHEM,path,"MatCoarsenCreate_HEM",MatCoarsenCreate_HEM);CHKERRQ(ierr);
   PetscFunctionReturn(0);

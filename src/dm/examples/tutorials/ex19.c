@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"p2d_");CHKERRQ(ierr);
-ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMView(da,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);

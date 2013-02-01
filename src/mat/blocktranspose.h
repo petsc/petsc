@@ -4,18 +4,18 @@
 #include <petscsys.h>
 #include <petscblaslapack.h>
 
-#define PetscKernel_A_gets_transpose_A_BODY(a,N)                        \
-    int i,j;                                                            \
-    for (i=0; i<N; i++) {                                               \
-      for (j=i+1; j<N; j++) {                                           \
-        MatScalar t = a[i*N+j];                                         \
-        a[i*N+j] = a[j*N+i];                                            \
-        a[j*N+i] = t;                                                   \
-      }                                                                 \
-    }                                                                   \
-    return 0
+#define PetscKernel_A_gets_transpose_A_BODY(a,N)                      \
+  int i,j;                                                            \
+  for (i=0; i<N; i++) {                                               \
+    for (j=i+1; j<N; j++) {                                           \
+      MatScalar t = a[i*N+j];                                         \
+      a[i*N+j] = a[j*N+i];                                            \
+      a[j*N+i] = t;                                                   \
+    }                                                                 \
+  }                                                                   \
+  return 0
 
-PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_N (MatScalar *a,PetscInt N)
+PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_transpose_A_N(MatScalar *a,PetscInt N)
 {
   PetscKernel_A_gets_transpose_A_BODY(a,N);
 }

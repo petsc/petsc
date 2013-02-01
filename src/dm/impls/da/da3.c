@@ -15,7 +15,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
   PetscBool      iascii,isdraw,isbinary;
   DM_DA          *dd = (DM_DA*)da->data;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscBool      ismatlab;
+  PetscBool ismatlab;
 #endif
 
   PetscFunctionBegin;
@@ -55,12 +55,12 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
-    PetscDraw       draw;
-    PetscReal     ymin = -1.0,ymax = (PetscReal)dd->N;
-    PetscReal     xmin = -1.0,xmax = (PetscReal)((dd->M+2)*dd->P),x,y,ycoord,xcoord;
-    PetscInt        k,plane,base,*idx;
-    char       node[10];
-    PetscBool  isnull;
+    PetscDraw draw;
+    PetscReal ymin = -1.0,ymax = (PetscReal)dd->N;
+    PetscReal xmin = -1.0,xmax = (PetscReal)((dd->M+2)*dd->P),x,y,ycoord,xcoord;
+    PetscInt  k,plane,base,*idx;
+    char      node[10];
+    PetscBool isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -127,8 +127,8 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
         base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs); idx = dd->idx;
         plane=k;
         /* Keep z wrap around points on the dradrawg */
-        if (k<0)    { plane=dd->P+k; }
-        if (k>=dd->P) { plane=k-dd->P; }
+        if (k<0) plane=dd->P+k;
+        if (k>=dd->P) plane=k-dd->P;
         ymin = dd->Ys; ymax = dd->Ye;
         xmin = (dd->M+1)*plane*dd->w;
         xmax = (dd->M+1)*plane*dd->w+dd->M*dd->w;
@@ -137,13 +137,13 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
             sprintf(node,"%d",(int)(idx[base]/dd->w));
             ycoord = y;
             /*Keep y wrap around points on drawing */
-            if (y<0)      { ycoord = dd->N+y; }
+            if (y<0) ycoord = dd->N+y;
 
-            if (y>=dd->N) { ycoord = y-dd->N; }
+            if (y>=dd->N) ycoord = y-dd->N;
             xcoord = x;   /* Keep x wrap points on drawing */
 
-            if (x<xmin)  { xcoord = xmax - (xmin-x); }
-            if (x>=xmax) { xcoord = xmin + (x-xmax); }
+            if (x<xmin) xcoord = xmax - (xmin-x);
+            if (x>=xmax) xcoord = xmin + (x-xmax);
             ierr = PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
             base+=dd->w;
           }
@@ -166,7 +166,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 #define __FUNCT__ "DMSetUp_DA_3D"
 PetscErrorCode  DMSetUp_DA_3D(DM da)
 {
-  DM_DA            *dd           = (DM_DA*)da->data;
+  DM_DA            *dd          = (DM_DA*)da->data;
   const PetscInt   M            = dd->M;
   const PetscInt   N            = dd->N;
   const PetscInt   P            = dd->P;
@@ -175,13 +175,13 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt         p            = dd->p;
   const PetscInt   dof          = dd->w;
   const PetscInt   s            = dd->s;
-  DMDABoundaryType bx         = dd->bx;
-  DMDABoundaryType by         = dd->by;
-  DMDABoundaryType bz         = dd->bz;
+  DMDABoundaryType bx           = dd->bx;
+  DMDABoundaryType by           = dd->by;
+  DMDABoundaryType bz           = dd->bz;
   DMDAStencilType  stencil_type = dd->stencil_type;
-  PetscInt         *lx           = dd->lx;
-  PetscInt         *ly           = dd->ly;
-  PetscInt         *lz           = dd->lz;
+  PetscInt         *lx          = dd->lx;
+  PetscInt         *ly          = dd->ly;
+  PetscInt         *lz          = dd->lz;
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
   PetscInt         xs = 0,xe,ys = 0,ye,zs = 0,ze,x = 0,y = 0,z = 0;
@@ -191,8 +191,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt         n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   PetscInt         n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
   PetscInt         *bases,*ldims,base,x_t,y_t,z_t,s_t,count,s_x,s_y,s_z;
-  PetscInt         sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
-  PetscInt         sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
+  PetscInt         sn0  = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
+  PetscInt         sn8  = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   PetscInt         sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
   Vec              local,global;
   VecScatter       ltog,gtol;
@@ -217,7 +217,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   }
   if (n != PETSC_DECIDE) {
     if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    else if (n > size)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
+    else if (n > size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
   }
   if (p != PETSC_DECIDE) {
     if (p < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);
@@ -297,60 +297,50 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   if (!lx) {
     ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
-    lx = dd->lx;
-    for (i=0; i<m; i++) {
-      lx[i] = M/m + ((M % m) > (i % m));
-    }
+    lx   = dd->lx;
+    for (i=0; i<m; i++) lx[i] = M/m + ((M % m) > (i % m));
   }
   x  = lx[rank % m];
   xs = 0;
-  for (i=0; i<(rank%m); i++) { xs += lx[i];}
+  for (i=0; i<(rank%m); i++) xs += lx[i];
   if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   if (!ly) {
     ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
-    ly = dd->ly;
-    for (i=0; i<n; i++) {
-      ly[i] = N/n + ((N % n) > (i % n));
-    }
+    ly   = dd->ly;
+    for (i=0; i<n; i++) ly[i] = N/n + ((N % n) > (i % n));
   }
-  y  = ly[(rank % (m*n))/m];
+  y = ly[(rank % (m*n))/m];
   if ((y < s) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
 
   ys = 0;
-  for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
+  for (i=0; i<(rank % (m*n))/m; i++) ys += ly[i];
 
   if (!lz) {
     ierr = PetscMalloc(p*sizeof(PetscInt), &dd->lz);CHKERRQ(ierr);
     lz = dd->lz;
-    for (i=0; i<p; i++) {
-      lz[i] = P/p + ((P % p) > (i % p));
-    }
+    for (i=0; i<p; i++) lz[i] = P/p + ((P % p) > (i % p));
   }
-  z  = lz[rank/(m*n)];
+  z = lz[rank/(m*n)];
 
   /* note this is different than x- and y-, as we will handle as an important special
    case when p=P=1 and DMDA_BOUNDARY_PERIODIC and s > z.  This is to deal with 2D problems
    in a 3D code.  Additional code for this case is noted with "2d case" comments */
   twod = PETSC_FALSE;
-  if (P == 1) {
-    twod = PETSC_TRUE;
-  } else if ((z < s) && ((p > 1) || (bz == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %D is smaller than stencil width s %D",z,s);
+  if (P == 1) twod = PETSC_TRUE;
+  else if ((z < s) && ((p > 1) || (bz == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %D is smaller than stencil width s %D",z,s);
   zs = 0;
-  for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
+  for (i=0; i<(rank/(m*n)); i++) zs += lz[i];
   ye = ys + y;
   xe = xs + x;
   ze = zs + z;
 
-    /* determine ghost region (Xs) and region scattered into (IXs)  */
+  /* determine ghost region (Xs) and region scattered into (IXs)  */
   if (xs-s > 0) {
     Xs = xs - s; IXs = xs - s;
   } else {
-    if (bx) {
-      Xs = xs - s;
-    } else {
-      Xs = 0;
-    }
+    if (bx) Xs = xs - s;
+    else Xs = 0;
     IXs = 0;
   }
   if (xe+s <= M) {
@@ -358,105 +348,87 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   } else {
     if (bx) {
       Xs = xs - s; Xe = xe + s;
-    } else {
-      Xe = M;
-    }
+    } else Xe = M;
     IXe = M;
   }
 
   if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
     IXs = xs - s;
     IXe = xe + s;
-    Xs = xs - s;
-    Xe = xe + s;
+    Xs  = xs - s;
+    Xe  = xe + s;
   }
 
   if (ys-s > 0) {
     Ys = ys - s; IYs = ys - s;
   } else {
-    if (by) {
-      Ys = ys - s;
-    } else {
-      Ys = 0;
-    }
+    if (by) Ys = ys - s;
+    else Ys = 0;
     IYs = 0;
   }
   if (ye+s <= N) {
     Ye = ye + s; IYe = ye + s;
   } else {
-    if (by) {
-      Ye = ye + s;
-    } else {
-      Ye = N;
-    }
+    if (by) Ye = ye + s;
+    else Ye = N;
     IYe = N;
   }
 
   if (by == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
     IYs = ys - s;
     IYe = ye + s;
-    Ys = ys - s;
-    Ye = ye + s;
+    Ys  = ys - s;
+    Ye  = ye + s;
   }
 
   if (zs-s > 0) {
     Zs = zs - s; IZs = zs - s;
   } else {
-    if (bz) {
-      Zs = zs - s;
-    } else {
-      Zs = 0;
-    }
+    if (bz) Zs = zs - s;
+    else Zs = 0;
     IZs = 0;
   }
   if (ze+s <= P) {
     Ze = ze + s; IZe = ze + s;
   } else {
-    if (bz) {
-      Ze = ze + s;
-    } else {
-      Ze = P;
-    }
+    if (bz) Ze = ze + s;
+    else Ze = P;
     IZe = P;
   }
 
   if (bz == DMDA_BOUNDARY_PERIODIC || bz == DMDA_BOUNDARY_MIRROR) {
     IZs = zs - s;
     IZe = ze + s;
-    Zs = zs - s;
-    Ze = ze + s;
+    Zs  = zs - s;
+    Ze  = ze + s;
   }
 
   /* Resize all X parameters to reflect w */
-  s_x  = s;
-  s_y  = s;
-  s_z  = s;
+  s_x = s;
+  s_y = s;
+  s_z = s;
 
   /* determine starting point of each processor */
   nn       = x*y*z;
   ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
-  for (i=1; i<=size; i++) {
-    bases[i] = ldims[i-1];
-  }
-  for (i=1; i<=size; i++) {
-    bases[i] += bases[i-1];
-  }
+  for (i=1; i<=size; i++) bases[i] = ldims[i-1];
+  for (i=1; i<=size; i++) bases[i] += bases[i-1];
   base = bases[rank]*dof;
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x*y*z*dof;
-  ierr = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*dof;
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
+  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*z*dof,start,1,&to);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(x*y*z*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc(x*y*z*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   left   = xs - Xs; right = left + x;
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
@@ -484,7 +456,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);
     down   = IZs - Zs; up  = down + (IZe-IZs);
-    count = 0;
+    count  = 0;
     for (i=down; i<up; i++) {
       for (j=bottom; j<top; j++) {
         for (k=left; k<right; k++) {
@@ -497,7 +469,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   } else {
     /* This is way ugly! We need to list the funny cross type region */
     count = ((ys-IYs) + (IYe-ye))*x*z + ((xs-IXs) + (IXe-xe))*y*z + ((zs-IZs) + (IZe-ze))*x*y + x*y*z;
-    ierr   = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
 
     left   = xs - Xs; right = left + x;
     bottom = ys - Ys; top = bottom + y;
@@ -548,15 +520,15 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* Solve for X,Y, and Z Periodic Case First, Then Modify Solution */
   /* Assume Nodes are Internal to the Cube */
-  n0  = rank - m*n - m - 1;
-  n1  = rank - m*n - m;
-  n2  = rank - m*n - m + 1;
-  n3  = rank - m*n -1;
-  n4  = rank - m*n;
-  n5  = rank - m*n + 1;
-  n6  = rank - m*n + m - 1;
-  n7  = rank - m*n + m;
-  n8  = rank - m*n + m + 1;
+  n0 = rank - m*n - m - 1;
+  n1 = rank - m*n - m;
+  n2 = rank - m*n - m + 1;
+  n3 = rank - m*n -1;
+  n4 = rank - m*n;
+  n5 = rank - m*n + 1;
+  n6 = rank - m*n + m - 1;
+  n7 = rank - m*n + m;
+  n8 = rank - m*n + m + 1;
 
   n9  = rank - m - 1;
   n10 = rank - m;
@@ -589,7 +561,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     n18 = rank       -1 + (m*n);
     n21 = rank + m   -1 + (m*n);
     n24 = rank + 2*m -1 + (m*n);
-   }
+  }
 
   if (xe == M) { /* First assume not corner or edge */
     n2  = rank -2*m +1 - (m*n);
@@ -635,7 +607,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     n4 = size - (m*n) + rank;
     n5 = size - (m*n) + rank + 1;
     n6 = size - (m*n) + rank + m - 1;
-    n7 = size - (m*n) + rank + m ;
+    n7 = size - (m*n) + rank + m;
     n8 = size - (m*n) + rank + m + 1;
   }
 
@@ -724,46 +696,47 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   }
 
   /* Check for Corners */
-  if ((xs==0)   && (ys==0) && (zs==0)) { n0  = size -1;}
-  if ((xs==0)   && (ys==0) && (ze==P)) { n18 = m*n-1;}
-  if ((xs==0)   && (ye==N) && (zs==0)) { n6  = (size-1)-m*(n-1);}
-  if ((xs==0)   && (ye==N) && (ze==P)) { n24 = m-1;}
-  if ((xe==M) && (ys==0) && (zs==0)) { n2  = size-m;}
-  if ((xe==M) && (ys==0) && (ze==P)) { n20 = m*n-m;}
-  if ((xe==M) && (ye==N) && (zs==0)) { n8  = size-m*n;}
-  if ((xe==M) && (ye==N) && (ze==P)) { n26 = 0;}
+  if ((xs==0) && (ys==0) && (zs==0)) n0  = size -1;
+  if ((xs==0) && (ys==0) && (ze==P)) n18 = m*n-1;
+  if ((xs==0) && (ye==N) && (zs==0)) n6  = (size-1)-m*(n-1);
+  if ((xs==0) && (ye==N) && (ze==P)) n24 = m-1;
+  if ((xe==M) && (ys==0) && (zs==0)) n2  = size-m;
+  if ((xe==M) && (ys==0) && (ze==P)) n20 = m*n-m;
+  if ((xe==M) && (ye==N) && (zs==0)) n8  = size-m*n;
+  if ((xe==M) && (ye==N) && (ze==P)) n26 = 0;
 
   /* Check for when not X,Y, and Z Periodic */
 
   /* If not X periodic */
   if (bx != DMDA_BOUNDARY_PERIODIC) {
-    if (xs==0)   {n0  = n3  = n6  = n9  = n12 = n15 = n18 = n21 = n24 = -2;}
-    if (xe==M) {n2  = n5  = n8  = n11 = n14 = n17 = n20 = n23 = n26 = -2;}
+    if (xs==0) n0 = n3 = n6 = n9  = n12 = n15 = n18 = n21 = n24 = -2;
+    if (xe==M) n2 = n5 = n8 = n11 = n14 = n17 = n20 = n23 = n26 = -2;
   }
 
   /* If not Y periodic */
   if (by != DMDA_BOUNDARY_PERIODIC) {
-    if (ys==0)   {n0  = n1  = n2  = n9  = n10 = n11 = n18 = n19 = n20 = -2;}
-    if (ye==N)   {n6  = n7  = n8  = n15 = n16 = n17 = n24 = n25 = n26 = -2;}
+    if (ys==0) n0 = n1 = n2 = n9  = n10 = n11 = n18 = n19 = n20 = -2;
+    if (ye==N) n6 = n7 = n8 = n15 = n16 = n17 = n24 = n25 = n26 = -2;
   }
 
   /* If not Z periodic */
   if (bz != DMDA_BOUNDARY_PERIODIC) {
-    if (zs==0)   {n0  = n1  = n2  = n3  = n4  = n5  = n6  = n7  = n8  = -2;}
-    if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
+    if (zs==0) n0  = n1  = n2  = n3  = n4  = n5  = n6  = n7  = n8  = -2;
+    if (ze==P) n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;
   }
 
   ierr = PetscMalloc(27*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
-  dd->neighbors[0] = n0;
-  dd->neighbors[1] = n1;
-  dd->neighbors[2] = n2;
-  dd->neighbors[3] = n3;
-  dd->neighbors[4] = n4;
-  dd->neighbors[5] = n5;
-  dd->neighbors[6] = n6;
-  dd->neighbors[7] = n7;
-  dd->neighbors[8] = n8;
-  dd->neighbors[9] = n9;
+
+  dd->neighbors[0]  = n0;
+  dd->neighbors[1]  = n1;
+  dd->neighbors[2]  = n2;
+  dd->neighbors[3]  = n3;
+  dd->neighbors[4]  = n4;
+  dd->neighbors[5]  = n5;
+  dd->neighbors[6]  = n6;
+  dd->neighbors[7]  = n7;
+  dd->neighbors[8]  = n8;
+  dd->neighbors[9]  = n9;
   dd->neighbors[10] = n10;
   dd->neighbors[11] = n11;
   dd->neighbors[12] = n12;
@@ -784,15 +757,13 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* If star stencil then delete the corner neighbors */
   if (stencil_type == DMDA_STENCIL_STAR) {
-     /* save information about corner neighbors */
-     sn0 = n0; sn1 = n1; sn2 = n2; sn3 = n3; sn5 = n5; sn6 = n6; sn7 = n7;
-     sn8 = n8; sn9 = n9; sn11 = n11; sn15 = n15; sn17 = n17; sn18 = n18;
-     sn19 = n19; sn20 = n20; sn21 = n21; sn23 = n23; sn24 = n24; sn25 = n25;
-     sn26 = n26;
-     n0  = n1  = n2  = n3  = n5  = n6  = n7  = n8  = n9  = n11 =
-     n15 = n17 = n18 = n19 = n20 = n21 = n23 = n24 = n25 = n26 = -1;
+    /* save information about corner neighbors */
+    sn0 = n0; sn1 = n1; sn2 = n2; sn3 = n3; sn5 = n5; sn6 = n6; sn7 = n7;
+    sn8 = n8; sn9 = n9; sn11 = n11; sn15 = n15; sn17 = n17; sn18 = n18;
+    sn19 = n19; sn20 = n20; sn21 = n21; sn23 = n23; sn24 = n24; sn25 = n25;
+    sn26 = n26;
+    n0 = n1 = n2 = n3 = n5 = n6 = n7 = n8 = n9 = n11 = n15 = n17 = n18 = n19 = n20 = n21 = n23 = n24 = n25 = n26 = -1;
   }
-
 
   ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -806,24 +777,24 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = ly[(n0 % (m*n))/m];
         z_t = lz[n0 / (m*n)];
         s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x;} /* 2D case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x; /* 2D case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n1 % (m*n))/m];
         z_t = lz[n1 / (m*n)];
         s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t;} /* 2D case */
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t; /* 2D case */
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       }
       if (n2 >= 0) { /* right below */
         x_t = lx[n2 % m];
         y_t = ly[(n2 % (m*n))/m];
         z_t = lz[n2 / (m*n)];
         s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t;} /* 2D case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t; /* 2D case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
 
@@ -833,8 +804,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         z_t = lz[n3 / (m*n)];
         s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - x_t*y_t; /* 2D case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
 
       if (n4 >= 0) { /* middle */
@@ -842,10 +813,10 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         z_t = lz[n4 / (m*n)];
         s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n4] + i*x_t + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n4] + i*x_t + x_t*y_t*z_t - x_t*y_t; /* 2D case */
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (bz == DMDA_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) { idx[nn++] = 0;}
+        for (j=0; j<x; j++) idx[nn++] = 0;
       }
 
       if (n5 >= 0) { /* directly right */
@@ -853,8 +824,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         z_t = lz[n5 / (m*n)];
         s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n5] + i*x_t + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n5] + i*x_t + x_t*y_t*z_t - x_t*y_t; /* 2D case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
 
@@ -864,24 +835,24 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = ly[(n6 % (m*n))/m];
         z_t = lz[n6 / (m*n)];
         s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - x_t*y_t; /* 2D case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n7 % (m*n))/m];
         z_t = lz[n7 / (m*n)];
         s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - x_t*y_t; /* 2D case */
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m];
         y_t = ly[(n8 % (m*n))/m];
         z_t = lz[n8 / (m*n)];
         s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        if (twod && (s_t < 0)) {s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t < 0)) s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - x_t*y_t; /* 2D case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
   }
@@ -894,23 +865,23 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = ly[(n9 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n10 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       }  else if (by == DMDA_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) { idx[nn++] = 0;}
+        for (j=0; j<x; j++) idx[nn++] = 0;
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m];
         y_t = ly[(n11 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
 
@@ -920,23 +891,23 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         /* z_t = z; */
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }  else if (bx == DMDA_BOUNDARY_MIRROR) {
-        for (j=0; j<s_x; j++) { idx[nn++] = 0;}
+        for (j=0; j<s_x; j++) idx[nn++] = 0;
       }
 
       /* Interior */
       s_t = bases[rank] + i*x + k*x*y;
-      for (j=0; j<x; j++) { idx[nn++] = s_t++;}
+      for (j=0; j<x; j++) idx[nn++] = s_t++;
 
       if (n14 >= 0) { /* directly right */
         x_t = lx[n14 % m];
         y_t = y;
         /* z_t = z; */
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       } else if (bx == DMDA_BOUNDARY_MIRROR) {
-        for (j=0; j<s_x; j++) { idx[nn++] = 0;}
+        for (j=0; j<s_x; j++) idx[nn++] = 0;
       }
     }
 
@@ -946,23 +917,23 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = ly[(n15 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n16 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (by == DMDA_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) { idx[nn++] = 0;}
+        for (j=0; j<x; j++) idx[nn++] = 0;
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m];
         y_t = ly[(n17 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
   }
@@ -975,24 +946,24 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = ly[(n18 % (m*n))/m];
         /* z_t = lz[n18 / (m*n)]; */
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n18] - (s_y-i)*x_t -s_x + x_t*y_t;} /* 2d case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n18] - (s_y-i)*x_t -s_x + x_t*y_t; /* 2d case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n19 % (m*n))/m];
         /* z_t = lz[n19 / (m*n)]; */
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n19] - (s_y+1-i)*x_t + x_t*y_t;} /* 2d case */
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n19] - (s_y+1-i)*x_t + x_t*y_t; /* 2d case */
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       }
       if (n20 >= 0) { /* right below */
         x_t = lx[n20 % m];
         y_t = ly[(n20 % (m*n))/m];
         /* z_t = lz[n20 / (m*n)]; */
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n20] - (s_y+1-i)*x_t + x_t*y_t;} /* 2d case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n20] - (s_y+1-i)*x_t + x_t*y_t; /* 2d case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
 
@@ -1002,8 +973,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         /* z_t = lz[n21 / (m*n)]; */
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n21] + (i+1)*x_t - s_x;}  /* 2d case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n21] + (i+1)*x_t - s_x;  /* 2d case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
 
       if (n22 >= 0) { /* middle */
@@ -1011,10 +982,10 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         /* z_t = lz[n22 / (m*n)]; */
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n22] + i*x_t;} /* 2d case */
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n22] + i*x_t; /* 2d case */
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (bz == DMDA_BOUNDARY_MIRROR) {
-        for (j=0; j<x; j++) { idx[nn++] = 0;}
+        for (j=0; j<x; j++) idx[nn++] = 0;
       }
 
       if (n23 >= 0) { /* directly right */
@@ -1022,8 +993,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = y;
         /* z_t = lz[n23 / (m*n)]; */
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n23] + i*x_t;} /* 2d case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n23] + i*x_t; /* 2d case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
 
@@ -1033,24 +1004,24 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         y_t = ly[(n24 % (m*n))/m];
         /* z_t = lz[n24 / (m*n)]; */
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n24] + i*x_t - s_x;} /* 2d case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n24] + i*x_t - s_x; /* 2d case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n25 % (m*n))/m];
         /* z_t = lz[n25 / (m*n)]; */
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n25] + (i-1)*x_t;} /* 2d case */
-        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n25] + (i-1)*x_t; /* 2d case */
+        for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       }
       if (n26 >= 0) { /* right above */
         x_t = lx[n26 % m];
         y_t = ly[(n26 % (m*n))/m];
         /* z_t = lz[n26 / (m*n)]; */
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
-        if (twod && (s_t >= M*N*P)) {s_t = bases[n26] + (i-1)*x_t;} /* 2d case */
-        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+        if (twod && (s_t >= M*N*P)) s_t = bases[n26] + (i-1)*x_t; /* 2d case */
+        for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       }
     }
   }
@@ -1085,27 +1056,27 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n0 % (m*n))/m];
           z_t = lz[n0 / (m*n)];
           s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && Ys-ys < 0 && Zs-zs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
         if (n1 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n1 % (m*n))/m];
           z_t = lz[n1 / (m*n)];
           s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Ys-ys < 0 && Zs-zs < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          for (j=0; j<x; j++) idx[nn++] = -1;
         }
         if (n2 >= 0) { /* right below */
           x_t = lx[n2 % m];
           y_t = ly[(n2 % (m*n))/m];
           z_t = lz[n2 / (m*n)];
           s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && Ys-ys < 0 && Zs-zs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
 
@@ -1115,9 +1086,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           z_t = lz[n3 / (m*n)];
           s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && Zs-zs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
 
         if (n4 >= 0) { /* middle */
@@ -1125,12 +1096,12 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           z_t = lz[n4 / (m*n)];
           s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Zs-zs < 0) {
           if (bz == DMDA_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) { idx[nn++] = 0;}
+            for (j=0; j<x; j++) idx[nn++] = 0;
           } else {
-            for (j=0; j<x; j++) { idx[nn++] = -1;}
+            for (j=0; j<x; j++) idx[nn++] = -1;
           }
         }
 
@@ -1139,9 +1110,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           z_t = lz[n5 / (m*n)];
           s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && Zs-zs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
 
@@ -1151,27 +1122,27 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n6 % (m*n))/m];
           z_t = lz[n6 / (m*n)];
           s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && ye-Ye < 0 && Zs-zs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
         if (n7 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n7 % (m*n))/m];
           z_t = lz[n7 / (m*n)];
           s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (ye-Ye < 0 && Zs-zs < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          for (j=0; j<x; j++) idx[nn++] = -1;
         }
         if (n8 >= 0) { /* right above */
           x_t = lx[n8 % m];
           y_t = ly[(n8 % (m*n))/m];
           z_t = lz[n8 / (m*n)];
           s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && ye-Ye < 0 && Zs-zs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
     }
@@ -1184,21 +1155,21 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n9 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && Ys-ys < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
         if (n10 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n10 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Ys-ys < 0) {
           if (by == DMDA_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) { idx[nn++] = -1;}
+            for (j=0; j<x; j++) idx[nn++] = -1;
           } else {
-            for (j=0; j<x; j++) { idx[nn++] = -1;}
+            for (j=0; j<x; j++) idx[nn++] = -1;
           }
         }
         if (n11 >= 0) { /* right below */
@@ -1206,9 +1177,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n11 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && Ys-ys < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
 
@@ -1218,30 +1189,30 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           /* z_t = z; */
           s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0) {
           if (bx == DMDA_BOUNDARY_MIRROR) {
-            for (j=0; j<s_x; j++) { idx[nn++] = 0;}
+            for (j=0; j<s_x; j++) idx[nn++] = 0;
           } else {
-            for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+            for (j=0; j<s_x; j++) idx[nn++] = -1;
           }
         }
 
         /* Interior */
         s_t = bases[rank] + i*x + k*x*y;
-        for (j=0; j<x; j++) { idx[nn++] = s_t++;}
+        for (j=0; j<x; j++) idx[nn++] = s_t++;
 
         if (n14 >= 0) { /* directly right */
           x_t = lx[n14 % m];
           y_t = y;
           /* z_t = z; */
           s_t = bases[n14] + i*x_t + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0) {
           if (bx == DMDA_BOUNDARY_MIRROR) {
-            for (j=0; j<s_x; j++) { idx[nn++] = 0;}
+            for (j=0; j<s_x; j++) idx[nn++] = 0;
           } else {
-            for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+            for (j=0; j<s_x; j++) idx[nn++] = -1;
           }
         }
       }
@@ -1252,21 +1223,21 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n15 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && ye-Ye < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
         if (n16 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n16 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (ye-Ye < 0) {
           if (by == DMDA_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) { idx[nn++] = 0;}
+            for (j=0; j<x; j++) idx[nn++] = 0;
           } else {
-            for (j=0; j<x; j++) { idx[nn++] = -1;}
+            for (j=0; j<x; j++) idx[nn++] = -1;
           }
         }
         if (n17 >= 0) { /* right above */
@@ -1274,9 +1245,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n17 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && ye-Ye < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
     }
@@ -1289,27 +1260,27 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n18 % (m*n))/m];
           /* z_t = lz[n18 / (m*n)]; */
           s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && Ys-ys < 0 && ze-Ze < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
         if (n19 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n19 % (m*n))/m];
           /* z_t = lz[n19 / (m*n)]; */
           s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (Ys-ys < 0 && ze-Ze < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          for (j=0; j<x; j++) idx[nn++] = -1;
         }
         if (n20 >= 0) { /* right below */
           x_t = lx[n20 % m];
           y_t = ly[(n20 % (m*n))/m];
           /* z_t = lz[n20 / (m*n)]; */
           s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && Ys-ys < 0 && ze-Ze < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
 
@@ -1319,9 +1290,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           /* z_t = lz[n21 / (m*n)]; */
           s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && ze-Ze < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
 
         if (n22 >= 0) { /* middle */
@@ -1329,12 +1300,12 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           /* z_t = lz[n22 / (m*n)]; */
           s_t = bases[n22] + i*x_t + k*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (ze-Ze < 0) {
           if (bz == DMDA_BOUNDARY_MIRROR) {
-            for (j=0; j<x; j++) { idx[nn++] = 0;}
+            for (j=0; j<x; j++) idx[nn++] = 0;
           } else {
-            for (j=0; j<x; j++) { idx[nn++] = -1;}
+            for (j=0; j<x; j++) idx[nn++] = -1;
           }
         }
 
@@ -1343,9 +1314,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = y;
           /* z_t = lz[n23 / (m*n)]; */
           s_t = bases[n23] + i*x_t + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && ze-Ze < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
 
@@ -1355,27 +1326,27 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           y_t = ly[(n24 % (m*n))/m];
           /* z_t = lz[n24 / (m*n)]; */
           s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (Xs-xs < 0 && ye-Ye < 0 && ze-Ze < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
         if (n25 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n25 % (m*n))/m];
           /* z_t = lz[n25 / (m*n)]; */
           s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
-          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) idx[nn++] = s_t++;
         } else if (ye-Ye < 0 && ze-Ze < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          for (j=0; j<x; j++) idx[nn++] = -1;
         }
         if (n26 >= 0) { /* right above */
           x_t = lx[n26 % m];
           y_t = ly[(n26 % (m*n))/m];
           /* z_t = lz[n26 / (m*n)]; */
           s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
-          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) idx[nn++] = s_t++;
         } else if (xe-Xe < 0 && ye-Ye < 0 && ze-Ze < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          for (j=0; j<s_x; j++) idx[nn++] = -1;
         }
       }
     }
@@ -1396,8 +1367,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
-  ierr = PetscFree2(bases,ldims);CHKERRQ(ierr);
-  dd->m  = m;  dd->n  = n;  dd->p  = p;
+  ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);
+  dd->m = m;  dd->n  = n;  dd->p  = p;
   /* note petsc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
   dd->xs = xs*dof; dd->xe = xe*dof; dd->ys = ys; dd->ye = ye; dd->zs = zs; dd->ze = ze;
   dd->Xs = Xs*dof; dd->Xe = Xe*dof; dd->Ys = Ys; dd->Ye = Ye; dd->Zs = Zs; dd->Ze = Ze;
@@ -1411,8 +1382,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   dd->Nl        = nn*dof;
   dd->base      = base;
   da->ops->view = DMView_DA_3d;
-  dd->ltol = PETSC_NULL;
-  dd->ao   = PETSC_NULL;
+  dd->ltol      = PETSC_NULL;
+  dd->ao        = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

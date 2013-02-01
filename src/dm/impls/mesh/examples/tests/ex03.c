@@ -16,8 +16,8 @@ typedef ALE::Two::BiGraph<int,int,int> BiGraphInt3;
 typedef std::set<int> int_set;
 
 PetscErrorCode   testBiGraphDiv2();
-void             viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name);
-void             removeArrows(const ALE::Obj<BiGraphInt3>& bg,         const char* name);
+void             viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char * name);
+void             removeArrows(const ALE::Obj<BiGraphInt3>& bg,         const char * name);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -29,16 +29,16 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr      = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
-  comm = PETSC_COMM_WORLD;
+  ierr      = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  comm      = PETSC_COMM_WORLD;
 
   ierr = testBiGraphDiv2();CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
-}/* main() */
+} /* main() */
 
 
 #undef  __FUNCT__
@@ -51,7 +51,7 @@ PetscErrorCode testBiGraphDiv2()
 
   PetscFunctionBegin;
   debug = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<BiGraphInt3> bg = BiGraphInt3(PETSC_COMM_SELF, debug);
 
   // Add arrows from the first 10 integers to the first 20 integers, coloring the arrows for 0 (even target) or 1 (odd target)
@@ -157,11 +157,11 @@ PetscErrorCode testBiGraphDiv2()
   // View
   bg->view(std::cout, "bigraph/2 after excluding [0,5[ from base");
   PetscFunctionReturn(0);
-}/* testBiGraphDiv2() */
+} /* testBiGraphDiv2() */
 
 #undef  __FUNCT__
 #define __FUNCT__ "viewConesAndSupports"
-void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name)
+void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char *name)
 {
 
   // View the cones for all base points
@@ -181,4 +181,4 @@ void viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name)
     std::cout << *i << ": ";
     supp.view(std::cout, true);
   }
-}/* viewConesAndSupports() */
+} /* viewConesAndSupports() */

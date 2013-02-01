@@ -17,8 +17,8 @@ struct DMCompositeLink {
   PetscInt               nlocal;
 
   /* only used for DMCOMPOSITE_DM */
-  PetscInt               *grstarts;     /* global row for first unknown of this DM on each process */
-  DM                     dm;
+  PetscInt *grstarts;                   /* global row for first unknown of this DM on each process */
+  DM       dm;
 };
 
 typedef struct {

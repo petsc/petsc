@@ -29,9 +29,9 @@ void PETSC_STDCALL dmcompositerestoreaccessvpvp_(DM *dm,Vec *v,Vec *v1,F90Array1
   *ierr = F90Array1dDestroy(&p2,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
 }
 
-void PETSC_STDCALL dmcompositegetentriesarray_( DM *dm, DM *dmarray, PetscErrorCode *ierr )
+void PETSC_STDCALL dmcompositegetentriesarray_(DM *dm, DM *dmarray, PetscErrorCode *ierr)
 {
-  *ierr = DMCompositeGetEntriesArray( *dm, dmarray );
+  *ierr = DMCompositeGetEntriesArray(*dm, dmarray);
 }
 
 

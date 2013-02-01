@@ -20,6 +20,7 @@ PetscErrorCode doit(DM da,Vec global)
       for (j=0; j<M; j++) {
         for (k=0; k<dof; k++) {
           ierr = PetscPrintf(PETSC_COMM_WORLD,"%d %d %G\n",i,j,mystruct[i][j].inside[0]);CHKERRQ(ierr);
+
           mystruct[i][j].inside[1] = 2.1;
         }
       }
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
   /* Create distributed array and get vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                    M,N,m,n,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      M,N,m,n,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 

@@ -11,8 +11,8 @@ PetscErrorCode DMSetFromOptions_Patch(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscOptionsHead("DMPatch Options");CHKERRQ(ierr);
-    /* Handle associated vectors */
-    /* Handle viewing */
+  /* Handle associated vectors */
+  /* Handle viewing */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -33,29 +33,30 @@ PetscErrorCode DMInitialize_Patch(DM dm)
 
   PetscFunctionBegin;
   ierr = PetscStrallocpy(VECSTANDARD,(char**) &dm->vectype);CHKERRQ(ierr);
-  dm->ops->view               = DMView_Patch;
-  dm->ops->setfromoptions     = DMSetFromOptions_Patch;
-  dm->ops->setup              = DMSetUp_Patch;
-  dm->ops->createglobalvector = DMCreateGlobalVector_Patch;
-  dm->ops->createlocalvector  = DMCreateLocalVector_Patch;
+
+  dm->ops->view                            = DMView_Patch;
+  dm->ops->setfromoptions                  = DMSetFromOptions_Patch;
+  dm->ops->setup                           = DMSetUp_Patch;
+  dm->ops->createglobalvector              = DMCreateGlobalVector_Patch;
+  dm->ops->createlocalvector               = DMCreateLocalVector_Patch;
   dm->ops->createlocaltoglobalmapping      = PETSC_NULL;
   dm->ops->createlocaltoglobalmappingblock = PETSC_NULL;
-  dm->ops->createfieldis      = PETSC_NULL;
-  dm->ops->getcoloring        = 0;
-  dm->ops->creatematrix       = 0;
-  dm->ops->createinterpolation= 0;
-  dm->ops->getaggregates      = 0;
-  dm->ops->getinjection       = 0;
-  dm->ops->refine             = 0;
-  dm->ops->coarsen            = 0;
-  dm->ops->refinehierarchy    = 0;
-  dm->ops->coarsenhierarchy   = 0;
-  dm->ops->globaltolocalbegin = PETSC_NULL;
-  dm->ops->globaltolocalend   = PETSC_NULL;
-  dm->ops->localtoglobalbegin = PETSC_NULL;
-  dm->ops->localtoglobalend   = PETSC_NULL;
-  dm->ops->destroy            = DMDestroy_Patch;
-  dm->ops->createsubdm        = DMCreateSubDM_Patch;
+  dm->ops->createfieldis                   = PETSC_NULL;
+  dm->ops->getcoloring                     = 0;
+  dm->ops->creatematrix                    = 0;
+  dm->ops->createinterpolation             = 0;
+  dm->ops->getaggregates                   = 0;
+  dm->ops->getinjection                    = 0;
+  dm->ops->refine                          = 0;
+  dm->ops->coarsen                         = 0;
+  dm->ops->refinehierarchy                 = 0;
+  dm->ops->coarsenhierarchy                = 0;
+  dm->ops->globaltolocalbegin              = PETSC_NULL;
+  dm->ops->globaltolocalend                = PETSC_NULL;
+  dm->ops->localtoglobalbegin              = PETSC_NULL;
+  dm->ops->localtoglobalend                = PETSC_NULL;
+  dm->ops->destroy                         = DMDestroy_Patch;
+  dm->ops->createsubdm                     = DMCreateSubDM_Patch;
   PetscFunctionReturn(0);
 }
 
@@ -64,12 +65,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DMCreate_Patch"
 PetscErrorCode DMCreate_Patch(DM dm)
 {
-  DM_Patch      *mesh;
+  DM_Patch       *mesh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscNewLog(dm, DM_Patch, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm, DM_Patch, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
   mesh->refct       = 1;
@@ -116,14 +117,14 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 #define __FUNCT__ "DMPatchCreateGrid"
 PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm)
 {
-  DM_Patch      *mesh;
+  DM_Patch       *mesh;
   DM             da;
   PetscInt       dof = 1, width = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPatchCreate(comm, dm);CHKERRQ(ierr);
-  mesh = (DM_Patch *) (*dm)->data;
+  mesh = (DM_Patch*) (*dm)->data;
   if (dim < 2) {
     gridSize.j  = 1;
     patchSize.j = 1;
@@ -140,7 +141,9 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da, DMDA_STENCIL_BOX);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);
-  mesh->dmCoarse  = da;
+
+  mesh->dmCoarse = da;
+
   ierr = DMPatchSetPatchSize(*dm, patchSize);CHKERRQ(ierr);
   ierr = DMPatchSetCommSize(*dm, commSize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
