@@ -2855,6 +2855,7 @@ struct _n_TSMonitorDrawCtx {
   Vec         initialsolution;
   PetscBool   showinitial;
   PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool   showtimestepandtime;
 };
 
 #undef __FUNCT__
@@ -2887,6 +2888,7 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
 {
   PetscErrorCode   ierr;
   TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
+  PetscDraw        draw;
 
   PetscFunctionBegin;
   if (!step && ictx->showinitial) {
@@ -2906,6 +2908,22 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
     ierr = PetscViewerDrawSetHold(ictx->viewer,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = VecView(u,ictx->viewer);CHKERRQ(ierr);
+  if (ictx->showtimestepandtime) {
+    PetscReal xl,yl,xr,yr,tw,w,h;
+    char      time[32];
+    size_t    len;
+
+    ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
+    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+    ierr =  PetscStrlen(time,&len);CHKERRQ(ierr);
+    ierr = PetscDrawStringGetSize(draw,&tw,PETSC_NULL);CHKERRQ(ierr);
+    w    = xl + .5*(xr - xl) - .5*len*tw;
+    h    = yl + .95*(yr - yl);
+    ierr = PetscDrawString(draw,w,h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  }
+
   if (ictx->showinitial) {
     ierr = PetscViewerDrawSetHold(ictx->viewer,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -2971,10 +2989,12 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
 
-  (*ctx)->showinitial = PETSC_FALSE;
   (*ctx)->howoften    = howoften;
-
+  (*ctx)->showinitial = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_draw_solution_initial",&(*ctx)->showinitial,PETSC_NULL);CHKERRQ(ierr);
+
+  (*ctx)->showtimestepandtime = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_draw_solution_show_time",&(*ctx)->showtimestepandtime,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

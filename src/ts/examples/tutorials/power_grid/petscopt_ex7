@@ -17,6 +17,6 @@
 -xmax 2
 -ymin -.5
 -ymax 2.5
--da_grid_x 110
--da_grid_y 110
+-da_grid_x 220
+-da_grid_y 220
 

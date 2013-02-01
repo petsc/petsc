@@ -861,17 +861,22 @@
           <li>./configure --prefix=/opt/petsc/petsc-3.3-p0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg and install the package. It will now be installed at /opt/petsc/petsc-3.3-p0]</li>
+          <li>[package up /tmp/petsc-pkg and install the package will be installed at /opt/petsc/petsc-3.3-p0]</li>
           <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
         </ul>
 
-        <h4>Multiple installs using --prefix/DESTDIR:</h4>
+        <h4>Multiple installs using --prefix and DESTDIR:</h4>
 
         Sepcify a different --prefix location/option for each build - at configure time. For eg:
 
         <ul class="code">
+          <li>untar petsc tar ball</li>
           <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-mpich --with-mpi-dir=/opt/mpich</li>
-          <li>[build/install]
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>untar petsc tar ball</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
           <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>[build/install]
         </ul>

@@ -142,10 +142,13 @@ class Configure(config.base.Configure):
 
     fd.write('Cflags: '+self.allincludes+'\n')
 
+    plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc'])
     if self.framework.argDB['prefix']:
-      fd.write('Libs: '+self.alllibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
+      fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
     else:
-      fd.write('Libs: '+self.alllibs+'\n')
+      fd.write('Libs: '+plibs+'\n')
+    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+
     fd.close()
     return
 
@@ -312,6 +315,7 @@ prepend-path PATH %s
           i.include = [i.include]
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
+    self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
       self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
