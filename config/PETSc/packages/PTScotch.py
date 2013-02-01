@@ -45,29 +45,31 @@ class Configure(PETSc.package.NewPackage):
     g.write('CCP        = '+self.setCompilers.getCompiler()+'\n')
     g.write('CCD        = '+self.setCompilers.getCompiler()+'\n')
 
-    # Building cflags
-    self.cflags = self.setCompilers.getCompilerFlags()
+    # Building cflags/ldflags
+    self.cflags = self.setCompilers.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)
+    ldflags = self.libraries.toString(self.mpi.lib)
     if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
-    self.cflags = self.cflags + ' -DCOMMON_PTHREAD -DCOMMON_RANDOM_FIXED_SEED'
+      ldflags += ' -lz'
+    if self.libraries.add('-lpthread','pthread_key_create'):
+      self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
+      ldflags += ' -lpthread'
+    if self.libraries.add('-lm','sin'): ldflags += ' -lm'
+    if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
+    self.cflags = self.cflags + '-DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
     self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="" '
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
     # SCOTCH_PTSCOTCH is NOT defined above Mac does not know what clock_gettime() is!
     if self.setCompilers.isDarwin():
       self.cflags = self.cflags + ' -DCOMMON_TIMING_OLD'
-
     if self.libraryOptions.integerSize == 64:
       self.cflags = self.cflags + ' -DINTSIZE64'
     else:
       self.cflags = self.cflags + ' -DINTSIZE32'
-    g.write('CFLAGS	= '+self.cflags+'\n')
-
     self.setCompilers.popLanguage()
-    ldflags = ''
-    if self.libraries.add('-lz','gzwrite'): ldflags += '-lz'
-    if self.libraries.add('-lm','sin'): ldflags += ' -lm'
-    if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
+
+    g.write('CFLAGS	= '+self.cflags+'\n')
     g.write('LDFLAGS	= '+ldflags+'\n')
     g.write('CP         = '+self.programs.cp+'\n')
     g.write('LEX	= '+self.programs.flex+'\n')
