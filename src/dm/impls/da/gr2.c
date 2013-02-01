@@ -29,8 +29,11 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   ZoomCtx        *zctx = (ZoomCtx*)ctx;
   PetscErrorCode ierr;
   PetscInt       m,n,i,j,k,step,id,c1,c2,c3,c4;
-  PetscReal      s,min,max,x1,x2,x3,x4,y_1,y2,y3,y4;
+  PetscReal      s,min,max,x1,x2,x3,x4,y_1,y2,y3,y4,xmin = PETSC_MAX_REAL,xmax = PETSC_MIN_REAL,ymin = PETSC_MAX_REAL,ymax = PETSC_MIN_REAL;
+  PetscReal      xminf,xmaxf,yminf,ymaxf,w;
   PetscScalar    *v,*xy;
+  char           value[16];
+  size_t         len;
 
   PetscFunctionBegin;
   m    = zctx->m;
@@ -46,10 +49,33 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
-      id = i+j*m;    x1 = PetscRealPart(xy[2*id]);y_1 = PetscRealPart(xy[2*id+1]);c1 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
-      id = i+j*m+1;  x2 = PetscRealPart(xy[2*id]);y2  = y_1;                      c2 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
-      id = i+j*m+1+m;x3 = x2;                     y3  = PetscRealPart(xy[2*id+1]);c3 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
-      id = i+j*m+m;  x4 = x1;                     y4  = y3;                       c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      id   = i+j*m;
+      x1   = PetscRealPart(xy[2*id]);
+      y_1  = PetscRealPart(xy[2*id+1]);
+      c1   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      xmin = PetscMin(xmin,x1);
+      ymin = PetscMin(ymin,y_1);
+      xmax = PetscMax(xmax,x1);
+      ymax = PetscMax(ymax,y_1);
+
+      id   = i+j*m+1;
+      x2   = PetscRealPart(xy[2*id]);
+      y2   = y_1;
+      c2   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      xmin = PetscMin(xmin,x2);
+      xmax = PetscMax(xmax,x2);
+
+      id   = i+j*m+1+m;
+      x3   = x2;
+      y3   = PetscRealPart(xy[2*id+1]);
+      c3   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      ymin = PetscMin(ymin,y3);
+      ymax = PetscMax(ymax,y3);
+
+      id = i+j*m+m;
+      x4 = x1;
+      y4 = y3;
+      c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
 
       ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
       ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
@@ -71,6 +97,24 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
     ierr = PetscDrawString(draw,x,yl,PETSC_DRAW_BLACK,zctx->name0);CHKERRQ(ierr);
     ierr = PetscDrawStringVertical(draw,xl,y,PETSC_DRAW_BLACK,zctx->name1);CHKERRQ(ierr);
   }
+  /*
+     Ideally we would use the PetscDrawAxis object to manage displaying the coordinate limits 
+     but that may require some refactoring.
+  */
+  ierr = MPI_Allreduce(&xmin,&xminf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&xmax,&xmaxf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ymin,&yminf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ymax,&ymaxf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(value,16,"%f",xminf);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,xminf,yminf - .05*(ymaxf - yminf),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(value,16,"%f",xmaxf);CHKERRQ(ierr);
+  ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
+  ierr = PetscDrawStringGetSize(draw,&w,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,xmaxf - len*w,yminf - .05*(ymaxf - yminf),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(value,16,"%f",yminf);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,xminf - .05*(xmaxf - xminf),yminf,PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(value,16,"%f",ymaxf);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,xminf - .05*(xmaxf - xminf),ymaxf,PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
