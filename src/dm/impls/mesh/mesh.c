@@ -206,7 +206,6 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
     ierr = DMMeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
   } else if (isdraw) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for DMMesh");
   else SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -860,9 +859,7 @@ PetscErrorCode DMMeshSetDimension(DM dm, PetscInt dim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   if (mesh->useNewImpl) mesh->dim = dim;
-  else
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Cannot reset dimension of C++ mesh");
-  }
+  else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Cannot reset dimension of C++ mesh");
   PetscFunctionReturn(0);
 }
 
