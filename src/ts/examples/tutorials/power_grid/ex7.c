@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -321,8 +321,10 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->sigmax = 0.1;
   user->sigmay = 0.1;  user->rho  = 0.0;
   user->t0     = 0.0;  user->tmax = 2.0;
-  user->xmin   = -1.0; user->xmax = 10.0;
-  user->ymin   = -1.0; user->ymax = 10.0;
+  user->xmin   = -PETSC_PI;
+  user->xmax   = PETSC_PI;
+  user->ymin   = -1.0; 
+  user->ymax = 10.0;
 
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-Inertia",&user->H,&flg);CHKERRQ(ierr);
