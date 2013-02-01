@@ -75,7 +75,7 @@ typedef struct {
   PetscInt    *ele;
   PetscScalar *vert;
   PetscInt    *ia,*ja;
-  IS     isnewproc;
+  IS          isnewproc;
   PetscInt    *localvert,nlocal; /* used to stash temporarily old global vertex number of new vertex */
 } GridData;
 
@@ -115,12 +115,12 @@ typedef struct {
    the profiling results are meaningless.
 */
 
-extern PetscErrorCode DataRead(GridData *);
-extern PetscErrorCode DataPartitionElements(GridData *);
-extern PetscErrorCode DataMoveElements(GridData *);
-extern PetscErrorCode DataPartitionVertices(GridData *);
-extern PetscErrorCode DataMoveVertices(GridData *);
-extern PetscErrorCode DataDestroy(GridData *);
+extern PetscErrorCode DataRead(GridData*);
+extern PetscErrorCode DataPartitionElements(GridData*);
+extern PetscErrorCode DataMoveElements(GridData*);
+extern PetscErrorCode DataPartitionVertices(GridData*);
+extern PetscErrorCode DataMoveVertices(GridData*);
+extern PetscErrorCode DataDestroy(GridData*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -128,12 +128,12 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
 #if defined(PETSC_USE_LOG)
-  PetscLogEvent  READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
-  PetscLogEvent  PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
+  PetscLogEvent READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
+  PetscLogEvent PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
 #endif
-  GridData       gdata;
+  GridData gdata;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = PetscLogEventRegister("Read Data",0,&READ_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Partition elemen",0,&PARTITION_ELEMENT_EVENT);CHKERRQ(ierr);
@@ -206,8 +206,8 @@ PetscErrorCode DataRead(GridData *gdata)
     printf("Number of grid vertices %d\n",n_vert);
 
     /* broadcast number of vertices to all processors */
-    ierr = MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    mlocal_vert  = n_vert/size + ((n_vert % size) > 0);
+    ierr        = MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    mlocal_vert = n_vert/size + ((n_vert % size) > 0);
 
     /*
       allocate enough room for the first processor to keep track of how many
@@ -293,8 +293,8 @@ PetscErrorCode DataRead(GridData *gdata)
          We don't know how many spaces in ja[] to allocate so we allocate
        3*the number of local elements, this is the maximum it could be
     */
-    ierr = PetscMalloc((mlocal_ele+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
-    ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
+    ierr  = PetscMalloc((mlocal_ele+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
+    ierr  = PetscMalloc((3*mlocal_ele+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
     net   = 0;
     ia[0] = 0;
     printf("Element neighbors on processor 0\n");
@@ -302,21 +302,18 @@ PetscErrorCode DataRead(GridData *gdata)
     for (i=0; i<mlocal_ele; i++) {
       fscanf(fd,"%d %d %d %d\n",&cnt,&a1,&a2,&a3);
       printf("%d %d %d %d\n",cnt,a1,a2,a3);
-      if (a1 >= 0) {ja[net++] = a1;}
-      if (a2 >= 0) {ja[net++] = a2;}
-      if (a3 >= 0) {ja[net++] = a3;}
+      if (a1 >= 0) ja[net++] = a1;
+      if (a2 >= 0) ja[net++] = a2;
+      if (a3 >= 0) ja[net++] = a3;
       ia[i+1] = net;
     }
 
     printf("ia values for processor 0\n");
-    for (i=0; i<mlocal_ele+1; i++) {
-      printf("%d ",ia[i]);
-    }
+    for (i=0; i<mlocal_ele+1; i++) printf("%d ",ia[i]);
+
     printf("\n");
     printf("ja values for processor 0\n");
-    for (i=0; i<ia[mlocal_ele]; i++) {
-      printf("%d ",ja[i]);
-    }
+    for (i=0; i<ia[mlocal_ele]; i++) printf("%d ",ja[i]);
     printf("\n");
 
     /*
@@ -325,27 +322,23 @@ PetscErrorCode DataRead(GridData *gdata)
     ierr = PetscMalloc((mlocal_ele+1)*sizeof(PetscInt),&iatmp);CHKERRQ(ierr);
     ierr = PetscMalloc((3*mlocal_ele+1)*sizeof(PetscInt),&jatmp);CHKERRQ(ierr);
     for (j=1; j<size; j++) {
-      net   = 0;
+      net      = 0;
       iatmp[0] = 0;
       printf("Element neighbors on processor %d\n",j);
       for (i=0; i<mmlocal_ele[j]; i++) {
         fscanf(fd,"%d %d %d %d\n",&cnt,&a1,&a2,&a3);
         printf("%d %d %d %d\n",cnt,a1,a2,a3);
-        if (a1 >= 0) {jatmp[net++] = a1;}
-        if (a2 >= 0) {jatmp[net++] = a2;}
-        if (a3 >= 0) {jatmp[net++] = a3;}
+        if (a1 >= 0) jatmp[net++] = a1;
+        if (a2 >= 0) jatmp[net++] = a2;
+        if (a3 >= 0) jatmp[net++] = a3;
         iatmp[i+1] = net;
       }
 
       printf("ia values for processor %d\n",j);
-      for (i=0; i<mmlocal_ele[j]+1; i++) {
-        printf("%d ",iatmp[i]);
-      }
+      for (i=0; i<mmlocal_ele[j]+1; i++) printf("%d ",iatmp[i]);
       printf("\n");
       printf("ja values for processor %d\n",j);
-      for (i=0; i<iatmp[mmlocal_ele[j]]; i++) {
-        printf("%d ",jatmp[i]);
-      }
+      for (i=0; i<iatmp[mmlocal_ele[j]]; i++) printf("%d ",jatmp[i]);
       printf("\n");
 
       /* send graph off to appropriate processor */
@@ -364,7 +357,7 @@ PetscErrorCode DataRead(GridData *gdata)
     */
 
     /* receive total number of vertices */
-    ierr = MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr        = MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     mlocal_vert = n_vert/size + ((n_vert % size) > rank);
 
     /* receive vertices */
@@ -372,7 +365,7 @@ PetscErrorCode DataRead(GridData *gdata)
     ierr = MPI_Recv(vert,2*mlocal_vert,MPIU_SCALAR,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive total number of elements */
-    ierr = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr       = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     mlocal_ele = n_ele/size + ((n_ele % size) > rank);
 
     /* receive elements */
@@ -394,8 +387,8 @@ PetscErrorCode DataRead(GridData *gdata)
   gdata->ele         = ele;
   gdata->vert        = vert;
 
-  gdata->ia          = ia;
-  gdata->ja          = ja;
+  gdata->ia = ia;
+  gdata->ja = ja;
   PetscFunctionReturn(0);
 }
 
@@ -417,11 +410,11 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
   IS              isnewproc;
 
   PetscFunctionBegin;
-  n_ele       = gdata->n_ele;
-  mlocal_ele  = gdata->mlocal_ele;
+  n_ele      = gdata->n_ele;
+  mlocal_ele = gdata->mlocal_ele;
 
-  ia          = gdata->ia;
-  ja          = gdata->ja;
+  ia = gdata->ia;
+  ja = gdata->ja;
 
   /*
       Create the adjacency graph matrix
@@ -440,8 +433,8 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
   /*
        isnewproc - indicates for each local element the new processor it is assigned to
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element\n");CHKERRQ(ierr);
-  ierr = ISView(isnewproc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr             = PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element\n");CHKERRQ(ierr);
+  ierr             = ISView(isnewproc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   gdata->isnewproc = isnewproc;
 
   /*
@@ -503,9 +496,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   */
   ierr = ISGetIndices(isnum,&idx);CHKERRQ(ierr);
   ierr = PetscMalloc(gdata->mlocal_ele*sizeof(PetscInt),&tidx);CHKERRQ(ierr);
-  for (i=0; i<gdata->mlocal_ele; i++) {
-    tidx[i] = idx[i];
-  }
+  for (i=0; i<gdata->mlocal_ele; i++) tidx[i] = idx[i];
   ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,tidx,PETSC_COPY_VALUES,&isscat);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isnum,&idx);CHKERRQ(ierr);
   ierr = PetscFree(tidx);CHKERRQ(ierr);
@@ -516,9 +507,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,3*gdata->mlocal_ele,&veleold);CHKERRQ(ierr);
   ierr = VecGetArray(veleold,&array);CHKERRQ(ierr);
-  for (i=0; i<3*gdata->mlocal_ele; i++) {
-    array[i] = gdata->ele[i];
-  }
+  for (i=0; i<3*gdata->mlocal_ele; i++) array[i] = gdata->ele[i];
   ierr = VecRestoreArray(veleold,&array);CHKERRQ(ierr);
   /*
      Scatter the element vertex information (still in the original vertex ordering) to the correct processor
@@ -533,14 +522,12 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   /*
      Put the element vertex data into a new allocation of the gdata->ele
   */
-  ierr = PetscFree(gdata->ele);CHKERRQ(ierr);
+  ierr              = PetscFree(gdata->ele);CHKERRQ(ierr);
   gdata->mlocal_ele = counts[rank];
-  ierr = PetscFree(counts);CHKERRQ(ierr);
-  ierr = PetscMalloc(3*gdata->mlocal_ele*sizeof(PetscInt),&gdata->ele);CHKERRQ(ierr);
-  ierr = VecGetArray(vele,&array);CHKERRQ(ierr);
-  for (i=0; i<3*gdata->mlocal_ele; i++) {
-    gdata->ele[i] = (int)PetscRealPart(array[i]);
-  }
+  ierr              = PetscFree(counts);CHKERRQ(ierr);
+  ierr              = PetscMalloc(3*gdata->mlocal_ele*sizeof(PetscInt),&gdata->ele);CHKERRQ(ierr);
+  ierr              = VecGetArray(vele,&array);CHKERRQ(ierr);
+  for (i=0; i<3*gdata->mlocal_ele; i++) gdata->ele[i] = (int)PetscRealPart(array[i]);
   ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
   ierr = VecDestroy(&vele);CHKERRQ(ierr);
 
@@ -548,7 +535,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
   for (i=0; i<gdata->mlocal_ele; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
-                            gdata->ele[3*i+2]);CHKERRQ(ierr);
+                                   gdata->ele[3*i+2]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -586,7 +573,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
 */
 PetscErrorCode DataPartitionVertices(GridData *gdata)
 {
-  PetscInt       n_vert = gdata->n_vert,*localvert;
+  PetscInt       n_vert     = gdata->n_vert,*localvert;
   PetscInt       mlocal_ele = gdata->mlocal_ele,*ele = gdata->ele,i,j,nlocal = 0,nmax;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
@@ -607,9 +594,7 @@ PetscErrorCode DataPartitionVertices(GridData *gdata)
      (because last processor needs to handle any leftovers)
   */
   nmax = n_vert/size;
-  if (rank == size-1) {
-    nmax = n_vert;
-  }
+  if (rank == size-1) nmax = n_vert;
 
   /*
      Receive list of marked vertices from left
@@ -621,9 +606,7 @@ PetscErrorCode DataPartitionVertices(GridData *gdata)
   if (rank == size-1) {
     /* last processor gets all the rest */
     for (i=0; i<n_vert; i++) {
-      if (!PetscBTLookup(mask,i)) {
-        nlocal++;
-      }
+      if (!PetscBTLookup(mask,i)) nlocal++;
     }
     nmax = nlocal;
   }
@@ -649,9 +632,7 @@ PetscErrorCode DataPartitionVertices(GridData *gdata)
   } else {
     /* last processor gets all the rest */
     for (i=0; i<n_vert; i++) {
-      if (!PetscBTLookup(mask,i)) {
-        localvert[nlocal++] = i;
-      }
+      if (!PetscBTLookup(mask,i)) localvert[nlocal++] = i;
     }
   }
   /*
@@ -705,7 +686,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
   for (i=0; i<gdata->mlocal_ele; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
-                            gdata->ele[3*i+2]);CHKERRQ(ierr);
+                                   gdata->ele[3*i+2]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
@@ -746,12 +727,12 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   /*
         Put resulting vertex information into gdata->vert array
   */
-  ierr = PetscMalloc(2*gdata->nlocal*sizeof(PetscScalar),&gdata->vert);CHKERRQ(ierr);
-  ierr = VecGetArray(vert,&avert);CHKERRQ(ierr);
-  ierr = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
+  ierr               = PetscMalloc(2*gdata->nlocal*sizeof(PetscScalar),&gdata->vert);CHKERRQ(ierr);
+  ierr               = VecGetArray(vert,&avert);CHKERRQ(ierr);
+  ierr               = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr               = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
   gdata->mlocal_vert = gdata->nlocal;
-  ierr = VecDestroy(&vert);CHKERRQ(ierr);
+  ierr               = VecDestroy(&vert);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");CHKERRQ(ierr);
   for (i=0; i<gdata->mlocal_vert; i++) {

@@ -19,7 +19,7 @@ typedef struct {
 #define __FUNCT__ "AODestroy_Mapping"
 PetscErrorCode AODestroy_Mapping(AO ao)
 {
-  AO_Mapping     *aomap = (AO_Mapping *) ao->data;
+  AO_Mapping     *aomap = (AO_Mapping*) ao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
 #define __FUNCT__ "AOView_Mapping"
 PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
-  AO_Mapping     *aomap = (AO_Mapping *) ao->data;
+  AO_Mapping     *aomap = (AO_Mapping*) ao->data;
   PetscMPIInt    rank;
   PetscInt       i;
   PetscBool      iascii;
@@ -42,9 +42,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   ierr = MPI_Comm_rank(((PetscObject)ao)->comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
-  if (!viewer) {
-    viewer = PETSC_VIEWER_STDOUT_SELF;
-  }
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
 
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -61,11 +59,11 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 #define __FUNCT__ "AOPetscToApplication_Mapping"
 PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
-  AO_Mapping *aomap = (AO_Mapping *) ao->data;
+  AO_Mapping *aomap = (AO_Mapping*) ao->data;
   PetscInt   *app   = aomap->app;
   PetscInt   *petsc = aomap->petsc;
   PetscInt   *perm  = aomap->petscPerm;
-  PetscInt   N     = aomap->N;
+  PetscInt   N      = aomap->N;
   PetscInt   low, high, mid=0;
   PetscInt   idex;
   PetscInt   i;
@@ -84,13 +82,9 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
     high = N - 1;
     while (low <= high) {
       mid = (low + high)/2;
-      if (idex == petsc[mid]) {
-        break;
-      } else if (idex < petsc[mid]) {
-        high = mid - 1;
-      } else {
-        low  = mid + 1;
-      }
+      if (idex == petsc[mid]) break;
+      else if (idex < petsc[mid]) high = mid - 1;
+      else low = mid + 1;
     }
     if (low > high) ia[i] = -1;
     else            ia[i] = app[perm[mid]];
@@ -102,11 +96,11 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 #define __FUNCT__ "AOApplicationToPetsc_Mapping"
 PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
-  AO_Mapping *aomap = (AO_Mapping *) ao->data;
+  AO_Mapping *aomap = (AO_Mapping*) ao->data;
   PetscInt   *app   = aomap->app;
   PetscInt   *petsc = aomap->petsc;
   PetscInt   *perm  = aomap->appPerm;
-  PetscInt   N     = aomap->N;
+  PetscInt   N      = aomap->N;
   PetscInt   low, high, mid=0;
   PetscInt   idex;
   PetscInt   i;
@@ -125,19 +119,12 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
     high = N - 1;
     while (low <= high) {
       mid = (low + high)/2;
-      if (idex == app[mid]) {
-        break;
-      } else if (idex < app[mid]) {
-        high = mid - 1;
-      } else {
-        low  = mid + 1;
-      }
+      if (idex == app[mid]) break;
+      else if (idex < app[mid]) high = mid - 1;
+      else low = mid + 1;
     }
-    if (low > high) {
-      ia[i] = -1;
-    } else {
-      ia[i] = petsc[perm[mid]];
-    }
+    if (low > high) ia[i] = -1;
+    else            ia[i] = petsc[perm[mid]];
   }
   PetscFunctionReturn(0);
 }
@@ -177,26 +164,19 @@ PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *h
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidPointer(hasIndex,3);
-  aomap = (AO_Mapping *) ao->data;
+  aomap = (AO_Mapping*) ao->data;
   app   = aomap->app;
   /* Use bisection since the array is sorted */
   low  = 0;
   high = aomap->N - 1;
   while (low <= high) {
     mid = (low + high)/2;
-    if (idex == app[mid]) {
-      break;
-    } else if (idex < app[mid]) {
-      high = mid - 1;
-    } else {
-      low  = mid + 1;
-    }
+    if (idex == app[mid]) break;
+    else if (idex < app[mid]) high = mid - 1;
+    else low = mid + 1;
   }
-  if (low > high) {
-    *hasIndex = PETSC_FALSE;
-  } else {
-    *hasIndex = PETSC_TRUE;
-  }
+  if (low > high) *hasIndex = PETSC_FALSE;
+  else *hasIndex = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -226,26 +206,19 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidPointer(hasIndex,3);
-  aomap = (AO_Mapping *) ao->data;
+  aomap = (AO_Mapping*) ao->data;
   petsc = aomap->petsc;
   /* Use bisection since the array is sorted */
   low  = 0;
   high = aomap->N - 1;
   while (low <= high) {
     mid = (low + high)/2;
-    if (idex == petsc[mid]) {
-      break;
-    } else if (idex < petsc[mid]) {
-      high = mid - 1;
-    } else {
-      low  = mid + 1;
-    }
+    if (idex == petsc[mid]) break;
+    else if (idex < petsc[mid]) high = mid - 1;
+    else low = mid + 1;
   }
-  if (low > high) {
-    *hasIndex = PETSC_FALSE;
-  } else {
-    *hasIndex = PETSC_TRUE;
-  }
+  if (low > high) *hasIndex = PETSC_FALSE;
+  else *hasIndex = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -294,9 +267,9 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, -1, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
-  ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
+  ierr     = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, -1, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr     = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
+  ierr     = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
@@ -305,10 +278,10 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
-  N    = 0;
+  N     = 0;
   for (i = 0; i < size; i++) {
     disp[i] = N;
-    N += lens[i];
+    N      += lens[i];
   }
   aomap->N = N;
   ao->N    = N;
@@ -318,9 +291,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   if (!mypetsc) {
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for (i = 0; i < napp; i++) {
-      petsc[i] = start + i;
-    }
+    for (i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt*)mypetsc;
   }
@@ -346,21 +317,17 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
     aomap->petsc[i] = allpetsc[petscPerm[i]];
   }
   /* Invert petscPerm[] into aomap->petscPerm[] */
-  for (i = 0; i < N; i++) {
-    aomap->petscPerm[petscPerm[i]] = i;
-  }
+  for (i = 0; i < N; i++) aomap->petscPerm[petscPerm[i]] = i;
+
   /* Form map between aomap->app[] and aomap->petsc[] */
-  for (i = 0; i < N; i++) {
-    aomap->appPerm[i] = aomap->petscPerm[appPerm[i]];
-  }
+  for (i = 0; i < N; i++) aomap->appPerm[i] = aomap->petscPerm[appPerm[i]];
+
   /* Invert appPerm[] into allapp[] */
-  for (i = 0; i < N; i++) {
-    allapp[appPerm[i]] = i;
-  }
+  for (i = 0; i < N; i++) allapp[appPerm[i]] = i;
+
   /* Form map between aomap->petsc[] and aomap->app[] */
-  for (i = 0; i < N; i++) {
-    aomap->petscPerm[i] = allapp[petscPerm[i]];
-  }
+  for (i = 0; i < N; i++) aomap->petscPerm[i] = allapp[petscPerm[i]];
+
 #if defined(PETSC_USE_DEBUG)
   /* Check that the permutations are complementary */
   for (i = 0; i < N; i++) {
@@ -411,8 +378,8 @@ PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {
   MPI_Comm       comm;
   const PetscInt *mypetsc, *myapp;
-  PetscInt        napp, npetsc;
-  PetscErrorCode  ierr;
+  PetscInt       napp, npetsc;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) isapp, &comm);CHKERRQ(ierr);

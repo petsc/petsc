@@ -1,8 +1,8 @@
 
 #include <../src/dm/ao/aoimpl.h>    /*I "petscao.h"  I*/
 
-PetscFunctionList AOList                       = PETSC_NULL;
-PetscBool         AORegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList AOList              = PETSC_NULL;
+PetscBool         AORegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "AOSetType"
@@ -41,7 +41,7 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
   ierr = PetscFunctionListFind(((PetscObject)ao)->comm, AOList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
-    ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+    ierr             = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
     ao->ops->destroy = PETSC_NULL;
   }
 
@@ -93,7 +93,7 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 @*/
 PetscErrorCode  AORegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(AO))
 {
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -123,7 +123,7 @@ PetscErrorCode  AORegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&AOList);CHKERRQ(ierr);
+  ierr                = PetscFunctionListDestroy(&AOList);CHKERRQ(ierr);
   AORegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

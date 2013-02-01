@@ -35,14 +35,14 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
   for (i=0; i<npoints; i++) {
     PetscReal pm1,pm2,pd1,pd2,pdd1,pdd2,x;
     PetscInt  j,k;
-    x = points[i];
-    pm2 = 0;
-    pm1 = 1;
-    pd2 = 0;
-    pd1 = 0;
+    x    = points[i];
+    pm2  = 0;
+    pm1  = 1;
+    pd2  = 0;
+    pd1  = 0;
     pdd2 = 0;
     pdd1 = 0;
-    k = 0;
+    k    = 0;
     if (degrees[k] == 0) {
       if (B) B[i*ndegree+k] = pm1;
       if (D) D[i*ndegree+k] = pd1;
@@ -51,13 +51,13 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
     }
     for (j=1; j<=maxdegree; j++,k++) {
       PetscReal p,d,dd;
-      p = ((2*j-1)*x*pm1 - (j-1)*pm2)/j;
-      d = pd2 + (2*j-1)*pm1;
-      dd = pdd2 + (2*j-1)*pd1;
-      pm2 = pm1;
-      pm1 = p;
-      pd2 = pd1;
-      pd1 = d;
+      p    = ((2*j-1)*x*pm1 - (j-1)*pm2)/j;
+      d    = pd2 + (2*j-1)*pm1;
+      dd   = pdd2 + (2*j-1)*pd1;
+      pm2  = pm1;
+      pm1  = p;
+      pd2  = pd1;
+      pd1  = d;
       pdd2 = pdd1;
       pdd1 = dd;
       if (degrees[k] == j) {
@@ -110,7 +110,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   ierr = PetscRealView(npoints-1,w,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscMalloc2(npoints*npoints,PetscScalar,&Z,PetscMax(1,2*npoints-2),PetscReal,&work);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(npoints,&N);CHKERRQ(ierr);
-  LDZ = N;
+  LDZ  = N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKsteqr_("I",&N,x,w,Z,&LDZ,work,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -118,8 +118,9 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 
   for (i=0; i<(npoints+1)/2; i++) {
     PetscReal y = 0.5 * (-x[i] + x[npoints-i-1]); /* enforces symmetry */
-    x[i] = (a+b)/2 - y*(b-a)/2;
+    x[i]           = (a+b)/2 - y*(b-a)/2;
     x[npoints-i-1] = (a+b)/2 + y*(b-a)/2;
+
     w[i] = w[npoints-1-i] = (b-a)*PetscSqr(0.5*PetscAbsScalar(Z[i*npoints] + Z[(npoints-i-1)*npoints]));
   }
   ierr = PetscFree2(Z,work);CHKERRQ(ierr);

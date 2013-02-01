@@ -2,12 +2,12 @@
 #include <petsc-private/pleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #if defined(PETSC_HAVE_EXODUSII)
-#include<netcdf.h>
-#include<exodusII.h>
+#include <netcdf.h>
+#include <exodusII.h>
 #endif
 
-PETSC_EXTERN PetscErrorCode DMPlexInterpolate_2D(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexInterpolate_3D(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexInterpolate_2D(DM, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexInterpolate_3D(DM, DM*);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateExodus"
@@ -35,7 +35,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   PetscMPIInt    num_proc, rank;
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar    *coords;
   PetscInt       coordSize, v;
   PetscErrorCode ierr;
   /* Read from ex_get_init() */
@@ -65,7 +65,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   /* Read cell sets information */
   if (!rank) {
     PetscInt *cone;
-    int  c, cs, c_loc, v, v_loc;
+    int      c, cs, c_loc, v, v_loc;
     /* Read from ex_get_elem_blk_ids() */
     int *cs_id;
     /* Read from ex_get_elem_block() */
@@ -129,11 +129,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
   /* Create vertex set label */
   if (!rank && (num_vs > 0)) {
-    int  vs, v;
+    int vs, v;
     /* Read from ex_get_node_set_ids() */
     int *vs_id;
     /* Read from ex_get_node_set_param() */
-    int  num_vertex_in_set, num_attr;
+    int num_vertex_in_set, num_attr;
     /* Read from ex_get_node_set() */
     int *vs_vertex_list;
 
@@ -172,9 +172,15 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     ierr = PetscMalloc3(numVertices,float,&x,numVertices,float,&y,numVertices,float,&z);CHKERRQ(ierr);
     ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
-    if (dim > 0) {for (v = 0; v < numVertices; ++v) {coords[v*dim+0] = x[v];}}
-    if (dim > 1) {for (v = 0; v < numVertices; ++v) {coords[v*dim+1] = y[v];}}
-    if (dim > 2) {for (v = 0; v < numVertices; ++v) {coords[v*dim+2] = z[v];}}
+    if (dim > 0) {
+      for (v = 0; v < numVertices; ++v) coords[v*dim+0] = x[v];
+    }
+    if (dim > 1) {
+      for (v = 0; v < numVertices; ++v) coords[v*dim+1] = y[v];
+    }
+    if (dim > 2) {
+      for (v = 0; v < numVertices; ++v) coords[v*dim+2] = z[v];
+    }
     ierr = PetscFree3(x,y,z);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
@@ -183,11 +189,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
   /* Create side set label */
   if (!rank && interpolate && (num_fs > 0)) {
-    int  fs, f, voff;
+    int fs, f, voff;
     /* Read from ex_get_side_set_ids() */
     int *fs_id;
     /* Read from ex_get_side_set_param() */
-    int  num_side_in_set, num_dist_fact_in_set;
+    int num_side_in_set, num_dist_fact_in_set;
     /* Read from ex_get_side_set_node_list() */
     int *fs_vertex_count_list, *fs_vertex_list;
 
@@ -199,9 +205,9 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = PetscMalloc2(num_side_in_set,int,&fs_vertex_count_list,num_side_in_set*4,int,&fs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
-        const PetscInt *faces    = PETSC_NULL;
-        PetscInt        faceSize = fs_vertex_count_list[f], numFaces;
-        PetscInt        faceVertices[4], v;
+        const PetscInt *faces   = PETSC_NULL;
+        PetscInt       faceSize = fs_vertex_count_list[f], numFaces;
+        PetscInt       faceVertices[4], v;
 
         if (faceSize > 4) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "ExodusII side cannot have %d > 4 vertices", faceSize);
         for (v = 0; v < faceSize; ++v, ++voff) {

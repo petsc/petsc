@@ -6,7 +6,7 @@
 
 /* Logging support */
 PetscClassId  AO_CLASSID;
-PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
+PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
 #undef __FUNCT__
 #define __FUNCT__ "AOView"
@@ -218,7 +218,7 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  if (n) {PetscValidIntPointer(ia,3);}
+  if (n) PetscValidIntPointer(ia,3);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -259,7 +259,7 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  if (n) {PetscValidIntPointer(ia,3);}
+  if (n) PetscValidIntPointer(ia,3);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -450,15 +450,15 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)ao);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = AOSetType(ao,type);CHKERRQ(ierr);
-    } else if (!((PetscObject)ao)->type_name) {
-      ierr = AOSetType(ao,def);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = AOSetType(ao,type);CHKERRQ(ierr);
+  } else if (!((PetscObject)ao)->type_name) {
+    ierr = AOSetType(ao,def);CHKERRQ(ierr);
+  }
 
-    /* not used here, but called so will go into help messaage */
-    ierr = PetscOptionsName("-ao_view","Print detailed information on AO used","AOView",0);CHKERRQ(ierr);
+  /* not used here, but called so will go into help messaage */
+  ierr = PetscOptionsName("-ao_view","Print detailed information on AO used","AOView",0);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -492,7 +492,7 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 
   PetscFunctionBegin;
   if (ispetsc) {
-    PetscInt       napp,npetsc;
+    PetscInt napp,npetsc;
     ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
     ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"napp %D != npetsc %d. Local IS lengths must match",napp,npetsc);
@@ -540,9 +540,9 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
 
   ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
-  *ao = aonew;
+  *ao  = aonew;
 
-  opt = PETSC_FALSE;
+  opt  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = AOView(aonew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

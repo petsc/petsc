@@ -193,7 +193,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
     }
 
     ierr = PetscViewerDestroy(&B->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatViewe",&B->viewonassembly,&B->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatView",&B->viewonassembly,&B->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",0.0,&B->checksymmetrytol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",PETSC_FALSE,&B->checknullspaceonassembly,PETSC_NULL);CHKERRQ(ierr);

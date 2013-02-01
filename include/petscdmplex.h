@@ -17,7 +17,7 @@
 .seealso:  DM, DMPlexCreate()
 S*/
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
-PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, const char[], DM*);
+PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, const char[], const char[], DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], const double[], DM*);
 PETSC_EXTERN PetscErrorCode DMPlexClone(DM, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetDimension(DM, PetscInt *);

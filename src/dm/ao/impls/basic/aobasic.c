@@ -7,8 +7,8 @@
 #include <../src/dm/ao/aoimpl.h>          /*I  "petscao.h"   I*/
 
 typedef struct {
-  PetscInt  *app;    /* app[i] is the partner for the ith PETSc slot */
-  PetscInt  *petsc;  /* petsc[j] is the partner for the jth app slot */
+  PetscInt *app;     /* app[i] is the partner for the ith PETSc slot */
+  PetscInt *petsc;   /* petsc[j] is the partner for the jth app slot */
 } AO_Basic;
 
 /*
@@ -105,7 +105,7 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
 #define __FUNCT__ "AOPetscToApplicationPermuteInt_Basic"
 PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
-  AO_Basic       *aobasic = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscInt       *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -124,7 +124,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
 #define __FUNCT__ "AOApplicationToPetscPermuteInt_Basic"
 PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
-  AO_Basic       *aobasic = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscInt       *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -143,7 +143,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
 #define __FUNCT__ "AOPetscToApplicationPermuteReal_Basic"
 PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
-  AO_Basic       *aobasic = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscReal      *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -162,7 +162,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
 #define __FUNCT__ "AOApplicationToPetscPermuteReal_Basic"
 PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
-  AO_Basic       *aobasic = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic*) ao->data;
   PetscReal      *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -178,14 +178,15 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
 }
 
 static struct _AOOps AOOps_Basic = {
-       AOView_Basic,
-       AODestroy_Basic,
-       AOPetscToApplication_Basic,
-       AOApplicationToPetsc_Basic,
-       AOPetscToApplicationPermuteInt_Basic,
-       AOApplicationToPetscPermuteInt_Basic,
-       AOPetscToApplicationPermuteReal_Basic,
-       AOApplicationToPetscPermuteReal_Basic};
+  AOView_Basic,
+  AODestroy_Basic,
+  AOPetscToApplication_Basic,
+  AOApplicationToPetsc_Basic,
+  AOPetscToApplicationPermuteInt_Basic,
+  AOApplicationToPetscPermuteInt_Basic,
+  AOPetscToApplicationPermuteReal_Basic,
+  AOApplicationToPetscPermuteReal_Basic
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -202,10 +203,10 @@ PetscErrorCode  AOCreate_Basic(AO ao)
 
   PetscFunctionBegin;
   /* create special struct aobasic */
-  ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
+  ierr     = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
   ao->data = (void*) aobasic;
-  ierr = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)ao,AOBASIC);CHKERRQ(ierr);
+  ierr     = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
+  ierr     = PetscObjectChangeTypeName((PetscObject)ao,AOBASIC);CHKERRQ(ierr);
 
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
@@ -214,10 +215,10 @@ PetscErrorCode  AOCreate_Basic(AO ao)
 
   /* transmit all lengths to all processors */
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
-  ierr  = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for (i = 0; i < size; i++) {
     ierr = PetscMPIIntCast(N,disp+i);CHKERRQ(ierr); /* = sum(lens[j]), j< i */
@@ -233,16 +234,16 @@ PetscErrorCode  AOCreate_Basic(AO ao)
       ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
       for (i=0; i<napp; i++) petsc[i] = start + i;
     } else {
-      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      ierr  = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
       petsc = (PetscInt*)mypetsc;
     }
   }
 
   /* get all indices on all processors */
-  ierr   = PetscMalloc2(N,PetscInt,&allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr   = PetscFree2(lens,disp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N,PetscInt,&allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   {
@@ -379,10 +380,10 @@ PetscErrorCode AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
   AO             ao;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr = AOCreate(comm,&ao);CHKERRQ(ierr);
-  ierr = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
-  ierr = AOSetType(ao,AOBASIC);CHKERRQ(ierr);
+  ierr   = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
+  ierr   = AOCreate(comm,&ao);CHKERRQ(ierr);
+  ierr   = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
+  ierr   = AOSetType(ao,AOBASIC);CHKERRQ(ierr);
   *aoout = ao;
   PetscFunctionReturn(0);
 }
