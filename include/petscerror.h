@@ -716,7 +716,7 @@ M*/
 
 
 */
-#define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
+#define PetscStackCall(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while(0)
 
 /*
     PetscStackCallStandard - Calls an external library routine after pushing the name of the routine on the stack.
