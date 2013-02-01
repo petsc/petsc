@@ -982,15 +982,16 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
 
     if (bs < 0) {
       if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
-        PetscInt pStart, pEnd, p, dof;
+        PetscInt pStart, pEnd, p, dof, cdof;
 
         ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
         for (p = pStart; p < pEnd; ++p) {
           ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
-          if (dof) {
+          ierr = PetscSectionGetConstraintDof(sectionGlobal, p, &cdof);CHKERRQ(ierr);
+          if (dof-cdof) {
             if (bs < 0) {
-              bs = dof;
-            } else if (bs != dof) {
+              bs = dof-cdof;
+            } else if (bs != dof-cdof) {
               /* Layout does not admit a pointwise block size */
               bs = 1;
               break;
@@ -10058,7 +10059,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   DMLabel         slabel;
   IS              subvertexIS, subedgeIS, subfaceIS, subcellIS, subpointMap;
   const PetscInt *subVertices, *subEdges, *subFaces, *subCells;
-  PetscInt       *coneNew;
+  PetscInt       *numSubPoints, *coneNew;
   PetscInt        dim, numSubVerticesInitial, numSubVertices, firstSubVertex, v, numSubEdges = 0, firstSubEdge, e, numSubFaces = 0, firstSubFace, f, numSubCells;
   PetscInt        vStart, vEnd, fStart, fEnd;
   PetscErrorCode  ierr;
