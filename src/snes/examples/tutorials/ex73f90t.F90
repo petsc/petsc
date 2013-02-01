@@ -157,6 +157,13 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,ierr)
       N1 = solver%my*solver%mx
+      N2 = solver%my
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-no_constraints',             &
+     &     flg,PETSC_NULL_CHARACTER,ierr)
+      if (flg) then
+         N2 = 0
+      endif
+
       call DMDestroy(daphi,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -197,19 +204,19 @@
 !  Create B, C, & D matrices
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call MatCreate(PETSC_COMM_WORLD,Cmat,ierr)
-      call MatSetSizes(Cmat,PETSC_DECIDE,PETSC_DECIDE,solver%my,N1,ierr)
+      call MatSetSizes(Cmat,PETSC_DECIDE,PETSC_DECIDE,N2,N1,ierr)
       call MatSetUp(Cmat,ierr)
 !      create data for C and B
       call MatCreate(PETSC_COMM_WORLD,Bmat,ierr)
-      call MatSetSizes(Bmat,PETSC_DECIDE,PETSC_DECIDE,N1,solver%my,ierr)
+      call MatSetSizes(Bmat,PETSC_DECIDE,PETSC_DECIDE,N1,N2,ierr)
       call MatSetUp(Bmat,ierr)
 !     create data for D
       call MatCreate(PETSC_COMM_WORLD,Dmat,ierr)
-      call MatSetSizes(Dmat,PETSC_DECIDE,PETSC_DECIDE,solver%my,solver%my,ierr)
+      call MatSetSizes(Dmat,PETSC_DECIDE,PETSC_DECIDE,N2,N2,ierr)
       call MatSetUp(Dmat,ierr)
 
       call VecCreate(PETSC_COMM_WORLD,x2,ierr)
-      call VecSetSizes(x2,PETSC_DECIDE,solver%my,ierr)
+      call VecSetSizes(x2,PETSC_DECIDE,N2,ierr)
       call VecSetFromOptions(x2,ierr)
 
       call VecGetOwnershipRange(x2,lamlow,lamhigh,ierr)
@@ -218,21 +225,23 @@
 !  Set fake B and C
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       one    = 1.0
-      bval = -one/dble(solver%mx-2)
-!      cval = -one/dble(solver%my*solver%mx)
-      cval = -one
-      do 20 row=low,high-1
-         j = row/solver%mx
-         i = mod(row,solver%mx)
-         if (i .eq. 0 .or. j .eq. 0                                  &
-     &        .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
-! no op
-         else
-            call MatSetValues(Bmat,ione,row,ione,j,bval,INSERT_VALUES,ierr)            
-         endif
-         call MatSetValues(Cmat,ione,j,ione,row,cval,INSERT_VALUES,ierr)
+      if( N2 .gt. 0 ) then
+         bval = -one/dble(solver%mx-2)
+!     cval = -one/dble(solver%my*solver%mx)
+         cval = -one
+         do 20 row=low,high-1
+            j = row/solver%mx   ! row in domain
+            i = mod(row,solver%mx)
+            if (i .eq. 0 .or. j .eq. 0                                  &
+     &           .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+!     no op
+            else
+               call MatSetValues(Bmat,ione,row,ione,j,bval,INSERT_VALUES,ierr)            
+            endif
+            call MatSetValues(Cmat,ione,j,ione,row,cval,INSERT_VALUES,ierr)
  20   continue
-
+      endif
+      
       call MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(Bmat,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY,ierr)
