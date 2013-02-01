@@ -103,21 +103,21 @@ EXTERN_C_END
 /*@
    MatCUSPARSESetFormat - Sets the storage format of CUSPARSE matrices for a particular
    operation. Only the MatMult operation can use different GPU storage formats
-   for AIJCUSPARSE matrices. This requires the txpetscgpu package. Use --download-txpetscgpu
+   for MPIAIJCUSPARSE matrices. This requires the txpetscgpu package. Use --download-txpetscgpu
    to build/install PETSc to use this package.
 
    Not Collective
 
    Input Parameters:
-+  A : Matrix of type SEQAIJCUSPARSE
-.  op : MatCUSPARSEFormatOperation. SEQAIJCUSPARSE matrices support MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, and MAT_CUSPARSE_ALL. MPIAIJCUSPARSE matrices support MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, and MAT_CUSPARSE_ALL.
--  format : MatCUSPARSEStorageFormat (one of MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB)
++  A - Matrix of type SEQAIJCUSPARSE
+.  op - MatCUSPARSEFormatOperation. SEQAIJCUSPARSE matrices support MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, and MAT_CUSPARSE_ALL. MPIAIJCUSPARSE matrices support MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, and MAT_CUSPARSE_ALL.
+-  format - MatCUSPARSEStorageFormat (one of MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB)
 
    Output Parameter:
 
    Level: intermediate
 
-.seealso: MatCUSPARSEStorageFormat, MatCUSPARSEARSEFormatOperation
+.seealso: MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPARSESetFormat"
@@ -868,11 +868,11 @@ EXTERN_C_END
 
    Options Database Keys:
 +  -mat_type aijcusparse - sets the matrix type to "seqaijcusparse" during a call to MatSetFromOptions()
-.  -mat_cusparse_storage_format csr (ell (ellpack) or hyb (hybrid)) sets the storage format of matrices (for MatMult and factors in MatSolve) during a call to MatSetFromOptions(). Only available with 'txpetscgpu' package.
-.  -mat_cusparse_mult_storage_format csr (ell (ellpack) or hyb (hybrid)) sets the storage format of matrices (for MatMult) during a call to MatSetFromOptions(). Only available with 'txpetscgpu' package.
--  -mat_cusparse_solve_storage_format csr (ell (ellpack) or hyb (hybrid)) sets the storage format matrices (for factors in MatSolve) during a call to MatSetFromOptions(). Only available with 'txpetscgpu' package.
+.  -mat_cusparse_storage_format csr - sets the storage format of matrices (for MatMult and factors in MatSolve) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid). Only available with 'txpetscgpu' package.
+.  -mat_cusparse_mult_storage_format csr - sets the storage format of matrices (for MatMult) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid). Only available with 'txpetscgpu' package.
+-  -mat_cusparse_solve_storage_format csr - sets the storage format matrices (for factors in MatSolve) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid). Only available with 'txpetscgpu' package.
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSPARSE, MATSEQAIJCUSPARSE, MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+.seealso: MatCreateSeqAIJCUSPARSE(), MATAIJCUSPARSE, MatCreateAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
 M*/

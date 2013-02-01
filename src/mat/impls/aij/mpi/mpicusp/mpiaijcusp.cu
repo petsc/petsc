@@ -308,10 +308,10 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
 }
 
 /*M
-   MATAIJCUSP - MATMPIAIJCUSP = "aijcusp" = "mpiaijcusp" - A matrix type to be used for sparse matrices.
+   MATAIJCUSP - MATMPIAIJCUSP= "aijcusp" = "mpiaijcusp" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format.
-   All matrix calculations are performed on Nvidia GPUs using the CUSP library. DIA and ELL
+   All matrix calculations are performed using the CUSP library. DIA and ELL
    formats are ONLY available when using the 'txpetscgpu' package. Use --download-txpetscgpu
    to build/install PETSc to use different GPU storage formats with CUSP matrix types.
 
@@ -323,12 +323,12 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
 
    Options Database Keys:
 +  -mat_type mpiaijcusp - sets the matrix type to "mpiaijcusp" during a call to MatSetFromOptions()
-.  -mat_cusp_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Only availabe with 'txpetscgpu' package.
-.  -mat_cusp_mult_diag_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of diagonal matrix during a call to MatSetFromOptions().  Only availabe with 'txpetscgpu' package.
--  -mat_cusp_mult_offdiag_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of off-diagonal matrix during a call to MatSetFromOptions().  Only availabe with 'txpetscgpu' package.
+.  -mat_cusp_storage_format csr - sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack) which are only available with 'txpetscgpu' package. Moreover this option is only available with the 'txpetscgpu' package.
+.  -mat_cusp_mult_diag_storage_format csr - sets the storage format of diagonal matrix during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack) which are only available with 'txpetscgpu' package. Moreover this option is only available with the 'txpetscgpu' package.
+-  -mat_cusp_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix during a call to MatSetFromOptions(). Other storage formats include dia (diagonal) or ell (ellpack) which are only available with 'txpetscgpu' package. Moreover this option is only available with the 'txpetscgpu' package.
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP, MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
+ .seealso: MatCreateAIJCUSP(), MATSEQAIJCUSP, MatCreateSeqAIJCUSP(), MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
 M*/
 

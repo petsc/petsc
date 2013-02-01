@@ -62,7 +62,7 @@ EXTERN_C_END
 /*@
    MatCUSPSetFormat - Sets the storage format of CUSP matrices for a particular
    operation. Only the MatMult operation can use different GPU storage formats
-   for SEQAIJCUSP matrices. This requires the txpetscgpu package. Use --download-txpetscgpu
+   for AIJCUSP matrices. This requires the txpetscgpu package. Use --download-txpetscgpu
    to build/install PETSc to use these capabilities. If txpetscgpu is not enabled,
    this function simply passes through leaving the matrix in the original CSR format
    for usage on the GPU.
@@ -70,9 +70,9 @@ EXTERN_C_END
    Not Collective
 
    Input Parameters:
-+  A : Matrix of type SEQAIJCUSP
-.  op : MatCUSPFormatOperation. SEQAIJCUSP matrices support MAT_CUSP_MULT and MAT_CUSP_ALL. MPIAIJCUSP matrices support MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_OFFDIAG, and MAT_CUSP_ALL.
--  format : MatCUSPStorageFormat (one of MAT_CUSP_CSR, MAT_CUSP_DIA, MAT_CUSP_ELL)
++  A - Matrix of type SEQAIJCUSP
+.  op - MatCUSPFormatOperation. SEQAIJCUSP matrices support MAT_CUSP_MULT and MAT_CUSP_ALL. MPIAIJCUSP matrices support MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_OFFDIAG, and MAT_CUSP_ALL.
+-  format - MatCUSPStorageFormat (one of MAT_CUSP_CSR, MAT_CUSP_DIA, MAT_CUSP_ELL)
 
    Output Parameter:
 
@@ -690,20 +690,21 @@ EXTERN_C_END
 #endif
 
 /*M
-   MATAIJCUSP - MATSEQAIJCUSP = "aijcusp" = "seqaijcusp" - A matrix type to be used for sparse matrices.
+   MATSEQAIJCUSP - MATAIJCUSP = "aijcusp" = "seqaijcusp" - A matrix type to be used for sparse matrices.
 
-   A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format.
-   All matrix calculations are performed on Nvidia GPUs using the CUSP library. DIA and ELL
-   formats are ONLY available when using the 'txpetscgpu' package. Use --download-txpetscgpu
-   to build/install PETSc to use different GPU storage formats with CUSP matrix types.
+   A matrix type type whose data resides on Nvidia GPUs. These matrices are in CSR format by 
+   default. All matrix calculations are performed using the CUSP library. 
+   DIA and ELL formats are ONLY available when using the 'txpetscgpu' package. 
+   Use --download-txpetscgpu to build/install PETSc to use different GPU storage formats 
+   with CUSP matrix types.
 
    Options Database Keys:
 +  -mat_type aijcusp - sets the matrix type to "seqaijcusp" during a call to MatSetFromOptions()
-.  -mat_cusp_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). dia and ell only available with 'txpetscgpu' package.
--  -mat_cusp_mult_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). dia and ell only available with 'txpetscgpu' package.
+.  -mat_cusp_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). Other options include dia (diagonal) or ell (ellpack). dia and ell only available with 'txpetscgpu' package.
+-  -mat_cusp_mult_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). Other options include dia (diagonal) or ell (ellpack). dia and ell only available with 'txpetscgpu' package.
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP, MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
+.seealso: MatCreateSeqAIJCUSP(), MATAIJCUSP, MatCreateAIJCUSP(), MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
 M*/
 
