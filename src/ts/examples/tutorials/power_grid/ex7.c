@@ -135,6 +135,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscScalar    rho   =user->rho;
   PetscScalar    mux   =user->mux,muy=user->muy;
   PetscMPIInt    rank;
+  PetscScalar    sum;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -153,6 +154,9 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   }
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,X,&p);CHKERRQ(ierr);
+  ierr = VecSum(X,&sum);CHKERRQ(ierr);
+  sum = 1.0/(sum*user->dx*user->dy);
+  ierr = VecScale(X,sum);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
