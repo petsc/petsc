@@ -328,7 +328,12 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->rho    = 0.0;
   user->xmin   = -PETSC_PI;
   user->xmax   = PETSC_PI;
-  user->ymin   = -1.0;
+
+  /*
+     ymin of -3 seems to let the unstable solution move up and leave a zero in its wake
+     with an ymin of -1 the wake is never exactly zero
+  */
+  user->ymin   = -3.0;
   user->ymax   = 10.0;
 
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);

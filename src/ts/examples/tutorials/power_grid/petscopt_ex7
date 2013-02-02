@@ -6,8 +6,6 @@
 -Inertia 5.0
 -Pmax 2.1
 -PM_min 1.0
--sigmax 0.1
--sigmay 0.1
 -rho 0.0
 -t0 0.0
 -tmax 4.0
