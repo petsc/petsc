@@ -2,25 +2,20 @@
 # ----------------
 -ts_exact_final_time MATCHSTEP
 
--ws 1.0
+#-q 100000
 -Inertia 5.0
 -Pmax 2.1
 -PM_min 1.0
--lambda 0.1
--q 1.0
 -sigmax 0.1
 -sigmay 0.1
 -rho 0.0
 -t0 0.0
 -tmax 4.0
-#-xmin -3
-#-xmax 6.28
--ymin -.5
 -ymax 48.5
 -da_grid_x 220
 -da_grid_y 220
 
--ts_adapt_dt_max 10
+-ts_adapt_dt_max 5
 
 -ts_monitor_draw_solution
 #-draw_bounds -.1,1.7

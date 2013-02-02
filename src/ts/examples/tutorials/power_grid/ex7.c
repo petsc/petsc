@@ -29,15 +29,12 @@ typedef struct {
   PetscScalar muy;    /* Average speed */
   PetscScalar sigmay; /* standard deviation of initial speed */
   PetscScalar rho;    /* Cross-correlation coefficient */
-  PetscScalar t0;     /* Initial time */
-  PetscScalar tmax;   /* Final time */
   PetscScalar xmin;   /* left boundary of angle */
   PetscScalar xmax;   /* right boundary of angle */
   PetscScalar ymin;   /* bottom boundary of speed */
   PetscScalar ymax;   /* top boundary of speed */
   PetscScalar dx;     /* x step size */
   PetscScalar dy;     /* y step size */
-  PetscInt    bc; /* Boundary conditions */
   PetscScalar disper_coe; /* Dispersion coefficient */
   DM          da;
 } AppCtx;
@@ -84,8 +81,7 @@ int main(int argc, char **argv)
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
   /*  ierr = TSSetIJacobian(ts,PETSC_NULL,PETSC_NULL,IJacobian,&user);CHKERRQ(ierr);  */
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,user.tmax);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,user.t0,.005);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
@@ -321,16 +317,19 @@ PetscErrorCode Parameter_settings(AppCtx *user)
 
   /* Set default parameters */
   user->ws     = 1.0;
-  user->H      = 5.0;  user->Pmax   = 2.1;
-  user->PM_min = 1.0;  user->lambda = 0.1;
-  user->q      = 1.0;  user->mux    = asin(user->PM_min/user->Pmax);
+  user->H      = 5.0;
+  user->Pmax   = 2.1;
+  user->PM_min = 1.0;
+  user->lambda = 0.1;
+  user->q      = 1.0;
+  user->mux    = asin(user->PM_min/user->Pmax);
   user->sigmax = 0.1;
-  user->sigmay = 0.1;  user->rho  = 0.0;
-  user->t0     = 0.0;  user->tmax = 2.0;
+  user->sigmay = 0.1;
+  user->rho    = 0.0;
   user->xmin   = -PETSC_PI;
   user->xmax   = PETSC_PI;
-  user->ymin   = -1.0; 
-  user->ymax = 10.0;
+  user->ymin   = -1.0;
+  user->ymax   = 10.0;
 
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-Inertia",&user->H,&flg);CHKERRQ(ierr);
@@ -343,8 +342,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-muy",&user->muy,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-sigmay",&user->sigmay,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-rho",&user->rho,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-t0",&user->t0,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-tmax",&user->tmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
