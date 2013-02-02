@@ -132,10 +132,8 @@
       ione = 1
       nfour = -4
       itwo = 2
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',             &
-     &     solver%lambda,flg,ierr)
-      if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) &
-     &     then
+      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr)
+      if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
          if (solver%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
@@ -145,21 +143,20 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-      call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,                      &
-     &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
-     &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
-      call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,        &
-     &               PETSC_NULL_INTEGER,                                &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD, &
+           DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, &
+           DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE, &
+           ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
+      call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,   &
+           PETSC_NULL_INTEGER,                               &
+           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
+           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
+           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
+           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
+           PETSC_NULL_INTEGER,ierr)
       N1 = solver%my*solver%mx
       N2 = solver%my
-      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-no_constraints',             &
-     &     flg,PETSC_NULL_CHARACTER,ierr)
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-no_constraints',flg,PETSC_NULL_CHARACTER,ierr)
       if (flg) then
          N2 = 0
       endif
@@ -232,9 +229,8 @@
          do 20 row=low,high-1
             j = row/solver%mx   ! row in domain
             i = mod(row,solver%mx)
-            if (i .eq. 0 .or. j .eq. 0                                  &
-     &           .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
-!     no op
+            if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+               !     no op
             else
                call MatSetValues(Bmat,ione,row,ione,j,bval,INSERT_VALUES,ierr)            
             endif
@@ -293,8 +289,7 @@
       matArray(3) = Cmat
       matArray(4) = Dmat
 
-      call MatCreateNest(PETSC_COMM_WORLD,itwo,PETSC_NULL_OBJECT,itwo, &
-     &     PETSC_NULL_OBJECT, matArray, KKTmat, ierr )
+      call MatCreateNest(PETSC_COMM_WORLD,itwo,PETSC_NULL_OBJECT,itwo,PETSC_NULL_OBJECT,matArray,KKTmat,ierr)
 
       call MatSetFromOptions(KKTmat,ierr)
 
@@ -302,8 +297,7 @@
 !     vectors that are the same types
       vecArray(1) = x1
       vecArray(2) = x2
-      call VecCreateNest(PETSC_COMM_WORLD,itwo,PETSC_NULL_OBJECT, &
-     &     vecArray,x,ierr)
+      call VecCreateNest(PETSC_COMM_WORLD,itwo,PETSC_NULL_OBJECT,vecArray,x,ierr)
       call VecSetFromOptions(x,ierr)
       call VecDuplicate(x,r,ierr)
 
@@ -318,8 +312,7 @@
 !  Set function evaluation routine and vector
       call SNESSetFunction(mysnes,r,FormFunction,solver,ierr)
 
-      call SNESSetJacobian(mysnes,KKTmat,KKTmat,FormJacobian,solver,&
-     &     ierr)
+      call SNESSetJacobian(mysnes,KKTmat,KKTmat,FormJacobian,solver,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
@@ -344,7 +337,6 @@
          write(6,100) its
       endif
   100 format('Number of SNES iterations = ',i5)
-
 !      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
 !      call MatView(Amat,PETSC_VIEWER_STDOUT_WORLD,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -467,12 +459,10 @@
          j = row/solver%mx
          i = mod(row,solver%mx)
          temp = dble(min(j,solver%my-j+1))*hy
-         if (i .eq. 0 .or. j .eq. 0                                  &
-     &        .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+         if (i .eq. 0 .or. j .eq. 0  .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
             v = 0.0
          else
-            v = temp1 *                                          &
-     &           sqrt(min(dble(min(i,solver%mx-i+1)*hx),dble(temp)))
+            v = temp1 * sqrt(min(dble(min(i,solver%mx-i+1)*hx),dble(temp)))
          endif
          call VecSetValues(X1,ione,row,v,INSERT_VALUES,ierr)
  20   continue
@@ -535,8 +525,7 @@
 
 !     Tell the matrix we will never add a new nonzero location to the
 !     matrix. If we do it will generate an error.
-      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,      &
-     &     ierr)
+      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)
 
       return
       end subroutine FormJacobian
@@ -595,8 +584,7 @@
          i = mod(row,solver%mx)
          ii = ii + 1            ! one based local index
 !     boundary points
-         if (i .eq. 0 .or. j .eq. 0                                  &
-     &        .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1) then
+         if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1) then
             col(1) = row
             v(1)   = one
             call MatSetValues(jac,ione,row,ione,col,v,INSERT_VALUES,ierr)
@@ -723,8 +711,7 @@
          i = mod(row,solver%mx)
          ii = ii + 1            ! one based local index
    
-         if (i .eq. 0 .or. j .eq. 0                                  &
-     &        .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
+         if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
             v = 0.d0
          else
             u = lx_v(ii)
