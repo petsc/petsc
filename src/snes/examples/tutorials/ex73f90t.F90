@@ -156,7 +156,8 @@
            PETSC_NULL_INTEGER,ierr)
       N1 = solver%my*solver%mx
       N2 = solver%my
-      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-no_constraints',flg,PETSC_NULL_CHARACTER,ierr)
+      flg = .false.
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr)
       if (flg) then
          N2 = 0
       endif

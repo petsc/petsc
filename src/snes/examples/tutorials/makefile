@@ -925,7 +925,7 @@ runex58_2:
 	   ${DIFF} output/ex58_2.out ex58.tmp || echo  ${PWD} "\nPossible problem with ex58_2, diffs above \n========================================="; \
 	   ${RM} -f ex58.tmp
 runex73f90t:
-	-@${MPIEXEC} -n 4 ./ex73f90t -par 6.0 -da_grid_x 100 -da_grid_y 100 -snes_monitor -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_lambda_ksp_monitor -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_pc_gamg_verbose 2 -fieldsplit_phi_gamg_est_ksp_type cg
+	-@${MPIEXEC} -n 4 ./ex73f90t -par 6.0 -da_grid_x 100 -da_grid_y 100 -snes_monitor -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_lambda_ksp_monitor -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_pc_gamg_verbose 2 -fieldsplit_phi_gamg_est_ksp_type cg -snes_view
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
