@@ -42,10 +42,10 @@
 #define NEGATIVE_DIAGONAL (-42)
 
 typedef struct {
-  PetscInt    nrows;
-  PetscInt    ncols;
-  PetscInt    nnz;
-  PetscInt    col_idx_type;
+  PetscInt nrows;
+  PetscInt ncols;
+  PetscInt nnz;
+  PetscInt col_idx_type;
 
   PetscInt    *row_nnz;
   PetscInt    *icol0;
@@ -57,7 +57,7 @@ typedef struct {
   PetscInt    n_alloc_val;
   PetscInt    *alloc_icol;
   PetscScalar *alloc_val;
-} spbas_matrix ;
+} spbas_matrix;
 
 
 /*
@@ -89,14 +89,14 @@ typedef struct {
      compressed row storage
 */
 PetscErrorCode spbas_compress_pattern(PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,spbas_matrix*,PetscReal*);
-long int spbas_memory_requirement(spbas_matrix);
+long int       spbas_memory_requirement(spbas_matrix);
 PetscErrorCode spbas_delete(spbas_matrix);
 PetscErrorCode spbas_incomplete_cholesky(Mat,const PetscInt*,const PetscInt*,spbas_matrix,PetscReal,PetscReal,spbas_matrix*);
 PetscErrorCode spbas_matrix_to_crs(spbas_matrix, MatScalar **,PetscInt **,PetscInt**);
 PetscErrorCode spbas_dump(const char*,spbas_matrix);
 PetscErrorCode spbas_transpose(spbas_matrix,spbas_matrix*);
-PetscErrorCode spbas_apply_reordering(spbas_matrix*, const PetscInt *, const PetscInt*);
-PetscErrorCode spbas_pattern_only(PetscInt, PetscInt, PetscInt *, PetscInt*, spbas_matrix *);
-PetscErrorCode spbas_power (spbas_matrix, PetscInt, spbas_matrix *);
-PetscErrorCode spbas_keep_upper(spbas_matrix *);
+PetscErrorCode spbas_apply_reordering(spbas_matrix*, const PetscInt*, const PetscInt*);
+PetscErrorCode spbas_pattern_only(PetscInt, PetscInt, PetscInt*, PetscInt*, spbas_matrix*);
+PetscErrorCode spbas_power (spbas_matrix, PetscInt, spbas_matrix*);
+PetscErrorCode spbas_keep_upper(spbas_matrix*);
 

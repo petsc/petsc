@@ -14,7 +14,7 @@
 static PetscErrorCode ourmatmffdfunction(void *ctx,Vec x,Vec f)
 {
   PetscErrorCode ierr = 0;
-  Mat            mat = (Mat) ctx;
+  Mat            mat  = (Mat) ctx;
   (*(void (PETSC_STDCALL *)(void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))((void*)((PetscObject)mat)->fortran_func_pointers[1],&x,&f,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -26,6 +26,7 @@ void PETSC_STDCALL matmffdsetfunction_(Mat *mat,void (PETSC_STDCALL *func)(void*
   PetscObjectAllocateFortranPointers(*mat,2);
   ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)func;
   ((PetscObject)*mat)->fortran_func_pointers[1] = (PetscVoidFunction)ctx;
+
   *ierr = MatMFFDSetFunction(*mat,ourmatmffdfunction,*mat);
 }
 

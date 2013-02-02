@@ -8,8 +8,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *rperm,IS *cperm,
-                       PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *rperm,IS *cperm,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(type,len,t);

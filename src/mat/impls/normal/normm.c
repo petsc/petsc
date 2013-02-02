@@ -11,7 +11,7 @@ typedef struct {
 #define __FUNCT__ "MatScale_Normal"
 PetscErrorCode MatScale_Normal(Mat inA,PetscScalar scale)
 {
-  Mat_Normal     *a = (Mat_Normal*)inA->data;
+  Mat_Normal *a = (Mat_Normal*)inA->data;
 
   PetscFunctionBegin;
   a->scale *= scale;
@@ -181,7 +181,7 @@ PetscErrorCode MatDestroy_Normal(Mat N)
 PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
-  Mat               A = Na->A;
+  Mat               A   = Na->A;
   PetscErrorCode    ierr;
   PetscInt          i,j,rstart,rend,nnz;
   const PetscInt    *cols;
@@ -199,14 +199,14 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,((PetscObject)N)->comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,((PetscObject)N)->comm);CHKERRQ(ierr);
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
-  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
-  ierr = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
-  ierr = PetscFree2(diag,work);CHKERRQ(ierr);
-  ierr = VecScale(v,Na->scale);CHKERRQ(ierr);
+  ierr   = VecGetArray(v,&values);CHKERRQ(ierr);
+  ierr   = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr   = VecRestoreArray(v,&values);CHKERRQ(ierr);
+  ierr   = PetscFree2(diag,work);CHKERRQ(ierr);
+  ierr   = VecScale(v,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -241,13 +241,14 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
 
-  ierr      = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
-  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  Na->A     = A;
-  Na->scale = 1.0;
+  ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  Na->A      = A;
+  Na->scale  = 1.0;
 
-  ierr    = VecCreateMPI(((PetscObject)A)->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)A)->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+
   (*N)->ops->destroy          = MatDestroy_Normal;
   (*N)->ops->mult             = MatMult_Normal;
   (*N)->ops->multtranspose    = MatMultTranspose_Normal;

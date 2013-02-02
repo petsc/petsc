@@ -2,11 +2,11 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetMultiProcBlock_MPIAIJ"
-PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat* subMat)
+PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {
   PetscErrorCode ierr;
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ*    aijB = (Mat_SeqAIJ*)aij->B->data;
+  Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ     *aijB = (Mat_SeqAIJ*)aij->B->data;
   PetscMPIInt    commRank,subCommSize,subCommRank;
   PetscMPIInt    *commRankMap,subRank,rank,commsize;
   PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
@@ -64,12 +64,17 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
 
     /* reuse diag block with the new submat */
     ierr = MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);
+
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
+
     ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
   } else if (((Mat_MPIAIJ*)(*subMat)->data)->A != aij->A) {
     PetscObject obj = (PetscObject)((Mat_MPIAIJ*)((*subMat)->data))->A;
+
     ierr = PetscObjectReference((PetscObject)obj);CHKERRQ(ierr);
+
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
+
     ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
   }
 

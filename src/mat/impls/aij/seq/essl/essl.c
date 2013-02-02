@@ -24,7 +24,7 @@ typedef struct {
   PetscScalar *aux;
   int         naux;
 
-  PetscBool  CleanUpESSL;
+  PetscBool CleanUpESSL;
 } Mat_Essl;
 
 #undef __FUNCT__
@@ -65,7 +65,7 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_Essl"
 PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)(A)->data;
+  Mat_SeqAIJ     *aa  =(Mat_SeqAIJ*)(A)->data;
   Mat_Essl       *essl=(Mat_Essl*)(F)->spptr;
   PetscErrorCode ierr;
   int            nessl,i,one = 1;
@@ -74,7 +74,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   ierr = PetscBLASIntCast(A->rmap->n,&nessl);CHKERRQ(ierr);
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
   for (i=0; i<A->rmap->n+1; i++) essl->ia[i] = aa->i[i] + 1;
-  for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
+  for (i=0; i<aa->nz; i++) essl->ja[i] = aa->j[i] + 1;
 
   ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
 
@@ -85,12 +85,13 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   essl->iparm[3] = 0;
   essl->rparm[0] = 1.e-12;
   essl->rparm[1] = 1.0;
+
   ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
 
   dgsf(&one,&nessl,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
-  F->ops->solve = MatSolve_Essl;
-  (F)->assembled = PETSC_TRUE;
+  F->ops->solve     = MatSolve_Essl;
+  (F)->assembled    = PETSC_TRUE;
   (F)->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -108,7 +109,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   PetscReal      f = 1.0;
 
   PetscFunctionBegin;
-  essl = (Mat_Essl *)(B->spptr);
+  essl = (Mat_Essl*)(B->spptr);
 
   /* allocate the work arrays required by ESSL */
   f    = info->fill;
@@ -118,10 +119,12 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
 
   /* since malloc is slow on IBM we try a single malloc */
   ierr = PetscMalloc4(essl->lna,PetscScalar,&essl->a,essl->naux,PetscScalar,&essl->aux,essl->lna,int,&essl->ia,essl->lna,int,&essl->ja);CHKERRQ(ierr);
+
   essl->CleanUpESSL = PETSC_TRUE;
 
   ierr = PetscLogObjectMemory(B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar));CHKERRQ(ierr);
-  B->ops->lufactornumeric  = MatLUFactorNumeric_Essl;
+
+  B->ops->lufactornumeric = MatLUFactorNumeric_Essl;
   PetscFunctionReturn(0);
 }
 
@@ -165,11 +168,14 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
+
   B->spptr                 = essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_essl",MatFactorGetSolverPackage_essl);CHKERRQ(ierr);
-  B->factortype            = MAT_FACTOR_LU;
-  *F                       = B;
+
+  B->factortype = MAT_FACTOR_LU;
+  *F            = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -91,7 +91,7 @@ typedef struct {
   PetscBool    PetscMatOrdering;
 
   /* Flag to clean up UMFPACK objects during Destroy */
-  PetscBool  CleanUpUMFPACK;
+  PetscBool CleanUpUMFPACK;
 } Mat_UMFPACK;
 
 #undef __FUNCT__
@@ -120,7 +120,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)A->spptr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)lu->A->data;
+  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)lu->A->data;
   PetscScalar    *av = a->a,*ba,*xa;
   PetscErrorCode ierr;
   PetscInt       *ai = a->i,*aj = a->j,status;
@@ -207,9 +207,10 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
 
   ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr = MatDestroy(&lu->A);CHKERRQ(ierr);
-  lu->A = A;
-  lu->flg = SAME_NONZERO_PATTERN;
-  lu->CleanUpUMFPACK = PETSC_TRUE;
+
+  lu->A                  = A;
+  lu->flg                = SAME_NONZERO_PATTERN;
+  lu->CleanUpUMFPACK     = PETSC_TRUE;
   F->ops->solve          = MatSolve_UMFPACK;
   F->ops->solvetranspose = MatSolveTranspose_UMFPACK;
   PetscFunctionReturn(0);
@@ -222,7 +223,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
 #define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
 static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
   PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n;
@@ -265,9 +266,9 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   /* report sumbolic factorization of A' when Control[PRL] > 3 */
   (void) umfpack_UMF_report_symbolic(lu->Symbolic, lu->Control);
 
-  lu->flg = DIFFERENT_NONZERO_PATTERN;
-  lu->CleanUpUMFPACK = PETSC_TRUE;
-  (F)->ops->lufactornumeric  = MatLUFactorNumeric_UMFPACK;
+  lu->flg                   = DIFFERENT_NONZERO_PATTERN;
+  lu->CleanUpUMFPACK        = PETSC_TRUE;
+  (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
   PetscFunctionReturn(0);
 }
 
@@ -385,8 +386,8 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=A->cmap->n,idx;
 
-  const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"},
-                 *scale[]={"NONE","SUM","MAX"};
+  const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"};
+  const char     *scale[]={"NONE","SUM","MAX"};
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -396,11 +397,14 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_UMFPACK,&lu);CHKERRQ(ierr);
+
   B->spptr                 = lu;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;
   B->ops->destroy          = MatDestroy_UMFPACK;
   B->ops->view             = MatView_UMFPACK;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_umfpack",MatFactorGetSolverPackage_seqaij_umfpack);CHKERRQ(ierr);
+
   B->factortype            = MAT_FACTOR_LU;
   B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
   B->preallocated          = PETSC_TRUE;
@@ -409,8 +413,8 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   /* ------------------------------------------------*/
   /* get the default control parameters */
   umfpack_UMF_defaults(lu->Control);
-  lu->perm_c = PETSC_NULL;  /* use defaul UMFPACK col permutation */
-  lu->Control[UMFPACK_IRSTEP] = 0; /* max num of iterative refinement steps to attempt */
+  lu->perm_c                  = PETSC_NULL; /* use defaul UMFPACK col permutation */
+  lu->Control[UMFPACK_IRSTEP] = 0;          /* max num of iterative refinement steps to attempt */
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"UMFPACK Options","Mat");CHKERRQ(ierr);
   /* Control parameters used by reporting routiones */

@@ -7,18 +7,18 @@
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_Bas"
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqSBAIJ       *b;
-  PetscErrorCode     ierr;
-  PetscBool          perm_identity,missing;
-  PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=A->rmap->n,*ui;
-  const PetscInt     *rip,*riip;
-  PetscInt           j;
-  PetscInt           d;
-  PetscInt           ncols,*cols,*uj;
-  PetscReal          fill=info->fill,levels=info->levels;
-  IS                 iperm;
-  spbas_matrix       Pattern_0, Pattern_P;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqSBAIJ   *b;
+  PetscErrorCode ierr;
+  PetscBool      perm_identity,missing;
+  PetscInt       reallocs=0,i,*ai=a->i,*aj=a->j,am=A->rmap->n,*ui;
+  const PetscInt *rip,*riip;
+  PetscInt       j;
+  PetscInt       d;
+  PetscInt       ncols,*cols,*uj;
+  PetscReal      fill=info->fill,levels=info->levels;
+  IS             iperm;
+  spbas_matrix   Pattern_0, Pattern_P;
 
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
@@ -29,7 +29,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   /* ICC(0) without matrix ordering: simply copies fill pattern */
   if (!levels && perm_identity) {
-    ierr = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);
+    ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);
     ui[0] = 0;
 
     for (i=0; i<am; i++) {
@@ -66,28 +66,32 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b    = (Mat_SeqSBAIJ*)(fact)->data;
-  b->singlemalloc = PETSC_FALSE;
-  ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
-  b->j    = uj;
-  b->i    = ui;
-  b->diag = 0;
-  b->ilen = 0;
-  b->imax = 0;
-  b->row  = perm;
-  b->col  = perm;
-  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  b->icol = iperm;
-  b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
-  ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((fact),(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
-  b->maxnz   = b->nz = ui[am];
-  b->free_a  = PETSC_TRUE;
-  b->free_ij = PETSC_TRUE;
+  b                = (Mat_SeqSBAIJ*)(fact)->data;
+  b->singlemalloc  = PETSC_FALSE;
 
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = fill;
+  ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
+
+  b->j             = uj;
+  b->i             = ui;
+  b->diag          = 0;
+  b->ilen          = 0;
+  b->imax          = 0;
+  b->row           = perm;
+  b->col           = perm;
+
+  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+
+  b->icol          = iperm;
+  b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
+  ierr             = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+  ierr             = PetscLogObjectMemory((fact),(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  b->maxnz         = b->nz = ui[am];
+  b->free_a        = PETSC_TRUE;
+  b->free_ij       = PETSC_TRUE;
+
+  (fact)->info.factor_mallocs   = reallocs;
+  (fact)->info.fill_ratio_given = fill;
   if (ai[am] != 0) {
     (fact)->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
   } else {
@@ -109,12 +113,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   const PetscInt *rip,*riip;
   PetscInt       mbs=A->rmap->n,*bi=b->i,*bj=b->j;
 
-  MatScalar      *ba=b->a;
-  PetscReal      shiftnz = info->shiftamount;
-  PetscReal      droptol = -1;
-  PetscBool      perm_identity;
-  spbas_matrix   Pattern, matrix_L,matrix_LT;
-  PetscReal      mem_reduction;
+  MatScalar    *ba     = b->a;
+  PetscReal    shiftnz = info->shiftamount;
+  PetscReal    droptol = -1;
+  PetscBool    perm_identity;
+  spbas_matrix Pattern, matrix_L,matrix_LT;
+  PetscReal    mem_reduction;
 
   PetscFunctionBegin;
   /* Reduce memory requirements:   erase values of B-matrix */
@@ -127,17 +131,16 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   ierr = PetscInfo1(PETSC_NULL,"    compression rate for spbas_compress_pattern %G \n",mem_reduction);CHKERRQ(ierr);
 
   /* Make Cholesky decompositions with larger Manteuffel shifts until no more    negative diagonals are found. */
-  ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
-  ierr  = ISGetIndices(iip,&riip);CHKERRQ(ierr);
+  ierr = ISGetIndices(ip,&rip);CHKERRQ(ierr);
+  ierr = ISGetIndices(iip,&riip);CHKERRQ(ierr);
 
   if (info->usedt) {
     droptol = info->dt;
   }
   for (ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL;)
   {
-    ierr  = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT);CHKERRQ(ierr);
-    if (ierr == NEGATIVE_DIAGONAL)
-    {
+    ierr = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT);CHKERRQ(ierr);
+    if (ierr == NEGATIVE_DIAGONAL) {
       shiftnz *= 1.5;
       if (shiftnz < 1e-5) shiftnz=1e-5;
       ierr = PetscInfo1(PETSC_NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%G\n",shiftnz);CHKERRQ(ierr);
@@ -154,25 +157,26 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   ierr = spbas_transpose(matrix_LT, &matrix_L);CHKERRQ(ierr);
   ierr = spbas_delete(matrix_LT);CHKERRQ(ierr);
   ierr = spbas_matrix_to_crs(matrix_L, &ba, &bi, &bj);CHKERRQ(ierr);
-  b->i=bi; b->j=bj; b->a=ba;
+  b->i =bi; b->j=bj; b->a=ba;
   ierr = spbas_delete(matrix_L);CHKERRQ(ierr);
 
   /* Set the appropriate solution functions */
   ierr = ISIdentity(ip,&perm_identity);CHKERRQ(ierr);
   if (perm_identity) {
-    (B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (B)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (B)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (B)->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    (B)->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    (B)->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    (B)->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    (B)->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   } else {
-    (B)->ops->solve           = MatSolve_SeqSBAIJ_1_inplace;
-    (B)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_inplace;
-    (B)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_inplace;
-    (B)->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_inplace;
+    (B)->ops->solve          = MatSolve_SeqSBAIJ_1_inplace;
+    (B)->ops->solvetranspose = MatSolve_SeqSBAIJ_1_inplace;
+    (B)->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_inplace;
+    (B)->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_inplace;
   }
 
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
+
   ierr = PetscLogFlops(C->rmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -182,8 +186,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatGetFactor_seqaij_bas"
 PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Mat *B)
 {
-  PetscInt           n = A->rmap->n;
-  PetscErrorCode     ierr;
+  PetscInt       n = A->rmap->n;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
@@ -191,6 +195,7 @@ PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Mat *B)
   if (ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+
     (*B)->ops->iccfactorsymbolic     = MatICCFactorSymbolic_SeqAIJ_Bas;
     (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_Bas;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");

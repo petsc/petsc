@@ -6,10 +6,10 @@
 #include <petsc-private/matimpl.h>
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
-PetscFunctionList MatOrderingList = 0;
+PetscFunctionList MatOrderingList              = 0;
 PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
+extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS*,IS*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_Flow"
@@ -79,7 +79,7 @@ PetscErrorCode  MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,I
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr  = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
@@ -126,7 +126,7 @@ PetscErrorCode  MatOrderingRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
+  ierr                         = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
   MatOrderingRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -196,11 +196,12 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   /* This code is terrible. MatGetOrdering() multiple dispatch should use matrix and this code should move to impls/aij/mpi. */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   if (ismpiaij) {               /* Reorder using diagonal block */
-    Mat Ad,Ao;
+    Mat            Ad,Ao;
     const PetscInt *colmap;
-    IS lrowperm,lcolperm;
-    PetscInt i,rstart,rend,*idx;
+    IS             lrowperm,lcolperm;
+    PetscInt       i,rstart,rend,*idx;
     const PetscInt *lidx;
+
     ierr = MatMPIAIJGetSeqAIJ(mat,&Ad,&Ao,&colmap);CHKERRQ(ierr);
     ierr = MatGetOrdering(Ad,type,&lrowperm,&lcolperm);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);

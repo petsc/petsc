@@ -4,7 +4,7 @@
 #include <elemental.hpp>
 #include <petsc-private/matimpl.h>
 
-#if defined (PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 typedef elem::Complex<PetscReal> PetscElemScalar;
 #else
 typedef PetscScalar PetscElemScalar;
@@ -17,10 +17,10 @@ typedef struct {
                           We expose a blocked ordering to the user because that is what all other PETSc infrastructure uses.
                           With the blocked ordering when the number of processes do not evenly divide the vector size,
                           we still need to be able to convert from PETSc/blocked ordering to VC/VR ordering. */
-  elem::Grid *grid;
-  elem::DistMatrix<PetscElemScalar> *emat;
-  elem::Matrix<PetscElemScalar> *esubmat; /* Used for adding off-proc matrix entries */
-  elem::AxpyInterface<PetscElemScalar> *interface;
+  elem::Grid                                     *grid;
+  elem::DistMatrix<PetscElemScalar>              *emat;
+  elem::Matrix<PetscElemScalar>                  *esubmat; /* Used for adding off-proc matrix entries */
+  elem::AxpyInterface<PetscElemScalar>           *interface;
   elem::DistMatrix<PetscInt,elem::VC,elem::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
 } Mat_Elemental;
 
@@ -31,13 +31,13 @@ typedef struct {
 
 PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset)
 {
-  Mat_Elemental *a = (Mat_Elemental*)A->data;
-  PetscInt critical = a->m[rc]*a->mr[rc];
+  Mat_Elemental *a       = (Mat_Elemental*)A->data;
+  PetscInt      critical = a->m[rc]*a->mr[rc];
   if (p < critical) {
-    *rank = p / a->m[rc];
+    *rank   = p / a->m[rc];
     *offset = p % a->m[rc];
   } else {
-    *rank = a->mr[rc] + (p - critical) / (a->m[rc] - 1);
+    *rank   = a->mr[rc] + (p - critical) / (a->m[rc] - 1);
     *offset = (p - critical) % (a->m[rc] - 1);
   }
 }

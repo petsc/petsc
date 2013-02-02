@@ -34,84 +34,79 @@
 /*****************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKfndsep"
-PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,
-                                PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
+PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
 {
-    PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */
+  PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */
 
-    /* System generated locals */
-    PetscInt i__1, i__2;
+  /* System generated locals */
+  PetscInt i__1, i__2;
 
-    /* Local variables */
-    PetscInt node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, midend, midlvl;
-    PetscInt nbr;
+  /* Local variables */
+  PetscInt node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, midend, midlvl;
+  PetscInt nbr;
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --ls;
-    --xls;
-    --sep;
-    --mask;
-    --adjncy;
-    --xadj;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --ls;
+  --xls;
+  --sep;
+  --mask;
+  --adjncy;
+  --xadj;
 
-    SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
+  SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
 /*       IF THE NUMBER OF LEVELS IS LESS THAN 3, RETURN */
 /*       THE WHOLE COMPONENT AS THE SEPARATOR.*/
-    if (nlvl >= 3) {
-        goto L200;
-    }
-    *nsep = xls[nlvl + 1] - 1;
-    i__1 = *nsep;
-    for (i = 1; i <= i__1; ++i) {
-        node = ls[i];
-        sep[i] = node;
-        mask[node] = 0;
-    }
-    PetscFunctionReturn(0);
+  if (nlvl >= 3) goto L200;
+  *nsep = xls[nlvl + 1] - 1;
+  i__1  = *nsep;
+  for (i = 1; i <= i__1; ++i) {
+    node       = ls[i];
+    sep[i]     = node;
+    mask[node] = 0;
+  }
+  PetscFunctionReturn(0);
 /*       FIND THE MIDDLE LEVEL OF THE ROOTED LEVEL STRUCTURE.*/
 L200:
-    midlvl = (nlvl + 2) / 2;
-    midbeg = xls[midlvl];
-    mp1beg = xls[midlvl + 1];
-    midend = mp1beg - 1;
-    mp1end = xls[midlvl + 2] - 1;
+  midlvl = (nlvl + 2) / 2;
+  midbeg = xls[midlvl];
+  mp1beg = xls[midlvl + 1];
+  midend = mp1beg - 1;
+  mp1end = xls[midlvl + 2] - 1;
 /*       THE SEPARATOR IS OBTAINED BY INCLUDING ONLY THOSE*/
 /*       MIDDLE-LEVEL NODES WITH NEIGHBORS IN THE MIDDLE+1*/
 /*       LEVEL. XADJ IS USED TEMPORARILY TO MARK THOSE*/
 /*       NODES IN THE MIDDLE+1 LEVEL.*/
-    i__1 = mp1end;
-    for (i = mp1beg; i <= i__1; ++i) {
-        node = ls[i];
-        xadj[node] = -xadj[node];
-    }
-    *nsep = 0;
-    i__1 = midend;
-    for (i = midbeg; i <= i__1; ++i) {
-        node = ls[i];
-        jstrt = xadj[node];
-        jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
-        i__2 = jstop;
-        for (j = jstrt; j <= i__2; ++j) {
-            nbr = adjncy[j];
-            if (xadj[nbr] > 0) {
-                goto L400;
-            }
-            ++(*nsep);
-            sep[*nsep] = node;
-            mask[node] = 0;
-            goto L500;
+  i__1 = mp1end;
+  for (i = mp1beg; i <= i__1; ++i) {
+    node       = ls[i];
+    xadj[node] = -xadj[node];
+  }
+  *nsep = 0;
+  i__1  = midend;
+  for (i = midbeg; i <= i__1; ++i) {
+    node  = ls[i];
+    jstrt = xadj[node];
+    jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
+    i__2  = jstop;
+    for (j = jstrt; j <= i__2; ++j) {
+      nbr = adjncy[j];
+      if (xadj[nbr] > 0) goto L400;
+      ++(*nsep);
+      sep[*nsep] = node;
+      mask[node] = 0;
+      goto L500;
 L400:
-            ;
-        }
+      ;
+    }
 L500:
-        ;
-    }
+    ;
+  }
 /*       RESET XADJ TO ITS CORRECT SIGN.*/
-    i__1 = mp1end;
-    for (i = mp1beg; i <= i__1; ++i) {
-        node = ls[i];
-        xadj[node] = -xadj[node];
-    }
-    PetscFunctionReturn(0);
+  i__1 = mp1end;
+  for (i = mp1beg; i <= i__1; ++i) {
+    node       = ls[i];
+    xadj[node] = -xadj[node];
+  }
+  PetscFunctionReturn(0);
 }

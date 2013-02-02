@@ -28,11 +28,11 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   }
 
-  N          = mat->cmap->N/bs;
-  c->M       = mat->rmap->N/bs;  /* set total rows, columns and local rows */
-  c->N       = mat->cmap->N/bs;
-  c->m       = mat->rmap->N/bs;
-  c->rstart  = 0;
+  N         = mat->cmap->N/bs;
+  c->M      = mat->rmap->N/bs;   /* set total rows, columns and local rows */
+  c->N      = mat->cmap->N/bs;
+  c->m      = mat->rmap->N/bs;
+  c->rstart = 0;
 
   c->ncolors = nis;
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
@@ -55,12 +55,13 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   for (i=0; i<nis; i++) {
     ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
     ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
+
     c->ncolumns[i] = n;
     if (n) {
       ierr = PetscMalloc(n*sizeof(PetscInt),&c->columns[i]);CHKERRQ(ierr);
       ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
     } else {
-      c->columns[i]  = 0;
+      c->columns[i] = 0;
     }
 
     if (!flg) { /* ------------------------------------------------------------------------------*/
@@ -99,26 +100,26 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       nrows     = 0;
       /* loop over columns */
       for (j=0; j<n; j++) {
-        col   = is[j];
-        rows  = cj + ci[col];
-        m     = ci[col+1] - ci[col];
+        col  = is[j];
+        rows = cj + ci[col];
+        m    = ci[col+1] - ci[col];
         /* loop over columns marking them in rowhit */
-        fm    = N; /* fm points to first entry in linked list */
+        fm = N;    /* fm points to first entry in linked list */
         for (k=0; k<m; k++) {
           currentcol = *rows++;
           /* is it already in the list? */
           do {
-            mfm  = fm;
-            fm   = rowhit[fm];
+            mfm = fm;
+            fm  = rowhit[fm];
           } while (fm < currentcol);
           /* not in list so add it */
           if (fm != currentcol) {
             nrows++;
             columnsforrow[currentcol] = col;
             /* next three lines insert new entry into linked list */
-            rowhit[mfm]               = currentcol;
-            rowhit[currentcol]        = fm;
-            fm                        = currentcol;
+            rowhit[mfm]        = currentcol;
+            rowhit[currentcol] = fm;
+            fm                 = currentcol;
             /* fm points to present position in list since we know the columns are sorted */
           } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Detected invalid coloring");
         }
@@ -127,8 +128,8 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
       ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
       /* now store the linked list of rows into c->rows[i] */
-      nrows       = 0;
-      fm          = rowhit[N];
+      nrows = 0;
+      fm    = rowhit[N];
       do {
         c->rows[i][nrows]            = fm;
         c->columnsforrow[i][nrows++] = columnsforrow[fm];
@@ -152,6 +153,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
     for (l=0; l<c->nrows[k]; l++) {
       col = c->columnsforrow[k][l];
+
       c->vscaleforrow[k][l] = col;
     }
   }

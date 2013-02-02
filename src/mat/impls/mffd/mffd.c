@@ -2,13 +2,13 @@
 #include <petsc-private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
-PetscFunctionList MatMFFDList        = 0;
+PetscFunctionList MatMFFDList              = 0;
 PetscBool         MatMFFDRegisterAllCalled = PETSC_FALSE;
 
 PetscClassId  MATMFFD_CLASSID;
 PetscLogEvent MATMFFD_Mult;
 
-static PetscBool  MatMFFDPackageInitialized = PETSC_FALSE;
+static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDFinalizePackage"
 /*@C
@@ -46,10 +46,10 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
 @*/
 PetscErrorCode  MatMFFDInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (MatMFFDPackageInitialized) PetscFunctionReturn(0);
@@ -169,7 +169,7 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
   MatMFFD ctx = (MatMFFD)J->data;
 
   PetscFunctionBegin;
-  ctx->ncurrenth    = 0;
+  ctx->ncurrenth = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -208,6 +208,7 @@ PetscErrorCode  MatMFFDRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&MatMFFDList);CHKERRQ(ierr);
+
   MatMFFDRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -218,7 +219,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;
-  MatMFFD      ctx = (MatMFFD)J->data;
+  MatMFFD        ctx = (MatMFFD)J->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
@@ -245,8 +246,8 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
     ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
+  ierr      = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
+  ierr      = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
   mat->data = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -272,7 +273,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
   PetscBool      iascii, viewbase, viewfunction;
-  const char*    prefix;
+  const char     *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -352,9 +353,9 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
      with particular objects, hence alleviating the more general problem. */
   ierr = PetscLogEventBegin(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
 
-  w    = ctx->w;
-  U    = ctx->current_u;
-  F    = ctx->current_f;
+  w = ctx->w;
+  U = ctx->current_u;
+  F = ctx->current_f;
   /*
       Compute differencing parameter
   */
@@ -451,11 +452,11 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
   ierr = VecGetArray(a,&aa);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
-    h  = ww[i-rstart];
+    h    = ww[i-rstart];
     if (h == 0.0) h = 1.0;
     if (PetscAbsScalar(h) < umin && PetscRealPart(h) >= 0.0)     h = umin;
     else if (PetscRealPart(h) < 0.0 && PetscAbsScalar(h) < umin) h = -umin;
-    h     *= epsilon;
+    h *= epsilon;
 
     ww[i-rstart] += h;
     ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
@@ -467,9 +468,9 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
       aa[i - rstart] = ctx->vshift + ctx->vscale*aa[i-rstart];
     }
 
-    ierr = VecGetArray(w,&ww);CHKERRQ(ierr);
+    ierr          = VecGetArray(w,&ww);CHKERRQ(ierr);
     ww[i-rstart] -= h;
-    ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
+    ierr          = VecRestoreArray(w,&ww);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(a,&aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -519,7 +520,7 @@ PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
 PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
-  
+
   PetscFunctionBegin;
   shell->vshift += a;
   PetscFunctionReturn(0);
@@ -530,7 +531,7 @@ PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
-  
+
   PetscFunctionBegin;
   shell->vscale *= a;
   PetscFunctionReturn(0);
@@ -546,6 +547,7 @@ PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 
   PetscFunctionBegin;
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
+
   ctx->current_u = U;
   if (F) {
     if (ctx->current_f_allocated) {ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);}
@@ -553,6 +555,7 @@ PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
     ctx->current_f_allocated = PETSC_FALSE;
   } else if (!ctx->current_f_allocated) {
     ierr = VecDuplicate(ctx->current_u, &ctx->current_f);CHKERRQ(ierr);
+
     ctx->current_f_allocated = PETSC_TRUE;
   }
   if (!ctx->w) {
@@ -566,7 +569,7 @@ typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetCheckh_MFFD"
-PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void*ectx)
+PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -604,7 +607,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 {
   MatMFFD        mfctx = mat ? (MatMFFD)mat->data : (MatMFFD)PETSC_NULL;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
@@ -699,8 +702,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_MFFD"
 PetscErrorCode  MatCreate_MFFD(Mat A)
 {
-  MatMFFD         mfctx;
-  PetscErrorCode  ierr;
+  MatMFFD        mfctx;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -708,18 +711,19 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
 #endif
 
   ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,0,"MatMFFD","Matrix-free Finite Differencing","Mat",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
-  mfctx->sp              = 0;
-  mfctx->error_rel       = PETSC_SQRT_MACHINE_EPSILON;
-  mfctx->recomputeperiod = 1;
-  mfctx->count           = 0;
-  mfctx->currenth        = 0.0;
-  mfctx->historyh        = PETSC_NULL;
-  mfctx->ncurrenth       = 0;
-  mfctx->maxcurrenth     = 0;
-  ((PetscObject)mfctx)->type_name       = 0;
 
-  mfctx->vshift          = 0.0;
-  mfctx->vscale          = 1.0;
+  mfctx->sp                       = 0;
+  mfctx->error_rel                = PETSC_SQRT_MACHINE_EPSILON;
+  mfctx->recomputeperiod          = 1;
+  mfctx->count                    = 0;
+  mfctx->currenth                 = 0.0;
+  mfctx->historyh                 = PETSC_NULL;
+  mfctx->ncurrenth                = 0;
+  mfctx->maxcurrenth              = 0;
+  ((PetscObject)mfctx)->type_name = 0;
+
+  mfctx->vshift = 0.0;
+  mfctx->vscale = 1.0;
 
   /*
      Create the empty data structure to contain compute-h routines.
@@ -733,11 +737,11 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   mfctx->ops->setfromoptions = 0;
   mfctx->hctx                = 0;
 
-  mfctx->func                = 0;
-  mfctx->funcctx             = 0;
-  mfctx->w                   = PETSC_NULL;
+  mfctx->func    = 0;
+  mfctx->funcctx = 0;
+  mfctx->w       = PETSC_NULL;
 
-  A->data                = mfctx;
+  A->data = mfctx;
 
   A->ops->mult           = MatMult_MFFD;
   A->ops->destroy        = MatDestroy_MFFD;
@@ -749,7 +753,7 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   A->ops->diagonalscale  = MatDiagonalScale_MFFD;
   A->ops->diagonalset    = MatDiagonalSet_MFFD;
   A->ops->setfromoptions = MatSetFromOptions_MFFD;
-  A->assembled = PETSC_TRUE;
+  A->assembled           = PETSC_TRUE;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
@@ -763,7 +767,9 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctionError_C","MatMFFDSetFunctionError_MFFD",MatMFFDSetFunctionError_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDResetHHistory_C","MatMFFDResetHHistory_MFFD",MatMFFDResetHHistory_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDAddNullSpace_C","MatMFFDAddNullSpace_MFFD",MatMFFDAddNullSpace_MFFD);CHKERRQ(ierr);
+
   mfctx->mat = A;
+
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1212,7 +1218,7 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
 
 .seealso:  MatMFFDSetCheckPositivity()
 @*/
-PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void* ctx)
+PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -1246,7 +1252,7 @@ PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,Petsc
 
 .seealso:  MatMFFDSetCheckh()
 @*/
-PetscErrorCode  MatMFFDCheckPositivity(void* dummy,Vec U,Vec a,PetscScalar *h)
+PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
 {
   PetscReal      val, minval;
   PetscScalar    *u_vec, *a_vec;
@@ -1255,12 +1261,12 @@ PetscErrorCode  MatMFFDCheckPositivity(void* dummy,Vec U,Vec a,PetscScalar *h)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)U,&comm);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&u_vec);CHKERRQ(ierr);
-  ierr = VecGetArray(a,&a_vec);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
+  ierr   = PetscObjectGetComm((PetscObject)U,&comm);CHKERRQ(ierr);
+  ierr   = VecGetArray(U,&u_vec);CHKERRQ(ierr);
+  ierr   = VecGetArray(a,&a_vec);CHKERRQ(ierr);
+  ierr   = VecGetLocalSize(U,&n);CHKERRQ(ierr);
   minval = PetscAbsScalar(*h*1.01);
-  for (i=0;i<n;i++) {
+  for (i=0; i<n; i++) {
     if (PetscRealPart(u_vec[i] + *h*a_vec[i]) <= 0.0) {
       val = PetscAbsScalar(u_vec[i]/a_vec[i]);
       if (val < minval) minval = val;

@@ -45,31 +45,34 @@ PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
   /*
     We have to use temporary values here because AMD always uses double, even though PetscReal may be single
   */
-  val = (PetscReal)Control[AMD_DENSE];
+  val  = (PetscReal)Control[AMD_DENSE];
   ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,PETSC_NULL);CHKERRQ(ierr);
+
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool)Control[AMD_AGGRESSIVE];
   ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,PETSC_NULL);CHKERRQ(ierr);
+
   Control[AMD_AGGRESSIVE] = (double)tval;
+
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc(nrow*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr   = PetscMalloc(nrow*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   status = amd_AMD_order(nrow,ia,ja,perm,Control,Info);
   switch (status) {
-    case AMD_OK: break;
-    case AMD_OK_BUT_JUMBLED:
-      /* The result is fine, but PETSc matrices are supposed to satisfy stricter preconditions, so PETSc considers a
-      * matrix that triggers this error condition to be invalid.
-      */
-      SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_PLIB,"According to AMD, the matrix has unsorted and/or duplicate row indices");
-    case AMD_INVALID:
-      amd_info(Info);
-      SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_PLIB,"According to AMD, the matrix is invalid");
-    case AMD_OUT_OF_MEMORY:
-      SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_MEM,"AMD could not compute ordering");
-    default:
-      SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_LIB,"Unexpected return value");
+  case AMD_OK: break;
+  case AMD_OK_BUT_JUMBLED:
+    /* The result is fine, but PETSc matrices are supposed to satisfy stricter preconditions, so PETSc considers a
+    * matrix that triggers this error condition to be invalid.
+    */
+    SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_PLIB,"According to AMD, the matrix has unsorted and/or duplicate row indices");
+  case AMD_INVALID:
+    amd_info(Info);
+    SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_PLIB,"According to AMD, the matrix is invalid");
+  case AMD_OUT_OF_MEMORY:
+    SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_MEM,"AMD could not compute ordering");
+  default:
+    SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_LIB,"Unexpected return value");
   }
   ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
