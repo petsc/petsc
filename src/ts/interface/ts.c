@@ -69,8 +69,10 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_monitor_draw_solution - Monitor solution graphically
 .  -ts_monitor_draw_solution - Monitor solution graphically
 .  -ts_monitor_draw_error - Monitor error graphically
-.  -ts_monitor_draw_solution_binary <filename> - Save each solution to a binary file
--  -ts_monitor_draw_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
+.  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
+-  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
+
+   Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
    Level: beginner
 
@@ -196,7 +198,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
-  ierr = PetscOptionsString("-ts_monitor_draw_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_monitor_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer ctx;
     if (monfilename[0]) {
@@ -207,17 +209,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
-  ierr = PetscOptionsString("-ts_monitor_draw_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
     const char *ptr,*ptr2;
     char       *filetemplate;
-    if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    if (!monfilename[0]) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
     /* Do some cursory validation of the input. */
     ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
-    if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_draw_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    if (!ptr) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
     for (ptr++; ptr && *ptr; ptr++) {
       ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
-      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_draw_solution_vtk, should look like filename-%%03D.vts");
+      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03D.vts");
       if (ptr2) break;
     }
     ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
