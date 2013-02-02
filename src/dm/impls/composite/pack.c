@@ -123,7 +123,7 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCompositeGetNumberDM"
-/*@C
+/*@
     DMCompositeGetNumberDM - Get's the number of DM objects in the DMComposite
        representation.
 
