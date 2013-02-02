@@ -10,8 +10,8 @@
 -t0 0.0
 -tmax 4.0
 -ymax 48.5
--da_grid_x 220
--da_grid_y 220
+-da_grid_x 210
+-da_grid_y 210
 
 -ts_adapt_dt_max 5
 
@@ -29,3 +29,5 @@
 -ts_type rosw
 -ts_final_time 10000
 -ts_max_steps 1000000
+
+-stencil_width 1

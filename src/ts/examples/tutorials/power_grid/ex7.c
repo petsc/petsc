@@ -37,6 +37,7 @@ typedef struct {
   PetscScalar dy;     /* y step size */
   PetscScalar disper_coe; /* Dispersion coefficient */
   DM          da;
+  PetscInt    st_width; /* Stencil width */
 } AppCtx;
 
 PetscErrorCode Parameter_settings(AppCtx*);
@@ -60,7 +61,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(user.da,0,"X - the angle");
@@ -166,8 +167,14 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
   f   =  (y - user->ws);
   fpos = PetscMax(f,0);
   fneg = PetscMin(f,0);
-  *p1 = fpos*(p[j][i] - p[j][i-1])/user->dx + fneg*(p[j][i+1] - p[j][i])/user->dx;
-  /* *p1 = f*(p[j][i+1] - p[j][i-1])/user->dy;*/
+  if (user->st_width == 1) {
+    *p1 = fpos*(p[j][i] - p[j][i-1])/user->dx + fneg*(p[j][i+1] - p[j][i])/user->dx;
+  } else if (user->st_width == 2) {
+    *p1 = fpos*(3*p[j][i] - 4*p[j][i-1] + p[j][i-2])/(2*user->dx) + fneg*(-p[j][i+2] + 4*p[j][i+1] - 3*p[j][i])/(2*user->dx);
+  } else if (user->st_width == 3) {
+    *p1 = fpos*(2*p[j][i+1] + 3*p[j][i] - 6*p[j][i-1] + p[j][i-2])/(6*user->dx) + fneg*(-p[j][i+2] + 6*p[j][i+1] - 3*p[j][i] - 2*p[j][i-1])/(6*user->dx);
+  }
+  /* *p1 = f*(p[j][i+1] - p[j][i-1])/user->dx;*/
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +188,14 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
   f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x));
   fpos = PetscMax(f,0);
   fneg = PetscMin(f,0);
-  *p2 = fpos*(p[j][i] - p[j-1][i])/user->dy + fneg*(p[j+1][i] - p[j][i])/user->dy;
+  if (user->st_width == 1) {
+    *p2 = fpos*(p[j][i] - p[j-1][i])/user->dy + fneg*(p[j+1][i] - p[j][i])/user->dy;
+  } else if (user->st_width ==2) {
+    *p2 = fpos*(3*p[j][i] - 4*p[j-1][i] + p[j-2][i])/(2*user->dy) + fneg*(-p[j+2][i] + 4*p[j+1][i] - 3*p[j][i])/(2*user->dy);
+  } else if (user->st_width == 3) {
+    *p2 = fpos*(2*p[j+1][i] + 3*p[j][i] - 6*p[j-1][i] + p[j-2][i])/(6*user->dy) + fneg*(-p[j+2][i] + 6*p[j+1][i] - 3*p[j][i] - 2*p[j-1][i])/(6*user->dy);
+  }
+
   /* *p2 = f*(p[j+1][i] - p[j-1][i])/user->dy;*/
   PetscFunctionReturn(0);
 }
@@ -192,8 +206,13 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscScalar *p_diff,AppCtx * user)
 {
   PetscFunctionBeginUser;
-
-  *p_diff = user->disper_coe*((p[j-1][i] - 2*p[j][i] + p[j+1][i])/(user->dy*user->dy));
+  if (user->st_width == 1) {
+    *p_diff = user->disper_coe*((p[j-1][i] - 2*p[j][i] + p[j+1][i])/(user->dy*user->dy));
+  } else if (user->st_width == 2) {
+    *p_diff = user->disper_coe*((-p[j-2][i] + 16*p[j-1][i] - 30*p[j][i] + 16*p[j+1][i] - p[j+2][i])/(12.0*user->dy*user->dy));
+  } else if (user->st_width == 3) {
+    *p_diff = user->disper_coe*((2*p[j-3][i] - 27*p[j-2][i] + 270*p[j-1][i] - 490*p[j][i] + 270*p[j+1][i] - 27*p[j+2][i] + 2*p[j+3][i])/(180.0*user->dy*user->dy));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +346,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->sigmay = 0.1;
   user->rho    = 0.0;
   user->xmin   = -PETSC_PI;
-  user->xmax   = PETSC_PI;
+  user->xmax   =  PETSC_PI;
 
   /*
      ymin of -3 seems to let the unstable solution move up and leave a zero in its wake
@@ -335,6 +354,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   */
   user->ymin   = -3.0;
   user->ymax   = 10.0;
+  user->st_width = 1;
 
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ws",&user->ws,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-Inertia",&user->H,&flg);CHKERRQ(ierr);
@@ -345,12 +365,16 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-mux",&user->mux,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-sigmax",&user->sigmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-muy",&user->muy,&flg);CHKERRQ(ierr);
+  if (flg == 0) {
+    user->muy = user->ws;
+  }
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-sigmay",&user->sigmay,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-rho",&user->rho,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  user->muy = user->ws;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
