@@ -504,8 +504,6 @@
       type(Mat)      Amat
       PetscInt       izero
 
-      if( jac .ne. jac_prec) stop 'jac != jac_prec'
-
       izero = 0
 
       call VecNestGetSubVec(X,izero,X_1,ierr)
