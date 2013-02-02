@@ -516,7 +516,11 @@
       ! the rest of the matrix is not touched
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-
+      if( jac .ne. jac_prec) then
+         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+         call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      endif
+      
 !     Set flag to indicate that the Jacobian matrix retains an identical
 !     nonzero structure throughout all nonlinear iterations 
       
