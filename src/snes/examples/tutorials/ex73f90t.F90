@@ -53,6 +53,7 @@
         double precision lambda
 !     Mats
         type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
+        type(IS)  isPhi,isLambda
       end type petsc_kkt_solver
 
       end module petsc_kkt_solver_module
@@ -107,6 +108,7 @@
       type(Vec)        x,r,x2,x1,x1loc,x2loc,vecArray(2)
       type(Mat)        Amat,Bmat,Cmat,Dmat,KKTMat,matArray(4)
       type(DM)         daphi,dalam
+      type(IS)         isglobal(2)
       PetscErrorCode   ierr
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
@@ -278,7 +280,10 @@
 !      call PetscObjectSetName(dalam,"lambda",ierr)
       call DMSetFromOptions(solver%da,ierr)
       call DMSetUp(solver%da,ierr)
-      
+      call DMCompositeGetGlobalISs(solver%da,isglobal,ierr)
+      solver%isPhi = isglobal(1)
+      solver%isLambda = isglobal(2)
+
 !     cache matrices
       solver%Amat = Amat
       solver%Bmat = Bmat
@@ -290,16 +295,12 @@
       matArray(3) = Cmat
       matArray(4) = Dmat
 
-      call MatCreateNest(PETSC_COMM_WORLD,itwo,PETSC_NULL_OBJECT,itwo,PETSC_NULL_OBJECT,matArray,KKTmat,ierr)
-
+      call MatCreateNest(PETSC_COMM_WORLD,itwo,isglobal,itwo,isglobal,matArray,KKTmat,ierr)
       call MatSetFromOptions(KKTmat,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
-      vecArray(1) = x1
-      vecArray(2) = x2
-      call VecCreateNest(PETSC_COMM_WORLD,itwo,PETSC_NULL_OBJECT,vecArray,x,ierr)
-      call VecSetFromOptions(x,ierr)
+      call MatGetVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr)
       call VecDuplicate(x,r,ierr)
 
       call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr)
@@ -350,6 +351,8 @@
       call MatDestroy(Bmat,ierr)
       call MatDestroy(Cmat,ierr)
       call MatDestroy(solver%AmatLin,ierr)
+      call ISDestroy(solver%isPhi,ierr)
+      call ISDestroy(solver%isLambda,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(x2,ierr)
       call VecDestroy(x1,ierr)
@@ -403,15 +406,17 @@
       ione = 1
       ierr = 0
       call SNESGetApplicationContext(mysnes,solver,ierr)
-      call VecNestGetSubVec(Xnest,izero,X_1,ierr)
+      call VecGetSubVector(Xnest,solver%isPhi,X_1,ierr)
 
       call InitialGuessLocal(solver,X_1,ierr)
       call VecAssemblyBegin(X_1,ierr)
       call VecAssemblyEnd(X_1,ierr)
+      call VecRestoreSubVector(Xnest,solver%isPhi,X_1,ierr)
 
 !     zero out lambda
-      call VecNestGetSubVec(Xnest,ione,X_1,ierr)
+      call VecGetSubVector(Xnest,solver%isLambda,X_1,ierr)
       call VecZeroEntries(X_1,ierr)
+      call VecRestoreSubVector(Xnest,solver%isLambda,X_1,ierr)
 
       return
       end subroutine FormInitialGuess
@@ -504,20 +509,24 @@
       type(Mat)      Amat
       PetscInt       izero
 
-      if( jac .ne. jac_prec) stop 'jac != jac_prec'
-
       izero = 0
 
-      call VecNestGetSubVec(X,izero,X_1,ierr)
+      call VecGetSubVector(X,solver%isPhi,X_1,ierr)
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
-      call MatNestGetSubMat( jac, izero, izero, Amat, ierr ) ! this will not work with any Mat
+      call MatGetSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr)
 
       call FormJacobianLocal(X_1,Amat,solver,.true.,ierr)
+      call MatDestroy(Amat,ierr) ! discard our reference
+      call VecRestoreSubVector(X,solver%isPhi,X_1,ierr)
 
       ! the rest of the matrix is not touched
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      if (jac .ne. jac_prec) then
+         call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+         call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      end if
 
 !     Set flag to indicate that the Jacobian matrix retains an identical
 !     nonzero structure throughout all nonlinear iterations 
@@ -526,7 +535,7 @@
 
 !     Tell the matrix we will never add a new nonzero location to the
 !     matrix. If we do it will generate an error.
-      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)
+      call MatSetOption(jac_prec,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)
 
       return
       end subroutine FormJacobian
@@ -651,19 +660,23 @@
  
       izero = 0
       ione = 1
-      call VecNestGetSubVec(X,izero,X_1,ierr)
-      call VecNestGetSubVec(X,ione,X_2,ierr)
-      call VecNestGetSubVec(F,izero,F_1,ierr)
-      call VecNestGetSubVec(F,ione,F_2,ierr)
+      call VecGetSubVector(X,solver%isPhi,X_1,ierr)
+      call VecGetSubVector(X,solver%isLambda,X_2,ierr)
+      call VecGetSubVector(F,solver%isPhi,F_1,ierr)
+      call VecGetSubVector(F,solver%isLambda,F_2,ierr)
 
       call FormFunctionNLTerm( X_1, F_1, solver, ierr )
       call MatMultAdd( solver%AmatLin, X_1, F_1, F_1, ierr)
-      
+
 !     do rest of operator (linear)
       call MatMult(    solver%Cmat, X_1,      F_2, ierr)
       call MatMultAdd( solver%Bmat, X_2, F_1, F_1, ierr)
       call MatMultAdd( solver%Dmat, X_2, F_2, F_2, ierr)
 
+      call VecRestoreSubVector(X,solver%isPhi,X_1,ierr)
+      call VecRestoreSubVector(X,solver%isLambda,X_2,ierr)
+      call VecRestoreSubVector(F,solver%isPhi,F_1,ierr)
+      call VecRestoreSubVector(F,solver%isLambda,F_2,ierr)
       return
       end subroutine formfunction
 
