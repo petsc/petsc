@@ -12,9 +12,9 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  PetscInt      ndim;
+  PetscInt     ndim;
   PetscInt     *dim;
-  cufftHandle   p_forward, p_backward;
+  cufftHandle  p_forward, p_backward;
   cufftComplex *devArray;
 } Mat_CUFFT;
 
@@ -22,10 +22,10 @@ typedef struct {
 #define __FUNCT__ "MatMult_SeqCUFFT"
 PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
 {
-  Mat_CUFFT     *cufft    = (Mat_CUFFT *) A->data;
-  cufftComplex  *devArray = cufft->devArray;
-  PetscInt       ndim     = cufft->ndim, *dim = cufft->dim;
-  PetscScalar   *x_array, *y_array;
+  Mat_CUFFT      *cufft    = (Mat_CUFFT*) A->data;
+  cufftComplex   *devArray = cufft->devArray;
+  PetscInt       ndim      = cufft->ndim, *dim = cufft->dim;
+  PetscScalar    *x_array, *y_array;
   cufftResult    result;
   PetscErrorCode ierr;
 
@@ -64,10 +64,10 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
 #define __FUNCT__ "MatMultTranspose_SeqCUFFT"
 PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
 {
-  Mat_CUFFT     *cufft    = (Mat_CUFFT *) A->data;
-  cufftComplex  *devArray = cufft->devArray;
-  PetscInt       ndim     = cufft->ndim, *dim = cufft->dim;
-  PetscScalar   *x_array, *y_array;
+  Mat_CUFFT      *cufft    = (Mat_CUFFT*) A->data;
+  cufftComplex   *devArray = cufft->devArray;
+  PetscInt       ndim      = cufft->ndim, *dim = cufft->dim;
+  PetscScalar    *x_array, *y_array;
   cufftResult    result;
   PetscErrorCode ierr;
 
@@ -105,7 +105,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
 #define __FUNCT__ "MatDestroy_SeqCUFFT"
 PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 {
-  Mat_CUFFT     *cufft = (Mat_CUFFT *) A->data;
+  Mat_CUFFT      *cufft = (Mat_CUFFT*) A->data;
   cufftResult    result;
   PetscErrorCode ierr;
 
@@ -139,16 +139,16 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 
   Level: intermediate
 @*/
-PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat* A)
+PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], Mat *A)
 {
-  Mat_CUFFT     *cufft;
+  Mat_CUFFT      *cufft;
   PetscInt       m, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ndim < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
   ierr = MatCreate(comm, A);CHKERRQ(ierr);
-  m = 1;
+  m    = 1;
   for (d = 0; d < ndim; ++d) {
     if (dim[d] < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
     m *= dim[d];
@@ -156,17 +156,18 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   ierr = MatSetSizes(*A, m, m, m, m);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*A, MATSEQCUFFT);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(*A, Mat_CUFFT, &cufft);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*A, Mat_CUFFT, &cufft);CHKERRQ(ierr);
   (*A)->data = (void*) cufft;
-  ierr = PetscMalloc((ndim+1)*sizeof(PetscInt), &cufft->dim);CHKERRQ(ierr);
-  ierr = PetscMemcpy(cufft->dim, dim, ndim*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr       = PetscMalloc((ndim+1)*sizeof(PetscInt), &cufft->dim);CHKERRQ(ierr);
+  ierr       = PetscMemcpy(cufft->dim, dim, ndim*sizeof(PetscInt));CHKERRQ(ierr);
+
   cufft->ndim       = ndim;
   cufft->p_forward  = 0;
   cufft->p_backward = 0;
   cufft->dim[ndim]  = m;
 
   /* GPU memory allocation */
-  cudaMalloc((void **) &cufft->devArray, sizeof(cufftComplex)*m);
+  cudaMalloc((void**) &cufft->devArray, sizeof(cufftComplex)*m);
 
   (*A)->ops->mult          = MatMult_SeqCUFFT;
   (*A)->ops->multtranspose = MatMultTranspose_SeqCUFFT;

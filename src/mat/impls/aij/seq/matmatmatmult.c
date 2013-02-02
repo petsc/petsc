@@ -8,9 +8,9 @@
 #define __FUNCT__ "MatDestroy_SeqAIJ_MatMatMatMult"
 PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  Mat_MatMatMatMult  *matmatmatmult=a->matmatmatmult;
-  PetscErrorCode     ierr;
+  Mat_SeqAIJ        *a            = (Mat_SeqAIJ*)A->data;
+  Mat_MatMatMatMult *matmatmatmult=a->matmatmatmult;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatDestroy(&matmatmatmult->BC);CHKERRQ(ierr);
@@ -41,15 +41,15 @@ PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse sca
 #define __FUNCT__ "MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
 {
-  PetscErrorCode     ierr;
-  Mat                BC;
-  Mat_MatMatMatMult  *matmatmatmult;
-  Mat_SeqAIJ         *d;
-  PetscBool          scalable=PETSC_TRUE;
+  PetscErrorCode    ierr;
+  Mat               BC;
+  Mat_MatMatMatMult *matmatmatmult;
+  Mat_SeqAIJ        *d;
+  PetscBool         scalable=PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (scalable) {
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(B,C,fill,&BC);CHKERRQ(ierr);
@@ -61,6 +61,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
   ierr = PetscNew(Mat_MatMatMatMult,&matmatmatmult);CHKERRQ(ierr);
+
   matmatmatmult->BC      = BC;
   matmatmatmult->destroy = (*D)->ops->destroy;
   d                      = (Mat_SeqAIJ*)(*D)->data;
@@ -76,9 +77,9 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D)
 {
   PetscErrorCode    ierr;
-  Mat_SeqAIJ        *d=(Mat_SeqAIJ*)D->data;
+  Mat_SeqAIJ        *d            =(Mat_SeqAIJ*)D->data;
   Mat_MatMatMatMult *matmatmatmult=d->matmatmatmult;
-  Mat               BC= matmatmatmult->BC;
+  Mat               BC            = matmatmatmult->BC;
 
   PetscFunctionBegin;
   ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);

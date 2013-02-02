@@ -13,25 +13,25 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #define NDIM 512
-    /* NDIM specifies how many rows at a time we should work with when
-     * performing the vectorized mat-vec.  This depends on various factors
-     * such as vector register length, etc., and I really need to add a
-     * way for the user (or the library) to tune this.  I'm setting it to
-     * 512 for now since that is what Ed D'Azevedo was using in his Fortran
-     * routines. */
+/* NDIM specifies how many rows at a time we should work with when
+ * performing the vectorized mat-vec.  This depends on various factors
+ * such as vector register length, etc., and I really need to add a
+ * way for the user (or the library) to tune this.  I'm setting it to
+ * 512 for now since that is what Ed D'Azevedo was using in his Fortran
+ * routines. */
 
 typedef struct {
-  PetscInt  ngroup;
+  PetscInt ngroup;
   PetscInt *xgroup;
-    /* Denotes where groups of rows with same number of nonzeros
-     * begin and end, i.e., xgroup[i] gives us the position in iperm[]
-     * where the ith group begins. */
+  /* Denotes where groups of rows with same number of nonzeros
+   * begin and end, i.e., xgroup[i] gives us the position in iperm[]
+   * where the ith group begins. */
   PetscInt *nzgroup; /*  how many nonzeros each row that is a member of group i has. */
   PetscInt *iperm;  /* The permutation vector. */
 
   /* Flag that indicates whether we need to clean up permutation
    * information during the MatDestroy. */
-  PetscBool  CleanUpAIJPERM;
+  PetscBool CleanUpAIJPERM;
 
   /* Some of this stuff is for Ed's recursive triangular solve.
    * I'm not sure what I need yet. */
@@ -57,7 +57,7 @@ PetscErrorCode  MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,M
   /* This routine is only called to convert a MATAIJPERM to its base PETSc type, */
   /* so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat            B = *newmat;
+  Mat            B       = *newmat;
   Mat_SeqAIJPERM *aijperm=(Mat_SeqAIJPERM*)A->spptr;
 
   PetscFunctionBegin;
@@ -92,7 +92,7 @@ EXTERN_C_END
 PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *) A->spptr;
+  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
 
   PetscFunctionBegin;
   /* Free everything in the Mat_SeqAIJPERM data structure.
@@ -118,8 +118,8 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
 PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *) A->spptr;
-  Mat_SeqAIJPERM *aijperm_dest = (Mat_SeqAIJPERM *) (*M)->spptr;
+  Mat_SeqAIJPERM *aijperm      = (Mat_SeqAIJPERM*) A->spptr;
+  Mat_SeqAIJPERM *aijperm_dest = (Mat_SeqAIJPERM*) (*M)->spptr;
 
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
@@ -143,21 +143,21 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
 #define __FUNCT__ "MatSeqAIJPERM_create_perm"
 PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 {
-  PetscInt        m;  /* Number of rows in the matrix. */
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)(A)->data;
-  PetscInt        *ia;  /* From the CSR representation; points to the beginning  of each row. */
-  PetscInt        maxnz; /* Maximum number of nonzeros in any row. */
-  PetscInt        *rows_in_bucket;
-    /* To construct the permutation, we sort each row into one of maxnz
-     * buckets based on how many nonzeros are in the row. */
-  PetscInt        nz;
-  PetscInt        *nz_in_row;  /* the number of nonzero elements in row k. */
-  PetscInt        *ipnz;
-    /* When constructing the iperm permutation vector,
-     * ipnz[nz] is used to point to the next place in the permutation vector
-     * that a row with nz nonzero elements should be placed.*/
+  PetscInt   m;       /* Number of rows in the matrix. */
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)(A)->data;
+  PetscInt   *ia;       /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt   maxnz;      /* Maximum number of nonzeros in any row. */
+  PetscInt   *rows_in_bucket;
+  /* To construct the permutation, we sort each row into one of maxnz
+   * buckets based on how many nonzeros are in the row. */
+  PetscInt nz;
+  PetscInt *nz_in_row;         /* the number of nonzero elements in row k. */
+  PetscInt *ipnz;
+  /* When constructing the iperm permutation vector,
+   * ipnz[nz] is used to point to the next place in the permutation vector
+   * that a row with nz nonzero elements should be placed.*/
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
-    /* Points to the MATSEQAIJPERM-specific data in the matrix B. */
+  /* Points to the MATSEQAIJPERM-specific data in the matrix B. */
   PetscErrorCode ierr;
   PetscInt       i, ngroup, istart, ipos;
 
@@ -214,14 +214,14 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   for (i=0; i<=maxnz; i++) {
     if (rows_in_bucket[i] > 0) {
       aijperm->nzgroup[ngroup] = i;
-      aijperm->xgroup[ngroup] = istart;
+      aijperm->xgroup[ngroup]  = istart;
       ngroup++;
       istart += rows_in_bucket[i];
     }
   }
 
   aijperm->xgroup[ngroup] = istart;
-  aijperm->ngroup = ngroup;
+  aijperm->ngroup         = ngroup;
 
   /* Now fill in the permutation vector iperm. */
   ipnz[0] = 0;
@@ -230,8 +230,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   }
 
   for (i=0; i<m; i++) {
-    nz = nz_in_row[i];
-    ipos = ipnz[nz];
+    nz                   = nz_in_row[i];
+    ipos                 = ipnz[nz];
     aijperm->iperm[ipos] = i;
     ipnz[nz]++;
   }
@@ -267,7 +267,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
    * are many zero rows.  If the SeqAIJ assembly end routine decides to use
    * this, this may break things.  (Don't know... haven't looked at it.) */
   a->inode.use = PETSC_FALSE;
-  ierr = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
+  ierr         = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
 
   /* Now calculate the permutation and grouping information. */
   ierr = MatSeqAIJPERM_create_perm(A);CHKERRQ(ierr);
@@ -285,27 +285,27 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   const PetscInt    *aj,*ai;
 #if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM) && defined(notworking))
-  PetscInt          i,j;
+  PetscInt i,j;
 #endif
 
   /* Variables that don't appear in MatMult_SeqAIJ. */
-  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *) A->spptr;
+  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
   PetscInt       *iperm;  /* Points to the permutation vector. */
   PetscInt       *xgroup;
-    /* Denotes where groups of rows with same number of nonzeros
-     * begin and end in iperm. */
-  PetscInt       *nzgroup;
-  PetscInt       ngroup;
-  PetscInt       igroup;
-  PetscInt       jstart,jend;
-    /* jstart is used in loops to denote the position in iperm where a
-     * group starts; jend denotes the position where it ends.
-     * (jend + 1 is where the next group starts.) */
-  PetscInt       iold,nz;
-  PetscInt       istart,iend,isize;
-  PetscInt       ipos;
-  PetscScalar    yp[NDIM];
-  PetscInt       ip[NDIM]; /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
+  /* Denotes where groups of rows with same number of nonzeros
+   * begin and end in iperm. */
+  PetscInt *nzgroup;
+  PetscInt ngroup;
+  PetscInt igroup;
+  PetscInt jstart,jend;
+  /* jstart is used in loops to denote the position in iperm where a
+   * group starts; jend denotes the position where it ends.
+   * (jend + 1 is where the next group starts.) */
+  PetscInt    iold,nz;
+  PetscInt    istart,iend,isize;
+  PetscInt    ipos;
+  PetscScalar yp[NDIM];
+  PetscInt    ip[NDIM];    /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -314,14 +314,14 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  aj  = a->j;    /* aj[k] gives column index for element aa[k]. */
-  aa  = a->a;  /* Nonzero elements stored row-by-row. */
-  ai  = a->i;   /* ai[k] is the position in aa and aj where row k starts. */
+  aj   = a->j;   /* aj[k] gives column index for element aa[k]. */
+  aa   = a->a; /* Nonzero elements stored row-by-row. */
+  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Get the info we need about the permutations and groupings. */
-  iperm  = aijperm->iperm;
-  ngroup = aijperm->ngroup;
-  xgroup = aijperm->xgroup;
+  iperm   = aijperm->iperm;
+  ngroup  = aijperm->ngroup;
+  xgroup  = aijperm->xgroup;
   nzgroup = aijperm->nzgroup;
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM) && defined(notworking)
@@ -341,8 +341,8 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
       }
     } else if (nz == 1) {
       for (i=jstart; i<=jend; i++) {
-        iold = iperm[i];
-        ipos = ai[iold];
+        iold    = iperm[i];
+        ipos    = ai[iold];
         y[iold] = aa[ipos] * x[aj[ipos]];
       }
     } else {
@@ -354,7 +354,9 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
         /* Figure out where the chunk of 'isize' rows ends in iperm.
          * 'isize may of course be less than NDIM for the last chunk. */
         iend = istart + (NDIM - 1);
-        if (iend > jend) { iend = jend; }
+
+        if (iend > jend) iend = jend;
+
         isize = iend - istart + 1;
 
         /* Initialize the yp[] array that will be used to hold part of
@@ -362,9 +364,9 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
          * row of the chunk will begin. */
         for (i=0; i<isize; i++) {
           iold = iperm[istart + i];
-            /* iold is a row number from the matrix A *before* reordering. */
+          /* iold is a row number from the matrix A *before* reordering. */
           ip[i] = ai[iold];
-            /* ip[i] tells us where the ith row of the chunk begins in aa. */
+          /* ip[i] tells us where the ith row of the chunk begins in aa. */
           yp[i] = (PetscScalar) 0.0;
         }
 
@@ -380,17 +382,17 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
 #pragma _CRI prefervector
 #endif
             for (j=0; j<nz; j++) {
-              ipos = ip[i] + j;
+              ipos   = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
           }
         } else {
-        /* Otherwise, there are enough rows in the chunk to make it
-         * worthwhile to vectorize across the rows, that is, to do the
-         * matvec by operating with "columns" of the chunk. */
+          /* Otherwise, there are enough rows in the chunk to make it
+           * worthwhile to vectorize across the rows, that is, to do the
+           * matvec by operating with "columns" of the chunk. */
           for (j=0; j<nz; j++) {
             for (i=0; i<isize; i++) {
-              ipos = ip[i] + j;
+              ipos   = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
           }
@@ -432,29 +434,29 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
   PetscErrorCode    ierr;
   const PetscInt    *aj,*ai;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJPERM)
-  PetscInt          i,j;
+  PetscInt i,j;
 #endif
 
   /* Variables that don't appear in MatMultAdd_SeqAIJ. */
-  Mat_SeqAIJPERM *  aijperm;
-  PetscInt         *iperm;  /* Points to the permutation vector. */
-  PetscInt         *xgroup;
-    /* Denotes where groups of rows with same number of nonzeros
-     * begin and end in iperm. */
-  PetscInt         *nzgroup;
-  PetscInt         ngroup;
-  PetscInt         igroup;
-  PetscInt         jstart,jend;
-    /* jstart is used in loops to denote the position in iperm where a
-     * group starts; jend denotes the position where it ends.
-     * (jend + 1 is where the next group starts.) */
-  PetscInt         iold,nz;
-  PetscInt         istart,iend,isize;
-  PetscInt         ipos;
-  PetscScalar      yp[NDIM];
-  PetscInt         ip[NDIM];
-    /* yp[] and ip[] are treated as vector "registers" for performing
-     * the mat-vec. */
+  Mat_SeqAIJPERM * aijperm;
+  PetscInt       *iperm;    /* Points to the permutation vector. */
+  PetscInt       *xgroup;
+  /* Denotes where groups of rows with same number of nonzeros
+   * begin and end in iperm. */
+  PetscInt *nzgroup;
+  PetscInt ngroup;
+  PetscInt igroup;
+  PetscInt jstart,jend;
+  /* jstart is used in loops to denote the position in iperm where a
+   * group starts; jend denotes the position where it ends.
+   * (jend + 1 is where the next group starts.) */
+  PetscInt    iold,nz;
+  PetscInt    istart,iend,isize;
+  PetscInt    ipos;
+  PetscScalar yp[NDIM];
+  PetscInt    ip[NDIM];
+  /* yp[] and ip[] are treated as vector "registers" for performing
+   * the mat-vec. */
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -469,15 +471,15 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
     w = y;
   }
 
-  aj  = a->j;  /* aj[k] gives column index for element aa[k]. */
-  aa  = a->a;  /* Nonzero elements stored row-by-row. */
-  ai  = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
+  aj = a->j;   /* aj[k] gives column index for element aa[k]. */
+  aa = a->a;   /* Nonzero elements stored row-by-row. */
+  ai = a->i;   /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Get the info we need about the permutations and groupings. */
-  aijperm = (Mat_SeqAIJPERM *) A->spptr;
-  iperm = aijperm->iperm;
-  ngroup = aijperm->ngroup;
-  xgroup = aijperm->xgroup;
+  aijperm = (Mat_SeqAIJPERM*) A->spptr;
+  iperm   = aijperm->iperm;
+  ngroup  = aijperm->ngroup;
+  xgroup  = aijperm->xgroup;
   nzgroup = aijperm->nzgroup;
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJPERM)
@@ -486,7 +488,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 
   for (igroup=0; igroup<ngroup; igroup++) {
     jstart = xgroup[igroup];
-    jend = xgroup[igroup+1] - 1;
+    jend   = xgroup[igroup+1] - 1;
 
     nz = nzgroup[igroup];
 
@@ -494,14 +496,14 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
      * in the group is either 0 or 1. */
     if (nz == 0) {
       for (i=jstart; i<=jend; i++) {
-        iold = iperm[i];
+        iold    = iperm[i];
         y[iold] = w[iold];
       }
     }
     else if (nz == 1) {
       for (i=jstart; i<=jend; i++) {
-        iold = iperm[i];
-        ipos = ai[iold];
+        iold    = iperm[i];
+        ipos    = ai[iold];
         y[iold] = w[iold] + aa[ipos] * x[aj[ipos]];
       }
     }
@@ -515,7 +517,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
         /* Figure out where the chunk of 'isize' rows ends in iperm.
          * 'isize may of course be less than NDIM for the last chunk. */
         iend = istart + (NDIM - 1);
-        if (iend > jend) { iend = jend; }
+        if (iend > jend) iend = jend;
         isize = iend - istart + 1;
 
         /* Initialize the yp[] array that will be used to hold part of
@@ -523,9 +525,9 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
          * row of the chunk will begin. */
         for (i=0; i<isize; i++) {
           iold = iperm[istart + i];
-            /* iold is a row number from the matrix A *before* reordering. */
+          /* iold is a row number from the matrix A *before* reordering. */
           ip[i] = ai[iold];
-            /* ip[i] tells us where the ith row of the chunk begins in aa. */
+          /* ip[i] tells us where the ith row of the chunk begins in aa. */
           yp[i] = w[iold];
         }
 
@@ -541,7 +543,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 #pragma _CRI prefervector
 #endif
             for (j=0; j<nz; j++) {
-              ipos = ip[i] + j;
+              ipos   = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
           }
@@ -552,7 +554,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
         else {
           for (j=0; j<nz; j++) {
             for (i=0; i<isize; i++) {
-              ipos = ip[i] + j;
+              ipos   = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
           }
@@ -599,8 +601,8 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,M
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_SeqAIJPERM,&aijperm);CHKERRQ(ierr);
-  B->spptr = (void *) aijperm;
+  ierr     = PetscNewLog(B,Mat_SeqAIJPERM,&aijperm);CHKERRQ(ierr);
+  B->spptr = (void*) aijperm;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_SeqAIJPERM;
@@ -616,7 +618,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,M
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaijperm_seqaij_C","MatConvert_SeqAIJPERM_SeqAIJ",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
+  ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

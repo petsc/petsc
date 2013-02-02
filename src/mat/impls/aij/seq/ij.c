@@ -48,7 +48,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
-      if (col > row) { break;}
+      if (col > row) break;
       if (col != row) ia[row+1]++;
       ia[col+1]++;
     }
@@ -57,7 +57,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
   /* shiftin ia[i] to point to next row */
   for (i=1; i<m+1; i++) {
     row       = ia[i-1];
-    ia[i]     += row;
+    ia[i]    += row;
     work[i-1] = row - shiftout;
   }
 
@@ -72,8 +72,8 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
-      if (col > row) { break;}
-      if (col != row) {ja[work[col]++] = row + shiftout; }
+      if (col > row) break;
+      if (col != row) ja[work[col]++] = row + shiftout;
       ja[work[row]++] = col + shiftout;
     }
   }

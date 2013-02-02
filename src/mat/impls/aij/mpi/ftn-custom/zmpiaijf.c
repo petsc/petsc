@@ -20,14 +20,12 @@ void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_
   *iic  = PetscIntAddressToFortran(ic,(PetscInt*)i);
 }
 
-void PETSC_STDCALL matcreateaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,
-         PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,Mat *newmat,PetscErrorCode *ierr)
+void PETSC_STDCALL matcreateaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
 
-  *ierr = MatCreateAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),
-                             *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
+  *ierr = MatCreateAIJ(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 
 void PETSC_STDCALL matmpiaijsetpreallocation_(Mat *mat,PetscInt *d_nz,PetscInt *d_nnz,PetscInt *o_nz,PetscInt *o_nnz,PetscErrorCode *ierr)

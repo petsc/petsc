@@ -8,26 +8,26 @@
 #define __FUNCT__ "SPARSEPACKrevrse"
 PetscErrorCode SPARSEPACKrevrse(const PetscInt *n,PetscInt *perm)
 {
-    /* System generated locals */
-    PetscInt i__1;
+  /* System generated locals */
+  PetscInt i__1;
 
-    /* Local variables */
-    PetscInt swap,i,m,in;
+  /* Local variables */
+  PetscInt swap,i,m,in;
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --perm;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --perm;
 
-    in = *n;
-    m = *n / 2;
-    i__1 = m;
-    for (i = 1; i <= i__1; ++i) {
-        swap = perm[i];
-        perm[i] = perm[in];
-        perm[in] = swap;
-        --in;
-    }
-    PetscFunctionReturn(0);
+  in   = *n;
+  m    = *n / 2;
+  i__1 = m;
+  for (i = 1; i <= i__1; ++i) {
+    swap     = perm[i];
+    perm[i]  = perm[in];
+    perm[in] = swap;
+    --in;
+  }
+  PetscFunctionReturn(0);
 }
 
 
@@ -59,50 +59,43 @@ PetscErrorCode SPARSEPACKrevrse(const PetscInt *n,PetscInt *perm)
 #define __FUNCT__ "SPARSEPACKgennd"
 PetscErrorCode SPARSEPACKgennd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask,PetscInt *perm,PetscInt *xls,PetscInt *ls)
 {
-    /* System generated locals */
-    PetscInt i__1;
+  /* System generated locals */
+  PetscInt i__1;
 
-    /* Local variables */
-    PetscInt nsep,root,i;
-    PetscInt num;
+  /* Local variables */
+  PetscInt nsep,root,i;
+  PetscInt num;
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --ls;
-    --xls;
-    --perm;
-    --mask;
-    --adjncy;
-    --xadj;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --ls;
+  --xls;
+  --perm;
+  --mask;
+  --adjncy;
+  --xadj;
 
-    i__1 = *neqns;
-    for (i = 1; i <= i__1; ++i) {
-        mask[i] = 1;
-    }
-    num = 0;
-    i__1 = *neqns;
-    for (i = 1; i <= i__1; ++i) {
+  i__1 = *neqns;
+  for (i = 1; i <= i__1; ++i) mask[i] = 1;
+  num  = 0;
+  i__1 = *neqns;
+  for (i = 1; i <= i__1; ++i) {
 /*           FOR EACH MASKED COMPONENT ...*/
 L200:
-        if (!mask[i]) {
-            goto L300;
-        }
-        root = i;
+    if (!mask[i]) goto L300;
+    root = i;
 /*              FIND A SEPARATOR AND NUMBER THE NODES NEXT.*/
-        SPARSEPACKfndsep(&root,&xadj[1],&adjncy[1],&mask[1],&nsep,&perm[num + 1],
-                &xls[1],&ls[1]);
-        num += nsep;
-        if (num >= *neqns) {
-            goto L400;
-        }
-        goto L200;
+    SPARSEPACKfndsep(&root,&xadj[1],&adjncy[1],&mask[1],&nsep,&perm[num + 1],&xls[1],&ls[1]);
+    num += nsep;
+    if (num >= *neqns) goto L400;
+    goto L200;
 L300:
-        ;
-    }
+    ;
+  }
 /*        SINCE SEPARATORS FOUND FIRST SHOULD BE ORDERED*/
 /*        LAST, ROUTINE REVRSE IS CALLED TO ADJUST THE*/
 /*        ORDERING VECTOR.*/
 L400:
-    SPARSEPACKrevrse(neqns,&perm[1]);
-    PetscFunctionReturn(0);
+  SPARSEPACKrevrse(neqns,&perm[1]);
+  PetscFunctionReturn(0);
 }

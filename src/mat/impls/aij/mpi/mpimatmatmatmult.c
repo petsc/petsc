@@ -8,9 +8,9 @@
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
 {
-  Mat_MPIAIJ         *a = (Mat_MPIAIJ*)A->data;
-  Mat_MatMatMatMult  *matmatmatmult=a->matmatmatmult;
-  PetscErrorCode     ierr;
+  Mat_MPIAIJ        *a            = (Mat_MPIAIJ*)A->data;
+  Mat_MatMatMatMult *matmatmatmult=a->matmatmatmult;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatDestroy(&matmatmatmult->BC);CHKERRQ(ierr);
@@ -41,11 +41,11 @@ PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,MatReuse sca
 #define __FUNCT__ "MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
 {
-  PetscErrorCode     ierr;
-  Mat                BC;
-  Mat_MatMatMatMult  *matmatmatmult;
-  Mat_MPIAIJ         *d;
-  PetscBool          scalable=PETSC_TRUE;
+  PetscErrorCode    ierr;
+  Mat               BC;
+  Mat_MatMatMatMult *matmatmatmult;
+  Mat_MPIAIJ        *d;
+  PetscBool         scalable=PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
@@ -61,6 +61,7 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
   ierr = PetscNew(Mat_MatMatMatMult,&matmatmatmult);CHKERRQ(ierr);
+
   matmatmatmult->BC      = BC;
   matmatmatmult->destroy = (*D)->ops->destroy;
   d                      = (Mat_MPIAIJ*)(*D)->data;
@@ -76,9 +77,9 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
 PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D)
 {
   PetscErrorCode    ierr;
-  Mat_MPIAIJ        *d=(Mat_MPIAIJ*)D->data;
-  Mat_MatMatMatMult *matmatmatmult=d->matmatmatmult;
-  Mat               BC= matmatmatmult->BC;
+  Mat_MPIAIJ        *d             = (Mat_MPIAIJ*)D->data;
+  Mat_MatMatMatMult *matmatmatmult = d->matmatmatmult;
+  Mat               BC             = matmatmatmult->BC;
 
   PetscFunctionBegin;
   ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);

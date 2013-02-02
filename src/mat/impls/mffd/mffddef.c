@@ -64,10 +64,10 @@ typedef struct {
 */
 static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscBool  *zeroa)
 {
-  MatMFFD_DS      *hctx = (MatMFFD_DS*)ctx->hctx;
-  PetscReal        nrm,sum,umin = hctx->umin;
-  PetscScalar      dot;
-  PetscErrorCode   ierr;
+  MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
+  PetscReal      nrm,sum,umin = hctx->umin;
+  PetscScalar    dot;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
@@ -117,9 +117,9 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
 */
 static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 {
-  MatMFFD_DS       *hctx = (MatMFFD_DS *)ctx->hctx;
-  PetscErrorCode   ierr;
-  PetscBool        iascii;
+  MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   /*
@@ -146,8 +146,8 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 */
 static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx)
 {
-  PetscErrorCode   ierr;
-  MatMFFD_DS       *hctx = (MatMFFD_DS*)ctx->hctx;
+  PetscErrorCode ierr;
+  MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Finite difference matrix free parameters");CHKERRQ(ierr);
@@ -186,12 +186,12 @@ EXTERN_C_BEGIN
 */
 PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
 {
-  MatMFFD     ctx = (MatMFFD)mat->data;
+  MatMFFD    ctx = (MatMFFD)mat->data;
   MatMFFD_DS *hctx;
 
   PetscFunctionBegin;
   if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
-  hctx = (MatMFFD_DS*)ctx->hctx;
+  hctx       = (MatMFFD_DS*)ctx->hctx;
   hctx->umin = umin;
   PetscFunctionReturn(0);
 }
@@ -258,13 +258,13 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreateMFFD_DS"
 PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
 {
-  MatMFFD_DS       *hctx;
-  PetscErrorCode   ierr;
+  MatMFFD_DS     *hctx;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  ierr       = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
-  ctx->hctx  = (void*)hctx;
+  ierr      = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
+  ctx->hctx = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;
 
@@ -275,8 +275,8 @@ PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",
-                            "MatMFFDDSSetUmin_DS",
-                             MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
+                                           "MatMFFDDSSetUmin_DS",
+                                           MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

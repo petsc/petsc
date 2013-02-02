@@ -8,21 +8,21 @@
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
 #define SEQAIJHEADER(datatype)        \
-  PetscBool         roworiented;      /* if true, row-oriented input, default */\
-  PetscInt          nonew;            /* 1 don't add new nonzeros, -1 generate error on new */\
-  PetscInt          nounused;         /* -1 generate error on unused space */\
-  PetscBool         singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */\
-  PetscInt          maxnz;            /* allocated nonzeros */\
-  PetscInt          *imax;            /* maximum space allocated for each row */\
-  PetscInt          *ilen;            /* actual length of each row */\
-  PetscBool         free_imax_ilen;  \
-  PetscInt          reallocs;         /* number of mallocs done during MatSetValues() \
+  PetscBool roworiented;              /* if true, row-oriented input, default */ \
+  PetscInt  nonew;                    /* 1 don't add new nonzeros, -1 generate error on new */ \
+  PetscInt  nounused;                 /* -1 generate error on unused space */ \
+  PetscBool singlemalloc;             /* if true a, i, and j have been obtained with one big malloc */ \
+  PetscInt  maxnz;                    /* allocated nonzeros */ \
+  PetscInt  *imax;                    /* maximum space allocated for each row */ \
+  PetscInt  *ilen;                    /* actual length of each row */ \
+  PetscBool free_imax_ilen;  \
+  PetscInt  reallocs;                 /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */\
-  PetscInt          rmax;             /* max nonzeros in any row */\
-  PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/\
+  PetscInt          rmax;             /* max nonzeros in any row */ \
+  PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/ \
   PetscBool         ignorezeroentries; \
-  PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */\
-  Mat               XtoY;             /* used by MatAXPY() */\
+  PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */ \
+  Mat               XtoY;             /* used by MatAXPY() */ \
   PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
   PetscBool         free_a;           /* free the numerical values when matrix is destroy */ \
   Mat_CompressedRow compressedrow;    /* use compressed row format */                      \
@@ -39,16 +39,16 @@
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */
 
 typedef struct {
-  MatTransposeColoring      matcoloring;
-  Mat                       Bt_den;  /* dense matrix of B^T */
-  Mat                       ABt_den; /* dense matrix of A*B^T */
-  PetscBool                 usecoloring;
+  MatTransposeColoring matcoloring;
+  Mat                  Bt_den;       /* dense matrix of B^T */
+  Mat                  ABt_den;      /* dense matrix of A*B^T */
+  PetscBool            usecoloring;
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatTransMult;
 
 typedef struct {
-  PetscInt       *api,*apj;    /* symbolic structure of A*P */
-  PetscScalar    *apa;         /* temporary array for storing one row of A*P */
+  PetscInt    *api,*apj;       /* symbolic structure of A*P */
+  PetscScalar *apa;            /* temporary array for storing one row of A*P */
   PetscErrorCode (*destroy)(Mat);
 } Mat_PtAP;
 
@@ -61,7 +61,7 @@ typedef struct {
 } Mat_RARt;
 
 typedef struct {
-  Mat            BC;    /* temp matrix for storing B*C */
+  Mat BC;               /* temp matrix for storing B*C */
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatMatMult;
 
@@ -74,16 +74,16 @@ typedef struct {
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
-  MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatSOR_SeqAIJ_Inode() */
-  PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
-  PetscBool   ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
+  MatScalar *bdiag,*ibdiag,*ssor_work;        /* diagonal blocks of matrix used for MatSOR_SeqAIJ_Inode() */
+  PetscInt  bdiagsize;                         /* length of bdiag and ibdiag */
+  PetscBool ibdiagvalid;                       /* do ibdiag[] and bdiag[] contain the most recent values */
 
-  PetscBool  use;
-  PetscInt   node_count;                    /* number of inodes */
-  PetscInt   *size;                         /* size of each inode */
-  PetscInt   limit;                         /* inode limit */
-  PetscInt   max_limit;                     /* maximum supported inode limit */
-  PetscBool  checked;                       /* if inodes have been checked for */
+  PetscBool use;
+  PetscInt  node_count;                     /* number of inodes */
+  PetscInt  *size;                          /* size of each inode */
+  PetscInt  limit;                          /* inode limit */
+  PetscInt  max_limit;                      /* maximum supported inode limit */
+  PetscBool checked;                        /* if inodes have been checked for */
 } Mat_SeqAIJ_Inode;
 
 extern PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
@@ -101,16 +101,16 @@ typedef struct {
   Mat_SeqAIJ_Inode inode;
   MatScalar        *saved_values;             /* location for stashing nonzero values of matrix */
 
-  PetscScalar      *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
-  PetscBool        idiagvalid;                     /* current idiag[] and mdiag[] are valid */
-  PetscScalar      *ibdiag;                   /* inverses of block diagonals */
-  PetscBool        ibdiagvalid;               /* inverses of block diagonals are valid. */
-  PetscScalar      fshift,omega;                   /* last used omega and fshift */
+  PetscScalar *idiag,*mdiag,*ssor_work;       /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
+  PetscBool   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
+  PetscScalar *ibdiag;                        /* inverses of block diagonals */
+  PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
+  PetscScalar fshift,omega;                   /* last used omega and fshift */
 
-  ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
+  ISColoring coloring;                        /* set with MatADSetColoring() used by MatADSetValues() */
 
-  PetscScalar      *matmult_abdense;     /* used by MatMatMult() */
-  Mat_PtAP         *ptap;                /* used by MatPtAP() */
+  PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
+  Mat_PtAP          *ptap;               /* used by MatPtAP() */
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
 } Mat_SeqAIJ;
 
@@ -137,37 +137,37 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     This is a macro because it takes the datatype as an argument which can be either a Mat or a MatScalar
 */
 #define MatSeqXAIJReallocateAIJ(Amat,AM,BS2,NROW,ROW,COL,RMAX,AA,AI,AJ,RP,AP,AIMAX,NONEW,datatype) \
-  if (NROW >= RMAX) {\
-        Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data;\
-        /* there is no extra room in row, therefore enlarge */ \
-        PetscInt   CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
-        datatype   *new_a; \
+  if (NROW >= RMAX) { \
+    Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data; \
+    /* there is no extra room in row, therefore enlarge */ \
+    PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
+    datatype *new_a; \
  \
-        if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
-        /* malloc new storage space */ \
-        ierr = PetscMalloc3(BS2*new_nz,datatype,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
+    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
+    /* malloc new storage space */ \
+    ierr = PetscMalloc3(BS2*new_nz,datatype,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr); \
  \
-        /* copy over old data into new slots */ \
-        for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
-        for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-        ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(datatype));CHKERRQ(ierr); \
-        ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(datatype));CHKERRQ(ierr);\
-        ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(datatype));CHKERRQ(ierr);  \
-        /* free up old matrix storage */ \
-        ierr = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr);\
-        AA = new_a; \
-        Ain->a = (MatScalar*) new_a;                   \
-        AI = Ain->i = new_i; AJ = Ain->j = new_j;  \
-        Ain->singlemalloc = PETSC_TRUE; \
+    /* copy over old data into new slots */ \
+    for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
+    for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
+    ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
+    len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
+    ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
+    ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(datatype));CHKERRQ(ierr); \
+    ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(datatype));CHKERRQ(ierr); \
+    ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(datatype));CHKERRQ(ierr);  \
+    /* free up old matrix storage */ \
+    ierr              = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr); \
+    AA                = new_a; \
+    Ain->a            = (MatScalar*) new_a;                   \
+    AI                = Ain->i = new_i; AJ = Ain->j = new_j;  \
+    Ain->singlemalloc = PETSC_TRUE; \
  \
-        RP          = AJ + AI[ROW]; AP = AA + BS2*AI[ROW]; \
-        RMAX        = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
-        Ain->maxnz += BS2*CHUNKSIZE; \
-        Ain->reallocs++; \
-      } \
+    RP          = AJ + AI[ROW]; AP = AA + BS2*AI[ROW]; \
+    RMAX        = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
+    Ain->maxnz += BS2*CHUNKSIZE; \
+    Ain->reallocs++; \
+  } \
 
 
 EXTERN_C_BEGIN
@@ -185,7 +185,7 @@ extern PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat,Mat,const MatF
 extern PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat,const MatFactorInfo*);
 extern PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
 extern PetscErrorCode MatCopy_SeqAIJ(Mat,Mat,MatStructure);
-extern PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscBool *,PetscInt*);
+extern PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscBool*,PetscInt*);
 extern PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 extern PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat,PetscInt*,PetscInt**);
 
@@ -266,10 +266,10 @@ extern PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt
 extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 extern PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 extern PetscErrorCode MatAXPY_SeqAIJ(Mat,PetscScalar,Mat,MatStructure);
-extern PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool  *);
-extern PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,const PetscInt *[],const PetscInt *[],PetscBool  *);
-extern PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool  *);
-extern PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool ,PetscBool ,PetscInt *,const PetscInt *[],const PetscInt *[],PetscBool  *);
+extern PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
+extern PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
+extern PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
+extern PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
 extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
 extern PetscErrorCode MatSetUp_SeqAIJ(Mat);
 extern PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
@@ -282,16 +282,16 @@ extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool);
 extern PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
-extern PetscErrorCode  MatMatMult_SeqDense_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode  MatRARt_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
+extern PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
+extern PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
-extern PetscErrorCode  MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
-extern PetscErrorCode  MatDestroy_SeqAIJ(Mat);
+extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
+extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
 
 
 /*
@@ -314,29 +314,29 @@ extern PetscErrorCode  MatDestroy_SeqAIJ(Mat);
 
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
-#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
-if (nnz > 0) {\
-switch (nnz & 0x3) {\
-case 3: sum -= *xv++ * r[*xi++];\
-case 2: sum -= *xv++ * r[*xi++];\
-case 1: sum -= *xv++ * r[*xi++];\
-nnz -= 4;}\
-while (nnz > 0) {\
-sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] -\
-        xv[2] * r[xi[2]] - xv[3] * r[xi[3]];\
-xv  += 4; xi += 4; nnz -= 4; }}}
+#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
+    if (nnz > 0) { \
+      switch (nnz & 0x3) { \
+      case 3: sum -= *xv++ *r[*xi++]; \
+      case 2: sum -= *xv++ *r[*xi++]; \
+      case 1: sum -= *xv++ *r[*xi++]; \
+        nnz       -= 4;} \
+      while (nnz > 0) { \
+        sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] - \
+               xv[2] * r[xi[2]] - xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
-#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
-PetscInt __i,__i1,__i2;\
-for (__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
-sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
-if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
+#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
+    PetscInt __i,__i1,__i2; \
+    for (__i=0; __i<nnz-1; __i+=2) {__i1 = xi[__i]; __i2=xi[__i+1]; \
+                                    sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);} \
+    if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
 
 #else
-#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
-PetscInt __i;\
-for (__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
+#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) { \
+    PetscInt __i; \
+    for (__i=0; __i<nnz; __i++) sum -= xv[__i] * r[xi[__i]];}
 #endif
 
 
@@ -361,29 +361,29 @@ for (__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
-#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
-if (nnz > 0) {\
-switch (nnz & 0x3) {\
-case 3: sum += *xv++ * r[*xi++];\
-case 2: sum += *xv++ * r[*xi++];\
-case 1: sum += *xv++ * r[*xi++];\
-nnz -= 4;}\
-while (nnz > 0) {\
-sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] +\
-        xv[2] * r[xi[2]] + xv[3] * r[xi[3]];\
-xv  += 4; xi += 4; nnz -= 4; }}}
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
+    if (nnz > 0) { \
+      switch (nnz & 0x3) { \
+      case 3: sum += *xv++ *r[*xi++]; \
+      case 2: sum += *xv++ *r[*xi++]; \
+      case 1: sum += *xv++ *r[*xi++]; \
+        nnz       -= 4;} \
+      while (nnz > 0) { \
+        sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + \
+               xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+        xv += 4; xi += 4; nnz -= 4; }}}
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
-#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
-PetscInt __i,__i1,__i2;\
-for (__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
-sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
-if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
+    PetscInt __i,__i1,__i2; \
+    for (__i=0; __i<nnz-1; __i+=2) {__i1 = xi[__i]; __i2=xi[__i+1]; \
+                                    sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);} \
+    if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
 #else
-#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
- PetscInt __i;\
-for (__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) { \
+    PetscInt __i; \
+    for (__i=0; __i<nnz; __i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
 #endif

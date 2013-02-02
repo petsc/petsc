@@ -8,23 +8,23 @@
 #define __FUNCT__ "MatSetUpMultiply_MPIAIJ"
 PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 {
-  Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);
-  PetscErrorCode     ierr;
-  PetscInt           i,j,*aj = B->j,ec = 0,*garray;
-  IS                 from,to;
-  Vec                gvec;
-  PetscBool          useblockis;
-#if defined (PETSC_USE_CTABLE)
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ     *B   = (Mat_SeqAIJ*)(aij->B->data);
+  PetscErrorCode ierr;
+  PetscInt       i,j,*aj = B->j,ec = 0,*garray;
+  IS             from,to;
+  Vec            gvec;
+  PetscBool      useblockis;
+#if defined(PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
   PetscInt           gid,lid;
 #else
-  PetscInt           N = mat->cmap->N,*indices;
+  PetscInt N = mat->cmap->N,*indices;
 #endif
 
   PetscFunctionBegin;
-#if defined (PETSC_USE_CTABLE)
+#if defined(PETSC_USE_CTABLE)
   /* use a table */
   ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n; i++) {
@@ -56,11 +56,12 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     for (j=0; j<B->ilen[i]; j++) {
       PetscInt gid1 = aj[B->i[i] + j] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
-      lid --;
-      aj[B->i[i] + j]  = lid;
+      lid--;
+      aj[B->i[i] + j] = lid;
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
+
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
@@ -70,14 +71,14 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = PetscMemzero(indices,N*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      if (!indices[aj[B->i[i] + j] ]) ec++;
-      indices[aj[B->i[i] + j] ] = 1;
+      if (!indices[aj[B->i[i] + j]]) ec++;
+      indices[aj[B->i[i] + j]] = 1;
     }
   }
 
   /* form array of columns we need */
   ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-  ec = 0;
+  ec   = 0;
   for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
   }
@@ -94,6 +95,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
+
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif
@@ -123,14 +125,14 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
 #if defined(PETSC_USE_DEBUG)
-  i = (PetscInt)useblockis;
+  i    = (PetscInt)useblockis;
   ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,((PetscObject)mat)->comm);CHKERRQ(ierr);
   if (j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
 #endif
 
   if (useblockis) {
     PetscInt *ga,bs = mat->cmap->bs,iec = ec/bs;
-    if (ec%bs)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ec=%D bs=%D",ec,bs);
+    if (ec%bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ec=%D bs=%D",ec,bs);
     ierr = PetscInfo(mat,"Using block index set to define scatter\n");CHKERRQ(ierr);
     ierr = PetscMalloc(iec*sizeof(PetscInt),&ga);CHKERRQ(ierr);
     for (i=0; i<iec; i++) ga[i] = garray[i*bs]/bs;
@@ -151,7 +153,9 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = PetscLogObjectParent(mat,aij->lvec);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+
   aij->garray = garray;
+
   ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -173,8 +177,8 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 */
 PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 {
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
-  Mat            B = aij->B,Bnew;
+  Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)A->data;
+  Mat            B     = aij->B,Bnew;
   Mat_SeqAIJ     *Baij = (Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
   PetscInt       i,j,m = B->rmap->n,n = A->cmap->N,col,ct = 0,*garray = aij->garray,*nz,ec;
@@ -186,7 +190,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
   if (aij->colmap) {
-#if defined (PETSC_USE_CTABLE)
+#if defined(PETSC_USE_CTABLE)
     ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
@@ -208,7 +212,9 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = MatSetBlockSizes(Bnew,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
+
   ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew; /* Inherit insertion error options. */
+
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=Baij->i[i]; j<Baij->i[i+1]; j++) {
@@ -221,16 +227,16 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   ierr = PetscLogObjectMemory(A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(A,Bnew);CHKERRQ(ierr);
-  aij->B = Bnew;
+
+  aij->B           = Bnew;
   A->was_assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 /*      ugly stuff added for Glenn someday we should fix this up */
 
-static PetscInt *auglyrmapd = 0,*auglyrmapo = 0;  /* mapping from the local ordering to the "diagonal" and "off-diagonal"
-                                      parts of the local matrix */
-static Vec auglydd = 0,auglyoo = 0;   /* work vectors used to scale the two parts of the local matrix */
+static PetscInt *auglyrmapd = 0,*auglyrmapo = 0; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
+static Vec auglydd          = 0,auglyoo     = 0; /* work vectors used to scale the two parts of the local matrix */
 
 
 #undef __FUNCT__

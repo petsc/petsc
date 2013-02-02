@@ -520,7 +520,7 @@
             <ul>
               <li>--with-blas-lapack-lib=libsunperf.a</li>
               <li>--with-blas-lib=libblas.a --with-lapack-lib=liblapack.a</li>
-              <li>--with-blas-lapack-dir=opt/intel/mkl72</li>
+              <li>--with-blas-lapack-dir=/soft/com/packages/intel/13/079/mkl</li>
             </ul>
           </li>
         </ul>
@@ -528,7 +528,16 @@
         <b>Notes:</b>
 
         <ul>
-          <li>
+          <li> <h4> Intel MKL</h4>
+            Intel provides blas/lapack via  <a href="http://software.intel.com/en-us/intel-mkl">MKL</a> library.
+            It usually works from GNU/Intel compilers on linux and MS/Intel compilers on Windows.
+            One can specify it to PETSc configure with for eg: <code>--with-blas-lapack-dir=/soft/com/packages/intel/13/079/mkl</code>
+            <br>
+            If the above option does not work - one could determine the correct library list for your compilers using
+            <a href="http://software.intel.com/sites/products/mkl/">Intel MKL Link Line Advisor</a>
+               and specify with the configure option <code>--with-blas-lapack-lib</code>
+          </li>
+          <li> <h4>IBM ESSL</h4>
             Sadly, IBM's ESSL does not have all the routines of BLAS and LAPACK
             that some packages, such as SuperLU expect; in particular slamch,
             dlamch and xerbla. In this case instead of using ESSL we suggest

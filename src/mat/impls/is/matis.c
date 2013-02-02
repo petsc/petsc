@@ -38,7 +38,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
 PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  Mat_IS         *is = (Mat_IS*)A->data;
+  Mat_IS         *is  = (Mat_IS*)A->data;
   PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
@@ -149,8 +149,8 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   if (is->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   PetscCheckSameComm(A,1,rmapping,2);
   if (rmapping != cmapping) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
-  ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
+  ierr        = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
+  ierr        = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
   is->mapping = rmapping;
 
   /* Create the local matrix A */
@@ -183,18 +183,18 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   PetscFunctionReturn(0);
 }
 
-#define ISG2LMapApply(mapping,n,in,out) 0;\
-  if (!(mapping)->globals) {\
-   PetscErrorCode _ierr = ISGlobalToLocalMappingApply((mapping),IS_GTOLM_MASK,0,0,0,0);CHKERRQ(_ierr);\
-  }\
-  {\
-    PetscInt _i,*_globals = (mapping)->globals,_start = (mapping)->globalstart,_end = (mapping)->globalend;\
-    for (_i=0; _i<n; _i++) {\
-      if (in[_i] < 0)           out[_i] = in[_i];\
-      else if (in[_i] < _start) out[_i] = -1;\
-      else if (in[_i] > _end)   out[_i] = -1;\
-      else                      out[_i] = _globals[in[_i] - _start];\
-    }\
+#define ISG2LMapApply(mapping,n,in,out) 0; \
+  if (!(mapping)->globals) { \
+    PetscErrorCode _ierr = ISGlobalToLocalMappingApply((mapping),IS_GTOLM_MASK,0,0,0,0);CHKERRQ(_ierr); \
+  } \
+  { \
+    PetscInt _i,*_globals = (mapping)->globals,_start = (mapping)->globalstart,_end = (mapping)->globalend; \
+    for (_i=0; _i<n; _i++) { \
+      if (in[_i] < 0)           out[_i] = in[_i]; \
+      else if (in[_i] < _start) out[_i] = -1; \
+      else if (in[_i] > _end)   out[_i] = -1; \
+      else                      out[_i] = _globals[in[_i] - _start]; \
+    } \
   }
 
 #undef __FUNCT__
@@ -235,7 +235,7 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, Petsc
 PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
-  PetscInt       n_l=0, *rows_l = PETSC_NULL;
+  PetscInt       n_l = 0, *rows_l = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -280,6 +280,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     is->pure_neumann = PETSC_TRUE;
   } else {
     is->pure_neumann = PETSC_FALSE;
+
     ierr = VecGetArray(is->x,&array);CHKERRQ(ierr);
     ierr = MatZeroRows(is->A,n,rows,diag,0,0);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -321,7 +322,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatISGetLocalMat_IS"
 PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
-  Mat_IS *is = (Mat_IS *)mat->data;
+  Mat_IS *is = (Mat_IS*)mat->data;
 
   PetscFunctionBegin;
   *local = is->A;
@@ -356,7 +357,7 @@ PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(local,2);
-  ierr = PetscUseMethod(mat,"MatISGetLocalMat_C",(Mat,Mat *),(mat,local));CHKERRQ(ierr);
+  ierr = PetscUseMethod(mat,"MatISGetLocalMat_C",(Mat,Mat*),(mat,local));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -365,8 +366,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatISSetLocalMat_IS"
 PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
 {
-  Mat_IS *is = (Mat_IS *)mat->data;
-  PetscInt nrows,ncols,orows,ocols;
+  Mat_IS         *is = (Mat_IS*)mat->data;
+  PetscInt       nrows,ncols,orows,ocols;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -375,8 +376,8 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
     ierr = MatGetSize(local,&nrows,&ncols);CHKERRQ(ierr);
     if (orows != nrows || ocols != ncols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %dx%d (you passed a %dx%d matrix)\n",orows,ocols,nrows,ncols);
   }
-  ierr = PetscObjectReference((PetscObject)local);CHKERRQ(ierr);
-  ierr = MatDestroy(&is->A);CHKERRQ(ierr);
+  ierr  = PetscObjectReference((PetscObject)local);CHKERRQ(ierr);
+  ierr  = MatDestroy(&is->A);CHKERRQ(ierr);
   is->A = local;
   PetscFunctionReturn(0);
 }
@@ -455,7 +456,7 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_IS"
-PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
+PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
 {
   Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
@@ -549,9 +550,9 @@ PetscErrorCode  MatCreate_IS(Mat A)
   Mat_IS         *b;
 
   PetscFunctionBegin;
-  ierr                = PetscNewLog(A,Mat_IS,&b);CHKERRQ(ierr);
-  A->data             = (void*)b;
-  ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,Mat_IS,&b);CHKERRQ(ierr);
+  A->data = (void*)b;
+  ierr    = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   A->ops->mult                    = MatMult_IS;
   A->ops->multadd                 = MatMultAdd_IS;
@@ -574,13 +575,13 @@ PetscErrorCode  MatCreate_IS(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  b->A          = 0;
-  b->ctx        = 0;
-  b->x          = 0;
-  b->y          = 0;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISSetLocalMat_C","MatISSetLocalMat_IS",MatISSetLocalMat_IS);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
+  b->A   = 0;
+  b->ctx = 0;
+  b->x   = 0;
+  b->y   = 0;
+  ierr   = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
+  ierr   = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISSetLocalMat_C","MatISSetLocalMat_IS",MatISSetLocalMat_IS);CHKERRQ(ierr);
+  ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

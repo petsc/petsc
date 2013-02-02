@@ -21,9 +21,9 @@ typedef struct {
 #define __FUNCT__ "MatDestroy_Composite"
 PetscErrorCode MatDestroy_Composite(Mat mat)
 {
-  PetscErrorCode   ierr;
-  Mat_Composite    *shell = (Mat_Composite*)mat->data;
-  Mat_CompositeLink next = shell->head,oldnext;
+  PetscErrorCode    ierr;
+  Mat_Composite     *shell = (Mat_Composite*)mat->data;
+  Mat_CompositeLink next   = shell->head,oldnext;
 
   PetscFunctionBegin;
   while (next) {
@@ -32,8 +32,8 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
       ierr = VecDestroy(&next->work);CHKERRQ(ierr);
     }
     oldnext = next;
-    next     = next->next;
-    ierr     = PetscFree(oldnext);CHKERRQ(ierr);
+    next    = next->next;
+    ierr    = PetscFree(oldnext);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&shell->work);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
 PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
 {
   Mat_Composite     *shell = (Mat_Composite*)A->data;
-  Mat_CompositeLink next = shell->head;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
   Vec               in,out;
 
@@ -67,7 +67,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
     if (!next->work) { /* should reuse previous work if the same size */
       ierr = MatGetVecs(next->mat,PETSC_NULL,&next->work);CHKERRQ(ierr);
     }
-    out = next->work;
+    out  = next->work;
     ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
     in   = out;
     next = next->next;
@@ -85,7 +85,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
 PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
 {
   Mat_Composite     *shell = (Mat_Composite*)A->data;
-  Mat_CompositeLink tail = shell->tail;
+  Mat_CompositeLink tail   = shell->tail;
   PetscErrorCode    ierr;
   Vec               in,out;
 
@@ -103,7 +103,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
     if (!tail->prev->work) { /* should reuse previous work if the same size */
       ierr = MatGetVecs(tail->mat,PETSC_NULL,&tail->prev->work);CHKERRQ(ierr);
     }
-    out = tail->prev->work;
+    out  = tail->prev->work;
     ierr = MatMultTranspose(tail->mat,in,out);CHKERRQ(ierr);
     in   = out;
     tail = tail->prev;
@@ -121,7 +121,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
 PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
 {
   Mat_Composite     *shell = (Mat_Composite*)A->data;
-  Mat_CompositeLink next = shell->head;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
   Vec               in;
 
@@ -151,7 +151,7 @@ PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
 PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
 {
   Mat_Composite     *shell = (Mat_Composite*)A->data;
-  Mat_CompositeLink next = shell->head;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
   Vec               in;
 
@@ -181,7 +181,7 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
 PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 {
   Mat_Composite     *shell = (Mat_Composite*)A->data;
-  Mat_CompositeLink next = shell->head;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -219,7 +219,7 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 #define __FUNCT__ "MatScale_Composite"
 PetscErrorCode MatScale_Composite(Mat inA,PetscScalar alpha)
 {
-  Mat_Composite  *a = (Mat_Composite*)inA->data;
+  Mat_Composite *a = (Mat_Composite*)inA->data;
 
   PetscFunctionBegin;
   a->scale *= alpha;
@@ -371,18 +371,18 @@ PetscErrorCode  MatCreate_Composite(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(A,Mat_Composite,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,Mat_Composite,&b);CHKERRQ(ierr);
   A->data = (void*)b;
-  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  A->assembled     = PETSC_TRUE;
-  A->preallocated  = PETSC_TRUE;
-  b->type          = MAT_COMPOSITE_ADDITIVE;
-  b->scale         = 1.0;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_TRUE;
+  b->type         = MAT_COMPOSITE_ADDITIVE;
+  b->scale        = 1.0;
+  ierr            = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -472,15 +472,14 @@ PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
   ilink->mat  = smat;
 
   shell = (Mat_Composite*)mat->data;
-  next = shell->head;
-  if (!next) {
-    shell->head  = ilink;
-  } else {
+  next  = shell->head;
+  if (!next) shell->head = ilink;
+  else {
     while (next->next) {
       next = next->next;
     }
-    next->next      = ilink;
-    ilink->prev     = next;
+    next->next  = ilink;
+    ilink->prev = next;
   }
   shell->tail = ilink;
   PetscFunctionReturn(0);
@@ -557,7 +556,7 @@ PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 PetscErrorCode  MatCompositeMerge(Mat mat)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;
-  Mat_CompositeLink next = shell->head, prev = shell->tail;
+  Mat_CompositeLink next   = shell->head, prev = shell->tail;
   PetscErrorCode    ierr;
   Mat               tmat,newmat;
 

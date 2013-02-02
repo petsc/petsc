@@ -11,14 +11,14 @@ PETSC_EXTERN PetscErrorCode SPARSEPACKqmdrch(const PetscInt*,const PetscInt*,con
 PETSC_EXTERN PetscErrorCode SPARSEPACKqmdmrg(const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKqmdqt(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKqmdupd(const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode SPARSEPACKrootls(const PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*,const PetscInt*,const PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*);
+PETSC_EXTERN PetscErrorCode SPARSEPACKrootls(const PetscInt*,const PetscInt*,const PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKfn1wd(PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKrevrse(const PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKrootls(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode SPARSEPACKfndsep(PetscInt*,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
-PETSC_EXTERN PetscErrorCode SPARSEPACKdegree(const PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode SPARSEPACKrcm(const PetscInt*,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode SPARSEPACKfndsep(PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode SPARSEPACKdegree(const PetscInt*,const PetscInt*,const PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*);
+PETSC_EXTERN PetscErrorCode SPARSEPACKrcm(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 
 
