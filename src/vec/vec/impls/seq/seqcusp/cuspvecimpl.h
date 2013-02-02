@@ -144,6 +144,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *a   = 0;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
   PetscFunctionReturn(0);
