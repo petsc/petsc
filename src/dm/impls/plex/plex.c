@@ -10312,7 +10312,8 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], const char s
   ierr = DMCreate(((PetscObject) dm)->comm, subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*subdm, dim-1);CHKERRQ(ierr);
-  if (depth == dim) {
+  /* TODO Remove the dim guard */
+  if ((dim > 1) && (depth == dim)) {
     ierr = DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, surfaceLabel, *subdm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateSubmesh_Uninterpolated(dm, vertexLabel, surfaceLabel, *subdm);CHKERRQ(ierr);
