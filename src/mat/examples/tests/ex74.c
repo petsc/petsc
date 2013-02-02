@@ -7,28 +7,28 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format.\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  PetscMPIInt        size;
-  PetscErrorCode     ierr;
-  Vec                x,y,b,s1,s2;
-  Mat                A;                /* linear system matrix */
-  Mat                sA,sB,sC;         /* symmetric part of the matrices */
-  PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc;
-  PetscReal          norm1,norm2,rnorm,tol=1.e-10;
-  PetscScalar        neg_one = -1.0,four=4.0,value[3];
-  IS                 perm, iscol;
-  PetscRandom        rdm;
-  PetscBool          doIcc=PETSC_TRUE,equal;
-  MatInfo            minfo1,minfo2;
-  MatFactorInfo      factinfo;
-  MatType            type;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+  Vec            x,y,b,s1,s2;
+  Mat            A;                    /* linear system matrix */
+  Mat            sA,sB,sC;             /* symmetric part of the matrices */
+  PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc;
+  PetscReal      norm1,norm2,rnorm,tol=1.e-10;
+  PetscScalar    neg_one = -1.0,four=4.0,value[3];
+  IS             perm, iscol;
+  PetscRandom    rdm;
+  PetscBool      doIcc=PETSC_TRUE,equal;
+  MatInfo        minfo1,minfo2;
+  MatFactorInfo  factinfo;
+  MatType        type;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
 
-  n = mbs*bs;
+  n    = mbs*bs;
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
@@ -58,17 +58,20 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr   = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
+
       value[0]= 0.1; value[1]=-1; value[2]=2;
+
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
-      i = 0;
-      col[0] = n-1;  col[1] = 1; col[2]=0;
-      value[0] = 0.1; value[1] = -1.0; value[2]=2;
+      i        = 0;
+      col[0]   = n-1;   col[1] = 1;      col[2] = 0;
+      value[0] = 0.1; value[1] = -1.0; value[2] = 2;
+
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -78,23 +81,23 @@ int main(int argc,char **args)
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
-          if (i>0)   {
-            J = Ii - n1;
+          if (i>0) {
+            J    = Ii - n1;
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
             ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (i<n1-1) {
-            J = Ii + n1;
+            J    = Ii + n1;
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
             ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
-          if (j>0)   {
-            J = Ii - 1;
+          if (j>0) {
+            J    = Ii - 1;
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
             ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (j<n1-1) {
-            J = Ii + 1;
+            J    = Ii + 1;
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
             ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
@@ -110,16 +113,20 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr   = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
       i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
+
       value[0]=-1.0; value[1]=4.0;
+
       ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
       i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
+
       value[0]=4.0; value[1] = -1.0;
+
       ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -127,9 +134,12 @@ int main(int argc,char **args)
     value[0]=-1.0;
     for (i=0; i<(n/bs-1)*bs; i++) {
       col[0]=i+bs;
+
       ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+
       col[0]=i; row=i+bs;
+
       ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -147,8 +157,8 @@ int main(int argc,char **args)
   printf("A matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated);
   printf("sA matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated);
   */
-  i = (int) (minfo1.nz_used - minfo2.nz_used);
-  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
+  i  = (int) (minfo1.nz_used - minfo2.nz_used);
+  j  = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   k1 = (int) (minfo1.nz_allocated - minfo1.nz_used);
   k2 = (int) (minfo2.nz_allocated - minfo2.nz_used);
   if (i < 0 || j < 0 || k1 < 0 || k2 < 0) {
@@ -162,20 +172,20 @@ int main(int argc,char **args)
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
 
   /* Test MatNorm() */
-  ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
+  ierr  = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
+  ierr  = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(norm1-norm2)/norm2;
   if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
-  ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
+  ierr  = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
+  ierr  = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(norm1-norm2)/norm2;
   if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
-  ierr = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
+  ierr  = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
+  ierr  = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(norm1-norm2)/norm2;
   if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
@@ -188,8 +198,8 @@ int main(int argc,char **args)
   printf("matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated);
   printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated);
   */
-  i = (int) (minfo1.nz_used - minfo2.nz_used);
-  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
+  i  = (int) (minfo1.nz_used - minfo2.nz_used);
+  j  = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   k1 = (int) (minfo1.nz_allocated - minfo1.nz_used);
   k2 = (int) (minfo2.nz_allocated - minfo2.nz_used);
   if (i < 0 || j < 0 || k1 < 0 || k2 < 0) {
@@ -242,10 +252,10 @@ int main(int argc,char **args)
 #endif
 
   /* Test MatGetRowMaxAbs() */
-  ierr = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(sB,s2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
+  ierr   = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = MatGetRowMaxAbs(sB,s2,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
+  ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMaxAbs() \n");CHKERRQ(ierr);
@@ -253,11 +263,11 @@ int main(int argc,char **args)
 
   /* Test MatMult() */
   for (i=0; i<40; i++) {
-    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-    ierr = MatMult(A,x,s1);CHKERRQ(ierr);
-    ierr = MatMult(sB,x,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
+    ierr   = VecSetRandom(x,rdm);CHKERRQ(ierr);
+    ierr   = MatMult(A,x,s1);CHKERRQ(ierr);
+    ierr   = MatMult(sB,x,s2);CHKERRQ(ierr);
+    ierr   = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
+    ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), norm1-norm2: %G\n",norm1);CHKERRQ(ierr);
@@ -266,12 +276,12 @@ int main(int argc,char **args)
 
   /* MatMultAdd() */
   for (i=0; i<40; i++) {
-    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-    ierr = VecSetRandom(y,rdm);CHKERRQ(ierr);
-    ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
-    ierr = MatMultAdd(sB,x,y,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
+    ierr   = VecSetRandom(x,rdm);CHKERRQ(ierr);
+    ierr   = VecSetRandom(y,rdm);CHKERRQ(ierr);
+    ierr   = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
+    ierr   = MatMultAdd(sB,x,y,s2);CHKERRQ(ierr);
+    ierr   = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
+    ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(),  norm1-norm2: %G\n",norm1);CHKERRQ(ierr);
@@ -279,8 +289,8 @@ int main(int argc,char **args)
   }
 
   /* Test MatCholeskyFactor(), MatICCFactor() with natural ordering */
-  ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iscol);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  ierr  = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iscol);CHKERRQ(ierr);
+  ierr  = ISDestroy(&iscol);CHKERRQ(ierr);
   norm1 = tol;
   inc   = bs;
 
@@ -290,13 +300,14 @@ int main(int argc,char **args)
   for (lf=-1; lf<10; lf += inc) {
     if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;
+
       ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
-    } else if (!doIcc) {
-      break;
-    } else {       /* incomplete Cholesky factor */
+    } else if (!doIcc) break;
+    else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;
+
       ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
       ierr = MatICCFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
     }

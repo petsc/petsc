@@ -645,7 +645,7 @@ PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix", MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
-  B->factortype            = MAT_FACTOR_LU;
+  B->factortype = MAT_FACTOR_LU;
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
 
@@ -686,7 +686,7 @@ PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
-  B->factortype            = MAT_FACTOR_LU;
+  B->factortype = MAT_FACTOR_LU;
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
 
@@ -726,7 +726,7 @@ PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
-  B->factortype                  = MAT_FACTOR_CHOLESKY;
+  B->factortype = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
 
@@ -767,7 +767,7 @@ PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
-  B->factortype                  = MAT_FACTOR_CHOLESKY;
+  B->factortype = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
 

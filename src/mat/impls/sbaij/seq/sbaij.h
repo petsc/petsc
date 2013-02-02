@@ -16,7 +16,7 @@ typedef struct {
   PetscInt         *jnew;        /* column values: jnew + i[k] is start of row k */
   MatScalar        *anew;        /* nonzero diagonal and superdiagonal elements of reordered matrix */
   PetscScalar      *solves_work; /* work space used in MatSolves */
-  PetscInt         solves_work_n;/* size of solves_work */
+  PetscInt         solves_work_n; /* size of solves_work */
   PetscInt         *a2anew;        /* map used for symm permutation */
   PetscBool        permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscBool        ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
@@ -40,11 +40,11 @@ extern PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,PetscInt,IS[],PetscInt);
 extern PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,MatReuse,Mat*);
 extern PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 extern PetscErrorCode MatScale_SeqSBAIJ(Mat,PetscScalar);
-extern PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);
-extern PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscBool *);
+extern PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal*);
+extern PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscBool*);
 extern PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat,Vec);
 extern PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat,Vec,Vec);
-extern PetscErrorCode MatGetInfo_SeqSBAIJ(Mat,MatInfoType,MatInfo *);
+extern PetscErrorCode MatGetInfo_SeqSBAIJ(Mat,MatInfoType,MatInfo*);
 extern PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat);
 extern PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat,Vec,PetscInt[]);
 extern PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,PetscInt*,PetscInt*,PetscInt*);

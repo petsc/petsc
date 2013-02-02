@@ -260,9 +260,10 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
       } else {
         /* Block sizes match so we can forward values to the top level using the block interface */
         B->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_LocalRef_Block;
+
         ierr = ISL2GComposeBlock(isrow,A->rmap->bmapping,&rltog);CHKERRQ(ierr);
         if (isrow == iscol && A->rmap->bmapping == A->cmap->bmapping) {
-          ierr =  PetscObjectReference((PetscObject)rltog);CHKERRQ(ierr);
+          ierr  =  PetscObjectReference((PetscObject)rltog);CHKERRQ(ierr);
           cltog = rltog;
         } else {
           ierr = ISL2GComposeBlock(iscol,A->cmap->bmapping,&cltog);CHKERRQ(ierr);

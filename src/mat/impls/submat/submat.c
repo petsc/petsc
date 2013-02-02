@@ -2,12 +2,12 @@
 #include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
 
 typedef struct {
-  IS isrow,iscol;               /* rows and columns in submatrix, only used to check consistency */
-  Vec left,right;               /* optional scaling */
-  Vec olwork,orwork;            /* work vectors outside the scatters, only touched by PreScale and only created if needed*/
-  Vec lwork,rwork;              /* work vectors inside the scatters */
-  VecScatter lrestrict,rprolong;
-  Mat A;
+  IS          isrow,iscol;      /* rows and columns in submatrix, only used to check consistency */
+  Vec         left,right;       /* optional scaling */
+  Vec         olwork,orwork;    /* work vectors outside the scatters, only touched by PreScale and only created if needed*/
+  Vec         lwork,rwork;      /* work vectors inside the scatters */
+  VecScatter  lrestrict,rprolong;
+  Mat         A;
   PetscScalar scale;
 } Mat_SubMatrix;
 
@@ -15,7 +15,7 @@ typedef struct {
 #define __FUNCT__ "PreScaleLeft"
 static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
 {
-  Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -26,7 +26,7 @@ static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
       ierr = VecDuplicate(Na->left,&Na->olwork);CHKERRQ(ierr);
     }
     ierr = VecPointwiseMult(Na->olwork,x,Na->left);CHKERRQ(ierr);
-    *xx = Na->olwork;
+    *xx  = Na->olwork;
   }
   PetscFunctionReturn(0);
 }
@@ -35,7 +35,7 @@ static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
 #define __FUNCT__ "PreScaleRight"
 static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
 {
-  Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -46,7 +46,7 @@ static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
       ierr = VecDuplicate(Na->right,&Na->orwork);CHKERRQ(ierr);
     }
     ierr = VecPointwiseMult(Na->orwork,x,Na->right);CHKERRQ(ierr);
-    *xx = Na->orwork;
+    *xx  = Na->orwork;
   }
   PetscFunctionReturn(0);
 }
@@ -55,7 +55,7 @@ static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
 #define __FUNCT__ "PostScaleLeft"
 static PetscErrorCode PostScaleLeft(Mat N,Vec x)
 {
-  Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -69,7 +69,7 @@ static PetscErrorCode PostScaleLeft(Mat N,Vec x)
 #define __FUNCT__ "PostScaleRight"
 static PetscErrorCode PostScaleRight(Mat N,Vec x)
 {
-  Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -94,7 +94,7 @@ static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
 #define __FUNCT__ "MatDiagonalScale_SubMatrix"
 static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 {
-  Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -122,8 +122,8 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx=0;
-  PetscErrorCode  ierr;
+  Vec            xx  = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PreScaleRight(N,x,&xx);CHKERRQ(ierr);
@@ -143,8 +143,8 @@ static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx=0;
-  PetscErrorCode  ierr;
+  Vec            xx  = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PreScaleRight(N,v1,&xx);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx=0;
+  Vec            xx  = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -198,7 +198,7 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx =0;
+  Vec            xx  = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -277,7 +277,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   Vec            left,right;
   PetscInt       m,n;
   Mat            N;
-  Mat_SubMatrix *Na;
+  Mat_SubMatrix  *Na;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -293,11 +293,11 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = MatSetSizes(N,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)N,MATSUBMATRIX);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(N,Mat_SubMatrix,&Na);CHKERRQ(ierr);
+  ierr      = PetscNewLog(N,Mat_SubMatrix,&Na);CHKERRQ(ierr);
   N->data   = (void*)Na;
-  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   Na->A     = A;
   Na->isrow = isrow;
   Na->iscol = iscol;
@@ -329,8 +329,10 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = VecDestroy(&right);CHKERRQ(ierr);
 
   N->assembled = PETSC_TRUE;
+
   ierr = MatSetUp(N);CHKERRQ(ierr);
-  *newmat = N;
+
+  *newmat      = N;
   PetscFunctionReturn(0);
 }
 
@@ -357,8 +359,8 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
 @*/
 PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
 {
-  PetscErrorCode  ierr;
-  PetscBool       flg;
+  PetscErrorCode ierr;
+  PetscBool      flg;
   Mat_SubMatrix  *Na;
 
   PetscFunctionBegin;
@@ -369,18 +371,18 @@ PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
   ierr = PetscObjectTypeCompare((PetscObject)N,MATSUBMATRIX,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 
-  Na = (Mat_SubMatrix*)N->data;
+  Na   = (Mat_SubMatrix*)N->data;
   ierr = ISEqual(isrow,Na->isrow,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
   ierr = ISEqual(iscol,Na->iscol,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
 
-  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr  = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr  = MatDestroy(&Na->A);CHKERRQ(ierr);
   Na->A = A;
 
   Na->scale = 1.0;
-  ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
-  ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
+  ierr      = VecDestroy(&Na->left);CHKERRQ(ierr);
+  ierr      = VecDestroy(&Na->right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

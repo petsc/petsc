@@ -33,7 +33,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
   PetscErrorCode           ierr;
   PetscInt                 *locals = PETSC_NULL;
-  Mat                      mat = part->adj,amat,pmat;
+  Mat                      mat     = part->adj,amat,pmat;
   PetscBool                flg;
   PetscInt                 bs = 1;
 
@@ -97,13 +97,13 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
       options[i] = -1;
     }
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
-    ierr = MPI_Comm_dup(pcomm,&comm_pmetis);CHKERRQ(ierr);
+    ierr   = MPI_Comm_dup(pcomm,&comm_pmetis);CHKERRQ(ierr);
     status = ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,options,&parmetis->cuts,locals,&comm_pmetis);CHKERRQPARMETIS(status);
-    ierr = MPI_Comm_free(&comm_pmetis);CHKERRQ(ierr);
+    ierr   = MPI_Comm_free(&comm_pmetis);CHKERRQ(ierr);
 
     ierr = PetscFree(tpwgts);CHKERRQ(ierr);
     ierr = PetscFree(ubvec);CHKERRQ(ierr);
-    if (PetscLogPrintInfo) {parmetis->printout = itmp;}
+    if (PetscLogPrintInfo) parmetis->printout = itmp;
   }
 
   if (bs > 1) {
@@ -129,9 +129,9 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 #define __FUNCT__ "MatPartitioningView_Parmetis"
 PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
 {
-  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
-  PetscErrorCode ierr;
-  int rank;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
+  PetscErrorCode           ierr;
+  int                      rank;
   PetscBool                iascii;
 
   PetscFunctionBegin;
@@ -168,7 +168,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
 @*/
 PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 {
-  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
 
   PetscFunctionBegin;
   parmetis->parallel = 1;
@@ -191,7 +191,7 @@ PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 @*/
 PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut)
 {
-  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *) part->data;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*) part->data;
 
   PetscFunctionBegin;
   *cut = parmetis->cuts;
@@ -208,9 +208,9 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
-    }
+  if (flag) {
+    ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -220,8 +220,8 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 #define __FUNCT__ "MatPartitioningDestroy_Parmetis"
 PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
-  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
-  PetscErrorCode ierr;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(parmetis);CHKERRQ(ierr);
@@ -255,12 +255,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatPartitioningCreate_Parmetis"
 PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode           ierr;
   MatPartitioning_Parmetis *parmetis;
 
   PetscFunctionBegin;
-  ierr  = PetscNewLog(part,MatPartitioning_Parmetis,&parmetis);CHKERRQ(ierr);
-  part->data                = (void*)parmetis;
+  ierr       = PetscNewLog(part,MatPartitioning_Parmetis,&parmetis);CHKERRQ(ierr);
+  part->data = (void*)parmetis;
 
   parmetis->cuts       = 0;   /* output variable */
   parmetis->foldfactor = 150; /*folding factor */
@@ -344,12 +344,12 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 @*/
 PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 {
-  PetscErrorCode           ierr;
-  PetscInt                 *newxadj,*newadjncy;
-  PetscInt                 numflag=0;
-  Mat_MPIAdj               *adj = (Mat_MPIAdj *)mesh->data,*newadj;
-  PetscBool                flg;
-  int                      status;
+  PetscErrorCode ierr;
+  PetscInt       *newxadj,*newadjncy;
+  PetscInt       numflag=0;
+  Mat_MPIAdj     *adj   = (Mat_MPIAdj*)mesh->data,*newadj;
+  PetscBool      flg;
+  int            status;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);
@@ -358,8 +358,9 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   CHKMEMQ;
   status = ParMETIS_V3_Mesh2Dual(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm);CHKERRQPARMETIS(status);
   CHKMEMQ;
-  ierr = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,PETSC_NULL,dual);CHKERRQ(ierr);
-  newadj = (Mat_MPIAdj *)(*dual)->data;
+  ierr   = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,PETSC_NULL,dual);CHKERRQ(ierr);
+  newadj = (Mat_MPIAdj*)(*dual)->data;
+
   newadj->freeaijwithfree = PETSC_TRUE; /* signal the matrix should be freed with system free since space was allocated by ParMETIS */
   PetscFunctionReturn(0);
 }

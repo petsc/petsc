@@ -34,7 +34,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank, size, p, inversions, total_inversions;
   PetscBool      sort_rows, sort_cols, show_inversions;
   PetscErrorCode ierr;
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -43,8 +43,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (size > 1) {
     n = 8; N = 16;
-  }
-  else {
+  } else {
     n = 16; N = 16;
   }
   ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);
@@ -55,7 +54,7 @@ int main(int argc,char **args)
   for (i=0; i<4; ++i) {
     for (j = 0; j<4; ++j) {
       row = j*4+i;
-      v = -1.0;
+      v   = -1.0;
       if (i>0) {
         col =  row-1; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
@@ -68,7 +67,7 @@ int main(int argc,char **args)
       if (j<3) {
         col = row+4; ierr = MatSetValues(A,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      v = 4.0;
+      v    = 4.0;
       ierr = MatSetValues(A,1,&row,1,&row,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -90,12 +89,12 @@ int main(int argc,char **args)
     jlow = Jlow; jhigh = Jhigh;
   }
   sort_rows = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-sort_rows", &sort_rows, PETSC_NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetBool(PETSC_NULL, "-sort_rows", &sort_rows, PETSC_NULL);CHKERRQ(ierr);
   sort_cols = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-sort_cols", &sort_cols, PETSC_NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetBool(PETSC_NULL, "-sort_cols", &sort_cols, PETSC_NULL);CHKERRQ(ierr);
   for (l = 0; l < nsub; ++l) {
     ierr = PetscMalloc(12*sizeof(PetscInt), &subindices);CHKERRQ(ierr);
-    k = 0;
+    k    = 0;
     for (i = 0; i < 4; ++i) {
       for (j = jlow[l]; j < jhigh[l]; ++j) {
         subindices[k] = j*4+i;
@@ -105,8 +104,7 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, 12, subindices, PETSC_OWN_POINTER, rowis+l);CHKERRQ(ierr);
     if ((sort_rows && !sort_cols) || (!sort_rows && sort_cols)) {
       ierr = ISDuplicate(rowis[l],colis+l);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = PetscObjectReference((PetscObject)rowis[l]);CHKERRQ(ierr);
       colis[l] = rowis[l];
     }
@@ -119,8 +117,11 @@ int main(int argc,char **args)
   }
   ierr = PetscMalloc(nsub*sizeof(Mat), &S);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
+
   show_inversions = PETSC_FALSE;
+
   ierr = PetscOptionsGetBool(PETSC_NULL, "-show_inversions", &show_inversions, PETSC_NULL);CHKERRQ(ierr);
+
   inversions = 0;
   for (p = 0; p < size; ++p) {
     if (p == rank) {
@@ -145,7 +146,7 @@ int main(int argc,char **args)
             }
             ierr = MatRestoreRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
           }
-        }        
+        }
       }
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);

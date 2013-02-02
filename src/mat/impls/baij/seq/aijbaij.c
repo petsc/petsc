@@ -41,8 +41,8 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,
       }
       aj++;
     }
-    ierr  = MatSetValues(B,bs,rows,bs*ncols,cols,aa,INSERT_VALUES);CHKERRQ(ierr);
-    aa   += ncols*bs*bs;
+    ierr = MatSetValues(B,bs,rows,bs*ncols,cols,aa,INSERT_VALUES);CHKERRQ(ierr);
+    aa  += ncols*bs*bs;
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatReuse reuse,M
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
-  b  = (Mat_SeqBAIJ*)(B->data);
+  b = (Mat_SeqBAIJ*)(B->data);
 
   ierr = PetscMemcpy(b->i,a->i,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(b->ilen,a->ilen,m*sizeof(PetscInt));CHKERRQ(ierr);

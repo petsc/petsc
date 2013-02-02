@@ -17,10 +17,10 @@ PetscInt main(PetscInt argc,char **args)
   PetscErrorCode ierr;
   PetscReal      fill=2.0;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if defined(WRITEFILE)
- {
-    PetscViewer    viewer;
+  {
+    PetscViewer viewer;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing matrix A in binary to A.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"A.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(A,viewer);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"P.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(P,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
- }
+  }
 #endif
 
   /* read the two matrices, A (square) and P (projection) */

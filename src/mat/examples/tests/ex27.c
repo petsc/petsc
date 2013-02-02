@@ -15,10 +15,10 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            x,y;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   /* Introduce new nonzero that requires new construction for
       matrix-vector product */
   if (rank) {
-    Ii = rank-1; J = m*n-1;
+    Ii   = rank-1; J = m*n-1;
     ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(x,PETSC_DECIDE,m*n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  v = 1.0; ierr = VecSet(x,v);CHKERRQ(ierr);
+  v    = 1.0; ierr = VecSet(x,v);CHKERRQ(ierr);
   ierr = MatMult(C,x,y);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);

@@ -14,7 +14,7 @@ int main(int argc,char **args)
   IS             isrow;
   PetscBool      keepnonzeropattern;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);

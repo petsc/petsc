@@ -39,9 +39,7 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
   PetscInt i,c = 0;
 
   PetscFunctionBegin;
-  for (i=0; i<m; i++) {
-    c = PetscMax(c,ia[i+1]-ia[i]);
-  }
+  for (i=0; i<m; i++) c = PetscMax(c,ia[i+1]-ia[i]);
   *minc = c;
   PetscFunctionReturn(0);
 }
@@ -116,9 +114,9 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
@@ -126,7 +124,7 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
-    nc=iscoloring_seq->n;
+    nc   = iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
@@ -195,9 +193,7 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
-    for (i=0; i<n; i++) {
-      s[i] = (ISColoringValue) (coloring[i]-1);
-    }
+    for (i=0; i<n; i++) s[i] = (ISColoringValue) (coloring[i]-1);
     ierr = MatColoringPatch(mat_seq,ncolors,n,s,iscoloring);CHKERRQ(ierr);
   }
 
@@ -206,17 +202,16 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++) {
-      colors_loc[i-rstart] = iscoloring_seq->colors[i];
-    }
+    for (i=rstart; i<rend; i++) colors_loc[i-rstart] = iscoloring_seq->colors[i];
+
     /* create a parallel iscoloring */
-    nc=iscoloring_seq->n;
+    nc   = iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
@@ -295,9 +290,9 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
@@ -305,7 +300,7 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
-    nc=iscoloring_seq->n;
+    nc   = iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
@@ -347,9 +342,9 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
 
-  ierr  = MatGetSize(mat_seq,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr  = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
-  n     = n/bs;
+  ierr = MatGetSize(mat_seq,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
+  n    = n/bs;
   if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
@@ -365,9 +360,9 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
 
     /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
@@ -375,7 +370,7 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
-    nc=iscoloring_seq->n;
+    nc   = iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
@@ -385,7 +380,7 @@ EXTERN_C_END
 
 /* ===========================================================================================*/
 
-PetscFunctionList MatColoringList = 0;
+PetscFunctionList MatColoringList              = 0;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -420,6 +415,7 @@ PetscErrorCode  MatColoringRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
+
   MatColoringRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -484,7 +480,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
   PetscBool      flag;
-  PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring *);
+  PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring*);
   char           tname[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;
 
@@ -497,7 +493,7 @@ PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscolori
   /* look for type on command line */
   if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
-  if (flag) { type = tname; }
+  if (flag) type = tname;
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscFunctionListFind(comm,MatColoringList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);

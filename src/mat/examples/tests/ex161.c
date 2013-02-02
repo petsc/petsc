@@ -7,16 +7,16 @@ static char help[] = "Test MatTransposeColoring for SeqAIJ matrices. Used for '-
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat                   A,R,C,C_dense,C_sparse,Rt_dense,P,PtAP;
-  PetscInt              row,col,m,n;
-  PetscErrorCode        ierr;
-  MatScalar             one=1.0,val;
-  MatTransposeColoring  matcoloring = 0;
-  ISColoring            iscoloring;
-  PetscBool             equal;
-  PetscMPIInt           size;
+  Mat                  A,R,C,C_dense,C_sparse,Rt_dense,P,PtAP;
+  PetscInt             row,col,m,n;
+  PetscErrorCode       ierr;
+  MatScalar            one         =1.0,val;
+  MatTransposeColoring matcoloring = 0;
+  ISColoring           iscoloring;
+  PetscBool            equal;
+  PetscMPIInt          size;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -26,10 +26,10 @@ int main(int argc,char **argv)
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  row=0; col=0; val=1.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
-  row=1; col=3; val=2.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
-  row=2; col=2; val=3.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
-  row=3; col=0; val=4.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row  = 0; col=0; val=1.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row  = 1; col=3; val=2.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row  = 2; col=2; val=3.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+  row  = 3; col=0; val=4.0; ierr = MatSetValues(A,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(A,"A_");CHKERRQ(ierr);
@@ -42,12 +42,12 @@ int main(int argc,char **argv)
   ierr = MatSetType(R,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(R);CHKERRQ(ierr);
   ierr = MatSetUp(R);CHKERRQ(ierr);
-  row=0; col=0; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
-  row=0; col=1; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row  = 0; col=0; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row  = 0; col=1; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
 
-  row=1; col=1; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
-  row=1; col=2; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
-  row=1; col=3; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row  = 1; col=1; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row  = 1; col=2; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
+  row  = 1; col=3; ierr = MatSetValues(R,1,&row,1,&col,&one,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(R,"R_");CHKERRQ(ierr);

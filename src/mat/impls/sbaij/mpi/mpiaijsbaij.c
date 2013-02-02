@@ -9,16 +9,16 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_MPIAIJ_MPISBAIJ"
 PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
-  PetscErrorCode     ierr;
-  Mat                M;
-  Mat_MPIAIJ         *mpimat = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ         *Aa = (Mat_SeqAIJ*)mpimat->A->data,*Ba = (Mat_SeqAIJ*)mpimat->B->data;
-  PetscInt           *d_nnz,*o_nnz;
-  PetscInt           i,j,nz;
-  PetscInt           m,n,lm,ln;
-  PetscInt           rstart,rend;
-  const PetscScalar  *vwork;
-  const PetscInt     *cwork;
+  PetscErrorCode    ierr;
+  Mat               M;
+  Mat_MPIAIJ        *mpimat = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ        *Aa     = (Mat_SeqAIJ*)mpimat->A->data,*Ba = (Mat_SeqAIJ*)mpimat->B->data;
+  PetscInt          *d_nnz,*o_nnz;
+  PetscInt          i,j,nz;
+  PetscInt          m,n,lm,ln;
+  PetscInt          rstart,rend;
+  const PetscScalar *vwork;
+  const PetscInt    *cwork;
 
   PetscFunctionBegin;
   if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
@@ -27,7 +27,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscMalloc2(lm,PetscInt,&d_nnz,lm,PetscInt,&o_nnz);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqAIJ(mpimat->A);CHKERRQ(ierr);
-  for (i=0;i<lm;i++) {
+  for (i=0; i<lm; i++) {
     d_nnz[i] = Aa->i[i+1] - Aa->diag[i];
     o_nnz[i] = Ba->i[i+1] - Ba->i[i];
   }
@@ -41,10 +41,12 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart;i<rend;i++) {
+  for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
-    j = 0;
-    while (cwork[j] < i) { j++; nz--;}
+    j    = 0;
+    while (cwork[j] < i) {
+      j++; nz--;
+    }
     ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }
@@ -63,17 +65,17 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPISBAIJ"
 PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
-  PetscErrorCode     ierr;
-  Mat                M;
-  Mat_MPIBAIJ        *mpimat = (Mat_MPIBAIJ*)A->data;
-  Mat_SeqBAIJ        *Aa = (Mat_SeqBAIJ*)mpimat->A->data,*Ba = (Mat_SeqBAIJ*)mpimat->B->data;
-  PetscInt           *d_nnz,*o_nnz;
-  PetscInt           i,j,nz;
-  PetscInt           m,n,lm,ln;
-  PetscInt           rstart,rend;
-  const PetscScalar  *vwork;
-  const PetscInt     *cwork;
-  PetscInt           bs = A->rmap->bs;
+  PetscErrorCode    ierr;
+  Mat               M;
+  Mat_MPIBAIJ       *mpimat = (Mat_MPIBAIJ*)A->data;
+  Mat_SeqBAIJ       *Aa     = (Mat_SeqBAIJ*)mpimat->A->data,*Ba = (Mat_SeqBAIJ*)mpimat->B->data;
+  PetscInt          *d_nnz,*o_nnz;
+  PetscInt          i,j,nz;
+  PetscInt          m,n,lm,ln;
+  PetscInt          rstart,rend;
+  const PetscScalar *vwork;
+  const PetscInt    *cwork;
+  PetscInt          bs = A->rmap->bs;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
@@ -81,7 +83,7 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscMalloc2(lm/bs,PetscInt,&d_nnz,lm/bs,PetscInt,&o_nnz);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqBAIJ(mpimat->A);CHKERRQ(ierr);
-  for (i=0;i<lm/bs;i++) {
+  for (i=0; i<lm/bs; i++) {
     d_nnz[i] = Aa->i[i+1] - Aa->diag[i];
     o_nnz[i] = Ba->i[i+1] - Ba->i[i];
   }
@@ -96,9 +98,9 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
-  for (i=rstart;i<rend;i++) {
+  for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
-    j = 0;
+    j    = 0;
     ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }

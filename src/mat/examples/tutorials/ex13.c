@@ -17,18 +17,18 @@ extern PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat,Vec,Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   A,F;
-  PetscViewer           fd;               /* viewer */
-  char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscErrorCode        ierr;
-  PetscBool             flg;
-  Vec                   x,y,w;
-  MatFactorInfo         iluinfo;
-  IS                    perm;
-  PetscInt              m;
-  PetscReal             norm;
+  Mat            A,F;
+  PetscViewer    fd;                      /* viewer */
+  char           file[PETSC_MAX_PATH_LEN];            /* input file name */
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  Vec            x,y,w;
+  MatFactorInfo  iluinfo;
+  IS             perm;
+  PetscInt       m;
+  PetscReal      norm;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /*
      Determine file from which we read the matrix
@@ -56,15 +56,17 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
 
-  ierr = MatGetFactor(A,"petsc",MAT_FACTOR_ILU,&F);CHKERRQ(ierr);
+  ierr         = MatGetFactor(A,"petsc",MAT_FACTOR_ILU,&F);CHKERRQ(ierr);
   iluinfo.fill = 1.0;
-  ierr = MatGetSize(A,&m,0);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,m,0,1,&perm);CHKERRQ(ierr);
+  ierr         = MatGetSize(A,&m,0);CHKERRQ(ierr);
+  ierr         = ISCreateStride(PETSC_COMM_WORLD,m,0,1,&perm);CHKERRQ(ierr);
 
   ierr = MatLUFactorSymbolic(F,A,perm,perm,&iluinfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&iluinfo);CHKERRQ(ierr);
   ierr = MatSolveTranspose(F,x,y);CHKERRQ(ierr);
+
   F->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_N;
+
   ierr = MatSolveTranspose(F,x,w);CHKERRQ(ierr);
   /*  VecView(w,0);VecView(y,0); */
   ierr = VecAXPY(w,-1.0,y);CHKERRQ(ierr);

@@ -54,7 +54,7 @@ PETSC_STATIC_INLINE void RO2P(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,Pe
 PETSC_STATIC_INLINE void E2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset)
 {
   Mat_Elemental *a = (Mat_Elemental*)A->data;
-  *rank = p % a->commsize;
+  *rank   = p % a->commsize;
   *offset = p / a->commsize;
 }
 PETSC_STATIC_INLINE void RO2E(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,PetscInt *e)

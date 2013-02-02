@@ -77,15 +77,15 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
-  for (i=0;i<pn;i++) {
+  for (i=0; i<pn; i++) {
     ptnzi  = pti[i+1] - pti[i];
     ptanzi = 0;
     /* Determine symbolic row of PtA: */
-    for (j=0;j<ptnzi;j++) {
+    for (j=0; j<ptnzi; j++) {
       arow = *ptJ++;
       anzj = ai[arow+1] - ai[arow];
       ajj  = aj + ai[arow];
-      for (k=0;k<anzj;k++) {
+      for (k=0; k<anzj; k++) {
         if (!ptadenserow[ajj[k]]) {
           ptadenserow[ajj[k]]    = -1;
           ptasparserow[ptanzi++] = ajj[k];
@@ -118,7 +118,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
 
-    for (j=0;j<ptanzi;j++) ptadenserow[ptasparserow[j]] = 0;
+    for (j=0; j<ptanzi; j++) ptadenserow[ptasparserow[j]] = 0;
 
     /* Aside: Perhaps we should save the pta info for the numerical factorization. */
     /*        For now, we will recompute what is needed. */

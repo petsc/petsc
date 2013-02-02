@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   MatInfo        info;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
@@ -38,7 +38,7 @@ int main(int argc,char **args)
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %D, allocated nonzeros = %D\n",
-    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();

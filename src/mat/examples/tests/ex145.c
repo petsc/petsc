@@ -29,9 +29,9 @@ int main(int argc,char **argv)
 
   /* Get local dimensions of matrices */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  n = m;
+  n    = m;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  p = m/2;
+  p    = m/2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
     }
   }
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
     }
   }
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
   for (j=0; j<m; j++) {
-    ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    ierr      = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
     barray[j] = rval;
   }
   ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
@@ -225,7 +225,7 @@ int main(int argc,char **argv)
   /* PF=LU or F=LU factorization - perms is ignored by Elemental;
      set finfo.dtcol !0 or 0 to enable/disable partial pivoting */
   finfo.dtcol = 0.1;
-  ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
+  ierr        = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
 
   /* Solve LUX = PB or LUX = B */
   ierr = MatSolveAdd(F,b,d,x);CHKERRQ(ierr);

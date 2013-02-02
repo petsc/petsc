@@ -23,19 +23,19 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
   else if (n == METIS_ERROR_MEMORY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory"); \
   else if (n == METIS_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error"); \
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
-  PetscBool flg;
-  int rank, size;
-  int i, ni, status;
-  idx_t *vtxdist, *xadj, *adjncy, *vwgt, *part;
-  idx_t wgtflag=0, numflag=0, ncon=1, ndims=3, edgecut=0;
-  idx_t options[5];
-  real_t *xyz, *tpwgts, ubvec[1];
-  MPI_Comm comm;
-  FILE *fp;
-  char fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
+  PetscBool      flg;
+  int            rank, size;
+  int            i, ni, status;
+  idx_t          *vtxdist, *xadj, *adjncy, *vwgt, *part;
+  idx_t          wgtflag=0, numflag=0, ncon=1, ndims=3, edgecut=0;
+  idx_t          options[5];
+  real_t         *xyz, *tpwgts, ubvec[1];
+  MPI_Comm       comm;
+  FILE           *fp;
+  char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -62,8 +62,7 @@ int main(int argc, char* argv[])
 
   ierr = PetscMalloc(xadj[ni]*sizeof(idx_t),&adjncy);CHKERRQ(ierr);
 
-  for (i=0; i<ni; i++)
-    fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
+  for (i=0; i<ni; i++) fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 
@@ -77,17 +76,16 @@ int main(int argc, char* argv[])
 
   vwgt = NULL;
 
-  for (i = 0 ; i < size ; i++)
-    tpwgts[i] = 1. / size ;
+  for (i = 0; i < size; i++) tpwgts[i] = 1. / size;
 
-  ubvec[0] = 1.05;
+  ubvec[0]   = 1.05;
   options[0] = 1;
   options[1] = 2;
   options[2] = 15;
   options[3] = 0;
   options[4] = 0;
 
-  ierr = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
+  ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
   status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt,
                                     PETSC_NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &size, tpwgts, ubvec,
                                     options, &edgecut, part, &comm);CHKERRQPARMETIS(status);

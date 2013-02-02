@@ -24,8 +24,8 @@ int main(int argc, char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   nemptyranks = 10;
-  nbigranks = 10;
-  ierr = PetscMalloc2(nemptyranks,PetscInt,&emptyranks,nbigranks,PetscInt,&bigranks);CHKERRQ(ierr);
+  nbigranks   = 10;
+  ierr        = PetscMalloc2(nemptyranks,PetscInt,&emptyranks,nbigranks,PetscInt,&bigranks);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Partitioning example options",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-emptyranks","Ranks to be skipped by partition","",emptyranks,&nemptyranks,PETSC_NULL);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc, char **args)
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    const PetscInt cols[] = {(i+N-1)%N,i,(i+1)%N};
+    const PetscInt    cols[] = {(i+N-1)%N,i,(i+1)%N};
     const PetscScalar vals[] = {1,1,1};
     ierr = MatSetValues(A,1,&i,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }

@@ -9,7 +9,7 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
@@ -36,7 +36,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
     if (jmin < jmax) {
       ap = aa + jmin*9;
       for (j = jmin; j < jmax; j++) {
-        vj = aj[j];         /* block col. index */
+        vj       = aj[j];   /* block col. index */
         rtmp_ptr = rtmp + vj*9;
         for (i=0; i<9; i++) *rtmp_ptr++ = *ap++;
       }
@@ -44,7 +44,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,rtmp+k*9,9*sizeof(MatScalar));CHKERRQ(ierr);
-    i = jl[k]; /* first row to be added to k_th row  */
+    i    = jl[k]; /* first row to be added to k_th row  */
 
     while (i < mbs) {
       nexti = jl[i]; /* next row to be added to k_th row */
@@ -91,8 +91,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
       if (jmin < jmax) {
         for (j=jmin; j<jmax; j++) {
           /* rtmp += -U(i,k)^T * U_bar(i,j) */
-          rtmp_ptr = rtmp + bj[j]*9;
-          u = ba + j*9;
+          rtmp_ptr     = rtmp + bj[j]*9;
+          u            = ba + j*9;
           rtmp_ptr[0] += uik[0]*u[0] + uik[1]*u[1] + uik[2]*u[2];
           rtmp_ptr[1] += uik[3]*u[0] + uik[4]*u[1] + uik[5]*u[2];
           rtmp_ptr[2] += uik[6]*u[0] + uik[7]*u[1] + uik[8]*u[2];
@@ -125,13 +125,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
       for (j=jmin; j<jmax; j++) {
-         vj = bj[j];           /* block col. index of U */
-         u   = ba + j*9;
-         rtmp_ptr = rtmp + vj*9;
-         for (k1=0; k1<9; k1++) {
-           *u++        = *rtmp_ptr;
-           *rtmp_ptr++ = 0.0;
-         }
+        vj       = bj[j];      /* block col. index of U */
+        u        = ba + j*9;
+        rtmp_ptr = rtmp + vj*9;
+        for (k1=0; k1<9; k1++) {
+          *u++        = *rtmp_ptr;
+          *rtmp_ptr++ = 0.0;
+        }
       }
 
       /* ... add k to row list for first nonzero entry in k-th row */
@@ -150,8 +150,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
   C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace;
   C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace;
 
-  C->assembled = PETSC_TRUE;
+  C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.3333*27*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

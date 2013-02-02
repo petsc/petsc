@@ -13,14 +13,14 @@ int main(int argc,char **args)
   PetscBool      aij,sbaij,flg;
   PetscViewer    fd;
   MatType        type = MATBAIJ;
-  PetscInt       n1 = 7, idx1[] = {1,5,6,8,9,12,15};
-  PetscInt       n2 = 5, idx2[] = {7,22,30,13,19};
+  PetscInt       n1   = 7, idx1[] = {1,5,6,8,9,12,15};
+  PetscInt       n2   = 5, idx2[] = {7,22,30,13,19};
   Vec            b,x;
   IS             is;
   PetscInt       i;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&aij);CHKERRQ(ierr);
   if (aij) type = MATAIJ;

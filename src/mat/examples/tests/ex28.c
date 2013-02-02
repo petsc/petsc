@@ -14,22 +14,23 @@ int main(int argc,char **args)
   PetscScalar    values[4];
   IS             rowperm,colperm;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,4,4,2,nnz,&A);CHKERRQ(ierr);
 
   /* build test matrix */
   values[0]=1.0;values[1]=-1.0;
-  col[0]=0;col[1]=2; i=0;
-  ierr = MatSetValues(A,1,&i,2,col,values,INSERT_VALUES);CHKERRQ(ierr);
+  col[0]   =0;col[1]=2; i=0;
+  ierr     = MatSetValues(A,1,&i,2,col,values,INSERT_VALUES);CHKERRQ(ierr);
   values[0]=1.0;
-  col[0]=1;i=1;
-  ierr = MatSetValues(A,1,&i,1,col,values,INSERT_VALUES);CHKERRQ(ierr);
+  col[0]   =1;i=1;
+  ierr     = MatSetValues(A,1,&i,1,col,values,INSERT_VALUES);CHKERRQ(ierr);
   values[0]=-1.0;
-  col[0]=3;i=2;
-  ierr = MatSetValues(A,1,&i,1,col,values,INSERT_VALUES);CHKERRQ(ierr);
+  col[0]   =3;i=2;
+  ierr     = MatSetValues(A,1,&i,1,col,values,INSERT_VALUES);CHKERRQ(ierr);
   values[0]=1.0;
-  col[0]=2;i=3;
+  col[0]   =2;i=3;
+
   ierr = MatSetValues(A,1,&i,1,col,values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -48,6 +49,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(x,PETSC_DECIDE,4);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+
   values[0]=0;values[1]=1.0;values[2]=-1.0;values[3]=1.0;
   for (i=0; i<4; i++) col[i]=i;
   ierr = VecSetValues(x,4,col,values,INSERT_VALUES);CHKERRQ(ierr);

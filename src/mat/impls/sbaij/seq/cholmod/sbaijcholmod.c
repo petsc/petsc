@@ -47,34 +47,39 @@ PetscErrorCode  CholmodStart(Mat F)
   if (chol->common) PetscFunctionReturn(0);
   ierr = PetscMalloc(sizeof(*chol->common),&chol->common);CHKERRQ(ierr);
   ierr = !cholmod_X_start(chol->common);CHKERRQ(ierr);
-  c = chol->common;
+
+  c                = chol->common;
   c->error_handler = CholmodErrorHandler;
 
 #define CHOLMOD_OPTION_DOUBLE(name,help) do {                            \
     PetscReal tmp = (PetscReal)c->name;                                  \
-    ierr = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
     c->name = (double)tmp;                                               \
-  } while (0)
+} while (0)
+
 #define CHOLMOD_OPTION_INT(name,help) do {                               \
     PetscInt tmp = (PetscInt)c->name;                                    \
-    ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
-  } while (0)
+} while (0)
+
 #define CHOLMOD_OPTION_SIZE_T(name,help) do {                            \
     PetscInt tmp = (PetscInt)c->name;                                    \
     ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
     if (tmp < 0) SETERRQ(((PetscObject)F)->comm,PETSC_ERR_ARG_OUTOFRANGE,"value must be positive"); \
     c->name = (size_t)tmp;                                               \
-  } while (0)
+} while (0)
+
 #define CHOLMOD_OPTION_TRUTH(name,help) do {                             \
-    PetscBool  tmp = (PetscBool)!!c->name;                              \
-    ierr = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    PetscBool tmp = (PetscBool) !!c->name;                              \
+    ierr    = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
-  } while (0)
+} while (0)
 
   ierr = PetscOptionsBegin(((PetscObject)F)->comm,((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
   chol->pack = (PetscBool)c->final_pack;
+
   ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
 
@@ -85,7 +90,8 @@ PetscErrorCode  CholmodStart(Mat F)
   CHOLMOD_OPTION_SIZE_T(maxrank,"Max rank of update, larger values are faster but use more memory [2,4,8]");
   {
     static const char *const list[] = {"SIMPLICIAL","AUTO","SUPERNODAL","MatCholmodFactorType","MAT_CHOLMOD_FACTOR_",0};
-    PetscEnum choice = (PetscEnum)c->supernodal;
+    PetscEnum                choice = (PetscEnum)c->supernodal;
+
     ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,&choice,0);CHKERRQ(ierr);
     c->supernodal = (int)choice;
   }
@@ -100,7 +106,7 @@ PetscErrorCode  CholmodStart(Mat F)
   }
   {
     PetscReal tmp[] = {(PetscReal)c->zrelax[0],(PetscReal)c->zrelax[1],(PetscReal)c->zrelax[2]};
-    PetscInt n = 3;
+    PetscInt  n     = 3;
     ierr = PetscOptionsRealArray("-mat_cholmod_zrelax","3 real supernodal relaxed amalgamation parameters","None",tmp,&n,&flg);CHKERRQ(ierr);
     if (flg && n != 3) SETERRQ(((PetscObject)F)->comm,PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_zrelax");
     if (flg) while (n--) c->zrelax[n] = (double)tmp[n];
@@ -120,24 +126,24 @@ PetscErrorCode  CholmodStart(Mat F)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatWrapCholmod_seqsbaij"
-static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool  values,cholmod_sparse *C,PetscBool  *aijalloc)
+static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool values,cholmod_sparse *C,PetscBool  *aijalloc)
 {
-  Mat_SeqSBAIJ *sbaij = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *sbaij = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(C,sizeof(*C));CHKERRQ(ierr);
   /* CHOLMOD uses column alignment, SBAIJ stores the upper factor, so we pass it on as a lower factor, swapping the meaning of row and column */
-  C->nrow  = (size_t)A->cmap->n;
-  C->ncol  = (size_t)A->rmap->n;
-  C->nzmax = (size_t)sbaij->maxnz;
-  C->p     = sbaij->i;
-  C->i     = sbaij->j;
-  C->x     = sbaij->a;
-  C->stype = -1;
-  C->itype = CHOLMOD_INT_TYPE;
-  C->xtype = CHOLMOD_SCALAR_TYPE;
-  C->dtype = CHOLMOD_DOUBLE;
+  C->nrow   = (size_t)A->cmap->n;
+  C->ncol   = (size_t)A->rmap->n;
+  C->nzmax  = (size_t)sbaij->maxnz;
+  C->p      = sbaij->i;
+  C->i      = sbaij->j;
+  C->x      = sbaij->a;
+  C->stype  = -1;
+  C->itype  = CHOLMOD_INT_TYPE;
+  C->xtype  = CHOLMOD_SCALAR_TYPE;
+  C->dtype  = CHOLMOD_DOUBLE;
   C->sorted = 1;
   C->packed = 1;
   *aijalloc = PETSC_FALSE;
@@ -149,19 +155,20 @@ static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool  values,cholmod_sp
 static PetscErrorCode VecWrapCholmod(Vec X,cholmod_dense *Y)
 {
   PetscErrorCode ierr;
-  PetscScalar *x;
-  PetscInt n;
+  PetscScalar    *x;
+  PetscInt       n;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(Y,sizeof(*Y));CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetSize(X,&n);CHKERRQ(ierr);
-  Y->x = (double*)x;
-  Y->nrow = n;
-  Y->ncol = 1;
+
+  Y->x     = (double*)x;
+  Y->nrow  = n;
+  Y->ncol  = 1;
   Y->nzmax = n;
-  Y->d = n;
-  Y->x = (double*)x;
+  Y->d     = n;
+  Y->x     = (double*)x;
   Y->xtype = CHOLMOD_SCALAR_TYPE;
   Y->dtype = CHOLMOD_DOUBLE;
   PetscFunctionReturn(0);
@@ -194,16 +201,16 @@ static const char *const CholmodOrderingMethods[] = {"User","AMD","METIS","NESDI
 #define __FUNCT__ "MatFactorInfo_CHOLMOD"
 static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
 {
-  Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
-  const cholmod_common *c = chol->common;
-  PetscErrorCode ierr;
-  PetscInt       i;
+  Mat_CHOLMOD          *chol = (Mat_CHOLMOD*)F->spptr;
+  const cholmod_common *c    = chol->common;
+  PetscErrorCode       ierr;
+  PetscInt             i;
 
   PetscFunctionBegin;
   if (F->ops->solve != MatSolve_CHOLMOD) PetscFunctionReturn(0);
   ierr = PetscViewerASCIIPrintf(viewer,"CHOLMOD run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Pack factors after symbolic factorization: %s\n",chol->pack?"TRUE":"FALSE");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Pack factors after symbolic factorization: %s\n",chol->pack ? "TRUE" : "FALSE");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.dbound            %g  (Smallest absolute value of diagonal entries of D)\n",c->dbound);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.grow0             %g\n",c->grow0);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.grow1             %g\n",c->grow1);CHKERRQ(ierr);
@@ -222,9 +229,9 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Common.prefer_upper      %d\n",c->prefer_upper);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.print             %d\n",c->print);CHKERRQ(ierr);
   for (i=0; i<c->nmethods; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Ordering method %D%s:\n",i,i==c->selected?" [SELECTED]":"");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Ordering method %D%s:\n",i,i==c->selected ? " [SELECTED]" : "");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  lnz %g, fl %g, prune_dense %g, prune_dense2 %g\n",
-        c->method[i].lnz,c->method[i].fl,c->method[i].prune_dense,c->method[i].prune_dense2);CHKERRQ(ierr);
+                                  c->method[i].lnz,c->method[i].fl,c->method[i].prune_dense,c->method[i].prune_dense2);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer,"Common.postorder         %d\n",c->postorder);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.default_nesdis    %d (use NESDIS instead of METIS for nested dissection)\n",c->default_nesdis);CHKERRQ(ierr);
@@ -275,9 +282,9 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecWrapCholmod(B,&cholB);CHKERRQ(ierr);
+  ierr     = VecWrapCholmod(B,&cholB);CHKERRQ(ierr);
   static_F = F;
-  cholX = cholmod_X_solve(CHOLMOD_A,chol->factor,&cholB,chol->common);
+  cholX    = cholmod_X_solve(CHOLMOD_A,chol->factor,&cholB,chol->common);
   if (!cholX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CHOLMOD failed");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,cholX->x,cholX->nrow*sizeof(*x));CHKERRQ(ierr);
@@ -296,12 +303,11 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc);CHKERRQ(ierr);
+  ierr     = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc);CHKERRQ(ierr);
   static_F = F;
-  ierr = !cholmod_X_factorize(&cholA,chol->factor,chol->common);
+  ierr     = !cholmod_X_factorize(&cholA,chol->factor,chol->common);
   if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
-  if (chol->common->status == CHOLMOD_NOT_POSDEF)
-    SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
+  if (chol->common->status == CHOLMOD_NOT_POSDEF) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
 
   if (aijalloc) {ierr = PetscFree3(cholA.p,cholA.i,cholA.x);CHKERRQ(ierr);}
 
@@ -322,14 +328,14 @@ PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatF
   size_t         fsize = 0;
 
   PetscFunctionBegin;
-  ierr = (*chol->Wrap)(A,PETSC_FALSE,&cholA,&aijalloc);CHKERRQ(ierr);
+  ierr     = (*chol->Wrap)(A,PETSC_FALSE,&cholA,&aijalloc);CHKERRQ(ierr);
   static_F = F;
   if (chol->factor) {
     ierr = !cholmod_X_resymbol(&cholA,fset,fsize,(int)chol->pack,chol->factor,chol->common);
     if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
   } else if (perm) {
     const PetscInt *ip;
-    ierr = ISGetIndices(perm,&ip);CHKERRQ(ierr);
+    ierr         = ISGetIndices(perm,&ip);CHKERRQ(ierr);
     chol->factor = cholmod_X_analyze_p(&cholA,(PetscInt*)ip,fset,fsize,chol->common);
     if (!chol->factor) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
     ierr = ISRestoreIndices(perm,&ip);CHKERRQ(ierr);
@@ -404,20 +410,21 @@ PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_CHOLMOD,&chol);CHKERRQ(ierr);
-  chol->Wrap               = MatWrapCholmod_seqsbaij;
-  chol->Destroy            = MatDestroy_SeqSBAIJ;
-  B->spptr                 = chol;
 
-  B->ops->view             = MatView_CHOLMOD;
+  chol->Wrap    = MatWrapCholmod_seqsbaij;
+  chol->Destroy = MatDestroy_SeqSBAIJ;
+  B->spptr      = chol;
+
+  B->ops->view                   = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
-  B->ops->destroy          = MatDestroy_CHOLMOD;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqsbaij_cholmod",MatFactorGetSolverPackage_seqsbaij_cholmod);CHKERRQ(ierr);
-  B->factortype            = MAT_FACTOR_CHOLESKY;
-  B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
-  B->preallocated          = PETSC_TRUE;
+  B->ops->destroy                = MatDestroy_CHOLMOD;
+  ierr                           = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqsbaij_cholmod",MatFactorGetSolverPackage_seqsbaij_cholmod);CHKERRQ(ierr);
+  B->factortype                  = MAT_FACTOR_CHOLESKY;
+  B->assembled                   = PETSC_TRUE; /* required by -ksp_view */
+  B->preallocated                = PETSC_TRUE;
 
   ierr = CholmodStart(B);CHKERRQ(ierr);
-  *F = B;
+  *F   = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

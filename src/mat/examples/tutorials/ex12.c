@@ -24,7 +24,7 @@ T*/
 PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 {
   PetscErrorCode ierr;
-  PetscInt       n = A->rmap->n,i,*cnt,*indices;
+  PetscInt       n    = A->rmap->n,i,*cnt,*indices;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
   PetscScalar    *vv;
 
@@ -66,14 +66,14 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   A,B;
-  PetscViewer           fd;               /* viewer */
-  char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscErrorCode        ierr;
-  PetscBool             flg;
-  Vec                   v;
+  Mat            A,B;
+  PetscViewer    fd;                        /* viewer */
+  char           file[PETSC_MAX_PATH_LEN];  /* input file name */
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  Vec            v;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
 
   /*

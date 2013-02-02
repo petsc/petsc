@@ -18,10 +18,10 @@ int main(int argc,char **args)
   PetscScalar    value[4];
   PetscInt       ridx[2],cidx[2];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* input matrix C */
   if (loadmat) {
@@ -32,9 +32,9 @@ int main(int argc,char **args)
     ierr = MatLoad(C,fd);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a sbaij mat with bs>1  */
-    mbs=8;
+    mbs  =8;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
-    m = mbs*bs;
+    m    = mbs*bs;
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
     ierr = MatSetType(C,MATSBAIJ);CHKERRQ(ierr);
@@ -48,15 +48,17 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr = MatSetValues(C,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+        ierr   = MatSetValues(C,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
       i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
+
       value[0]=-1.0; value[1]=4.0;
-      ierr = MatSetValues(C,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValues(C,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
       i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs;
+
       value[0]=4.0; value[1] = -1.0;
-      ierr = MatSetValues(C,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValues(C,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
     /* off-diagonal blocks */
     value[0]=-1.0; value[1] = -0.1; value[2] = 0.0; value[3] = -1.0; /* row-oriented */

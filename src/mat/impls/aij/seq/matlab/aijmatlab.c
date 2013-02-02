@@ -201,7 +201,7 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionBegin;
   if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   F->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
-  F->assembled = PETSC_TRUE;
+  F->assembled            = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

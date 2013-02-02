@@ -9,7 +9,7 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili,ipvt[5];
@@ -26,7 +26,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
     jl[i] = mbs; il[0] = 0;
   }
   ierr = PetscMalloc2(25,MatScalar,&dk,25,MatScalar,&uik);CHKERRQ(ierr);
-  ai = a->i; aj = a->j; aa = a->a;
+  ai   = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */
   for (k = 0; k<mbs; k++) {
@@ -36,7 +36,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
     if (jmin < jmax) {
       ap = aa + jmin*25;
       for (j = jmin; j < jmax; j++) {
-        vj = aj[j];         /* block col. index */
+        vj       = aj[j];   /* block col. index */
         rtmp_ptr = rtmp + vj*25;
         for (i=0; i<25; i++) *rtmp_ptr++ = *ap++;
       }
@@ -44,7 +44,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,rtmp+k*25,25*sizeof(MatScalar));CHKERRQ(ierr);
-    i = jl[k]; /* first row to be added to k_th row  */
+    i    = jl[k]; /* first row to be added to k_th row  */
 
     while (i < mbs) {
       nexti = jl[i]; /* next row to be added to k_th row */
@@ -54,7 +54,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
 
       /* uik = -inv(Di)*U_bar(i,k) */
       d = ba + i*25;
-      u    = ba + ili*25;
+      u = ba + ili*25;
 
       uik[0] = -(d[0]*u[0] + d[5]*u[1] + d[10]*u[2] + d[15]*u[3] + d[20]*u[4]);
       uik[1] = -(d[1]*u[0] + d[6]*u[1] + d[11]*u[2] + d[16]*u[3] + d[21]*u[4]);
@@ -128,8 +128,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
       if (jmin < jmax) {
         for (j=jmin; j<jmax; j++) {
           /* rtmp += -U(i,k)^T * U_bar(i,j) */
-          rtmp_ptr = rtmp + bj[j]*25;
-          u = ba + j*25;
+          rtmp_ptr     = rtmp + bj[j]*25;
+          u            = ba + j*25;
           rtmp_ptr[0] +=  uik[0]*u[0] + uik[1]*u[1] + uik[2]*u[2] + uik[3]*u[3] + uik[4]*u[4];
           rtmp_ptr[1] +=  uik[5]*u[0] + uik[6]*u[1] + uik[7]*u[2] + uik[8]*u[3] + uik[9]*u[4];
           rtmp_ptr[2] += uik[10]*u[0]+ uik[11]*u[1]+ uik[12]*u[2]+ uik[13]*u[3]+ uik[14]*u[4];
@@ -173,20 +173,20 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
     /* save nonzero entries in k-th row of U ... */
 
     /* invert diagonal block */
-    d = ba+k*25;
+    d    = ba+k*25;
     ierr = PetscMemcpy(d,dk,25*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_5(d,ipvt,work,shift);CHKERRQ(ierr);
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
       for (j=jmin; j<jmax; j++) {
-         vj = bj[j];           /* block col. index of U */
-         u   = ba + j*25;
-         rtmp_ptr = rtmp + vj*25;
-         for (k1=0; k1<25; k1++) {
-           *u++        = *rtmp_ptr;
-           *rtmp_ptr++ = 0.0;
-         }
+        vj       = bj[j];      /* block col. index of U */
+        u        = ba + j*25;
+        rtmp_ptr = rtmp + vj*25;
+        for (k1=0; k1<25; k1++) {
+          *u++        = *rtmp_ptr;
+          *rtmp_ptr++ = 0.0;
+        }
       }
 
       /* ... add k to row list for first nonzero entry in k-th row */
@@ -204,8 +204,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
   C->ops->solvetranspose = MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace;
   C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace;
   C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace;
-  C->assembled = PETSC_TRUE;
-  C->preallocated = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+  C->preallocated        = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.3333*125*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

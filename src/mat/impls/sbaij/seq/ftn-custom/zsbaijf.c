@@ -11,11 +11,10 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL matcreateseqsbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *nz,
-                           PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
+void PETSC_STDCALL matcreateseqsbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,PetscInt *n,PetscInt *nz,PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
-  *ierr = MatCreateSeqSBAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*bs,*m,*n,*nz,nnz,newmat);
+  *ierr = MatCreateSeqSBAIJ(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bs,*m,*n,*nz,nnz,newmat);
 }
 
 void PETSC_STDCALL matseqsbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)

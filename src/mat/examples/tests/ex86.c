@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscScalar    value[3];
   PetscInt       i,col[3],n=10;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Create seqaij matrices of size n by (n+rank) */
@@ -19,14 +19,18 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(seqaijmat,n+rank,PETSC_DECIDE,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(seqaijmat);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(seqaijmat,3,PETSC_NULL);CHKERRQ(ierr);
+
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(seqaijmat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(seqaijmat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
+
   ierr = MatSetValues(seqaijmat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+
   ierr = MatSetValues(seqaijmat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(seqaijmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(seqaijmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

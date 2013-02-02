@@ -9,9 +9,9 @@ static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 #include <../src/mat/impls/aij/seq/aij.h>
 PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
+  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)inA->data;
   PetscScalar    oalpha = alpha;
-  PetscBLASInt   one = 1,bnz;
+  PetscBLASInt   one    = 1,bnz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -43,7 +43,7 @@ PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A,PetscScalar aa)
 PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
 {
   PetscErrorCode ierr;
-  PetscMPIInt size;
+  PetscMPIInt    size;
 
   ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
 
@@ -53,7 +53,7 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
                                              MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
 
   } else { /* MPIAIJ Matrix */
-    Mat_MPIAIJ     *a = (Mat_MPIAIJ*)mat->data;
+    Mat_MPIAIJ *a = (Mat_MPIAIJ*)mat->data;
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatScaleUserImpl_C",
                                              "MatScaleUserImpl_MPIAIJ",
                                              MatScaleUserImpl_MPIAIJ);CHKERRQ(ierr);
@@ -97,11 +97,11 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
 
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   /* create the matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);

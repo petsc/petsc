@@ -5,8 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MINPACKseq"
-PetscErrorCode MINPACKseq(PetscInt *n,const PetscInt *indrow,const PetscInt *jpntr,const PetscInt *indcol,const PetscInt *ipntr,PetscInt *list,PetscInt *ngrp,
-                          PetscInt *maxgrp,PetscInt *iwa)
+PetscErrorCode MINPACKseq(PetscInt *n,const PetscInt *indrow,const PetscInt *jpntr,const PetscInt *indcol,const PetscInt *ipntr,PetscInt *list,PetscInt *ngrp,PetscInt *maxgrp,PetscInt *iwa)
 {
   /* System generated locals */
   PetscInt i__1, i__2, i__3;
@@ -76,10 +75,10 @@ PetscErrorCode MINPACKseq(PetscInt *n,const PetscInt *indrow,const PetscInt *jpn
 
   /* Function Body */
   *maxgrp = 0;
-  i__1 = *n;
+  i__1    = *n;
   for (jp = 1; jp <= i__1; ++jp) {
     ngrp[jp] = *n;
-    iwa[jp] = 0;
+    iwa[jp]  = 0;
   }
 
   /*     Beginning of iteration loop. */
@@ -115,9 +114,7 @@ PetscErrorCode MINPACKseq(PetscInt *n,const PetscInt *indrow,const PetscInt *jpn
 
     i__2 = *maxgrp;
     for (jp = 1; jp <= i__2; ++jp) {
-      if (iwa[jp] != j) {
-          goto L50;
-      }
+      if (iwa[jp] != j) goto L50;
     }
     ++(*maxgrp);
 L50:

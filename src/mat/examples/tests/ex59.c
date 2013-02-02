@@ -16,10 +16,10 @@ int main(int argc,char **args)
   PetscBool      flg;
   char           type[256];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   ierr = PetscStrcpy(type,MATSAME);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   */
   for (i=0; i<m*n; i++) {
     for (j=0; j<m*n; j++) {
-      v = i + j + 1;
+      v    = i + j + 1;
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }

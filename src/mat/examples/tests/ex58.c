@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  n = m;
+  n    = m;
 
   /* ------- Assemble matrix, --------- */
 
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
     cols[0] = 0;
     cols[1] = 1;
     v[0]    = 2.0; v[1] = -1.0;
-    ierr = MatSetValues(A,1,&rstart,2,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValues(A,1,&rstart,2,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     rstart++;
   }
   if (rend == m) {
@@ -37,14 +37,14 @@ int main(int argc,char **argv)
     cols[0] = rend-1;
     cols[1] = rend;
     v[0]    = -1.0; v[1] = 2.0;
-    ierr = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   v[0] = -1.0; v[1] = 2.0; v[2] = -1.0;
   for (i=rstart; i<rend; i++) {
     cols[0] = i-1;
     cols[1] = i;
     cols[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValues(A,1,&i,3,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
 
   eq[0] = "not equal";
   eq[1] = "equal";
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);CHKERRQ(ierr);
+  ierr  = PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);

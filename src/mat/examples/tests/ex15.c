@@ -18,7 +18,7 @@ int main(int argc,char **args)
   MatFactorInfo  info;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
@@ -63,11 +63,12 @@ int main(int argc,char **args)
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %G\n",norm);CHKERRQ(ierr);
 
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  info.fill      = 2.0;
-  info.dtcol     = 0.0;
-  info.zeropivot = 1.e-14;
+  ierr               = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  info.fill          = 2.0;
+  info.dtcol         = 0.0;
+  info.zeropivot     = 1.e-14;
   info.pivotinblocks = 1.0;
+
   ierr = MatLUFactor(C,perm,iperm,&info);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

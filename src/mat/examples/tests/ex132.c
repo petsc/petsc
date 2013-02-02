@@ -21,11 +21,11 @@ int main(int argc,char **args)
   MatInfo        info;
 
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   /* Set flag if we are doing a nonsymmetric problem; the default is symmetric. */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric,PETSC_NULL);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int main(int argc,char **args)
   ierr = MatSeqAIJSetPreallocation(C2,5,PETSC_NULL);CHKERRQ(ierr);
   */
   for (Ii=Istart; Ii<Iend; Ii++) {
-    v = 1.0;
+    v    = 1.0;
     ierr = MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

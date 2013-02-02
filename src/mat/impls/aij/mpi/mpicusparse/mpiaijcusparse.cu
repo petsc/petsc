@@ -205,8 +205,8 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A)
 PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
-  Mat_MPIAIJ         *a               = (Mat_MPIAIJ*)A->data;
-  Mat_MPIAIJCUSPARSE *cusparseStruct  = (Mat_MPIAIJCUSPARSE*)a->spptr;
+  Mat_MPIAIJ         *a              = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE*)a->spptr;
 
   PetscFunctionBegin;
   try {

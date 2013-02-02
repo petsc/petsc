@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -87,8 +87,8 @@ int main(int argc,char **args)
     alpha=1.0;
     for (i=0; i<2; i++) {
       alpha -=0.1;
-      ierr = MatScale(A,alpha);CHKERRQ(ierr);
-      ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+      ierr   = MatScale(A,alpha);CHKERRQ(ierr);
+      ierr   = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
     /* Create vector x that is compatible with B */
@@ -106,6 +106,7 @@ int main(int argc,char **args)
       ierr = VecNorm(v1,NORM_2,&norm_abs);CHKERRQ(ierr);
       ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
       ierr = VecNorm(v1,NORM_2,&norm_tmp);CHKERRQ(ierr);
+
       norm_tmp /= norm_abs;
       if (norm_tmp > norm) norm = norm_tmp;
     }
@@ -140,7 +141,7 @@ int main(int argc,char **args)
     }
     for (i=rstart; i<rend; i++) {
       for (j=0; j<nzp; j++) {
-        ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
+        ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
       }
       ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
@@ -151,7 +152,7 @@ int main(int argc,char **args)
     /* Create R = P^T */
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
 
-    {/* Test R = P^T, C1 = R*B */
+    { /* Test R = P^T, C1 = R*B */
       ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
       ierr = MatTranspose(P,MAT_REUSE_MATRIX,&R);CHKERRQ(ierr);
       ierr = MatMatMult(R,B,MAT_REUSE_MATRIX,fill,&C1);CHKERRQ(ierr);
@@ -207,7 +208,7 @@ int main(int argc,char **args)
   if (Test_MatPtAP) {
     PetscInt PN;
     Mat      Cdup;
-    
+
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -226,7 +227,7 @@ int main(int argc,char **args)
     ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       for (j=0; j<nzp; j++) {
-        ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
+        ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
       }
       ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
@@ -244,8 +245,8 @@ int main(int argc,char **args)
     alpha=1.0;
     for (i=0; i<2; i++) {
       alpha -=0.1;
-      ierr = MatScale(A,alpha);CHKERRQ(ierr);
-      ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+      ierr   = MatScale(A,alpha);CHKERRQ(ierr);
+      ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
     /* Test MatDuplicate() */
@@ -303,6 +304,7 @@ int main(int argc,char **args)
       ierr = VecNorm(v4,NORM_2,&norm_abs);CHKERRQ(ierr);
       ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_2,&norm_tmp);CHKERRQ(ierr);
+
       norm_tmp /= norm_abs;
       if (norm_tmp > norm) norm = norm_tmp;
     }

@@ -601,7 +601,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         header[1] = mat->rmap->N;
         header[2] = N;
         header[3] = MATRIX_BINARY_FORMAT_DENSE;
-        ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+        ierr      = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
 
         /* get largest work array needed for transposing array */
         mmax = mat->rmap->n;
@@ -911,7 +911,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       ierr = PetscMemzero(tmp,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       ierr = PetscMemzero(tmp2,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       *nrm = 0.0;
-      v = mat->v;
+      v    = mat->v;
       for (j=0; j<mdn->A->cmap->n; j++) {
         for (i=0; i<mdn->A->rmap->n; i++) {
           tmp[j] += PetscAbsScalar(*v);  v++;
@@ -955,7 +955,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
     B = *matout;
   }
 
-  m = a->A->rmap->n; n = a->A->cmap->n; v = Aloc->v;
+  m    = a->A->rmap->n; n = a->A->cmap->n; v = Aloc->v;
   ierr = PetscMalloc(m*sizeof(PetscInt),&rwork);CHKERRQ(ierr);
   for (i=0; i<m; i++) rwork[i] = rstart + i;
   for (j=0; j<n; j++) {
@@ -1598,7 +1598,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
     ierr = PetscMalloc(maxnz*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
     /* read in my part of the matrix column indices  */
-    nz = procsnz[0];
+    nz   = procsnz[0];
     ierr = PetscMalloc(nz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT);CHKERRQ(ierr);
 
@@ -1654,7 +1654,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
     smycols = mycols;
     svals   = vals;
     for (i=0; i<m; i++) {
-      ierr = MatSetValues(newmat,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr     = MatSetValues(newmat,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
       smycols += ourlens[i];
       svals   += ourlens[i];
       jj++;

@@ -14,7 +14,7 @@ PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 
   PetscFunctionBegin;
   if (F) {
-    ierr = VecCopy(F,fd->w1);CHKERRQ(ierr);
+    ierr     = VecCopy(F,fd->w1);CHKERRQ(ierr);
     fd->fset = PETSC_TRUE;
   } else {
     fd->fset = PETSC_FALSE;
@@ -566,7 +566,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   }
   w3 = coloring->w3;
 
-    /* Compute all the local scale factors, including ghost points */
+  /* Compute all the local scale factors, including ghost points */
   ierr = VecGetLocalSize(x1_tmp,&N);CHKERRQ(ierr);
   ierr = VecGetArray(x1_tmp,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
@@ -607,6 +607,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) {
     coloring->currentcolor = k;
+
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - start;

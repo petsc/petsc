@@ -148,7 +148,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   n_row_rescue = 0; n_rescue = 0;
   if (*n_row_alloc_ok==0) *n_alloc_used = 0;
   else {
-    i = *n_row_alloc_ok - 1;
+    i             = *n_row_alloc_ok - 1;
     *n_alloc_used = (result->icols[i]-result->alloc_icol) +  result->row_nnz[i];
   }
 

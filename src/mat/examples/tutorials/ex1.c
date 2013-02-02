@@ -24,15 +24,15 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   A;                /* matrix */
-  PetscViewer           fd;               /* viewer */
-  char                  file[2][PETSC_MAX_PATH_LEN];     /* input file name */
-  IS                    isrow,iscol;      /* row and column permutations */
-  PetscErrorCode        ierr;
-  MatOrderingType       rtype = MATORDERINGRCM;
-  PetscBool             flg,PetscPreLoad = PETSC_FALSE;
+  Mat             A;                      /* matrix */
+  PetscViewer     fd;                     /* viewer */
+  char            file[2][PETSC_MAX_PATH_LEN];           /* input file name */
+  IS              isrow,iscol;            /* row and column permutations */
+  PetscErrorCode  ierr;
+  MatOrderingType rtype = MATORDERINGRCM;
+  PetscBool       flg,PetscPreLoad = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
 
   /*
@@ -58,38 +58,38 @@ int main(int argc,char **args)
   */
   PetscPreLoadBegin(PetscPreLoad,"Load");
 
-    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                           Load system i
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+                         Load system i
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /*
-       Open binary file.  Note that we use FILE_MODE_READ to indicate
-       reading from this file.
-    */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  /*
+     Open binary file.  Note that we use FILE_MODE_READ to indicate
+     reading from this file.
+  */
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
-    /*
-       Load the matrix; then destroy the viewer.
-    */
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatLoad(A,fd);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  /*
+     Load the matrix; then destroy the viewer.
+  */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
 
-    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    PetscPreLoadStage("Reordering");
-    ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
+  PetscPreLoadStage("Reordering");
+  ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
 
-    /*
-       Free work space.  All PETSc objects should be destroyed when they
-       are no longer needed.
-    */
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  /*
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   PetscPreLoadEnd();
 
   ierr = PetscFinalize();

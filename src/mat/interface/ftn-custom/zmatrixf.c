@@ -102,6 +102,7 @@ void PETSC_STDCALL  matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*
 {
   PetscObjectAllocateFortranPointers(*sp,1);
   ((PetscObject)*sp)->fortran_func_pointers[0] = (PetscVoidFunction)rem;
+
   *ierr = MatNullSpaceSetFunction(*sp,ournullfunction,ctx);
 }
 
@@ -136,8 +137,8 @@ void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscBool  *sym,Petsc
   at a time.
 */
 static PetscErrorCode    matgetrowactive = 0;
-static const PetscInt    *my_ocols = 0;
-static const PetscScalar *my_ovals = 0;
+static const PetscInt    *my_ocols       = 0;
+static const PetscScalar *my_ovals       = 0;
 
 void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
 {
@@ -148,8 +149,8 @@ void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *c
     PetscError(PETSC_COMM_SELF,__LINE__,"MatGetRow_Fortran",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONGSTATE,PETSC_ERROR_INITIAL,
                "Cannot have two MatGetRow() active simultaneously\n\
                call MatRestoreRow() before calling MatGetRow() a second time");
-     *ierr = 1;
-     return;
+    *ierr = 1;
+    return;
   }
 
   CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = PETSC_NULL;
@@ -159,24 +160,24 @@ void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *c
   if (*ierr) return;
 
   if (oocols) { *ierr = PetscMemcpy(cols,my_ocols,(*ncols)*sizeof(PetscInt)); if (*ierr) return;}
-  if (oovals) { *ierr = PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(PetscScalar)); if (*ierr) return; }
+  if (oovals) { *ierr = PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(PetscScalar)); if (*ierr) return;}
   matgetrowactive = 1;
 }
 
 void PETSC_STDCALL matrestorerow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
 {
-  const PetscInt         **oocols = &my_ocols;
+  const PetscInt    **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
   if (!matgetrowactive) {
     PetscError(PETSC_COMM_SELF,__LINE__,"MatRestoreRow_Fortran",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONGSTATE,PETSC_ERROR_INITIAL,
                "Must call MatGetRow() first");
-     *ierr = 1;
-     return;
+    *ierr = 1;
+    return;
   }
   CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = PETSC_NULL;
   CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = PETSC_NULL;
 
-  *ierr = MatRestoreRow(*mat,*row,ncols,oocols,oovals);
+  *ierr           = MatRestoreRow(*mat,*row,ncols,oocols,oovals);
   matgetrowactive = 0;
 }
 
@@ -206,8 +207,8 @@ void PETSC_STDCALL matseqaijgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscE
 
 void PETSC_STDCALL matseqaijrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  PetscScalar          *lx;
-  PetscInt                  m,n;
+  PetscScalar *lx;
+  PetscInt    m,n;
 
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
@@ -226,8 +227,8 @@ void PETSC_STDCALL matdensegetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscEr
 
 void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  PetscScalar          *lx;
-  PetscInt                  m,n;
+  PetscScalar *lx;
+  PetscInt    m,n;
 
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
@@ -268,7 +269,7 @@ void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReu
 */
 void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
 {
-  Mat *lsmat;
+  Mat      *lsmat;
   PetscInt i;
 
   if (*scall == MAT_INITIAL_MATRIX) {
@@ -431,7 +432,7 @@ void PETSC_STDCALL   maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFacto
   *__ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-void PETSC_STDCALL   maticcfactor_(Mat *mat,IS *row, MatFactorInfo* info, int *__ierr)
+void PETSC_STDCALL   maticcfactor_(Mat *mat,IS *row, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactor(*mat,*row,info);
 }

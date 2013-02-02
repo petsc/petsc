@@ -10,13 +10,13 @@ static char help[] = "Reads a matrix and vector from a file and writes to anothe
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscBool   flg;
-  Vec         x;
-  Mat         A;
-  char        file[256];
-  PetscViewer fd;
+  PetscBool      flg;
+  Vec            x;
+  Mat            A;
+  char           file[256];
+  PetscViewer    fd;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",file,256,&flg);CHKERRQ(ierr);

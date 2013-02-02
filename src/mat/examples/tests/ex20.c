@@ -7,21 +7,21 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               C,A;
-  PetscInt          i,j,m = 5,n = 4,Ii,J;
-  PetscErrorCode    ierr;
-  PetscMPIInt       rank,size;
-  PetscScalar       v;
-  char              mtype[256];
+  Mat            C,A;
+  PetscInt       i,j,m = 5,n = 4,Ii,J;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscScalar    v;
+  char           mtype[256];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* This example does not work correctly for np > 2 */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 2) SETERRQ(PETSC_COMM_WORLD,1,"Use np <= 2");
 
- /* Create the matrix for the five point stencil, YET AGAIN */
+  /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);

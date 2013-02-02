@@ -8,16 +8,16 @@
 #include <../src/sys/utils/hash.h>
 
 struct _MatStashSeqIJ {
-  PetscInt      n;
-  PetscBool     multivalued;
-  PetscHashIJ   h;
+  PetscInt    n;
+  PetscBool   multivalued;
+  PetscHashIJ h;
 };
 typedef struct _MatStashSeqIJ *MatStashSeqIJ;
 
 struct _MatStashMPIIJ {
-  PetscLayout rmap;
-  MatStashSeqIJ  astash, bstash;
-  PetscBool   assembled;
+  PetscLayout   rmap;
+  MatStashSeqIJ astash, bstash;
+  PetscBool     assembled;
 };
 typedef struct _MatStashMPIIJ *MatStashMPIIJ;
 
@@ -29,13 +29,13 @@ extern PetscErrorCode MatStashSeqIJExtend_Private(MatStashSeqIJ, PetscInt, const
 extern PetscErrorCode MatStashSeqIJSetPreallocation_Private(MatStashSeqIJ, PetscInt);
 extern PetscErrorCode MatStashSeqIJGetIndices_Private(MatStashSeqIJ, PetscInt*,PetscInt**, PetscInt**);
 extern PetscErrorCode MatStashSeqIJClear_Private(MatStashSeqIJ);
-extern PetscErrorCode MatStashSeqIJDestroy_Private(MatStashSeqIJ *);
+extern PetscErrorCode MatStashSeqIJDestroy_Private(MatStashSeqIJ*);
 
 
 extern PetscErrorCode MatStashMPIIJCreate_Private(PetscLayout, MatStashMPIIJ*);
 extern PetscErrorCode MatStashMPIIJGetMultivalued_Private(MatStashMPIIJ, PetscBool*);
 extern PetscErrorCode MatStashMPIIJSetMultivalued_Private(MatStashMPIIJ, PetscBool);
-extern PetscErrorCode MatStashMPIIJDestroy_Private(MatStashMPIIJ *);
+extern PetscErrorCode MatStashMPIIJDestroy_Private(MatStashMPIIJ*);
 extern PetscErrorCode MatStashMPIIJClear_Private(MatStashMPIIJ);
 
 extern PetscErrorCode MatStashMPIIJSetPreallocation_Private(MatStashMPIIJ, PetscInt, PetscInt);

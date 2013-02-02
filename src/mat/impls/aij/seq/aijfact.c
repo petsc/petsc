@@ -254,18 +254,18 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr          = PetscMalloc((bi[n]+1)*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
-  b->j          = bj;
-  b->i          = bi;
-  b->diag       = bdiag;
-  b->ilen       = 0;
-  b->imax       = 0;
-  b->row        = isrow;
-  b->col        = iscol;
-  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-  b->icol       = isicol;
-  ierr          = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc((bi[n]+1)*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
+  b->j    = bj;
+  b->i    = bi;
+  b->diag = bdiag;
+  b->ilen = 0;
+  b->imax = 0;
+  b->row  = isrow;
+  b->col  = iscol;
+  ierr    = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+  b->icol = isicol;
+  ierr    = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
 
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
   ierr     = PetscLogObjectMemory(B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
@@ -401,17 +401,17 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
 
   ierr = PetscMalloc((bdiag[0]+1)*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
 
-  b->j          = bj;
-  b->i          = bi;
-  b->diag       = bdiag;
-  b->ilen       = 0;
-  b->imax       = 0;
-  b->row        = isrow;
-  b->col        = iscol;
-  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-  b->icol       = isicol;
-  ierr          = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+  b->j    = bj;
+  b->i    = bi;
+  b->diag = bdiag;
+  b->ilen = 0;
+  b->imax = 0;
+  b->row  = isrow;
+  b->col  = iscol;
+  ierr    = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+  b->icol = isicol;
+  ierr    = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
 
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
   ierr     = PetscLogObjectMemory(B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
@@ -2803,8 +2803,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b                = (Mat_SeqSBAIJ*)fact->data;
-  b->singlemalloc  = PETSC_FALSE;
+  b               = (Mat_SeqSBAIJ*)fact->data;
+  b->singlemalloc = PETSC_FALSE;
 
   ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
 
@@ -2975,11 +2975,13 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   b->imax      = 0;
   b->row       = perm;
   b->col       = perm;
+
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
 
   b->icol          = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
+
   ierr = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(fact,ui[am]*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
 
@@ -3299,7 +3301,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscBool      missing;
 
   PetscFunctionBegin;
-  if (dt      == PETSC_DEFAULT) dt      = 0.005;
+  if (dt      == PETSC_DEFAULT) dt = 0.005;
   if (dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5*a->rmax);
 
   /* ------- symbolic factorization, can be reused ---------*/
@@ -3332,17 +3334,17 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
 
-  b->a          = ba;
-  b->j          = bj;
-  b->i          = bi;
-  b->diag       = bdiag;
-  b->ilen       = 0;
-  b->imax       = 0;
-  b->row        = isrow;
-  b->col        = iscol;
-  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
-  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-  b->icol       = isicol;
+  b->a    = ba;
+  b->j    = bj;
+  b->i    = bi;
+  b->diag = bdiag;
+  b->ilen = 0;
+  b->imax = 0;
+  b->row  = isrow;
+  b->col  = iscol;
+  ierr    = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+  b->icol = isicol;
 
   ierr     = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   ierr     = PetscLogObjectMemory(B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);

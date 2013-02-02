@@ -1,18 +1,18 @@
 
 #include <petsc-private/matimpl.h>
 
-const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
-              "SYMMETRIC",
-              "STRUCTURALLY_SYMMETRIC",
-              "NEW_DIAGONALS",
-              "IGNORE_OFF_PROC_ENTRIES",
-              "NEW_NONZERO_LOCATION_ERR",
-              "NEW_NONZERO_ALLOCATION_ERR","USE_HASH_TABLE",
-              "KEEP_NONZERO_PATTERN","IGNORE_ZERO_ENTRIES","USE_INODES",
-              "HERMITIAN",
-              "SYMMETRY_ETERNAL",
-              "CHECK_COMPRESSED_ROW",
-              "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
+const char       *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
+                                  "SYMMETRIC",
+                                  "STRUCTURALLY_SYMMETRIC",
+                                  "NEW_DIAGONALS",
+                                  "IGNORE_OFF_PROC_ENTRIES",
+                                  "NEW_NONZERO_LOCATION_ERR",
+                                  "NEW_NONZERO_ALLOCATION_ERR","USE_HASH_TABLE",
+                                  "KEEP_NONZERO_PATTERN","IGNORE_ZERO_ENTRIES","USE_INODES",
+                                  "HERMITIAN",
+                                  "SYMMETRY_ETERNAL",
+                                  "CHECK_COMPRESSED_ROW",
+                                  "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
 const char *const MPPTScotchStrategyTypes[] = {"QUALITY","SPEED","BALANCE","SAFETY","SCALABILITY","MPPTScotchStrategyType","MP_PTSCOTCH_",0};
 const char *const MPChacoGlobalTypes[] = {"","MULTILEVEL","SPECTRAL","","LINEAR","RANDOM","SCATTERED","MPChacoGlobalType","MP_CHACO_",0};
@@ -20,7 +20,7 @@ const char *const MPChacoLocalTypes[] = {"","KERNIGHAN","NONE","MPChacoLocalType
 const char *const MPChacoEigenTypes[] = {"LANCZOS","RQI","MPChacoEigenType","MP_CHACO_",0};
 
 extern PetscErrorCode  MatMFFDInitializePackage(const char[]);
-static PetscBool  MatPackageInitialized = PETSC_FALSE;
+static PetscBool MatPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "MatFinalizePackage"
 /*@C
@@ -40,11 +40,11 @@ PetscErrorCode  MatFinalizePackage(void)
   PetscFunctionBegin;
   while (names) {
     nnames = names->next;
-    ierr = PetscFree(names->bname);CHKERRQ(ierr);
-    ierr = PetscFree(names->sname);CHKERRQ(ierr);
-    ierr = PetscFree(names->mname);CHKERRQ(ierr);
-    ierr = PetscFree(names);CHKERRQ(ierr);
-    names = nnames;
+    ierr   = PetscFree(names->bname);CHKERRQ(ierr);
+    ierr   = PetscFree(names->sname);CHKERRQ(ierr);
+    ierr   = PetscFree(names->mname);CHKERRQ(ierr);
+    ierr   = PetscFree(names);CHKERRQ(ierr);
+    names  = nnames;
   }
   MatBaseNameList                  = PETSC_NULL;
   MatPackageInitialized            = PETSC_FALSE;
@@ -56,8 +56,8 @@ PetscErrorCode  MatFinalizePackage(void)
   MatColoringRegisterAllCalled     = PETSC_FALSE;
   MatPartitioningList              = PETSC_NULL;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
-  MatCoarsenList              = PETSC_NULL;
-  MatCoarsenRegisterAllCalled = PETSC_FALSE;
+  MatCoarsenList                   = PETSC_NULL;
+  MatCoarsenRegisterAllCalled      = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -78,10 +78,10 @@ PetscErrorCode  MatFinalizePackage(void)
 @*/
 PetscErrorCode  MatInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (MatPackageInitialized) PetscFunctionReturn(0);

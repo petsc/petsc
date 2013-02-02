@@ -6,13 +6,13 @@ static char help[] = "Tests MatMPIBAIJ format in sequential run \n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               A,B;
-  PetscInt          i,rstart,rend;
-  PetscMPIInt       rank,size;
-  PetscErrorCode    ierr;
-  PetscScalar       v;
+  Mat            A,B;
+  PetscInt       i,rstart,rend;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscScalar    v;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   ierr = MatSeqBAIJSetPreallocation(A,2,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A,2,2,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
 
-  v = 1.0;
+  v    = 1.0;
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);

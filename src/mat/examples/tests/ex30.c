@@ -27,7 +27,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -87,9 +87,11 @@ int main(int argc,char **args)
 
   /* Compute LU or ILU factor A */
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+
   info.fill          = 1.0;
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&LU);CHKERRQ(ierr);
   if (LU) {
     printf("Test LU...\n");
@@ -98,6 +100,7 @@ int main(int argc,char **args)
   } else {
     printf("Test ILU...\n");
     info.levels = lf;
+
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_ILU,&A);CHKERRQ(ierr);
     ierr = MatILUFactorSymbolic(A,C,row,col,&info);CHKERRQ(ierr);
   }
@@ -137,7 +140,7 @@ int main(int argc,char **args)
   CHOLESKY = LU;
   if (CHOLESKY) {
     printf("Test Cholesky...\n");
-    lf = -1;
+    lf   = -1;
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
   } else {
@@ -146,6 +149,7 @@ int main(int argc,char **args)
     info.fill          = 1.0;
     info.diagonal_fill = 0;
     info.zeropivot     = 0.0;
+
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
   }

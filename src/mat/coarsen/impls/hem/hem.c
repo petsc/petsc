@@ -538,7 +538,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       ierr = MatGetVecs(cMat, &vec, 0);CHKERRQ(ierr);
       /* cpcol_pe */
       vval = (PetscScalar)(rank);
-      for (kk=0,gid=my0;kk<nloc;kk++,gid++) {
+      for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
         ierr = VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES);CHKERRQ(ierr); /* set with GID */
       }
       ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
@@ -548,11 +548,11 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       ierr = VecGetArray(mpimat->lvec, &cpcol_gid);CHKERRQ(ierr); /* get proc ID in 'cpcol_gid' */
       ierr = VecGetLocalSize(mpimat->lvec, &n);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt), &cpcol_pe);CHKERRQ(ierr);
-      for (kk=0;kk<n;kk++) cpcol_pe[kk] = (PetscMPIInt)PetscRealPart(cpcol_gid[kk]);
+      for (kk=0; kk<n; kk++) cpcol_pe[kk] = (PetscMPIInt)PetscRealPart(cpcol_gid[kk]);
       ierr = VecRestoreArray(mpimat->lvec, &cpcol_gid);CHKERRQ(ierr);
 
       /* cpcol_gid */
-      for (kk=0,gid=my0;kk<nloc;kk++,gid++) {
+      for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
         vval = (PetscScalar)(gid);
         ierr = VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES);CHKERRQ(ierr); /* set with GID */
       }
@@ -566,11 +566,11 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       /* cpcol_matched */
       ierr = VecGetLocalSize(mpimat->lvec, &n);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscBool), &cpcol_matched);CHKERRQ(ierr);
-      for (kk=0;kk<n;kk++) cpcol_matched[kk] = PETSC_FALSE;
+      for (kk=0; kk<n; kk++) cpcol_matched[kk] = PETSC_FALSE;
     }
 
     /* need an inverse map - locals */
-    for (kk=0;kk<nloc;kk++) lid_cprowID[kk] = -1;
+    for (kk=0; kk<nloc; kk++) lid_cprowID[kk] = -1;
     /* set index into compressed row 'lid_cprowID' */
     if (matB) {
       ii = matB->compressedrow.i;
@@ -599,7 +599,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
     /* } */
 
     /* compute 'locMaxEdge' & 'locMaxPE', and create list of edges, count edges' */
-    for (nEdges=0,kk=0,gid=my0;kk<nloc;kk++,gid++) {
+    for (nEdges=0,kk=0,gid=my0; kk<nloc; kk++,gid++) {
       PetscReal   max_e = 0., tt;
       PetscScalar vval;
       PetscInt    lid   = kk;
@@ -703,30 +703,22 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
         PetscBool      isOK = PETSC_TRUE;
 
         /* skip if either (local) vertex is done already */
-        if (lid_matched[lid0] || (gid1>=my0 && gid1<Iend && lid_matched[gid1-my0])) {
-          continue;
-        }
+        if (lid_matched[lid0] || (gid1>=my0 && gid1<Iend && lid_matched[gid1-my0])) continue;
+
         /* skip if ghost vertex is done */
-        if (cpid1 != -1 && cpcol_matched[cpid1]) {
-          continue;
-        }
+        if (cpid1 != -1 && cpcol_matched[cpid1]) continue;
 
         nactive_edges++;
         /* skip if I have a bigger edge someplace (lid_max_ew gets updated) */
-        if (PetscRealPart(lid_max_ew[lid0]) > e->weight + 1.e-12) {
-          continue;
-        }
+        if (PetscRealPart(lid_max_ew[lid0]) > e->weight + 1.e-12) continue;
 
         if (cpid1 == -1) {
-          if (PetscRealPart(lid_max_ew[lid1]) > e->weight + 1.e-12) {
-            continue;
-          }
+          if (PetscRealPart(lid_max_ew[lid1]) > e->weight + 1.e-12) continue;
         } else {
           /* see if edge might get matched on other proc */
           PetscReal g_max_e = PetscRealPart(cpcol_max_ew[cpid1]);
-          if (g_max_e > e->weight + 1.e-12) {
-            continue;
-          } else if (e->weight > g_max_e - 1.e-12 && (PetscMPIInt)PetscRealPart(cpcol_max_pe[cpid1]) > rank) {
+          if (g_max_e > e->weight + 1.e-12) continue;
+          else if (e->weight > g_max_e - 1.e-12 && (PetscMPIInt)PetscRealPart(cpcol_max_pe[cpid1]) > rank) {
             /* check for max_e == to this edge and larger processor that will deal with this */
             continue;
           }
@@ -782,9 +774,8 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
 
             ierr = PetscCDAppendID(deleted_list, proc, cpid1);CHKERRQ(ierr); /* cache to send messages */
             ierr = PetscCDAppendID(deleted_list, proc, lid0);CHKERRQ(ierr);
-          } else {
-            continue;
-          }
+          } else continue;
+
           lid_matched[lid0] = PETSC_TRUE; /* keep track of what we've done this round */
           /* set projection */
           ierr = MatSetValues(P,1,&gid0,1,&gid0,&one,INSERT_VALUES);CHKERRQ(ierr);

@@ -7,7 +7,7 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_6"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  Mat_SeqSBAIJ   *a   = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
   IS             perm = b->row;
   PetscErrorCode ierr;
   const PetscInt *ai,*aj,*perm_ptr,mbs=a->mbs,*bi=b->i,*bj=b->j;
@@ -45,7 +45,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
         while (a2anew[j] != j) {
           k = a2anew[j]; a2anew[j] = a2anew[k]; a2anew[k] = k;
           for (k1=0; k1<36; k1++) {
-            dk[k1]       = aa[k*36+k1];
+            dk[k1]      = aa[k*36+k1];
             aa[k*36+k1] = aa[j*36+k1];
             aa[j*36+k1] = dk[k1];
           }
@@ -80,7 +80,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,w+k*36,36*sizeof(MatScalar));CHKERRQ(ierr);
-    i = jl[k]; /* first row to be added to k_th row  */
+    i    = jl[k]; /* first row to be added to k_th row  */
 
     while (i < mbs) {
       nexti = jl[i]; /* next row to be added to k_th row */
@@ -92,8 +92,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
       d = ba + i*36;
       u = ba + ili*36;
 
-      u0 = u[0]; u1 = u[1]; u2 = u[2]; u3 = u[3]; u4 = u[4]; u5 = u[5]; u6 = u[6];
-      u7 = u[7]; u8 = u[8]; u9 = u[9]; u10 = u[10]; u11 = u[11]; u12 = u[12]; u13 = u[13];
+      u0  = u[0]; u1 = u[1]; u2 = u[2]; u3 = u[3]; u4 = u[4]; u5 = u[5]; u6 = u[6];
+      u7  = u[7]; u8 = u[8]; u9 = u[9]; u10 = u[10]; u11 = u[11]; u12 = u[12]; u13 = u[13];
       u14 = u[14]; u15 = u[15]; u16 = u[16]; u17 = u[17]; u18 = u[18]; u19 = u[19]; u20 = u[20];
       u21 = u[21]; u22 = u[22]; u23 = u[23]; u24 = u[24]; u25 = u[25]; u26 = u[26]; u27 = u[27];
       u28 = u[28]; u29 = u[29]; u30 = u[30]; u31 = u[31]; u32 = u[32]; u33 = u[33]; u34 = u[34];
@@ -195,7 +195,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
         for (j=jmin; j<jmax; j++) {
           /* w += -U(i,k)^T * U_bar(i,j) */
           wp = w + bj[j]*36;
-          u = ba + j*36;
+          u  = ba + j*36;
 
           u0  = u[0];  u1  = u[1];  u2  = u[2];  u3  = u[3];  u4  = u[4];  u5  = u[5];  u6  = u[6];
           u7  = u[7];  u8  = u[8];  u9  = u[9];  u10 = u[10]; u11 = u[11]; u12 = u[12]; u13 = u[13];
@@ -259,20 +259,20 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
     /* save nonzero entries in k-th row of U ... */
 
     /* invert diagonal block */
-    d = ba+k*36;
+    d    = ba+k*36;
     ierr = PetscMemcpy(d,dk,36*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_6(d,shift);CHKERRQ(ierr);
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
       for (j=jmin; j<jmax; j++) {
-         vj = bj[j];           /* block col. index of U */
-         u   = ba + j*36;
-         wp = w + vj*36;
-         for (k1=0; k1<36; k1++) {
-           *u++        = *wp;
-           *wp++ = 0.0;
-         }
+        vj = bj[j];            /* block col. index of U */
+        u  = ba + j*36;
+        wp = w + vj*36;
+        for (k1=0; k1<36; k1++) {
+          *u++  = *wp;
+          *wp++ = 0.0;
+        }
       }
 
       /* ... add k to row list for first nonzero entry in k-th row */
@@ -290,10 +290,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
   }
 
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqSBAIJ_6_inplace;
   C->ops->solvetranspose = MatSolve_SeqSBAIJ_6_inplace;
-  C->assembled = PETSC_TRUE;
-  C->preallocated = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+  C->preallocated        = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.3333*216*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

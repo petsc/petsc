@@ -35,7 +35,7 @@ int main(int argc,char **args)
   Vec             xin, xout;
   VecScatter      scat;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
@@ -142,11 +142,16 @@ int main(int argc,char **args)
     for (i=0; i<m; i++) {
       ierr = MatGetRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
       for (j=0; j<nzl; j++) {
-        if (cols[j] >= rstart && cols[j] < rstart+n) {nzd[2*i] += 2; nzd[2*i+1] += 2;}
-        else {nzo[2*i] += 2; nzo[2*i+1] += 2;}
+        if (cols[j] >= rstart && cols[j] < rstart+n) {
+          nzd[2*i] += 2;
+          nzd[2*i+1] += 2;
+        } else {
+          nzo[2*i] += 2;
+          nzo[2*i+1] += 2;
+        }
       }
       nzmax = PetscMax(nzmax,nzd[2*i]+nzo[2*i]);
-      ierr = MatRestoreRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
+      ierr  = MatRestoreRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);
     ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);

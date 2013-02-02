@@ -16,10 +16,10 @@ int main(int argc,char **args)
   PetscScalar       v;
   const PetscScalar *values;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);

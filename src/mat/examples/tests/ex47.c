@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscRandom       r;
 
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
@@ -60,14 +60,14 @@ int main(int argc,char **args)
   if (!tflg) SETERRQ(PETSC_COMM_SELF,1,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
-   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
-   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y);CHKERRQ(ierr);
 
   ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
   ierr = MatGetDiagonal(B,y);CHKERRQ(ierr);
 
   ierr = VecEqual(x,y,&tflg);CHKERRQ(ierr);
-  if (!tflg)  SETERRQ(PETSC_COMM_SELF,1,"MatGetDiagonal() failed");
+  if (!tflg) SETERRQ(PETSC_COMM_SELF,1,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
@@ -75,12 +75,12 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,r);CHKERRQ(ierr);
   ierr = VecSetRandom(y,r);CHKERRQ(ierr);
 
-  ierr = MatDiagonalScale(A,x,y);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(B,x,y);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm1);CHKERRQ(ierr);
-  ierr = MatMult(B,x,y);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
+  ierr  = MatDiagonalScale(A,x,y);CHKERRQ(ierr);
+  ierr  = MatDiagonalScale(B,x,y);CHKERRQ(ierr);
+  ierr  = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr  = VecNorm(y,NORM_2,&norm1);CHKERRQ(ierr);
+  ierr  = MatMult(B,x,y);CHKERRQ(ierr);
+  ierr  = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
   if (rnorm<-0.1 || rnorm>0.01) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);CHKERRQ(ierr);

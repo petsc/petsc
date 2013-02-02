@@ -8,14 +8,14 @@ static char help[] = "Tests basic assembly of MATIJ using the edges of a 2d para
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  DM       da;
-  Mat      A;
-  PetscInt i,j,k,i0,j0,m,n,gi0,gj0,gm,gn,M = 4,N = 4, e0[2],e1[2];
+  DM             da;
+  Mat            A;
+  PetscInt       i,j,k,i0,j0,m,n,gi0,gj0,gm,gn,M = 4,N = 4, e0[2],e1[2];
 #if 0
   PetscBool preallocate,flag;
 #endif
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Create the DA and extract its size info. */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR,-M,-N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
@@ -40,11 +40,11 @@ int main(int argc,char **args)
   for (j = j0; j < j0+n; ++j) {
     for (i = i0; i < i0+m; ++i) {
       k = 0;
-      if (i+1 < gi0+gm) {/* there is a point to the right, so draw an edge to it.*/
+      if (i+1 < gi0+gm) { /* there is a point to the right, so draw an edge to it.*/
         e0[k] = i*M+j; e1[k] = (i+i)*M+j;
         ++k;
       }
-      if (j+1 < gj0+gn) {/* there is a point above, so draw an edge to it.*/
+      if (j+1 < gj0+gn) { /* there is a point above, so draw an edge to it.*/
         e0[k] = i*M+j; e1[k] = (i)*M+j+1;
         ++k;
       }

@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscScalar    data=100;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   /* offproc assembly */
   data = 5.0;
-  row = (M+start-1)%M;
+  row  = (M+start-1)%M;
   for (col=0; col<M; col++) {
     ierr = MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES);CHKERRQ(ierr);
   }
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   if (flg) {
     PetscScalar *bval;
     row /= bs;
-    col = start/bs;
+    col  = start/bs;
     ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&bval);CHKERRQ(ierr);
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;

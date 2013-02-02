@@ -14,7 +14,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  flg = PETSC_FALSE;
+  flg  = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-vec",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -36,10 +36,10 @@ int main(int argc,char **args)
       ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(x);CHKERRQ(ierr);
       ierr = VecSet(x,one);CHKERRQ(ierr);
-      }
+    }
   } else {
     ierr = VecLoad(x,fd);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = MatMult(A,x,b);CHKERRQ(ierr);

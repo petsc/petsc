@@ -6,10 +6,10 @@ static const char help[] = "Test parallel assembly of SBAIJ matrices\n\n";
 #define __FUNCT__ "Assemble"
 PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
 {
-  Mat A;
-  PetscInt first,last,i;
+  Mat            A;
+  PetscInt       first,last,i;
   PetscErrorCode ierr;
-  PetscMPIInt rank,size;
+  PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

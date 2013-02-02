@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   MatType        type = MATMPIBAIJ;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&flg);CHKERRQ(ierr);
   if (flg) type = MATMPIAIJ;
 

@@ -12,10 +12,10 @@
 EXTERN_C_BEGIN
 /* Chaco does not have an include file */
 extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
-    float *ewgts, float *x, float *y, float *z, char *outassignname,
-    char *outfilename, short *assignment, int architecture, int ndims_tot,
-    int mesh_dims[3], double *goal, int global_method, int local_method,
-    int rqi_flag, int vmax, int ndims, double eigtol, long seed);
+                     float *ewgts, float *x, float *y, float *z, char *outassignname,
+                     char *outfilename, short *assignment, int architecture, int ndims_tot,
+                     int mesh_dims[3], double *goal, int global_method, int local_method,
+                     int rqi_flag, int vmax, int ndims, double eigtol, long seed);
 
 extern int FREE_GRAPH;
 
@@ -80,29 +80,29 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 
   PetscFunctionBegin;
   FREE_GRAPH = 0; /* otherwise Chaco will attempt to free memory for adjacency graph */
-  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
+  ierr       = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+  ierr       = MPI_Comm_rank(((PetscObject)mat)->comm,&rank);CHKERRQ(ierr);
+  ierr       = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (size>1) {
     if (flg) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
-    ierr = PetscInfo(part,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
-    ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-    ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+    ierr   = PetscInfo(part,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+    ierr   = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+    ierr   = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
+    ierr   = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
+    ierr   = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr   = ISDestroy(&isrow);CHKERRQ(ierr);
+    ierr   = ISDestroy(&iscol);CHKERRQ(ierr);
     matSeq = *A;
-    ierr = PetscFree(A);CHKERRQ(ierr);
+    ierr   = PetscFree(A);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+    ierr   = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
     matSeq = mat;
   }
 
   if (!flg) { /* convert regular matrix to MPIADJ */
     ierr = MatConvert(matSeq,MATMPIADJ,MAT_INITIAL_MATRIX,&matAdj);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectReference((PetscObject)matSeq);CHKERRQ(ierr);
+    ierr   = PetscObjectReference((PetscObject)matSeq);CHKERRQ(ierr);
     matAdj = matSeq;
   }
 
@@ -125,8 +125,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 
   ierr = PetscMalloc((mat->rmap->N)*sizeof(short),&assignment);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(int)*start[nvtxs],&adjacency);CHKERRQ(ierr);
-  for (i=0;i<start[nvtxs];i++)
-    adjacency[i] = (adj->j)[i] + 1;   /* 1-based indexing */
+  for (i=0; i<start[nvtxs]; i++) adjacency[i] = (adj->j)[i] + 1; /* 1-based indexing */
 
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -139,8 +138,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 
   /* library call */
   ierr = interface(nvtxs,start,adjacency,vwgts,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
-            PETSC_NULL,PETSC_NULL,assignment,architecture,ndims_tot,mesh_dims,
-            PETSC_NULL,global_method,local_method,rqi_flag,vmax,ndims,eigtol,seed);
+                   PETSC_NULL,PETSC_NULL,assignment,architecture,ndims_tot,mesh_dims,
+                   PETSC_NULL,global_method,local_method,rqi_flag,vmax,ndims,eigtol,seed);
 
 #if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
@@ -153,17 +152,19 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   close(fd_stdout);
   close(fd_pipe[0]);
   close(fd_pipe[1]);
-  if (chaco->verbose) { ierr = PetscPrintf(((PetscObject)mat)->comm,mesg_log); }
+  if (chaco->verbose) {
+    ierr = PetscPrintf(((PetscObject)mat)->comm,mesg_log);
+  }
   ierr = PetscFree(mesg_log);CHKERRQ(ierr);
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
   ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);
-  for (i=0;i<nvtxs;i++) parttab[i] = assignment[i];
+  for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
 
   /* creation of the index set */
   nb_locals = mat->rmap->N / size;
-  locals = parttab + rank*nb_locals;
+  locals    = parttab + rank*nb_locals;
   if (rank < mat->rmap->N % size) {
     nb_locals++;
     locals += rank;
@@ -342,11 +343,11 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
   if (method==PETSC_DEFAULT) chaco->local_method = MP_CHACO_KERNIGHAN;
   else {
     switch (method) {
-      case MP_CHACO_KERNIGHAN:
-      case MP_CHACO_NONE:
-        chaco->local_method = method; break;
-      default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
+    case MP_CHACO_KERNIGHAN:
+    case MP_CHACO_NONE:
+      chaco->local_method = method; break;
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
     }
   }
   PetscFunctionReturn(0);
@@ -727,19 +728,19 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Chaco partitioning options");CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,(PetscEnum)chaco->global_method,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningChacoSetGlobal(part,global);CHKERRQ(ierr); }
-    ierr = PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,(PetscEnum)chaco->local_method,(PetscEnum*)&local,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningChacoSetLocal(part,local);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-mat_partitioning_chaco_coarse","Coarse level","MatPartitioningChacoSetCoarseLevel",0.0,&r,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningChacoSetCoarseLevel(part,r);CHKERRQ(ierr); }
-    ierr = PetscOptionsEnum("-mat_partitioning_chaco_eigen_solver","Eigensolver method","MatPartitioningChacoSetEigenSolver",MPChacoEigenTypes,(PetscEnum)chaco->eigen_method,(PetscEnum*)&eigen,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningChacoSetEigenSolver(part,eigen);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-mat_partitioning_chaco_eigen_tol","Eigensolver tolerance","MatPartitioningChacoSetEigenTol",chaco->eigtol,&r,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningChacoSetEigenTol(part,r);CHKERRQ(ierr); }
-    ierr = PetscOptionsInt("-mat_partitioning_chaco_eigen_number","Number of eigenvectors: 1, 2, or 3 (bi-, quadri-, or octosection)","MatPartitioningChacoSetEigenNumber",chaco->eignum,&i,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningChacoSetEigenNumber(part,i);CHKERRQ(ierr); }
-    ierr = PetscOptionsBool("-mat_partitioning_chaco_verbose","Show library output","",chaco->verbose,&chaco->verbose,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,(PetscEnum)chaco->global_method,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningChacoSetGlobal(part,global);CHKERRQ(ierr); }
+  ierr = PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,(PetscEnum)chaco->local_method,(PetscEnum*)&local,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningChacoSetLocal(part,local);CHKERRQ(ierr); }
+  ierr = PetscOptionsReal("-mat_partitioning_chaco_coarse","Coarse level","MatPartitioningChacoSetCoarseLevel",0.0,&r,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningChacoSetCoarseLevel(part,r);CHKERRQ(ierr); }
+  ierr = PetscOptionsEnum("-mat_partitioning_chaco_eigen_solver","Eigensolver method","MatPartitioningChacoSetEigenSolver",MPChacoEigenTypes,(PetscEnum)chaco->eigen_method,(PetscEnum*)&eigen,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningChacoSetEigenSolver(part,eigen);CHKERRQ(ierr); }
+  ierr = PetscOptionsReal("-mat_partitioning_chaco_eigen_tol","Eigensolver tolerance","MatPartitioningChacoSetEigenTol",chaco->eigtol,&r,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningChacoSetEigenTol(part,r);CHKERRQ(ierr); }
+  ierr = PetscOptionsInt("-mat_partitioning_chaco_eigen_number","Number of eigenvectors: 1, 2, or 3 (bi-, quadri-, or octosection)","MatPartitioningChacoSetEigenNumber",chaco->eignum,&i,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningChacoSetEigenNumber(part,i);CHKERRQ(ierr); }
+  ierr = PetscOptionsBool("-mat_partitioning_chaco_verbose","Show library output","",chaco->verbose,&chaco->verbose,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -748,7 +749,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 #define __FUNCT__ "MatPartitioningDestroy_Chaco"
 PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 {
-  MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
+  MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*) part->data;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
@@ -789,7 +790,7 @@ PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
   MatPartitioning_Chaco *chaco;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(part,MatPartitioning_Chaco,&chaco);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,MatPartitioning_Chaco,&chaco);CHKERRQ(ierr);
   part->data = (void*)chaco;
 
   chaco->global_method = MP_CHACO_MULTILEVEL;

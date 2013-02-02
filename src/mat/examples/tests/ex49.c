@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = m;
+  n    = m;
   ierr = PetscOptionsHasName(PETSC_NULL,"-rect1",&flg);CHKERRQ(ierr);
   if (flg) {n += 2; rect = 1;}
   ierr = PetscOptionsHasName(PETSC_NULL,"-rect2",&flg);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
-      v=10*i+j;
+      v    = 10*i+j;
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   /* Print info about original matrix */
   ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %D, allocated nonzeros = %D\n",
-                    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRQ(ierr);

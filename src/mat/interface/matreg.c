@@ -5,7 +5,7 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h" I*/
 #include <stdarg.h> /* Variable-length arg lists. */
 
-PetscBool  MatRegisterAllCalled = PETSC_FALSE;
+PetscBool MatRegisterAllCalled = PETSC_FALSE;
 
 /*
    Contains the list of registered Mat routines
@@ -66,6 +66,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   /* free the old data structure if it existed */
   if (mat->ops->destroy) {
     ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
+
     mat->ops->destroy = PETSC_NULL;
   }
   mat->preallocated = PETSC_FALSE;
@@ -101,6 +102,7 @@ PetscErrorCode  MatRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&MatList);CHKERRQ(ierr);
+
   MatRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

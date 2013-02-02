@@ -16,99 +16,100 @@ extern PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat,Vec,Vec,Vec);
 #define __FUNCT__ "MPISBSTRM_create_sbstrm"
 PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 {
-  Mat_MPISBAIJ     *a = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqSBAIJ     *Aij = (Mat_SeqSBAIJ*)(a->A->data), *Bij = (Mat_SeqSBAIJ*)(a->B->data);
+  Mat_MPISBAIJ *a   = (Mat_MPISBAIJ*)A->data;
+  Mat_SeqSBAIJ *Aij = (Mat_SeqSBAIJ*)(a->A->data), *Bij = (Mat_SeqSBAIJ*)(a->B->data);
   /*
   */
-  Mat_SeqSBSTRM   *sbstrmA, *sbstrmB;
-  PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
+  Mat_SeqSBSTRM *sbstrmA, *sbstrmB;
+  PetscInt      MROW = Aij->mbs, bs = a->A->rmap->bs;
 
   /* PetscInt       m = A->rmap->n;*/  /* Number of rows in the matrix. */
   /* PetscInt       nd = a->A->cmap->n;*/ /* number of columns in diagonal portion */
-  PetscInt       *ai = Aij->i, *bi = Bij->i;  /* From the CSR representation; points to the beginning  of each row. */
-  PetscInt       i,j,k;
-  PetscScalar    *aa = Aij->a,*ba = Bij->a;
+  PetscInt    *ai = Aij->i, *bi = Bij->i;     /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt    i,j,k;
+  PetscScalar *aa = Aij->a,*ba = Bij->a;
 
-  PetscInt      bs2,  rbs, cbs, slen, blen;
+  PetscInt       bs2,  rbs, cbs, slen, blen;
   PetscErrorCode ierr;
-  PetscScalar **asp;
-  PetscScalar **bsp;
+  PetscScalar    **asp;
+  PetscScalar    **bsp;
 
   PetscFunctionBegin;
   /* printf(" --- in MPISBSTRM_create_sbstrm, m=%d, nd=%d, bs=%d, MROW=%d\n", m,nd,bs,MROW); */
 
-  rbs = cbs = bs;
-  bs2 = bs*bs;
+  rbs  = cbs = bs;
+  bs2  = bs*bs;
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
 
   /* printf(" --- blen=%d, slen=%d\n", blen, slen);  */
 
-  ierr = PetscNewLog(a->A,Mat_SeqSBSTRM,&sbstrmA);CHKERRQ(ierr);
-  a->A->spptr = (void *) sbstrmA;
-  sbstrmA = (Mat_SeqSBSTRM*) a->A->spptr;
+  ierr         = PetscNewLog(a->A,Mat_SeqSBSTRM,&sbstrmA);CHKERRQ(ierr);
+  a->A->spptr  = (void*) sbstrmA;
+  sbstrmA      = (Mat_SeqSBSTRM*) a->A->spptr;
   sbstrmA->rbs = sbstrmA->cbs = bs;
-  ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmA->as);CHKERRQ(ierr);
+  ierr         = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmA->as);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &asp);CHKERRQ(ierr);
 
-  for (i=0;i<rbs;i++) asp[i] = sbstrmA->as + i*slen;
+  for (i=0; i<rbs; i++) asp[i] = sbstrmA->as + i*slen;
 
   for (k=0; k<blen; k++) {
-    for (j=0; j<cbs; j++)
-    for (i=0; i<rbs; i++)
-        asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
+    for (j=0; j<cbs; j++) {
+      for (i=0; i<rbs; i++) asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
+    }
   }
   switch (bs) {
-    case 4:
-      a->A->ops->mult          = MatMult_SeqSBSTRM_4;
-      a->A->ops->multtranspose = MatMult_SeqSBSTRM_4;
-      /* a->A->ops->sor   = MatSOR_SeqSBSTRM_4;  */
-      break;
-    case 5:
-      a->A->ops->mult          = MatMult_SeqSBSTRM_5;
-      a->A->ops->multtranspose = MatMult_SeqSBSTRM_5;
-      /* a->A->ops->sor   = MatSOR_SeqSBSTRM_5;  */
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
+  case 4:
+    a->A->ops->mult          = MatMult_SeqSBSTRM_4;
+    a->A->ops->multtranspose = MatMult_SeqSBSTRM_4;
+    /* a->A->ops->sor   = MatSOR_SeqSBSTRM_4;  */
+    break;
+  case 5:
+    a->A->ops->mult          = MatMult_SeqSBSTRM_5;
+    a->A->ops->multtranspose = MatMult_SeqSBSTRM_5;
+    /* a->A->ops->sor   = MatSOR_SeqSBSTRM_5;  */
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
   ierr = PetscFree(asp);CHKERRQ(ierr);
 
 
 /*.....*/
-  blen = bi[MROW]-bi[0];
-  slen = blen*bs;
-  ierr = PetscNewLog(a->B,Mat_SeqSBSTRM,&sbstrmB);CHKERRQ(ierr);
-  a->B->spptr = (void *) sbstrmB;
-  sbstrmB = (Mat_SeqSBSTRM*) a->B->spptr;
+  blen         = bi[MROW]-bi[0];
+  slen         = blen*bs;
+  ierr         = PetscNewLog(a->B,Mat_SeqSBSTRM,&sbstrmB);CHKERRQ(ierr);
+  a->B->spptr  = (void*) sbstrmB;
+  sbstrmB      = (Mat_SeqSBSTRM*) a->B->spptr;
   sbstrmB->rbs = sbstrmB->cbs = bs;
+
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmB->as);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &bsp);CHKERRQ(ierr);
+  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &bsp);CHKERRQ(ierr);
 
-  for (i=0;i<rbs;i++) bsp[i] = sbstrmB->as + i*slen;
+  for (i=0; i<rbs; i++) bsp[i] = sbstrmB->as + i*slen;
 
   for (k=0; k<blen; k++) {
-    for (j=0; j<cbs; j++)
-    for (i=0; i<rbs; i++)
-        bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
+    for (j=0; j<cbs; j++) {
+      for (i=0; i<rbs; i++) bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
+    }
   }
   switch (bs) {
-    case 4:
-      /* a->B->ops->mult             = MatMult_SeqSBSTRM_4; */
-      a->B->ops->multtranspose    = MatMultTranspose_SeqBSTRM_4;
-      a->B->ops->multadd          = MatMultAdd_SeqBSTRM_4;
-      /* a->B->ops->multtransposeadd = MatMultAdd_SeqSBSTRM_4; */
-      break;
-    case 5:
-      /* a->B->ops->mult             = MatMult_SeqSBSTRM_5; */
-      a->B->ops->multtranspose    = MatMultTranspose_SeqBSTRM_5;
-      a->B->ops->multadd          = MatMultAdd_SeqBSTRM_5;
-      /* a->B->ops->multtransposeadd = MatMultAdd_SeqSBSTRM_5; */
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
+  case 4:
+    /* a->B->ops->mult         = MatMult_SeqSBSTRM_4; */
+    a->B->ops->multtranspose = MatMultTranspose_SeqBSTRM_4;
+    a->B->ops->multadd       = MatMultAdd_SeqBSTRM_4;
+    /* a->B->ops->multtransposeadd = MatMultAdd_SeqSBSTRM_4; */
+    break;
+  case 5:
+    /* a->B->ops->mult         = MatMult_SeqSBSTRM_5; */
+    a->B->ops->multtranspose = MatMultTranspose_SeqBSTRM_5;
+    a->B->ops->multadd       = MatMultAdd_SeqBSTRM_5;
+    /* a->B->ops->multtransposeadd = MatMultAdd_SeqSBSTRM_5; */
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
   ierr = PetscFree(bsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -194,8 +195,8 @@ PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,MatReuse reuse
   }
   /* printf(" --- in MatConvert_MPISBAIJ_MPISBSTRM  -- 1 \n"); */
 
-  ierr = PetscNewLog(B,   Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
-  B->spptr    = (void *) sbstrm;
+  ierr     = PetscNewLog(B,   Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
+  B->spptr = (void*)sbstrm;
 
   /* Set function pointers for methods that we inherit from AIJ but override.
      B->ops->duplicate   = MatDuplicate_SBSTRM;

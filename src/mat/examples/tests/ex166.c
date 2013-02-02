@@ -17,7 +17,7 @@ static char help[] = "Tests MatPermute() for a square matrix in parallel.\n\n";
 int main(int argc,char **argv)
 {
   const struct {PetscInt i,j; PetscScalar v;} entries[] = {{0,3,1.},{1,2,2.},{2,1,3.},{2,4,4.},{3,0,5.},{3,3,6.},{4,1,7.},{4,4,8.}};
-  const PetscInt ixrow[5] = {4,2,1,3,0},ixcol[5] = {3,2,1,4,0};
+  const PetscInt ixrow[5]                               = {4,2,1,3,0},ixcol[5] = {3,2,1,4,0};
   Mat            A,B;
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,cstart,cend;
@@ -47,9 +47,9 @@ int main(int argc,char **argv)
   ierr = ISSetPermutation(isrow);CHKERRQ(ierr);
   ierr = ISSetPermutation(iscol);CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+  ierr        = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   view_sparse = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-view_sparse", &view_sparse, PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetBool(PETSC_NULL, "-view_sparse", &view_sparse, PETSC_NULL);CHKERRQ(ierr);
   if (!view_sparse) {
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   }

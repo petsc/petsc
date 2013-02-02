@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscRandom    r;
   PetscScalar    rand;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
@@ -59,10 +59,10 @@ int main(int argc,char **args)
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
     for (j=0; j<rank; j++) {
-      ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     }
-    ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
-    lsize   = (PetscInt)(rand*m);
+    ierr  = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+    lsize = (PetscInt)(rand*m);
     for (j=0; j<lsize; j++) {
       ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
       idx[j] = (PetscInt)(rand*m);

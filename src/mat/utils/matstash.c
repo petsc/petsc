@@ -134,7 +134,7 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
 
-  stash->space      = 0;
+  stash->space = 0;
 
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);

@@ -30,8 +30,7 @@ void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,PetscViewer *view
   *ierr = MatPartitioningView(*part,v);
 }
 
-void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),
-                                           PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(type,len,t);

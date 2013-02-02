@@ -30,7 +30,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
   PetscReal      tols[2];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -75,15 +75,15 @@ PetscInt main(PetscInt argc,char **args)
     printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,&lierr);
     evecs_array = arrayA;
-    ierr = PetscBLASIntCast(m,&nevs);CHKERRQ(ierr);
-    il   = 1;
-    ierr = PetscBLASIntCast(m,&iu);CHKERRQ(ierr);
+    ierr        = PetscBLASIntCast(m,&nevs);CHKERRQ(ierr);
+    il          = 1;
+    ierr        = PetscBLASIntCast(m,&iu);CHKERRQ(ierr);
   } else { /* test syevx()  */
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m,&iu));CHKERRQ(ierr);
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
-    ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-    ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
+    ierr  = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
 
     /* in the case "I", vl and vu are not referenced */
@@ -111,7 +111,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   tols[0] = 1.e-8;  tols[1] = 1.e-8;
-  ierr = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
+  ierr    = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
 
   /* Free work space. */
   for (i=0; i<nevs; i++) { ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
@@ -136,7 +136,7 @@ PetscInt main(PetscInt argc,char **args)
     minMN = PetscMin(m,n);
     maxMN = PetscMax(m,n);
     lwork = 5*minMN + maxMN;
-    ierr = PetscMalloc4(m*minMN,PetscScalar,&arrayU,m*minMN,PetscScalar,&arrayVT,m*minMN,PetscScalar,&arrayErr,lwork,PetscScalar,&work);CHKERRQ(ierr);
+    ierr  = PetscMalloc4(m*minMN,PetscScalar,&arrayU,m*minMN,PetscScalar,&arrayVT,m*minMN,PetscScalar,&arrayErr,lwork,PetscScalar,&work);CHKERRQ(ierr);
 
     /* Create matrix Err for checking error */
     ierr = MatCreate(PETSC_COMM_WORLD,&Err);CHKERRQ(ierr);
@@ -199,9 +199,9 @@ PetscInt main(PetscInt argc,char **args)
 #define __FUNCT__ "CkEigenSolutions"
 PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscReal *eval,Vec *evec,PetscReal *tols)
 {
-  PetscInt     ierr,i,j,nev;
-  Vec          vt1,vt2; /* tmp vectors */
-  PetscReal    norm,tmp,dot,norm_max,dot_max;
+  PetscInt  ierr,i,j,nev;
+  Vec       vt1,vt2;    /* tmp vectors */
+  PetscReal norm,tmp,dot,norm_max,dot_max;
 
   PetscFunctionBegin;
   nev = iu - il;
@@ -253,7 +253,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 #endif
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);
-   break;
+    break;
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
   }

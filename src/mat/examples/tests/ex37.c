@@ -15,7 +15,7 @@ int main(int argc,char **args)
   MatType        type;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -39,12 +39,12 @@ int main(int argc,char **args)
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=1; i<n-1; i++) {
     midx[2] = i-1; midx[1] = i; midx[0] = i+1;
-    ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = 0; midx[0] = 0; midx[1] = 1;
+  i    = 0; midx[0] = 0; midx[1] = 1;
   v[0] = 2.0; v[1] = -1.;
   ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
-  i = n-1; midx[0] = n-2; midx[1] = n-1;
+  i    = n-1; midx[0] = n-2; midx[1] = n-1;
   v[0] = -1.0; v[1] = 2.;
   ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
 

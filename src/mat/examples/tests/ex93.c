@@ -9,7 +9,7 @@ extern PetscErrorCode testPTAPRectangular(void);
 int main(int argc,char **argv)
 {
   Mat            A,B,C,D;
-  PetscScalar    a[]={1.,1.,0.,0.,1.,1.,0.,0.,1.};
+  PetscScalar    a[] ={1.,1.,0.,0.,1.,1.,0.,0.,1.};
   PetscInt       ij[]={0,1,2};
   PetscScalar    none=-1.;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscReal      norm;
   PetscMPIInt    size,rank;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -124,18 +124,17 @@ int main(int argc,char **argv)
 PetscErrorCode testPTAPRectangular(void)
 {
 
-  const int rows = 3;
-  const int cols = 5;
+  const int      rows = 3;
+  const int      cols = 5;
   PetscErrorCode _ierr;
-  int i;
-  Mat A;
-  Mat P;
-  Mat C;
+  int            i;
+  Mat            A;
+  Mat            P;
+  Mat            C;
 
   PetscFunctionBegin;
   /* set up A  */
-  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,
-                            1, PETSC_NULL, &A);
+  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,1, PETSC_NULL, &A);
   PETSc_CHKERRQ(_ierr);
   for (i=0; i<rows; i++) {
     _ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);
@@ -147,8 +146,7 @@ PetscErrorCode testPTAPRectangular(void)
   PETSc_CHKERRQ(_ierr);
 
   /* set up P */
-  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,
-                            5, PETSC_NULL, &P);
+  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,5, PETSC_NULL, &P);
   PETSc_CHKERRQ(_ierr);
   _ierr = MatSetValue(P, 0, 0,  1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
   _ierr = MatSetValue(P, 0, 1,  2.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);

@@ -5,7 +5,7 @@
 
 #include <petsc-private/matimpl.h>      /*I "petscmat.h" I*/
 
-PetscClassId  MAT_NULLSPACE_CLASSID;
+PetscClassId MAT_NULLSPACE_CLASSID;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceSetFunction"
@@ -84,18 +84,18 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
 @*/
 PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar *v[6],dots[3];
-  Vec vec[6];
-  PetscInt n,N,dim,nmodes,i,j;
+  PetscScalar       *v[6],dots[3];
+  Vec               vec[6];
+  PetscInt          n,N,dim,nmodes,i,j;
 
   PetscFunctionBegin;
   ierr = VecGetBlockSize(coords,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
   ierr = VecGetSize(coords,&N);CHKERRQ(ierr);
-  n /= dim;
-  N /= dim;
+  n   /= dim;
+  N   /= dim;
   switch (dim) {
   case 1:
     ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_TRUE,0,PETSC_NULL,sp);CHKERRQ(ierr);
@@ -103,10 +103,10 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   case 2:
   case 3:
     nmodes = (dim == 2) ? 3 : 6;
-    ierr = VecCreate(((PetscObject)coords)->comm,&vec[0]);CHKERRQ(ierr);
-    ierr = VecSetSizes(vec[0],dim*n,dim*N);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(vec[0],dim);CHKERRQ(ierr);
-    ierr = VecSetUp(vec[0]);CHKERRQ(ierr);
+    ierr   = VecCreate(((PetscObject)coords)->comm,&vec[0]);CHKERRQ(ierr);
+    ierr   = VecSetSizes(vec[0],dim*n,dim*N);CHKERRQ(ierr);
+    ierr   = VecSetBlockSize(vec[0],dim);CHKERRQ(ierr);
+    ierr   = VecSetUp(vec[0]);CHKERRQ(ierr);
     for (i=1; i<nmodes; i++) {ierr = VecDuplicate(vec[0],&vec[i]);CHKERRQ(ierr);}
     for (i=0; i<nmodes; i++) {ierr = VecGetArray(vec[i],&v[i]);CHKERRQ(ierr);}
     ierr = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
@@ -188,11 +188,11 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscViewerFormat format;
-    PetscInt i;
+    PetscInt          i;
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer,"MatNullSpace Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1?"":"s",sp->has_cnst?" and the constant":"");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : "");CHKERRQ(ierr);
     if (sp->remove) {ierr = PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n");CHKERRQ(ierr);}
     if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
       for (i=0; i<sp->n; i++) {
@@ -238,7 +238,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceSetFunction()
 @*/
-PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
+PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
 {
   MatNullSpace   sp;
   PetscErrorCode ierr;
@@ -270,12 +270,12 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
     ierr = PetscMalloc(n*sizeof(PetscScalar),&sp->alpha);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);
+      ierr        = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);
       sp->vecs[i] = vecs[i];
     }
   }
 
-  *SP          = sp;
+  *SP = sp;
   PetscFunctionReturn(0);
 }
 
@@ -350,7 +350,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
       ierr = PetscLogObjectParent(sp,sp->vec);CHKERRQ(ierr);
     }
     ierr = VecCopy(vec,sp->vec);CHKERRQ(ierr);
-    vec = *out = sp->vec;
+    vec  = *out = sp->vec;
   }
 
   if (sp->has_cnst) {
@@ -408,7 +408,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  n = sp->n;
+  n    = sp->n;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test_view",&flg1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
@@ -419,7 +419,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
       ierr = MatGetVecs(mat,&sp->vec,PETSC_NULL);CHKERRQ(ierr);
     }
   }
-  l    = sp->vec;
+  l = sp->vec;
 
   ierr = PetscViewerASCIIGetStdout(((PetscObject)sp)->comm,&viewer);CHKERRQ(ierr);
   if (sp->has_cnst) {
@@ -451,7 +451,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
       if (consistent) {
         ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
+        ierr       = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
         consistent = PETSC_FALSE;
       }
       ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);

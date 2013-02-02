@@ -241,7 +241,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildLowerTriMatrix(Mat A)
         AjLo[offset] = (PetscInt) i;
         AALo[offset] = (MatScalar) 1.0;
         offset      += 1;
-        
+
         v  += nz;
         vi += nz;
       }
@@ -256,7 +256,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildLowerTriMatrix(Mat A)
       ierr = cudaFreeHost(AiLo);CHKERRCUSP(ierr);
       ierr = cudaFreeHost(AjLo);CHKERRCUSP(ierr);
       ierr = cudaFreeHost(AALo);CHKERRCUSP(ierr);
-    } catch(char* ex) {
+    } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
     }
   }
@@ -323,7 +323,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildUpperTriMatrix(Mat A)
       ierr = cudaFreeHost(AiUp);CHKERRCUSP(ierr);
       ierr = cudaFreeHost(AjUp);CHKERRCUSP(ierr);
       ierr = cudaFreeHost(AAUp);CHKERRCUSP(ierr);
-    } catch(char* ex) {
+    } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
     }
   }

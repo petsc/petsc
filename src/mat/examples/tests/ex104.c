@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   const PetscInt *rows,*cols;
   PetscScalar    *v,rval;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      ierr = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);
+      ierr         = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
     }
   }

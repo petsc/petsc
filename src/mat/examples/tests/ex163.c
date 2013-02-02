@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */

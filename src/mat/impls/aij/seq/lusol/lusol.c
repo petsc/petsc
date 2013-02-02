@@ -37,17 +37,17 @@ void PETSC_STDCALL M6RDEL()
   ;
 }
 
-extern void PETSC_STDCALL LU1FAC (int *m, int *n, int *nnz, int *size, int *luparm,
-                        double *parmlu, double *data, int *indc, int *indr,
-                        int *rowperm, int *colperm, int *collen, int *rowlen,
-                        int *colstart, int *rowstart, int *rploc, int *cploc,
-                        int *rpinv, int *cpinv, double *w, int *inform);
+extern void PETSC_STDCALL LU1FAC(int *m, int *n, int *nnz, int *size, int *luparm,
+                                 double *parmlu, double *data, int *indc, int *indr,
+                                 int *rowperm, int *colperm, int *collen, int *rowlen,
+                                 int *colstart, int *rowstart, int *rploc, int *cploc,
+                                 int *rpinv, int *cpinv, double *w, int *inform);
 
-extern void PETSC_STDCALL LU6SOL (int *mode, int *m, int *n, double *rhs, double *x,
-                        int *size, int *luparm, double *parmlu, double *data,
-                        int *indc, int *indr, int *rowperm, int *colperm,
-                        int *collen, int *rowlen, int *colstart, int *rowstart,
-                        int *inform);
+extern void PETSC_STDCALL LU6SOL(int *mode, int *m, int *n, double *rhs, double *x,
+                                 int *size, int *luparm, double *parmlu, double *data,
+                                 int *indc, int *indr, int *rowperm, int *colperm,
+                                 int *collen, int *rowlen, int *colstart, int *rowstart,
+                                 int *inform);
 EXTERN_C_END
 
 extern PetscErrorCode MatDuplicate_LUSOL(Mat,MatDuplicateOption,Mat*);
