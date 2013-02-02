@@ -356,6 +356,7 @@
       call MatDestroy(Dmat,ierr)
       call MatDestroy(Bmat,ierr)
       call MatDestroy(Cmat,ierr)
+      call MatDestroy(solver%AmatLin,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(x2,ierr)
       call VecDestroy(x1,ierr)
