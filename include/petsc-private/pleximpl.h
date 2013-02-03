@@ -43,7 +43,7 @@ typedef struct {
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
   /* Submesh */
-  IS                   subpointMap;       /* map[submesh point] = original mesh point, original points are sorted so we can use PetscFindInt() */
+  DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
 
   /* Labels and numbering */
   DMLabel              labels;            /* Linked list of labels */
