@@ -252,14 +252,14 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
       PetscInt    coneOrientations[16] = {0, 0, 0,  0, -2, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
       PetscScalar vertexCoords[8]      = {-0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.5, 0.5};
       PetscInt    markerPoints[16]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 8, 1, 9, 1, 10, 1};
-      PetscInt    faultPoints[6]       = {7, 1, 3, 0, 4, 0};
+      PetscInt    faultPoints[2]       = {3, 4};
 
       ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for (p = 0; p < 8; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
-      for (p = 0; p < 3; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p*2], faultPoints[p*2+1]);CHKERRQ(ierr);
+      for(p = 0; p < 2; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
       }
     }
     break;
@@ -295,14 +295,14 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
       PetscInt    coneOrientations[47] = {0, 0, 0,  0,   0,  0,  0, -3,   0, -2, -2,   0, -2, -2,   0, -2, -2,   0,  0,  0,   0,  0, -2,   0,  0, -2,  -2,  0,  0,   0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
       PetscScalar vertexCoords[15]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
       PetscInt    markerPoints[20]     = {2, 1, 3, 1, 4, 1, 5, 1, 14, 1, 15, 1, 16, 1, 17, 1, 18, 1, 19, 1};
-      PetscInt    faultPoints[14]      = {10, 2, 17, 1, 18, 1, 19, 1, 3, 0, 4, 0, 5, 0};
+      PetscInt    faultPoints[3]      = {3, 4, 5};
 
       ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for (p = 0; p < 10; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
-      for (p = 0; p < 7; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p*2], faultPoints[p*2+1]);CHKERRQ(ierr);
+      for(p = 0; p < 3; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
       }
     }
     break;
@@ -338,14 +338,14 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
       PetscInt    coneOrientations[22] = {0, 0,  0,  0,   0,  0,  0, -2,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
       PetscScalar vertexCoords[12]     = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
       PetscInt    markerPoints[24]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 10, 1, 11, 1, 12, 1, 13, 1, 14, 1};
-      PetscInt    faultPoints[6]       = {9, 1, 3, 0, 4, 0};
+      PetscInt    faultPoints[2]       = {3, 4};
 
       ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for (p = 0; p < 12; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
-      for (p = 0; p < 3; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p*2], faultPoints[p*2+1]);CHKERRQ(ierr);
+      for(p = 0; p < 2; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
       }
     }
     break;
@@ -389,14 +389,14 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
       PetscInt    markerPoints[52]     = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1,
                                           14,1,15,1,16,1,17,1,18,1,19,1,
                                           25,1,26,1,27,1,28,1,29,1,30,1,31,1,32,1,33,1,34,1,35,1,36,1};
-      PetscInt    faultPoints[18]      = {17,2, 26,1,30,1,34,1,35,1, 3,0,4,0,7,0,8,0};
+      PetscInt    faultPoints[4]       = {3, 4, 7, 8};
 
       ierr = CreateTopology(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for(p = 0; p < 26; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
-      for(p = 0; p < 9; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p*2], faultPoints[p*2+1]);CHKERRQ(ierr);
+      for(p = 0; p < 4; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
       }
     }
     break;
@@ -446,14 +446,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
   }
   {
-    DM      hybridMesh = PETSC_NULL;
-    DMLabel label;
+    DM      hybridMesh = PETSC_NULL, faultMesh = PETSC_NULL;
+    DMLabel subpointMap, label;
 
-    ierr = DMPlexGetLabel(*dm, "fault", &label);CHKERRQ(ierr);
+    ierr = DMPlexCreateSubmesh(*dm, "fault", &faultMesh);CHKERRQ(ierr);
+    ierr = DMPlexGetSubpointMap(faultMesh, &subpointMap);CHKERRQ(ierr);
+    ierr = DMLabelDuplicate(subpointMap, &label);CHKERRQ(ierr);
+    ierr = DMLabelClearStratum(label, dim);CHKERRQ(ierr);
     ierr = DMLabelCohesiveComplete(*dm, label);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMPlexConstructCohesiveCells(*dm, "fault", &hybridMesh);CHKERRQ(ierr);
+    ierr = DMPlexConstructCohesiveCells(*dm, label, &hybridMesh);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = hybridMesh;
   }
