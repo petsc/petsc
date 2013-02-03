@@ -13,6 +13,7 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 #include <petscdmda.h>
 #include <petscts.h>
 
+static const char *const BoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","DMDABoundaryType","DMDA_BOUNDARY_",0};
 /*
    User-defined data structures and routines
 */
@@ -38,6 +39,8 @@ typedef struct {
   PetscScalar disper_coe; /* Dispersion coefficient */
   DM          da;
   PetscInt    st_width; /* Stencil width */
+  DMDABoundaryType bx; /* x boundary type */
+  DMDABoundaryType by; /* y boundary type */
 } AppCtx;
 
 PetscErrorCode Parameter_settings(AppCtx*);
@@ -61,7 +64,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(user.da,0,"X - the angle");
@@ -347,6 +350,8 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->rho    = 0.0;
   user->xmin   = -PETSC_PI;
   user->xmax   =  PETSC_PI;
+  user->bx     = DMDA_BOUNDARY_PERIODIC;
+  user->by     = DMDA_BOUNDARY_MIRROR;
 
   /*
      ymin of -3 seems to let the unstable solution move up and leave a zero in its wake
@@ -375,6 +380,8 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum("","-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum("","-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
