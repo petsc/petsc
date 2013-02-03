@@ -8,13 +8,13 @@ static char help[] = "Tests MatDenseGetArray() and MatView_SeqDense_Binary(), Ma
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat              A;
-  PetscInt         i,j,m = 3,n = 2,rstart,rend;
-  PetscErrorCode   ierr;
-  PetscScalar      v,*array;
-  PetscViewer      view;
+  Mat            A;
+  PetscInt       i,j,m = 3,n = 2,rstart,rend;
+  PetscErrorCode ierr;
+  PetscScalar    v,*array;
+  PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /*
       Create a parallel dense matrix shared by all processors

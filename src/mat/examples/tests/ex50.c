@@ -17,10 +17,10 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      flg;
   PetscScalar    val,*array;
-  FILE*          file;
+  FILE           *file;
   PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,256,&flg);CHKERRQ(ierr);

@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -69,9 +69,11 @@ int main(int argc,char **args)
 
   /* Compute CHOLESKY or ICC factor sA */
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+
   info.fill          = 1.0;
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
   if (CHOLESKY) {
     printf("Test CHOLESKY...\n");
@@ -80,6 +82,7 @@ int main(int argc,char **args)
   } else {
     printf("Test ICC...\n");
     info.levels = lf;
+
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
   }
@@ -112,7 +115,7 @@ int main(int argc,char **args)
 
   /* Free data structures */
   ierr = MatDestroy(&C);CHKERRQ(ierr);
- ierr = ISDestroy(&row);CHKERRQ(ierr);
+  ierr = ISDestroy(&row);CHKERRQ(ierr);
   ierr = ISDestroy(&col);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);

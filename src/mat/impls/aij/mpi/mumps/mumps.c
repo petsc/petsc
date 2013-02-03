@@ -470,7 +470,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
       }
     }
 
-    nz = nza + nzb; /* total nz of upper triangular part of mat */
+    nz   = nza + nzb; /* total nz of upper triangular part of mat */
     *nnz = nz;
     ierr = PetscMalloc((2*nz*sizeof(PetscInt)+nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
     col  = row + nz;
@@ -912,7 +912,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
          */
         if (!mumps->myid) {
           const PetscInt *idx;
-          PetscInt i,*perm_in;
+          PetscInt       i,*perm_in;
 
           ierr = PetscMalloc(M*sizeof(PetscInt),&perm_in);CHKERRQ(ierr);
           ierr = ISGetIndices(r,&idx);CHKERRQ(ierr);

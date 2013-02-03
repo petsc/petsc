@@ -9,13 +9,13 @@ struct MatNestISPair {
 };
 
 typedef struct {
-  PetscInt           nr,nc;        /* nr x nc blocks */
-  Mat                **m;
+  PetscInt             nr,nc;      /* nr x nc blocks */
+  Mat                  **m;
   struct MatNestISPair isglobal;
   struct MatNestISPair islocal;
-  Vec                *left,*right;
-  PetscInt           *row_len,*col_len;
-  PetscBool          splitassembly;
+  Vec                  *left,*right;
+  PetscInt             *row_len,*col_len;
+  PetscBool            splitassembly;
 } Mat_Nest;
 
 #endif

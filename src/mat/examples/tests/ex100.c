@@ -7,15 +7,15 @@ static char help[] = "Tests vatious routines in MatMAIJ format.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               A,B,MA;
-  PetscViewer       fd;
-  char              file[PETSC_MAX_PATH_LEN];
-  PetscInt          m,n,M,N,dof=1;
-  PetscMPIInt       rank,size;
-  PetscErrorCode    ierr;
-  PetscBool         flg;
+  Mat            A,B,MA;
+  PetscViewer    fd;
+  char           file[PETSC_MAX_PATH_LEN];
+  PetscInt       m,n,M,N,dof=1;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
 
   /* Test MatMultTransposeAdd() */
-   ierr = MatMultTransposeAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
+  ierr = MatMultTransposeAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulTransposeAdd() for MAIJ matrix");
 
   ierr = MatDestroy(&MA);CHKERRQ(ierr);

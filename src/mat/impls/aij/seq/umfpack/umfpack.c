@@ -386,9 +386,9 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   PetscInt       m=A->rmap->n,n=A->cmap->n,idx;
 
-  const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"};
-  const char     *scale[]={"NONE","SUM","MAX"};
-  PetscBool      flg;
+  const char *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC"};
+  const char *scale[]   ={"NONE","SUM","MAX"};
+  PetscBool  flg;
 
   PetscFunctionBegin;
   /* Create the factorization matrix F */
@@ -405,9 +405,9 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_umfpack",MatFactorGetSolverPackage_seqaij_umfpack);CHKERRQ(ierr);
 
-  B->factortype            = MAT_FACTOR_LU;
-  B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
-  B->preallocated          = PETSC_TRUE;
+  B->factortype   = MAT_FACTOR_LU;
+  B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
+  B->preallocated = PETSC_TRUE;
 
   /* initializations */
   /* ------------------------------------------------*/

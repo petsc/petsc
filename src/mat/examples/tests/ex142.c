@@ -7,45 +7,45 @@ static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
 
 #include <petscmat.h>
 #include <fftw3.h>
-#include<fftw3-mpi.h>
+#include <fftw3-mpi.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
-  const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
-  PetscMPIInt    size;
-  PetscInt       n = 10,N,Ny,ndim=4,dim[4],DIM,i;
-  Vec            x,y,z;
-  PetscScalar    s;
-  PetscRandom    rdm;
-  PetscReal      enorm;
-  PetscInt       func=RANDOM;
-  FuncType       function = RANDOM;
-  PetscBool      view = PETSC_FALSE;
-  PetscErrorCode ierr;
-  PetscScalar    *x_array,*y_array,*z_array;
-  fftw_plan      fplan,bplan;
+  const char      *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
+  PetscMPIInt     size;
+  PetscInt        n = 10,N,Ny,ndim=4,dim[4],DIM,i;
+  Vec             x,y,z;
+  PetscScalar     s;
+  PetscRandom     rdm;
+  PetscReal       enorm;
+  PetscInt        func     =RANDOM;
+  FuncType        function = RANDOM;
+  PetscBool       view     = PETSC_FALSE;
+  PetscErrorCode  ierr;
+  PetscScalar     *x_array,*y_array,*z_array;
+  fftw_plan       fplan,bplan;
   const ptrdiff_t N0 = 20, N1 = 20;
 
   ptrdiff_t alloc_local, local_n0, local_0_start;
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
+  ierr       = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   alloc_local=fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD,&local_n0, &local_0_start);
 
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, PETSC_NULL);CHKERRQ(ierr);
-    function = (FuncType) func;
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
+  ierr     = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, PETSC_NULL);CHKERRQ(ierr);
+  function = (FuncType) func;
+  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 
   for (DIM = 0; DIM < ndim; DIM++) {
-    dim[DIM]  = n; /* size of real space vector in DIM-dimension */
+    dim[DIM] = n;  /* size of real space vector in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
@@ -85,20 +85,20 @@ PetscInt main(PetscInt argc,char **args)
 
     switch (DIM) {
     case 1:
-      fplan = fftw_plan_dft_r2c_1d(dim[0], (double *)x_array, (fftw_complex*)y_array, flags);
-      bplan = fftw_plan_dft_c2r_1d(dim[0], (fftw_complex*)y_array, (double *)z_array, flags);
+      fplan = fftw_plan_dft_r2c_1d(dim[0], (double*)x_array, (fftw_complex*)y_array, flags);
+      bplan = fftw_plan_dft_c2r_1d(dim[0], (fftw_complex*)y_array, (double*)z_array, flags);
       break;
     case 2:
-      fplan = fftw_plan_dft_r2c_2d(dim[0],dim[1],(double *)x_array, (fftw_complex*)y_array,flags);
-      bplan = fftw_plan_dft_c2r_2d(dim[0],dim[1],(fftw_complex*)y_array,(double *)z_array,flags);
+      fplan = fftw_plan_dft_r2c_2d(dim[0],dim[1],(double*)x_array, (fftw_complex*)y_array,flags);
+      bplan = fftw_plan_dft_c2r_2d(dim[0],dim[1],(fftw_complex*)y_array,(double*)z_array,flags);
       break;
     case 3:
-      fplan = fftw_plan_dft_r2c_3d(dim[0],dim[1],dim[2],(double *)x_array, (fftw_complex*)y_array,flags);
-      bplan = fftw_plan_dft_c2r_3d(dim[0],dim[1],dim[2],(fftw_complex*)y_array,(double *)z_array,flags);
+      fplan = fftw_plan_dft_r2c_3d(dim[0],dim[1],dim[2],(double*)x_array, (fftw_complex*)y_array,flags);
+      bplan = fftw_plan_dft_c2r_3d(dim[0],dim[1],dim[2],(fftw_complex*)y_array,(double*)z_array,flags);
       break;
     default:
-      fplan = fftw_plan_dft_r2c(DIM,dim,(double *)x_array, (fftw_complex*)y_array,flags);
-      bplan = fftw_plan_dft_c2r(DIM,dim,(fftw_complex*)y_array,(double *)z_array,flags);
+      fplan = fftw_plan_dft_r2c(DIM,dim,(double*)x_array, (fftw_complex*)y_array,flags);
+      bplan = fftw_plan_dft_c2r(DIM,dim,(fftw_complex*)y_array,(double*)z_array,flags);
       break;
     }
 
@@ -146,7 +146,7 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
     /*------------------------------------------------------------------*/
-    s = 1.0/(PetscReal)N;
+    s    = 1.0/(PetscReal)N;
     ierr = VecScale(z,s);CHKERRQ(ierr);
     if (view) {ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     if (view) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}

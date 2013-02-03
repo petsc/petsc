@@ -17,23 +17,23 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank,size;
-  PetscInt        N0=50,N1=20,N=N0*N1;
-  PetscRandom     rdm;
-  PetscScalar     a;
-  PetscReal       enorm;
-  Vec             x,y,z;
-  PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       N0=50,N1=20,N=N0*N1;
+  PetscRandom    rdm;
+  PetscScalar    a;
+  PetscReal      enorm;
+  Vec            x,y,z;
+  PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
 #endif
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
@@ -46,18 +46,19 @@ PetscInt main(PetscInt argc,char **args)
   if (!use_interface) {
     /* Use mpi FFTW without PETSc-FFTW interface, 2D case only */
     /*---------------------------------------------------------*/
-    fftw_plan       fplan,bplan;
-    fftw_complex    *data_in,*data_out,*data_out2;
-    ptrdiff_t       alloc_local,local_n0,local_0_start;
+    fftw_plan    fplan,bplan;
+    fftw_complex *data_in,*data_out,*data_out2;
+    ptrdiff_t    alloc_local,local_n0,local_0_start;
 
     if (!rank) printf("Use FFTW without PETSc-FFTW interface\n");
     fftw_mpi_init();
-    N = N0*N1;
+    N           = N0*N1;
     alloc_local = fftw_mpi_local_size_2d(N0,N1,PETSC_COMM_WORLD,&local_n0,&local_0_start);
 
     data_in   = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
     data_out  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
     data_out2 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_in,&x);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real Space vector");CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,(PetscInt)local_n0*N1,(PetscInt)N,(const PetscScalar*)data_out,&y);CHKERRQ(ierr);
@@ -77,7 +78,7 @@ PetscInt main(PetscInt argc,char **args)
     fftw_execute(bplan);
 
     /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
-    a = 1.0/(PetscReal)N;
+    a    = 1.0/(PetscReal)N;
     ierr = VecScale(z,a);CHKERRQ(ierr);
     if (view) {ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
@@ -101,9 +102,9 @@ PetscInt main(PetscInt argc,char **args)
 
     N=1;
     for (i=1; i<5; i++) {
-      DIM = i;
+      DIM  = i;
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
-      for (k=0;k<i;k++) {
+      for (k=0; k<i; k++) {
         dim[k]=30;
       }
       N *= dim[i-1];
@@ -133,7 +134,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
       /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
-      a = 1.0/(PetscReal)N;
+      a    = 1.0/(PetscReal)N;
       ierr = VecScale(z,a);CHKERRQ(ierr);
       if (view) {ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);

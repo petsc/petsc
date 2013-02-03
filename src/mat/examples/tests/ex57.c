@@ -24,7 +24,7 @@ int main(int argc,char **args)
   IS             isrow,iscol;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",fin,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -40,10 +40,10 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fdin);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fdin);CHKERRQ(ierr);
 
-  ierr = MatGetSize(A,&size,&size);CHKERRQ(ierr);
+  ierr  = MatGetSize(A,&size,&size);CHKERRQ(ierr);
   size /= 2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&size,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(PETSC_NULL,"-size",&size,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRQ(ierr);

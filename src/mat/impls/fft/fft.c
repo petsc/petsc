@@ -44,7 +44,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
    Level: intermediate
 
 @*/
-PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat* A)
+PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -56,10 +56,10 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   if (ndim < 1) SETERRQ1(comm,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
-  ierr = MatCreate(comm,&FFT);CHKERRQ(ierr);
-  ierr = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
+  ierr      = MatCreate(comm,&FFT);CHKERRQ(ierr);
+  ierr      = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
   FFT->data = (void*)fft;
-  N = 1;
+  N         = 1;
   for (i=0; i<ndim; i++) {
     if (dim[i] < 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
     N *= dim[i];
@@ -74,6 +74,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   fft->data = PETSC_NULL;
 
   ierr = MatSetType(FFT,mattype);CHKERRQ(ierr);
+
   FFT->ops->destroy = MatDestroy_FFT;
 
   /* get runtime options */

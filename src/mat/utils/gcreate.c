@@ -74,8 +74,9 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,0,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
-  B->preallocated  = PETSC_FALSE;
-  *A               = B;
+
+  B->preallocated = PETSC_FALSE;
+  *A              = B;
   PetscFunctionReturn(0);
 }
 
@@ -176,41 +177,41 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
 
-    if (B->rmap->bs < 0) {
-      PetscInt newbs = -1;
-      ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSetBlockSize",newbs,&newbs,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = PetscLayoutSetBlockSize(B->rmap,newbs);CHKERRQ(ierr);
-        ierr = PetscLayoutSetBlockSize(B->cmap,newbs);CHKERRQ(ierr);
-      }
-    }
-
-    ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  if (B->rmap->bs < 0) {
+    PetscInt newbs = -1;
+    ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSetBlockSize",newbs,&newbs,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = MatSetType(B,type);CHKERRQ(ierr);
-    } else if (!((PetscObject)B)->type_name) {
-      ierr = MatSetType(B,deft);CHKERRQ(ierr);
+      ierr = PetscLayoutSetBlockSize(B->rmap,newbs);CHKERRQ(ierr);
+      ierr = PetscLayoutSetBlockSize(B->cmap,newbs);CHKERRQ(ierr);
     }
+  }
 
-    ierr = PetscViewerDestroy(&B->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatView",&B->viewonassembly,&B->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",0.0,&B->checksymmetrytol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",PETSC_FALSE,&B->checknullspaceonassembly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSetType(B,type);CHKERRQ(ierr);
+  } else if (!((PetscObject)B)->type_name) {
+    ierr = MatSetType(B,deft);CHKERRQ(ierr);
+  }
 
-    if (B->ops->setfromoptions) {
-      ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
-    }
+  ierr = PetscViewerDestroy(&B->viewonassembly);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatView",&B->viewonassembly,&B->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",0.0,&B->checksymmetrytol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",PETSC_FALSE,&B->checknullspaceonassembly,PETSC_NULL);CHKERRQ(ierr);
 
-    flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
-    if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,flg);CHKERRQ(ierr);}
-    flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
-    if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg);CHKERRQ(ierr);}
+  if (B->ops->setfromoptions) {
+    ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
+  }
 
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)B);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,flg);CHKERRQ(ierr);}
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg);CHKERRQ(ierr);}
+
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)B);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -238,7 +239,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,const PetscInt *onnz,const PetscInt *dnnzu,const PetscInt *onnzu)
 {
   PetscErrorCode ierr;
-  void (*aij)(void);
+  void           (*aij)(void);
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
@@ -268,8 +269,8 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
         if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
         if (onnz) sonnz[i] = onnz[i/bs] * bs;
       }
-      ierr = MatSeqAIJSetPreallocation(A,0,dnnz?sdnnz:PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(A,0,dnnz?sdnnz:PETSC_NULL,0,onnz?sonnz:PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : PETSC_NULL,0,onnz ? sonnz : PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
     }
   }
@@ -285,12 +286,12 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
 #define __FUNCT__ "MatHeaderMerge"
 PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 {
-  PetscErrorCode         ierr;
-  PetscInt               refct;
-  PetscOps               *Abops;
-  MatOps                 Aops;
-  char                   *mtype,*mname;
-  void                   *spptr;
+  PetscErrorCode ierr;
+  PetscInt       refct;
+  PetscOps       *Abops;
+  MatOps         Aops;
+  char           *mtype,*mname;
+  void           *spptr;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
@@ -316,7 +317,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ierr = PetscObjectListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
 
   /* copy C over to A */
-  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   /* return the parts of A we saved */
   ((PetscObject)A)->bops      = Abops;
@@ -329,6 +330,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)C)->qlist = 0;
   ((PetscObject)C)->olist = 0;
+
   ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -363,8 +365,10 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 
   /* copy C over to A */
   refct = ((PetscObject)A)->refct;
-  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+
   ((PetscObject)A)->refct = refct;
+
   ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
   ierr = PetscFree(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);

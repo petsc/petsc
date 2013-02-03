@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscRandom    r;
   PetscScalar    rand;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
@@ -61,10 +61,10 @@ int main(int argc,char **args)
   for (i=0; i<nd; i++) {
     /* Skip a few,so that the IS on different procs are diffeent*/
     for (j=0; j<rank; j++) {
-      ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     }
-    ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
-    lsize   = (PetscInt)(rand*m);
+    ierr  = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+    lsize = (PetscInt)(rand*m);
     for (j=0; j<lsize; j++) {
       ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
       idx[j] = (PetscInt)(rand*m);

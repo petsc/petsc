@@ -150,11 +150,11 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
 
   PetscFunctionBegin;
   switch (strategy) {
-    case MP_PTSCOTCH_QUALITY:     scotch->strategy = SCOTCH_STRATQUALITY; break;
-    case MP_PTSCOTCH_SPEED:       scotch->strategy = SCOTCH_STRATSPEED; break;
-    case MP_PTSCOTCH_BALANCE:     scotch->strategy = SCOTCH_STRATBALANCE; break;
-    case MP_PTSCOTCH_SAFETY:      scotch->strategy = SCOTCH_STRATSAFETY; break;
-    case MP_PTSCOTCH_SCALABILITY: scotch->strategy = SCOTCH_STRATSCALABILITY; break;
+  case MP_PTSCOTCH_QUALITY:     scotch->strategy = SCOTCH_STRATQUALITY; break;
+  case MP_PTSCOTCH_SPEED:       scotch->strategy = SCOTCH_STRATSPEED; break;
+  case MP_PTSCOTCH_BALANCE:     scotch->strategy = SCOTCH_STRATBALANCE; break;
+  case MP_PTSCOTCH_SAFETY:      scotch->strategy = SCOTCH_STRATSAFETY; break;
+  case MP_PTSCOTCH_SCALABILITY: scotch->strategy = SCOTCH_STRATSCALABILITY; break;
   }
   PetscFunctionReturn(0);
 }
@@ -197,11 +197,11 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,
 
   PetscFunctionBegin;
   switch (scotch->strategy) {
-    case SCOTCH_STRATQUALITY:     *strategy = MP_PTSCOTCH_QUALITY; break;
-    case SCOTCH_STRATSPEED:       *strategy = MP_PTSCOTCH_SPEED; break;
-    case SCOTCH_STRATBALANCE:     *strategy = MP_PTSCOTCH_BALANCE; break;
-    case SCOTCH_STRATSAFETY:      *strategy = MP_PTSCOTCH_SAFETY; break;
-    case SCOTCH_STRATSCALABILITY: *strategy = MP_PTSCOTCH_SCALABILITY; break;
+  case SCOTCH_STRATQUALITY:     *strategy = MP_PTSCOTCH_QUALITY; break;
+  case SCOTCH_STRATSPEED:       *strategy = MP_PTSCOTCH_SPEED; break;
+  case SCOTCH_STRATBALANCE:     *strategy = MP_PTSCOTCH_BALANCE; break;
+  case SCOTCH_STRATSAFETY:      *strategy = MP_PTSCOTCH_SAFETY; break;
+  case SCOTCH_STRATSCALABILITY: *strategy = MP_PTSCOTCH_SCALABILITY; break;
   }
   PetscFunctionReturn(0);
 }
@@ -220,11 +220,11 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     switch (scotch->strategy) {
-      case SCOTCH_STRATQUALITY:     str = "Prioritize quality over speed"; break;
-      case SCOTCH_STRATSPEED:       str = "Prioritize speed over quality"; break;
-      case SCOTCH_STRATBALANCE:     str = "Enforce load balance"; break;
-      case SCOTCH_STRATSAFETY:      str = "Avoid methods that may fail"; break;
-      case SCOTCH_STRATSCALABILITY: str = "Favor scalability as much as possible"; break;
+    case SCOTCH_STRATQUALITY:     str = "Prioritize quality over speed"; break;
+    case SCOTCH_STRATSPEED:       str = "Prioritize speed over quality"; break;
+    case SCOTCH_STRATBALANCE:     str = "Enforce load balance"; break;
+    case SCOTCH_STRATSAFETY:      str = "Avoid methods that may fail"; break;
+    case SCOTCH_STRATSCALABILITY: str = "Favor scalability as much as possible"; break;
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Strategy=%s\n",str);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Load imbalance ratio=%g\n",scotch->imbalance);CHKERRQ(ierr);
@@ -244,10 +244,10 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PTScotch partitioning options");CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)MP_PTSCOTCH_QUALITY,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningPTScotchSetStrategy(part,strat);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-mat_partitioning_ptscotch_imbalance","Load imbalance ratio","MatPartitioningPTScotchSetImbalance",scotch->imbalance,&r,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = MatPartitioningPTScotchSetImbalance(part,r);CHKERRQ(ierr); }
+  ierr = PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)MP_PTSCOTCH_QUALITY,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningPTScotchSetStrategy(part,strat);CHKERRQ(ierr); }
+  ierr = PetscOptionsReal("-mat_partitioning_ptscotch_imbalance","Load imbalance ratio","MatPartitioningPTScotchSetImbalance",scotch->imbalance,&r,&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatPartitioningPTScotchSetImbalance(part,r);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -259,7 +259,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
   PetscErrorCode           ierr;
   PetscMPIInt              rank;
-  Mat                      mat = part->adj;
+  Mat                      mat  = part->adj;
   Mat_MPIAdj               *adj = (Mat_MPIAdj*)mat->data;
   PetscBool                flg;
   PetscInt                 i,j,wgtflag=0,bs=1,nold;
@@ -285,29 +285,28 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   ierr = PetscMalloc((mat->rmap->n+1)*sizeof(SCOTCH_Num),&locals);CHKERRQ(ierr);
   ierr = PetscMalloc(nparts*sizeof(PetscReal),&vwgttab);CHKERRQ(ierr);
   ierr = PetscMalloc(nparts*sizeof(SCOTCH_Num),&velotab);CHKERRQ(ierr);
-  for (j=0;j<nparts;j++) {
+  for (j=0; j<nparts; j++) {
     if (part->part_weights) vwgttab[j] = part->part_weights[j]*nparts;
     else vwgttab[j] = 1.0;
   }
-  for (i=0;i<nparts;i++) {
+  for (i=0; i<nparts; i++) {
     deltval = PetscAbsReal(vwgttab[i]-floor(vwgttab[i]+0.5));
     if (deltval>0.01) {
-      for (j=0;j<nparts;j++) vwgttab[j] /= deltval;
+      for (j=0; j<nparts; j++) vwgttab[j] /= deltval;
     }
   }
-  for (i=0;i<nparts;i++)
-    velotab[i] = (SCOTCH_Num) (vwgttab[i] + 0.5);
+  for (i=0; i<nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
   ierr = PetscFree(vwgttab);CHKERRQ(ierr);
 
   ierr = SCOTCH_dgraphInit(&grafdat,((PetscObject)part)->comm);CHKERRQ(ierr);
 
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
-  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights: PETSC_NULL;
-  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values: PETSC_NULL;
+  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights : PETSC_NULL;
+  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values : PETSC_NULL;
 
   ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
-                    PETSC_NULL,edgelocnbr,edgelocnbr,adj->j,PETSC_NULL,edloloctab);CHKERRQ(ierr);
+                            PETSC_NULL,edgelocnbr,edgelocnbr,adj->j,PETSC_NULL,edloloctab);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
@@ -385,7 +384,7 @@ PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning part)
   MatPartitioning_PTScotch *scotch;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(part,MatPartitioning_PTScotch,&scotch);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,MatPartitioning_PTScotch,&scotch);CHKERRQ(ierr);
   part->data = (void*)scotch;
 
   scotch->imbalance = 0.01;

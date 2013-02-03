@@ -20,12 +20,12 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat             A;
-  PetscInt        *ia,*ja;
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank,size;
+  Mat            A;
+  PetscInt       *ia,*ja;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 4) SETERRQ(PETSC_COMM_WORLD,1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

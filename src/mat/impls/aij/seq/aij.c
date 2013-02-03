@@ -1774,9 +1774,7 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   if (v) *v = a->a + a->i[row];
   if (idx) {
     itmp = a->j + a->i[row];
-    if (*nz) {
-      *idx = itmp;
-    }
+    if (*nz) *idx = itmp;
     else *idx = 0;
   }
   PetscFunctionReturn(0);
@@ -1854,13 +1852,9 @@ PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A,Mat *B)
 
   /* Walk through aj and count ## of non-zeros in each row of A^T. */
   /* Note: offset by 1 for fast conversion into csr format. */
-  for (i=0;i<ai[am];i++) {
-    ati[aj[i]+1] += 1;
-  }
+  for (i=0;i<ai[am];i++) ati[aj[i]+1] += 1;
   /* Form ati for csr format of A^T. */
-  for (i=0;i<an;i++) {
-    ati[i+1] += ati[i];
-  }
+  for (i=0;i<an;i++) ati[i+1] += ati[i];
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
   ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
@@ -2454,7 +2448,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   }
   ierr = PetscFree(cnew);CHKERRQ(ierr);
 
-  (*B)->assembled     = PETSC_FALSE;
+  (*B)->assembled = PETSC_FALSE;
 
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3914,7 +3908,7 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
 
   ierr = PetscNewLog(B,Mat_SeqAIJ,&b);CHKERRQ(ierr);
 
-  B->data             = (void*)b;
+  B->data = (void*)b;
 
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 

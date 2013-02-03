@@ -280,8 +280,8 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
           PetscInt i;
 
           if (m+1 != (PetscInt) mat->row_offsets.size()) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", mat->row_offsets.size()-1, m);
-          a->nz    = mat->values.size();
-          a->maxnz = a->nz; /* Since we allocate exactly the right amount */
+          a->nz           = mat->values.size();
+          a->maxnz        = a->nz; /* Since we allocate exactly the right amount */
           A->preallocated = PETSC_TRUE;
           if (a->singlemalloc) {
             if (a->a) {ierr = PetscFree3(a->a,a->j,a->i);CHKERRQ(ierr);}
@@ -671,7 +671,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   B->ops->multadd = MatMultAdd_SeqAIJCUSP;
   B->spptr        = new Mat_SeqAIJCUSP;
 
-  ((Mat_SeqAIJCUSP*)B->spptr)->mat = 0;
+  ((Mat_SeqAIJCUSP*)B->spptr)->mat     = 0;
   ((Mat_SeqAIJCUSP*)B->spptr)->tempvec = 0;
   ((Mat_SeqAIJCUSP*)B->spptr)->indices = 0;
 

@@ -21,11 +21,11 @@ int main(int argc,char **args)
   MatFactorInfo  factinfo;
   IS             perm,iperm;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = 2*size;
+  n    = 2*size;
 
   /*
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
@@ -111,8 +111,8 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (PetscScalar)(i + 100*rank);
-    ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
+    v       = (PetscScalar)(i + 100*rank);
+    ierr    = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -127,7 +127,7 @@ int main(int argc,char **args)
   /* Compute right-hand-side vector */
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
+  ierr    = MatGetOrdering(C,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
   its_max = 2000;
   for (i=0; i<its_max; i++) {
     /* printf(" it %d\n",i); */

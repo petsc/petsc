@@ -16,10 +16,10 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  n = m;
+  n    = m;
   ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) n += 2;
   ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRQ(ierr);
@@ -46,10 +46,10 @@ int main(int argc,char **args)
 
   /* Assembly */
   for (i=rstart; i<rend; i++) {
-    v = 100*(i+1);
+    v    = 100*(i+1);
     ierr = VecSetValues(z,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     for (j=0; j<n; j++) {
-      v=10*(i+1)+j+1;
+      v    = 10*(i+1)+j+1;
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -57,9 +57,9 @@ int main(int argc,char **args)
   /* Flush off proc Vec values and do more assembly */
   ierr = VecAssemblyBegin(z);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {
-    v = one*((PetscReal)i);
+    v    = one*((PetscReal)i);
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v = 100.0*i;
+    v    = 100.0*i;
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
-      v=10*(i+1)+j+1;
+      v    = 10*(i+1)+j+1;
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   /* ------- Test MatMultTranspose(), MatMultTransposeAdd() ------- */
 
   for (i=rstart; i<rend; i++) {
-    v = one*((PetscReal)i);
+    v    = one*((PetscReal)i);
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(C,x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {
-    v = one*((PetscReal)(i+1));
+    v    = one*((PetscReal)(i+1));
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 

@@ -8,12 +8,12 @@ static char help[] = "Passes a sparse matrix to MATLAB.\n\n";
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscInt       m = 4,n = 5,i,j,II,J;
+  PetscInt       m   = 4,n = 5,i,j,II,J;
   PetscScalar    one = 1.0,v;
   Vec            x;
   Mat            A;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 

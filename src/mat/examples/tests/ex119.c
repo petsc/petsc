@@ -13,7 +13,7 @@ int main(int argc,char **args)
   char           inputfile[256],outputfile[256];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-inputfile",inputfile,256,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-outputfile",outputfile,256,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,inputfile,FILE_MODE_READ,&viewer);CHKERRQ(ierr);

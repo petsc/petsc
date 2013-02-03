@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
 
@@ -59,9 +59,9 @@ int main(int argc,char **args)
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
-    /* test mumps options */
-    PetscInt icntl_7 = 5;
-    ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
+      /* test mumps options */
+      PetscInt icntl_7 = 5;
+      ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
     }
     break;
 #endif
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   }
 
   info.fill = 5.0;
-  ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+  ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 1; nfact++) {
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);

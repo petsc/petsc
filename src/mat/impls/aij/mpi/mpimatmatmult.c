@@ -56,6 +56,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 
   PetscFunctionBegin;
   ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
+
   (*M)->ops->destroy   = ptap->destroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's special structure! */
   (*M)->ops->duplicate = ptap->duplicate; /* = MatDuplicate_MPIAIJ */
   PetscFunctionReturn(0);

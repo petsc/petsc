@@ -22,7 +22,7 @@ static PetscErrorCode AssembleMatrix(MPI_Comm comm,Mat *A)
   ierr = MatSetValue(B,me-1,me,me*me,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *A = B;
+  *A   = B;
   PetscFunctionReturn(0);
 }
 
@@ -33,7 +33,7 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
   PetscErrorCode ierr;
   PetscReal      norm;
   Vec            Y;
-  PetscInt      verbose = 0;
+  PetscInt       verbose = 0;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(X[0],&Y);CHKERRQ(ierr);
@@ -125,13 +125,13 @@ int main(int argc, char *argv[])
   idxrow[0] = ms+1;
   idxrow[1] = ms+2;
   idxrow[2] = ms+4;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,3,idxrow,PETSC_USE_POINTER,&isrow);CHKERRQ(ierr);
+  ierr      = ISCreateGeneral(PETSC_COMM_WORLD,3,idxrow,PETSC_USE_POINTER,&isrow);CHKERRQ(ierr);
 
   idxcol[0] = ms+1;
   idxcol[1] = ms+2;
   idxcol[2] = ms+4;
   idxcol[3] = ms+5;
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,4,idxcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
+  ierr      = ISCreateGeneral(PETSC_COMM_WORLD,4,idxcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix(A,isrow,iscol,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(B,isrow,iscol,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);

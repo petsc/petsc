@@ -15,52 +15,53 @@ extern PetscErrorCode MatSOR_SeqBSTRM_5(Mat,Vec,PetscReal,MatSORType,PetscReal,P
 #define __FUNCT__ "MatMPIBSTRM_create_bstrm"
 PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
 {
-  Mat_MPIBAIJ     *a = (Mat_MPIBAIJ *)A->data;
-  Mat_SeqBAIJ     *Aij = (Mat_SeqBAIJ*)(a->A->data), *Bij = (Mat_SeqBAIJ*)(a->B->data);
+  Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*)A->data;
+  Mat_SeqBAIJ *Aij = (Mat_SeqBAIJ*)(a->A->data), *Bij = (Mat_SeqBAIJ*)(a->B->data);
   /* */
-  Mat_SeqBSTRM   *bstrmA, *bstrmB;
-  PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
-  PetscInt       *ai = Aij->i, *bi = Bij->i;
-  PetscInt       i,j,k;
-  PetscScalar    *aa = Aij->a,*ba = Bij->a;
+  Mat_SeqBSTRM *bstrmA, *bstrmB;
+  PetscInt     MROW = Aij->mbs, bs = a->A->rmap->bs;
+  PetscInt     *ai  = Aij->i, *bi = Bij->i;
+  PetscInt     i,j,k;
+  PetscScalar  *aa = Aij->a,*ba = Bij->a;
 
-  PetscInt      bs2,  rbs, cbs, slen, blen;
+  PetscInt       bs2,  rbs, cbs, slen, blen;
   PetscErrorCode ierr;
-  PetscScalar **asp;
-  PetscScalar **bsp;
+  PetscScalar    **asp;
+  PetscScalar    **bsp;
 
   PetscFunctionBegin;
-  rbs = cbs = bs;
-  bs2 = bs*bs;
+  rbs  = cbs = bs;
+  bs2  = bs*bs;
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
 
-  ierr = PetscNewLog(a->A,Mat_SeqBSTRM,&bstrmA);CHKERRQ(ierr);
-  a->A->spptr = (void *) bstrmA;
-  bstrmA = (Mat_SeqBSTRM*) a->A->spptr;
+  ierr        = PetscNewLog(a->A,Mat_SeqBSTRM,&bstrmA);CHKERRQ(ierr);
+  a->A->spptr = (void*) bstrmA;
+  bstrmA      = (Mat_SeqBSTRM*) a->A->spptr;
   bstrmA->rbs = bstrmA->cbs = bs;
-  ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmA->as);CHKERRQ(ierr);
+  ierr        = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmA->as);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &asp);CHKERRQ(ierr);
 
-  for (i=0;i<rbs;i++) asp[i] = bstrmA->as + i*slen;
+  for (i=0; i<rbs; i++) asp[i] = bstrmA->as + i*slen;
 
   for (k=0; k<blen; k++) {
-    for (j=0; j<cbs; j++)
-    for (i=0; i<rbs; i++)
-        asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
+    for (j=0; j<cbs; j++) {
+      for (i=0; i<rbs; i++) asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
+    }
   }
+
   switch (bs) {
-    case 4:
-      a->A->ops->mult  = MatMult_SeqBSTRM_4;
-      a->A->ops->sor   = MatSOR_SeqBSTRM_4;
-      break;
-    case 5:
-      a->A->ops->mult  = MatMult_SeqBSTRM_5;
-      a->A->ops->sor   = MatSOR_SeqBSTRM_5;
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
+  case 4:
+    a->A->ops->mult = MatMult_SeqBSTRM_4;
+    a->A->ops->sor  = MatSOR_SeqBSTRM_4;
+    break;
+  case 5:
+    a->A->ops->mult = MatMult_SeqBSTRM_5;
+    a->A->ops->sor  = MatSOR_SeqBSTRM_5;
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
   ierr = PetscFree(asp);CHKERRQ(ierr);
 
@@ -68,29 +69,31 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
   blen = bi[MROW]-bi[0];
   slen = blen*bs;
   ierr = PetscNewLog(a->B,Mat_SeqBSTRM,&bstrmB);CHKERRQ(ierr);
-  a->B->spptr = (void *) bstrmB;
-  bstrmB = (Mat_SeqBSTRM*) a->B->spptr;
+
+  a->B->spptr = (void*) bstrmB;
+  bstrmB      = (Mat_SeqBSTRM*) a->B->spptr;
   bstrmB->rbs = bstrmB->cbs = bs;
-  ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmB->as);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &bsp);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmB->as);CHKERRQ(ierr);
+  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &bsp);CHKERRQ(ierr);
 
-  for (i=0;i<rbs;i++) bsp[i] = bstrmB->as + i*slen;
+  for (i=0; i<rbs; i++) bsp[i] = bstrmB->as + i*slen;
 
   for (k=0; k<blen; k++) {
-    for (j=0; j<cbs; j++)
-    for (i=0; i<rbs; i++)
-        bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
+    for (j=0; j<cbs; j++) {
+      for (i=0; i<rbs; i++) bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
+    }
   }
+
   switch (bs) {
-    case 4:
-      a->B->ops->multadd = MatMultAdd_SeqBSTRM_4;
-      break;
-    case 5:
-      a->B->ops->multadd = MatMultAdd_SeqBSTRM_5;
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
+  case 4:
+    a->B->ops->multadd = MatMultAdd_SeqBSTRM_4;
+    break;
+  case 5:
+    a->B->ops->multadd = MatMultAdd_SeqBSTRM_5;
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
   ierr = PetscFree(bsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -168,15 +171,15 @@ PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,MatType type,MatReuse reuse,Mat
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
-  Mat_SeqBSTRM  *bstrm;
+  Mat_SeqBSTRM   *bstrm;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,   Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
-  B->spptr    = (void *) bstrm;
+  ierr     = PetscNewLog(B,   Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
+  B->spptr = (void*) bstrm;
 
   /* Set function pointers for methods that we inherit from AIJ but override.
      B->ops->duplicate   = MatDuplicate_BSTRM;

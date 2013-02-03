@@ -4,8 +4,8 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 typedef struct {
-  PetscInt   dof;         /* number of components */
-  Mat        AIJ;        /* representation of interpolation for one component */
+  PetscInt dof;           /* number of components */
+  Mat      AIJ;          /* representation of interpolation for one component */
 } Mat_SeqMAIJ;
 
 typedef struct {
@@ -18,5 +18,5 @@ typedef struct {
 
 PETSC_EXTERN_C PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN_C PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat,Mat,Mat);
+extern PetscErrorCode         MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat,Mat,Mat);
 #endif

@@ -96,7 +96,7 @@ ok1:;
         goto ok2;
       }
     }
-    ok2:;
+ok2:;
   }
   ierr = ISCreateGeneral(((PetscObject)M)->comm,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -481,8 +481,8 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   PetscScalar    value;
   PetscErrorCode ierr;
-  PetscInt       i,j,rstart = mat->rmap->rstart,rend = mat->rmap->rend;
-  PetscInt       cstart = mat->cmap->rstart,cend = mat->cmap->rend,row,col;
+  PetscInt       i,j,rstart  = mat->rmap->rstart,rend = mat->rmap->rend;
+  PetscInt       cstart      = mat->cmap->rstart,cend = mat->cmap->rend,row,col;
   PetscBool      roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
@@ -920,7 +920,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   const PetscInt    *aj, *ii,*ridx;
   PetscScalar       *aa;
 #if defined(PETSC_DEBUG)
-  PetscBool         found = PETSC_FALSE;
+  PetscBool found = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
@@ -1535,12 +1535,13 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 
     /* copy over the A part */
     Aloc = (Mat_SeqAIJ*)aij->A->data;
-    m = aij->A->rmap->n; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-    row = mat->rmap->rstart;
+    m    = aij->A->rmap->n; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    row  = mat->rmap->rstart;
     for (i=0; i<ai[m]; i++) aj[i] += mat->cmap->rstart;
     for (i=0; i<m; i++) {
       ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,INSERT_VALUES);CHKERRQ(ierr);
-      row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
+      row++;
+      a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
     }
     aj = Aloc->j;
     for (i=0; i<ai[m]; i++) aj[i] -= mat->cmap->rstart;
@@ -1812,7 +1813,7 @@ PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 
   PetscFunctionBegin;
   info->block_size = 1.0;
-  ierr = MatGetInfo(A,MAT_LOCAL,info);CHKERRQ(ierr);
+  ierr             = MatGetInfo(A,MAT_LOCAL,info);CHKERRQ(ierr);
 
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
   isend[3] = info->memory;  isend[4] = info->mallocs;
@@ -2425,7 +2426,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, c
 
   process_group_type pg;
   typedef graph_dist::ilu_default::ilu_level_graph_type lgraph_type;
-  lgraph_type  *lgraph_p  = new lgraph_type(petsc::num_global_vertices(A), pg, petsc::matrix_distribution(A, pg));
+  lgraph_type  *lgraph_p   = new lgraph_type(petsc::num_global_vertices(A), pg, petsc::matrix_distribution(A, pg));
   lgraph_type& level_graph = *lgraph_p;
   graph_dist::ilu_default::graph_type&            graph(level_graph.graph);
 
@@ -2740,12 +2741,13 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     /* send nzlocal to others */
     for (i=0; i<nsends; i++) {
       sbuf_nz[i] = nzlocal;
-      ierr = MPI_Isend(sbuf_nz+i,1,MPIU_INT,send_rank[i],tag1,comm,s_waits1+i);CHKERRQ(ierr);
+      ierr       = MPI_Isend(sbuf_nz+i,1,MPIU_INT,send_rank[i],tag1,comm,s_waits1+i);CHKERRQ(ierr);
     }
     /* wait on receives of nzlocal; allocate space for rbuf_j, rbuf_a */
     count = nrecvs;
     while (count) {
       ierr = MPI_Waitany(nrecvs,r_waits1,&imdex,&recv_status);CHKERRQ(ierr);
+
       recv_rank[imdex] = recv_status.MPI_SOURCE;
       /* allocate rbuf_a and rbuf_j; then post receives of rbuf_j */
       ierr = PetscMalloc((rbuf_nz[imdex]+1)*sizeof(PetscScalar),&rbuf_a[imdex]);CHKERRQ(ierr);
@@ -4750,7 +4752,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
         if (ai[i+1] > ai[i]) nrows++;
       }
       len_si[proc] = 2*(nrows+1);
-      len += len_si[proc];
+      len         += len_si[proc];
     }
   }
 
@@ -4860,10 +4862,10 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   for (i=0; i<m; i++) {
     bnzi = 0;
     /* add local non-zero cols of this proc's seqmat into lnk */
-    arow = owners[rank] + i;
-    anzi = ai[arow+1] - ai[arow];
-    aj   = a->j + ai[arow];
-    ierr = PetscLLAddSorted(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+    arow  = owners[rank] + i;
+    anzi  = ai[arow+1] - ai[arow];
+    aj    = a->j + ai[arow];
+    ierr  = PetscLLAddSorted(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     bnzi += nlnk;
     /* add received col data into lnk */
     for (k=0; k<merge->nrecv; k++) { /* k-th received message */
@@ -5146,7 +5148,7 @@ PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
     iscola = *col;
   }
   if (scall != MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc(sizeof(Mat),&aloc);CHKERRQ(ierr);
+    ierr    = PetscMalloc(sizeof(Mat),&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
   ierr   = MatGetSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);

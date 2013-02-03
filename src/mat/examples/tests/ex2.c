@@ -7,20 +7,20 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatAXPY() and MatAYPX().\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat              mat,tmat = 0;
-  PetscInt         m = 7,n,i,j,rstart,rend,rect = 0;
-  PetscErrorCode   ierr;
-  PetscMPIInt      size,rank;
-  PetscBool        flg;
-  PetscScalar      v, alpha;
-  PetscReal        normf,normi,norm1;
+  Mat            mat,tmat = 0;
+  PetscInt       m = 7,n,i,j,rstart,rend,rect = 0;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscBool      flg;
+  PetscScalar    v, alpha;
+  PetscReal      normf,normi,norm1;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  n = m;
+  n    = m;
   ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) {n += 2; rect = 1;}
   ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
-      v=10.0*i+j;
+      v    = 10.0*i+j;
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -70,10 +70,10 @@ int main(int argc,char **argv)
   /* ----------------- Test MatAXPY(), MatAYPX()  ----------------- */
   if (mat && !rect) {
     alpha = 1.0;
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n");CHKERRQ(ierr);
-    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n");CHKERRQ(ierr);
+    ierr  = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr  = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAYPX:  B = alpha*B + A\n");CHKERRQ(ierr);
     ierr = MatAYPX(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -83,11 +83,11 @@ int main(int argc,char **argv)
   {
     Mat C;
     alpha = 1.0;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
-    ierr = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr  = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr  = MatDestroy(&C);CHKERRQ(ierr);
   }
 
   {
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
     if (rstart % 2 != 0) rstart++;
     for (i=rstart; i<rend; i += 2) {
       for (j=0; j<n; j += 2) {
-        v=10.0*i+j;
+        v    = 10.0*i+j;
         ierr = MatSetValues(matB,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }

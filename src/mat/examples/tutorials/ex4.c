@@ -17,16 +17,16 @@ extern PetscErrorCode LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,PetscInt);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   U,V;                /* matrix */
-  PetscViewer           fd;               /* viewer */
-  char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscErrorCode        ierr;
-  PetscBool             flg;
-  Vec                   x,y,work1,work2;
-  PetscInt              i,N,n,M,m;
-  PetscScalar           *xx;
+  Mat            U,V;                       /* matrix */
+  PetscViewer    fd;                      /* viewer */
+  char           file[PETSC_MAX_PATH_LEN];            /* input file name */
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  Vec            x,y,work1,work2;
+  PetscInt       i,N,n,M,m;
+  PetscScalar    *xx;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /*
      Determine file from which we read the matrix
@@ -105,14 +105,14 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
 {
   Mat            Ulocal = ((Mat_MPIDense*)U->data)->A;
   Mat            Vlocal = ((Mat_MPIDense*)V->data)->A;
-  PetscInt       Nsave = x->map->N;
+  PetscInt       Nsave  = x->map->N;
   PetscErrorCode ierr;
   PetscScalar    *w1,*w2;
 
   PetscFunctionBegin;
   /* First multiply the local part of U with the local part of x */
   x->map->N = x->map->n; /* this tricks the silly error checking in MatMultTranspose();*/
-  ierr = MatMultTranspose(Ulocal,x,work1);CHKERRQ(ierr);/* note in this call x is treated as a sequential vector  */
+  ierr      = MatMultTranspose(Ulocal,x,work1);CHKERRQ(ierr); /* note in this call x is treated as a sequential vector  */
   x->map->N = Nsave;
 
   /* Form the sum of all the local multiplies : this is work2 = U'*x = sum_{all processors} work1 */
@@ -124,7 +124,7 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
 
   /* multiply y = V*work2 */
   y->map->N = y->map->n; /* this tricks the silly error checking in MatMult() */
-  ierr = MatMult(Vlocal,work2,y);CHKERRQ(ierr);/* note in this call y is treated as a sequential vector  */
+  ierr      = MatMult(Vlocal,work2,y);CHKERRQ(ierr); /* note in this call y is treated as a sequential vector  */
   y->map->N = Nsave;
   PetscFunctionReturn(0);
 }

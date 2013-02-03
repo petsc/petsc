@@ -11,44 +11,44 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_ushort(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 #endif
 {
-  Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
-  const PetscScalar    *x;
-  PetscScalar          *z,x1,sum;
-  const MatScalar      *v;
-  MatScalar            vj;
-  PetscErrorCode       ierr;
-  PetscInt             mbs=a->mbs,i,j,nz;
-  const PetscInt       *ai=a->i;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  const PetscScalar *x;
+  PetscScalar       *z,x1,sum;
+  const MatScalar   *v;
+  MatScalar         vj;
+  PetscErrorCode    ierr;
+  PetscInt          mbs=a->mbs,i,j,nz;
+  const PetscInt    *ai=a->i;
 #if defined(USESHORT)
   const unsigned short *ib=a->jshort;
   unsigned short       ibt;
 #else
-  const PetscInt       *ib=a->j;
-  PetscInt             ibt;
+  const PetscInt *ib=a->j;
+  PetscInt       ibt;
 #endif
-  PetscInt             nonzerorow = 0,jmin;
+  PetscInt nonzerorow = 0,jmin;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v  = a->a;
+  v = a->a;
   for (i=0; i<mbs; i++) {
-    nz   = ai[i+1] - ai[i];  /* length of i_th row of A */
+    nz = ai[i+1] - ai[i];    /* length of i_th row of A */
     if (!nz) continue; /* Move to the next row if the current row is empty */
     nonzerorow++;
     x1   = x[i];
-    sum = 0.0;
+    sum  = 0.0;
     jmin = 0;
     if (ib[0] == i) {
-      sum  = v[0]*x1;          /* diagonal term */
+      sum = v[0]*x1;           /* diagonal term */
       jmin++;
     }
     for (j=jmin; j<nz; j++) {
-      ibt  = ib[j];
-      vj   = v[j];
-      sum += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
+      ibt     = ib[j];
+      vj      = v[j];
+      sum    += vj * x[ibt]; /* (strict upper triangular part of A)*x  */
       z[ibt] += PetscConj(v[j]) * x1;    /* (strict lower triangular part of A)*x  */
     }
     z[i] += sum;
@@ -71,38 +71,38 @@ PetscErrorCode MatMult_SeqSBAIJ_1_ushort(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 #endif
 {
-  Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
-  const PetscScalar    *x;
-  PetscScalar          *z,x1,sum;
-  const MatScalar      *v;
-  MatScalar            vj;
-  PetscErrorCode       ierr;
-  PetscInt             mbs=a->mbs,i,j,nz;
-  const PetscInt       *ai=a->i;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  const PetscScalar *x;
+  PetscScalar       *z,x1,sum;
+  const MatScalar   *v;
+  MatScalar         vj;
+  PetscErrorCode    ierr;
+  PetscInt          mbs=a->mbs,i,j,nz;
+  const PetscInt    *ai=a->i;
 #if defined(USESHORT)
   const unsigned short *ib=a->jshort;
   unsigned short       ibt;
 #else
-  const PetscInt       *ib=a->j;
-  PetscInt             ibt;
+  const PetscInt *ib=a->j;
+  PetscInt       ibt;
 #endif
-  PetscInt             nonzerorow=0,jmin;
+  PetscInt nonzerorow=0,jmin;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v  = a->a;
+  v = a->a;
   for (i=0; i<mbs; i++) {
-    nz   = ai[i+1] - ai[i];        /* length of i_th row of A */
+    nz = ai[i+1] - ai[i];          /* length of i_th row of A */
     if (!nz) continue; /* Move to the next row if the current row is empty */
     nonzerorow++;
-    sum = 0.0;
+    sum  = 0.0;
     jmin = 0;
     x1   = x[i];
     if (ib[0] == i) {
-      sum  = v[0]*x1;                /* diagonal term */
+      sum = v[0]*x1;                 /* diagonal term */
       jmin++;
     }
     PetscPrefetchBlock(ib+nz,nz,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
@@ -133,20 +133,20 @@ PetscErrorCode MatSOR_SeqSBAIJ_ushort(Mat A,Vec bb,PetscReal omega,MatSORType fl
 PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 #endif
 {
-  Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
-  const MatScalar      *aa=a->a,*v,*v1,*aidiag;
-  PetscScalar          *x,*t,sum;
-  const PetscScalar    *b;
-  MatScalar            tmp;
-  PetscErrorCode       ierr;
-  PetscInt             m=a->mbs,bs=A->rmap->bs,j;
-  const PetscInt       *ai=a->i;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  const MatScalar   *aa=a->a,*v,*v1,*aidiag;
+  PetscScalar       *x,*t,sum;
+  const PetscScalar *b;
+  MatScalar         tmp;
+  PetscErrorCode    ierr;
+  PetscInt          m  =a->mbs,bs=A->rmap->bs,j;
+  const PetscInt    *ai=a->i;
 #if defined(USESHORT)
   const unsigned short *aj=a->jshort,*vj,*vj1;
 #else
-  const PetscInt       *aj=a->j,*vj,*vj1;
+  const PetscInt *aj=a->j,*vj,*vj1;
 #endif
-  PetscInt             nz,nz1,i;
+  PetscInt nz,nz1,i;
 
   PetscFunctionBegin;
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
@@ -178,11 +178,11 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     /* apply (U + D/omega) to the vector */
     PetscScalar d;
     for (i=0; i<m; i++) {
-      d    = fshift + aa[ai[i]];
-      nz   = ai[i+1] - ai[i] - 1;
-      vj   = aj + ai[i] + 1;
-      v    = aa + ai[i] + 1;
-      sum  = b[i]*d/omega;
+      d   = fshift + aa[ai[i]];
+      nz  = ai[i+1] - ai[i] - 1;
+      vj  = aj + ai[i] + 1;
+      v   = aa + ai[i] + 1;
+      sum = b[i]*d/omega;
       PetscSparseDensePlusDot(sum,b,v,vj,nz);
       x[i] = sum;
     }
@@ -196,11 +196,9 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       v  = aa + 1;
       vj = aj + 1;
       for (i=0; i<m; i++) {
-        nz = ai[i+1] - ai[i] - 1;
-        tmp = - (x[i] = omega*t[i]*aidiag[i]);
-        for (j=0; j<nz; j++) {
-          t[vj[j]] += tmp*v[j];
-        }
+        nz  = ai[i+1] - ai[i] - 1;
+        tmp = -(x[i] = omega*t[i]*aidiag[i]);
+        for (j=0; j<nz; j++) t[vj[j]] += tmp*v[j];
         v  += nz + 1;
         vj += nz + 1;
       }
@@ -216,7 +214,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         for (i=m-1; i>=0; i--) {
           sum = b[i];
           nz  = ai[i+1] - ai[i] - 1;
-          {PetscInt __i;for (__i=0;__i<nz;__i++) sum -= v[-__i] * x[vj[-__i]];}
+          {PetscInt __i;for (__i=0; __i<nz; __i++) sum -= v[-__i] * x[vj[-__i]];}
 #else
         v  = aa + ai[m-1] + 1;
         vj = aj + ai[m-1] + 1;
@@ -227,11 +225,11 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PetscSparseDenseMinusDot(sum,x,v,vj,nz);
-          nz   = nz2;
+          nz = nz2;
 #endif
           x[i] = omega*sum*aidiag[i];
-          v  -= nz + 1;
-          vj -= nz + 1;
+          v   -= nz + 1;
+          vj  -= nz + 1;
         }
         ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
       } else {
@@ -245,9 +243,9 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
           PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PetscSparseDenseMinusDot(sum,x,v,vj,nz);
           x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];
-          nz  = nz2;
-          v  -= nz + 1;
-          vj -= nz + 1;
+          nz   = nz2;
+          v   -= nz + 1;
+          vj  -= nz + 1;
         }
         ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
       }
@@ -268,10 +266,10 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
       for (i=0; i<m; i++) {
-        v  = aa + ai[i] + 1; v1=v;
-        vj = aj + ai[i] + 1; vj1=vj;
-        nz = ai[i+1] - ai[i] - 1; nz1=nz;
-        sum = t[i];
+        v    = aa + ai[i] + 1; v1=v;
+        vj   = aj + ai[i] + 1; vj1=vj;
+        nz   = ai[i+1] - ai[i] - 1; nz1=nz;
+        sum  = t[i];
         ierr = PetscLogFlops(4.0*nz-2);CHKERRQ(ierr);
         while (nz1--) sum -= (*v1++)*x[*vj1++];
         x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];
@@ -291,18 +289,18 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
       for (i=0; i<m-1; i++) {  /* update rhs */
-        v  = aa + ai[i] + 1;
-        vj = aj + ai[i] + 1;
-        nz = ai[i+1] - ai[i] - 1;
+        v    = aa + ai[i] + 1;
+        vj   = aj + ai[i] + 1;
+        nz   = ai[i+1] - ai[i] - 1;
         ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
       for (i=m-1; i>=0; i--) {
-        v  = aa + ai[i] + 1;
-        vj = aj + ai[i] + 1;
-        nz = ai[i+1] - ai[i] - 1;
+        v    = aa + ai[i] + 1;
+        vj   = aj + ai[i] + 1;
+        nz   = ai[i+1] - ai[i] - 1;
         ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
-        sum = t[i];
+        sum  = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
         x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];
       }

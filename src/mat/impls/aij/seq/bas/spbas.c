@@ -675,7 +675,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   ierr = PetscMalloc(sizeof(PetscInt)*nrows, &row_nnz);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt*)*nrows, &icols);CHKERRQ(ierr);
 
-  for (i=0; i<nrows;i++) {
+  for (i=0; i<nrows; i++) {
     ip = permutation[i];
     if (do_values) vals[i] = matrix_A->values[ip];
     icols[i]   = matrix_A->icols[ip];
@@ -713,7 +713,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A,const PetscInt
   PetscFunctionBegin;
   if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern\n");
 
-  for (i=0; i<nrows;i++) {
+  for (i=0; i<nrows; i++) {
     icols   = matrix_A->icols[i];
     row_nnz = matrix_A->row_nnz[i];
     if (do_values) vals = matrix_A->values[i];

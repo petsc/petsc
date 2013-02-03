@@ -3612,6 +3612,7 @@ PetscErrorCode DMPlexShiftCoordinates_Private(DM dm, PetscInt depthShift[], DM d
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(newCoordinates, &newCoords);CHKERRQ(ierr);
+  ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   ierr = PetscFree(depthEnd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -4,8 +4,8 @@
 
 typedef struct {
   Mat         A,U,V;
-  Vec         work1,work2;/* Sequential (big) vectors that hold partial products */
-  PetscMPIInt nwork;      /* length of work vectors */
+  Vec         work1,work2; /* Sequential (big) vectors that hold partial products */
+  PetscMPIInt nwork;       /* length of work vectors */
 } Mat_LRC;
 
 
@@ -94,23 +94,23 @@ PetscErrorCode  MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
   (*N)->data = (void*) Na;
   Na->A      = A;
 
-  ierr      = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
-  ierr      = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
-  ierr      = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
+  ierr = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
+  ierr = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
 
-  ierr                   = VecCreateSeq(PETSC_COMM_SELF,U->cmap->N,&Na->work1);CHKERRQ(ierr);
-  ierr                   = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);
-  Na->nwork              = U->cmap->N;
+  ierr      = VecCreateSeq(PETSC_COMM_SELF,U->cmap->N,&Na->work1);CHKERRQ(ierr);
+  ierr      = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);
+  Na->nwork = U->cmap->N;
 
-  (*N)->ops->destroy     = MatDestroy_LRC;
-  (*N)->ops->mult        = MatMult_LRC;
-  (*N)->assembled        = PETSC_TRUE;
-  (*N)->cmap->N                = A->cmap->N;
-  (*N)->rmap->N                = A->cmap->N;
-  (*N)->cmap->n                = A->cmap->n;
-  (*N)->rmap->n                = A->cmap->n;
+  (*N)->ops->destroy = MatDestroy_LRC;
+  (*N)->ops->mult    = MatMult_LRC;
+  (*N)->assembled    = PETSC_TRUE;
+  (*N)->cmap->N      = A->cmap->N;
+  (*N)->rmap->N      = A->cmap->N;
+  (*N)->cmap->n      = A->cmap->n;
+  (*N)->rmap->n      = A->cmap->n;
   PetscFunctionReturn(0);
 }
 

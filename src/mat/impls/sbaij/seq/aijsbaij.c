@@ -13,7 +13,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
-  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs,diagcnt=0;
+  PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=A->rmap->N/bs,diagcnt=0;
   MatScalar      *av,*bv;
 
   PetscFunctionBegin;
@@ -22,7 +22,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
 
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
   aj = a->j;
-  k = 0;
+  k  = 0;
   for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
     if (nz) {
@@ -45,6 +45,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+
   B->rmap->bs = A->rmap->bs;
 
   b  = (Mat_SeqAIJ*)(B->data);
@@ -59,7 +60,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
       b->ilen[i*bs+j]    = rowlengths[i*bs];
       rowstart[i*bs+j+1] = rowstart[i*bs+j] + rowlengths[i*bs];
     }
-    bi[i+1]     = bi[i] + rowlengths[i*bs]/bs;
+    bi[i+1] = bi[i] + rowlengths[i*bs]/bs;
   }
   if (bi[mbs] != 2*a->nz - diagcnt) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz-diagcnt: %D\n",bi[mbs],2*a->nz - diagcnt);
 
@@ -183,7 +184,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
-  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=m/bs,col,row;
+  PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=m/bs,col,row;
   MatScalar      *av,*bv;
 
   PetscFunctionBegin;
@@ -225,6 +226,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
   for (i=0; i<mbs; i++) {
     /* diagonal block */
     *(bj + browstart[i]) = *aj; aj++;
+
     itmp = bs2*browstart[i];
     for (k=0; k<bs2; k++) {
       *(bv + itmp + k) = *av; av++;
@@ -235,6 +237,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
     while (nz--) {
       /* lower triangular blocks - transpose blocks of A */
       *(bj + browstart[*aj]) = i; /* block col index */
+
       itmp = bs2*browstart[*aj];  /* row index */
       for (col=0; col<bs; col++) {
         k = col;
@@ -246,6 +249,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
 
       /* upper triangular blocks */
       *(bj + browstart[i]) = *aj; aj++;
+
       itmp = bs2*browstart[i];
       for (k=0; k<bs2; k++) {
         bv[itmp + k] = av[k];
@@ -277,7 +281,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*browlengths;
-  PetscInt       bs=A->rmap->bs,bs2=bs*bs,mbs=m/bs,dd;
+  PetscInt       bs =A->rmap->bs,bs2=bs*bs,mbs=m/bs,dd;
   MatScalar      *av,*bv;
   PetscBool      flg;
 

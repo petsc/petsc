@@ -24,6 +24,7 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   GPU_Matrix_Ifc           *upTriFactorPtr; /* pointer for upper triangular (factored matrix) on GPU */
   CUSPARRAY                *tempvec;
   MatCUSPARSEStorageFormat format;   /* the storage format for the matrix on the device */
+  PetscBool hasTranspose; /* boolean describing whether a transpose has been built or not */
 };
 
 struct Mat_SeqAIJCUSPARSE {
@@ -31,6 +32,7 @@ struct Mat_SeqAIJCUSPARSE {
   CUSPARRAY                *tempvec; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
   PetscInt                 nonzerorow; /* number of nonzero rows ... used in the flop calculations */
   MatCUSPARSEStorageFormat format;   /* the storage format for the matrix on the device */
+  PetscBool hasTranspose; /* boolean describing whether a transpose has been built or not */
 };
 
 extern PetscErrorCode MatCUSPARSECopyToGPU(Mat);

@@ -558,6 +558,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
+
   (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
 
   /* set MatInfo */
@@ -681,6 +682,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
+
   (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
 
   /* set MatInfo */
@@ -765,7 +767,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscContainer      container;
 
   PetscFunctionBegin;
-   /* create symbolic Bt */
+  /* create symbolic Bt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,B->cmap->n,B->rmap->n,bti,btj,PETSC_NULL,&Bt);CHKERRQ(ierr);
 

@@ -17,7 +17,7 @@ int main(int argc,char **args)
   char           file[128];
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /*  Load the matrix A */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,128,&flg);CHKERRQ(ierr);

@@ -25,17 +25,17 @@ int main(int argc,char **argv)
   ierr = MatSetUp(mat);CHKERRQ(ierr);
 
   /* set anti-diagonal of matrix */
-  v = 1.0;
-  i = 0; j = 3;
+  v    = 1.0;
+  i    = 0; j = 3;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = 2.0;
-  i = 1; j = 2;
+  v    = 2.0;
+  i    = 1; j = 2;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = 3.0;
-  i = 2; j = 1;
+  v    = 3.0;
+  i    = 2; j = 1;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = 4.0;
-  i = 3; j = 0;
+  v    = 4.0;
+  i    = 3; j = 0;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

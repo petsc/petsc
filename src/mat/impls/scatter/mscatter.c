@@ -31,7 +31,7 @@ typedef struct {
 @*/
 PetscErrorCode  MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
 {
-  Mat_Scatter    *mscatter;
+  Mat_Scatter *mscatter;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -239,8 +239,8 @@ PetscErrorCode  MatCreate_Scatter(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  A->assembled     = PETSC_TRUE;
-  A->preallocated  = PETSC_FALSE;
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSCATTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -319,6 +319,7 @@ PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
 
   ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&mscatter->scatter);CHKERRQ(ierr);
+
   mscatter->scatter = scatter;
   PetscFunctionReturn(0);
 }

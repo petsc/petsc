@@ -66,18 +66,18 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b                = (Mat_SeqSBAIJ*)(fact)->data;
-  b->singlemalloc  = PETSC_FALSE;
+  b               = (Mat_SeqSBAIJ*)(fact)->data;
+  b->singlemalloc = PETSC_FALSE;
 
   ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
 
-  b->j             = uj;
-  b->i             = ui;
-  b->diag          = 0;
-  b->ilen          = 0;
-  b->imax          = 0;
-  b->row           = perm;
-  b->col           = perm;
+  b->j    = uj;
+  b->i    = ui;
+  b->diag = 0;
+  b->ilen = 0;
+  b->imax = 0;
+  b->row  = perm;
+  b->col  = perm;
 
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);

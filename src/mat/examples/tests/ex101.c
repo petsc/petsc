@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = MatSetValues(A,3,aij[0],3,aij[0],pa,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(A,3,aij[1],3,aij[1],pa,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(A,3,aij[2],3,aij[2],pa,ADD_VALUES);CHKERRQ(ierr);
-  for (i=0;i<9;i++) {
+  for (i=0; i<9; i++) {
     ierr = MatSetValue(A,i,i,one,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

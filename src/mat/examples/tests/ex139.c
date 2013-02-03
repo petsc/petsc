@@ -8,7 +8,7 @@ const char help[] = "Test MatCreateLocalRef()\n\n";
 static PetscErrorCode GetLocalRef(Mat A,IS isrow,IS iscol,Mat *B)
 {
   PetscErrorCode ierr;
-  IS istmp;
+  IS             istmp;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Extracting LocalRef with isrow:\n");CHKERRQ(ierr);
@@ -43,11 +43,11 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"LocalRef Test Options",PETSC_NULL);CHKERRQ(ierr);
   {
     top_bs = 2; row_bs = 2; col_bs = 2; diag = PETSC_FALSE; blocked = PETSC_FALSE;
-    ierr = PetscOptionsInt("-top_bs","Block size of top-level matrix",0,top_bs,&top_bs,0);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-row_bs","Block size of row map",0,row_bs,&row_bs,0);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-col_bs","Block size of col map",0,col_bs,&col_bs,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-diag","Extract a diagonal black",0,diag,&diag,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-blocked","Use block insertion",0,blocked,&blocked,0);CHKERRQ(ierr);
+    ierr   = PetscOptionsInt("-top_bs","Block size of top-level matrix",0,top_bs,&top_bs,0);CHKERRQ(ierr);
+    ierr   = PetscOptionsInt("-row_bs","Block size of row map",0,row_bs,&row_bs,0);CHKERRQ(ierr);
+    ierr   = PetscOptionsInt("-col_bs","Block size of col map",0,col_bs,&col_bs,0);CHKERRQ(ierr);
+    ierr   = PetscOptionsBool("-diag","Extract a diagonal black",0,diag,&diag,0);CHKERRQ(ierr);
+    ierr   = PetscOptionsBool("-blocked","Use block insertion",0,blocked,&blocked,0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -62,7 +62,7 @@ int main(int argc,char *argv[])
   ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
 
   nlocblocks = (rend-rstart)/top_bs + 2;
-  ierr = PetscMalloc(nlocblocks*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr       = PetscMalloc(nlocblocks*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for (i=0; i<nlocblocks; i++) {
     idx[i] = (rstart/top_bs + i - 1 + m/top_bs) % (m/top_bs);
   }
@@ -79,7 +79,7 @@ int main(int argc,char *argv[])
   /* Create index sets for local submatrix */
   nrowblocks = (rend-rstart)/row_bs;
   ncolblocks = (rend-rstart)/col_bs;
-  ierr = PetscMalloc2(nrowblocks,PetscInt,&ridx,ncolblocks,PetscInt,&cidx);CHKERRQ(ierr);
+  ierr       = PetscMalloc2(nrowblocks,PetscInt,&ridx,ncolblocks,PetscInt,&cidx);CHKERRQ(ierr);
   for (i=0; i<nrowblocks; i++) ridx[i] = i + ((i > nrowblocks/2) ^ !rstart);
   for (i=0; i<ncolblocks; i++) cidx[i] = i + ((i < ncolblocks/2) ^ !!rstart);
   ierr = ISCreateBlock(PETSC_COMM_SELF,row_bs,nrowblocks,ridx,PETSC_COPY_VALUES,&is0);CHKERRQ(ierr);
@@ -87,9 +87,9 @@ int main(int argc,char *argv[])
   ierr = PetscFree2(ridx,cidx);CHKERRQ(ierr);
 
   if (diag) {
-    ierr = ISDestroy(&is1);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)is0);CHKERRQ(ierr);
-    is1 = is0;
+    ierr       = ISDestroy(&is1);CHKERRQ(ierr);
+    ierr       = PetscObjectReference((PetscObject)is0);CHKERRQ(ierr);
+    is1        = is0;
     ncolblocks = nrowblocks;
   }
 

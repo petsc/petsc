@@ -1907,6 +1907,35 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
   PetscFunctionReturn(0);
 }
 
+
+#if defined(PETSC_USE_COMPLEX)
+struct conjugate 
+{
+  __host__ __device__
+  PetscScalar operator()(PetscScalar x)
+  {
+    return cusp::conj(x);
+  }
+};
+#endif
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecConjugate_SeqCUSP"
+PetscErrorCode VecConjugate_SeqCUSP(Vec xin)
+{
+  PetscErrorCode ierr;
+  CUSPARRAY      *xarray;
+
+  PetscFunctionBegin;
+  ierr = VecCUSPGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  thrust::transform(xarray->begin(), xarray->end(), xarray->begin(), conjugate());
+#endif
+  ierr = VecCUSPRestoreArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqCUSP"
@@ -1948,7 +1977,8 @@ PetscErrorCode  VecCreate_SeqCUSP(Vec V)
   V->ops->resetarray      = VecResetArray_SeqCUSP;
   V->ops->destroy         = VecDestroy_SeqCUSP;
   V->ops->duplicate       = VecDuplicate_SeqCUSP;
-
+  V->ops->conjugate       = VecConjugate_SeqCUSP;
+  
   ierr = VecCUSPAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_CUSP_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);

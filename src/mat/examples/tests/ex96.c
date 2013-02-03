@@ -18,17 +18,17 @@ static char help[] ="Tests sequential and parallel DMCreateMatrix(), MatMatMult(
 
 /* User-defined application contexts */
 typedef struct {
-   PetscInt   mx,my,mz;         /* number grid points in x, y and z direction */
-   Vec        localX,localF;    /* local vectors with ghost region */
-   DM         da;
-   Vec        x,b,r;            /* global vectors */
-   Mat        J;                /* Jacobian on grid */
+  PetscInt mx,my,mz;            /* number grid points in x, y and z direction */
+  Vec      localX,localF;       /* local vectors with ghost region */
+  DM       da;
+  Vec      x,b,r;               /* global vectors */
+  Mat      J;                   /* Jacobian on grid */
 } GridCtx;
 typedef struct {
-   GridCtx     fine;
-   GridCtx     coarse;
-   PetscInt    ratio;
-   Mat         Ii;              /* interpolation from coarse to fine */
+  GridCtx  fine;
+  GridCtx  coarse;
+  PetscInt ratio;
+  Mat      Ii;                  /* interpolation from coarse to fine */
 } AppCtx;
 
 #define COARSE_LEVEL 0
@@ -50,25 +50,28 @@ int main(int argc,char **argv)
   PetscReal      fill=2.0;
   Mat            A,A_tmp,P,C,C1,C2;
   PetscScalar    *array,none = -1.0,alpha;
-  Vec           x,v1,v2,v3,v4;
-  PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
-  PetscRandom   rdm;
-  PetscBool     Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
+  Vec            x,v1,v2,v3,v4;
+  PetscReal      norm,norm_tmp,norm_tmp1,tol=1.e-12;
+  PetscRandom    rdm;
+  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);
 
-  user.ratio = 2;
+  user.ratio     = 2;
   user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mz",&user.coarse.mz,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1;
   user.fine.my = user.ratio*(user.coarse.my-1)+1;
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Npx,PETSC_NULL);CHKERRQ(ierr);
@@ -78,11 +81,11 @@ int main(int argc,char **argv)
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        user.fine.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                    user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,
-                    1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,
+                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
   /* Test DMCreateMatrix()                                         */
@@ -112,7 +115,7 @@ int main(int argc,char **argv)
     ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
   } else {
     Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-    Mat_SeqAIJ *a=(Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
+    Mat_SeqAIJ *a   = (Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
     /* A_part */
     for (i=0; i<a->i[m]; i++) a->a[i] = one;
     /* B_part */
@@ -124,11 +127,11 @@ int main(int argc,char **argv)
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        user.coarse.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                    user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
-                    1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
+                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the levels */
@@ -156,8 +159,8 @@ int main(int argc,char **argv)
     alpha=1.0;
     for (i=0; i<2; i++) {
       alpha -=0.1;
-      ierr = MatScale(A_tmp,alpha);CHKERRQ(ierr);
-      ierr = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+      ierr   = MatScale(A_tmp,alpha);CHKERRQ(ierr);
+      ierr   = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
     /* Test MatDuplicate()        */
@@ -175,13 +178,13 @@ int main(int argc,char **argv)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(P,x,v1);CHKERRQ(ierr);
-      ierr = MatMult(A_tmp,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
-      ierr = MatMult(C,x,v1);CHKERRQ(ierr);       /* v1 = C*x   */
-      ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
-      ierr = VecNorm(v1,NORM_1,&norm_tmp);CHKERRQ(ierr);
-      ierr = VecNorm(v2,NORM_1,&norm_tmp1);CHKERRQ(ierr);
+      ierr      = VecSetRandom(x,rdm);CHKERRQ(ierr);
+      ierr      = MatMult(P,x,v1);CHKERRQ(ierr);
+      ierr      = MatMult(A_tmp,v1,v2);CHKERRQ(ierr); /* v2 = A*P*x */
+      ierr      = MatMult(C,x,v1);CHKERRQ(ierr);  /* v1 = C*x   */
+      ierr      = VecAXPY(v1,none,v2);CHKERRQ(ierr);
+      ierr      = VecNorm(v1,NORM_1,&norm_tmp);CHKERRQ(ierr);
+      ierr      = VecNorm(v2,NORM_1,&norm_tmp1);CHKERRQ(ierr);
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
@@ -204,11 +207,11 @@ int main(int argc,char **argv)
     alpha=1.0;
     for (i=0; i<1; i++) {
       alpha -=0.1;
-      ierr = MatScale(A,alpha);CHKERRQ(ierr);
-      ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+      ierr   = MatScale(A,alpha);CHKERRQ(ierr);
+      ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
-        /* Test MatDuplicate()        */
+    /* Test MatDuplicate()        */
     /*----------------------------*/
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
@@ -237,6 +240,7 @@ int main(int argc,char **argv)
       ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_1,&norm_tmp);CHKERRQ(ierr);
       ierr = VecNorm(v3,NORM_1,&norm_tmp1);CHKERRQ(ierr);
+
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
@@ -250,7 +254,7 @@ int main(int argc,char **argv)
   }
 
   /* Clean up */
-   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = VecDestroy(&v1);CHKERRQ(ierr);
   ierr = VecDestroy(&v2);CHKERRQ(ierr);

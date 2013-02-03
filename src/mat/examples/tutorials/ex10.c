@@ -20,15 +20,15 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   A;                /* matrix */
-  PetscViewer           fd;               /* viewer */
-  char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscErrorCode        ierr;
-  PetscReal             *norms;
-  PetscInt              n,cstart,cend;
-  PetscBool             flg;
+  Mat            A;                       /* matrix */
+  PetscViewer    fd;                      /* viewer */
+  char           file[PETSC_MAX_PATH_LEN];            /* input file name */
+  PetscErrorCode ierr;
+  PetscReal      *norms;
+  PetscInt       n,cstart,cend;
+  PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
 
   /*

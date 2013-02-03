@@ -17,11 +17,11 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    *val,*bval;
-  FILE*          file;
+  FILE           *file;
   PetscViewer    view;
   PetscBool      opt;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,PETSC_MAX_PATH_LEN,&opt);CHKERRQ(ierr);
@@ -40,8 +40,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&col);CHKERRQ(ierr);
-  for (i=0; i<n+1; i++)
-    fscanf(file,"     I=%d%d\n",&j,&col[i]);
+  for (i=0; i<n+1; i++) fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 
   ierr = PetscMalloc(nnz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
@@ -63,12 +62,12 @@ int main(int argc,char **args)
   fscanf(file,"  EOD RESIDUAL");
   fclose(file);
 
-  m = n/size+1;
+  m     = n/size+1;
   start = rank*m;
-  end = (rank+1)*m; if (end > n) end = n;
+  end   = (rank+1)*m; if (end > n) end = n;
   for (j=start; j<end; j++) {
     length = col[j+1]-col[j];
-    ierr = MatSetValues(A,length,&row[col[j]-1],1,&j,&val[col[j]-1],INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(A,length,&row[col[j]-1],1,&j,&val[col[j]-1],INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

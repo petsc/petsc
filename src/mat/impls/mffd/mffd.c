@@ -459,7 +459,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
     h *= epsilon;
 
     ww[i-rstart] += h;
-    ierr = VecRestoreArray(w,&ww);CHKERRQ(ierr);
+    ierr          = VecRestoreArray(w,&ww);CHKERRQ(ierr);
     ierr          = (*ctx->funci)(ctx->funcctx,i,w,&v);CHKERRQ(ierr);
     aa[i-rstart]  = (v - aa[i-rstart])/h;
 

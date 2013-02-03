@@ -12,7 +12,7 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat_SeqBAIJ    *a    = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   const PetscInt *r,*ic;
@@ -22,7 +22,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   MatScalar      p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
-  MatScalar      *ba = b->a,*aa = a->a;
+  MatScalar      *ba   = b->a,*aa = a->a;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -34,7 +34,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      x = rtmp + 9*ajtmp[j];
+      x    = rtmp + 9*ajtmp[j];
       x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = 0.0;
     }
     /* load in initial (unfactored row) */
@@ -46,7 +46,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
       x    = rtmp + 9*ic[ajtmpold[j]];
       x[0] = v[0]; x[1] = v[1]; x[2] = v[2]; x[3] = v[3];
       x[4] = v[4]; x[5] = v[5]; x[6] = v[6]; x[7] = v[7]; x[8] = v[8];
-      v    += 9;
+      v   += 9;
     }
     row = *ajtmp++;
     while (row < i) {
@@ -55,10 +55,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
       p5 = pc[4]; p6 = pc[5]; p7 = pc[6]; p8 = pc[7]; p9 = pc[8];
       if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0 || p5 != 0.0 ||
           p6 != 0.0 || p7 != 0.0 || p8 != 0.0 || p9 != 0.0) {
-        pv = ba + 9*diag_offset[row];
-        pj = bj + diag_offset[row] + 1;
-        x1 = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
-        x5 = pv[4]; x6 = pv[5]; x7 = pv[6]; x8 = pv[7]; x9 = pv[8];
+        pv    = ba + 9*diag_offset[row];
+        pj    = bj + diag_offset[row] + 1;
+        x1    = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
+        x5    = pv[4]; x6 = pv[5]; x7 = pv[6]; x8 = pv[7]; x9 = pv[8];
         pc[0] = m1 = p1*x1 + p4*x2 + p7*x3;
         pc[1] = m2 = p2*x1 + p5*x2 + p8*x3;
         pc[2] = m3 = p3*x1 + p6*x2 + p9*x3;
@@ -70,12 +70,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
         pc[6] = m7 = p1*x7 + p4*x8 + p7*x9;
         pc[7] = m8 = p2*x7 + p5*x8 + p8*x9;
         pc[8] = m9 = p3*x7 + p6*x8 + p9*x9;
-        nz = bi[row+1] - diag_offset[row] - 1;
-        pv += 9;
+        nz    = bi[row+1] - diag_offset[row] - 1;
+        pv   += 9;
         for (j=0; j<nz; j++) {
-          x1   = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
-          x5   = pv[4]; x6 = pv[5]; x7 = pv[6]; x8 = pv[7]; x9 = pv[8];
-          x    = rtmp + 9*pj[j];
+          x1    = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
+          x5    = pv[4]; x6 = pv[5]; x7 = pv[6]; x8 = pv[7]; x9 = pv[8];
+          x     = rtmp + 9*pj[j];
           x[0] -= m1*x1 + m4*x2 + m7*x3;
           x[1] -= m2*x1 + m5*x2 + m8*x3;
           x[2] -= m3*x1 + m6*x2 + m9*x3;
@@ -104,16 +104,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
       pv   += 9;
     }
     /* invert diagonal block */
-    w = ba + 9*diag_offset[i];
+    w    = ba + 9*diag_offset[i];
     ierr = PetscKernel_A_gets_inverse_A_3(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_3_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_3_inplace;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*3*3*3*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -128,8 +130,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  Mat            C     =B;
+  Mat_SeqBAIJ    *a    =(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   const PetscInt *r,*ic;
@@ -158,7 +160,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
     }
 
     /* U part */
-    nz = bdiag[i] - bdiag[i+1];
+    nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
@@ -175,9 +177,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for (k = 0;k < nzL;k++) {
+    for (k = 0; k < nzL; k++) {
       row = bjtmp[k];
-      pc = rtmp + bs2*row;
+      pc  = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) {
         if (pc[j]!=0.0) {
           flg = 1;
@@ -205,9 +207,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
 
     /* finished row so stick it into b->a */
     /* L part */
-    pv   = b->a + bs2*bi[i] ;
-    pj   = b->j + bi[i] ;
-    nz   = bi[i+1] - bi[i];
+    pv = b->a + bs2*bi[i];
+    pj = b->j + bi[i];
+    nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -231,10 +233,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->ops->solve = MatSolve_SeqBAIJ_3;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_3;
 
-  C->assembled = PETSC_TRUE;
+  C->ops->solve          = MatSolve_SeqBAIJ_3;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_3;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*3*3*3*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -243,7 +246,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
   PetscInt       *ajtmpold,*ajtmp,nz,row;
@@ -251,7 +254,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   MatScalar      p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
-  MatScalar      *ba = b->a,*aa = a->a;
+  MatScalar      *ba   = b->a,*aa = a->a;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -261,8 +264,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      x = rtmp+9*ajtmp[j];
-      x[0]  = x[1]  = x[2]  = x[3]  = x[4]  = x[5]  = x[6] = x[7] = x[8] = 0.0;
+      x    = rtmp+9*ajtmp[j];
+      x[0] = x[1]  = x[2]  = x[3]  = x[4]  = x[5]  = x[6] = x[7] = x[8] = 0.0;
     }
     /* load in initial (unfactored row) */
     nz       = ai[i+1] - ai[i];
@@ -270,21 +273,21 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
     v        = aa + 9*ai[i];
     for (j=0; j<nz; j++) {
       x    = rtmp+9*ajtmpold[j];
-      x[0]  = v[0];  x[1]  = v[1];  x[2]  = v[2];  x[3]  = v[3];
-      x[4]  = v[4];  x[5]  = v[5];  x[6]  = v[6];  x[7]  = v[7];  x[8]  = v[8];
-      v    += 9;
+      x[0] = v[0];  x[1]  = v[1];  x[2]  = v[2];  x[3]  = v[3];
+      x[4] = v[4];  x[5]  = v[5];  x[6]  = v[6];  x[7]  = v[7];  x[8]  = v[8];
+      v   += 9;
     }
     row = *ajtmp++;
     while (row < i) {
-      pc  = rtmp + 9*row;
-      p1  = pc[0];  p2  = pc[1];  p3  = pc[2];  p4  = pc[3];
-      p5  = pc[4];  p6  = pc[5];  p7  = pc[6];  p8  = pc[7];  p9  = pc[8];
+      pc = rtmp + 9*row;
+      p1 = pc[0];  p2  = pc[1];  p3  = pc[2];  p4  = pc[3];
+      p5 = pc[4];  p6  = pc[5];  p7  = pc[6];  p8  = pc[7];  p9  = pc[8];
       if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0 || p5 != 0.0 ||
           p6 != 0.0 || p7 != 0.0 || p8 != 0.0 || p9 != 0.0) {
-        pv = ba + 9*diag_offset[row];
-        pj = bj + diag_offset[row] + 1;
-        x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-        x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];  x9  = pv[8];
+        pv    = ba + 9*diag_offset[row];
+        pj    = bj + diag_offset[row] + 1;
+        x1    = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
+        x5    = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];  x9  = pv[8];
         pc[0] = m1 = p1*x1 + p4*x2 + p7*x3;
         pc[1] = m2 = p2*x1 + p5*x2 + p8*x3;
         pc[2] = m3 = p3*x1 + p6*x2 + p9*x3;
@@ -297,12 +300,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
         pc[7] = m8 = p2*x7 + p5*x8 + p8*x9;
         pc[8] = m9 = p3*x7 + p6*x8 + p9*x9;
 
-        nz = bi[row+1] - diag_offset[row] - 1;
+        nz  = bi[row+1] - diag_offset[row] - 1;
         pv += 9;
         for (j=0; j<nz; j++) {
-          x1   = pv[0];  x2  = pv[1];   x3 = pv[2];  x4  = pv[3];
-          x5   = pv[4];  x6  = pv[5];   x7 = pv[6];  x8  = pv[7]; x9 = pv[8];
-          x    = rtmp + 9*pj[j];
+          x1    = pv[0];  x2  = pv[1];   x3 = pv[2];  x4  = pv[3];
+          x5    = pv[4];  x6  = pv[5];   x7 = pv[6];  x8  = pv[7]; x9 = pv[8];
+          x     = rtmp + 9*pj[j];
           x[0] -= m1*x1 + m4*x2 + m7*x3;
           x[1] -= m2*x1 + m5*x2 + m8*x3;
           x[2] -= m3*x1 + m6*x2 + m9*x3;
@@ -325,20 +328,22 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
     pj = bj + bi[i];
     nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
-      x      = rtmp+9*pj[j];
-      pv[0]  = x[0];  pv[1]  = x[1];  pv[2]  = x[2];  pv[3]  = x[3];
-      pv[4]  = x[4];  pv[5]  = x[5];  pv[6]  = x[6];  pv[7]  = x[7]; pv[8] = x[8];
+      x     = rtmp+9*pj[j];
+      pv[0] = x[0];  pv[1]  = x[1];  pv[2]  = x[2];  pv[3]  = x[3];
+      pv[4] = x[4];  pv[5]  = x[5];  pv[6]  = x[6];  pv[7]  = x[7]; pv[8] = x[8];
       pv   += 9;
     }
     /* invert diagonal block */
-    w = ba + 9*diag_offset[i];
+    w    = ba + 9*diag_offset[i];
     ierr = PetscKernel_A_gets_inverse_A_3(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_3_NaturalOrdering_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering_inplace;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*3*3*3*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -351,8 +356,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  Mat            C =B;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,k,nz,nzL,row;
   const PetscInt n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
@@ -376,7 +381,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
     }
 
     /* U part */
-    nz = bdiag[i] - bdiag[i+1];
+    nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1] + 1;
     for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
@@ -393,9 +398,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for (k=0;k<nzL;k++) {
+    for (k=0; k<nzL; k++) {
       row = bjtmp[k];
-      pc = rtmp + bs2*row;
+      pc  = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) {
         if (pc[j]!=0.0) {
           flg = 1;
@@ -423,9 +428,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
 
     /* finished row so stick it into b->a */
     /* L part */
-    pv   = b->a + bs2*bi[i] ;
-    pj   = b->j + bi[i] ;
-    nz   = bi[i+1] - bi[i];
+    pv = b->a + bs2*bi[i];
+    pj = b->j + bi[i];
+    nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -446,9 +451,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
     }
   }
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_3_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*3*3*3*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

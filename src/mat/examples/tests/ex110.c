@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   Mat_MPIAIJ     *Ampiaij;
   PetscMPIInt    size,rank;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size == 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Must run with 2 or more processes");CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -45,14 +45,14 @@ int main(int argc,char **argv)
   daij    = (Mat_SeqAIJ*) Ampiaij->A->data;
   oaij    = (Mat_SeqAIJ*) Ampiaij->B->data;
 
-  di      = daij->i;
-  dj      = daij->j;
-  da      = daij->a;
+  di = daij->i;
+  dj = daij->j;
+  da = daij->a;
 
-  oi      = oaij->i;
-  oa      = oaij->a;
-  ierr    = PetscMalloc(oi[5]*sizeof(PetscInt),&oj);CHKERRQ(ierr);
-  ierr    = PetscMemcpy(oj,oaij->j,oi[5]*sizeof(PetscInt));CHKERRQ(ierr);
+  oi   = oaij->i;
+  oa   = oaij->a;
+  ierr = PetscMalloc(oi[5]*sizeof(PetscInt),&oj);CHKERRQ(ierr);
+  ierr = PetscMemcpy(oj,oaij->j,oi[5]*sizeof(PetscInt));CHKERRQ(ierr);
   /* modify the column entries in the non-diagonal portion back to global numbering */
   for (i=0; i<oi[5]; i++) {
     oj[i] = Ampiaij->garray[oj[i]];

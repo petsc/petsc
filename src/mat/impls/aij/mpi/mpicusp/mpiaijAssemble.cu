@@ -43,8 +43,7 @@ public:
   {
     difference_type repeats;
 
-    repeat_functor(difference_type repeats)
-      : repeats(repeats) {}
+    repeat_functor(difference_type repeats) : repeats(repeats) {}
 
     __host__ __device__
     difference_type operator()(const difference_type &i) const
@@ -291,9 +290,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = MPI_Alltoall(procSendSizes, 1, MPIU_INT, procRecvSizes, 1, MPIU_INT, comm);CHKERRQ(ierr);
 
   numRecvEntries = 0;
-  for (PetscInt p = 0; p < numProcs; ++p) {
-    numRecvEntries += procRecvSizes[p];
-  }
+  for (PetscInt p = 0; p < numProcs; ++p) numRecvEntries += procRecvSizes[p];
   ierr = PetscInfo2(j->A, "Send entries %d Recv Entries %d\n", numSendEntries, numRecvEntries);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   // Allocate storage for "fat" COO representation of matrix

@@ -20,11 +20,11 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscScalar    val;
-  FILE*          file;
+  FILE           *file;
   PetscViewer    view;
   PetscRandom    r;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Uniprocessor Example only\n");
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nnz; i++) {
     fscanf(file,"%d %d %le\n",&row,&col,(double*)&val);
-    row = row-1; col = col-1 ;
+    row  = row-1; col = col-1;
     ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
     if (row != col) {
       ierr = MatSetValues(A,1,&col,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);

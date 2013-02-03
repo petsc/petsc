@@ -16,7 +16,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscInt       DIM,dim[2];
   PetscReal      fac;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
@@ -37,10 +37,10 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscObjectSetName((PetscObject)output, "Reconstructed vector");CHKERRQ(ierr);
 
   /* Get FFTW vectors 'x', 'y' and 'z' */
-  DIM = 2;
+  DIM    = 2;
   dim[0] = N0; dim[1] = N1;
-  ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+  ierr   = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
+  ierr   = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 
   /* Scatter PETSc vector 'input' to FFTW vector 'x' */
   ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
 
   /* Check accuracy */
-  fac = 1.0/(PetscReal)N;
+  fac  = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);

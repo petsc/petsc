@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscScalar    val,v;
   PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(b,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
-    val = i + 1;
+    val  = i + 1;
     ierr = VecSetValues(b,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);

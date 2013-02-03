@@ -52,7 +52,7 @@ int main(int argc,char **args)
   PetscBool      flg_A,flg_b,flg_u,flg;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -61,14 +61,14 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-noshift",&flg);CHKERRQ(ierr);
   if (flg) shift = 0;
   if (flg_A) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr);
+    ierr   = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
+    ierr   = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr);
     nsizes = 3;
-    ierr = PetscOptionsGetIntArray(PETSC_NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
+    ierr   = PetscOptionsGetIntArray(PETSC_NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
     if (flg) {
       if (nsizes != 3) SETERRQ(PETSC_COMM_WORLD,1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
-      m = sizes[0];
-      n = sizes[1];
+      m  = sizes[0];
+      n  = sizes[1];
       nz = sizes[2];
     } else {
       fscanf(Afile,"%d %d %d\n",&m,&n,&nz);

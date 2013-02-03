@@ -726,7 +726,7 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
       Mat_Shell *shell = (Mat_Shell*)mat->data;
-      shell->destroy   = (PetscErrorCode (*)(Mat))f;
+      shell->destroy = (PetscErrorCode (*)(Mat))f;
     } else mat->ops->destroy = (PetscErrorCode (*)(Mat))f;
     break;
   case MATOP_VIEW:

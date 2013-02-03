@@ -8,21 +8,21 @@ extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
 extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
 PetscInt main(PetscInt argc,char **args)
 {
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N2=3,N=N0*N1*N2;
-  PetscRandom     rdm;
-  PetscScalar     a;
-  PetscReal       enorm;
-  Vec             x,y,z,input,output;
-  PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
-  Mat             A;
-  PetscInt        DIM, dim[3],vsize;
-  PetscReal       fac;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       N0=3,N1=3,N2=3,N=N0*N1*N2;
+  PetscRandom    rdm;
+  PetscScalar    a;
+  PetscReal      enorm;
+  Vec            x,y,z,input,output;
+  PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
+  Mat            A;
+  PetscInt       DIM, dim[3],vsize;
+  PetscReal      fac;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
- SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ PetscInt main(PetscInt argc,char **args)
 /*  ierr = VecGetSize(input,&vsize);CHKERRQ(ierr); */
 /*  printf("Size of the input Vector is %d\n",vsize); */
 
-  DIM = 3;
+  DIM    = 3;
   dim[0] = N0; dim[1] = N1; dim[2] = N2;
 
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
   ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
 
-  fac = 1.0/(PetscReal)N;
+  fac  = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
@@ -68,8 +68,9 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
 /*  if (enorm > 1.e-14) { */
-    if (!rank)
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+  }
 /*      } */
 
 

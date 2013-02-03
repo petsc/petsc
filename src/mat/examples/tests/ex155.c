@@ -6,17 +6,17 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank,size;
-  PetscInt        N0=4096,N1=4096,N2=256,N3=10,N4=10,N=N0*N1;
-  PetscRandom     rdm;
-  PetscReal       enorm;
-  Vec             x,y,z,input,output;
-  Mat             A;
-  PetscInt        DIM, dim[5],vsize,row,col;
-  PetscReal       fac;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       N0=4096,N1=4096,N2=256,N3=10,N4=10,N=N0*N1;
+  PetscRandom    rdm;
+  PetscReal      enorm;
+  Vec            x,y,z,input,output;
+  Mat            A;
+  PetscInt       DIM, dim[5],vsize,row,col;
+  PetscReal      fac;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
@@ -33,7 +33,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);
 
-  DIM = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
+  DIM  = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&row,&col);CHKERRQ(ierr);
   printf("The Matrix size  is %d and %d from process %d\n",row,col,rank);
@@ -50,7 +50,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
   ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
   /*ierr = VecDestroy(&z);CHKERRQ(ierr);*/
-  fac = 1.0/(PetscReal)N;
+  fac  = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
@@ -64,8 +64,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
   if (enorm > 1.e-14) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-      }
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

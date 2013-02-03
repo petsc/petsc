@@ -16,11 +16,11 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   PetscBT        table_out,table_in;
 
   PetscFunctionBegin;
-  if (ov < 0)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
-  mbs = a->mbs;
-  ai  = a->i;
-  aj  = a->j;
-  bs  = A->rmap->bs;
+  if (ov < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  mbs  = a->mbs;
+  ai   = a->i;
+  aj   = a->j;
+  bs   = A->rmap->bs;
   ierr = PetscBTCreate(mbs,&table_out);CHKERRQ(ierr);
   ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
   ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 
     /* Enter these into the temp arrays i.e mark table_out[brow], enter brow into new index */
     bcol_max = 0;
-    for (j=0; j<n ; ++j) {
+    for (j=0; j<n; ++j) {
       brow = idx[j]/bs; /* convert the indices into block indices */
       if (brow >= mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if (!PetscBTLookupSet(table_out,brow)) {
@@ -57,7 +57,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
       for (brow=0; brow<mbs; brow++) {
         start = ai[brow]; end   = ai[brow+1];
         if (PetscBTLookup(table_in,brow)) { /* brow is on nidx - row search: collect all bcol in this brow */
-          for (l = start; l<end ; l++) {
+          for (l = start; l<end; l++) {
             bcol = aj[l];
             if (!PetscBTLookupSet(table_out,bcol)) {
               nidx[isz++] = bcol;
@@ -67,11 +67,11 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
           k++;
           if (k >= n) break; /* for (brow=0; brow<mbs; brow++) */
         } else { /* brow is not on nidx - col serach: add brow onto nidx if there is a bcol in nidx */
-          for (l = start; l<end ; l++) {
+          for (l = start; l<end; l++) {
             bcol = aj[l];
             if (bcol > bcol_max) break;
             if (PetscBTLookup(table_in,bcol)) {
-              if (!PetscBTLookupSet(table_out,brow)) {nidx[isz++] = brow;}
+              if (!PetscBTLookupSet(table_out,brow)) nidx[isz++] = brow;
               break; /* for l = start; l<end ; l++) */
             }
           }
@@ -81,8 +81,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 
     /* expand the Index Set */
     for (j=0; j<isz; j++) {
-      for (k=0; k<bs; k++)
-        nidx2[j*bs+k] = nidx[j]*bs+k;
+      for (k=0; k<bs; k++) nidx2[j*bs+k] = nidx[j]*bs+k;
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
   }
@@ -97,7 +96,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 #define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ_Private"
 PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
-  Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data,*c;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*c;
   PetscErrorCode ierr;
   PetscInt       *smap,i,k,kstart,kend,oldcols = a->mbs,*lens;
   PetscInt       row,mat_i,*mat_j,tcol,*mat_ilen;
@@ -125,35 +124,33 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
     kstart  = ai[irow[i]];
     kend    = kstart + a->ilen[irow[i]];
     lens[i] = 0;
-      for (k=kstart; k<kend; k++) {
-        if (ssmap[aj[k]]) {
-          lens[i]++;
-        }
-      }
+    for (k=kstart; k<kend; k++) {
+      if (ssmap[aj[k]]) lens[i]++;
     }
+  }
   /* Create and fill new matrix */
   if (scall == MAT_REUSE_MATRIX) {
-    c = (Mat_SeqSBAIJ *)((*B)->data);
+    c = (Mat_SeqSBAIJ*)((*B)->data);
 
     if (c->mbs!=nrows || (*B)->rmap->bs!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
     if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
-    C = *B;
+    C    = *B;
   } else {
     ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows*bs,nrows*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(C,bs,0,lens);CHKERRQ(ierr);
   }
-  c = (Mat_SeqSBAIJ *)(C->data);
+  c = (Mat_SeqSBAIJ*)(C->data);
   for (i=0; i<nrows; i++) {
-    row    = irow[i];
-    kstart = ai[row];
-    kend   = kstart + a->ilen[row];
-    mat_i  = c->i[i];
-    mat_j  = c->j + mat_i;
-    mat_a  = c->a + mat_i*bs2;
+    row      = irow[i];
+    kstart   = ai[row];
+    kend     = kstart + a->ilen[row];
+    mat_i    = c->i[i];
+    mat_j    = c->j + mat_i;
+    mat_a    = c->a + mat_i*bs2;
     mat_ilen = c->ilen + i;
     for (k=kstart; k<kend; k++) {
       if ((tcol=ssmap[a->j[k]])) {
@@ -172,7 +169,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
-  *B = C;
+  *B   = C;
   PetscFunctionReturn(0);
 }
 
@@ -242,7 +239,7 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -250,31 +247,31 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {     /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
-      v += 4; jmin++;
+      v        += 4; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
-      z[cval]     += v[0]*x1 + v[1]*x2;
-      z[cval+1]   += v[2]*x1 + v[3]*x2;
+      z[cval]   += v[0]*x1 + v[1]*x2;
+      z[cval+1] += v[2]*x1 + v[3]*x2;
       /* (strict upper triangular part of A)*x  */
       z[2*i]   += v[0]*x[cval] + v[2]*x[cval+1];
       z[2*i+1] += v[1]*x[cval] + v[3]*x[cval+1];
-      v  += 4;
+      v        += 4;
     }
     xb +=2; ai++;
   }
@@ -293,7 +290,7 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -301,34 +298,34 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v    = a->a;
-  xb   = x;
+  v  = a->a;
+  xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {     /* (diag of A)*x */
       z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
       z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
       z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-      v += 9; jmin++;
+      v        += 9; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
-      z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3;
-      z[cval+1]   += v[3]*x1 + v[4]*x2 + v[5]*x3;
-      z[cval+2]   += v[6]*x1 + v[7]*x2 + v[8]*x3;
+      z[cval]   += v[0]*x1 + v[1]*x2 + v[2]*x3;
+      z[cval+1] += v[3]*x1 + v[4]*x2 + v[5]*x3;
+      z[cval+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
       /* (strict upper triangular part of A)*x  */
       z[3*i]   += v[0]*x[cval] + v[3]*x[cval+1]+ v[6]*x[cval+2];
       z[3*i+1] += v[1]*x[cval] + v[4]*x[cval+1]+ v[7]*x[cval+2];
       z[3*i+2] += v[2]*x[cval] + v[5]*x[cval+1]+ v[8]*x[cval+2];
-      v  += 9;
+      v        += 9;
     }
     xb +=3; ai++;
   }
@@ -347,7 +344,7 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -355,37 +352,37 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {     /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
       z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
-      v += 16; jmin++;
+      v        += 16; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
-      z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4;
-      z[cval+1]   += v[4]*x1 + v[5]*x2 + v[6]*x3 + v[7]*x4;
-      z[cval+2]   += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[11]*x4;
-      z[cval+3]   += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
+      z[cval]   += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4;
+      z[cval+1] += v[4]*x1 + v[5]*x2 + v[6]*x3 + v[7]*x4;
+      z[cval+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[11]*x4;
+      z[cval+3] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
       /* (strict upper triangular part of A)*x  */
       z[4*i]   += v[0]*x[cval] + v[4]*x[cval+1]+ v[8]*x[cval+2] + v[12]*x[cval+3];
       z[4*i+1] += v[1]*x[cval] + v[5]*x[cval+1]+ v[9]*x[cval+2] + v[13]*x[cval+3];
       z[4*i+2] += v[2]*x[cval] + v[6]*x[cval+1]+ v[10]*x[cval+2]+ v[14]*x[cval+3];
       z[4*i+3] += v[3]*x[cval] + v[7]*x[cval+1]+ v[11]*x[cval+2]+ v[15]*x[cval+3];
-      v  += 16;
+      v        += 16;
     }
     xb +=4; ai++;
   }
@@ -404,7 +401,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,x5,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -412,14 +409,14 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
@@ -427,25 +424,25 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
       z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
       z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5;
-      v += 25; jmin++;
+      v        += 25; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
-      z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4 + v[4]*x5;
-      z[cval+1]   += v[5]*x1 + v[6]*x2 + v[7]*x3 + v[8]*x4 + v[9]*x5;
-      z[cval+2]   += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4+ v[14]*x5;
-      z[cval+3]   += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4+ v[19]*x5;
-      z[cval+4]   += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5;
+      z[cval]   += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4 + v[4]*x5;
+      z[cval+1] += v[5]*x1 + v[6]*x2 + v[7]*x3 + v[8]*x4 + v[9]*x5;
+      z[cval+2] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4+ v[14]*x5;
+      z[cval+3] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4+ v[19]*x5;
+      z[cval+4] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5;
       /* (strict upper triangular part of A)*x  */
       z[5*i]   +=v[0]*x[cval]+v[5]*x[cval+1]+v[10]*x[cval+2]+v[15]*x[cval+3]+v[20]*x[cval+4];
       z[5*i+1] +=v[1]*x[cval]+v[6]*x[cval+1]+v[11]*x[cval+2]+v[16]*x[cval+3]+v[21]*x[cval+4];
       z[5*i+2] +=v[2]*x[cval]+v[7]*x[cval+1]+v[12]*x[cval+2]+v[17]*x[cval+3]+v[22]*x[cval+4];
       z[5*i+3] +=v[3]*x[cval]+v[8]*x[cval+1]+v[13]*x[cval+2]+v[18]*x[cval+3]+v[23]*x[cval+4];
       z[5*i+4] +=v[4]*x[cval]+v[9]*x[cval+1]+v[14]*x[cval+2]+v[19]*x[cval+3]+v[24]*x[cval+4];
-      v  += 25;
+      v        += 25;
     }
     xb +=5; ai++;
   }
@@ -465,7 +462,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,x5,x6,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -473,14 +470,14 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {      /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
@@ -489,7 +486,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
       z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
       z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6;
       z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
-      v += 36; jmin++;
+      v        += 36; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
@@ -509,7 +506,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
       z[6*i+3] +=v[3]*x[cval]+v[9]*x[cval+1]+v[15]*x[cval+2]+v[21]*x[cval+3]+v[27]*x[cval+4]+v[33]*x[cval+5];
       z[6*i+4] +=v[4]*x[cval]+v[10]*x[cval+1]+v[16]*x[cval+2]+v[22]*x[cval+3]+v[28]*x[cval+4]+v[34]*x[cval+5];
       z[6*i+5] +=v[5]*x[cval]+v[11]*x[cval+1]+v[17]*x[cval+2]+v[23]*x[cval+3]+v[29]*x[cval+4]+v[35]*x[cval+5];
-      v  += 36;
+      v        += 36;
     }
     xb +=6; ai++;
   }
@@ -527,7 +524,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -535,14 +532,14 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {      /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
@@ -552,7 +549,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
       z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
       z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
       z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
-      v += 49; jmin++;
+      v        += 49; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
@@ -574,7 +571,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
       z[7*i+4]+=v[4]*x[cval]+v[11]*x[cval+1]+v[18]*x[cval+2]+v[25]*x[cval+3]+v[32]*x[cval+4]+v[39]*x[cval+5]+v[46]*x[cval+6];
       z[7*i+5]+=v[5]*x[cval]+v[12]*x[cval+1]+v[19]*x[cval+2]+v[26]*x[cval+3]+v[33]*x[cval+4]+v[40]*x[cval+5]+v[47]*x[cval+6];
       z[7*i+6]+=v[6]*x[cval]+v[13]*x[cval+1]+v[20]*x[cval+2]+v[27]*x[cval+3]+v[34]*x[cval+4]+v[41]*x[cval+5]+v[48]*x[cval+6];
-      v  += 49;
+      v       += 49;
     }
     xb +=7; ai++;
   }
@@ -595,7 +592,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*idx,*aj,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2,ncols,k;
+  PetscInt       mbs       =a->mbs,i,*idx,*aj,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2,ncols,k;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -603,9 +600,9 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); x_ptr=x;
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
 
-  aj   = a->j;
-  v    = a->a;
-  ii   = a->i;
+  aj = a->j;
+  v  = a->a;
+  ii = a->i;
 
   if (!a->mult_work) {
     ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
@@ -613,8 +610,8 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   work = a->mult_work;
 
   for (i=0; i<mbs; i++) {
-    n     = ii[1] - ii[0]; ncols = n*bs;
-    workt = work; idx=aj+ii[0];
+    n           = ii[1] - ii[0]; ncols = n*bs;
+    workt       = work; idx=aj+ii[0];
     nonzerorow += (n>0);
 
     /* upper triangular part */
@@ -638,7 +635,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++);
-        for (k=0; k<bs; k++) zb[k] += workt[k] ;
+        for (k=0; k<bs; k++) zb[k] += workt[k];
         workt += bs;
       }
     }
@@ -659,21 +656,21 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  v  = a->a;
-  xb = x;
+  v    = a->a;
+  xb   = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0];  /* length of i_th row of A */
-    x1 = xb[0];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th row of A */
+    x1          = xb[0];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {            /* (diag of A)*x */
       z[i] += *v++ * x[*ib++]; jmin++;
@@ -701,7 +698,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -713,27 +710,27 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {      /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
-      v += 4; jmin++;
+      v        += 4; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
-      z[cval]     += v[0]*x1 + v[1]*x2;
-      z[cval+1]   += v[2]*x1 + v[3]*x2;
+      z[cval]   += v[0]*x1 + v[1]*x2;
+      z[cval+1] += v[2]*x1 + v[3]*x2;
       /* (strict upper triangular part of A)*x  */
       z[2*i]   += v[0]*x[cval] + v[2]*x[cval+1];
       z[2*i+1] += v[1]*x[cval] + v[3]*x[cval+1];
-      v  += 4;
+      v        += 4;
     }
     xb +=2; ai++;
   }
@@ -752,7 +749,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -760,34 +757,34 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {     /* (diag of A)*x */
-     z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
-     z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
-     z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-     v += 9; jmin++;
+      z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
+      z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
+      z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
+      v        += 9; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA);   /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
-      z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3;
-      z[cval+1]   += v[3]*x1 + v[4]*x2 + v[5]*x3;
-      z[cval+2]   += v[6]*x1 + v[7]*x2 + v[8]*x3;
+      z[cval]   += v[0]*x1 + v[1]*x2 + v[2]*x3;
+      z[cval+1] += v[3]*x1 + v[4]*x2 + v[5]*x3;
+      z[cval+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
       /* (strict upper triangular part of A)*x  */
       z[3*i]   += v[0]*x[cval] + v[3]*x[cval+1]+ v[6]*x[cval+2];
       z[3*i+1] += v[1]*x[cval] + v[4]*x[cval+1]+ v[7]*x[cval+2];
       z[3*i+2] += v[2]*x[cval] + v[5]*x[cval+1]+ v[8]*x[cval+2];
-      v  += 9;
+      v        += 9;
     }
     xb +=3; ai++;
   }
@@ -807,7 +804,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -815,37 +812,37 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {      /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
       z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
-      v += 16; jmin++;
+      v        += 16; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
-      z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4;
-      z[cval+1]   += v[4]*x1 + v[5]*x2 + v[6]*x3 + v[7]*x4;
-      z[cval+2]   += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[11]*x4;
-      z[cval+3]   += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
+      z[cval]   += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4;
+      z[cval+1] += v[4]*x1 + v[5]*x2 + v[6]*x3 + v[7]*x4;
+      z[cval+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[11]*x4;
+      z[cval+3] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
       /* (strict upper triangular part of A)*x  */
       z[4*i]   += v[0]*x[cval] + v[4]*x[cval+1]+ v[8]*x[cval+2] + v[12]*x[cval+3];
       z[4*i+1] += v[1]*x[cval] + v[5]*x[cval+1]+ v[9]*x[cval+2] + v[13]*x[cval+3];
       z[4*i+2] += v[2]*x[cval] + v[6]*x[cval+1]+ v[10]*x[cval+2]+ v[14]*x[cval+3];
       z[4*i+3] += v[3]*x[cval] + v[7]*x[cval+1]+ v[11]*x[cval+2]+ v[15]*x[cval+3];
-      v  += 16;
+      v        += 16;
     }
     xb +=4; ai++;
   }
@@ -865,7 +862,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,x5;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -873,14 +870,14 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
@@ -888,25 +885,25 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
       z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
       z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5;
-      v += 25; jmin++;
+      v        += 25; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
-      z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4 + v[4]*x5;
-      z[cval+1]   += v[5]*x1 + v[6]*x2 + v[7]*x3 + v[8]*x4 + v[9]*x5;
-      z[cval+2]   += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4+ v[14]*x5;
-      z[cval+3]   += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4+ v[19]*x5;
-      z[cval+4]   += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5;
+      z[cval]   += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4 + v[4]*x5;
+      z[cval+1] += v[5]*x1 + v[6]*x2 + v[7]*x3 + v[8]*x4 + v[9]*x5;
+      z[cval+2] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4+ v[14]*x5;
+      z[cval+3] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4+ v[19]*x5;
+      z[cval+4] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5;
       /* (strict upper triangular part of A)*x  */
       z[5*i]   +=v[0]*x[cval]+v[5]*x[cval+1]+v[10]*x[cval+2]+v[15]*x[cval+3]+v[20]*x[cval+4];
       z[5*i+1] +=v[1]*x[cval]+v[6]*x[cval+1]+v[11]*x[cval+2]+v[16]*x[cval+3]+v[21]*x[cval+4];
       z[5*i+2] +=v[2]*x[cval]+v[7]*x[cval+1]+v[12]*x[cval+2]+v[17]*x[cval+3]+v[22]*x[cval+4];
       z[5*i+3] +=v[3]*x[cval]+v[8]*x[cval+1]+v[13]*x[cval+2]+v[18]*x[cval+3]+v[23]*x[cval+4];
       z[5*i+4] +=v[4]*x[cval]+v[9]*x[cval+1]+v[14]*x[cval+2]+v[19]*x[cval+3]+v[24]*x[cval+4];
-      v  += 25;
+      v        += 25;
     }
     xb +=5; ai++;
   }
@@ -925,7 +922,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,x5,x6;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -933,14 +930,14 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {     /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
@@ -949,7 +946,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
       z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6;
       z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
-      v += 36; jmin++;
+      v        += 36; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
@@ -969,7 +966,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       z[6*i+3] +=v[3]*x[cval]+v[9]*x[cval+1]+v[15]*x[cval+2]+v[21]*x[cval+3]+v[27]*x[cval+4]+v[33]*x[cval+5];
       z[6*i+4] +=v[4]*x[cval]+v[10]*x[cval+1]+v[16]*x[cval+2]+v[22]*x[cval+3]+v[28]*x[cval+4]+v[34]*x[cval+5];
       z[6*i+5] +=v[5]*x[cval]+v[11]*x[cval+1]+v[17]*x[cval+2]+v[23]*x[cval+3]+v[29]*x[cval+4]+v[35]*x[cval+5];
-      v  += 36;
+      v        += 36;
     }
     xb +=6; ai++;
   }
@@ -989,7 +986,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs       =a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -997,14 +994,14 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  v     = a->a;
+  v  = a->a;
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0]; /* length of i_th block row of A */
-    x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
-    ib = aj + *ai;
-    jmin = 0;
+    n           = ai[1] - ai[0]; /* length of i_th block row of A */
+    x1          = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
+    ib          = aj + *ai;
+    jmin        = 0;
     nonzerorow += (n>0);
     if (*ib == i) {     /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
@@ -1014,7 +1011,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
       z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
       z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
-      v += 49; jmin++;
+      v        += 49; jmin++;
     }
     PetscPrefetchBlock(ib+jmin+n,n,0,PETSC_PREFETCH_HINT_NTA); /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
@@ -1036,7 +1033,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       z[7*i+4]+=v[4]*x[cval]+v[11]*x[cval+1]+v[18]*x[cval+2]+v[25]*x[cval+3]+v[32]*x[cval+4]+v[39]*x[cval+5]+v[46]*x[cval+6];
       z[7*i+5]+=v[5]*x[cval]+v[12]*x[cval+1]+v[19]*x[cval+2]+v[26]*x[cval+3]+v[33]*x[cval+4]+v[40]*x[cval+5]+v[47]*x[cval+6];
       z[7*i+6]+=v[6]*x[cval]+v[13]*x[cval+1]+v[20]*x[cval+2]+v[27]*x[cval+3]+v[34]*x[cval+4]+v[41]*x[cval+5]+v[48]*x[cval+6];
-      v  += 49;
+      v       += 49;
     }
     xb +=7; ai++;
   }
@@ -1056,7 +1053,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*x_ptr,*z,*z_ptr=0,*xb,*zb,*work,*workt;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*idx,*aj,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2,ncols,k;
+  PetscInt       mbs       =a->mbs,i,*idx,*aj,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2,ncols,k;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -1064,9 +1061,9 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); x_ptr=x;
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
 
-  aj   = a->j;
-  v    = a->a;
-  ii   = a->i;
+  aj = a->j;
+  v  = a->a;
+  ii = a->i;
 
   if (!a->mult_work) {
     ierr = PetscMalloc((A->rmap->n+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
@@ -1075,8 +1072,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
 
   for (i=0; i<mbs; i++) {
-    n     = ii[1] - ii[0]; ncols = n*bs;
-    workt = work; idx=aj+ii[0];
+    n           = ii[1] - ii[0]; ncols = n*bs;
+    workt       = work; idx=aj+ii[0];
     nonzerorow += (n>0);
 
     /* upper triangular part */
@@ -1099,7 +1096,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
       PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++);
-        for (k=0; k<bs; k++) zb[k] += workt[k] ;
+        for (k=0; k<bs; k++) zb[k] += workt[k];
         workt += bs;
       }
     }
@@ -1118,7 +1115,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatScale_SeqSBAIJ"
 PetscErrorCode MatScale_SeqSBAIJ(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inA->data;
+  Mat_SeqSBAIJ   *a     = (Mat_SeqSBAIJ*)inA->data;
   PetscScalar    oalpha = alpha;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,totalnz;
@@ -1134,8 +1131,8 @@ PetscErrorCode MatScale_SeqSBAIJ(Mat inA,PetscScalar alpha)
 #define __FUNCT__ "MatNorm_SeqSBAIJ"
 PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar      *v = a->a;
+  Mat_SeqSBAIJ   *a       = (Mat_SeqSBAIJ*)A->data;
+  MatScalar      *v       = a->a;
   PetscReal      sum_diag = 0.0, sum_off = 0.0, *sum;
   PetscInt       i,j,k,bs = A->rmap->bs,bs2=a->bs2,k1,mbs=a->mbs,*aj=a->j;
   PetscErrorCode ierr;
@@ -1159,7 +1156,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       }
     }
     *norm = PetscSqrtReal(sum_diag + 2*sum_off);
-  }  else if (type == NORM_INFINITY || type == NORM_1) { /* maximum row/column sum */
+  } else if (type == NORM_INFINITY || type == NORM_1) {  /* maximum row/column sum */
     ierr = PetscMalloc3(bs,PetscReal,&sum,mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) jl[i] = mbs;
     il[0] = 0;
@@ -1185,7 +1182,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
         jmax = a->i[i+1];
         if (jmin < jmax) {
           il[i] = jmin;
-          j   = a->j[jmin];
+          j     = a->j[jmin];
           jl[i] = jl[j]; jl[j]=i;
         }
         i = nexti;
@@ -1220,7 +1217,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 #define __FUNCT__ "MatEqual_SeqSBAIJ"
 PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscBool * flg)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data,*b = (Mat_SeqSBAIJ *)B->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1232,15 +1229,12 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscBool * flg)
 
   /* if the a->i are the same */
   ierr = PetscMemcmp(a->i,b->i,(a->mbs+1)*sizeof(PetscInt),flg);CHKERRQ(ierr);
-  if (!*flg) {
-    PetscFunctionReturn(0);
-  }
+  if (!*flg) PetscFunctionReturn(0);
 
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),flg);CHKERRQ(ierr);
-  if (!*flg) {
-    PetscFunctionReturn(0);
-  }
+  if (!*flg) PetscFunctionReturn(0);
+
   /* if a->a are the same */
   ierr = PetscMemcmp(a->a,b->a,(a->nz)*(A->rmap->bs)*(A->rmap->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1257,7 +1251,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   MatScalar      *aa,*aa_j;
 
   PetscFunctionBegin;
-  bs   = A->rmap->bs;
+  bs = A->rmap->bs;
   if (A->factortype && bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");
 
   aa   = a->a;
@@ -1342,10 +1336,10 @@ PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
 
   PetscFunctionBegin;
-  info->block_size     = a->bs2;
-  info->nz_allocated   = a->bs2*a->maxnz; /*num. of nonzeros in upper triangular part */
-  info->nz_used        = a->bs2*a->nz; /*num. of nonzeros in upper triangular part */
-  info->nz_unneeded    = (double)(info->nz_allocated - info->nz_used);
+  info->block_size   = a->bs2;
+  info->nz_allocated = a->bs2*a->maxnz;   /*num. of nonzeros in upper triangular part */
+  info->nz_used      = a->bs2*a->nz;   /*num. of nonzeros in upper triangular part */
+  info->nz_unneeded  = (double)(info->nz_allocated - info->nz_used);
   info->assemblies   = A->num_ass;
   info->mallocs      = A->info.mallocs;
   info->memory       = ((PetscObject)A)->mem;
@@ -1366,7 +1360,7 @@ PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNCT__ "MatZeroEntries_SeqSBAIJ"
 PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat A)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1393,10 +1387,10 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
   PetscFunctionBegin;
   if (idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Send email to petsc-maint@mcs.anl.gov");
   if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  bs   = A->rmap->bs;
-  aa   = a->a;
-  ai   = a->i;
-  aj   = a->j;
+  bs  = A->rmap->bs;
+  aa  = a->a;
+  ai  = a->i;
+  aj  = a->j;
   mbs = a->mbs;
 
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
@@ -1412,7 +1406,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
         col = bcol + kcol;      /* col index */
         for (krow=0; krow<bs; krow++) {
           atmp = PetscAbsScalar(*aa); aa++;
-          row = brow + krow;    /* row index */
+          row  = brow + krow;   /* row index */
           if (PetscRealPart(x[row]) < atmp) x[row] = atmp;
           if (*aj > i && PetscRealPart(x[col]) < atmp) x[col] = atmp;
         }

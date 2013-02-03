@@ -11,22 +11,22 @@ static char help[] = "Reads a matrix from PETSc binary file. Use for view or inv
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   A,Asp;
-  PetscViewer           fd;               /* viewer */
-  char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscErrorCode        ierr;
-  PetscInt              m,n,rstart,rend;
-  PetscBool             flg;
-  PetscInt             row,ncols,j,nrows,nnzA=0,nnzAsp=0;
-  const PetscInt       *cols;
-  const PetscScalar    *vals;
-  PetscReal            norm,percent,val,dtol=1.e-16;
-  PetscMPIInt          rank;
-  MatInfo              matinfo;
-  PetscInt             Dnnz,Onnz;
+  Mat               A,Asp;
+  PetscViewer       fd;                        /* viewer */
+  char              file[PETSC_MAX_PATH_LEN];  /* input file name */
+  PetscErrorCode    ierr;
+  PetscInt          m,n,rstart,rend;
+  PetscBool         flg;
+  PetscInt          row,ncols,j,nrows,nnzA=0,nnzAsp=0;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+  PetscReal         norm,percent,val,dtol=1.e-16;
+  PetscMPIInt       rank;
+  MatInfo           matinfo;
+  PetscInt          Dnnz,Onnz;
 
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Determine files from which we read the linear systems. */
@@ -52,19 +52,19 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Asp,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(Asp,"asp_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(Asp);CHKERRQ(ierr);
-  Dnnz  = (PetscInt)matinfo.nz_used/m + 1;
-  Onnz  = Dnnz/2;
+  Dnnz = (PetscInt)matinfo.nz_used/m + 1;
+  Onnz = Dnnz/2;
   printf("Dnnz %d %d\n",Dnnz,Onnz);
   ierr = MatSeqAIJSetPreallocation(Asp,Dnnz,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Asp,Dnnz,PETSC_NULL,Onnz,PETSC_NULL);CHKERRQ(ierr);
 
   /* Check zero rows */
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   nrows = 0;
   for (row=rstart; row<rend; row++) {
-    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr  = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
     nnzA += ncols;
-    norm = 0.0;
+    norm  = 0.0;
     for (j=0; j<ncols; j++) {
       val = PetscAbsScalar(vals[j]);
       if (norm < val) norm = norm;
@@ -80,12 +80,12 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(Asp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   percent=(PetscReal)nnzA*100/(m*n);
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix A local size %d,%d; nnzA %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnzA,percent,nrows);
+  ierr   = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix A local size %d,%d; nnzA %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnzA,percent,nrows);
   percent=(PetscReal)nnzAsp*100/(m*n);
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix Asp nnzAsp %d, %g percent\n",rank,nnzAsp,percent);
+  ierr   = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix Asp nnzAsp %d, %g percent\n",rank,nnzAsp,percent);
 
   /* investigate matcoloring for Asp */
-  PetscBool     Asp_coloring = PETSC_FALSE;
+  PetscBool Asp_coloring = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-Asp_color",&Asp_coloring);CHKERRQ(ierr);
   if (Asp_coloring) {
     ISColoring    iscoloring;
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   PetscBool Asp_write = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-Asp_write",&Asp_write);CHKERRQ(ierr);
   if (Asp_write) {
-    PetscViewer    viewer;
+    PetscViewer viewer;
     ierr = PetscPrintf(PETSC_COMM_SELF,"Write Asp into file Asp.dat ...\n");
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"Asp.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(Asp,viewer);CHKERRQ(ierr);

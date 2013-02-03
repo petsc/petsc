@@ -43,13 +43,13 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   /* Open the files; each process opens its own file */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer1);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer1,&fd1);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd1,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd1,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
 
   /* open the file twice so that later we can read entries from two different parts of the
      file at the same time. Note that due to file caching this should not impact performance */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer2,&fd2);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd2,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd2,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
 
   /* error checking on files */
   if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
@@ -57,19 +57,19 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   if (N != size*header[2]) SETERRQ(PETSC_COMM_SELF,1,"All files must have matrices with the same number of total columns");
 
   /* number of rows in matrix is sum of rows in all files */
-  m = header[1]; N = header[2];
+  m    = header[1]; N = header[2];
   ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   /* determine rows of matrices owned by each process */
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+  ierr       = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+  ierr       = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
     rowners[i] += rowners[i-1];
   }
   rstart = rowners[rank];
   rend   = rowners[rank+1];
-  ierr = PetscFree(rowners);CHKERRQ(ierr);
+  ierr   = PetscFree(rowners);CHKERRQ(ierr);
 
   /* determine column ownership if matrix is not square */
   if (N != M) {
@@ -137,11 +137,11 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = PetscFree(mycols);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr    = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr    = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;
-  ierr = PetscViewerDestroy(&viewer1);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
+  ierr    = PetscViewerDestroy(&viewer1);CHKERRQ(ierr);
+  ierr    = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

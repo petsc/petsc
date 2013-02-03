@@ -2,7 +2,7 @@
 static char help[] = "Tests matrix ordering routines.\n\n";
 
 #include <petscmat.h>
-extern PetscErrorCode MatGetOrdering_myordering(Mat,MatOrderingType,IS *,IS *);
+extern PetscErrorCode MatGetOrdering_myordering(Mat,MatOrderingType,IS*,IS*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   const PetscScalar *vals;
   PetscBool         TestMyorder=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 

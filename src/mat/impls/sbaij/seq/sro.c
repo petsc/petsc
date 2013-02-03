@@ -34,7 +34,7 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 #define __FUNCT__ "MatReorderingSeqSBAIJ"
 PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
-  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ *)A->data;
+  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
   const PetscInt mbs=a->mbs,*rip,*riip;
   PetscInt       *ai,*aj,*r;
@@ -60,8 +60,8 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   } else {
     ai = a->inew; aj = a->jnew;
   }
-  ierr  = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
 
   /*
      Phase 1: Find row index r in which to store each nonzero.
@@ -78,7 +78,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   /*  for each nonzero element */
   for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
-    j = ai[i];
+    j  = ai[i];
     /* printf("nz = %d, j=%d\n",nz,j); */
     while (nz--) {
       /*  --- find row (=r[j]) and column (=aj[j]) in which to store a[j] ...*/
@@ -89,7 +89,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
       else k = i;
 
       r[j] = k; j++;
-      nzr[k] ++; /* increment count of nonzeros in that row */
+      nzr[k]++;  /* increment count of nonzeros in that row */
     }
   }
 
@@ -99,16 +99,16 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
               At the end of this phase, (aj[j],a[j]) will be stored in
               (aj[r(j)],a[r(j)]).
   */
-    for (i=0; i<mbs; i++) {
-      ai[i+1] = ai[i] + nzr[i];
-      nzr[i]    = ai[i+1];
-    }
+  for (i=0; i<mbs; i++) {
+    ai[i+1] = ai[i] + nzr[i];
+    nzr[i]  = ai[i+1];
+  }
 
   /* determine where each (aj[j], a[j]) is stored in new (aj,a)
      for each nonzero element (in reverse order) */
   jmin = ai[0]; jmax = ai[mbs];
-  nz = jmax - jmin;
-  j = jmax-1;
+  nz   = jmax - jmin;
+  j    = jmax-1;
   while (nz--) {
     i = r[j];  /* row value */
     if (aj[j] == i) r[j] = ai[i]; /* put diagonal nonzero at beginning of row */
@@ -119,12 +119,12 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   }
 
   a->a2anew = aj + ai[mbs];
-  ierr  = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr      = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Phase 3: permute (aj,a) to upper triangular form (wrt new ordering) */
   for (j=jmin; j<jmax; j++) {
     while (r[j] != j) {
-      k = r[j]; r[j] = r[k]; r[k] = k;
+      k   = r[j]; r[j] = r[k]; r[k] = k;
       ajk = aj[k]; aj[k] = aj[j]; aj[j] = ajk;
       /* ak = aa[k]; aa[k] = aa[j]; aa[j] = ak; */
     }
@@ -134,13 +134,13 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   a->inew = ai;
   a->jnew = aj;
 
-  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
-  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
+  ierr    = ISDestroy(&a->row);CHKERRQ(ierr);
+  ierr    = ISDestroy(&a->icol);CHKERRQ(ierr);
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  ierr    = ISDestroy(&a->row);CHKERRQ(ierr);
   a->row  = perm;
-  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  ierr    = ISDestroy(&a->icol);CHKERRQ(ierr);
   a->icol = perm;
 
   ierr = PetscFree(nzr);CHKERRQ(ierr);

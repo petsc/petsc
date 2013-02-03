@@ -18,11 +18,11 @@ int main(int argc,char **args)
   PetscReal      Cnorm;
   PetscBool      flg,mats_view=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  n = m;
+  n    = m;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
@@ -37,14 +37,14 @@ int main(int argc,char **args)
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
-#if defined (PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   PetscRandom rand;
   PetscScalar rval;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
     }
   }
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   }
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&d);CHKERRQ(ierr);
-  ierr = VecSetSizes(d,m>n?n:m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetSizes(d,m>n ? n : m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(d);CHKERRQ(ierr);
   ierr = MatGetDiagonal(C,d);CHKERRQ(ierr);
   if (mats_view) {

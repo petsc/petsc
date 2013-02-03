@@ -18,7 +18,7 @@ int main(int argc, char **args)
   PetscInt        r,N = 10, start, end;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &args, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &args, (char*) 0, help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-N", &N, PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
@@ -35,6 +35,7 @@ int main(int argc, char **args)
 
       cols[0] = r;   cols[1] = r+1;
       vals[0] = 1.0; vals[1] = 1.0;
+
       ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     } else if (r == N-1) {
       PetscInt    cols[2];
@@ -42,6 +43,7 @@ int main(int argc, char **args)
 
       cols[0] = r-1; cols[1] = r;
       vals[0] = 1.0; vals[1] = 1.0;
+
       ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     } else {
       PetscInt    cols[3];
@@ -49,6 +51,7 @@ int main(int argc, char **args)
 
       cols[0] = r-1; cols[1] = r;   cols[2] = r+1;
       vals[0] = 1.0; vals[1] = 1.0; vals[2] = 1.0;
+
       ierr = MatSetValues(A, 1, &r, 3, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     }
   }

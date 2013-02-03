@@ -13,7 +13,7 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_6_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat_SeqBAIJ    *a    = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   const PetscInt *ajtmpold,*ajtmp,*diag_offset = b->diag,*r,*ic,*bi = b->i,*bj = b->j,*ai=a->i,*aj=a->j,*pj;
@@ -27,7 +27,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
   MatScalar      p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,p36;
   MatScalar      x26,x27,x28,x29,x30,x31,x32,x33,x34,x35,x36;
   MatScalar      m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
-  MatScalar      *ba = b->a,*aa = a->a;
+  MatScalar      *ba   = b->a,*aa = a->a;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -39,12 +39,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      x = rtmp+36*ajtmp[j];
-      x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
+      x     = rtmp+36*ajtmp[j];
+      x[0]  = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
       x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = x[16] = x[17] = 0.0;
-      x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0 ;
-      x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0 ;
-      x[34] = x[35] = 0.0 ;
+      x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0;
+      x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0;
+      x[34] = x[35] = 0.0;
     }
     /* load in initial (unfactored row) */
     idx      = r[i];
@@ -52,10 +52,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
     ajtmpold = aj + ai[idx];
     v        = aa + 36*ai[idx];
     for (j=0; j<nz; j++) {
-      x    = rtmp+36*ic[ajtmpold[j]];
-      x[0] =  v[0];  x[1] =  v[1];  x[2] =  v[2];  x[3] =  v[3];
-      x[4] =  v[4];  x[5] =  v[5];  x[6] =  v[6];  x[7] =  v[7];
-      x[8] =  v[8];  x[9] =  v[9];  x[10] = v[10]; x[11] = v[11];
+      x     = rtmp+36*ic[ajtmpold[j]];
+      x[0]  =  v[0];  x[1] =  v[1];  x[2] =  v[2];  x[3] =  v[3];
+      x[4]  =  v[4];  x[5] =  v[5];  x[6] =  v[6];  x[7] =  v[7];
+      x[8]  =  v[8];  x[9] =  v[9];  x[10] = v[10]; x[11] = v[11];
       x[12] = v[12]; x[13] = v[13]; x[14] = v[14]; x[15] = v[15];
       x[16] = v[16]; x[17] = v[17]; x[18] = v[18]; x[19] = v[19];
       x[20] = v[20]; x[21] = v[21]; x[22] = v[22]; x[23] = v[23];
@@ -85,23 +85,23 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
           p25 != 0.0 || p26 != 0.0 || p27 != 0.0 || p28 != 0.0 ||
           p29 != 0.0 || p30 != 0.0 || p31 != 0.0 || p32 != 0.0 ||
           p33 != 0.0 || p34 != 0.0 || p35 != 0.0 || p36 != 0.0) {
-        pv = ba + 36*diag_offset[row];
-        pj = bj + diag_offset[row] + 1;
-        x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-        x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
-        x9  = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
-        x13 = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
-        x17 = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
-        x21 = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
-        x25 = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
-        x29 = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
-        x33 = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
-        pc[0]  = m1  = p1*x1  + p7*x2   + p13*x3  + p19*x4  + p25*x5  + p31*x6;
-        pc[1]  = m2  = p2*x1  + p8*x2   + p14*x3  + p20*x4  + p26*x5  + p32*x6;
-        pc[2]  = m3  = p3*x1  + p9*x2   + p15*x3  + p21*x4  + p27*x5  + p33*x6;
-        pc[3]  = m4  = p4*x1  + p10*x2  + p16*x3  + p22*x4  + p28*x5  + p34*x6;
-        pc[4]  = m5  = p5*x1  + p11*x2  + p17*x3  + p23*x4  + p29*x5  + p35*x6;
-        pc[5]  = m6  = p6*x1  + p12*x2  + p18*x3  + p24*x4  + p30*x5  + p36*x6;
+        pv    = ba + 36*diag_offset[row];
+        pj    = bj + diag_offset[row] + 1;
+        x1    = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
+        x5    = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
+        x9    = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
+        x13   = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
+        x17   = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
+        x21   = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
+        x25   = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
+        x29   = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
+        x33   = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
+        pc[0] = m1  = p1*x1  + p7*x2   + p13*x3  + p19*x4  + p25*x5  + p31*x6;
+        pc[1] = m2  = p2*x1  + p8*x2   + p14*x3  + p20*x4  + p26*x5  + p32*x6;
+        pc[2] = m3  = p3*x1  + p9*x2   + p15*x3  + p21*x4  + p27*x5  + p33*x6;
+        pc[3] = m4  = p4*x1  + p10*x2  + p16*x3  + p22*x4  + p28*x5  + p34*x6;
+        pc[4] = m5  = p5*x1  + p11*x2  + p17*x3  + p23*x4  + p29*x5  + p35*x6;
+        pc[5] = m6  = p6*x1  + p12*x2  + p18*x3  + p24*x4  + p30*x5  + p36*x6;
 
         pc[6]  = m7  = p1*x7  + p7*x8   + p13*x9  + p19*x10 + p25*x11 + p31*x12;
         pc[7]  = m8  = p2*x7  + p8*x8   + p14*x9  + p20*x10 + p26*x11 + p32*x12;
@@ -138,25 +138,25 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
         pc[34] = m35 = p5*x31 + p11*x32 + p17*x33 + p23*x34 + p29*x35 + p35*x36;
         pc[35] = m36 = p6*x31 + p12*x32 + p18*x33 + p24*x34 + p30*x35 + p36*x36;
 
-        nz = bi[row+1] - diag_offset[row] - 1;
+        nz  = bi[row+1] - diag_offset[row] - 1;
         pv += 36;
         for (j=0; j<nz; j++) {
-          x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-          x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
-          x9  = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
-          x13 = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
-          x17 = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
-          x21 = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
-          x25 = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
-          x29 = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
-          x33 = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
-          x    = rtmp + 36*pj[j];
-          x[0]  -= m1*x1  + m7*x2   + m13*x3  + m19*x4  + m25*x5  + m31*x6;
-          x[1]  -= m2*x1  + m8*x2   + m14*x3  + m20*x4  + m26*x5  + m32*x6;
-          x[2]  -= m3*x1  + m9*x2   + m15*x3  + m21*x4  + m27*x5  + m33*x6;
-          x[3]  -= m4*x1  + m10*x2  + m16*x3  + m22*x4  + m28*x5  + m34*x6;
-          x[4]  -= m5*x1  + m11*x2  + m17*x3  + m23*x4  + m29*x5  + m35*x6;
-          x[5]  -= m6*x1  + m12*x2  + m18*x3  + m24*x4  + m30*x5  + m36*x6;
+          x1    = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
+          x5    = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
+          x9    = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
+          x13   = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
+          x17   = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
+          x21   = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
+          x25   = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
+          x29   = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
+          x33   = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
+          x     = rtmp + 36*pj[j];
+          x[0] -= m1*x1  + m7*x2   + m13*x3  + m19*x4  + m25*x5  + m31*x6;
+          x[1] -= m2*x1  + m8*x2   + m14*x3  + m20*x4  + m26*x5  + m32*x6;
+          x[2] -= m3*x1  + m9*x2   + m15*x3  + m21*x4  + m27*x5  + m33*x6;
+          x[3] -= m4*x1  + m10*x2  + m16*x3  + m22*x4  + m28*x5  + m34*x6;
+          x[4] -= m5*x1  + m11*x2  + m17*x3  + m23*x4  + m29*x5  + m35*x6;
+          x[5] -= m6*x1  + m12*x2  + m18*x3  + m24*x4  + m30*x5  + m36*x6;
 
           x[6]  -= m1*x7  + m7*x8   + m13*x9  + m19*x10 + m25*x11 + m31*x12;
           x[7]  -= m2*x7  + m8*x8   + m14*x9  + m20*x10 + m26*x11 + m32*x12;
@@ -193,7 +193,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
           x[34] -= m5*x31 + m11*x32 + m17*x33 + m23*x34 + m29*x35 + m35*x36;
           x[35] -= m6*x31 + m12*x32 + m18*x33 + m24*x34 + m30*x35 + m36*x36;
 
-          pv   += 36;
+          pv += 36;
         }
         ierr = PetscLogFlops(432.0*nz+396.0);CHKERRQ(ierr);
       }
@@ -214,19 +214,21 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
       pv[24] = x[24]; pv[25] = x[25]; pv[26] = x[26]; pv[27] = x[27];
       pv[28] = x[28]; pv[29] = x[29]; pv[30] = x[30]; pv[31] = x[31];
       pv[32] = x[32]; pv[33] = x[33]; pv[34] = x[34]; pv[35] = x[35];
-      pv   += 36;
+      pv    += 36;
     }
     /* invert diagonal block */
-    w = ba + 36*diag_offset[i];
+    w    = ba + 36*diag_offset[i];
     ierr = PetscKernel_A_gets_inverse_A_6(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_6_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_6_inplace;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*6*6*6*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -235,8 +237,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_inplace(Mat C,Mat A,const MatFactorI
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_6"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  Mat            C     = B;
+  Mat_SeqBAIJ    *a    = (Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   const PetscInt *r,*ic;
@@ -265,7 +267,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
     }
 
     /* U part */
-    nz = bdiag[i] - bdiag[i+1];
+    nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
@@ -282,9 +284,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for (k=0;k < nzL;k++) {
+    for (k=0; k < nzL; k++) {
       row = bjtmp[k];
-      pc = rtmp + bs2*row;
+      pc  = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) {
         if (pc[j]!=0.0) {
           flg = 1;
@@ -312,9 +314,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
 
     /* finished row so stick it into b->a */
     /* L part */
-    pv   = b->a + bs2*bi[i] ;
-    pj   = b->j + bi[i] ;
-    nz   = bi[i+1] - bi[i];
+    pv = b->a + bs2*bi[i];
+    pj = b->j + bi[i];
+    nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -338,9 +340,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_6;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_6;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*6*6*6*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -349,7 +353,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
   PetscInt       *ajtmpold,*ajtmp,nz,row;
@@ -364,7 +368,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,p36;
   MatScalar      x26,x27,x28,x29,x30,x31,x32,x33,x34,x35,x36;
   MatScalar      m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
-  MatScalar      *ba = b->a,*aa = a->a;
+  MatScalar      *ba   = b->a,*aa = a->a;
   PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
@@ -373,22 +377,22 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      x = rtmp+36*ajtmp[j];
-      x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
+      x     = rtmp+36*ajtmp[j];
+      x[0]  = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
       x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = x[16] = x[17] = 0.0;
-      x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0 ;
-      x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0 ;
-      x[34] = x[35] = 0.0 ;
+      x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0;
+      x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0;
+      x[34] = x[35] = 0.0;
     }
     /* load in initial (unfactored row) */
     nz       = ai[i+1] - ai[i];
     ajtmpold = aj + ai[i];
     v        = aa + 36*ai[i];
     for (j=0; j<nz; j++) {
-      x    = rtmp+36*ajtmpold[j];
-      x[0] =  v[0];  x[1] =  v[1];  x[2] =  v[2];  x[3] =  v[3];
-      x[4] =  v[4];  x[5] =  v[5];  x[6] =  v[6];  x[7] =  v[7];
-      x[8] =  v[8];  x[9] =  v[9];  x[10] = v[10]; x[11] = v[11];
+      x     = rtmp+36*ajtmpold[j];
+      x[0]  =  v[0];  x[1] =  v[1];  x[2] =  v[2];  x[3] =  v[3];
+      x[4]  =  v[4];  x[5] =  v[5];  x[6] =  v[6];  x[7] =  v[7];
+      x[8]  =  v[8];  x[9] =  v[9];  x[10] = v[10]; x[11] = v[11];
       x[12] = v[12]; x[13] = v[13]; x[14] = v[14]; x[15] = v[15];
       x[16] = v[16]; x[17] = v[17]; x[18] = v[18]; x[19] = v[19];
       x[20] = v[20]; x[21] = v[21]; x[22] = v[22]; x[23] = v[23];
@@ -418,23 +422,23 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
           p25 != 0.0 || p26 != 0.0 || p27 != 0.0 || p28 != 0.0 ||
           p29 != 0.0 || p30 != 0.0 || p31 != 0.0 || p32 != 0.0 ||
           p33 != 0.0 || p34 != 0.0 || p35 != 0.0 || p36 != 0.0) {
-        pv = ba + 36*diag_offset[row];
-        pj = bj + diag_offset[row] + 1;
-        x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-        x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
-        x9  = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
-        x13 = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
-        x17 = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
-        x21 = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
-        x25 = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
-        x29 = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
-        x33 = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
-        pc[0]  = m1  = p1*x1  + p7*x2   + p13*x3  + p19*x4  + p25*x5  + p31*x6;
-        pc[1]  = m2  = p2*x1  + p8*x2   + p14*x3  + p20*x4  + p26*x5  + p32*x6;
-        pc[2]  = m3  = p3*x1  + p9*x2   + p15*x3  + p21*x4  + p27*x5  + p33*x6;
-        pc[3]  = m4  = p4*x1  + p10*x2  + p16*x3  + p22*x4  + p28*x5  + p34*x6;
-        pc[4]  = m5  = p5*x1  + p11*x2  + p17*x3  + p23*x4  + p29*x5  + p35*x6;
-        pc[5]  = m6  = p6*x1  + p12*x2  + p18*x3  + p24*x4  + p30*x5  + p36*x6;
+        pv    = ba + 36*diag_offset[row];
+        pj    = bj + diag_offset[row] + 1;
+        x1    = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
+        x5    = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
+        x9    = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
+        x13   = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
+        x17   = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
+        x21   = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
+        x25   = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
+        x29   = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
+        x33   = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
+        pc[0] = m1  = p1*x1  + p7*x2   + p13*x3  + p19*x4  + p25*x5  + p31*x6;
+        pc[1] = m2  = p2*x1  + p8*x2   + p14*x3  + p20*x4  + p26*x5  + p32*x6;
+        pc[2] = m3  = p3*x1  + p9*x2   + p15*x3  + p21*x4  + p27*x5  + p33*x6;
+        pc[3] = m4  = p4*x1  + p10*x2  + p16*x3  + p22*x4  + p28*x5  + p34*x6;
+        pc[4] = m5  = p5*x1  + p11*x2  + p17*x3  + p23*x4  + p29*x5  + p35*x6;
+        pc[5] = m6  = p6*x1  + p12*x2  + p18*x3  + p24*x4  + p30*x5  + p36*x6;
 
         pc[6]  = m7  = p1*x7  + p7*x8   + p13*x9  + p19*x10 + p25*x11 + p31*x12;
         pc[7]  = m8  = p2*x7  + p8*x8   + p14*x9  + p20*x10 + p26*x11 + p32*x12;
@@ -471,25 +475,25 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
         pc[34] = m35 = p5*x31 + p11*x32 + p17*x33 + p23*x34 + p29*x35 + p35*x36;
         pc[35] = m36 = p6*x31 + p12*x32 + p18*x33 + p24*x34 + p30*x35 + p36*x36;
 
-        nz = bi[row+1] - diag_offset[row] - 1;
+        nz  = bi[row+1] - diag_offset[row] - 1;
         pv += 36;
         for (j=0; j<nz; j++) {
-          x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-          x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
-          x9  = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
-          x13 = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
-          x17 = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
-          x21 = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
-          x25 = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
-          x29 = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
-          x33 = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
-          x    = rtmp + 36*pj[j];
-          x[0]  -= m1*x1  + m7*x2   + m13*x3  + m19*x4  + m25*x5  + m31*x6;
-          x[1]  -= m2*x1  + m8*x2   + m14*x3  + m20*x4  + m26*x5  + m32*x6;
-          x[2]  -= m3*x1  + m9*x2   + m15*x3  + m21*x4  + m27*x5  + m33*x6;
-          x[3]  -= m4*x1  + m10*x2  + m16*x3  + m22*x4  + m28*x5  + m34*x6;
-          x[4]  -= m5*x1  + m11*x2  + m17*x3  + m23*x4  + m29*x5  + m35*x6;
-          x[5]  -= m6*x1  + m12*x2  + m18*x3  + m24*x4  + m30*x5  + m36*x6;
+          x1    = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
+          x5    = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
+          x9    = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11];
+          x13   = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15];
+          x17   = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
+          x21   = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
+          x25   = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
+          x29   = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
+          x33   = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
+          x     = rtmp + 36*pj[j];
+          x[0] -= m1*x1  + m7*x2   + m13*x3  + m19*x4  + m25*x5  + m31*x6;
+          x[1] -= m2*x1  + m8*x2   + m14*x3  + m20*x4  + m26*x5  + m32*x6;
+          x[2] -= m3*x1  + m9*x2   + m15*x3  + m21*x4  + m27*x5  + m33*x6;
+          x[3] -= m4*x1  + m10*x2  + m16*x3  + m22*x4  + m28*x5  + m34*x6;
+          x[4] -= m5*x1  + m11*x2  + m17*x3  + m23*x4  + m29*x5  + m35*x6;
+          x[5] -= m6*x1  + m12*x2  + m18*x3  + m24*x4  + m30*x5  + m36*x6;
 
           x[6]  -= m1*x7  + m7*x8   + m13*x9  + m19*x10 + m25*x11 + m31*x12;
           x[7]  -= m2*x7  + m8*x8   + m14*x9  + m20*x10 + m26*x11 + m32*x12;
@@ -526,7 +530,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
           x[34] -= m5*x31 + m11*x32 + m17*x33 + m23*x34 + m29*x35 + m35*x36;
           x[35] -= m6*x31 + m12*x32 + m18*x33 + m24*x34 + m30*x35 + m36*x36;
 
-          pv   += 36;
+          pv += 36;
         }
         ierr = PetscLogFlops(432.0*nz+396.0);CHKERRQ(ierr);
       }
@@ -547,17 +551,19 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
       pv[24] = x[24]; pv[25] = x[25]; pv[26] = x[26]; pv[27] = x[27];
       pv[28] = x[28]; pv[29] = x[29]; pv[30] = x[30]; pv[31] = x[31];
       pv[32] = x[32]; pv[33] = x[33]; pv[34] = x[34]; pv[35] = x[35];
-      pv   += 36;
+      pv    += 36;
     }
     /* invert diagonal block */
-    w = ba + 36*diag_offset[i];
+    w    = ba + 36*diag_offset[i];
     ierr = PetscKernel_A_gets_inverse_A_6(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_6_NaturalOrdering_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering_inplace;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*6*6*6*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -566,8 +572,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace(Mat C,Mat A,
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  Mat            C =B;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,k,nz,nzL,row;
   const PetscInt n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
@@ -591,7 +597,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
     }
 
     /* U part */
-    nz = bdiag[i] - bdiag[i+1];
+    nz    = bdiag[i] - bdiag[i+1];
     bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++) {
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
@@ -608,9 +614,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for (k=0;k < nzL;k++) {
+    for (k=0; k < nzL; k++) {
       row = bjtmp[k];
-      pc = rtmp + bs2*row;
+      pc  = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) {
         if (pc[j]!=0.0) {
           flg = 1;
@@ -638,9 +644,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
 
     /* finished row so stick it into b->a */
     /* L part */
-    pv   = b->a + bs2*bi[i] ;
-    pj   = b->j + bi[i] ;
-    nz   = bi[i+1] - bi[i];
+    pv = b->a + bs2*bi[i];
+    pj = b->j + bi[i];
+    nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -661,9 +667,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
     }
   }
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
+
   C->ops->solve          = MatSolve_SeqBAIJ_6_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering;
-  C->assembled = PETSC_TRUE;
+  C->assembled           = PETSC_TRUE;
+
   ierr = PetscLogFlops(1.333333333333*6*6*6*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

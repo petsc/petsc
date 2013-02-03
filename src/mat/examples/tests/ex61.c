@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscInt       i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
   PetscBool      flg;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-baij",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -31,19 +31,19 @@ int main(int argc,char **args)
     ierr = MatSeqAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
   }
 
-  i = 0; j = 0; v = 1.0;
+  i    = 0; j = 0; v = 1.0;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 0; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-
-  i = 1; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 1; j = 1; v = 2.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i = 1; j = 2; v = 3.0;
+  i    = 0; j = 2; v = 3.0;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
 
-  i = 2; j = 2; v = 3.0;
+  i    = 1; j = 0; v = 1.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  i    = 1; j = 1; v = 2.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  i    = 1; j = 2; v = 3.0;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+
+  i    = 2; j = 2; v = 3.0;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

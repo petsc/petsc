@@ -21,7 +21,7 @@ static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt *size,PetscInt **ns)
   min_mn = (m < n) ? m : n;
   if (!ns) {
     for (count=0,i=0; count<min_mn; count+=ns_row[i],i++) ;
-    for (; count+1 < n; count++,i++);
+    for (; count+1 < n; count++,i++) ;
     if (count < n)  {
       i++;
     }

@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscLogStage  stages[2];
   PetscInt       vid = -1;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -63,20 +63,20 @@ int main(int argc,char **args)
   }
   /* second, add random blocks */
   for (i=0; i<20*bs; i++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-      cols[0] = bs*(PetscInt)(PetscRealPart(rval)*Mbs);
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-      rows[0] = rstart + bs*(PetscInt)(PetscRealPart(rval)*mbs);
-      for (j=1; j<bs; j++) {
-        rows[j] = rows[j-1]+1;
-        cols[j] = cols[j-1]+1;
-      }
+    ierr    = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    cols[0] = bs*(PetscInt)(PetscRealPart(rval)*Mbs);
+    ierr    = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    rows[0] = rstart + bs*(PetscInt)(PetscRealPart(rval)*mbs);
+    for (j=1; j<bs; j++) {
+      rows[j] = rows[j-1]+1;
+      cols[j] = cols[j-1]+1;
+    }
 
-      for (j=0; j<bs*bs; j++) {
-        ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-        vals[j] = rval;
-      }
-      ierr = MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    for (j=0; j<bs*bs; j++) {
+      ierr    = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      vals[j] = rval;
+    }
+    ierr = MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES);CHKERRQ(ierr);
   }
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ int main(int argc,char **args)
 
   /* Test sA==A through MatMult() */
   ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG ,"Error in MatConvert(): A != sA");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in MatConvert(): A != sA");
 
   /* Test MatIncreaseOverlap() */
   ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
@@ -113,10 +113,10 @@ int main(int argc,char **args)
   for (i=0; i<nd; i++) {
     if (!TestAllcols) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-      sz = (PetscInt)((0.5+0.2*PetscRealPart(rval))*mbs); /* 0.5*mbs < sz < 0.7*mbs */
+      sz   = (PetscInt)((0.5+0.2*PetscRealPart(rval))*mbs); /* 0.5*mbs < sz < 0.7*mbs */
 
       for (j=0; j<sz; j++) {
-        ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+        ierr      = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
         idx[j*bs] = bs*(PetscInt)(PetscRealPart(rval)*Mbs);
         for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
       }
@@ -127,12 +127,12 @@ int main(int argc,char **args)
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     } else { /* Test all rows and colums */
-      sz = M;
+      sz   = M;
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is1+i);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is2+i);CHKERRQ(ierr);
 
       if (rank == vid) {
-        PetscBool      colflag;
+        PetscBool colflag;
         ierr = ISIdentity(is2[i],&colflag);CHKERRQ(ierr);
         printf("[%d] is2[%d], colflag %d\n",rank,i,colflag);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
