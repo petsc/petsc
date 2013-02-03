@@ -67,11 +67,42 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!(*label)) PetscFunctionReturn(0);
   if (--(*label)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree((*label)->name);CHKERRQ(ierr);
   ierr = PetscFree3((*label)->stratumValues,(*label)->stratumOffsets,(*label)->stratumSizes);CHKERRQ(ierr);
   ierr = PetscFree((*label)->points);CHKERRQ(ierr);
   ierr = PetscFree(*label);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelDuplicate"
+PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
+{
+  PetscInt       v, q;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _n_DMLabel, labelnew);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(label->name, &(*labelnew)->name);CHKERRQ(ierr);
+
+  (*labelnew)->refct     = 1;
+  (*labelnew)->numStrata = label->numStrata;
+  if (label->numStrata) {
+    ierr = PetscMalloc3(label->numStrata,PetscInt,&(*labelnew)->stratumValues,label->numStrata+1,PetscInt,&(*labelnew)->stratumOffsets,label->numStrata,PetscInt,&(*labelnew)->stratumSizes);CHKERRQ(ierr);
+    ierr = PetscMalloc(label->stratumOffsets[label->numStrata] * sizeof(PetscInt), &(*labelnew)->points);CHKERRQ(ierr);
+    /* Could eliminate unused space here */
+    for (v = 0; v < label->numStrata; ++v) {
+      (*labelnew)->stratumValues[v]  = label->stratumValues[v];
+      (*labelnew)->stratumOffsets[v] = label->stratumOffsets[v];
+      (*labelnew)->stratumSizes[v]   = label->stratumSizes[v];
+      for (q = label->stratumOffsets[v]; q < label->stratumOffsets[v]+label->stratumSizes[v]; ++q) {
+        (*labelnew)->points[q] = label->points[q];
+      }
+    }
+    (*labelnew)->stratumOffsets[label->numStrata] = label->stratumOffsets[label->numStrata];
+  }
   PetscFunctionReturn(0);
 }
 
