@@ -919,7 +919,7 @@ PetscErrorCode DMMeshGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
 @*/
 PetscErrorCode DMMeshSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
 {
-  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  DM_Mesh       *mesh = (DM_Mesh*) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4474,7 +4474,7 @@ PetscErrorCode SectionGetArray(DM dm, const char name[], PetscInt *numElements, 
 /*   const int                                  depth   = m->depth(*chart.begin()); */
 /*   *numElements = m->depthStratum(depth)->size(); */
 /*   *fiberDim    = section->getFiberDimension(*chart.begin()); */
-/*   *array       = (PetscScalar *) m->restrict(section); */
+/*   *array       = (PetscScalar*) m->restrict(section); */
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 

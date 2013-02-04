@@ -14,5 +14,6 @@
 find src/ -name *.[ch] -or -name *.cu \
  | grep -v 'src/docs' \
  | grep -v 'ftn-auto' \
- | xargs grep "([_a-zA-Z][_a-zA-Z]* \*)"
+ | xargs grep "([_a-zA-Z][_a-zA-Z]* \*)" \
+ | grep -v -F "PETSC_STDCALL *)"
 

@@ -1689,7 +1689,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
     from->procs[n]    = recvProcs[n];
     for (i = from->starts[n]; i < from->starts[n]+recvSizes[n]; i++) from->indices[i] = recvIdx[i];
   }
-  ctx->fromdata = (void *)from;
+  ctx->fromdata = (void*)from;
 
   /* No local scatter optimization */
   from->local.n                    = 0;

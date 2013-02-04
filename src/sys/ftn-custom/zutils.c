@@ -180,14 +180,14 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
   PetscContainer container;
   PetscScalar    *tlx;
 
-  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject*)&container);CHKERRQ(ierr);
   if (container) {
     ierr = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
     tlx  = base + addr;
 
     shift = *(PetscInt*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
-    tlx   = (PetscScalar*)(((char *)tlx) - shift);
+    tlx   = (PetscScalar*)(((char*)tlx) - shift);
 
     ierr = PetscFree(tlx);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);

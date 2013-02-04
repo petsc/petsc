@@ -500,14 +500,14 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
         (*fin)->ops->destroy = VecDestroy_MPIFFTW;
       }
       if (bout) {
-        data_boutr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
+        data_boutr=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr = VecCreateMPIWithArray(comm,1,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
 
         (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
 
       if (fout) {
-        data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        data_fout=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,1,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
 
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;

@@ -10373,7 +10373,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 /* Note: Should normally not be called by the user, since it is set in DMPlexCreateSubmesh() */
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
-  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

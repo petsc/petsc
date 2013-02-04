@@ -1159,6 +1159,6 @@ PetscErrorCode VecReplaceArray_Seq(Vec vin,const PetscScalar *a)
 
   PetscFunctionBegin;
   ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);
-  v->array_allocated = v->array = (PetscScalar *)a;
+  v->array_allocated = v->array = (PetscScalar*)a;
   PetscFunctionReturn(0);
 }

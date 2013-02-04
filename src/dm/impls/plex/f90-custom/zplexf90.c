@@ -54,7 +54,7 @@ void PETSC_STDCALL dmplexgetcone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *__i
 
   *__ierr = DMPlexGetConeSize(*dm, *p, &n);if (*__ierr) return;
   *__ierr = DMPlexGetCone(*dm, *p, &v);if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void *) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void*) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL dmplexrestorecone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -69,7 +69,7 @@ void PETSC_STDCALL dmplexgetconeorientation_(DM *dm, PetscInt *p, F90Array1d *pt
 
   *__ierr = DMPlexGetConeSize(*dm, *p, &n);if (*__ierr) return;
   *__ierr = DMPlexGetConeOrientation(*dm, *p, &v);if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void *) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void*) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL dmplexrestoreconeorientation_(DM *dm, PetscInt *p, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -84,7 +84,7 @@ void PETSC_STDCALL dmplexgetsupport_(DM *dm, PetscInt *p, F90Array1d *ptr, int *
 
   *__ierr = DMPlexGetSupportSize(*dm, *p, &n);if (*__ierr) return;
   *__ierr = DMPlexGetSupport(*dm, *p, &v);if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void *) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void*) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL dmplexrestoresupport_(DM *dm, PetscInt *p, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -98,7 +98,7 @@ void PETSC_STDCALL dmplexgettransitiveclosure_(DM *dm, PetscInt *p, PetscBool *u
   PetscInt n;
 
   *__ierr = DMPlexGetTransitiveClosure(*dm, *p, *useCone, &n, &v);if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void *) v, PETSC_INT, 1, n*2, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void*) v, PETSC_INT, 1, n*2, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL dmplexrestoretransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))

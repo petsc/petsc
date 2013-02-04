@@ -77,7 +77,7 @@ std::string XMLObject::parseString(const xmlChar* name, const xmlChar** attrs, c
   // Parse data
   for (uint i = 0; attrs[i]; i++) {
     // Check for attribute
-    if (xmlStrcasecmp(attrs[i], (xmlChar *) attribute) == 0) {
+    if (xmlStrcasecmp(attrs[i], (xmlChar*) attribute) == 0) {
       if (!attrs[i+1]) error("Value for attribute \"%s\" of <%s> missing in XML file.", attribute, name);
       return (const char*) (attrs[i+1]);
     }
@@ -130,11 +130,11 @@ void XMLMesh::startElement(const xmlChar *name, const xmlChar **attrs)
     if (xmlStrcasecmp(name, (xmlChar*) "vertex") == 0) readVertex(name, attrs);
     break;
   case INSIDE_CELLS:
-    if (xmlStrcasecmp(name, (xmlChar *) "interval") == 0) {
+    if (xmlStrcasecmp(name, (xmlChar*) "interval") == 0) {
       readInterval(name, attrs);
-    } else if (xmlStrcasecmp(name, (xmlChar *) "triangle") == 0) {
+    } else if (xmlStrcasecmp(name, (xmlChar*) "triangle") == 0) {
       readTriangle(name, attrs);
-    } else if (xmlStrcasecmp(name, (xmlChar *) "tetrahedron") == 0) {
+    } else if (xmlStrcasecmp(name, (xmlChar*) "tetrahedron") == 0) {
       readTetrahedron(name, attrs);
     }
     break;
