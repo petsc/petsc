@@ -398,25 +398,24 @@
 
 !  Declarations for use with local arrays:
       type(petsc_kkt_solver), pointer:: solver
-      type(Vec)      X_1
-      PetscInt       izero,ione
+      type(Vec)      Xsub(2)
+      PetscInt       izero,ione,itwo
       type(DM)       daphi,dmarray(2)
 
       izero = 0
       ione = 1
+      itwo = 2
       ierr = 0
       call SNESGetApplicationContext(mysnes,solver,ierr)
-      call VecGetSubVector(Xnest,solver%isPhi,X_1,ierr)
+      call DMCompositeGetAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr)
 
-      call InitialGuessLocal(solver,X_1,ierr)
-      call VecAssemblyBegin(X_1,ierr)
-      call VecAssemblyEnd(X_1,ierr)
-      call VecRestoreSubVector(Xnest,solver%isPhi,X_1,ierr)
+      call InitialGuessLocal(solver,Xsub(1),ierr)
+      call VecAssemblyBegin(Xsub(1),ierr)
+      call VecAssemblyEnd(Xsub(1),ierr)
 
 !     zero out lambda
-      call VecGetSubVector(Xnest,solver%isLambda,X_1,ierr)
-      call VecZeroEntries(X_1,ierr)
-      call VecRestoreSubVector(Xnest,solver%isLambda,X_1,ierr)
+      call VecZeroEntries(Xsub(2),ierr)
+      call DMCompositeRestoreAccessArray(solver%da,Xnest,itwo,PETSC_NULL_INTEGER,Xsub,ierr)
 
       return
       end subroutine FormInitialGuess
@@ -505,20 +504,21 @@
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-      type(Vec)      X_1
+      type(Vec)      Xsub(1)
       type(Mat)      Amat
-      PetscInt       izero
+      PetscInt       izero,ione
 
       izero = 0
+      ione = 1
 
-      call VecGetSubVector(X,solver%isPhi,X_1,ierr)
+      call DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr)
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
       call MatGetSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr)
 
-      call FormJacobianLocal(X_1,Amat,solver,.true.,ierr)
+      call FormJacobianLocal(Xsub(1),Amat,solver,.true.,ierr)
       call MatDestroy(Amat,ierr) ! discard our reference
-      call VecRestoreSubVector(X,solver%isPhi,X_1,ierr)
+      call DMCompositeRestoreAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr)
 
       ! the rest of the matrix is not touched
       call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
@@ -650,8 +650,8 @@
       type (petsc_kkt_solver) solver
 
 !  Declarations for use with local arrays:
-      type(Vec)              X_1,X_2,F_1,F_2
-      PetscInt               izero,ione
+      type(Vec)              Xsub(2),Fsub(2)
+      PetscInt               izero,ione,itwo
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -660,23 +660,20 @@
  
       izero = 0
       ione = 1
-      call VecGetSubVector(X,solver%isPhi,X_1,ierr)
-      call VecGetSubVector(X,solver%isLambda,X_2,ierr)
-      call VecGetSubVector(F,solver%isPhi,F_1,ierr)
-      call VecGetSubVector(F,solver%isLambda,F_2,ierr)
+      itwo = 2
+      call DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr)
+      call DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr)
 
-      call FormFunctionNLTerm( X_1, F_1, solver, ierr )
-      call MatMultAdd( solver%AmatLin, X_1, F_1, F_1, ierr)
+      call FormFunctionNLTerm( Xsub(1), Fsub(1), solver, ierr )
+      call MatMultAdd( solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr)
 
 !     do rest of operator (linear)
-      call MatMult(    solver%Cmat, X_1,      F_2, ierr)
-      call MatMultAdd( solver%Bmat, X_2, F_1, F_1, ierr)
-      call MatMultAdd( solver%Dmat, X_2, F_2, F_2, ierr)
+      call MatMult(    solver%Cmat, Xsub(1),      Fsub(2), ierr)
+      call MatMultAdd( solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr)
+      call MatMultAdd( solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr)
 
-      call VecRestoreSubVector(X,solver%isPhi,X_1,ierr)
-      call VecRestoreSubVector(X,solver%isLambda,X_2,ierr)
-      call VecRestoreSubVector(F,solver%isPhi,F_1,ierr)
-      call VecRestoreSubVector(F,solver%isLambda,F_2,ierr)
+      call DMCompositeRestoreAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr)
+      call DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr)
       return
       end subroutine formfunction
 

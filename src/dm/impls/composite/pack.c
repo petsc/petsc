@@ -166,8 +166,14 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
 
     Notes: Use DMCompositeRestoreAccess() to return the vectors when you no longer need them
 
+    Fortran Notes:
+
+    Fortran callers must use numbered versions of this routine, e.g., DMCompositeGetAccess4(dm,gvec,vec1,vec2,vec3,vec4)
+    or use the alternative interface DMCompositeGetAccessArray().
+
     Level: advanced
 
+.seealso: DMCompositeGetEntries(), DMCompositeScatter()
 @*/
 PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
 {
@@ -199,6 +205,57 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
     next = next->next;
   }
   va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCompositeGetAccessArray"
+/*@C
+    DMCompositeGetAccessArray - Allows one to access the individual packed vectors in their global
+       representation.
+
+    Collective on DMComposite
+
+    Input Parameters:
++    dm - the packer object
+.    pvec - packed vector
+.    nwanted - number of vectors wanted
+-    wanted - sorted array of vectors wanted, or PETSC_NULL to get all vectors
+
+    Output Parameters:
+.    vecs - array of requested global vectors (must be allocated)
+
+    Notes: Use DMCompositeRestoreAccessArray() to return the vectors when you no longer need them
+
+    Level: advanced
+
+.seealso: DMCompositeGetAccess(), DMCompositeGetEntries(), DMCompositeScatter(), DMCompositeGather()
+@*/
+PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *link;
+  PetscInt               i,wnum;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(pvec,VEC_CLASSID,2);
+  if (!com->setup) {
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
+  }
+
+  for (i=0,wnum=0,link=com->next; link && wnum<nwanted; i++,link=link->next) {
+    if (!wanted || i == wanted[wnum]) {
+      PetscScalar *array;
+      Vec v;
+      ierr = DMGetGlobalVector(link->dm,&v);CHKERRQ(ierr);
+      ierr = VecGetArray(pvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(v,array+link->rstart);CHKERRQ(ierr);
+      ierr = VecRestoreArray(pvec,&array);CHKERRQ(ierr);
+      vecs[wnum++] = v;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -249,6 +306,48 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     next = next->next;
   }
   va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCompositeRestoreAccessArray"
+/*@C
+    DMCompositeRestoreAccessArray - Returns the vectors obtained with DMCompositeGetAccessArray()
+
+    Collective on DMComposite
+
+    Input Parameters:
++    dm - the packer object
+.    pvec - packed vector
+.    nwanted - number of vectors wanted
+.    wanted - sorted array of vectors wanted, or PETSC_NULL to get all vectors
+-    vecs - array of global vectors to return
+
+    Level: advanced
+
+.seealso: DMCompositeRestoreAccess(), DMCompositeRestoreEntries(), DMCompositeScatter(), DMCompositeGather()
+@*/
+PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,const PetscInt *wanted,Vec *vecs)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *link;
+  PetscInt               i,wnum;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(pvec,VEC_CLASSID,2);
+  if (!com->setup) {
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
+  }
+
+  for (i=0,wnum=0,link=com->next; link && wnum<nwanted; i++,link=link->next) {
+    if (!wanted || i == wanted[wnum]) {
+      ierr = VecResetArray(vecs[wnum]);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(link->dm,&vecs[wnum]);CHKERRQ(ierr);
+      wnum++;
+    }
+  }
   PetscFunctionReturn(0);
 }
 

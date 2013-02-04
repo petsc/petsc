@@ -18,6 +18,8 @@
 #define dmcompositerestorelocalvectors4_ DMCOMPOSITERESTORELOCALVECTORS4
 #define dmcompositegetglobaliss_     DMCOMPOSITEGETGLOBALISS
 #define dmcompositegetlocaliss_      DMCOMPOSITEGETLOCALISS
+#define dmcompositegetaccessarray_   DMCOMPOSITEGETACCESSARRAY
+#define dmcompositerestoreaccessarray_   DMCOMPOSITERESTOREACCESSARRAY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmcompositegetentries1_      dmcompositegetentries1
 #define dmcompositegetentries2_      dmcompositegetentries2
@@ -34,6 +36,8 @@
 #define dmcompositerestorelocalvectors4_ dmcompositerestorelocalvectors4
 #define dmcompositegetglobaliss_     dmcompositegetglobaliss
 #define dmcompositegetlocaliss_      dmcompositegetlocaliss
+#define dmcompositegetaccessarray_   dmcompositegetaccessarray
+#define dmcompositerestoreaccessarray_   dmcompositerestoreaccessarray
 #endif
 
 EXTERN_C_BEGIN
@@ -127,4 +131,16 @@ PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetlocaliss_(DM *dm,IS *iss,PetscEr
   *ierr = DMCompositeGetNumberDM(*dm,&ndm); if (*ierr) return;
   for (i=0; i<ndm; i++) iss[i] = ais[i];
   *ierr = PetscFree(ais);
+}
+
+PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetaccessarray_(DM *dm,Vec *gvec,PetscInt *n,const PetscInt *wanted,Vec *vecs,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(wanted);
+  *ierr = DMCompositeGetAccessArray(*dm,*gvec,*n,wanted,vecs);
+}
+
+PETSC_EXTERN_C void PETSC_STDCALL dmcompositerestoreaccessarray_(DM *dm,Vec *gvec,PetscInt *n,const PetscInt *wanted,Vec *vecs,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(wanted);
+  *ierr = DMCompositeRestoreAccessArray(*dm,*gvec,*n,wanted,vecs);
 }
