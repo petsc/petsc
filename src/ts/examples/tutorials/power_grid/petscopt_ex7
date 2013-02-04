@@ -9,7 +9,8 @@
 -rho 0.0
 -t0 0.0
 -tmax 4.0
--ymax 48.5
+-ymin -10
+-ymax 10
 -da_grid_x 210
 -da_grid_y 210
 
