@@ -3,7 +3,7 @@
 #include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 PetscBool TaoSolverRegisterAllCalled = PETSC_FALSE;
-PetscFList TaoSolverList = PETSC_NULL;
+PetscFunctionList TaoSolverList = PETSC_NULL;
 
 PetscClassId TAOSOLVER_CLASSID;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
@@ -2158,7 +2158,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
     ierr = PetscObjectTypeCompare((PetscObject)tao,type,&issame); CHKERRQ(ierr);
     if (issame) PetscFunctionReturn(0);
 
-    ierr = PetscFListFind(TaoSolverList,((PetscObject)tao)->comm, type, PETSC_TRUE, (void(**)(void))&create_xxx); CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(((PetscObject)tao)->comm, TaoSolverList, type, PETSC_TRUE, (void(**)(void))&create_xxx); CHKERRQ(ierr);
     if (!create_xxx) {
 	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoSolver type %s",type);
     }
@@ -2234,8 +2234,8 @@ PetscErrorCode TaoSolverRegister(const char sname[], const char path[], const ch
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    ierr = PetscFListConcat(path,cname,fullname); CHKERRQ(ierr);
-    ierr = PetscFListAdd(&TaoSolverList,sname, fullname,(void (*)(void))func); CHKERRQ(ierr);
+    ierr = PetscFunctionListConcat(path,cname,fullname); CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TaoSolverList,sname, fullname,(void (*)(void))func); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -2255,7 +2255,7 @@ PetscErrorCode TaoSolverRegisterDestroy(void)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    ierr = PetscFListDestroy(&TaoSolverList); CHKERRQ(ierr);
+    ierr = PetscFunctionListDestroy(&TaoSolverList); CHKERRQ(ierr);
     TaoSolverRegisterAllCalled = PETSC_FALSE;
     PetscFunctionReturn(0);
 }
