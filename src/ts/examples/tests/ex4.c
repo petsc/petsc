@@ -458,7 +458,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
                   yl*inptr[j*m-m]+yr*inptr[j*m+m];
     outptr[j*m+m-1] = xc*inptr[j*m+m-1]+2.0*xl*inptr[j*m+m-1-1]+
                       yl*inptr[j*m+m-1-m]+yr*inptr[j*m+m-1+m];
-    for (i=1; i<m-1; i++)
+    for (i=1; i<m-1; i++) {
       outptr[j*m+i] = xc*inptr[j*m+i]+xl*inptr[j*m+i-1]+xr*inptr[j*m+i+1]
                       +yl*inptr[j*m+i-m]+yr*inptr[j*m+i+m];
     }
