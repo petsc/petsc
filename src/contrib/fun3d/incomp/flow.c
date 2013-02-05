@@ -37,11 +37,11 @@ typedef struct {                               /*============================*/
 
 extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
             FormFunction(SNES,Vec,Vec,void*),
-            FormInitialGuess(SNES,GRID *),
+            FormInitialGuess(SNES,GRID*),
             Update(SNES,void*),
             ComputeTimeStep(SNES,int,void*),
-            GetLocalOrdering(GRID *),
-            SetPetscDS(GRID *,TstepCtx *);
+            GetLocalOrdering(GRID*),
+            SetPetscDS(GRID *,TstepCtx*);
 static PetscErrorCode WritePVTU(AppCtx*,const char*,PetscBool);
 #if defined(_OPENMP) && defined(HAVE_EDGE_COLORING)
 int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncolor,int *ncount);

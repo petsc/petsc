@@ -358,7 +358,7 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 #define __FUNCT__ "MatCoarsenView_MIS"
 PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
-  /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS *)coarse->; */
+  /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
   int            rank;
   PetscBool      iascii;

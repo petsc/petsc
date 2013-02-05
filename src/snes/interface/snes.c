@@ -3062,7 +3062,8 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetTitle(draw,"Residual norm");CHKERRQ(ierr);
   x    = (PetscReal)n;
-  if (rnorm > 0.0) y = log10(rnorm);else y = -15.0;
+  if (rnorm > 0.0) y = log10(rnorm);
+  else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || !(n % 5)) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);

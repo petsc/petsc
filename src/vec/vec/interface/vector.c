@@ -1412,7 +1412,8 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
-  if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
+  if (N >= 0) PetscValidLogicalCollectiveInt(v,N,3);
+  if (N >= 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
   if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
@@ -1451,6 +1452,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   if (bs == v->map->bs) PetscFunctionReturn(0);
+  PetscValidLogicalCollectiveInt(v,bs,2);
   ierr = PetscLayoutSetBlockSize(v->map,bs);CHKERRQ(ierr);
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);

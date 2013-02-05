@@ -953,10 +953,10 @@ PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
        now build a GPU matrix data structure */
     B->spptr = new Mat_SeqAIJCUSPARSE;
 
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->mat     = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->tempvec = 0;
-    ((Mat_SeqAIJCUSPARSE*)B->spptr)->format  = MAT_CUSPARSE_CSR;
-    ((Mat_SeqAIJCUSPARSE *)B->spptr)->hasTranspose = PETSC_FALSE;
+    ((Mat_SeqAIJCUSPARSE*)B->spptr)->mat          = 0;
+    ((Mat_SeqAIJCUSPARSE*)B->spptr)->tempvec      = 0;
+    ((Mat_SeqAIJCUSPARSE*)B->spptr)->format       = MAT_CUSPARSE_CSR;
+    ((Mat_SeqAIJCUSPARSE*)B->spptr)->hasTranspose = PETSC_FALSE;
   } else {
     /* NEXT, set the pointers to the triangular factors */
     B->spptr = new Mat_SeqAIJCUSPARSETriFactors;
@@ -965,7 +965,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->upTriFactorPtr = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->tempvec        = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->format         = cusparseMatSolveStorageFormat;
-((Mat_SeqAIJCUSPARSETriFactors *)B->spptr)->hasTranspose      = PETSC_FALSE;
+    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->hasTranspose   = PETSC_FALSE;
   }
   /* Create a single instance of the MAT_cusparseHandle for any matrix (matMult, TriSolve, ...) */
   if (!MAT_cusparseHandle) {

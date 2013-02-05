@@ -375,11 +375,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-on_error_abort",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
-#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
     ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
-#else
-    ierr = MPI_Errhandler_set(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
-#endif
     ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
@@ -388,11 +384,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-mpi_return_on_error",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
-#if defined(PETSC_HAVE_MPI_COMM_SET_ERRHANDLER)
     ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
-#else
-    ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
-#endif
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);

@@ -1284,6 +1284,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  if (!PetscLogBegin_PrivateCalled) SETERRQ(comm, PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogView()");
   ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -1771,6 +1772,7 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (!PetscLogBegin_PrivateCalled) SETERRQ(comm, PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogPrintDetailed()");
   /* Pop off any stages the user forgot to remove */
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
@@ -2098,6 +2100,7 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   MPI_Comm           comm;
 
   PetscFunctionBegin;
+  if (!PetscLogBegin_PrivateCalled) SETERRQ(comm, PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogViewPython()");
   ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);

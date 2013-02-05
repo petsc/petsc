@@ -192,7 +192,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatLUFactorNumeric_bstrm"
 PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
 {
-  /* Mat_SeqBSTRM     *bstrm = (Mat_SeqBSTRM *) F->spptr; */
+  /* Mat_SeqBSTRM     *bstrm = (Mat_SeqBSTRM*) F->spptr; */
   PetscInt       bs = A->rmap->bs;
   PetscErrorCode ierr;
   Mat_SeqBSTRM   *bstrm;

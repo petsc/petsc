@@ -197,8 +197,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
       rhox    = .5*(u[i+1].rho - u[i-1].rho)/hx;
       cx      = .5*(u[i+1].c - u[i-1].c)/hx;
       kcxrhox = appctx->kappa*(cxx*rho + cx*rhox);
-    } else
+    } else {
       kcxrhox = appctx->kappa*((u[i+1].c - u[i].c)*u[i+1].rho - (u[i].c - u[i-1].c)*u[i].rho)*sx;
+    }
 
     f[i].rho = udot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,PetscRealPart(c - appctx->cstar)) + appctx->beta*rho;
     f[i].c   = udot[i].c - appctx->delta*cxx + appctx->lambda*c + appctx->alpha*rho*c/(appctx->gamma + c);

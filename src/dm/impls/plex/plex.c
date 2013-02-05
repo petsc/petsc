@@ -9845,7 +9845,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char label
   const PetscInt *subVertices;
   PetscInt       *subVerticesActive;
   PetscInt       *subCells = PETSC_NULL;
-  PetscInt        numSubVertices, numSubVerticesActive, firstSubVertex, numSubCells = 0, maxSubCells = 0, numOldSubCells;
+  PetscInt        numSubVertices = 0, numSubVerticesActive, firstSubVertex, numSubCells = 0, maxSubCells = 0, numOldSubCells;
   PetscInt       *face, *subface, maxConeSize, numSubFaces = 0, firstSubFace, newFacePoint, nFV = 0, coordSize;
   PetscInt        dim;  /* Right now, do not specify dimension */
   PetscInt        cStart, cEnd, cMax, c, vStart, vEnd, vMax, v, p, corner, i, d, f;
@@ -10373,7 +10373,7 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 /* Note: Should normally not be called by the user, since it is set in DMPlexCreateSubmesh() */
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
-  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

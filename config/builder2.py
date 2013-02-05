@@ -92,7 +92,7 @@ def checkSingleRun(maker, ex, replace, extraArgs = ''):
   numtests = 1 if args.testnum is not None else len(params)
   maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
-    if 'num' in param: testnum = param['num']
+    if 'num' in param: testnum = int(param['num'])
     if not args.testnum is None and testnum != args.testnum: continue
     if 'setup' in param:
       print(param['setup'])
@@ -172,7 +172,7 @@ def regression(args):
         if not basename.startswith('ex'): continue
         if not ext in ['.c', '.F']: continue
         ex  = os.path.join(root, f)
-        ret = checkSingleRun(maker, ex)
+        ret = checkSingleRun(maker, ex, False)
         if ret: break
       if ret: break
     if ret: break

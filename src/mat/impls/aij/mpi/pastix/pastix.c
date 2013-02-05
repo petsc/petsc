@@ -502,9 +502,9 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 
   if (lu->commSize > 1) {
     if ((F)->factortype == MAT_FACTOR_LU) {
-      F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
+      F_diag = ((Mat_MPIAIJ*)(F)->data)->A;
     } else {
-      F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
+      F_diag = ((Mat_MPISBAIJ*)(F)->data)->A;
     }
     F_diag->assembled = PETSC_TRUE;
   }

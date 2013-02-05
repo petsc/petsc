@@ -119,8 +119,7 @@ public:
 
   // construct repeated_range for the range [first,last)
   tiled_range(Iterator first, Iterator last, difference_type repeats)
-    : first(first), last(last), repeats(repeats), tile_size(last - first) {
-  }
+    : first(first), last(last), repeats(repeats), tile_size(last - first) {}
 
   tiled_range(Iterator first, Iterator last, difference_type repeats, difference_type tile_size)
     : first(first), last(last), repeats(repeats), tile_size(tile_size)
@@ -158,8 +157,7 @@ struct is_diag
 {
   IndexType first, last;
 
-  is_diag(IndexType first, IndexType last) : first(first), last(last) {
-  };
+  is_diag(IndexType first, IndexType last) : first(first), last(last) {}
 
   template <typename Tuple>
   __host__ __device__
@@ -176,7 +174,7 @@ struct is_nonlocal
 {
   IndexType first, last;
 
-  is_nonlocal(IndexType first, IndexType last) : first(first), last(last) {};
+  is_nonlocal(IndexType first, IndexType last) : first(first), last(last) {}
 
   template <typename Tuple>
   __host__ __device__

@@ -116,7 +116,7 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
   for (i=0; i<N-1; i++) {
     if (ii[b+s+1] != ii[b]) {
       ii[b+1] = ii[b+s+1]; b++;
-    }else s++;
+    } else s++;
   }
   *n = N - s;
   PetscFunctionReturn(0);
