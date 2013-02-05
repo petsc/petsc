@@ -3,7 +3,7 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = plexcreate.c plex.c plexlabel.c plexexodusii.c plexvtk.c plexpoint.c plexvtu.c
+SOURCEC  = plexcreate.c plex.c plexlabel.c plexsubmesh.c plexexodusii.c plexvtk.c plexpoint.c plexvtu.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = examples
