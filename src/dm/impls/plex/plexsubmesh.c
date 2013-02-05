@@ -3,6 +3,173 @@
 extern PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM, PetscInt, PetscInt *);
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexMarkSubmesh_Uninterpolated"
+/* Here we need the explicit assumption that:
+
+     For any marked cell, the marked vertices constitute a single face
+*/
+static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabel, DMLabel subpointMap, PetscInt *numFaces, PetscInt *nFV, DM subdm)
+{
+  IS               subvertexIS;
+  const PetscInt  *subvertices;
+  PetscInt        *pStart, *pEnd, *pMax;
+  PetscInt         depth, dim, d, numSubVerticesInitial = 0, v;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  *numFaces = 0;
+  *nFV      = 0;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&pMax);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth>1 ? &pMax[depth-1] : PETSC_NULL, depth > 2 ? &pMax[1] : PETSC_NULL, &pMax[0]);CHKERRQ(ierr);
+  for (d = 0; d <= depth; ++d) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
+    if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
+  }
+  /* Loop over initial vertices and mark all faces in the collective star() */
+  ierr = DMLabelGetStratumIS(vertexLabel, 1, &subvertexIS);CHKERRQ(ierr);
+  if (subvertexIS) {
+    ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
+    ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
+  }
+  for (v = 0; v < numSubVerticesInitial; ++v) {
+    const PetscInt vertex = subvertices[v];
+    PetscInt      *star   = PETSC_NULL;
+    PetscInt       starSize, s, numCells = 0, c;
+
+    ierr = DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    for (s = 0; s < starSize*2; s += 2) {
+      const PetscInt point = star[s];
+      if ((point >= pStart[depth]) && (point < pEnd[depth])) star[numCells++] = point;
+    }
+    for (c = 0; c < numCells; ++c) {
+      const PetscInt cell    = star[c];
+      PetscInt      *closure = PETSC_NULL;
+      PetscInt       closureSize, cl;
+      PetscInt       cellLoc, numCorners = 0, faceSize = 0;
+
+      ierr = DMLabelGetValue(subpointMap, cell, &cellLoc);CHKERRQ(ierr);
+      if (cellLoc == dim) continue;
+      if (cellLoc >= 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Cell %d has dimension %d in the surface label", cell, cellLoc);
+      ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (cl = 0; cl < closureSize*2; cl += 2) {
+        const PetscInt point = closure[cl];
+        PetscInt       vertexLoc;
+
+        if ((point >= pStart[0]) && (point < pEnd[0])) {
+          ++numCorners;
+          ierr = DMLabelGetValue(vertexLabel, point, &vertexLoc);CHKERRQ(ierr);
+          if (vertexLoc >= 0) closure[faceSize++] = point;
+        }
+      }
+      if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices_Internal(dm, numCorners, nFV);CHKERRQ(ierr);}
+      if (faceSize > *nFV) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+      if (faceSize == *nFV) {
+        ++(*numFaces);
+        for (cl = 0; cl < faceSize; ++cl) {
+          ierr = DMLabelSetValue(subpointMap, closure[cl], 0);CHKERRQ(ierr);
+        }
+        ierr = DMLabelSetValue(subpointMap, cell, 2);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+  }
+  if (subvertexIS) {
+    ierr = ISRestoreIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
+  ierr = PetscFree3(pStart,pEnd,pMax);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexMarkSubmesh_Interpolated"
+static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, DMLabel subpointMap, DM subdm)
+{
+  IS               subvertexIS;
+  const PetscInt  *subvertices;
+  PetscInt        *pStart, *pEnd, *pMax;
+  PetscInt         dim, d, numSubVerticesInitial = 0, v;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&pMax);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &pMax[dim], dim>1 ? &pMax[dim-1] : PETSC_NULL, dim > 2 ? &pMax[1] : PETSC_NULL, &pMax[0]);CHKERRQ(ierr);
+  for (d = 0; d <= dim; ++d) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
+    if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
+  }
+  /* Loop over initial vertices and mark all faces in the collective star() */
+  ierr = DMLabelGetStratumIS(vertexLabel, 1, &subvertexIS);CHKERRQ(ierr);
+  if (subvertexIS) {
+    ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
+    ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
+  }
+  for (v = 0; v < numSubVerticesInitial; ++v) {
+    const PetscInt vertex = subvertices[v];
+    PetscInt      *star   = PETSC_NULL;
+    PetscInt       starSize, s, numFaces = 0, f;
+
+    ierr = DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    for (s = 0; s < starSize*2; s += 2) {
+      const PetscInt point = star[s];
+      if ((point >= pStart[dim-1]) && (point < pEnd[dim-1])) star[numFaces++] = point;
+    }
+    for (f = 0; f < numFaces; ++f) {
+      const PetscInt face    = star[f];
+      PetscInt      *closure = PETSC_NULL;
+      PetscInt       closureSize, c;
+      PetscInt       faceLoc;
+
+      ierr = DMLabelGetValue(subpointMap, face, &faceLoc);CHKERRQ(ierr);
+      if (faceLoc == dim-1) continue;
+      if (faceLoc >= 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Face %d has dimension %d in the surface label", face, faceLoc);
+      ierr = DMPlexGetTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {
+        const PetscInt point = closure[c];
+        PetscInt       vertexLoc;
+
+        if ((point >= pStart[0]) && (point < pEnd[0])) {
+          ierr = DMLabelGetValue(vertexLabel, point, &vertexLoc);CHKERRQ(ierr);
+          if (vertexLoc < 0) break;
+        }
+      }
+      if (c == closureSize*2) {
+        const PetscInt *support;
+        PetscInt        supportSize, s;
+
+        for (c = 0; c < closureSize*2; c += 2) {
+          const PetscInt point = closure[c];
+
+          for (d = 0; d < dim; ++d) {
+            if ((point >= pStart[d]) && (point < pEnd[d])) {
+              ierr = DMLabelSetValue(subpointMap, point, d);CHKERRQ(ierr);
+              break;
+            }
+          }
+        }
+        ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = DMLabelSetValue(subpointMap, support[s], dim);CHKERRQ(ierr);
+        }
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+  }
+  if (subvertexIS) {
+    ierr = ISRestoreIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
+  ierr = PetscFree3(pStart,pEnd,pMax);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetFaceOrientation"
 PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
@@ -431,122 +598,37 @@ PetscErrorCode DMPlexInsertFace_Private(DM dm, DM subdm, PetscInt numFaceVertice
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubmesh_Uninterpolated"
-static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char label[], DM subdm)
+static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char vertexLabelName[], DM subdm)
 {
   MPI_Comm        comm = ((PetscObject) dm)->comm;
-  PetscBool       boundaryFaces = PETSC_FALSE;
-  PetscSection    coordSection, subCoordSection;
-  Vec             coordinates, subCoordinates;
-  PetscScalar    *coords, *subCoords;
-  DMLabel         subpointMap;
-  IS              labelIS;
-  const PetscInt *subVertices;
-  PetscInt       *subVerticesActive;
-  PetscInt       *subCells = PETSC_NULL;
-  PetscInt        numSubVertices, numSubVerticesActive, firstSubVertex, numSubCells = 0, maxSubCells = 0, numOldSubCells;
-  PetscInt       *face, *subface, maxConeSize, numSubFaces = 0, firstSubFace, newFacePoint, nFV = 0, coordSize;
-  PetscInt        dim;  /* Right now, do not specify dimension */
-  PetscInt        cStart, cEnd, cMax, c, vStart, vEnd, vMax, v, p, corner, i, d, f;
+  DMLabel         vertexLabel, subpointMap;
+  IS              subvertexIS,  subcellIS;
+  const PetscInt *subVertices, *subCells;
+  PetscInt        numSubVertices, firstSubVertex, numSubCells;
+  PetscInt       *subface, maxConeSize, numSubFaces, firstSubFace, newFacePoint, nFV;
+  PetscInt        vStart, vEnd, c, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, PETSC_NULL, PETSC_NULL, &vMax);CHKERRQ(ierr);
-  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  if (vMax >= 0) vEnd = PetscMin(vEnd, vMax);
-  ierr = DMGetWorkArray(dm, 2*maxConeSize, PETSC_INT, &face);CHKERRQ(ierr);
-  subface = &face[maxConeSize];
-  ierr = DMPlexGetStratumIS(dm, label, 1, &labelIS);CHKERRQ(ierr);
-  if (labelIS) {
-    ierr = ISGetSize(labelIS, &numSubVertices);CHKERRQ(ierr);
-    ierr = ISGetIndices(labelIS, &subVertices);CHKERRQ(ierr);
-  }
-  maxSubCells = numSubVertices;
-  ierr = PetscMalloc(maxSubCells * sizeof(PetscInt), &subCells);CHKERRQ(ierr);
-  ierr = PetscMalloc(numSubVertices * sizeof(PetscInt), &subVerticesActive);CHKERRQ(ierr);
-  ierr = PetscMemzero(subVerticesActive, numSubVertices * sizeof(PetscInt));CHKERRQ(ierr);
-  for (v = 0; v < numSubVertices; ++v) {
-    const PetscInt vertex = subVertices[v];
-    PetscInt      *star   = PETSC_NULL;
-    PetscInt       starSize, numCells = 0;
-
-    ierr = DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
-    for (p = 0; p < starSize*2; p += 2) {
-      const PetscInt point = star[p];
-      if ((point >= cStart) && (point < cEnd)) star[numCells++] = point;
-    }
-    numOldSubCells = numSubCells;
-    for (c = 0; c < numCells; ++c) {
-      const PetscInt cell    = star[c];
-      PetscInt      *closure = PETSC_NULL;
-      PetscInt       closureSize, numCorners = 0, faceSize = 0;
-      PetscInt       cellLoc;
-
-      ierr = PetscFindInt(cell, numOldSubCells, subCells, &cellLoc);CHKERRQ(ierr);
-      if (cellLoc >= 0) continue;
-      ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (p = 0; p < closureSize*2; p += 2) {
-        const PetscInt point = closure[p];
-        if ((point >= vStart) && (point < vEnd)) closure[numCorners++] = point;
-      }
-      if (!nFV) {ierr = DMPlexGetNumFaceVertices_Internal(dm, numCorners, &nFV);CHKERRQ(ierr);}
-      for (corner = 0; corner < numCorners; ++corner) {
-        const PetscInt cellVertex = closure[corner];
-        PetscInt       subVertex;
-
-        ierr = PetscFindInt(cellVertex, numSubVertices, subVertices, &subVertex);CHKERRQ(ierr);
-        if (subVertex >= 0) { /* contains submesh vertex */
-          for (i = 0; i < faceSize; ++i) {
-            if (cellVertex == face[i]) break;
-          }
-          if (i == faceSize) {
-            if (faceSize >= maxConeSize) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices in face %d should not exceed %d", faceSize+1, maxConeSize);
-            face[faceSize]    = cellVertex;
-            subface[faceSize] = subVertex;
-            ++faceSize;
-          }
-        }
-      }
-      ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      if (faceSize >= nFV) {
-        if (faceSize > nFV && !boundaryFaces) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
-        if (numSubCells >= maxSubCells) {
-          PetscInt *tmpCells;
-          maxSubCells *= 2;
-          ierr = PetscMalloc(maxSubCells * sizeof(PetscInt), &tmpCells);CHKERRQ(ierr);
-          ierr = PetscMemcpy(tmpCells, subCells, numSubCells * sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscFree(subCells);CHKERRQ(ierr);
-
-          subCells = tmpCells;
-        }
-        /* TOOD: Maybe overestimate then squeeze out empty faces */
-        if (faceSize > nFV) {
-          /* TODO: This is tricky. Maybe just add all faces */
-          numSubFaces++;
-        } else {
-          numSubFaces++;
-        }
-        for (f = 0; f < faceSize; ++f) subVerticesActive[subface[f]] = 1;
-        subCells[numSubCells++] = cell;
-      }
-    }
-    ierr = DMPlexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
-    ierr = PetscSortRemoveDupsInt(&numSubCells, subCells);CHKERRQ(ierr);
-  }
-  /* Pick out active subvertices */
-  for (v = 0, numSubVerticesActive = 0; v < numSubVertices; ++v) {
-    if (subVerticesActive[v]) {
-      subVerticesActive[numSubVerticesActive++] = subVertices[v];
-    }
-  }
-  ierr = DMPlexSetChart(subdm, 0, numSubCells+numSubFaces+numSubVerticesActive);CHKERRQ(ierr);
+  /* Create subpointMap which marks the submesh */
+  ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
+  ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, vertexLabelName, &vertexLabel);CHKERRQ(ierr);
+  ierr = DMPlexMarkSubmesh_Uninterpolated(dm, vertexLabel, subpointMap, &numSubFaces, &nFV, subdm);CHKERRQ(ierr);
+  /* Setup chart */
+  ierr = DMLabelGetStratumSize(subpointMap, 0, &numSubVertices);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumSize(subpointMap, 2, &numSubCells);CHKERRQ(ierr);
+  ierr = DMPlexSetChart(subdm, 0, numSubCells+numSubFaces+numSubVertices);CHKERRQ(ierr);
+  ierr = DMPlexSetVTKCellHeight(subdm, 1);CHKERRQ(ierr);
   /* Set cone sizes */
   firstSubVertex = numSubCells;
-  firstSubFace   = numSubCells+numSubVerticesActive;
+  firstSubFace   = numSubCells+numSubVertices;
   newFacePoint   = firstSubFace;
+  ierr = DMLabelGetStratumIS(subpointMap, 0, &subvertexIS);CHKERRQ(ierr);
+  if (subvertexIS) {ierr = ISGetIndices(subvertexIS, &subVertices);CHKERRQ(ierr);}
+  ierr = DMLabelGetStratumIS(subpointMap, 2, &subcellIS);CHKERRQ(ierr);
+  if (subcellIS) {ierr = ISGetIndices(subcellIS, &subCells);CHKERRQ(ierr);}
   for (c = 0; c < numSubCells; ++c) {
     ierr = DMPlexSetConeSize(subdm, c, 1);CHKERRQ(ierr);
   }
@@ -555,98 +637,87 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char label
   }
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Create face cones */
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
   for (c = 0; c < numSubCells; ++c) {
     const PetscInt cell    = subCells[c];
+    const PetscInt subcell = c;
     PetscInt      *closure = PETSC_NULL;
-    PetscInt       closureSize, numCorners = 0, faceSize = 0;
+    PetscInt       closureSize, cl, numCorners = 0, faceSize = 0;
 
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    for (p = 0; p < closureSize*2; p += 2) {
-      const PetscInt point = closure[p];
-      if ((point >= vStart) && (point < vEnd)) closure[numCorners++] = point;
-    }
-    for (corner = 0; corner < numCorners; ++corner) {
-      const PetscInt cellVertex = closure[corner];
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt point = closure[cl];
       PetscInt       subVertex;
 
-      ierr = PetscFindInt(cellVertex, numSubVerticesActive, subVerticesActive, &subVertex);CHKERRQ(ierr);
-      if (subVertex >= 0) { /* contains submesh vertex */
-        for (i = 0; i < faceSize; ++i) {
-          if (cellVertex == face[i]) break;
-        }
-        if (i == faceSize) {
-          face[faceSize]    = cellVertex;
-          subface[faceSize] = numSubCells+subVertex;
+      if ((point >= vStart) && (point < vEnd)) {
+        ++numCorners;
+        ierr = PetscFindInt(point, numSubVertices, subVertices, &subVertex);CHKERRQ(ierr);
+        if (subVertex >= 0) {
+          closure[faceSize] = point;
+          subface[faceSize] = subVertex;
           ++faceSize;
         }
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    if (faceSize >= nFV) {
-      if (faceSize > nFV && !boundaryFaces) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
-      /* Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron) */
-      /*   We have to take all the faces, and discard those in the interior */
-      /*   We check the join of the face vertices, which produces 2 cells if in the interior */
-#if 0
-      /* This object just calls insert on each face that comes from subsets() */
-      /* In fact, we can just always acll subsets(), since when we pass a single face it is a single call */
-      FaceInserterV<FlexMesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
-      PointArray                          faceVec(face->begin(), face->end());
-
-      subsets(faceVec, nFV, inserter);
-#endif
-      ierr = DMPlexInsertFace_Private(dm, subdm, faceSize, face, subface, numCorners, cell, c, firstSubFace, &newFacePoint);CHKERRQ(ierr);
+    if (faceSize > nFV) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+    if (faceSize == nFV) {
+      ierr = DMPlexInsertFace_Private(dm, subdm, faceSize, closure, subface, numCorners, cell, subcell, firstSubFace, &newFacePoint);CHKERRQ(ierr);
     }
   }
+  ierr = DMRestoreWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
   ierr = DMPlexStratify(subdm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(subCoordSection, firstSubVertex, firstSubVertex+numSubVerticesActive);CHKERRQ(ierr);
-  for (v = firstSubVertex; v < firstSubVertex+numSubVerticesActive; ++v) {
-    ierr = PetscSectionSetDof(subCoordSection, v, dim);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
-  ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
-  ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
-  for (v = 0; v < numSubVerticesActive; ++v) {
-    const PetscInt vertex    = subVerticesActive[v];
-    const PetscInt subVertex = firstSubVertex+v;
-    PetscInt       dof, off, sdof, soff;
+  {
+    PetscSection coordSection, subCoordSection;
+    Vec          coordinates, subCoordinates;
+    PetscScalar *coords, *subCoords;
+    PetscInt     coordSize, v;
 
-    ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(coordSection, vertex, &off);CHKERRQ(ierr);
-    ierr = PetscSectionGetDof(subCoordSection, subVertex, &sdof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(subCoordSection, subVertex, &soff);CHKERRQ(ierr);
-    if (dof != sdof) SETERRQ4(comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subVertex, vertex, dof);
-    for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
-  }
-  ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(subdm, subCoordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
+    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(subCoordSection, firstSubVertex, firstSubVertex+numSubVertices);CHKERRQ(ierr);
+    for (v = 0; v < numSubVertices; ++v) {
+      const PetscInt vertex    = subVertices[v];
+      const PetscInt subvertex = firstSubVertex+v;
+      PetscInt       dof;
 
-  ierr = DMPlexSetVTKCellHeight(subdm, 1);CHKERRQ(ierr);
-  /* Create map from submesh points to original mesh points */
-  ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
-  for (c = 0; c < numSubCells; ++c) {ierr = DMLabelSetValue(subpointMap, subCells[c], 2);CHKERRQ(ierr);}
-  for (v = 0; v < numSubVerticesActive; ++v) {ierr = DMLabelSetValue(subpointMap, subVerticesActive[v], 0);CHKERRQ(ierr);}
-  ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(subCoordSection, subvertex, dof);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
+    ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
+    ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
+    ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
+    for (v = 0; v < numSubVertices; ++v) {
+      const PetscInt vertex    = subVertices[v];
+      const PetscInt subvertex = firstSubVertex+v;
+      PetscInt       dof, off, sdof, soff, d;
 
-  ierr = PetscFree(subCells);CHKERRQ(ierr);
-  ierr = PetscFree(subVerticesActive);CHKERRQ(ierr);
-  if (labelIS) {
-    ierr = ISRestoreIndices(labelIS, &subVertices);CHKERRQ(ierr);
-    ierr = ISDestroy(&labelIS);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, vertex, &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(subCoordSection, subvertex, &sdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(subCoordSection, subvertex, &soff);CHKERRQ(ierr);
+      if (dof != sdof) SETERRQ4(comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
+      for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
+    }
+    ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(subdm, subCoordinates);CHKERRQ(ierr);
+    ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
   }
-  ierr = DMRestoreWorkArray(dm, 2*maxConeSize, PETSC_INT, &face);CHKERRQ(ierr);
+  /* Cleanup */
+  if (subvertexIS) {ierr = ISRestoreIndices(subvertexIS, &subVertices);CHKERRQ(ierr);}
+  ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
+  if (subcellIS) {ierr = ISRestoreIndices(subcellIS, &subCells);CHKERRQ(ierr);}
+  ierr = ISDestroy(&subcellIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -656,81 +727,22 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
 {
   MPI_Comm         comm = ((PetscObject) dm)->comm;
   DMLabel          subpointMap, vertexLabel;
-  IS              *subpointIS, subvertexIS;
-  const PetscInt **subpoints, *subvertices;
-  PetscInt        *pStart, *pEnd, *numSubPoints, *firstSubPoint, *coneNew;
-  PetscInt         numSubVerticesInitial, totSubPoints = 0, maxConeSize, dim, p, d, v;
+  IS              *subpointIS;
+  const PetscInt **subpoints;
+  PetscInt        *numSubPoints, *firstSubPoint, *coneNew;
+  PetscInt         totSubPoints = 0, maxConeSize, dim, p, d, v;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc6(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&numSubPoints,dim+1,PetscInt,&firstSubPoint,dim+1,IS,&subpointIS,dim+1,const PetscInt *,&subpoints);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
-  }
+  /* Create subpointMap which marks the submesh */
   ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
+  ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, vertexLabelName, &vertexLabel);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(vertexLabel, 1, &subvertexIS);CHKERRQ(ierr);
-  ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
-  ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
-  /* Loop over initial vertices and mark all faces in the collective star() */
-  for (v = 0; v < numSubVerticesInitial; ++v) {
-    const PetscInt vertex = subvertices[v];
-    PetscInt      *star   = PETSC_NULL;
-    PetscInt       starSize, s, numFaces = 0, f;
-
-    ierr = DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
-    for (s = 0; s < starSize*2; s += 2) {
-      const PetscInt point = star[s];
-      if ((point >= pStart[dim-1]) && (point < pEnd[dim-1])) {
-        star[numFaces++] = point;
-      }
-    }
-    for (f = 0; f < numFaces; ++f) {
-      const PetscInt face    = star[f];
-      PetscInt      *closure = PETSC_NULL;
-      PetscInt       closureSize, c;
-      PetscInt       faceLoc;
-
-      ierr = DMLabelGetValue(subpointMap, face, &faceLoc);CHKERRQ(ierr);
-      if (faceLoc == dim-1) continue;
-      if (faceLoc >= 0) SETERRQ2(comm, PETSC_ERR_PLIB, "Face %d has dimension %d in the surface label", face, faceLoc);
-      ierr = DMPlexGetTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize*2; c += 2) {
-        const PetscInt point = closure[c];
-        PetscInt       vertexLoc;
-
-        if ((point >= pStart[0]) && (point < pEnd[0])) {
-          ierr = DMLabelGetValue(vertexLabel, point, &vertexLoc);CHKERRQ(ierr);
-          if (vertexLoc < 0) break;
-        }
-      }
-      if (c == closureSize*2) {
-        const PetscInt *support;
-        PetscInt        supportSize, s;
-
-        for (c = 0; c < closureSize*2; c += 2) {
-          const PetscInt point = closure[c];
-
-          for (d = 0; d < dim; ++d) {
-            if ((point >= pStart[d]) && (point < pEnd[d])) {
-              ierr = DMLabelSetValue(subpointMap, point, d);CHKERRQ(ierr);
-              break;
-            }
-          }
-        }
-        ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
-        for (s = 0; s < supportSize; ++s) {
-          ierr = DMLabelSetValue(subpointMap, support[s], dim);CHKERRQ(ierr);
-        }
-      }
-      ierr = DMPlexRestoreTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    }
-    ierr = DMPlexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
-  ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
+  ierr = DMPlexMarkSubmesh_Interpolated(dm, vertexLabel, subpointMap, subdm);CHKERRQ(ierr);
+  /* Setup chart */
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim+1,PetscInt,&numSubPoints,dim+1,PetscInt,&firstSubPoint,dim+1,IS,&subpointIS,dim+1,const PetscInt *,&subpoints);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     ierr = DMLabelGetStratumSize(subpointMap, d, &numSubPoints[d]);CHKERRQ(ierr);
     totSubPoints += numSubPoints[d];
@@ -792,10 +804,10 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   ierr = DMPlexStratify(subdm);CHKERRQ(ierr);
   /* Build coordinates */
   {
-    PetscSection    coordSection, subCoordSection;
-    Vec             coordinates, subCoordinates;
-    PetscScalar    *coords, *subCoords;
-    PetscInt        coordSize;
+    PetscSection coordSection, subCoordSection;
+    Vec          coordinates, subCoordinates;
+    PetscScalar *coords, *subCoords;
+    PetscInt     coordSize;
 
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -826,21 +838,19 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
       ierr = PetscSectionGetDof(subCoordSection, subvertex, &sdof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(subCoordSection, subvertex, &soff);CHKERRQ(ierr);
       if (dof != sdof) SETERRQ4(comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
-      for (d = 0; d < dof; ++d) {
-        subCoords[soff+d] = coords[off+d];
-      }
+      for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
     }
     ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
     ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(subdm, subCoordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
   }
+  /* Cleanup */
   for (d = 0; d <= dim; ++d) {
     ierr = ISRestoreIndices(subpointIS[d], &subpoints[d]);CHKERRQ(ierr);
     ierr = ISDestroy(&subpointIS[d]);CHKERRQ(ierr);
   }
-  ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
+  ierr = PetscFree4(numSubPoints,firstSubPoint,subpointIS,subpoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -876,7 +886,6 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], DM *subdm)
   ierr = DMCreate(((PetscObject) dm)->comm, subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*subdm, dim-1);CHKERRQ(ierr);
-  /* TODO Remove the dim guard */
   if (depth == dim) {
     ierr = DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, *subdm);CHKERRQ(ierr);
   } else {
