@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &options, &mesh);CHKERRQ(ierr);

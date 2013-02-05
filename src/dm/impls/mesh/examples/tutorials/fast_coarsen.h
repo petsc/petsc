@@ -502,7 +502,7 @@ PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int n
     output->normlist = NULL;
 
     string triangleOptions = "-zpDQ"; //(z)ero indexing, output (e)dges, Quiet, Delaunay
-    triangulate((char *)triangleOptions.c_str(), input, output, NULL);
+    triangulate((char*)triangleOptions.c_str(), input, output, NULL);
     TriangleToMesh(mesh, output, curLevel);
     //printf("computing the angles\n");
     delete input->pointlist;

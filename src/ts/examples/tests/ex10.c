@@ -119,7 +119,7 @@ typedef struct {
 PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 {
   TSDAESimple         tsdae = (TSDAESimple)actx;
-  TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
+  TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
   PetscErrorCode      ierr;
 
   PetscFunctionBeginUser;
@@ -139,7 +139,7 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void
 PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx)
 {
   TSDAESimple         tsdae = (TSDAESimple)actx;
-  TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
+  TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
   PetscErrorCode      ierr;
 
   PetscFunctionBeginUser;
@@ -153,7 +153,7 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx
 PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 {
   PetscErrorCode      ierr;
-  TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
+  TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
   ierr = TSSolve(red->ts,U);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
-  TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
+  TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
   ierr = TSSetFromOptions(red->ts);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae)
 PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
-  TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
+  TSDAESimple_Reduced *red = (TSDAESimple_Reduced*)tsdae->data;
 
   PetscFunctionBegin;
   ierr = TSDestroy(&red->ts);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ typedef struct {
 PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
 {
   TSDAESimple      tsdae = (TSDAESimple)actx;
-  TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
+  TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
@@ -269,7 +269,7 @@ PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts,PetscReal t,Vec UV,Vec F,voi
 PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
 {
   TSDAESimple       tsdae = (TSDAESimple)actx;
-  TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
+  TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
@@ -290,7 +290,7 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,V
 PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 {
   PetscErrorCode   ierr;
-  TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
+  TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
   ierr = VecSet(full->UV,1.0);CHKERRQ(ierr);
@@ -307,7 +307,7 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
-  TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
+  TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
   ierr = TSSetFromOptions(full->ts);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae)
 PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
-  TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
+  TSDAESimple_Full *full = (TSDAESimple_Full*)tsdae->data;
 
   PetscFunctionBegin;
   ierr = TSDestroy(&full->ts);CHKERRQ(ierr);
@@ -417,7 +417,7 @@ int main(int argc,char **argv)
   TSDAESimple    tsdae;
   Vec            U,V,Usolution;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = TSDAESimpleCreate(PETSC_COMM_WORLD,&tsdae);CHKERRQ(ierr);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);

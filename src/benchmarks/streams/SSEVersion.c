@@ -134,12 +134,8 @@ int main(int argc,char *argv[])
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);
 
-  if  ((quantum = checktick()) >= 1)
-    PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity/precision appears to be "
-                "%d microseconds.\n", quantum);
-  else
-    PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity appears to be "
-                "less than one microsecond.\n");
+  if  ((quantum = checktick()) >= 1) PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity/precision appears to be %d microseconds.\n", quantum);
+  else PetscPrintf(PETSC_COMM_WORLD,"Your clock granularity appears to be less than one microsecond.\n");
 
   t = Second();
   for (j = 0; j < N; j++) a[j] = 2.0E0 * a[j];

@@ -116,6 +116,7 @@ PETSC_EXTERN PetscErrorCode DMPlexDistribute(DM, const char[], PetscInt, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexLoad(PetscViewer, DM);
 PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);
 PETSC_EXTERN PetscErrorCode DMPlexSetSubpointMap(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);

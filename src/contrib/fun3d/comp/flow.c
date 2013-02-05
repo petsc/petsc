@@ -38,15 +38,15 @@ typedef struct {                               /*============================*/
 
 int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
     FormFunction(SNES,Vec,Vec,void*),
-    FormInitialGuess(SNES, GRID *),
-    Monitor(SNES,int,double,void *),
+    FormInitialGuess(SNES, GRID*),
+    Monitor(SNES,int,double,void*),
     Update(SNES, void*),
     ComputeTimeStep(SNES, int, void*),
-    GetLocalOrdering(GRID *),
-    SetPetscDS(GRID *, TstepCtx *),
-    FieldOutput(GRID *, int),
-    WriteRestartFile(GRID *, int),
-    ReadRestartFile(GRID *);
+    GetLocalOrdering(GRID*),
+    SetPetscDS(GRID*, TstepCtx*),
+    FieldOutput(GRID*, int),
+    WriteRestartFile(GRID*, int),
+    ReadRestartFile(GRID*);
 
 long clock();
 
@@ -2673,7 +2673,7 @@ int set_up_grid(GRID *grid)
     ICALLOC(mgzero*ncell,     &grid->csearch);
     ICALLOC(valloc*ncell*4,   &grid->c2n);
     ICALLOC(valloc*ncell*6,   &grid->c2e);
-    grid->c2c = (int *)grid->dfp;
+    grid->c2c = (int*)grid->dfp;
     ICALLOC(ncell*4,   &grid->c2c);
     ICALLOC(nnodes,    &grid->cenc);
     if (grid->iup == 1) {

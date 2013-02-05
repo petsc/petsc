@@ -443,8 +443,51 @@ PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec U)
   ierr = DMTSGetSolutionFunction(dm,&solutionfunction,&ctx);CHKERRQ(ierr);
 
   if (solutionfunction) {
-    PetscStackPush("TS user right-hand-side function");
+    PetscStackPush("TS user solution function");
     ierr = (*solutionfunction)(ts,t,U,ctx);CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeForcingFunction"
+/*@
+   TSComputeForcingFunction - Evaluates the forcing function.
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+-  t - current time
+
+   Output Parameter:
+.  U - the function value
+
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers.
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetSolutionFunction(), TSSetRHSFunction(), TSComputeIFunction()
+@*/
+PetscErrorCode TSComputeForcingFunction(TS ts,PetscReal t,Vec U)
+{
+  PetscErrorCode     ierr, (*forcing)(TS,PetscReal,Vec,void*);
+  void               *ctx;
+  DM                 dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetForcingFunction(dm,&forcing,&ctx);CHKERRQ(ierr);
+
+  if (forcing) {
+    PetscStackPush("TS user forcing function");
+    ierr = (*forcing)(ts,t,U,ctx);CHKERRQ(ierr);
     PetscStackPop;
   }
   PetscFunctionReturn(0);
@@ -776,7 +819,7 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetForcingFunction()
 @*/
 PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
@@ -787,6 +830,50 @@ PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetSolutionFunction(dm,f,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetForcingFunction"
+/*@C
+    TSSetForcingFunction - Provide a function that computes a forcing term for a ODE or PDE
+
+    Logically Collective on TS
+
+    Input Parameters:
++   ts - the TS context obtained from TSCreate()
+.   f - routine for evaluating the forcing function
+-   ctx - [optional] user-defined context for private data for the
+          function evaluation routine (may be PETSC_NULL)
+
+    Calling sequence of func:
+$     func (TS ts,PetscReal t,Vec u,void *ctx);
+
++   t - current timestep
+.   u - output vector
+-   ctx - [optional] user-defined function context
+
+    Notes:
+    This routine is useful for testing accuracy of time integration schemes when using the Method of Manufactured Solutions to
+    create closed-form solutions with a non-physical forcing term.
+
+    For low-dimensional problems solved in serial, such as small discrete systems, TSMonitorLGError() can be used to monitor the error history.
+
+    Level: beginner
+
+.keywords: TS, timestep, set, right-hand-side, function
+
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetSolutionFunction()
+@*/
+PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetForcingFunction(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

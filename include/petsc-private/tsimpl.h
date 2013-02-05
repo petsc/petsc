@@ -172,6 +172,7 @@ struct _DMTSOps {
   PetscErrorCode (*ijacobianload)(void**,PetscViewer);
 
   TSSolutionFunction solution;
+  PetscErrorCode (*forcing)(TS,PetscReal,Vec,void*);
 
   PetscErrorCode (*destroy)(DMTS);
   PetscErrorCode (*duplicate)(DMTS,DMTS);
@@ -186,6 +187,7 @@ struct _p_DMTS {
   void *ijacobianctx;
 
   void *solutionctx;
+  void *forcingctx;
 
   void *data;
 

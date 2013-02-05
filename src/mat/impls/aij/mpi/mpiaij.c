@@ -666,7 +666,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   PetscScalar    *val;
   InsertMode     addv = mat->insertmode;
 
-  /* do not use 'b = (Mat_SeqAIJ *)aij->B->data' as B can be reset in disassembly */
+  /* do not use 'b = (Mat_SeqAIJ*)aij->B->data' as B can be reset in disassembly */
 
   PetscFunctionBegin;
   if (!aij->donotstash && !mat->nooffprocentries) {

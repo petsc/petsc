@@ -262,7 +262,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
         }
         ncolors = nc + nc*(col - 1 + col*(col-1));
         ierr    = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&dd->ghostedcoloring);CHKERRQ(ierr);
-        /* PetscIntView(ncolors,(PetscInt *)colors,0); */
+        /* PetscIntView(ncolors,(PetscInt*)colors,0); */
 
         ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }

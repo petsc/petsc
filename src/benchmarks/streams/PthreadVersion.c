@@ -200,11 +200,9 @@ int main(int argc,char *argv[])
   /*printf(HLINE);*/
 
   /* Get initial value for system clock. */
-  if  ((quantum = checktick()) >= 1) ;
-  /*      printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
-  else
-    /*   printf("Your clock granularity appears to be less than one microsecond.\n"); */
-    quantum = 1;
+  if  ((quantum = checktick()) >= 1) ;/*      printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
+  else quantum = 1; /*   printf("Your clock granularity appears to be less than one microsecond.\n"); */
+
 
   t = mysecond();
 

@@ -4201,7 +4201,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering"
 PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   const PetscInt    n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag;
   PetscInt          i,k,nz,idx,jdx,idt;
   PetscErrorCode    ierr;
@@ -6276,7 +6276,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 #define __FUNCT__ "MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE"
 PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
-  /* Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data; */
+  /* Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; */
   /* int i,*AJ=a->j,nz=a->nz; */
 
   PetscFunctionBegin;

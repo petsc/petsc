@@ -675,7 +675,7 @@ PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
   KSP_GMRES *gmres;
 
   PetscFunctionBegin;
-  gmres = (KSP_GMRES *)ksp->data;
+  gmres = (KSP_GMRES*)ksp->data;
   gmres->q_preallocate = 1;
   PetscFunctionReturn(0);
 }

@@ -759,7 +759,7 @@ PetscErrorCode  PetscObjectSetPrecision(PetscObject obj,PetscPrecision precision
          PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with child object
 -  ptr - the other PETSc object associated with the PETSc object, this must be
-         cast with (PetscObject *)
+         cast with (PetscObject*)
 
    Level: advanced
 

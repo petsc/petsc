@@ -59,19 +59,19 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
 #define DEF_PackNoInit(type)                                            \
   static void CPPJoin2(Pack_,type)(PetscInt n,const PetscInt *idx,const void *unpacked,void *packed) { \
     const type *u = (const type*)unpacked;                              \
-    type *p = (type *)packed;                                           \
+    type *p = (type*)packed;                                            \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) p[i] = u[idx[i]];                               \
   }                                                                     \
   static void CPPJoin2(UnpackInsert_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    const type *p = (const type *)packed;                               \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) u[idx[i]] = p[i];                               \
   }                                                                     \
   static void CPPJoin2(FetchAndInsert_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    type *p = (type *)packed;                                           \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -85,14 +85,14 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
 #define DEF_PackAddNoInit(type)                                         \
   DEF_PackNoInit(type)                                                  \
   static void CPPJoin2(UnpackAdd_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    const type *p = (const type *)packed;                               \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) u[idx[i]] += p[i];                              \
   }                                                                     \
   static void CPPJoin2(FetchAndAdd_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    type *p = (type *)packed;                                           \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -115,8 +115,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
 #define DEF_PackCmp(type)                                               \
   DEF_PackAddNoInit(type)                                               \
   static void CPPJoin2(UnpackMax_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    const type *p = (const type *)packed;                               \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       type v = u[idx[i]];                                               \
@@ -124,8 +124,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoin2(UnpackMin_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    const type *p = (const type *)packed;                               \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       type v = u[idx[i]];                                               \
@@ -133,8 +133,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoin2(FetchAndMax_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    type *p = (type *)packed;                                           \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -144,8 +144,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoin2(FetchAndMin_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    type *u = (type *)unpacked;                                         \
-    type *p = (type *)packed;                                           \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -173,8 +173,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
 #define PairType(type1,type2) CPPJoin3_(_pairtype_,type1,type2)
 #define DEF_UnpackXloc(type1,type2,locname,op)                              \
   static void CPPJoinloc(Unpack,locname,type1,type2)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
-    const PairType(type1,type2) *p = (const PairType(type1,type2) *)packed; \
+    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;        \
+    const PairType(type1,type2) *p = (const PairType(type1,type2)*)packed; \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -187,8 +187,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoinloc(FetchAnd,locname,type1,type2)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
-    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;        \
+    PairType(type1,type2) *p = (PairType(type1,type2)*)packed;          \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -208,8 +208,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
 #define DEF_PackPair(type1,type2)                                       \
   typedef struct {type1 a; type2 b;} PairType(type1,type2);             \
   static void CPPJoin3_(Pack_,type1,type2)(PetscInt n,const PetscInt *idx,const void *unpacked,void *packed) { \
-    const PairType(type1,type2) *u = (const PairType(type1,type2) *)unpacked; \
-    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    const PairType(type1,type2) *u = (const PairType(type1,type2)*)unpacked; \
+    PairType(type1,type2) *p = (PairType(type1,type2)*)packed;          \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       p[i].a = u[idx[i]].a;                                             \
@@ -217,8 +217,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoin3_(UnpackInsert_,type1,type2)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
-    const PairType(type1,type2) *p = (const PairType(type1,type2) *)packed; \
+    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;       \
+    const PairType(type1,type2) *p = (const PairType(type1,type2)*)packed; \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       u[idx[i]].a = p[i].a;                                             \
@@ -226,8 +226,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoin3_(UnpackAdd_,type1,type2)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
-    const PairType(type1,type2) *p = (const PairType(type1,type2) *)packed; \
+    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;       \
+    const PairType(type1,type2) *p = (const PairType(type1,type2)*)packed; \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       u[idx[i]].a += p[i].a;                                            \
@@ -235,8 +235,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void CPPJoin3_(FetchAndInsert_,type1,type2)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
-    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;        \
+    PairType(type1,type2) *p = (PairType(type1,type2)*)packed;          \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \
@@ -250,8 +250,8 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     }                                                                   \
   }                                                                     \
   static void FetchAndAdd_ ## type1 ## _ ## type2(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
-    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
-    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    PairType(type1,type2) *u = (PairType(type1,type2)*)unpacked;       \
+    PairType(type1,type2) *p = (PairType(type1,type2)*)packed;         \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) {                                               \
       PetscInt j = idx[i];                                              \

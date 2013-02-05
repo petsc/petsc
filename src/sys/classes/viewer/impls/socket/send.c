@@ -1394,7 +1394,7 @@ PetscErrorCode  PetscWebServe(MPI_Comm comm,int port)
   if (port == PETSC_DECIDE || port == PETSC_DEFAULT) port = 8080;
   ierr = PetscMalloc(1*sizeof(int),&trueport);CHKERRQ(ierr); /* malloc this so it still exists in thread */
   *trueport = port;
-  ierr = pthread_create(&thread, NULL, (void *(*)(void *))PetscWebServeWait, trueport);CHKERRQ(ierr);
+  ierr = pthread_create(&thread, NULL, (void *(*)(void*))PetscWebServeWait, trueport);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

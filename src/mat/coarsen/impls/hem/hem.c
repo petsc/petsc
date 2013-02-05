@@ -1161,7 +1161,7 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 #define __FUNCT__ "MatCoarsenView_HEM"
 PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 {
-  /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM *)coarse->subctx; */
+  /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
   PetscMPIInt rank;
   PetscBool iascii;

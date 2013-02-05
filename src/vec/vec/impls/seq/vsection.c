@@ -177,7 +177,7 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   s->numFields = numFields;
 
   ierr = PetscMalloc(s->numFields * sizeof(PetscInt), &s->numFieldComponents);CHKERRQ(ierr);
-  ierr = PetscMalloc(s->numFields * sizeof(char *), &s->fieldNames);CHKERRQ(ierr);
+  ierr = PetscMalloc(s->numFields * sizeof(char*), &s->fieldNames);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(PetscSection), &s->field);CHKERRQ(ierr);
   for (f = 0; f < s->numFields; ++f) {
     char name[64];
