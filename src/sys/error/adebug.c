@@ -475,8 +475,7 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
   (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
 
   ierr = PetscAttachDebugger();
-  if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */
-    
+  if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */    
   PetscFunctionReturn(0);
 }
 

@@ -736,7 +736,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGet(PetscHashIJ h, PetscHashIJKey 
   _9_hi = kh_get(HASHIJ, (h)->ht, (i));
   if (_9_hi != kh_end((h)->ht)) *ii = kh_val((h)->ht, _9_hi).head->k;
   else *ii = -1;
-
   PetscFunctionReturn(0);
 }
 

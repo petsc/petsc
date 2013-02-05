@@ -18,7 +18,7 @@
 
 for f in `find src/ -name *.[ch] -or -name *.cu`
 do
- output=`gcc -fpreprocessed -dD -E -w -x c++ $f | grep "else[{\s]*" | grep -v "} else {" | grep -v "^\s*else {" | grep -v "}* else if (.*) {" | grep -v " else [^{]*;" | grep -v "#\s*else"`
+ output=`gcc -fpreprocessed -dD -E -w -x c++ $f | grep "else[{\s]*" | grep -v "} else {" | grep -v "^\s*else {" | grep -v "}* else if (.*)" | grep -v " else [^{]*;" | grep -v "#\s*else"`
  if [ -n "$output" ]; then echo "$f: $output"; fi
 done
 
