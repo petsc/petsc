@@ -466,6 +466,77 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMTSSetForcingFunction"
+/*@C
+   DMTSSetForcingFunction - set TS forcing function evaluation function
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  TSForcingFunction - forcing function evaluation function
+-  ctx - context for solution evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetForcingFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
+@*/
+PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (TSForcingFunction) tsdm->ops->forcing = TSForcingFunction;
+  if (ctx)  tsdm->forcingctx   = ctx;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetForcingFunction"
+/*@C
+   DMTSGetForcingFunction - get TS forcing function evaluation function
+
+   Not Collective
+
+   Input Argument:
+.   dm - DM to be used with TS
+
+   Output Arguments:
++  TSForcingFunction - forcing function evaluation function
+-  ctx - context for solution evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetForcingFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
+@*/
+PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**TSForcingFunction)(TS,PetscReal,Vec,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (TSForcingFunction) *TSForcingFunction = tsdm->ops->forcing;
+  if (ctx) *ctx = tsdm->forcingctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMTSGetRHSFunction"
 /*@C
    DMTSGetRHSFunction - get TS explicit residual evaluation function

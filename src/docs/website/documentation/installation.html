@@ -99,10 +99,12 @@
 
       <ul>
         <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
-        <li>Please install PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
+        <li>For most users we recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
         <li>To extract the sources use: <code>gunzip -c petsc-3.3-p0.tar.gz | tar -xof -</code></li>
         <li>Please check: <code>./configure --help</code></li>
         <li>Please check <a href="#exampleusage">example usages</a></li>
+        <li>To install in <a href="#root">system directories</a> and for <a href="#packagemanagers">package managers.</a></li> 
+        <li><a href="#pkgconfig">Pkgconfig</a> and <a href="#pkgconfig">module files.</a></li> 
       </ul>
 
     </div>
@@ -464,7 +466,7 @@
 
               <li>
                 All packages will be installed with the same set of compilers
-                - this avoids problems [for ex: weird link time errors] with
+                - this avoids problems [for example weird link time errors] with
                 mixing code compiled with multiple compilers [for example mixing
                 gfortran and ifort compiled code].
               </li>
@@ -825,7 +827,7 @@
       <hr>
 
       <div>
-        <h3><a name="root">Installing PETSc in /usr/local or /opt where sudo or root previledges are required:</a></h3>
+        <h3><a name="root">Installing PETSc in /usr/local or /opt where sudo or root privileges are required:</a></h3>
 
         <p>
           If one wants to install PETSc [with sources] in a common system
@@ -859,18 +861,18 @@
           install is done - and <b>NOT</b> use PETSC_ARCH anymore.
         </p>
 
-        <h4>Using DESTDIR with prefix install:</h4>
+        <h4><a name="packagemanagers">Using DESTDIR with prefix install:</h4>
 
         <p>
           One can also use the GNU <b>DESTDIR</b> with a prefix install. This mode is generally
-          used by binary packagers. For ex:
+          used by binary packagers. For example
         </p>
 
         <ul class="code">
           <li>./configure --prefix=/opt/petsc/petsc-3.3-p0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg and install the package will be installed at /opt/petsc/petsc-3.3-p0]</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.3-p0]</li>
           <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
         </ul>
 
@@ -890,13 +892,18 @@
           <li>[build/install]
         </ul>
 
-        Note: PETSc defaults to using PETSC_DIR/PETSC_ARCH as the
-        BUILDDIR where the buildfiles are stored. So if rebuilding in
-        the same source tree [with a different prefix] - one could
-        delete the oldbuild files before the next build [thus reusing
-        same PETSC_ARCH,BUILDDIR between builds] or sepcify a
-        different PETSC_ARCH value to configure - so a different
-        BUILDDIR location is used for the second build.
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #root -->
+
+      <hr>
+
+      <div>
+        <h3><a name="pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></h3>
+
+       These can be found in ${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/PETSc.pc and ${PETSC_DIR}/${PETSC_ARCH}/lib/modules/${PETSC_VERSION}-${PETSC_ARCH}.
+        The module file may need to be edited for your particular system. Note that if --prefix is used then $PETSC_ARCH is not included in the above directories.
 
         </p>
 
