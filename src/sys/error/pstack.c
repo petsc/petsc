@@ -35,7 +35,7 @@ PetscErrorCode PetscStackCreate_kernel(PetscInt trank)
 
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
-  PetscThreadLocalSetValue(petscstack,petscstack_in);
+  PetscThreadLocalSetValue(&petscstack,petscstack_in);
   return 0;
 }
 
@@ -80,7 +80,7 @@ PetscErrorCode PetscStackDestroy_kernel(PetscInt trank)
     PetscStack *petscstack_in;
     petscstack_in = (PetscStack*)PetscThreadLocalGetValue(petscstack);
     free(petscstack_in);
-    PetscThreadLocalSetValue(petscstack,(PetscStack*)0);
+    PetscThreadLocalSetValue(&petscstack,(PetscStack*)0);
   }
   return 0;
 }

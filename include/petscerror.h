@@ -434,6 +434,13 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 #include <pthread.h>
 #endif
 
+/*
+     This code is for managing thread local global variables. Each of Linux, Microsoft WINDOWS, OpenMP, and Apple OS X have
+   different ways to indicate this. On OS X each thread local global is accessed by using a pthread_key_t for that variable.
+   Thus we have functions for creating destroying and using the keys. Except for OS X these access functions merely directly 
+   acess the thread local variable.
+*/
+
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
 /* Get the value associated with key */
 PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(pthread_key_t key)
@@ -442,9 +449,9 @@ PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(pthread_key_t key)
 }
 
 /* Set the value for key */
-PETSC_STATIC_INLINE void PetscThreadLocalSetValue(pthread_key_t key,void* value)
+PETSC_STATIC_INLINE void PetscThreadLocalSetValue(pthread_key_t *key,void* value)
 {
-  pthread_setspecific(key,(void*)value);
+  pthread_setspecific(*key,(void*)value);
 }
 
 /* Create pthread thread local key */
@@ -464,7 +471,10 @@ PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* key)
   return key;
 }
 
-#define PetscThreadLocalSetValue(key,value) (key = value)
+PETSC_STATIC_INLINE void PetscThreadLocalSetValue(void **key,void* value)
+{
+  *key = value;
+}
 
 PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED void *key)
 {
