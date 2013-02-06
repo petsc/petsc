@@ -965,10 +965,18 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
 
       ierr = DMPlexGetDepthStratum(dm, dep, &depStart, &depEnd);CHKERRQ(ierr);
       ierr = DMLabelGetStratumSize(subpointMap, dep, &n);CHKERRQ(ierr);
-      if (d < 2) { /* Only check vertices and cells for now since the map is broken for others */
+      if (((d < 2) && (depth > 1)) || (d == 1)) { /* Only check vertices and cells for now since the map is broken for others */
         if (n != depEnd-depStart) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d at depth %d should be %d", n, dep, depEnd-depStart);
       } else {
-        if (!n) for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
+        if (!n) {
+          if (d == 0) {
+            /* Missing cells */
+            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = -1;
+          } else {
+            /* Missing faces */
+            for(p = 0; p < depEnd-depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
+          }
+        }
       }
       if (n) {
         ierr = DMLabelGetStratumIS(subpointMap, dep, &is);CHKERRQ(ierr);
