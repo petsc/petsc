@@ -124,7 +124,6 @@ PetscErrorCode  PetscInfoActivateClass(int objclass)
   PetscFunctionBegin;
   if (!objclass) PetscLogPrintInfoNull = PETSC_TRUE;
   else PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 1;
-
   PetscFunctionReturn(0);
 }
 

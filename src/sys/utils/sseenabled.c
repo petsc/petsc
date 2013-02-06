@@ -167,7 +167,6 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
 
   if (lflag) *lflag = petsc_sse_enabled_local;
   if (gflag) *gflag = petsc_sse_enabled_global;
-
   PetscFunctionReturn(0);
 }
 
