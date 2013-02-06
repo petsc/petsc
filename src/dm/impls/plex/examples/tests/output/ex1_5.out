@@ -1,22 +1,12 @@
-\documentclass{article}
+\documentclass[crop,multi=false]{standalone}
 \usepackage{tikz}
 \usepackage{pgflibraryshapes}
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{arrows}
-\newenvironment{changemargin}[2]{%
-  \begin{list}{}{%
-    \setlength{\topsep}{0pt}%
-    \setlength{\leftmargin}{#1}%
-    \setlength{\rightmargin}{#2}%
-    \setlength{\listparindent}{\parindent}%
-    \setlength{\itemindent}{\parindent}%
-    \setlength{\parsep}{\parskip}%
-  }%
-  \item[]}{\end{list}}
 \begin{document}
 \section{Parallel Mesh}
-\begin{changemargin}{-1cm}{0cm}
 \begin{center}
+Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
 \begin{tikzpicture}[scale = 4,font=\fontsize{8}{8}\selectfont]
 \path
 (2,0) node(4_0) [draw,shape=circle,color=red] {4} --
@@ -62,28 +52,16 @@
 \draw[color=blue] (6_1) -- (8_1) -- (5_1) -- (6_1);
 \end{tikzpicture}
 \end{center}
-Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
-\end{changemargin}
 \end{document}
-\documentclass{article}
+\documentclass[crop,multi=false]{standalone}
 \usepackage{tikz}
 \usepackage{pgflibraryshapes}
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{arrows}
-\newenvironment{changemargin}[2]{%
-  \begin{list}{}{%
-    \setlength{\topsep}{0pt}%
-    \setlength{\leftmargin}{#1}%
-    \setlength{\rightmargin}{#2}%
-    \setlength{\listparindent}{\parindent}%
-    \setlength{\itemindent}{\parindent}%
-    \setlength{\parsep}{\parskip}%
-  }%
-  \item[]}{\end{list}}
 \begin{document}
 \section{Simplical Mesh}
-\begin{changemargin}{-1cm}{0cm}
 \begin{center}
+Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
 \begin{tikzpicture}[scale = 4,font=\fontsize{8}{8}\selectfont]
 \path
 (2,0) node(16_0) [draw,shape=circle,color=red] {16} --
@@ -213,6 +191,4 @@ Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
 \draw[color=blue] (29_1) -- (28_1) -- (30_1) -- (29_1);
 \end{tikzpicture}
 \end{center}
-Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
-\end{changemargin}
 \end{document}
