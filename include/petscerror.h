@@ -442,45 +442,47 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 */
 
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
+typedef pthread_key_t PetscThreadKey;
 /* Get the value associated with key */
-PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(pthread_key_t key)
+PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(PetscThreadKey key)
 {
   return pthread_getspecific(key);
 }
 
 /* Set the value for key */
-PETSC_STATIC_INLINE void PetscThreadLocalSetValue(pthread_key_t *key,void* value)
+PETSC_STATIC_INLINE void PetscThreadLocalSetValue(PetscThreadKey *key,void* value)
 {
   pthread_setspecific(*key,(void*)value);
 }
 
 /* Create pthread thread local key */
-PETSC_STATIC_INLINE void PetscThreadLocalRegister(pthread_key_t *key)
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(PetscThreadKey *key)
 {
   pthread_key_create(key,PETSC_NULL);
 }
 
 /* Delete pthread thread local key */
-PETSC_STATIC_INLINE void PetscThreadLocalDestroy(pthread_key_t key)
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PetscThreadKey key)
 {
   pthread_key_delete(key);
 }
 #else
-PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* key)
+typedef void* PetscThreadKey;
+PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(PetscThreadKey key)
 {
   return key;
 }
 
-PETSC_STATIC_INLINE void PetscThreadLocalSetValue(void **key,void* value)
+PETSC_STATIC_INLINE void PetscThreadLocalSetValue(PetscThreadKey *key,void* value)
 {
   *key = value;
 }
 
-PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED void *key)
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED PetscThreadKey *key)
 {
 }
 
-PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED void *key)
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED PetscThreadKey key)
 {
 }
 #endif
@@ -505,7 +507,7 @@ typedef struct  {
 #if defined(PETSC_PTHREAD_LOCAL)
 PETSC_EXTERN PETSC_PTHREAD_LOCAL PetscStack *petscstack;
 #else
-PETSC_EXTERN pthread_key_t petscstack;
+PETSC_EXTERN PetscThreadKey petscstack;
 #endif
 #elif defined(PETSC_HAVE_OPENMP)
 PETSC_EXTERN PetscStack *petscstack;
