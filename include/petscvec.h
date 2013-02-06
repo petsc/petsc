@@ -562,7 +562,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscB
   PetscFunctionReturn(0);
 }
 #else
-PETSC_STATIC_INLINE PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
+PETSC_STATIC_INLINE PetscErrorCode VecValidValues(PETSC_UNUSED Vec vec,PETSC_UNUSED PetscInt argnum,PETSC_UNUSED PetscBool begin)
 {
   return 0;
 }
