@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
 SOURCEC  = vinv.c vscat.c vpscat.c cmesh.c vecio.c \
-           comb.c vecstash.c vecmpitoseq.c
+           comb.c vecstash.c vecmpitoseq.c vecs.c
 SOURCEF  =
 SOURCEH  = vpscat.h
 DIRS     = matlab veccusp

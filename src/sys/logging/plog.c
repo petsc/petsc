@@ -2100,13 +2100,13 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   MPI_Comm           comm;
 
   PetscFunctionBegin;
-  if (!PetscLogBegin_PrivateCalled) SETERRQ(comm, PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogViewPython()");
-  ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  if (!PetscLogBegin_PrivateCalled) SETERRQ(comm, PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogViewPython()");
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscLogDouble), &mydata);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt), &mycount);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
 
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;

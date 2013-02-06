@@ -535,10 +535,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
 S*/
         struct _n_Vecs  {PetscInt n; Vec v;};
 typedef struct _n_Vecs* Vecs;
-#define VecsDestroy(x)            (VecDestroy(&(x)->v)         || PetscFree(x))
-#define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
-#define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeqWithArray(comm,1,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
-#define VecsDuplicate(x,y)        (PetscNew(struct _n_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
+PETSC_EXTERN PetscErrorCode VecsDestroy(Vecs);
+PETSC_EXTERN PetscErrorCode VecsCreateSeq(MPI_Comm,PetscInt,PetscInt,Vecs*);
+PETSC_EXTERN PetscErrorCode VecsCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,PetscScalar*,Vecs*);
+PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs,Vecs*);
 
 #if defined(PETSC_HAVE_CUSP)
 typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
