@@ -161,7 +161,7 @@ def regression(args):
   args.testnum = None
   walker = builder.DirectoryTreeWalker(maker.argDB, maker.log, maker.configInfo, allowExamples = True)
   #dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
-  dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), ['vec'])
+  dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), [os.path.join('dm', 'impls', 'plex')])
   for d in dirs:
     print 'Dir',d
     for root, files in walker.walk(d):
