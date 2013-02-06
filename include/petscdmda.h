@@ -176,39 +176,6 @@ typedef struct {
 } DMDALocalInfo;
 
 /*MC
-      DMDAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DMDA
-
-   Synopsis:
-   #include "petscdm.h"
-   void  DMDAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
-
-   Not Collective
-
-   Level: intermediate
-
-.seealso: DMDAForEachPointEnd2d(), DMDAVecGetArray()
-M*/
-#define DMDAForEachPointBegin2d(info,i,j) {\
-  PetscInt _xints = info->xs,_xinte = info->xs+info->xm,_yints = info->ys,_yinte = info->ys+info->ym;\
-  for (j=_yints; j<_yinte; j++) {\
-    for (i=_xints; i<_xinte; i++) {\
-
-/*MC
-      DMDAForEachPointEnd2d - Ends a loop over the local part of a two dimensional DMDA
-
-   Synopsis:
-   #include "petscdm.h"
-   void  DMDAForEachPointEnd2d;
-
-   Not Collective
-
-   Level: intermediate
-
-.seealso: DMDAForEachPointBegin2d(), DMDAVecGetArray()
-M*/
-#define DMDAForEachPointEnd2d }}}
-
-/*MC
       DMDACoor2d - Structure for holding 2d (x and y) coordinates.
 
     Level: intermediate
