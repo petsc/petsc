@@ -94,8 +94,9 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   numtests = 1 if args.testnum is not None else len(params)
   maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
-    if 'num' in param: testnum = int(param['num'])
-    if not args.testnum is None and testnum != args.testnum: continue
+    testnum = str(testnum)
+    if 'num' in param: testnum = param['num']
+    if not args.testnum is None and testnum != str(args.testnum): continue
     if 'setup' in param:
       print(param['setup'])
       os.system('python '+param['setup'])
