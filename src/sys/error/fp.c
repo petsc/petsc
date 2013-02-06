@@ -406,7 +406,7 @@ void PetscDefaultFPTrap(int sig)
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
 #if defined(PETSC_USE_DEBUG)
-  if (!PetscStackActive) (*PetscErrorPrintf)("  or try option -log_stack\n");
+  if (!PetscStackActive()) (*PetscErrorPrintf)("  or try option -log_stack\n");
   else {
     (*PetscErrorPrintf)("likely location of problem given in stack below\n");
     (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");

@@ -148,7 +148,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
   (*PetscErrorPrintf)("or see http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind");
   (*PetscErrorPrintf)("or try http://valgrind.org on GNU/linux and Apple Mac OS X to find memory corruption errors\n");
 #if defined(PETSC_USE_DEBUG)
-  if (!PetscStackActive) (*PetscErrorPrintf)("  or try option -log_stack\n");
+  if (!PetscStackActive()) (*PetscErrorPrintf)("  or try option -log_stack\n");
   else {
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;

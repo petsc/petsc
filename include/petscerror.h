@@ -517,7 +517,10 @@ PETSC_EXTERN PetscStack *petscstack;
 PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack*,PetscStack*);
 PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
-#define PetscStackActive (((PetscStack*)PetscThreadLocalGetValue(petscstack)) != 0)
+PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
+{
+  return(PetscThreadLocalGetValue(petscstack) ? PETSC_TRUE : PETSC_FALSE);
+}
 
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
@@ -708,7 +711,7 @@ M*/
 #define PetscFunctionReturnVoid() return
 #define PetscStackPop     CHKMEMQ
 #define PetscStackPush(f) CHKMEMQ
-#define PetscStackActive        0
+#define PetscStackActive        PETSC_FALSE
 
 #endif
 
@@ -719,7 +722,7 @@ M*/
 +   name - string that gives the name of the function being called
 -   routine - actual call to the routine, including ierr = and CHKERRQ(ierr);
 
-   Note: Often one should use PetscStackCallStandard() instead
+   Note: Often one should use PetscStackCallStandard() instead. This routine is intended for external library routines that DO NOT return error codes
 
    Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
@@ -735,7 +738,9 @@ M*/
 +   func-  name of the routine
 -   args - arguments to the routine surrounded by ()
 
-   Developer Note: this is so that when a hypre routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   Notes: This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.
+
+   Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 */
 #define PetscStackCallStandard(func,args) do {                        \
