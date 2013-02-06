@@ -157,8 +157,10 @@ def check(args):
 def regression(args):
   '''Run complete regression suite'''
   ret   = 0
+  gret  = 0
   maker = builder.PETScMaker()
   maker.setup()
+  haltOnError = False
 
   args.retain  = False
   args.testnum = None
@@ -179,13 +181,15 @@ def regression(args):
         if not ext in ['.c', '.F']: continue
         ex  = os.path.join(root, f)
         ret = checkSingleRun(maker, ex, False, isRegression = True)
-        if ret: break
-      if ret: break
-    if ret: break
-  if not ret:
-    print('All regression tests pass')
+        if ret:
+          gret = ret
+          if haltOnError: break
+      if ret and haltOnError: break
+    if ret and haltOnError: break
+  if not gret:
+    maker.logPrint('All regression tests pass\n', debugSection='screen', forceScroll=True)
   maker.cleanup()
-  return ret
+  return gret
 
 def clean(args):
   '''Remove source database and all objects'''
