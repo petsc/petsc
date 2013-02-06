@@ -64,7 +64,7 @@ def buildExample(args):
   maker.cleanup()
   return ret
 
-def checkSingleRun(maker, ex, replace, extraArgs = ''):
+def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   import shutil
 
   if isinstance(ex, list):
@@ -84,7 +84,9 @@ def checkSingleRun(maker, ex, replace, extraArgs = ''):
   params = builder.regressionParameters.get(paramKey, {})
   if not params:
     params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
-    print 'Makefile params',params
+    if params: maker.logPrint('Retrieved test options from makefile: %s\n' % (str(params),))
+  if isRegression and not params:
+    return
   if not isinstance(params, list):
     params = [params]
   # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
@@ -92,8 +94,9 @@ def checkSingleRun(maker, ex, replace, extraArgs = ''):
   numtests = 1 if args.testnum is not None else len(params)
   maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
-    if 'num' in param: testnum = int(param['num'])
-    if not args.testnum is None and testnum != args.testnum: continue
+    testnum = str(testnum)
+    if 'num' in param: testnum = param['num']
+    if not args.testnum is None and testnum != str(args.testnum): continue
     if 'setup' in param:
       print(param['setup'])
       os.system('python '+param['setup'])
@@ -166,16 +169,16 @@ def regression(args):
   walker  = builder.DirectoryTreeWalker(maker.argDB, maker.log, maker.configInfo, allowExamples = True)
   dirs    = map(lambda d: os.path.join(maker.petscDir, d), regdirs)
   for d in dirs:
-    print 'Dir',d
     for root, files in walker.walk(d):
       baseDir = os.path.basename(root)
       if not baseDir == 'tests' and not baseDir == 'tutorials': continue
+      maker.logPrint('Running regression tests in %s\n' % (baseDir,), debugSection='screen', forceScroll=True)
       for f in files:
         basename, ext = os.path.splitext(f)
         if not basename.startswith('ex'): continue
         if not ext in ['.c', '.F']: continue
         ex  = os.path.join(root, f)
-        ret = checkSingleRun(maker, ex, False)
+        ret = checkSingleRun(maker, ex, False, isRegression = True)
         if ret: break
       if ret: break
     if ret: break

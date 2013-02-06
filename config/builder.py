@@ -1483,15 +1483,15 @@ class PETScMaker(script.Script):
 
  def checkTestOutput(self, testDir, executable, cmd, output, testNum, replace = False):
    from difflib import unified_diff
-   outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
+   outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+testNum+'.out')
    ret        = 0
    if not os.path.isfile(outputName):
      if replace:
        with file(outputName, 'w') as f:
          f.write(output)
-       self.logPrint("REPLACED: Regression output file %s (test %d) was stored" % (outputName, testNum), debugSection='screen')
+       self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, testNum), debugSection='screen')
      else:
-       self.logPrint("MISCONFIGURATION: Regression output file %s (test %d) is missing" % (outputName, testNum), debugSection='screen')
+       self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
    else:
      with file(outputName) as f:
        validOutput = f.read()
@@ -1499,9 +1499,9 @@ class PETScMaker(script.Script):
          if replace:
            with file(outputName, 'w') as f:
              f.write(output)
-           self.logPrint("REPLACED: Regression output file %s (test %d) was stored" % (outputName, testNum), debugSection='screen')
+           self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, testNum), debugSection='screen')
          else:
-           self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, str(testNum)), debugSection = 'screen')
+           self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')
            for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
                end = '' if linum < 3 else '\n' # Control lines have their own end-lines
                self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
@@ -1511,7 +1511,7 @@ class PETScMaker(script.Script):
            self.logPrint(output, indent = 0)
            ret = -1
        else:
-         self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, str(testNum)))
+         self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, testNum))
    return ret
 
  def getTestCommand(self, executable, **params):
@@ -1521,8 +1521,9 @@ class PETScMaker(script.Script):
    return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
  def runTest(self, testDir, executable, testNum, replace, **params):
+   '''testNum can be any string'''
    cmd = self.getTestCommand(executable, **params)
-   self.logPrint('Running #%d: %s' % (testNum, cmd), debugSection='screen')
+   self.logPrint('Running #%s: %s' % (str(testNum), cmd), debugSection='screen')
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
@@ -1530,7 +1531,7 @@ class PETScMaker(script.Script):
        self.logPrint(output+error, indent = 0, debugSection='screen')
        ret = -2
      else:
-       ret = self.checkTestOutput(testDir, executable, cmd, output+error, testNum, replace)
+       ret = self.checkTestOutput(testDir, executable, cmd, output+error, str(testNum), replace)
    return ret
 
  def regressionTestsDir(self, dirname, dummy):
