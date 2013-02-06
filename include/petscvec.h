@@ -452,30 +452,6 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 
-#if defined(PETSC_USE_DEBUG)
-#define VecValidValues(vec,argnum,input) do {                           \
-    PetscErrorCode     _ierr;                                           \
-    PetscInt          _n,_i;                                            \
-    const PetscScalar *_x;                                              \
-                                                                        \
-    if (vec->petscnative || vec->ops->getarray) {                       \
-      _ierr = VecGetLocalSize(vec,&_n);CHKERRQ(_ierr);                  \
-      _ierr = VecGetArrayRead(vec,&_x);CHKERRQ(_ierr);                  \
-      for (_i=0; _i<_n; _i++) {                                         \
-        if (input) {                                                    \
-          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %d",_i,argnum); \
-        } else {                                                        \
-          if (PetscIsInfOrNanScalar(_x[_i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %d",_i,argnum); \
-        }                                                               \
-      }                                                                 \
-      _ierr = VecRestoreArrayRead(vec,&_x);CHKERRQ(_ierr);              \
-    }                                                                   \
-  } while (0)
-#else
-#define VecValidValues(vec,argnum,input)
-#endif
-
-
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES} VecOption;
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
 
@@ -485,6 +461,112 @@ PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
 */
 
 #include <petsc-private/vecimpl.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
+      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
+    }
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!x->petscnative){
+    ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  if (a) *a = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
+      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
+    }
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUSP)
+    x->valid_GPU_array = PETSC_CUSP_CPU;
+#endif
+  } else {
+    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  if (a) *a = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecValidValues"
+#if defined(PETSC_USE_DEBUG)
+PETSC_STATIC_INLINE PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n,i;
+  const PetscScalar *x;
+
+  PetscFunctionBegin;
+  if (vec->petscnative || vec->ops->getarray) {
+    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(vec,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      if (begin) {
+        if (PetscIsInfOrNanScalar(x[i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %D",i,argnum);
+      } else {
+        if (PetscIsInfOrNanScalar(x[i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %D",i,argnum);
+      }
+    }
+    ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#else
+PETSC_STATIC_INLINE PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
+{
+  return 0;
+}
+#endif
 
 PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
 

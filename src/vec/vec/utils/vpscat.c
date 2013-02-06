@@ -4,8 +4,7 @@
 */
 
 #include <petsc-private/isimpl.h>
-#include <petsc-private/vecimpl.h>         /*I "petscvec.h" I*/
-#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/dvecimpl.h>         /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 
 #undef __FUNCT__

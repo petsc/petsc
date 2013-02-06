@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>
+#include <petscvec.h>
 
 #define DEFAULT_STASH_SIZE   100
 

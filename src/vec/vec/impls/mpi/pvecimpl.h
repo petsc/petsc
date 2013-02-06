@@ -2,7 +2,6 @@
 #if !defined(__PVECIMPL)
 #define __PVECIMPL
 
-#include <petsc-private/vecimpl.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
 
 typedef struct {

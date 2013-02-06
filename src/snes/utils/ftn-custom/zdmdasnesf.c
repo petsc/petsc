@@ -19,6 +19,8 @@ static struct {
 } _cb;
 
 EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "sourlj1d"
 /************************************************/
 static PetscErrorCode sourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat A,Mat m,MatStructure *str,void *ptr)
 {
@@ -33,6 +35,8 @@ static PetscErrorCode sourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat A,Mat m,M
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "sourlj2d"
 static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,MatStructure *str,void *ptr)
 {
   PetscErrorCode ierr;
@@ -46,6 +50,8 @@ static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "sourlj3d"
 static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m,MatStructure *str,void *ptr)
 {
   PetscErrorCode ierr;
@@ -80,6 +86,8 @@ void PETSC_STDCALL dmdasnessetjacobianlocal_(DM *da,void (PETSC_STDCALL *jac)(DM
 
 /************************************************/
 
+#undef __FUNCT__
+#define __FUNCT__ "sourlf1d"
 static PetscErrorCode sourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
   PetscErrorCode ierr;
@@ -93,6 +101,8 @@ static PetscErrorCode sourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "sourlf2d"
 static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
   PetscErrorCode ierr;
@@ -106,6 +116,8 @@ static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "sourlf3d"
 static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
   PetscErrorCode ierr;

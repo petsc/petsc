@@ -4,8 +4,7 @@
   and sequential vectors.
 */
 
-#include <petsc-private/vecimpl.h>
-#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/dvecimpl.h>          /*I "petscvec.h" I*/
 #include <petscblaslapack.h>
 #include <petscthreadcomm.h>
 

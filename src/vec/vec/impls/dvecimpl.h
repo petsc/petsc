@@ -9,7 +9,7 @@
 #if !defined(__DVECIMPL)
 #define __DVECIMPL
 
-#include <petsc-private/vecimpl.h>
+#include <petscvec.h>
 
 typedef struct {
   VECHEADER

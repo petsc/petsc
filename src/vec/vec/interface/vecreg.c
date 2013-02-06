@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>    /*I "petscvec.h"  I*/
+#include <petscvec.h>    /*I "petscvec.h"  I*/
 
 PetscFunctionList VecList              = PETSC_NULL;
 PetscBool         VecRegisterAllCalled = PETSC_FALSE;

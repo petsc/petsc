@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>     /*I  "petscvec.h"  I*/
+#include <petscvec.h>
 EXTERN_C_BEGIN
 extern PetscErrorCode  VecCreate_Seq(Vec);
 extern PetscErrorCode  VecCreate_MPI(Vec);

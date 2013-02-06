@@ -2,8 +2,7 @@
 /*
      Some useful vector utility functions.
 */
-#include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
-#include <../src/vec/vec/impls/mpi/pvecimpl.h>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>          /*I "petscvec.h" I*/
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 

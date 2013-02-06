@@ -6,7 +6,7 @@
 */
 
 #include <petsc-private/isimpl.h>
-#include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
+#include <petscvec.h>
 
 /* Logging support */
 PetscClassId VEC_SCATTER_CLASSID;

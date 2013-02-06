@@ -1,5 +1,5 @@
 
-#include <petsc-private/vecimpl.h>                              /*I   "petscvec.h"   I*/
+#include <petscvec.h>
 
 PetscErrorCode VecsDestroy(Vecs x)
 {
