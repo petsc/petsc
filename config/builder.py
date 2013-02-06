@@ -142,10 +142,10 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
                         'src/ksp/ksp/examples/tutorials/ex56':[{'numProcs': 8, 'args': '-ne 11 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
                         'src/snes/examples/tutorials/ex5':    [{'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
-                                                               {'numProcs': 1, 'args': '-pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full'},
-                                                               {'numProcs': 1, 'args': '-pc_type mg -ksp_monitor_short  -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full'},
+                                                               {'numProcs': 1, 'args': '-pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_estimate_eigenvalues 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full'},
+                                                               {'numProcs': 1, 'args': '-pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_estimate_eigenvalues 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full'},
                                                                {'numProcs': 2, 'args': '-snes_grid_sequence 2 -snes_mf_operator -snes_converged_reason -snes_view -pc_type mg'},
-                                                               {'numProcs': 2, 'args': '-snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -ksp_converged_reason -snes_converged_reason -snes_view -pc_type mg'}],
+                                                               {'numProcs': 2, 'args': '-snes_grid_sequence 2 -snes_monitor_short -ksp_converged_reason -snes_converged_reason -snes_view -pc_type mg'}],
                         'src/snes/examples/tutorials/ex5f90':  {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex9':    [{'numProcs': 1, 'args': '-snes_mf -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}],
@@ -451,7 +451,7 @@ class MakeParser(object):
       base   = os.path.splitext(ex)[0]
       source = base+'.c'
       exc    = os.path.join(os.path.relpath(srcDir, self.maker.petscDir), base)
-      runs   = [e for e in testTargets if e.startswith('run'+base)]
+      runs   = [e for e in testTargets if e == 'run'+base or e.startswith('run'+base+'_')]
       regressionParameters[exc] = []
       for r in runs:
         if not r in targets:
