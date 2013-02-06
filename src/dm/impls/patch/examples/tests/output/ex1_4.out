@@ -270,9 +270,9 @@ Star Forest Object:Restricted Map 16 MPI processes
   [13] Number of roots=64, leaves=0, remote ranks=0
   [14] Number of roots=64, leaves=0, remote ranks=0
   [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 4: (0, 2, 0)--(2, 4, 1)
 Processor [0] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 0 2, Y range of indices: 0 2
-Patch 4: (0, 2, 0)--(2, 4, 1)
 Processor [1] M 3 N 4 m 2 n 2 w 1 s 0
 X range of indices: 2 3, Y range of indices: 0 2
 Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
