@@ -409,10 +409,10 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
           ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventinterprestrict);CHKERRQ(ierr);
         }
       } else {
-        fas->eventsmoothsetup    = PETSC_FALSE;
-        fas->eventsmoothsolve    = PETSC_FALSE;
-        fas->eventresidual       = PETSC_FALSE;
-        fas->eventinterprestrict = PETSC_FALSE;
+        fas->eventsmoothsetup    = PETSC_NULL;
+        fas->eventsmoothsolve    = PETSC_NULL;
+        fas->eventresidual       = PETSC_NULL;
+        fas->eventinterprestrict = PETSC_NULL;
       }
     }
   }
