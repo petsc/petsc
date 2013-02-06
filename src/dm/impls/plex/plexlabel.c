@@ -843,7 +843,8 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
   while (next) {
     ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
-      if (last) last->next = next->next;
+      if (last) last->next   = next->next;
+      else      mesh->labels = next->next;
       next->next = PETSC_NULL;
       *label     = next;
       break;
