@@ -50,7 +50,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
       PetscInt       cellLoc, numCorners = 0, faceSize = 0;
 
       ierr = DMLabelGetValue(subpointMap, cell, &cellLoc);CHKERRQ(ierr);
-      if (cellLoc == dim) continue;
+      if (cellLoc == 2) continue;
       if (cellLoc >= 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Cell %d has dimension %d in the surface label", cell, cellLoc);
       ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (cl = 0; cl < closureSize*2; cl += 2) {
@@ -656,16 +656,16 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
         ierr = PetscFindInt(point, numSubVertices, subVertices, &subVertex);CHKERRQ(ierr);
         if (subVertex >= 0) {
           closure[faceSize] = point;
-          subface[faceSize] = subVertex;
+          subface[faceSize] = firstSubVertex+subVertex;
           ++faceSize;
         }
       }
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (faceSize > nFV) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
     if (faceSize == nFV) {
       ierr = DMPlexInsertFace_Private(dm, subdm, faceSize, closure, subface, numCorners, cell, subcell, firstSubFace, &newFacePoint);CHKERRQ(ierr);
     }
+    ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
