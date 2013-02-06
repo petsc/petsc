@@ -159,9 +159,12 @@ def regression(args):
 
   args.retain  = False
   args.testnum = None
-  walker = builder.DirectoryTreeWalker(maker.argDB, maker.log, maker.configInfo, allowExamples = True)
-  #dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
-  dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), [os.path.join('dm', 'impls', 'plex')])
+  if len(args.dirs):
+    regdirs = args.dirs
+  else:
+    regdirs = map(lambda d: os.path.join('src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
+  walker  = builder.DirectoryTreeWalker(maker.argDB, maker.log, maker.configInfo, allowExamples = True)
+  dirs    = map(lambda d: os.path.join(maker.petscDir, d), regdirs)
   for d in dirs:
     print 'Dir',d
     for root, files in walker.walk(d):
@@ -283,6 +286,7 @@ if __name__ == '__main__':
   parser_check.add_argument('--replace', action='store_true', default=False, help='Replace stored output with test output')
   parser_check.set_defaults(func=check)
   parser_regression = subparsers.add_parser('regression', help='Execute regression tests')
+  parser_regression.add_argument('dirs', nargs='*', help='Directories for regression tests')
   parser_regression.set_defaults(func=regression)
   parser_clean = subparsers.add_parser('clean', help='Remove source database and all objects')
   parser_clean.set_defaults(func=clean)
