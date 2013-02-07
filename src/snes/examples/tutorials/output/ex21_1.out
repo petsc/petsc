@@ -9,7 +9,7 @@
     7 KSP Residual norm 7.804415505680e-02 
     8 KSP Residual norm 1.195696422191e-02 
     9 KSP Residual norm 3.694080068906e-03 
-   10 KSP Residual norm 1.452658495052e-15 
-      Line search: Using full step: fnorm 8.660254037844e-01 gnorm 4.873282863590e-10
+   10 KSP Residual norm 1.639230932038e-15 
+      Line search: Using full step: fnorm 8.660254037844e-01 gnorm 4.873279917558e-10
   1 SNES Function norm 4.873e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
