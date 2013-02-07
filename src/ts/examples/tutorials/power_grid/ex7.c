@@ -115,8 +115,8 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = VecSum(X,&sum);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %f = %f\n",(double)t,(double)(sum*user->dx*user->dy));CHKERRQ(ierr);
-  if (sum*user->dx*user->dy < 1.0e-2) {
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %f = %f\n",(double)t,(double)(sum));CHKERRQ(ierr);
+  if (sum  < 1.0e-2) {
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_USER);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Exiting TS as the integral of PDF is almost zero\n");CHKERRQ(ierr);
   }
@@ -166,8 +166,9 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   }
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,X,&p);CHKERRQ(ierr);
-  ierr = VecSum(X,&sum);CHKERRQ(ierr);
-  sum = 1.0/(sum*user->dx*user->dy);
+  /*  ierr = VecSum(X,&sum);CHKERRQ(ierr); */
+  sum =  (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)));
+  sum = 1.0/(sum);
   ierr = VecScale(X,sum);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
