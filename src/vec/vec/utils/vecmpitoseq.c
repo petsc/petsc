@@ -1,5 +1,5 @@
 
-#include <petscvec.h>
+#include <petscvec.h>    /*I   "petscvec.h"    I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToAll"

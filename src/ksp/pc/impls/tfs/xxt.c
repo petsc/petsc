@@ -347,7 +347,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       off   = *iptr++;
       len   = *iptr++;
       ierr  = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-      uu[k] = BLASdot_(&dlen,u+off,&i1,x_ptr,&i1);
+      PetscStackCall("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,x_ptr,&i1));
       x_ptr+=len;
     }
 
@@ -363,14 +363,14 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       off  = *iptr++;
       len  = *iptr++;
       ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-      BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1);
+      PetscStackCall("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
       x_ptr+=len;
     }
 
     /* compute v_l = v_l - z */
     PCTFS_rvec_zero(v+a_n,a_m-a_n);
     ierr = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
-    BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1);
+    PetscStackCall("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
 
     /* compute u_l = A.v_l */
     if (a_n!=a_m) PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);
@@ -379,7 +379,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - local portion */
     ierr  = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
-    alpha = BLASdot_(&dlen,u,&i1,v,&i1);
+    PetscStackCall("BLASdot",alpha = BLASdot_(&dlen,u,&i1,v,&i1));
     /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - comm portion */
     PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
 
@@ -496,7 +496,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
     off       =*iptr++;
     len       =*iptr++;
     ierr      = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-    *uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,x_ptr,&i1);
+    PetscStackCall("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,x_ptr,&i1));
   }
 
   /* comunication of beta */
@@ -510,7 +510,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
     off  =*iptr++;
     len  =*iptr++;
     ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-    BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1);
+    PetscStackCall("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
   }
   PetscFunctionReturn(0);
 }

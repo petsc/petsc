@@ -18,7 +18,7 @@
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
 #define PetscAXPY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n; \
-  BLASaxpy_(&nn,&a1,p1,&one,U,&one);}
+    PetscStackCall("BLASaxpy",BLASaxpy_(&nn,&a1,p1,&one,U,&one));}
 #define PetscAXPY2(U,a1,a2,p1,p2,n) { \
   fortranmaxpy2_(U,&a1,&a2,p1,p2,&n);}
 #define PetscAXPY3(U,a1,a2,a3,p1,p2,p3,n) { \
@@ -77,7 +77,7 @@
 #elif defined(PETSC_USE_BLAS_KERNELS)
 
 #define PetscAXPY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n;\
-  BLASaxpy_(&nn,&a1,p1,&one,U,&one);}
+  PetscStackCall("BLASaxpy",BLASaxpy_(&nn,&a1,p1,&one,U,&one));}
 #define PetscAXPY2(U,a1,a2,p1,p2,n){PetscAXPY(U,a1,p1,n);\
   PetscAXPY(U,a2,p2,n);}
 #define PetscAXPY3(U,a1,a2,a3,p1,p2,p3,n){PetscAXPY2(U,a1,a2,p1,p2,n);\

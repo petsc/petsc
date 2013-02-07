@@ -2304,11 +2304,11 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     x    = (Mat_SeqAIJ*)xx->A->data;
     ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     y    = (Mat_SeqAIJ*)yy->A->data;
-    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
+    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     x    = (Mat_SeqAIJ*)xx->B->data;
     y    = (Mat_SeqAIJ*)yy->B->data;
     ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
-    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
+    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
   } else if (str == SUBSET_NONZERO_PATTERN) {
     ierr = MatAXPY_SeqAIJ(yy->A,a,xx->A,str);CHKERRQ(ierr);
 

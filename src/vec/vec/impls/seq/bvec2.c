@@ -489,7 +489,7 @@ PetscErrorCode VecSwap_kernel(PetscInt thread_id,Vec xin,Vec yin)
   end   = trstarts[thread_id+1];
   n     = end-start;
   ierr  = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-  BLASswap_(&bn,xa+start,&one,ya+start,&one);CHKERRQ(ierr);
+  PetscStackCall("BLASswap",BLASswap_(&bn,xa+start,&one,ya+start,&one));
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   return 0;
@@ -522,7 +522,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    BLASswap_(&bn,xa,&one,ya,&one);
+    PetscStackCall("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -560,7 +560,7 @@ PetscErrorCode VecNorm_kernel(PetscInt thread_id,Vec xin,NormType* type_p,PetscT
     }
     ierr = PetscThreadReductionKernelPost(thread_id,red,(void*)&max);CHKERRQ(ierr);
   } else if (type == NORM_1) {
-    z_loc = BLASasum_(&bn,xx+start,&one);
+    PetscStackCall("BLASasum",z_loc = BLASasum_(&bn,xx+start,&one));
     ierr  = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
@@ -628,7 +628,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    *z   = BLASasum_(&bn,xx,&one);
+    PetscStackCall("BLASasum",*z   = BLASasum_(&bn,xx,&one));
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {

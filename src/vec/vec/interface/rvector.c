@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petscvec.h>
+#include <petscvec.h>       /*I  "petscvec.h"   */
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
 #define PetscCheckSameSizeVec(x,y) \

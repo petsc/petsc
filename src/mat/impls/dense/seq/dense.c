@@ -62,10 +62,10 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   ierr = PetscBLASIntCast(y->lda,&lday);CHKERRQ(ierr);
   if (ldax>m || lday>m) {
     for (j=0; j<X->cmap->n; j++) {
-      BLASaxpy_(&m,&oalpha,x->v+j*ldax,&one,y->v+j*lday,&one);
+      PetscStackCall("BLASaxpy",BLASaxpy_(&m,&oalpha,x->v+j*ldax,&one,y->v+j*lday,&one));
     }
   } else {
-    BLASaxpy_(&N,&oalpha,x->v,&one,y->v,&one);
+    PetscStackCall("BLASaxpy",BLASaxpy_(&N,&oalpha,x->v,&one,y->v,&one));
   }
   ierr = PetscLogFlops(PetscMax(2*N-1,0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -105,11 +105,11 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
   if (lda>A->rmap->n) {
     ierr = PetscBLASIntCast(A->rmap->n,&nz);CHKERRQ(ierr);
     for (j=0; j<A->cmap->n; j++) {
-      BLASscal_(&nz,&oalpha,a->v+j*lda,&one);
+      PetscStackCall("BLASscal",BLASscal_(&nz,&oalpha,a->v+j*lda,&one));
     }
   } else {
     ierr = PetscBLASIntCast(A->rmap->n*A->cmap->n,&nz);CHKERRQ(ierr);
-    BLASscal_(&nz,&oalpha,a->v,&one);
+    PetscStackCall("BLASscal",BLASscal_(&nz,&oalpha,a->v,&one));
   }
   ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -563,13 +563,13 @@ PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i=0; i<m; i++) {
-        xt   = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
+        PetscStackCall("BLASdot",xt   = b[i] - BLASdot_(&bm,v+i,&bm,x,&o));
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       for (i=m-1; i>=0; i--) {
-        xt   = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
+        PetscStackCall("BLASdot",xt   = b[i] - BLASdot_(&bm,v+i,&bm,x,&o));
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
@@ -596,7 +596,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  BLASgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One);
+  PetscStackCall("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One));
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->cmap->n);CHKERRQ(ierr);
@@ -618,7 +618,7 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
+  PetscStackCall("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One));
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->rmap->n);CHKERRQ(ierr);
@@ -641,7 +641,7 @@ PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
+  PetscStackCall("BLASgemv",BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n);CHKERRQ(ierr);
@@ -665,7 +665,7 @@ PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
+  PetscStackCall("BLASgemv",BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One));
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n);CHKERRQ(ierr);
@@ -1727,7 +1727,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(B->cmap->n,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
-  BLASgemm_("N","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
+  PetscStackCall("BLASgemv",BLASgemm_("N","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda));
   PetscFunctionReturn(0);
 }
 
@@ -1784,7 +1784,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   /*
      Note the m and n arguments below are the number rows and columns of A', not A!
   */
-  BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
+  PetscStackCall("BLASgemv",BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda));
   PetscFunctionReturn(0);
 }
 

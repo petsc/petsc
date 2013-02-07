@@ -238,7 +238,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       AYlc[0]          = 0.;
       AYlc[bcgsl->ell] = -1;
 
-      BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione);
+      PetscStackCall("BLASgemv",BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione));
 
       kappa0 = PetscRealPart(BLASdot_(&ldMZ, AY0c, &ione, AYtc, &ione));
 
@@ -248,7 +248,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
       kappaA = PetscRealPart(BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione));
 
-      BLASgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione);
+      PetscStackCall("BLASgemv",BLASgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione));
 
       kappa1 = PetscRealPart(BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione));
 

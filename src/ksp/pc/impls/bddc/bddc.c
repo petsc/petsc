@@ -2734,7 +2734,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       quad_value = 1.0;
       if (use_nnsp_true) { /* check if array is null on the connected component in case use_nnsp_true has been requested */
         ierr       = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
-        quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone);
+        PetscStackCall("BLASasum",quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone));
       }
       if (quad_value > 0.0) { /* keep indices and values */
         temp_constraints++;
@@ -2763,8 +2763,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
             dot_result += val1*PetscConj(val2);
           }
 #else
-          dot_result = BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone,
-                                    &temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone);
+          PetscStackCall("BLASdot",dot_result = BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone));
 #endif
           correlation_mat[j*temp_constraints+k]=dot_result;
         }
@@ -2787,7 +2786,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       if (j<temp_constraints) {
         for (k=j;k<Bt;k++) singular_vals[k]=1.0/PetscSqrtReal(singular_vals[k]);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,correlation_mat,&Bt,&zero,temp_basis,&Bs);
+        PetscStackCall("BLASgemm",BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,correlation_mat,&Bt,&zero,temp_basis,&Bs));
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         /* copy POD basis into used quadrature memory */
         for (k=0;k<Bt-j;k++) {

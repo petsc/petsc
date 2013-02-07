@@ -19,7 +19,7 @@
            insure that the user calls the routines in the correct order
 */
 
-#include <petscvec.h>
+#include <petscvec.h>    /*I   "petscvec.h"    I*/
 
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {

@@ -1912,7 +1912,7 @@ PetscErrorCode MatScale_SeqBAIJ(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(totalnz,&tnz);CHKERRQ(ierr);
-  BLASscal_(&tnz,&oalpha,a->a,&one);
+  PetscStackCall("BLASscal",BLASscal_(&tnz,&oalpha,a->a,&one));
   ierr = PetscLogFlops(totalnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

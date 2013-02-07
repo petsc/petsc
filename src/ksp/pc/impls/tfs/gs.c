@@ -1190,7 +1190,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
     ids_in++;
     while (*iptr >= 0) {
       ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
-      BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
+      PetscStackCall("BLASaxpy",BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1));
       in2+=step;
       iptr++;
     }
@@ -1240,7 +1240,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *
   /* copy over my contributions */
   while (*in >= 0) {
     ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
-    BLAScopy_(&dstep,vals + *in++ * step,&i1,buf + *out++ * step,&i1);
+    PetscStackCall("BLAScopy",BLAScopy_(&dstep,vals + *in++ * step,&i1,buf + *out++ * step,&i1));
   }
 
   /* perform fan in/out on full buffer */
@@ -1254,7 +1254,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *
   /* get the portion of the results I need */
   while (*in >= 0) {
     ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
-    BLAScopy_(&dstep,buf + *out++ * step,&i1,vals + *in++ * step,&i1);
+    PetscStackCall("BLAScopy",BLAScopy_(&dstep,buf + *out++ * step,&i1,vals + *in++ * step,&i1));
   }
   PetscFunctionReturn(0);
 }

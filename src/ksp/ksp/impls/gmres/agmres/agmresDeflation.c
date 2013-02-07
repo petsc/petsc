@@ -225,7 +225,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   /* Explicitly form MatEigL = H^T*H, It can also be formed as H^T+h_{N+1,N}H^-1e^T */
   alpha = 1.0;
   beta  = 0.0;
-  BLASgemm_("T", "N", &KspSize, &KspSize, &lC, &alpha, agmres->hes_origin, &lC, agmres->hes_origin, &lC, &beta, MatEigL, &N);
+  PetscStackCall("BLASgemm",BLASgemm_("T", "N", &KspSize, &KspSize, &lC, &alpha, agmres->hes_origin, &lC, agmres->hes_origin, &lC, &beta, MatEigL, &N));
   if (!agmres->ritz) {
     /* Form TmpU = V*H where V is the Newton basis orthogonalized  with roddec*/
     for (j = 0; j < KspSize; j++) {
