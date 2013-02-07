@@ -48,10 +48,11 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   Mat_SeqAIJ         *a        = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
   PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*ptaj,nspacedouble=0;
-  PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N;
+  PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N,pm=P->rmap->N;
   PetscInt           i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi,nlnk,*lnk;
   MatScalar          *ca;
   PetscBT            lnkbt;
+  PetscReal          afill;
 
   PetscFunctionBegin;
   /* Get ij structure of P^T */
@@ -71,9 +72,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   nlnk = pn+1;
   ierr = PetscLLCreate(pn,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* Set initial free space to be fill*nnz(A). */
-  /* This should be reasonable if sparsity of PtAP is similar to that of A. */
-  ierr          = PetscFreeSpaceGet((PetscInt)(fill*ai[am]),&free_space);CHKERRQ(ierr);
+  /* Set initial free space to be fill*(nnz(A)+ nnz(P)) */
+  ierr          = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+pi[pm])),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
@@ -148,15 +148,21 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
-
   (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy;
+
+  /* set MatInfo */
+  afill = (PetscReal)ci[pn]/(ai[am]+pi[pm] + 1.e-5);
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[pn];
+  c->nz                        = ci[pn];
+  (*C)->info.mallocs           = nspacedouble;
+  (*C)->info.fill_ratio_given  = fill;
+  (*C)->info.fill_ratio_needed = afill;
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
   if (ci[pn] != 0) {
-    PetscReal afill = ((PetscReal)ci[pn])/ai[am];
-    if (afill < 1.0) afill = 1.0;
     ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
     ierr = PetscInfo1((*C),"Use MatPtAP(A,P,MatReuse,%G,&C) for best performance.\n",afill);CHKERRQ(ierr);
   } else {
