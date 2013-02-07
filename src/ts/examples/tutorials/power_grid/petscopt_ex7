@@ -12,7 +12,7 @@
 -ymin -10
 -ymax 10
 -da_grid_x 210
--da_grid_y 210
+-da_grid_y 201
 
 -ts_adapt_dt_max 5
 
