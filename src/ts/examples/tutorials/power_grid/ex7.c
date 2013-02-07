@@ -150,6 +150,14 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+
+  /* mux and muy need to be grid points in the x and y-direction otherwise the solution goes unstable
+     muy is set by choosing the y domain, no. of grid points along y-direction so that muy is a grid point
+     in the y-direction. We only modify mux here
+  */
+  mux = user->mux = coors[0][M/2+10].x; /* For -pi < x < pi, this should be some angle between 0 and pi/2 */
+  /* Change PM_min accordingly */
+  user->PM_min = user->Pmax*sin(mux);
   for(i=xs; i < xs+xm; i++) {
     for(j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
