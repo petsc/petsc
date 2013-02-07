@@ -13,7 +13,13 @@ typedef struct {
   VecScatter *gscatter;           /* scatter from global space to the subdomain local space */
   PCASMType  type;                /* ASM type */
   PetscBool  usesdm;              /* use the DM for setting up the subproblems */
+
+  /* logging events */
+  PetscLogEvent eventrestrictinterp;
+  PetscLogEvent eventsubsolve;
 } SNES_NASM;
+
+const char *const SNESNASMTypes[] = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NASM"
@@ -45,6 +51,9 @@ PetscErrorCode SNESReset_NASM(SNES snes)
   if (nasm->oscatter) {ierr = PetscFree(nasm->oscatter);CHKERRQ(ierr);}
   if (nasm->iscatter) {ierr = PetscFree(nasm->iscatter);CHKERRQ(ierr);}
   if (nasm->gscatter) {ierr = PetscFree(nasm->gscatter);CHKERRQ(ierr);}
+
+  nasm->eventrestrictinterp = 0;
+  nasm->eventsubsolve = 0;
   PetscFunctionReturn(0);
 }
 
@@ -141,14 +150,20 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   DM                dm,ddm;
   char              ddm_name[1024];
   PCASMType         asmtype;
-  const char *const SNESNASMTypes[] = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
-  PetscBool         flg;
+  PetscBool         flg,monflg;
   SNES_NASM         *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Nonlinear Additive Schwartz options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_nasm_type","Type of restriction/extension","",SNESNASMTypes,(PetscEnum)nasm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
   if (flg) nasm->type = asmtype;
+  flg    = PETSC_FALSE;
+  monflg = PETSC_TRUE;
+  ierr   = PetscOptionsBool("-snes_nasm_log","Log times for subSNES solves and restriction","",monflg,&monflg,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscLogEventRegister("SNESNASMSubSolve",((PetscObject)snes)->classid,&nasm->eventsubsolve);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("SNESNASMRestrict",((PetscObject)snes)->classid,&nasm->eventrestrictinterp);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsString("-snes_nasm_decomposition", "Name of the DM defining the composition", "SNESSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (flg) {
@@ -168,6 +183,44 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
 PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 {
   PetscFunctionBegin;
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscInt       i,N;
+  PetscBool      iascii,isstring;
+  PetscViewer    sviewer;
+  MPI_Comm       comm = ((PetscObject)snes)->comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&nasm->n,&N,1,MPIU_INT,MPIU_SUM,0,comm);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer, "  Nonlinear Additive Schwarz: total subdomain blocks = %D\n",N);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Nonlinear Additive Schwarz: restriction/interpolation type - %s\n",SNESNASMTypes[nasm->type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Nonlinear Additive Schwarz: subSNES iterations: %D subKSP iterations: %D\n",SNESNASMTypes[nasm->type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,nasm->n);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Local SNES objects:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    if (!rank) {
+      for (i=0; i<nasm->n; i++) {
+        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = SNESView(nasm->subsnes[i],sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  } else if (isstring) {
+    ierr = PetscViewerStringSPrintf(viewer," blocks=%D,type=%s",N,SNESNASMTypes[nasm->type]);CHKERRQ(ierr);
+    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    if (nasm->subsnes && !rank) {ierr = SNESView(nasm->subsnes[0],sviewer);CHKERRQ(ierr);}
+    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -253,6 +306,8 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
+
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
     /* scatter the solution to the local solution */
     Xlloc = nasm->xl[i];
@@ -267,6 +322,8 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       Bl = PETSC_NULL;
     }
   }
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
+
   for (i=0; i<nasm->n; i++) {
     Xlloc = nasm->xl[i];
     ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -274,6 +331,8 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
   }
+
+  if (nasm->eventsubsolve) {ierr = PetscLogEventBegin(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
     Xl    = nasm->x[i];
     Xlloc = nasm->xl[i];
@@ -291,9 +350,11 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     ierr = SNESSolve(subsnes,Bl,Yl);CHKERRQ(ierr);
     ierr = VecAXPY(Yl,-1.0,Xl);CHKERRQ(ierr);
   }
+  if (nasm->eventsubsolve) {ierr = PetscLogEventEnd(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
 
   ierr = MPI_Barrier(((PetscObject)snes)->comm);CHKERRQ(ierr);
 
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
     Yl    = nasm->y[i];
     iscat   = nasm->iscatter[i];
@@ -302,7 +363,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       ierr = VecScatterBegin(oscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else if (nasm->type == PC_ASM_RESTRICT) {
       ierr = VecScatterBegin(iscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Only basic and interpolate types are supported for SNESNASM");
+    } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
 
   for (i=0; i<nasm->n; i++) {
@@ -313,9 +374,9 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       ierr = VecScatterEnd(oscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else if (nasm->type == PC_ASM_RESTRICT) {
       ierr = VecScatterEnd(iscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Only basic and interpolate types are supported for SNESNASM");
-
+    } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
 
   ierr = MPI_Barrier(((PetscObject)snes)->comm);CHKERRQ(ierr);
 
@@ -466,6 +527,9 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;
+
+  nasm->eventrestrictinterp = PETSC_NULL;
+  nasm->eventsubsolve       = PETSC_NULL;
 
   if (!snes->tolerancesset) {
     snes->max_its   = 10000;
