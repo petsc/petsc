@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petscvec.h>    /*I  "petscvec.h"   */
+#include <petscvec.h>    /*I  "petscvec.h"   I*/
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
