@@ -1,4 +1,4 @@
-static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
+static char help[] = "Stokes Problem with Temperature in 2d and 3d with simplicial finite elements.\n\
 We solve the Stokes problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
