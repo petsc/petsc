@@ -22,6 +22,8 @@ static struct {
   PetscFortranCallbackId createlocalvector;
 } _cb;
 
+#undef __FUNCT__
+#define __FUNCT__ "ourcreatematrix"
 static PetscErrorCode ourcreatematrix(DM dm,MatType type,Mat *A)
 {
   int  len;
@@ -39,12 +41,16 @@ static PetscErrorCode ourcreatematrix(DM dm,MatType type,Mat *A)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ourcreateglobalvector"
 static PetscErrorCode ourcreateglobalvector(DM dm,Vec *v)
 {
   PetscObjectUseFortranCallback(dm,_cb.createglobalvector,(DM*,Vec*,PetscErrorCode*),(&dm,v,&ierr));
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ourcreatelocalvector"
 static PetscErrorCode ourcreatelocalvector(DM dm,Vec *v)
 {
   PetscObjectUseFortranCallback(dm,_cb.createlocalvector,(DM*,Vec*,PetscErrorCode*),(&dm,v,&ierr));

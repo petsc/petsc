@@ -16,12 +16,16 @@ static struct {
   PetscFortranCallbackId destroy;
 } _cb;
 
+#undef __FUNCT__
+#define __FUNCT__ "ourmodify"
 static PetscErrorCode ourmodify(KSP ksp,PetscInt i,PetscInt i2,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallbackSubType(ksp,_cb.modify,(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&ksp,&i,&i2,&d,_ctx,&ierr));
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ourmoddestroy"
 static PetscErrorCode ourmoddestroy(void *ctx)
 {
   KSP ksp = (KSP)ctx;
