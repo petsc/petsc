@@ -21,6 +21,8 @@
 
 #include <petscvec.h>    /*I   "petscvec.h"    I*/
 
+#undef __FUNCT__
+#define __FUNCT__ "MPIPetsc_Iallreduce"
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {
   PETSC_UNUSED PetscErrorCode ierr;

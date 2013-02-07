@@ -855,7 +855,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
       ndone += aggID;
       /* QR */
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO);
+      PetscStackCall("LAPACKgeqrf",LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (INFO != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRF error");
       /* get R - column oriented - output B_{i+1} */
@@ -871,7 +871,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
       }
 
       /* get Q - row oriented */
-      LAPACKungqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO);
+      PetscStackCall("LAPACKungqr",LAPACKungqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       if (INFO != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xORGQR error arg %d",-INFO);
 
       for (ii = 0; ii < M; ii++) {

@@ -2612,8 +2612,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     ierr  = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     abs_tol=1.e-8;
-    LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,
-                 &abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,&temp_work,&lwork,iwork,ifail,&lierr);
+    PetscStackCall("LAPACKsyevx",LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,&abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,&temp_work,&lwork,iwork,ifail,&lierr));
 #else
     SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
 #endif
@@ -2639,11 +2638,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     dummy_int = Bs;
     ierr      = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-    LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,
-                 &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr);
+    PetscStackCall("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr));
 #else
-    LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,
-                 &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr);
+    PetscStackCall("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr);
 #endif
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SVD Lapack routine %d",(int)lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -2770,11 +2767,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       }
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-/*      LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,work,&lwork,&lierr); */
-      LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,
-                   &abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,work,&lwork,iwork,ifail,&lierr);
+      PetscStackCall("LAPACKsyevx",LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,&abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,work,&lwork,iwork,ifail,&lierr));
 #else
-/*  LAPACK call is missing here! TODO */
       SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
 #endif
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEVX Lapack routine %d",(int)lierr);
@@ -2802,11 +2796,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       dummy_int = Bs;
       ierr      = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,
-                   &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr);
+      PetscStackCall("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr));
 #else
-      LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,
-                   &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr);
+      PetscStackCall("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr);
 #endif
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -2966,7 +2958,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
             }
             Bt   = temp_constraints;
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            LAPACKgesv_(&Bt,&Bone,temp_basis,&Bt,ipiv,work,&Bt,&lierr);
+            PetscStackCall("LAPACKgesvd",LAPACKgesv_(&Bt,&Bone,temp_basis,&Bt,ipiv,work,&Bt,&lierr));
             if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESV Lapack routine %d",(int)lierr);
             ierr = PetscFPTrapPop();CHKERRQ(ierr);
             j    = temp_indices_to_constraint_B[temp_indices[start_constraint]+s];
