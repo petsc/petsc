@@ -385,8 +385,11 @@ PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,P
  */
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  PetscReal hx,hy,dhx,dhy,sc,source;
-  PetscInt  i,j;
+  PetscReal      hx,hy,dhx,dhy,sc,source;
+  PetscInt       i,j;
+  PetscScalar    eu;
+  PetscErrorCode ierr;
+
 
   PetscFunctionBeginUser;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -420,14 +423,17 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
           e_S  = eta(user,xx,yy,ux_S,uy_S),
           uxx  = -hy * (e_E*ux_E - e_W*ux_W),
           uyy  = -hx * (e_N*uy_N - e_S*uy_S);
+        if (sc) eu = PetscExpScalar(u);
+        else    eu = 0.;
         /** For p=2, these terms decay to:
         * uxx = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx
         * uyy = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy
         **/
-        f[j][i] = uxx + uyy - sc*PetscExpScalar(u) - source;
+        f[j][i] = uxx + uyy - sc*eu - source;
       }
     }
   }
+  ierr = PetscLogFlops(info->xm*info->ym*(72.0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -442,6 +448,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
 {
   PetscReal hx,hy,sc,source;
   PetscInt  i,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -459,6 +466,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
       }
     }
   }
+  ierr = PetscLogFlops(info->xm*info->ym*2.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -615,6 +623,9 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
+  if (user->jtype == JAC_NEWTON) {
+    ierr = PetscLogFlops(info->xm*info->ym*(131.0));CHKERRQ(ierr);
+  }
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -789,17 +800,22 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
             x[j][i] = 0.0 + bij;
           } else {
             u = x[j][i];
+            const PetscScalar
+              u_E = x[j][i+1],
+              u_W = x[j][i-1],
+              u_N = x[j+1][i],
+              u_S = x[j-1][i];
+            const PetscScalar
+              uy_E   = 0.25*dhy*(x[j+1][i]+x[j+1][i+1]-x[j-1][i]-x[j-1][i+1]),
+              uy_W   = 0.25*dhy*(x[j+1][i-1]+x[j+1][i]-x[j-1][i-1]-x[j-1][i]),
+              ux_N   = 0.25*dhx*(x[j][i+1]+x[j+1][i+1]-x[j][i-1]-x[j+1][i-1]),
+              ux_S   = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]);
             for (k=0; k<its; k++) {
               const PetscScalar
-              /* */
-                ux_E   = dhx*(x[j][i+1]-u),
-                uy_E   = 0.25*dhy*(x[j+1][i]+x[j+1][i+1]-x[j-1][i]-x[j-1][i+1]),
-                ux_W   = dhx*(u-x[j][i-1]),
-                uy_W   = 0.25*dhy*(x[j+1][i-1]+x[j+1][i]-x[j-1][i-1]-x[j-1][i]),
-                ux_N   = 0.25*dhx*(x[j][i+1]+x[j+1][i+1]-x[j][i-1]-x[j+1][i-1]),
-                uy_N   = dhy*(x[j+1][i]-u),
-                ux_S   = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]),
-                uy_S   = dhy*(u-x[j-1][i]),
+                ux_E   = dhx*(u_E-u),
+                ux_W   = dhx*(u-u_W),
+                uy_N   = dhy*(u_N-u),
+                uy_S   = dhy*(u-u_S),
                 e_E    = eta(user,xx,yy,ux_E,uy_E),
                 e_W    = eta(user,xx,yy,ux_W,uy_W),
                 e_N    = eta(user,xx,yy,ux_N,uy_N),
@@ -836,13 +852,13 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
       }
     }
     /*
-     Restore vector
+x     Restore vector
      */
   }
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = PetscLogFlops(tot_its*(21.0));CHKERRQ(ierr);
+  ierr = PetscLogFlops(tot_its*(118.0));CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
     ierr = DMDAVecRestoreArray(da,localB,&b);CHKERRQ(ierr);
