@@ -26,6 +26,7 @@ typedef struct {
   PetscBool  type_set;               /* if user set this value (so won't change it for symmetric problems) */
   PetscBool  same_subdomain_solvers; /* flag indicating whether all local solvers are same */
   PetscBool  sort_indices;           /* flag to sort subdomain indices */
+  PetscBool  use_dm_decomposition;   /* whether DM is allowed to define subdomains */
 } PC_GASM;
 
 #undef __FUNCT__
@@ -284,23 +285,11 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
      */
     if (osm->n == PETSC_DECIDE) {
       /* no subdomains given */
-      /* try pc->dm first */
-      if (pc->dm) {
-        char      ddm_name[1024];
-        DM        ddm;
-        PetscBool flg;
+      /* try pc->dm first, if allowed */
+      if (osm->use_dm_decomposition && pc->dm) {
         PetscInt  num_subdomains, d;
         char      **subdomain_names;
         IS        *inner_subdomain_is, *outer_subdomain_is;
-        /* Allow the user to request a decomposition DM by name */
-        ierr = PetscStrncpy(ddm_name, "", 1024);CHKERRQ(ierr);
-        ierr = PetscOptionsString("-pc_gasm_decomposition","Name of the DM defining the decomposition", "PCSetDM",ddm_name,ddm_name,1024,&flg);CHKERRQ(ierr);
-        if (flg) {
-          ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
-          if (!ddm) SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
-          ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
-          ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
-        }
         ierr = DMCreateDomainDecomposition(pc->dm, &num_subdomains, &subdomain_names, &inner_subdomain_is, &outer_subdomain_is, &subdomain_dm);CHKERRQ(ierr);
         if (num_subdomains) {
           ierr = PCGASMSetSubdomains(pc, num_subdomains, inner_subdomain_is, outer_subdomain_is);CHKERRQ(ierr);
@@ -673,15 +662,17 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
   }
   ierr = PetscOptionsHead("Generalized additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_gasm_total_subdomains","Total number of subdomains across communicator","PCGASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
-
-  osm->create_local = PETSC_TRUE;
-
-  ierr = PetscOptionsBool("-pc_gasm_subdomains_create_local","Whether to make autocreated subdomains local (true by default)","PCGASMSetTotalSubdomains",osm->create_local,&osm->create_local,&flg);CHKERRQ(ierr);
-  if (!osm->create_local) SETERRQ(((PetscObject)pc)->comm, PETSC_ERR_SUP, "No support for autocreation of nonlocal subdomains yet.");
-
-  if (flg) {ierr = PCGASMSetTotalSubdomains(pc,blocks,osm->create_local);CHKERRQ(ierr); }
+  if (flg) {
+    osm->create_local = PETSC_TRUE;
+    ierr = PetscOptionsBool("-pc_gasm_subdomains_create_local","Whether to make autocreated subdomains local (true by default)","PCGASMSetTotalSubdomains",osm->create_local,&osm->create_local,NULL);CHKERRQ(ierr);
+    ierr = PCGASMSetTotalSubdomains(pc,blocks,osm->create_local);CHKERRQ(ierr);
+    osm->use_dm_decomposition = PETSC_FALSE;
+  }
   ierr = PetscOptionsInt("-pc_gasm_overlap","Number of overlapping degrees of freedom","PCGASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCGASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
+  if (flg) {
+    ierr = PCGASMSetOverlap(pc,ovl);CHKERRQ(ierr);
+    osm->use_dm_decomposition = PETSC_FALSE;
+  }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsEnum("-pc_gasm_type","Type of restriction/extension","PCGASMSetType",PCGASMTypes,(PetscEnum)osm->type,(PetscEnum*)&gasmtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCGASMSetType(pc,gasmtype);CHKERRQ(ierr); }
@@ -1185,6 +1176,7 @@ PetscErrorCode  PCCreate_GASM(PC pc)
   osm->type                   = PC_GASM_RESTRICT;
   osm->same_subdomain_solvers = PETSC_TRUE;
   osm->sort_indices           = PETSC_TRUE;
+  osm->use_dm_decomposition   = PETSC_TRUE;
 
   pc->data                 = (void*)osm;
   pc->ops->apply           = PCApply_GASM;

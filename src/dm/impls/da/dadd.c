@@ -314,6 +314,61 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetUseDomainDecomposition"
+/*@
+  DMDASetUseDomainDecomposition - sets option controlling whether DMCreateDomainDecomposition() is used.
+
+  Logically collective.
+
+  Input Parameters:
+- dm   - the DM object of type DA
++ flag - PETSC_TRUE | PETSC_FALSE according to whether DMCreateDomainDecomposition returns geometrically-defined or null subdomains.
+
+.seealso DMDAGetUseDomainDecomposition()
+ */
+PetscErrorCode DMDASetUseDomainDecomposition(DM dm,PetscBool flag)
+{
+  DM_DA *dd = (DM_DA*)(dm->data);
+  PetscBool isda;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);
+  if (!isda) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM must be of type DMDA");
+  dd->decompositiondm = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetUseDomainDecomposition"
+/*@
+  DMDAGetUseDomainDecomposition - returns option controlling whether DMCreateDomainDecomposition() is used.
+
+  Logically collective.
+
+  Input Parameters:
+. dm   - the DM object of type DA
+
+  Output Parameters:
+. flag - PETSC_TRUE | PETSC_FALSE according to whether DMCreateDomainDecomposition returns geometrically-defined or null subdomains.
+
+.seealso DMDASetUseDomainDecomposition()
+ */
+PetscErrorCode DMDAGetUseDomainDecomposition(DM dm,PetscBool *flag)
+{
+  DM_DA *dd = (DM_DA*)(dm->data);
+  PetscBool isda;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);
+  if (!isda) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM must be of type DMDA");
+  if(flag) *flag = dd->decompositiondm;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDomainDecomposition_DA"
 PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,IS **iis,IS **ois,DM **subdm)
@@ -352,22 +407,5 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   }
   if (subdm) (*subdm)[0] = subdm0;
   if (names) (*names)[0] = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDomainDecompositionDM_DA"
-PetscErrorCode DMCreateDomainDecompositionDM_DA(DM dm,const char *name,DM *ddm)
-{
-  DM_DA          *dd = (DM_DA*)dm;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscStrcmp(name,"default",&flg);CHKERRQ(ierr);
-  if (flg) {
-    dd->decompositiondm = PETSC_TRUE;
-    *ddm = dm;
-  } else dd->decompositiondm = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

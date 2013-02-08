@@ -1045,22 +1045,9 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   PetscBool       flg,stokes = PETSC_FALSE;
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
-  DM              ddm;
-  char            ddm_name[1025];
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
-  if (pc->dm) {
-    /* Allow the user to request a decomposition DM by name */
-    ierr = PetscStrncpy(ddm_name, "", 1024);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-pc_fieldsplit_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DMCreateFieldDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
-      if (!ddm) SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown field decomposition name %s", ddm_name);
-      ierr = PetscInfo(pc,"Using field decomposition DM defined using options database\n");CHKERRQ(ierr);
-      ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
-    }
-  }
   ierr = PetscOptionsBool("-pc_fieldsplit_real_diagonal","Use diagonal blocks of the operator","PCFieldSplitSetRealDiagonal",jac->realdiagonal,&jac->realdiagonal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {

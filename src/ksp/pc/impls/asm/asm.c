@@ -27,6 +27,7 @@ typedef struct {
   PetscBool  type_set;            /* if user set this value (so won't change it for symmetric problems) */
   PetscBool  same_local_solves;   /* flag indicating whether all local solvers are same */
   PetscBool  sort_indices;        /* flag to sort subdomain indices */
+  PetscBool  use_dm_decomposition;/* whether DM is allowed to define subdomains */
 } PC_ASM;
 
 #undef __FUNCT__
@@ -195,23 +196,11 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* Note: if subdomains have been set either via PCASMSetTotalSubdomains() or via PCASMSetLocalSubdomains(), osm->n_local_true will not be PETSC_DECIDE */
     if (osm->n_local_true == PETSC_DECIDE) {
       /* no subdomains given */
-      /* try pc->dm first */
-      if (pc->dm) {
-        char      ddm_name[1024];
-        DM        ddm;
-        PetscBool flg;
+      /* try pc->dm first, if allowed */
+      if (osm->use_dm_decomposition && pc->dm) {
         PetscInt  num_domains, d;
         char      **domain_names;
         IS        *inner_domain_is, *outer_domain_is;
-        /* Allow the user to request a decomposition DM by name */
-        ierr = PetscStrncpy(ddm_name, "", 1024);CHKERRQ(ierr);
-        ierr = PetscOptionsString("-pc_asm_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg);CHKERRQ(ierr);
-        if (flg) {
-          ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm);CHKERRQ(ierr);
-          if (!ddm) SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
-          ierr = PetscInfo(pc,"Using domain decomposition DM defined using options database\n");CHKERRQ(ierr);
-          ierr = PCSetDM(pc,ddm);CHKERRQ(ierr);
-        }
         ierr = DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm);CHKERRQ(ierr);
         if (num_domains) {
           ierr = PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is);CHKERRQ(ierr);
@@ -597,9 +586,15 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
   }
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr); }
+  if (flg) {
+    ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+    osm->use_dm_decomposition = PETSC_FALSE;
+  }
   ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
+  if (flg) {
+    ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); 
+    osm->use_dm_decomposition = PETSC_FALSE;
+  }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetType(pc,asmtype);CHKERRQ(ierr); }
@@ -1090,6 +1085,7 @@ PetscErrorCode  PCCreate_ASM(PC pc)
   osm->type              = PC_ASM_RESTRICT;
   osm->same_local_solves = PETSC_TRUE;
   osm->sort_indices      = PETSC_TRUE;
+  osm->use_dm_decomposition = PETSC_TRUE;
 
   pc->data                 = (void*)osm;
   pc->ops->apply           = PCApply_ASM;
