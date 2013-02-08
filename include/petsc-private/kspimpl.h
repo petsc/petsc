@@ -178,16 +178,98 @@ PETSC_EXTERN PetscErrorCode DMCopyDMKSP(DM,DM);
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.
 */
-#define KSP_RemoveNullSpace(ksp,y) ((ksp->nullsp && ksp->pc_side == PC_LEFT) ? MatNullSpaceRemove(ksp->nullsp,y,NULL) : 0)
+#undef __FUNCT__
+#define __FUNCT__ "KSP_RemoveNullSpace"
+PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y,NULL);}
+  PetscFunctionReturn(0);
+}
 
-#define KSP_MatMult(ksp,A,x,y)          (!ksp->transpose_solve) ? MatMult(A,x,y)                                                            : MatMultTranspose(A,x,y)
-#define KSP_MatMultTranspose(ksp,A,x,y) (!ksp->transpose_solve) ? MatMultTranspose(A,x,y)                                                   : MatMult(A,x,y)
-#define KSP_PCApply(ksp,x,y)            (!ksp->transpose_solve) ? (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y))                      : PCApplyTranspose(ksp->pc,x,y)
-#define KSP_PCApplyTranspose(ksp,x,y)   (!ksp->transpose_solve) ? PCApplyTranspose(ksp->pc,x,y)                                             : (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y))
-#define KSP_PCApplyBAorAB(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w)
-#define KSP_PCApplyBAorABTranspose(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w)
+#undef __FUNCT__
+#define __FUNCT__ "KSP_MatMult"
+PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {ierr = MatMult(A,x,y);CHKERRQ(ierr);}
+  else                       {ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSP_MatMultTranspose"
+PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);}
+  else                       {ierr = MatMult(A,x,y);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSP_PCApply"
+PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {
+    ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+  } else {
+    ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSP_PCApplyTranspose"
+PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {
+    ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSP_PCApplyBAorAB"
+PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {
+    ierr = PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+  } else {
+    ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSP_PCApplyBAorABTranspose"
+PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {
+    ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
+  } else {
+    ierr = PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
-
 
 #endif
