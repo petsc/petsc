@@ -4618,8 +4618,8 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         if (dnz[i]>lcols) dnz[i]=lcols;
         if (onz[i]>pcbddc->coarse_size-lcols) onz[i]=pcbddc->coarse_size-lcols;
       }
-      ierr = MatSeqAIJSetPreallocation(pcbddc->coarse_mat,NULL,dnz);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(pcbddc->coarse_mat,NULL,dnz,NULL,onz);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(pcbddc->coarse_mat,0,dnz);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(pcbddc->coarse_mat,0,dnz,0,onz);CHKERRQ(ierr);
       ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
     } else {
       ierr = MatSeqAIJSetPreallocation(matis_coarse_local_mat,0,dnz);CHKERRQ(ierr);
