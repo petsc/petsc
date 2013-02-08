@@ -546,8 +546,8 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,fnorm,0);
-  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -602,8 +602,8 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
     snes->iter = i+1;
     snes->norm = fnorm;
     ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,snes->norm,0);
-    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
+    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;

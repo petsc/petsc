@@ -204,12 +204,18 @@ typedef struct {
   PetscReal norm_last;           /* function norm from last iteration */
 } SNESKSPEW;
 
-#define SNESLogConvHistory(snes,res,its) \
-  { if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) \
-    { if (snes->conv_hist)     snes->conv_hist[snes->conv_hist_len]     = res; \
-      if (snes->conv_hist_its) snes->conv_hist_its[snes->conv_hist_len] = its; \
-      snes->conv_hist_len++;\
-    }}
+#undef __FUNCT__
+#define __FUNCT__ "SNESLogConvergenceHistory"
+PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal res,PetscInt its)
+{
+  PetscFunctionBegin;
+  if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) {
+    if (snes->conv_hist)     snes->conv_hist[snes->conv_hist_len]     = res;
+    if (snes->conv_hist_its) snes->conv_hist_its[snes->conv_hist_len] = its;
+    snes->conv_hist_len++;
+  }
+  PetscFunctionReturn(0);
+}
 
 PETSC_EXTERN PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
 

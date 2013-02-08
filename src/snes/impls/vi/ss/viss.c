@@ -284,8 +284,8 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
   ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,vi->phinorm,0);
-  ierr = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,vi->phinorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = vi->phinorm*snes->rtol;
@@ -374,8 +374,8 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     snes->iter = i+1;
     snes->norm = vi->phinorm;
     ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,snes->norm,lits);
-    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
+    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);

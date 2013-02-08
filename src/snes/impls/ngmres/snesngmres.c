@@ -223,9 +223,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,fnorm,0);
-  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
-  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  ierr       = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
   k_restart = 1;
@@ -326,8 +326,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = k;
     snes->norm = fnorm;
-    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,snes->norm,snes->iter);
+    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     ierr = VecNormBegin(Y,NORM_2,&ynorm);CHKERRQ(ierr);
     ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);

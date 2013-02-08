@@ -131,8 +131,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   delta      = neP->delta0*fnorm;
   neP->delta = delta;
-  SNESLogConvHistory(snes,fnorm,0);
-  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -227,8 +227,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       snes->iter = i+1;
       snes->norm = fnorm;
       ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-      SNESLogConvHistory(snes,snes->norm,lits);
-      ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+      ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
+      ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
       /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
       if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
