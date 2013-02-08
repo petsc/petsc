@@ -1,5 +1,6 @@
 
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
+#include "finclude/petscbagdef.h"
 
       Subroutine PetscBagRegisterEnum(bag,addr,FArray,def,n,h,ierr)
       use,intrinsic :: iso_c_binding
