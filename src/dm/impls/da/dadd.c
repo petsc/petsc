@@ -324,11 +324,11 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
 
   Input Parameters:
 - dm   - the DM object of type DA
-+ flag - PETSC_TRUE | PETSC_FALSE according to whether DMCreateDomainDecomposition returns geometrically-defined or null subdomains.
++ flag - PETSC_TRUE or PETSC_FALSE according to whether DMCreateDomainDecomposition() returns geometrically-defined or null subdomains.
 
 .seealso DMDAGetUseDomainDecomposition()
 @*/
-PetscErrorCode DMDASetUseDomainDecomposition(DM dm,PetscBool flag)
+PetscErrorCode DMDASetUseDomainDecomposition(DM dm, PetscBool flag)
 {
   DM_DA *dd = (DM_DA*)(dm->data);
   PetscBool isda;
@@ -352,7 +352,7 @@ PetscErrorCode DMDASetUseDomainDecomposition(DM dm,PetscBool flag)
 . dm   - the DM object of type DA
 
   Output Parameters:
-. flag - PETSC_TRUE | PETSC_FALSE according to whether DMCreateDomainDecomposition returns geometrically-defined or null subdomains.
+. flag - PETSC_TRUE or PETSC_FALSE according to whether DMCreateDomainDecomposition returns geometrically-defined or null subdomains.
 
 .seealso DMDASetUseDomainDecomposition()
 @*/
