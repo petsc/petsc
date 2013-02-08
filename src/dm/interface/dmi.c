@@ -8,7 +8,7 @@ extern PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 {
   PetscSection   gSection;
-  PetscInt       localSize, blockSize = -1, pStart, pEnd, p;
+  PetscInt       localSize, bs, blockSize = -1, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -25,11 +25,13 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
       break;
     }
   }
+  if (blockSize < 0) blockSize = 1;
+  ierr = MPI_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, ((PetscObject) dm)->comm);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gSection, &localSize);CHKERRQ(ierr);
   if (localSize%blockSize) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);
   ierr = VecCreate(((PetscObject) dm)->comm, vec);CHKERRQ(ierr);
   ierr = VecSetSizes(*vec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*vec, bs);CHKERRQ(ierr);
   /* ierr = VecSetType(*vec, dm->vectype);CHKERRQ(ierr); */
   ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
   ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
