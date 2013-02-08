@@ -87,7 +87,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
-  DM             dm,ddm;
+  DM             dm;
   DM             *subdms;
   PetscInt       i;
   const char     *optionsprefix;
