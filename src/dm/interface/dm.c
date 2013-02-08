@@ -1134,38 +1134,6 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldDecompositionDM"
-/*@C
-  DMCreateFieldDecompositionDM - creates a DM that encapsulates a decomposition of the original DM into fields.
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - the DM object
-- name - the name of the field decomposition
-
-  Output Parameter:
-. ddm  - the field decomposition DM (NULL, if no such decomposition is known)
-
-  Level: advanced
-
-.seealso DMDestroy(), DMCreate(), DMCreateFieldDecomposition(), DMCreateDomainDecompositionDM()
-@*/
-PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char *name, DM *ddm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidCharPointer(name,2);
-  PetscValidPointer(ddm,3);
-  *ddm = NULL;
-  if (dm->ops->createfielddecompositiondm) {
-    ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldDecomposition"
@@ -1286,38 +1254,6 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDomainDecompositionDM"
-/*@C
-  DMCreateDomainDecompositionDM - creates a DM that encapsulates a decomposition of the original DM into subdomains.
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - the DM object
-- name - the name of the subdomain decomposition
-
-  Output Parameter:
-. ddm  - the subdomain decomposition DM (NULL, if no such decomposition is known)
-
-  Level: advanced
-
-.seealso DMDestroy(), DMCreate(), DMCreateFieldDecomposition(), DMCreateDomainDecompositionDM()
-@*/
-PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char *name, DM *ddm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidCharPointer(name,2);
-  PetscValidPointer(ddm,3);
-  *ddm = NULL;
-  if (dm->ops->createdomaindecompositiondm) {
-    ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDomainDecomposition"

@@ -34,6 +34,8 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);}
   if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-da_overlap","Overlap between local grids","DMDASetOverlap",dd->overlap,&dd->overlap,NULL);CHKERRQ(ierr);
+    /* Whether to use DMCreateDomainDecomposition() to define subdomains (e.g., for ASM). */
+    ierr = PetscOptionsBool("-da_use_domain_decomposition", "Use DMCreateDomainDecomposition","DMDASetUseDomainDecomposition",dd->decompositiondm,&dd->decompositiondm,PETSC_NULL);CHKERRQ(ierr);
   /* Handle DMDA parallel distibution */
   ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
   if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
@@ -124,7 +126,6 @@ extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
 extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char***,IS**,IS**,DM**);
-extern PetscErrorCode  DMCreateDomainDecompositionDM_DA(DM,const char*,DM*);
 extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
 #undef __FUNCT__
@@ -350,7 +351,6 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->createsubdm                 = DMCreateSubDM_DA;
   da->ops->createfielddecomposition    = DMCreateFieldDecomposition_DA;
   da->ops->createdomaindecomposition   = DMCreateDomainDecomposition_DA;
-  da->ops->createdomaindecompositiondm = DMCreateDomainDecompositionDM_DA;
   da->ops->createddscatters            = DMCreateDomainDecompositionScatters_DA;
   PetscFunctionReturn(0);
 }

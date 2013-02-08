@@ -89,50 +89,6 @@ PetscErrorCode DMAKKTGetMatrix(DM dm, Mat *Aff)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "DMAKKTSetFieldDecompositionName"
-PetscErrorCode DMAKKTSetFieldDecompositionName(DM dm, const char *dname)
-{
-  PetscBool      iskkt;
-  DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID,1);
-  PetscValidCharPointer(dname,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMAKKT, &iskkt);CHKERRQ(ierr);
-  if (!iskkt) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "DM not of type DMAKKT");
-  if (kkt->dname) {
-    ierr = PetscStrncpy(kkt->dname, dname, DMAKKT_DECOMPOSITION_NAME_LEN);CHKERRQ(ierr);
-  }
-  ierr = DMDestroy(&(kkt->cdm));CHKERRQ(ierr);
-  ierr = MatDestroy(&(kkt->Pfc));CHKERRQ(ierr);
-
-  dm->setupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
-#define __FUNCT__ "DMAKKTGetFieldDecompositionName"
-PetscErrorCode DMAKKTGetFieldDecompositionName(DM dm, char **dname)
-{
-  PetscBool      iskkt;
-  DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID,1);
-  PetscValidCharPointer(dname,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMAKKT, &iskkt);CHKERRQ(ierr);
-  if (!iskkt) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "DM not of type DMAKKT");
-  if (dname) {
-    *dname = NULL;
-    if (kkt->dname) {
-      ierr = PetscStrallocpy(kkt->dname, dname);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
 
 
 #undef  __FUNCT__
@@ -256,13 +212,6 @@ PetscErrorCode DMSetFromOptions_AKKT(DM dm)
                           kkt->detect_saddle_point,
                           &kkt->detect_saddle_point,
                           NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-dm_akkt_decomposition_name",
-                            "Name of primal-dual decomposition to request from DM",
-                            "DMAKKTSetFieldDecompositionName",
-                            kkt->dname,
-                            kkt->dname,
-                            DMAKKT_DECOMPOSITION_NAME_LEN,
-                            NULL);CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -284,16 +233,14 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
   if (!kkt->isf[0] && !kkt->isf[0]) {
     if (kkt->detect_saddle_point) {
       ierr = MatFindZeroDiagonals(kkt->Aff,&kkt->isf[1]);CHKERRQ(ierr);
-    } else if (kkt->dm && kkt->dname) {
-      DM       ddm;
+    } else if (kkt->dm) {
       PetscInt n;
       char     **names;
       IS       *iss;
       DM       *dms;
       PetscInt i;
 
-      ierr = DMCreateFieldDecompositionDM(kkt->dm, kkt->dname, &ddm);CHKERRQ(ierr);
-      ierr = DMCreateFieldDecomposition(ddm, &n, &names, &iss, &dms);CHKERRQ(ierr);
+      ierr = DMCreateFieldDecomposition(kkt->dm, &n, &names, &iss, &dms);CHKERRQ(ierr);
       if (n < 1 || n > 2) SETERRQ2(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition %s must be between 1 and 2.  Got %D instead",kkt->dname, n);
       for (i = 0; i < n; ++i) {
         if (!iss[i] && dms[i]) {
