@@ -367,7 +367,7 @@ M*/
 M*/
 
 /*MC
-    PETSC_NULL - standard way of passing in a null or array or pointer
+    PETSC_NULL - standard way of passing in a null or array or pointer. This is deprecated in C/C++ simply use NULL
 
    Level: beginner
 
@@ -377,16 +377,13 @@ M*/
           This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER,
           PETSC_NULL_DOUBLE_PRECISION, PETSC_NULL_FUNCTION, PETSC_NULL_OBJECT etc
 
-  Developer Note: Why have PETSC_NULL, why not just use NULL? The problem is that NULL is defined in different include files under
-      different versions of Unix. It is tricky to insure the correct include file is always included.
-
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
 #define PETSC_NULL           0
 
 /*MC
-    PETSC_IGNORE - same as PETSC_NULL, means PETSc will ignore this argument
+    PETSC_IGNORE - same as NULL, means PETSc will ignore this argument
 
    Level: beginner
 
@@ -399,7 +396,7 @@ M*/
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_NULL, PETSC_DETERMINE
 
 M*/
-#define PETSC_IGNORE         PETSC_NULL
+#define PETSC_IGNORE         NULL
 
 /*MC
     PETSC_DECIDE - standard way of passing in integer or floating point parameter
@@ -422,7 +419,7 @@ M*/
    Developer Note: I would like to use const PetscInt PETSC_DETERMINE = PETSC_DECIDE; but for
      some reason this is not allowed by the standard even though PETSC_DECIDE is a constant value.
 
-.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_NULL, VecSetSizes()
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, VecSetSizes()
 
 M*/
 #define PETSC_DETERMINE PETSC_DECIDE
@@ -435,7 +432,7 @@ M*/
 
    Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
 
-.seealso: PETSC_DECIDE, PETSC_NULL, PETSC_IGNORE, PETSC_DETERMINE
+.seealso: PETSC_DECIDE, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
 #define PETSC_DEFAULT  -2
@@ -1379,13 +1376,13 @@ PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
          PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with the child function
 .  fname - name of the function
--  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
+-  ptr - function pointer (or NULL if using dynamic libraries)
 
    Level: advanced
 
 
    Notes:
-   To remove a registered routine, pass in a PETSC_NULL rname and fnc().
+   To remove a registered routine, pass in a NULL rname and fnc().
 
    PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object.

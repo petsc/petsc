@@ -29,7 +29,7 @@
    freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
-   Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
+   Any of y, z, n, and p can be passed in as NULL if not needed.
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 

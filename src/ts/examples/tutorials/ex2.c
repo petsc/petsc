@@ -93,9 +93,9 @@ int main(int argc,char **argv)
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&appctx.m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
   appctx.h    = 1.0/(appctx.m-1.0);
 
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -132,14 +132,14 @@ int main(int argc,char **argv)
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (mymonitor) {
-    ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

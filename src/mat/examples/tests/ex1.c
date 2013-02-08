@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(RHS,PETSC_DECIDE,PETSC_DECIDE,n,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(RHS,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(RHS);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(RHS,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(RHS,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&SOLU);CHKERRQ(ierr);
 
   /* create matrix */
-  ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,NULL,&mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     value = (PetscReal)i+1;

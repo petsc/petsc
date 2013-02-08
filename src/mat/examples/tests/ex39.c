@@ -21,10 +21,10 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -95,9 +95,9 @@ int main(int argc,char **args)
     ierr = VecView(d,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   if (m>n) {
-    ierr = MatDiagonalScale(C,PETSC_NULL,d);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(C,NULL,d);CHKERRQ(ierr);
   } else {
-    ierr = MatDiagonalScale(C,d,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(C,d,NULL);CHKERRQ(ierr);
   }
   if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal Scaled C:\n");CHKERRQ(ierr);

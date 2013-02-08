@@ -1369,11 +1369,11 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetMinEig_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetLambda_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRSetRadius_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetNormD_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetObjFcn_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetMinEig_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetLambda_C","",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -1449,16 +1449,16 @@ PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GLTR options");CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-ksp_gltr_radius", "Trust Region Radius", "KSPGLTRSetRadius", cg->radius, &cg->radius, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_gltr_radius", "Trust Region Radius", "KSPGLTRSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-ksp_gltr_init_pert", "Initial perturbation", "", cg->init_pert, &cg->init_pert, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_gltr_newton_tol", "Newton tolerance", "", cg->newton_tol, &cg->newton_tol, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_gltr_init_pert", "Initial perturbation", "", cg->init_pert, &cg->init_pert, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_gltr_newton_tol", "Newton tolerance", "", cg->newton_tol, &cg->newton_tol, NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-ksp_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEList("-ksp_gltr_dtype", "Norm used for direction", "", DType_Table, GLTR_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-ksp_gltr_dtype", "Norm used for direction", "", DType_Table, GLTR_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

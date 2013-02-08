@@ -77,13 +77,13 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
     comm = ((PetscObject)pf)->comm;
   }
-  ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,NULL);CHKERRQ(ierr);
   if (keeptmpfiles) sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; ke  MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
   else              sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; make  MIN=%d NOUT=%d -f makefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f makefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
 
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPOpen(comm,PETSC_NULL,task,"r",&fd);CHKERRQ(ierr);
-  ierr = PetscPClose(comm,fd,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPOpen(comm,NULL,task,"r",&fd);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fd,NULL);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -93,7 +93,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   /* load the apply function from the dynamic library */
   ierr = PetscGetUserName(username,64);CHKERRQ(ierr);
   sprintf(lib,"%s/%s/libpetscdlib",tmp,username);
-  ierr = PetscDLLibrarySym(comm,PETSC_NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
+  ierr = PetscDLLibrarySym(comm,NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
   if (!f) SETERRQ1(((PetscObject)pf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot find function %s",lib);
 #endif
   PetscFunctionReturn(0);
@@ -132,7 +132,7 @@ PetscErrorCode  PFCreate_String(PF pf,void *value)
   if (value) {
     ierr = PFStringCreateFunction(pf,(char*)value,(void**)&f);CHKERRQ(ierr);
   }
-  ierr                    = PFSet(pf,f,PETSC_NULL,PFView_String,PFDestroy_String,PETSC_NULL);CHKERRQ(ierr);
+  ierr                    = PFSet(pf,f,NULL,PFView_String,PFDestroy_String,NULL);CHKERRQ(ierr);
   pf->ops->setfromoptions = PFSetFromOptions_String;
   PetscFunctionReturn(0);
 }

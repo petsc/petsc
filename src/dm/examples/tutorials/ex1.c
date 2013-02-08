@@ -56,11 +56,11 @@ int main(int argc,char **argv)
   ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr  = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-view_global", &flg,NULL);CHKERRQ(ierr);
   if (flg) { /* view global vector in natural ordering */
     ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

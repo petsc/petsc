@@ -22,7 +22,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 
   periodicity = 0;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic", &periodicity, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-periodic", &periodicity, NULL);CHKERRQ(ierr);
   if (periodicity==1) {
     bx = DMDA_BOUNDARY_PERIODIC;
   } else if (periodicity==2) {
@@ -36,7 +36,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
                       PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
-                      PETSC_NULL,PETSC_NULL,PETSC_NULL,
+                      NULL,NULL,NULL,
                       &daf);CHKERRQ(ierr);
 
   ierr = DMSetFromOptions(daf);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
 
-    ierr = DMCreateInterpolation(cdac,cdaf,&interp,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&interp,NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(coordsf,&coordsf2);CHKERRQ(ierr);
     ierr = MatInterpolate(interp,coordsc,coordsf2);CHKERRQ(ierr);
     ierr = VecAXPY(coordsf2,-1.0,coordsf);CHKERRQ(ierr);
@@ -113,9 +113,9 @@ int main(int argc,char **argv)
   mx   = 2;
   my   = 2;
   mz   = 2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx", &mx, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my", &my, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mz", &mz, 0);CHKERRQ(ierr);
 
   ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
 

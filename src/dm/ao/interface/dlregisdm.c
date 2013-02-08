@@ -33,7 +33,7 @@ PetscErrorCode  AOFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate().
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -58,7 +58,7 @@ PetscErrorCode  AOInitializePackage(const char path[])
   ierr = PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
@@ -66,7 +66,7 @@ PetscErrorCode  AOInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
@@ -97,7 +97,7 @@ PetscErrorCode  DMFinalizePackage(void)
 
   PetscFunctionBegin;
   DMPackageInitialized = PETSC_FALSE;
-  DMList               = PETSC_NULL;
+  DMList               = NULL;
   DMRegisterAllCalled  = PETSC_FALSE;
 #if defined(PETSC_HAVE_SIEVE)
   ierr = DMMeshFinalize();CHKERRQ(ierr);
@@ -119,7 +119,7 @@ EXTERN_C_END
   or DMDACreate() when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -171,7 +171,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
   ierr = PetscLogEventRegister("SectionIntView",         SECTIONINT_CLASSID,&SectionInt_View);CHKERRQ(ierr);
 #endif
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
@@ -189,7 +189,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 #endif
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {

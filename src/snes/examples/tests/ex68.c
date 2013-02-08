@@ -148,9 +148,9 @@ int main(int argc, char **argv)
   PetscInt       problem = 1, N = 10;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-problem", &problem, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-problem", &problem, NULL);CHKERRQ(ierr);
   ierr = VecCreate(comm, &u);CHKERRQ(ierr);
   ierr = VecSetSizes(u, PETSC_DETERMINE, N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
   ierr = MatCreate(comm, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DETERMINE, PETSC_DETERMINE, N, N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 5, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A, 5, NULL);CHKERRQ(ierr);
   J    = A;
 
   switch (problem) {
@@ -175,12 +175,12 @@ int main(int argc, char **argv)
   }
 
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes, A, J, ComputeJacobianLinear, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, ComputeJacobianLinear, NULL);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes, r, ComputeFunctionLinear, A);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = SNESSolve(snes, b, u);CHKERRQ(ierr);
-  ierr = VecView(u, PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecView(u, NULL);CHKERRQ(ierr);
 
   switch (problem) {
   case 1:

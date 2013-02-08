@@ -176,8 +176,8 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   if (pStart) PetscValidIntPointer(pStart,3);
   if (pEnd)   PetscValidIntPointer(pEnd,4);
   ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
-  ierr = DMDAGetNumVertices(dm, PETSC_NULL, PETSC_NULL, PETSC_NULL, &nV);CHKERRQ(ierr);
-  ierr = DMDAGetNumFaces(dm, PETSC_NULL, &nXF, PETSC_NULL, &nYF, PETSC_NULL, &nZF);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
   if (height == 0) {
     /* Cells */
     if (pStart) *pStart = 0;
@@ -207,10 +207,10 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   Input Parameters:
 + dm- The DMDA
 . numFields - The number of fields
-. numComp - The number of components in each field, or PETSC_NULL for 1
-. numVertexDof - The number of dofs per vertex for each field, or PETSC_NULL
-. numFaceDof - The number of dofs per face for each field and direction, or PETSC_NULL
-- numCellDof - The number of dofs per cell for each field, or PETSC_NULL
+. numComp - The number of components in each field, or NULL for 1
+. numVertexDof - The number of dofs per vertex for each field, or NULL
+. numFaceDof - The number of dofs per face for each field and direction, or NULL
+- numCellDof - The number of dofs per cell for each field, or NULL
 
   Level: developer
 
@@ -753,8 +753,8 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
       if (dd->arrayghostedin[i]) {
         *iptr                 = dd->arrayghostedin[i];
         iarray_start          = (char*)dd->startghostedin[i];
-        dd->arrayghostedin[i] = PETSC_NULL;
-        dd->startghostedin[i] = PETSC_NULL;
+        dd->arrayghostedin[i] = NULL;
+        dd->startghostedin[i] = NULL;
 
         goto done;
       }
@@ -770,8 +770,8 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
       if (dd->arrayin[i]) {
         *iptr          = dd->arrayin[i];
         iarray_start   = (char*)dd->startin[i];
-        dd->arrayin[i] = PETSC_NULL;
-        dd->startin[i] = PETSC_NULL;
+        dd->arrayin[i] = NULL;
+        dd->startin[i] = NULL;
 
         goto done;
       }
@@ -873,8 +873,8 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool ghosted,void *vptr)
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayghostedout[i] == *iptr) {
         iarray_start           = dd->startghostedout[i];
-        dd->arrayghostedout[i] = PETSC_NULL;
-        dd->startghostedout[i] = PETSC_NULL;
+        dd->arrayghostedout[i] = NULL;
+        dd->startghostedout[i] = NULL;
         break;
       }
     }
@@ -889,8 +889,8 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool ghosted,void *vptr)
     for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
       if (dd->arrayout[i] == *iptr) {
         iarray_start    = dd->startout[i];
-        dd->arrayout[i] = PETSC_NULL;
-        dd->startout[i] = PETSC_NULL;
+        dd->arrayout[i] = NULL;
+        dd->startout[i] = NULL;
         break;
       }
     }

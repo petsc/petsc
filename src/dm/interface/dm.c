@@ -56,33 +56,33 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
-  *dm = PETSC_NULL;
+  *dm = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = DMInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
 
 
-  v->ltogmap              = PETSC_NULL;
-  v->ltogmapb             = PETSC_NULL;
+  v->ltogmap              = NULL;
+  v->ltogmapb             = NULL;
   v->bs                   = 1;
   v->coloringtype         = IS_COLORING_GLOBAL;
   ierr                    = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
   ierr                    = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
-  v->defaultSection       = PETSC_NULL;
-  v->defaultGlobalSection = PETSC_NULL;
+  v->defaultSection       = NULL;
+  v->defaultGlobalSection = NULL;
   {
     PetscInt i;
     for (i = 0; i < 10; ++i) {
-      v->nullspaceConstructors[i] = PETSC_NULL;
+      v->nullspaceConstructors[i] = NULL;
     }
   }
   v->numFields = 0;
-  v->fields    = PETSC_NULL;
+  v->fields    = NULL;
 
   *dm = v;
   PetscFunctionReturn(0);
@@ -348,7 +348,7 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = VecDestroy(&nlink->X);CHKERRQ(ierr);
     ierr = PetscFree(nlink);CHKERRQ(ierr);
   }
-  (*dm)->namedglobal = PETSC_NULL;
+  (*dm)->namedglobal = NULL;
 
   for (nlink=(*dm)->namedlocal; nlink; nlink=nnext) { /* Destroy the named local vectors */
     nnext = nlink->next;
@@ -357,7 +357,7 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = VecDestroy(&nlink->X);CHKERRQ(ierr);
     ierr = PetscFree(nlink);CHKERRQ(ierr);
   }
-  (*dm)->namedlocal = PETSC_NULL;
+  (*dm)->namedlocal = NULL;
 
   /* Destroy the list of hooks */
   {
@@ -366,7 +366,7 @@ PetscErrorCode  DMDestroy(DM *dm)
       next = link->next;
       ierr = PetscFree(link);CHKERRQ(ierr);
     }
-    (*dm)->coarsenhook = PETSC_NULL;
+    (*dm)->coarsenhook = NULL;
   }
   {
     DMRefineHookLink link,next;
@@ -374,7 +374,7 @@ PetscErrorCode  DMDestroy(DM *dm)
       next = link->next;
       ierr = PetscFree(link);CHKERRQ(ierr);
     }
-    (*dm)->refinehook = PETSC_NULL;
+    (*dm)->refinehook = NULL;
   }
   {
     DMSubDomainHookLink link,next;
@@ -382,7 +382,7 @@ PetscErrorCode  DMDestroy(DM *dm)
       next = link->next;
       ierr = PetscFree(link);CHKERRQ(ierr);
     }
-    (*dm)->subdomainhook = PETSC_NULL;
+    (*dm)->subdomainhook = NULL;
   }
   {
     DMGlobalToLocalHookLink link,next;
@@ -390,7 +390,7 @@ PetscErrorCode  DMDestroy(DM *dm)
       next = link->next;
       ierr = PetscFree(link);CHKERRQ(ierr);
     }
-    (*dm)->gtolhook = PETSC_NULL;
+    (*dm)->gtolhook = NULL;
   }
   /* Destroy the work arrays */
   {
@@ -401,7 +401,7 @@ PetscErrorCode  DMDestroy(DM *dm)
       ierr = PetscFree(link->mem);CHKERRQ(ierr);
       ierr = PetscFree(link);CHKERRQ(ierr);
     }
-    (*dm)->workin = PETSC_NULL;
+    (*dm)->workin = NULL;
   }
 
   ierr = PetscObjectDestroy(&(*dm)->dmksp);CHKERRQ(ierr);
@@ -501,7 +501,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
@@ -510,7 +510,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   if (flg) {
     ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
   }
@@ -890,7 +890,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,MatType mtype,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
@@ -1002,7 +1002,7 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void 
       *p           = link->next;
       link->next   = dm->workin;
       dm->workin   = link;
-      *(void**)mem = PETSC_NULL;
+      *(void**)mem = NULL;
       PetscFunctionReturn(0);
     }
   }
@@ -1032,9 +1032,9 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 . dm - the DM object
 
   Output Parameters:
-+ numFields  - The number of fields (or PETSC_NULL if not requested)
-. fieldNames - The name for each field (or PETSC_NULL if not requested)
-- fields     - The global indices for each field (or PETSC_NULL if not requested)
++ numFields  - The number of fields (or NULL if not requested)
+. fieldNames - The name for each field (or NULL if not requested)
+- fields     - The global indices for each field (or NULL if not requested)
 
   Level: intermediate
 
@@ -1058,11 +1058,11 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   }
   if (fieldNames) {
     PetscValidPointer(fieldNames,3);
-    *fieldNames = PETSC_NULL;
+    *fieldNames = NULL;
   }
   if (fields) {
     PetscValidPointer(fields,4);
-    *fields = PETSC_NULL;
+    *fields = NULL;
   }
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (section) {
@@ -1146,7 +1146,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 - name - the name of the field decomposition
 
   Output Parameter:
-. ddm  - the field decomposition DM (PETSC_NULL, if no such decomposition is known)
+. ddm  - the field decomposition DM (NULL, if no such decomposition is known)
 
   Level: advanced
 
@@ -1160,7 +1160,7 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char *name, DM *ddm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
-  *ddm = PETSC_NULL;
+  *ddm = NULL;
   if (dm->ops->createfielddecompositiondm) {
     ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm);CHKERRQ(ierr);
   }
@@ -1181,10 +1181,10 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char *name, DM *ddm)
 . dm - the DM object
 
   Output Parameters:
-+ len       - The number of subproblems in the field decomposition (or PETSC_NULL if not requested)
-. namelist  - The name for each field (or PETSC_NULL if not requested)
-. islist    - The global indices for each field (or PETSC_NULL if not requested)
-- dmlist    - The DMs for each field subproblem (or PETSC_NULL, if not requested; if PETSC_NULL is returned, no DMs are defined)
++ len       - The number of subproblems in the field decomposition (or NULL if not requested)
+. namelist  - The name for each field (or NULL if not requested)
+. islist    - The global indices for each field (or NULL if not requested)
+- dmlist    - The DMs for each field subproblem (or NULL, if not requested; if NULL is returned, no DMs are defined)
 
   Level: intermediate
 
@@ -1242,7 +1242,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     } else {
       ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
       /* By default there are no DMs associated with subproblems. */
-      if (dmlist) *dmlist = PETSC_NULL;
+      if (dmlist) *dmlist = NULL;
     }
   } else {
     ierr = (*dm->ops->createfielddecomposition)(dm,len,namelist,islist,dmlist);CHKERRQ(ierr);
@@ -1261,7 +1261,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   Input Parameters:
 + dm - the DM object
 . numFields - number of fields in this subproblem
-- len       - The number of subproblems in the decomposition (or PETSC_NULL if not requested)
+- len       - The number of subproblems in the decomposition (or NULL if not requested)
 
   Output Parameters:
 . is - The global indices for the subproblem
@@ -1298,7 +1298,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
 - name - the name of the subdomain decomposition
 
   Output Parameter:
-. ddm  - the subdomain decomposition DM (PETSC_NULL, if no such decomposition is known)
+. ddm  - the subdomain decomposition DM (NULL, if no such decomposition is known)
 
   Level: advanced
 
@@ -1312,7 +1312,7 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char *name, DM *ddm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
-  *ddm = PETSC_NULL;
+  *ddm = NULL;
   if (dm->ops->createdomaindecompositiondm) {
     ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm);CHKERRQ(ierr);
   }
@@ -1334,11 +1334,11 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char *name, DM *ddm)
 . dm - the DM object
 
   Output Parameters:
-+ len         - The number of subproblems in the domain decomposition (or PETSC_NULL if not requested)
-. namelist    - The name for each subdomain (or PETSC_NULL if not requested)
-. innerislist - The global indices for each inner subdomain (or PETSC_NULL, if not requested)
-. outerislist - The global indices for each outer subdomain (or PETSC_NULL, if not requested)
-- dmlist      - The DMs for each subdomain subproblem (or PETSC_NULL, if not requested; if PETSC_NULL is returned, no DMs are defined)
++ len         - The number of subproblems in the domain decomposition (or NULL if not requested)
+. namelist    - The name for each subdomain (or NULL if not requested)
+. innerislist - The global indices for each inner subdomain (or NULL, if not requested)
+. outerislist - The global indices for each outer subdomain (or NULL, if not requested)
+- dmlist      - The DMs for each subdomain subproblem (or NULL, if not requested; if NULL is returned, no DMs are defined)
 
   Level: intermediate
 
@@ -1358,10 +1358,10 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (len)           {PetscValidPointer(len,2);            *len         = 0;}
-  if (namelist)      {PetscValidPointer(namelist,3);       *namelist    = PETSC_NULL;}
-  if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = PETSC_NULL;}
-  if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
-  if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
+  if (namelist)      {PetscValidPointer(namelist,3);       *namelist    = NULL;}
+  if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = NULL;}
+  if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = NULL;}
+  if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = NULL;}
   /*
    Is it a good idea to apply the following check across all impls?
    Perhaps some impls can have a well-defined decomposition before DMSetUp?
@@ -1440,9 +1440,9 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
   Output Parameter:
-. dmf - the refined DM, or PETSC_NULL
+. dmf - the refined DM, or NULL
 
-  Note: If no refinement was done, the return value is PETSC_NULL
+  Note: If no refinement was done, the return value is NULL
 
   Level: developer
 
@@ -1486,7 +1486,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 +  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  refinehook - function to run when setting up a coarser level
 .  interphook - function to run to update data on finer levels (once per SNESSolve())
--  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+-  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence of refinehook:
 $    refinehook(DM coarse,DM fine,void *ctx);
@@ -1524,7 +1524,7 @@ PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void
   link->refinehook = refinehook;
   link->interphook = interphook;
   link->ctx        = ctx;
-  link->next       = PETSC_NULL;
+  link->next       = NULL;
   *p               = link;
   PetscFunctionReturn(0);
 }
@@ -1596,7 +1596,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 +  dm - the DM
 .  beginhook - function to run at the beginning of DMGlobalToLocalBegin()
 .  endhook - function to run after DMGlobalToLocalEnd() has completed
--  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+-  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence for beginhook:
 $    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
@@ -1638,7 +1638,7 @@ PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
   link->beginhook = beginhook;
   link->endhook   = endhook;
   link->ctx       = ctx;
-  link->next      = PETSC_NULL;
+  link->next      = NULL;
   *p              = link;
   PetscFunctionReturn(0);
 }
@@ -1903,7 +1903,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 +  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
 .  restricthook - function to run to update data on coarser levels (once per SNESSolve())
--  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+-  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence of coarsenhook:
 $    coarsenhook(DM fine,DM coarse,void *ctx);
@@ -1946,7 +1946,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
   link->coarsenhook  = coarsenhook;
   link->restricthook = restricthook;
   link->ctx          = ctx;
-  link->next         = PETSC_NULL;
+  link->next         = NULL;
   *p                 = link;
   PetscFunctionReturn(0);
 }
@@ -1992,7 +1992,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
    Input Arguments:
 +  global - global DM
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
--  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+-  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
    Calling sequence for restricthook:
 $    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
@@ -2027,7 +2027,7 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
   link->restricthook = restricthook;
   link->ddhook       = ddhook;
   link->ctx          = ctx;
-  link->next         = PETSC_NULL;
+  link->next         = NULL;
   *p                 = link;
   PetscFunctionReturn(0);
 }
@@ -2287,7 +2287,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
     Input Parameter:
 +   dm - the DM object
--   f - the function that computes variable bounds used by SNESVI (use PETSC_NULL to cancel a previous function that was set)
+-   f - the function that computes variable bounds used by SNESVI (use NULL to cancel a previous function that was set)
 
     Level: intermediate
 
@@ -2394,7 +2394,7 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 
     Input Parameter:
 +   dm - the DM object
--   x - location to compute residual and Jacobian, if PETSC_NULL is passed to those routines; will be PETSC_NULL for linear problems.
+-   x - location to compute residual and Jacobian, if NULL is passed to those routines; will be NULL for linear problems.
 
     Level: developer
 
@@ -2417,7 +2417,7 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
   PetscFunctionReturn(0);
 }
 
-PetscFunctionList DMList              = PETSC_NULL;
+PetscFunctionList DMList              = NULL;
 PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -2453,13 +2453,13 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   ierr = PetscObjectTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!DMRegisterAllCalled) {ierr = DMRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscFunctionListFind(((PetscObject)dm)->comm, DMList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
     ierr             = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
-    dm->ops->destroy = PETSC_NULL;
+    dm->ops->destroy = NULL;
   }
   ierr = (*r)(dm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)dm,method);CHKERRQ(ierr);
@@ -2492,7 +2492,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!DMRegisterAllCalled) {
-    ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRegisterAll(NULL);CHKERRQ(ierr);
   }
   *type = ((PetscObject)dm)->type_name;
   PetscFunctionReturn(0);
@@ -2535,7 +2535,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
   ierr = PetscObjectTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr);
   {
-    PetscErrorCode (*conv)(DM, DMType, DM*) = PETSC_NULL;
+    PetscErrorCode (*conv)(DM, DMType, DM*) = NULL;
 
     /*
        Order of precedence:
@@ -2881,7 +2881,7 @@ PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(sf, 2);
-  ierr = PetscSFGetGraph(dm->defaultSF, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(dm->defaultSF, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots < 0) {
     PetscSection section, gSection;
 
@@ -2890,7 +2890,7 @@ PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf)
       ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
       ierr = DMCreateDefaultSF(dm, section, gSection);CHKERRQ(ierr);
     } else {
-      *sf = PETSC_NULL;
+      *sf = NULL;
       PetscFunctionReturn(0);
     }
   }
@@ -3215,7 +3215,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
   if (!dm->coordinates && dm->coordinatesLocal) {
-    DM cdm = PETSC_NULL;
+    DM cdm = NULL;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(cdm, &dm->coordinates);CHKERRQ(ierr);
@@ -3261,7 +3261,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
   if (!dm->coordinatesLocal && dm->coordinates) {
-    DM cdm = PETSC_NULL;
+    DM cdm = NULL;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);

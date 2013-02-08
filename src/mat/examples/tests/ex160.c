@@ -20,8 +20,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,32,32);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,2,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,2,2,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,2,2,NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,2,2,NULL,2,NULL);CHKERRQ(ierr);
 
   v    = 1.0;
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);

@@ -18,7 +18,7 @@
 
   Level: intermediate
 
-   Note: vout may be PETSC_NULL [PETSC_NULL_OBJECT from fortran] if you do not
+   Note: vout may be NULL [NULL_OBJECT from fortran] if you do not
    need to have it created
 
    Usage:
@@ -33,7 +33,7 @@ $        VecScatterDestroy(ctx);
 $        VecDestroy(vout);
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
-  automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
+  automatically (unless you pass NULL in for that argument if you do not need it).
 
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
@@ -90,7 +90,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 
   Level: intermediate
 
-   Note: vout may be PETSC_NULL [PETSC_NULL_OBJECT from fortran] if you do not
+   Note: vout may be NULL [NULL_OBJECT from fortran] if you do not
    need to have it created
 
    Usage:
@@ -107,7 +107,7 @@ $        VecDestroy(vout);
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
-  automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
+  automatically (unless you pass NULL in for that argument if you do not need it).
 
 @*/
 PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)

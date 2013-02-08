@@ -19,7 +19,7 @@
 -    len - amount of space allocated to hold variable
 
    Output Parameters:
-+    flag - if not PETSC_NULL tells if variable found or not
++    flag - if not NULL tells if variable found or not
 -    env - value of variable
 
   Level: advanced
@@ -54,7 +54,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
   }
   ierr = PetscStrtolower(work);CHKERRQ(ierr);
   if (env) {
-    ierr = PetscOptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,work,env,len,&flg);CHKERRQ(ierr);
     if (flg) {
       if (flag) *flag = PETSC_TRUE;
     } else { /* now check environment */
@@ -71,7 +71,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
       if (flag) *flag = flg;
     }
   } else {
-    ierr = PetscOptionsHasName(PETSC_NULL,work,flag);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,work,flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -118,7 +118,7 @@ PetscErrorCode  PetscSetDisplay(void)
   const char     *str;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

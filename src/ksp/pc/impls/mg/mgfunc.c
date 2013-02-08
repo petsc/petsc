@@ -459,7 +459,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
     ierr = KSPSetType(mglevels[l]->smoothu,ksptype);CHKERRQ(ierr);
     ierr = KSPSetNormType(mglevels[l]->smoothu,normtype);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);
     ierr = KSPGetPC(mglevels[l]->smoothu,&ipc);CHKERRQ(ierr);
     ierr = PCSetType(ipc,pctype);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mglevels[l]->smoothu);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   /* make sure smoother up and down are different */
   if (l) {
-    ierr = PCMGGetSmootherUp(pc,l,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGGetSmootherUp(pc,l,NULL);CHKERRQ(ierr);
   }
   *ksp = mglevels[l]->smoothd;
   PetscFunctionReturn(0);

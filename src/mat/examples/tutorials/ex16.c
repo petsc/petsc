@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Determine files from which we read the linear systems. */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /* Open binary file.  Note that we use FILE_MODE_READ to indicate
@@ -55,8 +55,8 @@ int main(int argc,char **args)
   Dnnz = (PetscInt)matinfo.nz_used/m + 1;
   Onnz = Dnnz/2;
   printf("Dnnz %d %d\n",Dnnz,Onnz);
-  ierr = MatSeqAIJSetPreallocation(Asp,Dnnz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Asp,Dnnz,PETSC_NULL,Onnz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Asp,Dnnz,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Asp,Dnnz,NULL,Onnz,NULL);CHKERRQ(ierr);
 
   /* Check zero rows */
   ierr  = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ int main(int argc,char **args)
 
   /* investigate matcoloring for Asp */
   PetscBool Asp_coloring = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-Asp_color",&Asp_coloring);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-Asp_color",&Asp_coloring);CHKERRQ(ierr);
   if (Asp_coloring) {
     ISColoring    iscoloring;
     MatFDColoring matfdcoloring;
@@ -101,7 +101,7 @@ int main(int argc,char **args)
 
   /* Write Asp in binary for study - see ~petsc/src/mat/examples/tests/ex124.c */
   PetscBool Asp_write = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-Asp_write",&Asp_write);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-Asp_write",&Asp_write);CHKERRQ(ierr);
   if (Asp_write) {
     PetscViewer viewer;
     ierr = PetscPrintf(PETSC_COMM_SELF,"Write Asp into file Asp.dat ...\n");

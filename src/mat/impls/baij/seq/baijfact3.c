@@ -95,7 +95,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool natur
       {
         PetscBool      sse_enabled_local;
         PetscErrorCode ierr;
-        ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,NULL);CHKERRQ(ierr);
         if (sse_enabled_local) {
 #  if defined(PETSC_HAVE_SSE)
           int i,*AJ=a->j,nz=a->nz,n=a->mbs;
@@ -196,7 +196,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscInt           *bdiag,row,nnz,nzi,reallocs=0,nzbd,*im;
   PetscReal          f;
   PetscInt           nlnk,*lnk,k,**bi_ptr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -283,7 +283,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqBAIJ*)(B)->data;
 
@@ -355,7 +355,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   PetscInt           *bdiag,row,nnz,nzi,reallocs=0,nzbd,*im;
   PetscReal          f;
   PetscInt           nlnk,*lnk,k,**bi_ptr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -449,7 +449,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqBAIJ*)(B)->data;
 

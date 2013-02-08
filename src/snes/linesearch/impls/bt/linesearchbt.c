@@ -82,14 +82,14 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,&maxstep,PETSC_NULL,PETSC_NULL,PETSC_NULL,&max_its);CHKERRQ(ierr);
-  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,&stol,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESGetObjective(snes,&objective,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,&maxstep,NULL,NULL,NULL,&max_its);CHKERRQ(ierr);
+  ierr = SNESGetTolerances(snes,NULL,NULL,&stol,NULL,NULL);CHKERRQ(ierr);
+  ierr = SNESGetObjective(snes,&objective,NULL);CHKERRQ(ierr);
   bt   = (SNESLineSearch_BT*)linesearch->data;
 
   alpha = bt->alpha;
 
-  ierr = SNESGetJacobian(snes, &jac, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes, &jac, NULL, NULL, NULL);CHKERRQ(ierr);
 
   if (!jac && !objective) SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "SNESLineSearchBT requires a Jacobian matrix");
 
@@ -436,7 +436,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
   bt = (SNESLineSearch_BT*)linesearch->data;
 
   ierr = PetscOptionsHead("SNESLineSearch BT options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -479,9 +479,9 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
   linesearch->ops->apply          = SNESLineSearchApply_BT;
   linesearch->ops->destroy        = SNESLineSearchDestroy_BT;
   linesearch->ops->setfromoptions = SNESLineSearchSetFromOptions_BT;
-  linesearch->ops->reset          = PETSC_NULL;
+  linesearch->ops->reset          = NULL;
   linesearch->ops->view           = SNESLineSearchView_BT;
-  linesearch->ops->setup          = PETSC_NULL;
+  linesearch->ops->setup          = NULL;
 
   ierr = PetscNewLog(linesearch, SNESLineSearch_BT, &bt);CHKERRQ(ierr);
 

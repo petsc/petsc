@@ -46,7 +46,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
-  ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
@@ -311,7 +311,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPReset_FGMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","",NULL);CHKERRQ(ierr);
   ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -494,7 +494,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
   /* work vectors */
-  ierr = KSPGetVecs(ksp,nalloc,&fgmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&fgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
@@ -503,7 +503,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   fgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors */
-  ierr = KSPGetVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
@@ -742,8 +742,8 @@ PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
   fgmres->Rsvd           = 0;
   fgmres->orthogwork     = 0;
   fgmres->modifypc       = KSPFGMRESModifyPCNoChange;
-  fgmres->modifyctx      = PETSC_NULL;
-  fgmres->modifydestroy  = PETSC_NULL;
+  fgmres->modifyctx      = NULL;
+  fgmres->modifydestroy  = NULL;
   fgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   PetscFunctionReturn(0);
 }

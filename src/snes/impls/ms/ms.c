@@ -143,7 +143,7 @@ PetscErrorCode SNESMSRegisterDestroy(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -412,7 +412,7 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -456,8 +456,8 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
     ierr = PetscOptionsEList("-snes_ms_type","Multistage smoother type","SNESMSSetType",(const char*const*)namelist,count,mstype,&choice,&flg);CHKERRQ(ierr);
     ierr = SNESMSSetType(snes,flg ? namelist[choice] : mstype);CHKERRQ(ierr);
     ierr = PetscFree(namelist);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ms_damping","Damping for multistage method","SNESMSSetDamping",ms->damping,&ms->damping,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-snes_ms_norms","Compute norms for monitoring","none",ms->norms,&ms->norms,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ms_damping","Damping for multistage method","SNESMSSetDamping",ms->damping,&ms->damping,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-snes_ms_norms","Compute norms for monitoring","none",ms->norms,&ms->norms,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -557,7 +557,7 @@ PetscErrorCode  SNESCreate_MS(SNES snes)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = SNESMSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESMSInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   snes->ops->setup          = SNESSetUp_MS;

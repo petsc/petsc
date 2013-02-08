@@ -22,12 +22,12 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-baij",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-baij",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,PETSC_NULL,rowlens,&A);CHKERRQ(ierr);
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,NULL,rowlens,&A);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
   } else {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,PETSC_NULL,rowlens,&A);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,NULL,rowlens,&A);CHKERRQ(ierr);
     ierr = MatSeqAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
   }
 

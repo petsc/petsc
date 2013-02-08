@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
   PetscBool      view_draw,pass_dm;
 
   PetscInitialize(&argc,&argv,0,help);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,NULL,&dau);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
   ierr = DMCompositeGetLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,user->Uloc,user->Kloc);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
   {
     user->ptype = 0; view_draw = PETSC_FALSE; pass_dm = PETSC_TRUE;
 
@@ -393,29 +393,29 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dau,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dau,NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     ierr = SNESSetDM(snes,dau);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,Xu);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,Xu);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,F,&Fu,0);CHKERRQ(ierr);
     break;
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dak,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dak,NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     ierr = SNESSetDM(snes,dak);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,Xk);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,Xk);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
     /* This example does not correctly allocate off-diagonal blocks. These options allows new nonzeros (slow). */
     ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ int main(int argc, char *argv[])
        * of splits, but it requires using a DM (perhaps your own implementation). */
       ierr = SNESSetDM(snes,pack);CHKERRQ(ierr);
     }
-    ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     break;
   }
   if (view_draw) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}

@@ -36,23 +36,23 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      random_exact_sol,view_exact_sol,permute;
   char           ordering[256] = MATORDERINGRCM;
-  IS             rowperm       = PETSC_NULL,colperm = PETSC_NULL;
+  IS             rowperm       = NULL,colperm = NULL;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Poisson example options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Poisson example options","");CHKERRQ(ierr);
   {
     m                = 8;
-    ierr             = PetscOptionsInt("-m","Number of grid points in x direction","",m,&m,PETSC_NULL);CHKERRQ(ierr);
+    ierr             = PetscOptionsInt("-m","Number of grid points in x direction","",m,&m,NULL);CHKERRQ(ierr);
     n                = m-1;
-    ierr             = PetscOptionsInt("-n","Number of grid points in y direction","",n,&n,PETSC_NULL);CHKERRQ(ierr);
+    ierr             = PetscOptionsInt("-n","Number of grid points in y direction","",n,&n,NULL);CHKERRQ(ierr);
     random_exact_sol = PETSC_FALSE;
-    ierr             = PetscOptionsBool("-random_exact_sol","Choose a random exact solution","",random_exact_sol,&random_exact_sol,PETSC_NULL);CHKERRQ(ierr);
+    ierr             = PetscOptionsBool("-random_exact_sol","Choose a random exact solution","",random_exact_sol,&random_exact_sol,NULL);CHKERRQ(ierr);
     view_exact_sol   = PETSC_FALSE;
-    ierr             = PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,PETSC_NULL);CHKERRQ(ierr);
+    ierr             = PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,NULL);CHKERRQ(ierr);
     permute          = PETSC_FALSE;
     ierr             = PetscOptionsList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
   }
@@ -74,8 +74,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   /*

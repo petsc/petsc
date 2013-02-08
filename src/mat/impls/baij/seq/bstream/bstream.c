@@ -192,7 +192,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -325,7 +325,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -453,7 +453,7 @@ PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
   const PetscScalar *x,*xb;
   const MatScalar   *v1, *v2, *v3, *v4;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
   PetscInt          slen;
 
@@ -512,7 +512,7 @@ PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
   const PetscScalar *x,*xb;
   const MatScalar   *v1, *v2, *v3, *v4, *v5;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
   PetscInt          slen;
 
@@ -693,7 +693,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*yarray,*zarray;
   MatScalar      *v1, *v2, *v3, *v4;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
   PetscInt       slen;
 
@@ -767,7 +767,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *yarray,*zarray;
   MatScalar      *v1,*v2,*v3,*v4,*v5;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
   PetscInt       slen;
 

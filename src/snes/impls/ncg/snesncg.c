@@ -54,7 +54,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   PetscFunctionBegin;
   ierr = SNESDefaultGetWork(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHNCGLINEAR, PETSC_NULL,"SNESLineSearchCreate_NCGLinear", SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHNCGLINEAR, NULL,"SNESLineSearchCreate_NCGLinear", SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -77,8 +77,8 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NCG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,NULL);CHKERRQ(ierr);
   ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
   if (debug) {
     ncg->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
@@ -167,11 +167,11 @@ PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_NCGLinear;
-  linesearch->ops->destroy        = PETSC_NULL;
-  linesearch->ops->setfromoptions = PETSC_NULL;
-  linesearch->ops->reset          = PETSC_NULL;
-  linesearch->ops->view           = PETSC_NULL;
-  linesearch->ops->setup          = PETSC_NULL;
+  linesearch->ops->destroy        = NULL;
+  linesearch->ops->setfromoptions = NULL;
+  linesearch->ops->reset          = NULL;
+  linesearch->ops->view           = NULL;
+  linesearch->ops->setup          = NULL;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -510,7 +510,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
 
   ierr         = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
   snes->data   = (void*) neP;
-  neP->monitor = PETSC_NULL;
+  neP->monitor = NULL;
   neP->type    = SNES_NCG_PRP;
   ierr         = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNCGSetType_C","SNESNCGSetType_NCG", SNESNCGSetType_NCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);

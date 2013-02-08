@@ -38,14 +38,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-view_is", &viewIS);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-view_mats", &viewMats);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-view_is", &viewIS);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
 
   /*
      Determine file from which we read the matrix
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 
   /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   /* move the vector rows to the new processes they have been assigned to */
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xout);CHKERRQ(ierr);
-  ierr = VecScatterCreate(xin,is,xout,PETSC_NULL,&scat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(xin,is,xout,NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
@@ -134,13 +134,13 @@ int main(int argc,char **args)
     const PetscScalar *vals;
     PetscScalar       *nvals;
 
-    ierr = MatGetOwnershipRange(B,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzd);CHKERRQ(ierr);
     ierr = PetscMemzero(nzd,2*m*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzo);CHKERRQ(ierr);
     ierr = PetscMemzero(nzo,2*m*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      ierr = MatGetRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRow(B,i+rstart,&nzl,&cols,NULL);CHKERRQ(ierr);
       for (j=0; j<nzl; j++) {
         if (cols[j] >= rstart && cols[j] < rstart+n) {
           nzd[2*i] += 2;
@@ -151,7 +151,7 @@ int main(int argc,char **args)
         }
       }
       nzmax = PetscMax(nzmax,nzd[2*i]+nzo[2*i]);
-      ierr  = MatRestoreRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
+      ierr  = MatRestoreRow(B,i+rstart,&nzl,&cols,NULL);CHKERRQ(ierr);
     }
     ierr = MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);
     ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);

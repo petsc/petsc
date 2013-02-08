@@ -36,15 +36,15 @@ int main(int argc,char **args)
   ierr  = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(wcomm,PETSC_NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(wcomm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {
     char nestring[256];
     ierr = PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %D (nprocs^{1/3})",(PetscInt)(pow((double)npe,1./3.) + .5));CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ne",nestring,"",ne,&ne,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",soft_alpha,&soft_alpha,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ne",nestring,"",ne,&ne,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",soft_alpha,&soft_alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

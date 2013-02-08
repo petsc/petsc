@@ -17,8 +17,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
@@ -31,10 +31,10 @@ int main(int argc,char **args)
   } else {
     ierr = PetscObjectTypeCompare((PetscObject)C,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
   }
-  ierr = MatSeqAIJSetPreallocation(C,3,PETSC_NULL);
-  ierr = MatMPIAIJSetPreallocation(C,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(C,bs,3,PETSC_NULL);
-  ierr = MatMPIBAIJSetPreallocation(C,bs,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(C,3,NULL);
+  ierr = MatMPIAIJSetPreallocation(C,3,NULL,3,NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(C,bs,3,NULL);
+  ierr = MatMPIBAIJSetPreallocation(C,bs,3,NULL,3,NULL);CHKERRQ(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=1; i<n-1; i++) {

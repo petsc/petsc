@@ -68,7 +68,7 @@ int main(int argc,char **argv)
     x    += hx;
   }
   ierr = PetscDrawAxisSetLabels(axis,"Derivative","","");CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(lg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,NULL);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);

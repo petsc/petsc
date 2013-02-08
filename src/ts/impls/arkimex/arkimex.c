@@ -230,7 +230,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                   {0.0,0.5,0.5}},
       b[3]       = {0.0,0.5,0.5},
       bembedt[3] = {1.0,0.0,0.0};
-    ierr = TSARKIMEXRegister(TSARKIMEX1BEE,2,3,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX1BEE,2,3,&At[0][0],b,NULL,&A[0][0],b,NULL,bembedt,bembedt,1,b,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -241,7 +241,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       b[2]       = {0.0,1.0},
       bembedt[2] = {0.5,0.5};
     /* binterpt[2][2] = {{1.0,-1.0},{0.0,1.0}};  second order dense output has poor stability properties and hence it is not currently in use*/
-    ierr = TSARKIMEXRegister(TSARKIMEXARS122,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEXARS122,2,2,&At[0][0],b,NULL,&A[0][0],b,NULL,bembedt,bembedt,1,b,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -252,7 +252,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       b[2]       = {0.5,0.5},
       bembedt[2] = {0.0,1.0};
     /* binterpt[2][2] = {{1.0,-0.5},{0.0,0.5}}  second order dense output has poor stability properties and hence it is not currently in use*/
-    ierr = TSARKIMEXRegister(TSARKIMEXA2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,1,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEXA2,2,2,&At[0][0],b,NULL,&A[0][0],b,NULL,bembedt,bembedt,1,b,NULL);CHKERRQ(ierr);
   }
   {
     /* const PetscReal us2 = 1.0-1.0/PetscSqrtReal((PetscReal)2.0);    Direct evaluation: 0.2928932188134524755992. Used below to ensure all values are available at compile time   */
@@ -266,7 +266,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       binterpt[2][2] = {{  (0.2928932188134524755992-1.0)/(2.0*0.2928932188134524755992-1.0),-1/(2.0*(1.0-2.0*0.2928932188134524755992))},
                         {1-(0.2928932188134524755992-1.0)/(2.0*0.2928932188134524755992-1.0),-1/(2.0*(1.0-2.0*0.2928932188134524755992))}},
       binterp[2][2] = {{1.0,-0.5},{0.0,0.5}};
-    ierr = TSARKIMEXRegister(TSARKIMEXL2,2,2,&At[0][0],b,PETSC_NULL,&A[0][0],b,PETSC_NULL,bembedt,bembedt,2,binterpt[0],binterp[0]);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEXL2,2,2,&At[0][0],b,NULL,&A[0][0],b,NULL,bembedt,bembedt,2,binterpt[0],binterp[0]);CHKERRQ(ierr);
   }
   {
     /* const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),  Direct evaluation: 1.414213562373095048802. Used below to ensure all values are available at compile time   */
@@ -281,7 +281,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       binterpt[3][2] = {{1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
                         {1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
                         {1.0-1.414213562373095048802,1.0/1.414213562373095048802}};
-    ierr = TSARKIMEXRegister(TSARKIMEX2C,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX2C,2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,2,binterpt[0],NULL);CHKERRQ(ierr);
   }
   {
     /* const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),  Direct evaluation: 1.414213562373095048802. Used below to ensure all values are available at compile time   */
@@ -296,7 +296,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       binterpt[3][2] =  {{1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
                          {1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
                          {1.0-1.414213562373095048802,1.0/1.414213562373095048802}};
-    ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,2,binterpt[0],NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */
     /* const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),  Direct evaluation: 1.414213562373095048802. Used below to ensure all values are available at compile time   */
@@ -311,7 +311,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       binterpt[3][2] =  {{1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
                          {1.0/1.414213562373095048802,-1.0/(2.0*1.414213562373095048802)},
                          {1.0-1.414213562373095048802,1.0/1.414213562373095048802}};
-    ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,2,binterpt[0],NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */
     const PetscReal
@@ -321,7 +321,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[3][3] = {{0.25,0,0},
                   {0,0.25,0},
                   {1./3,1./3,1./3}};
-    ierr = TSARKIMEXRegister(TSARKIMEXPRSSP2,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEXPRSSP2,2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -338,7 +338,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                         {-18682724506714./9892148508045.,17870216137069./13817060693119.},
                         {34259539580243./13192909600954.,-28141676662227./17317692491321.},
                         {584795268549./6622622206610.,   2508943948391./7218656332882.}};
-    ierr = TSARKIMEXRegister(TSARKIMEX3,3,4,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX3,3,4,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,2,binterpt[0],NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -352,8 +352,8 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                   {0,1./6,1./2,0,0},
                   {0,-1./2,1./2,1./2,0},
                   {0,3./2,-3./2,1./2,1./2}},
-    *bembedt = PETSC_NULL;
-    ierr = TSARKIMEXRegister(TSARKIMEXARS443,3,5,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    *bembedt = NULL;
+    ierr = TSARKIMEXRegister(TSARKIMEXARS443,3,5,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,0,NULL,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -367,8 +367,8 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                   {5./18,-1./9,.5,0,0},
                   {.5,0,0,.5,0},
                   {.25,0,.75,-.5,.5}},
-    *bembedt = PETSC_NULL;
-    ierr = TSARKIMEXRegister(TSARKIMEXBPR3,3,5,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    *bembedt = NULL;
+    ierr = TSARKIMEXRegister(TSARKIMEXBPR3,3,5,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,0,NULL,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -391,7 +391,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                         {-20649996744609./7521556579894.,174696575./18121608.,-31592104683404./5083833661969.},
                         {8854892464581./2390941311638.,-12120380./966161.,61146701046299./7138195549469.},
                         {-11397109935349./6675773540249.,3843./706.,-17219254887155./4939391667607.}};
-    ierr = TSARKIMEXRegister(TSARKIMEX4,4,6,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,3,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX4,4,6,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,3,binterpt[0],NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -420,7 +420,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                         {-99329723586156./26959484932159.,  -12239297817655./9152339842473., 30029262896817./10175596800299.},
                         {-19024464361622./5461577185407.,  115839755401235./10719374521269., -26136350496073./3983972220547.},
                         {-6511271360970./6095937251113.,  5843115559534./2180450260947., -5289405421727./3760307252460. }};
-    ierr = TSARKIMEXRegister(TSARKIMEX5,5,8,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembedt,3,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX5,5,8,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembedt,3,binterpt[0],NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -464,7 +464,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -517,16 +517,16 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 .  order - approximation order of method
 .  s - number of stages, this is the dimension of the matrices below
 .  At - Butcher table of stage coefficients for stiff part (dimension s*s, row-major)
-.  bt - Butcher table for completing the stiff part of the step (dimension s; PETSC_NULL to use the last row of At)
-.  ct - Abscissa of each stiff stage (dimension s, PETSC_NULL to use row sums of At)
+.  bt - Butcher table for completing the stiff part of the step (dimension s; NULL to use the last row of At)
+.  ct - Abscissa of each stiff stage (dimension s, NULL to use row sums of At)
 .  A - Non-stiff stage coefficients (dimension s*s, row-major)
-.  b - Non-stiff step completion table (dimension s; PETSC_NULL to use last row of At)
-.  c - Non-stiff abscissa (dimension s; PETSC_NULL to use row sums of A)
-.  bembedt - Stiff part of completion table for embedded method (dimension s; PETSC_NULL if not available)
-.  bembed - Non-stiff part of completion table for embedded method (dimension s; PETSC_NULL to use bembedt if provided)
+.  b - Non-stiff step completion table (dimension s; NULL to use last row of At)
+.  c - Non-stiff abscissa (dimension s; NULL to use row sums of A)
+.  bembedt - Stiff part of completion table for embedded method (dimension s; NULL if not available)
+.  bembed - Non-stiff part of completion table for embedded method (dimension s; NULL to use bembedt if provided)
 .  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt and binterp
 .  binterpt - Coefficients of the interpolation formula for the stiff part (dimension s*pinterp)
--  binterp - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; PETSC_NULL to reuse binterpt)
+-  binterp - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; NULL to reuse binterpt)
 
    Notes:
    Several ARK IMEX methods are provided, this function is only needed to create new methods.
@@ -788,7 +788,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         }
       }
     }
-    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ark->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
@@ -898,9 +898,9 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_ARKIMEX(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXGetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXGetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -987,7 +987,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSARKIMEXGetVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,dm,NULL,&Ydot);CHKERRQ(ierr);
   /* ark->Ydot has already been computed in SNESTSFormFunction_ARKIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
@@ -995,7 +995,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
   ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,shift,A,B,str,ark->imex);CHKERRQ(ierr);
 
   ts->dm = dmsave;
-  ierr   = TSARKIMEXRestoreVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  ierr   = TSARKIMEXRestoreVecs(ts,dm,NULL,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1016,12 +1016,12 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Ma
   Vec            Z,Z_c;
 
   PetscFunctionBegin;
-  ierr = TSARKIMEXGetVecs(ts,fine,&Z,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSARKIMEXGetVecs(ts,coarse,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,fine,&Z,NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,coarse,&Z_c,NULL);CHKERRQ(ierr);
   ierr = MatRestrict(restrct,Z,Z_c);CHKERRQ(ierr);
   ierr = VecPointwiseMult(Z_c,rscale,Z_c);CHKERRQ(ierr);
-  ierr = TSARKIMEXRestoreVecs(ts,fine,&Z,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSARKIMEXRestoreVecs(ts,coarse,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,fine,&Z,NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,coarse,&Z_c,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1043,14 +1043,14 @@ static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm,VecScatter gscat,V
   Vec            Z,Z_c;
 
   PetscFunctionBegin;
-  ierr = TSARKIMEXGetVecs(ts,dm,&Z,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSARKIMEXGetVecs(ts,subdm,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,dm,&Z,NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,subdm,&Z_c,NULL);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(gscat,Z,Z_c,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(gscat,Z,Z_c,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = TSARKIMEXRestoreVecs(ts,dm,&Z,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSARKIMEXRestoreVecs(ts,subdm,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,dm,&Z,NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,subdm,&Z_c,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1110,7 +1110,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
     ierr      = TSARKIMEXSetType(ts,flg ? namelist[choice] : arktype);CHKERRQ(ierr);
     ierr      = PetscFree(namelist);CHKERRQ(ierr);
     flg       = (PetscBool) !ark->imex;
-    ierr      = PetscOptionsBool("-ts_arkimex_fully_implicit","Solve the problem fully implicitly","TSARKIMEXSetFullyImplicit",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr      = PetscOptionsBool("-ts_arkimex_fully_implicit","Solve the problem fully implicitly","TSARKIMEXSetFullyImplicit",flg,&flg,NULL);CHKERRQ(ierr);
     ark->imex = (PetscBool) !flg;
     ierr      = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
@@ -1184,8 +1184,8 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
   /* function and Jacobian context for SNES when used with TS is always ts object */
-  ierr = SNESSetFunction(snes,PETSC_NULL,PETSC_NULL,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,ts);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,NULL,NULL,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,NULL,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1347,7 +1347,7 @@ PetscErrorCode  TSCreate_ARKIMEX(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSARKIMEXInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ts->ops->reset          = TSReset_ARKIMEX;

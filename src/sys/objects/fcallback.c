@@ -48,7 +48,7 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 
    Input Arguments:
 +  classid - ID of class on which to register callback
--  subtype - subtype string, or PETSC_NULL for class ids
+-  subtype - subtype string, or NULL for class ids
 
    Output Arguments:
 .  id - callback id

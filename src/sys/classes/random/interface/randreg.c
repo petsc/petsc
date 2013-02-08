@@ -1,7 +1,7 @@
 
 #include <../src/sys/classes/random/randomimpl.h>         /*I "petscsys.h" I*/
 
-PetscFunctionList PetscRandomList              = PETSC_NULL;
+PetscFunctionList PetscRandomList              = NULL;
 PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -45,7 +45,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   if (rnd->ops->destroy) {
     ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
 
-    rnd->ops->destroy = PETSC_NULL;
+    rnd->ops->destroy = NULL;
   }
   ierr = (*r)(rnd);CHKERRQ(ierr);
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);

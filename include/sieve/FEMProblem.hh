@@ -66,7 +66,7 @@ namespace ALE {
 
       GeneralCell() {
         _num_vertices = 0;
-        _coordinates = PETSC_NULL;
+        _coordinates = NULL;
       }
 
       GeneralCell(int embedded_dimension, int num_vertices) {
@@ -124,7 +124,7 @@ namespace ALE {
 
       virtual const int * getReorder() {
         throw Exception("GeneralBoundaryCondition->getReorder(): Unimplemented base class version called.");
-        return PETSC_NULL;
+        return NULL;
       }
 
     };
@@ -247,7 +247,7 @@ namespace ALE {
 
       //use the UFC lingo here
       //have some notion of the cell initialized and in-state in the eventual implementation.
-      virtual void tabulateTensor(double * tensor, const double * coefficients = PETSC_NULL) {
+      virtual void tabulateTensor(double * tensor, const double * coefficients = NULL) {
         throw Exception("GeneralIntegral->tabulateTensor: Nonimplemented Base class version called.");
         return;
       }
@@ -727,7 +727,7 @@ namespace ALE {
             const int                  oSize   = pV.getSize();
         
             if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
-            //mesh->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+            //mesh->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
             this->setCell(mesh, *c_iter);
             for(int f = 0; f < numFields; ++f) v[f] = 0;
             for(int cl = 0; cl < oSize; ++cl) {
@@ -930,7 +930,7 @@ namespace ALE {
         s->axpy(-1.0, constant);
       }
       PetscBool  flag;
-      PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);
+      PetscOptionsHasName(NULL, "-vec_view", &flag);
       if (flag) {
         ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
         s->view("RHS");

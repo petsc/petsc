@@ -73,7 +73,7 @@ int main(int argc,char **argv)
                       PETSC_DECIDE,PETSC_DECIDE, /* num of procs in each dim */
                       1,                         /* dof = 1 */
                       1,                         /* s = 1 (stencil extends out one cell) */
-                      PETSC_NULL,PETSC_NULL,     /* no specify proc decomposition */
+                      NULL,NULL,     /* no specify proc decomposition */
                       &da);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
@@ -82,8 +82,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(u,&(user.psi));CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","options to obstacle problem","");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fd","use coloring to compute Jacobian by finite differences",PETSC_NULL,fdflg,&fdflg,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-feasible","use feasible initial guess",PETSC_NULL,feasible,&feasible,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-fd","use coloring to compute Jacobian by finite differences",NULL,fdflg,&fdflg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-feasible","use feasible initial guess",NULL,feasible,&feasible,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
                      4.0, Mx, My, (double)dx, (double)dy);CHKERRQ(ierr);
 
   /* solve nonlinear system */
-  ierr = SNESSolve(snes,PETSC_NULL,u);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %D; result = %s\n",
@@ -163,7 +163,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da, &coordDA);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da, &coordinates);CHKERRQ(ierr);

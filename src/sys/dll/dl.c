@@ -142,7 +142,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   PetscValidCharPointer(path,2);
   PetscValidPointer(entry,3);
 
-  *entry = PETSC_NULL;
+  *entry = NULL;
 
   /* retrieve the library */
   ierr = PetscInfo1(0,"Retrieving %s\n",path);CHKERRQ(ierr);
@@ -207,12 +207,12 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 
    Input Parameter:
 +  comm - communicator that will open the library
-.  outlist - list of already open libraries that may contain symbol (can be PETSC_NULL and only the executable is searched for the function)
+.  outlist - list of already open libraries that may contain symbol (can be NULL and only the executable is searched for the function)
 .  path     - optional complete library name (if provided checks here before checking outlist)
 -  insymbol - name of symbol
 
    Output Parameter:
-.  value - if symbol not found then this value is set to PETSC_NULL
+.  value - if symbol not found then this value is set to NULL
 
    Level: developer
 
@@ -225,7 +225,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const char path[],const char insymbol[],void **value)
 {
   char           libname[PETSC_MAX_PATH_LEN],suffix[16],*symbol,*s;
-  PetscDLLibrary nlist,prev,list = PETSC_NULL;
+  PetscDLLibrary nlist,prev,list = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -294,7 +294,7 @@ done:;
       list = list->next;
     }
     if (!*value) {
-      ierr = PetscDLSym(PETSC_NULL,symbol,value);CHKERRQ(ierr);
+      ierr = PetscDLSym(NULL,symbol,value);CHKERRQ(ierr);
       if (*value) {
         ierr = PetscInfo1(0,"Loading symbol %s from object code\n",symbol);CHKERRQ(ierr);
       }

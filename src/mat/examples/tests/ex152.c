@@ -37,11 +37,11 @@ int main(int argc, char *argv[])
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Parmetis test options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");CHKERRQ(ierr);
   ierr = PetscOptionsString("-prefix","Path and prefix of test file","",prefix,prefix,sizeof(prefix),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
   ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
   status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt,
-                                    PETSC_NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &size, tpwgts, ubvec,
+                                    NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &size, tpwgts, ubvec,
                                     options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
   ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
 

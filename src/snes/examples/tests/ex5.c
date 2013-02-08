@@ -93,11 +93,11 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0; user.param2 = 0.0;
-  ierr    = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,"-lambda",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-kappa",&user.param2,NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) SETERRQ(PETSC_COMM_SELF,1,"Kappa is out of range");
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%G, kappa=%G\n",user.param,user.param2);CHKERRQ(ierr);
 
@@ -118,10 +118,10 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
   /*
      Visualize the distribution of the array across the processors
@@ -168,18 +168,18 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     PetscBool matrix_free_operator = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-snes_mf_operator",&matrix_free_operator,NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
   if (!matrix_free) {
     if (size == 1) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
+      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&J);CHKERRQ(ierr);
     } else {
       ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
-      ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
+      ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,NULL,3,NULL,&J);CHKERRQ(ierr);
     }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
   }
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
@@ -264,8 +264,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -341,8 +341,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -432,8 +432,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points

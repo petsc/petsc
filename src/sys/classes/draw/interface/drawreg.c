@@ -43,7 +43,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscDrawInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   *indraw = 0;
   ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,-1,"Draw","Graphics","Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
@@ -66,9 +66,9 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->port_yr = 1.0;
   draw->popup   = 0;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
-  draw->savefilename  = PETSC_NULL;
+  draw->savefilename  = NULL;
   draw->savefilemovie = PETSC_FALSE;
   draw->savefilecount = -1;
 
@@ -124,7 +124,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   if (match) PetscFunctionReturn(0);
 
   /*  User requests no graphics */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-nox",&flg);CHKERRQ(ierr);
 
   /*
      This is not ideal, but it allows codes to continue to run if X graphics
@@ -137,7 +137,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     if (match) {
       PetscBool dontwarn = PETSC_TRUE;
       flg  = PETSC_TRUE;
-      ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
       if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     }
   }
@@ -147,7 +147,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   if (draw->data) {
     /* destroy the old private PetscDraw context */
     ierr               = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
-    draw->ops->destroy = PETSC_NULL;
+    draw->ops->destroy = NULL;
     draw->data         = 0;
   }
 
@@ -261,12 +261,12 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
 
   if (!PetscDrawList) {
-    ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscDrawRegisterAll(NULL);CHKERRQ(ierr);
   }
 
   if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;
   else {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&nox);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
     if (!nox) def = PETSC_DRAW_WIN32;
@@ -277,7 +277,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #elif defined(PETSC_HAVE_OPENGLES)
     if (!nox) def = PETSC_DRAW_OPENGLES;
 #else
-    ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&warn);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"-nox_warning",&warn);CHKERRQ(ierr);
     if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, OpenGL ES, or GLUT/OpenGL on this machine\nproceeding without graphics\n");
 #endif
   }
@@ -293,7 +293,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   {
     char      filename[PETSC_MAX_PATH_LEN];
     PetscBool save,movie = PETSC_FALSE;
-    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
     if (save) {
       ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
    Input Parameter:
 +  draw      - the graphics context
-.  filename  - name of the file, if PETSC_NULL uses name of draw object
+.  filename  - name of the file, if NULL uses name of draw object
 -  movie - produce a movie of all the images
 
    Options Database Command:

@@ -108,7 +108,7 @@ PetscInt main(PetscInt argc,char **args)
     NM = N1+1;
   }
   /*printf("The Value of NM is %d",NM); */
-  ierr = VecGetOwnershipRange(fin,&low,PETSC_NULL);
+  ierr = VecGetOwnershipRange(fin,&low,NULL);
   /*printf("The local index is %d from %d\n",low,rank); */
   ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx3);
   ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx4);

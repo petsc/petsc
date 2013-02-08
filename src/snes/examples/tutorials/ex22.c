@@ -81,21 +81,21 @@ int main(int argc,char **argv)
   DM             packer;
   PetscBool      use_monitor = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
   ierr = PetscOptionsSetFromOptions();CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsInsertString(common_options);CHKERRQ(ierr);
   ierr = PetscOptionsInsertString(matrix_free_options);CHKERRQ(ierr);
-  ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsInsert(&argc,&argv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(red,"red_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,red);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(red,"da_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
@@ -105,8 +105,8 @@ int main(int argc,char **argv)
   /* create nonlinear multi-level solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,packer);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,PETSC_NULL,ComputeFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,PETSC_NULL, PETSC_NULL,ComputeJacobian_MF,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,NULL,ComputeFunction,NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL, NULL,ComputeJacobian_MF,NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
     ierr = SNESMonitorSet(snes,Monitor,0,0);CHKERRQ(ierr);
   }
 
-  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
   ierr = DMDestroy(&red);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   ierr = DMCompositeScatter(packer,U,vw,vu_lambda);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,FU,&vfw,&vfu_lambda);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = VecGetArray(vw,&w);CHKERRQ(ierr);
   ierr = VecGetArray(vfw,&fw);CHKERRQ(ierr);
@@ -310,6 +310,6 @@ PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *st
 
   PetscFunctionBeginUser;
   ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase(*A,x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(*A,x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

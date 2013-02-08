@@ -46,12 +46,12 @@ PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
     We have to use temporary values here because AMD always uses double, even though PetscReal may be single
   */
   val  = (PetscReal)Control[AMD_DENSE];
-  ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,NULL);CHKERRQ(ierr);
 
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool)Control[AMD_AGGRESSIVE];
-  ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL);CHKERRQ(ierr);
 
   Control[AMD_AGGRESSIVE] = (double)tval;
 

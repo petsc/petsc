@@ -193,8 +193,8 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPREGetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPREGetType_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -269,12 +269,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
     ierr        = PetscSNPrintf(levels,sizeof(levels),"%D",jac->levels);CHKERRQ(ierr);
     args[cnt++] = (char*)"-level"; args[cnt++] = levels;
   }
-  ierr = PetscOptionsBool("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,NULL);CHKERRQ(ierr);
   if (jac->bjilu) {
     args[cnt++] =(char*) "-bj"; args[cnt++] = (char*)"1";
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_euclid_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_euclid_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,NULL);CHKERRQ(ierr);
   if (jac->printstatistics) {
     args[cnt++] = (char*)"-eu_stats"; args[cnt++] = (char*)"1";
     args[cnt++] = (char*)"-eu_mem"; args[cnt++] = (char*)"1";
@@ -543,7 +543,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg);CHKERRQ(ierr);
   if (flg) {
     level = 3;
-    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_statistics","Print statistics","None",level,&level,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_statistics","Print statistics","None",level,&level,NULL);CHKERRQ(ierr);
 
     jac->printstatistics = PETSC_TRUE;
     PetscStackCallStandard(HYPRE_BoomerAMGSetPrintLevel,(jac->hsolver,level));
@@ -552,7 +552,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsName("-pc_hypre_boomeramg_print_debug","Print debug information","None",&flg);CHKERRQ(ierr);
   if (flg) {
     level = 3;
-    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_debug","Print debug information","None",level,&level,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_debug","Print debug information","None",level,&level,NULL);CHKERRQ(ierr);
 
     jac->printstatistics = PETSC_TRUE;
     PetscStackCallStandard(HYPRE_BoomerAMGSetDebugFlag,(jac->hsolver,level));
@@ -865,7 +865,7 @@ PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   }
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
 
-  jac->hypre_type = PETSC_NULL;
+  jac->hypre_type = NULL;
   SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
   PetscFunctionReturn(0);
 }
@@ -1012,7 +1012,7 @@ PetscErrorCode  PCCreate_HYPRE(PC pc)
   pc->ops->setup          = PCSetUp_HYPRE;
   pc->ops->apply          = PCApply_HYPRE;
   jac->comm_hypre         = MPI_COMM_NULL;
-  jac->hypre_type         = PETSC_NULL;
+  jac->hypre_type         = NULL;
   /* duplicate communicator for hypre */
   ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","PCHYPRESetType_HYPRE",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
@@ -1089,26 +1089,26 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
     PetscStackCallStandard(HYPRE_StructPFMGSetPrintLevel,(ex->hsolver,level));
   }
-  ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxIter,(ex->hsolver,ex->its));
-  ierr = PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetNumPreRelax,(ex->hsolver,ex->num_pre_relax));
-  ierr = PetscOptionsInt("-pc_pfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_pfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetNumPostRelax,(ex->hsolver,ex->num_post_relax));
 
-  ierr = PetscOptionsInt("-pc_pfmg_max_levels","Max Levels for MG hierarchy","HYPRE_StructPFMGSetMaxLevels",ex->max_levels,&ex->max_levels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_pfmg_max_levels","Max Levels for MG hierarchy","HYPRE_StructPFMGSetMaxLevels",ex->max_levels,&ex->max_levels,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetMaxLevels,(ex->hsolver,ex->max_levels));
 
-  ierr = PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetTol,(ex->hsolver,ex->tol));
-  ierr = PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,ALEN(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,ALEN(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetRelaxType,(ex->hsolver, ex->relax_type));
-  ierr = PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,ALEN(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,ALEN(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetRAPType,(ex->hsolver, ex->rap_type));
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1306,21 +1306,21 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SysPFMG options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
     PetscStackCallStandard(HYPRE_SStructSysPFMGSetPrintLevel,(ex->ss_solver,level));
   }
-  ierr = PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetMaxIter,(ex->ss_solver,ex->its));
-  ierr = PetscOptionsInt("-pc_syspfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_SStructSysPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_syspfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_SStructSysPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetNumPreRelax,(ex->ss_solver,ex->num_pre_relax));
-  ierr = PetscOptionsInt("-pc_syspfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_SStructSysPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_syspfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_SStructSysPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetNumPostRelax,(ex->ss_solver,ex->num_post_relax));
 
-  ierr = PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetTol,(ex->ss_solver,ex->tol));
-  ierr = PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,4,SysPFMGRelaxType[ex->relax_type],&ex->relax_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,4,SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetRelaxType,(ex->ss_solver, ex->relax_type));
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

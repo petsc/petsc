@@ -292,9 +292,9 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
   if (functionload) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-    ierr = PetscDLSym(PETSC_NULL,fname,(void**)p);CHKERRQ(ierr);
+    ierr = PetscDLSym(NULL,fname,(void**)p);CHKERRQ(ierr);
 #else
-    *(void**)p = PETSC_NULL;
+    *(void**)p = NULL;
 #endif
   }
   PetscFunctionReturn(0);
@@ -575,7 +575,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   MPI_Datatype   mtype;
   char           *fname;
   PetscBool      functionload = PETSC_FALSE;
-  void           *ptmp        = PETSC_NULL;
+  void           *ptmp        = NULL;
 
   PetscFunctionBegin;
   if (type == PETSC_FUNCTION) {
@@ -597,9 +597,9 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
 
   if (functionload) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-    ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,PETSC_NULL,fname,(void**)ptmp);CHKERRQ(ierr);
+    ierr = PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,fname,(void**)ptmp);CHKERRQ(ierr);
 #else
-    *(void**)ptmp = PETSC_NULL;
+    *(void**)ptmp = NULL;
 #endif
   }
   PetscFunctionReturn(0);

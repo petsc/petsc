@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);       /* number of nodes */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);     /* my ranking */
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-check_generators", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-check_generators", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&r);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
@@ -82,11 +82,11 @@ int main(int argc, char *argv[])
   hinfo.dt          = 1.0/12;   /* a month as a period */
   hinfo.totalNumSim = 1000;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_stocks",&(hinfo.n),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-num_of_stocks",&(hinfo.n),NULL);CHKERRQ(ierr);
   if (hinfo.n <1 || hinfo.n > 31) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only 31 stocks listed in stock.txt. num_of_stocks %D must between 1 and 31",hinfo.n);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-interest_rate",&(hinfo.r),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-time_interval",&(hinfo.dt),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_simulations",&(hinfo.totalNumSim),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-interest_rate",&(hinfo.r),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-time_interval",&(hinfo.dt),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-num_of_simulations",&(hinfo.totalNumSim),NULL);CHKERRQ(ierr);
 
   n           = hinfo.n;
   r           = hinfo.r;

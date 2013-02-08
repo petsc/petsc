@@ -60,10 +60,10 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   PetscValidPointer(hist,3);
   ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(h, _p_PetscDrawHG, int, PETSC_DRAWHG_CLASSID, 0, "PetscDrawHG", "Histogram", "Draw", comm, PetscDrawHGDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h, _p_PetscDrawHG, int, PETSC_DRAWHG_CLASSID, 0, "PetscDrawHG", "Histogram", "Draw", comm, PetscDrawHGDestroy, NULL);CHKERRQ(ierr);
 
-  h->view        = PETSC_NULL;
-  h->destroy     = PETSC_NULL;
+  h->view        = NULL;
+  h->destroy     = NULL;
   h->win         = draw;
 
   ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   if (!isnull) {
     ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(h, h->axis);CHKERRQ(ierr);
-  } else h->axis = PETSC_NULL;
+  } else h->axis = NULL;
   *hist = h;
   PetscFunctionReturn(0);
 }
@@ -316,7 +316,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       else var = 0.0;
       ierr = PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
       ierr = PetscSNPrintf(xlabel,256, "Total: %D", numValues);CHKERRQ(ierr);
-      ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     /* Draw bins */
@@ -371,7 +371,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 
       ierr = PetscSNPrintf(title, 256,"Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
       ierr = PetscSNPrintf(xlabel,256, "Total: %D", numValues);CHKERRQ(ierr);
-      ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     /* Draw bins */

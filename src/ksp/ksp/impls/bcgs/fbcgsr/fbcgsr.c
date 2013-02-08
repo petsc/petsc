@@ -45,13 +45,13 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   P2 = ksp->work[0];
 
   /* The followings are involved in modified inner product calculations and vector updates */
-  RP = ksp->work[1]; ierr = VecGetArray(RP,(PetscScalar**)&rp);CHKERRQ(ierr); ierr = VecRestoreArray(RP,PETSC_NULL);CHKERRQ(ierr);
-  R  = ksp->work[2]; ierr = VecGetArray(R,(PetscScalar**)&r);CHKERRQ(ierr);   ierr = VecRestoreArray(R,PETSC_NULL);CHKERRQ(ierr);
-  P  = ksp->work[3]; ierr = VecGetArray(P,(PetscScalar**)&p);CHKERRQ(ierr);   ierr = VecRestoreArray(P,PETSC_NULL);CHKERRQ(ierr);
-  V  = ksp->work[4]; ierr = VecGetArray(V,(PetscScalar**)&v);CHKERRQ(ierr);   ierr = VecRestoreArray(V,PETSC_NULL);CHKERRQ(ierr);
-  S  = ksp->work[5]; ierr = VecGetArray(S,(PetscScalar**)&s);CHKERRQ(ierr);   ierr = VecRestoreArray(S,PETSC_NULL);CHKERRQ(ierr);
-  T  = ksp->work[6]; ierr = VecGetArray(T,(PetscScalar**)&t);CHKERRQ(ierr);   ierr = VecRestoreArray(T,PETSC_NULL);CHKERRQ(ierr);
-  S2 = ksp->work[7]; ierr = VecGetArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr); ierr = VecRestoreArray(S2,PETSC_NULL);CHKERRQ(ierr);
+  RP = ksp->work[1]; ierr = VecGetArray(RP,(PetscScalar**)&rp);CHKERRQ(ierr); ierr = VecRestoreArray(RP,NULL);CHKERRQ(ierr);
+  R  = ksp->work[2]; ierr = VecGetArray(R,(PetscScalar**)&r);CHKERRQ(ierr);   ierr = VecRestoreArray(R,NULL);CHKERRQ(ierr);
+  P  = ksp->work[3]; ierr = VecGetArray(P,(PetscScalar**)&p);CHKERRQ(ierr);   ierr = VecRestoreArray(P,NULL);CHKERRQ(ierr);
+  V  = ksp->work[4]; ierr = VecGetArray(V,(PetscScalar**)&v);CHKERRQ(ierr);   ierr = VecRestoreArray(V,NULL);CHKERRQ(ierr);
+  S  = ksp->work[5]; ierr = VecGetArray(S,(PetscScalar**)&s);CHKERRQ(ierr);   ierr = VecRestoreArray(S,NULL);CHKERRQ(ierr);
+  T  = ksp->work[6]; ierr = VecGetArray(T,(PetscScalar**)&t);CHKERRQ(ierr);   ierr = VecRestoreArray(T,NULL);CHKERRQ(ierr);
+  S2 = ksp->work[7]; ierr = VecGetArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr); ierr = VecRestoreArray(S2,NULL);CHKERRQ(ierr);
 
   /* Only supports right preconditioning */
   if (ksp->pc_side != PC_RIGHT) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP fbcgsr does not support %s",PCSides[ksp->pc_side]);

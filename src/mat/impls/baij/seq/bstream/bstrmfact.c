@@ -264,7 +264,7 @@ PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  /* ierr = MatSeqBAIJSetPreallocation(*B,bs,0,PETSC_NULL);CHKERRQ(ierr); */
+  /* ierr = MatSeqBAIJSetPreallocation(*B,bs,0,NULL);CHKERRQ(ierr); */
 
   (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_bstrm;
   (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_bstrm;

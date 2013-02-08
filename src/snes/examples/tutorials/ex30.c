@@ -138,11 +138,11 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   PetscOptionsSetValue("-file","ex30_output");
-  PetscOptionsSetValue("-snes_monitor_short",PETSC_NULL);
+  PetscOptionsSetValue("-snes_monitor_short",NULL);
   PetscOptionsSetValue("-snes_max_it","20");
   PetscOptionsSetValue("-ksp_max_it","1500");
   PetscOptionsSetValue("-ksp_gmres_restart","300");
-  PetscOptionsInsert(&argc,&argv,PETSC_NULL);
+  PetscOptionsInsert(&argc,&argv,NULL);
 
   comm = PETSC_COMM_WORLD;
 
@@ -180,7 +180,7 @@ int main(int argc,char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
 
-  ierr = SNESSetConvergenceTest(snes,SNESConverged_Interactive,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetConvergenceTest(snes,SNESConverged_Interactive,(void*)user,NULL);CHKERRQ(ierr);
   ierr = PetscPushSignalHandler(InteractiveHandler,(void*)user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -823,25 +823,25 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->lid_depth   = 35.0;                                               /* km */
   param->fault_depth = 35.0;                                               /* km */
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_dip",&(param->slab_dip),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-width",&(param->width),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-depth",&(param->depth),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lid_depth",&(param->lid_depth),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-fault_depth",&(param->fault_depth),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-slab_dip",&(param->slab_dip),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-width",&(param->width),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-depth",&(param->depth),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lid_depth",&(param->lid_depth),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-fault_depth",&(param->fault_depth),NULL);CHKERRQ(ierr);
 
   param->slab_dip = param->slab_dip*PI/180.0;                    /* radians */
 
   /* grid information */
-  ierr     = PetscOptionsGetInt(PETSC_NULL, "-jfault",&(grid->jfault),PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL, "-jfault",&(grid->jfault),NULL);CHKERRQ(ierr);
   grid->ni = 82;
-  ierr     = PetscOptionsGetInt(PETSC_NULL, "-ni",&(grid->ni),PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
 
   grid->dx            = param->width/((double)(grid->ni-2));               /* km */
   grid->dz            = grid->dx*tan(param->slab_dip);                     /* km */
   grid->nj            = (PetscInt)(param->depth/grid->dz + 3.0);         /* gridpoints*/
   param->depth        = grid->dz*(grid->nj-2);                             /* km */
   grid->inose         = 0;                                          /* gridpoints*/
-  ierr                = PetscOptionsGetInt(PETSC_NULL,"-inose",&(grid->inose),PETSC_NULL);CHKERRQ(ierr);
+  ierr                = PetscOptionsGetInt(NULL,"-inose",&(grid->inose),NULL);CHKERRQ(ierr);
   grid->bx            = DMDA_BOUNDARY_NONE;
   grid->by            = DMDA_BOUNDARY_NONE;
   grid->stencil       = DMDA_STENCIL_BOX;
@@ -852,7 +852,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   /* boundary conditions */
   param->pv_analytic = PETSC_FALSE;
   param->ibound      = BC_NOSTRESS;
-  ierr               = PetscOptionsGetInt(PETSC_NULL,"-ibound",&(param->ibound),PETSC_NULL);CHKERRQ(ierr);
+  ierr               = PetscOptionsGetInt(NULL,"-ibound",&(param->ibound),NULL);CHKERRQ(ierr);
 
   /* physical constants */
   param->slab_velocity = 5.0;               /* cm/yr */
@@ -861,11 +861,11 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->kappa         = 0.7272e-6;         /* m^2/sec */
   param->potentialT    = 1300.0;            /* degrees C */
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_velocity",&(param->slab_velocity),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_age",&(param->slab_age),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lid_age",&(param->lid_age),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&(param->kappa),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-potentialT",&(param->potentialT),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-slab_velocity",&(param->slab_velocity),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-slab_age",&(param->slab_age),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lid_age",&(param->lid_age),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-kappa",&(param->kappa),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-potentialT",&(param->potentialT),NULL);CHKERRQ(ierr);
 
   /* viscosity */
   param->ivisc        = 3;                  /* 0=isovisc, 1=difn creep, 2=disl creep, 3=full */
@@ -885,26 +885,26 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->dislocation.Estar = 530e3;           /* J/mol */
   param->dislocation.Vstar = 14e-6;           /* m^3/mol */
 
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-ivisc",&(param->ivisc),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-visc_cutoff",&(param->visc_cutoff),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-ivisc",&(param->ivisc),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-visc_cutoff",&(param->visc_cutoff),NULL);CHKERRQ(ierr);
 
   param->output_ivisc = param->ivisc;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-output_ivisc",&(param->output_ivisc),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-vstar",&(param->dislocation.Vstar),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-output_ivisc",&(param->output_ivisc),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-vstar",&(param->dislocation.Vstar),NULL);CHKERRQ(ierr);
 
   /* output options */
   param->quiet      = PETSC_FALSE;
   param->param_test = PETSC_FALSE;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
+  ierr = PetscOptionsHasName(NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-test",&(param->param_test));CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
 
   /* advection */
   param->adv_scheme = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-adv_scheme",&(param->adv_scheme),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-adv_scheme",&(param->adv_scheme),NULL);CHKERRQ(ierr);
 
   /* misc. flags */
   param->stop_solve    = PETSC_FALSE;
@@ -939,7 +939,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
                         / param->kappa;                         /* m^2/sec */
   param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
   param->skt     = sqrt(param->kappa*param->slab_age*SEC_PER_YR);
-  ierr           = PetscOptionsGetReal(PETSC_NULL,"-peclet",&(param->peclet),PETSC_NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetReal(NULL,"-peclet",&(param->peclet),NULL);CHKERRQ(ierr);
 
   return ierr_out;
 }
@@ -1040,7 +1040,7 @@ PetscErrorCode Initialize(DM da)
   Xguess = user->Xguess;
   param  = user->param;
   grid   = user->grid;
-  ierr   = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
   ierr   = DMDAVecGetArray(da,Xguess,(void**)&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
@@ -1094,7 +1094,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
   param->ivisc = param->output_ivisc;
 
   /* compute final residual and final viscosity/strain rate fields */
-  ierr = SNESGetFunction(snes, &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes, &res, NULL, NULL);CHKERRQ(ierr);
   ierr = ViscosityField(da, user->x, user->Xguess);CHKERRQ(ierr);
 
   /* get the communicator and the rank of the processor */
@@ -1193,7 +1193,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ilim = grid->ni-1; jlim = grid->nj-1;
 
   /* Compute real temperature, strain rate and viscosity */
-  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
       T = PetscRealPart(param->potentialT * x[j][i].T * exp((j-0.5)*dz*param->z_scale));
@@ -1235,7 +1235,7 @@ PetscErrorCode StressField(DM da)
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
 
   /* Get the fine grid of Xguess and X */
-  ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,user->Xguess,(void**)&x);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(da, &locVec);CHKERRQ(ierr);
@@ -1351,7 +1351,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
       param->kspmon = PETSC_FALSE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");
     } else {
-      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,NULL,NULL);CHKERRQ(ierr);
 
       param->kspmon = PETSC_TRUE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");

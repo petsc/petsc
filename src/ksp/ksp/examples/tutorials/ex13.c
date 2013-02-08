@@ -52,8 +52,8 @@ int main(int argc,char **args)
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
   */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /*
      Create the empty sparse matrix and linear solver data structures
@@ -165,7 +165,7 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx
      This way, we can use the data structures already in the program
      by using VecPlaceArray() subroutine at a later stage.
   */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,N,PETSC_NULL,&userctx->b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,N,NULL,&userctx->b);CHKERRQ(ierr);
   ierr = VecDuplicate(userctx->b,&userctx->x);CHKERRQ(ierr);
 
   /*

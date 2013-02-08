@@ -66,10 +66,10 @@ int main(int argc, char **argv)
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  info = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg);CHKERRQ(info);
-  info = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg);CHKERRQ(info);
-  info = PetscOptionsGetScalar(PETSC_NULL, "-lb", &lb, &flg);CHKERRQ(info);
-  info = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg);CHKERRQ(info);
+  info = PetscOptionsGetInt(NULL, "-mx", &user.mx, &flg);CHKERRQ(info);
+  info = PetscOptionsGetInt(NULL, "-my", &user.my, &flg);CHKERRQ(info);
+  info = PetscOptionsGetScalar(NULL, "-lb", &lb, &flg);CHKERRQ(info);
+  info = PetscOptionsGetScalar(NULL, "-ub", &ub, &flg);CHKERRQ(info);
 
 
   /* Calculate any derived values from parameters */
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   /* Create appropriate vectors and matrices */
   info = VecCreateSeq(MPI_COMM_SELF, N, &x);
   info = VecDuplicate(x, &r);CHKERRQ(info);
-  info = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, PETSC_NULL, &J);CHKERRQ(info);
+  info = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, NULL, &J);CHKERRQ(info);
 
   /* Create nonlinear solver context */
   info = SNESCreate(PETSC_COMM_SELF,&snes);CHKERRQ(info);
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
   /* Solve the application */
-  info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
+  info = SNESSolve(snes,NULL,x);CHKERRQ(info);
 
   info = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(info);
 
@@ -500,7 +500,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscScalar    zero =0.0;
   PetscBool      flg;
 
-  info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
+  info = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(info);
 
   if (flg && start==0) { /* The zero vector is reasonable */
 

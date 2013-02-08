@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&Rt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(Rt_dense,4,matcoloring->ncolors,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Rt_dense,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Rt_dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(Rt_dense,NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Rt_dense,&m,&n);CHKERRQ(ierr);

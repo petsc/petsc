@@ -228,7 +228,7 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
   ierr                         = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr                         = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr                         = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr                         = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr                         = MatSeqAIJSetPreallocation(*F,0,NULL);CHKERRQ(ierr);
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 

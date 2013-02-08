@@ -164,7 +164,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -290,7 +290,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCliqueInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCliqueInitializePackage(NULL);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
   B->spptr            = (void*)cliq;
   cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-  ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),NULL);CHKERRQ(ierr);
   cliq->rhs           = new cliq::DistVector<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
   cliq->xNodal        = new cliq::DistNodalVector<PetscCliqScalar>();
   cliq->info          = new cliq::DistSymmInfo;

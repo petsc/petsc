@@ -42,14 +42,14 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->atlasLayout.pEnd   = -1;
   (*s)->atlasLayout.numDof = 1;
   (*s)->maxDof             = 0;
-  (*s)->atlasDof           = PETSC_NULL;
-  (*s)->atlasOff           = PETSC_NULL;
-  (*s)->bc                 = PETSC_NULL;
-  (*s)->bcIndices          = PETSC_NULL;
+  (*s)->atlasDof           = NULL;
+  (*s)->atlasOff           = NULL;
+  (*s)->bc                 = NULL;
+  (*s)->bcIndices          = NULL;
   (*s)->setup              = PETSC_FALSE;
   (*s)->numFields          = 0;
-  (*s)->fieldNames         = PETSC_NULL;
-  (*s)->field              = PETSC_NULL;
+  (*s)->fieldNames         = NULL;
+  (*s)->field              = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +80,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(*newSection, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
-    const char *name   = PETSC_NULL;
+    const char *name   = NULL;
     PetscInt   numComp = 0;
 
     ierr = PetscSectionGetFieldName(section, f, &name);CHKERRQ(ierr);
@@ -761,7 +761,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 @*/
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscSection *gsection)
 {
-  PetscInt       *neg = PETSC_NULL, *recv = PETSC_NULL;
+  PetscInt       *neg = NULL, *recv = NULL;
   PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal;
   PetscErrorCode ierr;
 
@@ -769,7 +769,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   ierr = PetscSectionCreate(s->atlasLayout.comm, gsection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   nlocal = nroots;              /* The local/leaf space matches global/root space */
   /* Must allocate for all points visible to SF, which may be more than this section */
   if (nroots >= 0) {             /* nroots < 0 means that the graph has not been set, only happens in serial */
@@ -867,7 +867,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     neg[p-pStart] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
     if (nroots > pEnd - pStart) {
       PetscInt *tmpDof;
@@ -1142,7 +1142,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    const char *name   = PETSC_NULL;
+    const char *name   = NULL;
     PetscInt   numComp = 0;
 
     ierr = PetscSectionGetFieldName(s, fields[f], &name);CHKERRQ(ierr);
@@ -1177,7 +1177,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 
       ierr = PetscSectionGetConstraintDof(*subs, p, &cdof);CHKERRQ(ierr);
       if (cdof) {
-        const PetscInt *oldIndices = PETSC_NULL;
+        const PetscInt *oldIndices = NULL;
         PetscInt       fdof = 0, cfdof = 0, fc, numConst = 0, fOff = 0;
 
         for (f = 0; f < numFields; ++f) {
@@ -1209,7 +1209,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 #define __FUNCT__ "PetscSectionCreateSubmeshSection"
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
-  const PetscInt *points, *indices = PETSC_NULL;
+  const PetscInt *points, *indices = NULL;
   PetscInt       numFields, f, numSubpoints, pStart, pEnd, p, subp;
   PetscErrorCode ierr;
 
@@ -1218,7 +1218,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
-    const char *name   = PETSC_NULL;
+    const char *name   = NULL;
     PetscInt   numComp = 0;
 
     ierr = PetscSectionGetFieldName(s, f, &name);CHKERRQ(ierr);
@@ -1510,7 +1510,7 @@ PetscErrorCode  PetscSectionDestroy(PetscSection *s)
     ierr = PetscSectionReset(*s);CHKERRQ(ierr);
     ierr = PetscFree(*s);CHKERRQ(ierr);
   }
-  *s = PETSC_NULL;
+  *s = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1736,7 +1736,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionBegin;
   if (s->bc) {
     ierr = VecIntGetValuesSection(s->bcIndices, s->bc, point, indices);CHKERRQ(ierr);
-  } else *indices = PETSC_NULL;
+  } else *indices = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1801,7 +1801,7 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   /* Get the number of parts and sizes that I have to distribute */
-  ierr = PetscSFGetGraph(sfPart,PETSC_NULL,&numParts,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPart,NULL,&numParts,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc2(numParts,PetscInt,&partSizes,numParts,PetscInt,&partOffsets);CHKERRQ(ierr);
   for (p=0,numPoints=0; p<numParts; p++) {
     ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
@@ -1850,7 +1850,7 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
 - rootSection - Section defined on root space
 
   Output Parameters:
-+ remoteOffsets - root offsets in leaf storage, or PETSC_NULL
++ remoteOffsets - root offsets in leaf storage, or NULL
 - leafSection - Section defined on the leaf space
 
   Level: intermediate
@@ -1879,7 +1879,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(embedSF, PETSC_NULL, &nleaves, &ilocal, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(embedSF, NULL, &nleaves, &ilocal, NULL);CHKERRQ(ierr);
   if (ilocal) {
     for (i = 0; i < nleaves; ++i) {
       lpStart = PetscMin(lpStart, ilocal[i]);
@@ -1919,8 +1919,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *remoteOffsets = PETSC_NULL;
-  ierr = PetscSFGetGraph(sf, &numRoots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  *remoteOffsets = NULL;
+  ierr = PetscSFGetGraph(sf, &numRoots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (numRoots < 0) PetscFunctionReturn(0);
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
@@ -1949,8 +1949,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
   Input Parameters:
 + sf - The SF
-. rootSection - Data layout of remote points for outgoing data (this is usually the serial section), or PETSC_NULL
-- remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or PETSC_NULL
+. rootSection - Data layout of remote points for outgoing data (this is usually the serial section), or NULL
+- remoteOffsets - Offsets for point data on remote processes (these are offsets from the root section), or NULL
 
   Output Parameters:
 + leafSection - Data layout of local points for incoming data  (this is the distributed section)

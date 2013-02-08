@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vectors */
-  Mat            J,Jmf = PETSC_NULL;   /* Jacobian matrices */
+  Mat            J,Jmf = NULL;   /* Jacobian matrices */
   PetscInt       maxsteps = 1000;      /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
@@ -61,23 +61,23 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   /* Initialize user application context */
-  user.da           = PETSC_NULL;
+  user.da           = NULL;
   user.nstencilpts  = 5;
   user.c            = -30.0;
   user.boundary     = 0;  /* 0: Drichlet BC; 1: Neumann BC */
   user.viewJacobian = PETSC_FALSE;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nstencilpts",&user.nstencilpts,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nstencilpts",&user.nstencilpts,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (user.nstencilpts == 5) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   } else if (user.nstencilpts == 9) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
   user.da = da;
 
@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr  = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   Jtype = 0;
-  ierr  = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL, "-Jtype",&Jtype,NULL);CHKERRQ(ierr);
   if (Jtype == 0) { /* use user provided Jacobian evaluation routine */
     if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
     ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = MatCreateSNESMF(snes,&Jmf);CHKERRQ(ierr);
     if (Jtype == 1) { /* slow finite difference J; */
-      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
     } else if (Jtype == 2) { /* Use coloring to compute  finite difference J efficiently */
       ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Jtype is not supported");
@@ -188,7 +188,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -258,7 +258,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
@@ -330,7 +330,7 @@ PetscErrorCode FormInitialSolution(Vec U,void *ptr)
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {

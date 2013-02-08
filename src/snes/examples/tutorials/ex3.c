@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-n",&N,NULL);CHKERRQ(ierr);
   ctx.h = 1.0/(N-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,1,1,PETSC_NULL,&ctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,1,1,NULL,&ctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
@@ -147,8 +147,8 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(J,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,3,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,3,NULL,3,NULL);CHKERRQ(ierr);
 
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -163,7 +163,7 @@ int main(int argc,char **argv)
   /*
      Optional allow user provided preconditioner
    */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-user_precond",&flg);CHKERRQ(ierr);
   if (flg) {
     KSP ksp;
     PC  pc;
@@ -200,7 +200,7 @@ int main(int argc,char **argv)
      iterates that are determined by line search methods
   */
   ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-post_check_iterates",&post_check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-post_check_iterates",&post_check);CHKERRQ(ierr);
 
   if (post_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post step checking routine\n");CHKERRQ(ierr);
@@ -210,16 +210,16 @@ int main(int argc,char **argv)
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;
 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-check_tol",&checkP.tolerance,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-post_setsubksp",&post_setsubksp);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-post_setsubksp",&post_setsubksp);CHKERRQ(ierr);
   if (post_setsubksp) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post setsubksp\n");CHKERRQ(ierr);
     ierr = SNESLineSearchSetPostCheck(linesearch,PostSetSubKSP,&checkP1);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&pre_check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-pre_check_iterates",&pre_check);CHKERRQ(ierr);
   if (pre_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating pre step checking routine\n");CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(linesearch,PreCheck,&checkP);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ int main(int argc,char **argv)
      Get local grid boundaries (for 1-dimensional DMDA):
        xs, xm - starting grid index, width of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(ctx.da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(ctx.da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -277,7 +277,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
 
@@ -378,9 +378,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      Get local grid boundaries (for 1-dimensional DMDA):
        xs, xm  - starting grid index, width of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
-                     PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Set function values for boundary points; define local interior grid point range:
@@ -440,13 +440,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,v
      Get pointer to vector data
   */
   ierr = DMDAVecGetArray(da,x,&xx);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
     Get range of locally owned matrix
   */
-  ierr = DMDAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
-                     PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL,&M,NULL,NULL,NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Determine starting and ending local indices for interior grid points.
@@ -587,7 +587,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   check = (StepCheckCtx*)ctx;
   user  = check->user;
   ierr  = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-  ierr  = SNESLineSearchGetPreCheck(linesearch, PETSC_NULL, (void**)&check);CHKERRQ(ierr);
+  ierr  = SNESLineSearchGetPreCheck(linesearch, NULL, (void**)&check);CHKERRQ(ierr);
 
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {
@@ -597,7 +597,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
     /* Access local array data */
     ierr = DMDAVecGetArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(da,x,&xa);CHKERRQ(ierr);
-    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
     /*
        If we fail the user-defined check for validity of the candidate iterate,
@@ -660,7 +660,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   ierr    = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
   ierr    = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr    = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr    = PCBJacobiGetSubKSP(pc,PETSC_NULL,PETSC_NULL,&sub_ksps);CHKERRQ(ierr);
+  ierr    = PCBJacobiGetSubKSP(pc,NULL,NULL,&sub_ksps);CHKERRQ(ierr);
   sub_ksp = sub_ksps[0];
   ierr    = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);      /* outer KSP iteration number */
   ierr    = KSPGetIterationNumber(sub_ksp,&sub_its);CHKERRQ(ierr); /* inner KSP iteration number */

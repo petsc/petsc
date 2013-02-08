@@ -23,12 +23,12 @@ PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG_Levels **mglevels)
   /* work our way up through the levels */
   ierr = VecSet(mglevels[0]->x,0.0);CHKERRQ(ierr);
   for (i=0; i<l-1; i++) {
-    ierr = PCMGMCycle_Private(pc,&mglevels[i],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGMCycle_Private(pc,&mglevels[i],NULL);CHKERRQ(ierr);
     if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->x,mglevels[i+1]->x);CHKERRQ(ierr);
     if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
   }
-  ierr = PCMGMCycle_Private(pc,&mglevels[l-1],PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGMCycle_Private(pc,&mglevels[l-1],NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

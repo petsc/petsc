@@ -540,8 +540,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMumpsSetIcntl_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMumpsSetIcntl_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -635,9 +635,9 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet");
   PetscFunctionReturn(0);
@@ -796,37 +796,37 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     else mumps->id.ICNTL(7) = icntl;
   }
 
-  ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 8 or 77)","None",mumps->id.ICNTL(8),&mumps->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",mumps->id.ICNTL(10),&mumps->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",mumps->id.ICNTL(11),&mumps->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3)","None",mumps->id.ICNTL(12),&mumps->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control: with or without ScaLAPACK","None",mumps->id.ICNTL(13),&mumps->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",mumps->id.ICNTL(14),&mumps->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): Schur complement","None",mumps->id.ICNTL(19),&mumps->id.ICNTL(19),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 8 or 77)","None",mumps->id.ICNTL(8),&mumps->id.ICNTL(8),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",mumps->id.ICNTL(10),&mumps->id.ICNTL(10),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",mumps->id.ICNTL(11),&mumps->id.ICNTL(11),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3)","None",mumps->id.ICNTL(12),&mumps->id.ICNTL(12),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control: with or without ScaLAPACK","None",mumps->id.ICNTL(13),&mumps->id.ICNTL(13),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",mumps->id.ICNTL(14),&mumps->id.ICNTL(14),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): Schur complement","None",mumps->id.ICNTL(19),&mumps->id.ICNTL(19),NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core facility (0 or 1)","None",mumps->id.ICNTL(22),&mumps->id.ICNTL(22),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): max size of the working memory (MB) that can allocate per processor","None",mumps->id.ICNTL(23),&mumps->id.ICNTL(23),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_24","ICNTL(24): detection of null pivot rows (0 or 1)","None",mumps->id.ICNTL(24),&mumps->id.ICNTL(24),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core facility (0 or 1)","None",mumps->id.ICNTL(22),&mumps->id.ICNTL(22),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): max size of the working memory (MB) that can allocate per processor","None",mumps->id.ICNTL(23),&mumps->id.ICNTL(23),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_24","ICNTL(24): detection of null pivot rows (0 or 1)","None",mumps->id.ICNTL(24),&mumps->id.ICNTL(24),NULL);CHKERRQ(ierr);
   if (mumps->id.ICNTL(24)) {
     mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
   }
 
-  ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): computation of a null space basis","None",mumps->id.ICNTL(25),&mumps->id.ICNTL(25),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): Schur options for right-hand side or solution vector","None",mumps->id.ICNTL(26),&mumps->id.ICNTL(26),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): factors can be discarded in the solve phase","None",mumps->id.ICNTL(31),&mumps->id.ICNTL(31),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",mumps->id.ICNTL(33),&mumps->id.ICNTL(33),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): computation of a null space basis","None",mumps->id.ICNTL(25),&mumps->id.ICNTL(25),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): Schur options for right-hand side or solution vector","None",mumps->id.ICNTL(26),&mumps->id.ICNTL(26),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): factors can be discarded in the solve phase","None",mumps->id.ICNTL(31),&mumps->id.ICNTL(31),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",mumps->id.ICNTL(33),&mumps->id.ICNTL(33),NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",mumps->id.CNTL(1),&mumps->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",mumps->id.CNTL(2),&mumps->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",mumps->id.CNTL(3),&mumps->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",mumps->id.CNTL(4),&mumps->id.CNTL(4),PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",mumps->id.CNTL(5),&mumps->id.CNTL(5),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",mumps->id.CNTL(1),&mumps->id.CNTL(1),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",mumps->id.CNTL(2),&mumps->id.CNTL(2),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",mumps->id.CNTL(3),&mumps->id.CNTL(3),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",mumps->id.CNTL(4),&mumps->id.CNTL(4),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",mumps->id.CNTL(5),&mumps->id.CNTL(5),NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, 256, PETSC_NULL);
+  ierr = PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, 256, NULL);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -850,8 +850,8 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   PetscMUMPS_c(&mumps->id);
 
   mumps->CleanUpMUMPS = PETSC_FALSE;
-  mumps->scat_rhs     = PETSC_NULL;
-  mumps->scat_sol     = PETSC_NULL;
+  mumps->scat_rhs     = NULL;
+  mumps->scat_sol     = NULL;
 
   /* set PETSc-MUMPS default options - override MUMPS default */
   mumps->id.ICNTL(3) = 0;
@@ -1126,7 +1126,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 #if !defined(PETSC_USE_COMPLEX)
   F->ops->getinertia = MatGetInertia_SBAIJMUMPS;
 #else
-  F->ops->getinertia = PETSC_NULL;
+  F->ops->getinertia = NULL;
 #endif
   PetscFunctionReturn(0);
 }
@@ -1377,9 +1377,9 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   if (isSeqAIJ) {
-    ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
   } else {
-    ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -1438,11 +1438,11 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
   if (isSeqSBAIJ) {
-    ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
 
     mumps->ConvertToTriples = MatConvertToTriples_seqsbaij_seqsbaij;
   } else {
-    ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(B,1,0,NULL,0,NULL);CHKERRQ(ierr);
 
     mumps->ConvertToTriples = MatConvertToTriples_mpisbaij_mpisbaij;
   }
@@ -1486,9 +1486,9 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   if (isSeqBAIJ) {
-    ierr = MatSeqBAIJSetPreallocation(B,A->rmap->bs,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(B,A->rmap->bs,0,NULL);CHKERRQ(ierr);
   } else {
-    ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);

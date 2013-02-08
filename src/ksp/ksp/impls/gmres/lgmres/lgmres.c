@@ -64,7 +64,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   lgmres->aug_vv_allocated = 2* aug_dim + AUG_OFFSET;
   lgmres->augwork_alloc    =  2* aug_dim + AUG_OFFSET;
 
-  ierr = KSPGetVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0],0,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc((max_k+1)*sizeof(PetscScalar),&lgmres->hwork);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k<lgmres->aug_vv_allocated; k++) {
@@ -621,7 +621,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp,PetscInt it)
   lgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
   /* work vectors */
-  ierr = KSPGetVecs(ksp,nalloc,&lgmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&lgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,lgmres->user_work[nwork]);CHKERRQ(ierr);
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
@@ -714,7 +714,7 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHead("KSP LGMRES Options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) lgmres->approx_constant = 1;
   ierr = PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPLGMRESSetAugDim(ksp,aug);CHKERRQ(ierr); }

@@ -37,9 +37,9 @@ int main(int Argc,char **Args)
   PetscScalar    vals[1] = {1.0};
 
   PetscInitialize(&Argc,&Args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&n,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&beta,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-rho",&rho,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-size",&n,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-beta",&beta,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-rho",&rho,&flg);CHKERRQ(ierr);
 
   /* Set the fudge parameters, we scale the whole thing by 1/(2*h) later */
   h    = 1.;
@@ -48,7 +48,7 @@ int main(int Argc,char **Args)
   /* Geometry info */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, n, n,
                       PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
-                      1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+                      1, NULL, NULL, &da);CHKERRQ(ierr);
 
   /* Random numbers */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);

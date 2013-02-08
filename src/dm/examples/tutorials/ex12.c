@@ -24,11 +24,11 @@ int main(int argc,char **argv)
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);

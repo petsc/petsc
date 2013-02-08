@@ -302,11 +302,11 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
 
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
-  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights : PETSC_NULL;
-  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values : PETSC_NULL;
+  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights : NULL;
+  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values : NULL;
 
   ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
-                            PETSC_NULL,edgelocnbr,edgelocnbr,adj->j,PETSC_NULL,edloloctab);CHKERRQ(ierr);
+                            NULL,edgelocnbr,edgelocnbr,adj->j,NULL,edloloctab);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
@@ -356,10 +356,10 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
   PetscFunctionBegin;
   ierr = PetscFree(scotch);CHKERRQ(ierr);
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetImbalance_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetImbalance_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetStrategy_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetImbalance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetImbalance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetStrategy_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

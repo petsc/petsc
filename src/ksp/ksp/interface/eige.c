@@ -58,14 +58,14 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
   }
   ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
 
@@ -152,7 +152,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       ierr = MatSetSizes(A,0,0,n,n);CHKERRQ(ierr);
     }
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
-    ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(BA,A);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
@@ -381,7 +381,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
   }
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigen-contours",PETSC_DECIDE,PETSC_DECIDE,450,450,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawTensorContour(draw,M,N,PETSC_NULL,PETSC_NULL,value);CHKERRQ(ierr);
+  ierr = PetscDrawTensorContour(draw,M,N,NULL,NULL,value);CHKERRQ(ierr);
   if (0) {
     ierr = PetscDrawAxisCreate(draw,&drawaxis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLimits(drawaxis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);

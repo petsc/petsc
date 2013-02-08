@@ -116,7 +116,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
-  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,1,mat->cmap->n,mat->cmap->N,PETSC_NULL,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
 
@@ -228,7 +228,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(inA,&cstart,&cend);CHKERRQ(ierr);
-  ierr = MatGetSize(ina->A,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(ina->A,NULL,&n);CHKERRQ(ierr);
   ierr = PetscMalloc((inA->rmap->bmapping->n+1)*sizeof(PetscInt),&r_rmapd);CHKERRQ(ierr);
   ierr = PetscMemzero(r_rmapd,inA->rmap->bmapping->n*sizeof(PetscInt));CHKERRQ(ierr);
   nt   = 0;
@@ -316,7 +316,7 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
   }
   ierr = VecRestoreArray(uglydd,&d);CHKERRQ(ierr);
   /* column scale "diagonal" portion of local matrix */
-  ierr = MatDiagonalScale(a->A,PETSC_NULL,uglydd);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(a->A,NULL,uglydd);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(uglyoo,&n);CHKERRQ(ierr);
   ierr = VecGetArray(uglyoo,&o);CHKERRQ(ierr);
@@ -326,7 +326,7 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
   ierr = VecRestoreArray(scale,&s);CHKERRQ(ierr);
   ierr = VecRestoreArray(uglyoo,&o);CHKERRQ(ierr);
   /* column scale "off-diagonal" portion of local matrix */
-  ierr = MatDiagonalScale(a->B,PETSC_NULL,uglyoo);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(a->B,NULL,uglyoo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

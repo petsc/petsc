@@ -91,7 +91,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscErrorCode      ierr;
   Mat                 Cmpi;
   Mat_PtAPMPI         *ptap;
-  PetscFreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList  free_space=NULL,current_space=NULL;
   Mat_MPIAIJ          *a        =(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
   Mat_SeqAIJ          *ad       =(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ          *p_loc,*p_oth;
@@ -302,7 +302,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
   /* determine the number and length of messages to receive for coi and coj  */
-  ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
+  ierr = PetscGatherNumberOfMessages(comm,NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths2(comm,merge->nsend,merge->nrecv,len_s,len_si,&merge->id_r,&merge->len_r,&len_ri);CHKERRQ(ierr);
 
   /* post the Irecv and Isend of coj */
@@ -478,7 +478,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* set default scalable */
   ptap->scalable = PETSC_TRUE;
 
-  ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
   if (!ptap->scalable) {  /* Do dense axpy */
     ierr = PetscMalloc(pN*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
     ierr = PetscMemzero(ptap->apa,pN*sizeof(PetscScalar));CHKERRQ(ierr);

@@ -24,13 +24,13 @@ int main(int argc,char **argv)
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-periodic",&wrap,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,(DMDABoundaryType)wrap,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,(DMDABoundaryType)wrap,M,dof,s,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",(int)i);

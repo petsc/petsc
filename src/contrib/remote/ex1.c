@@ -67,20 +67,20 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /*
      Set function evaluation routine and vector.
     */
-    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,NULL);CHKERRQ(ierr);
 
     /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,NULL);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
 
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;

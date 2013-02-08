@@ -364,7 +364,7 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   user->a = 1;
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -505,7 +505,7 @@ static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
   ierr = RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Burgers_Rusanov);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsList("-physics_burgers_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_burgers_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&r);CHKERRQ(ierr);
@@ -645,8 +645,8 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   ierr = RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Traffic_Rusanov);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Traffic","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_traffic_a","Flux = a*u*(1-u)","",user->a,&user->a,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_traffic_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_traffic_a","Flux = a*u*(1-u)","",user->a,&user->a,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_traffic_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -805,10 +805,10 @@ static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
   ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for linear Acoustics","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_acoustics_c","c = sqrt(bulk/rho)","",user->c,&user->c,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-physics_acoustics_z","z = sqrt(bulk*rho)","",user->z,&user->z,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_acoustics_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_acoustics_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_acoustics_c","c = sqrt(bulk/rho)","",user->c,&user->c,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_acoustics_z","z = sqrt(bulk*rho)","",user->z,&user->z,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_acoustics_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_acoustics_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
@@ -1036,9 +1036,9 @@ static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
   ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for IsoGas","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_isogas_acoustic_speed","Acoustic speed","",user->acoustic_speed,&user->acoustic_speed,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_isogas_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_isogas_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_isogas_acoustic_speed","Acoustic speed","",user->acoustic_speed,&user->acoustic_speed,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_isogas_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_isogas_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
@@ -1213,9 +1213,9 @@ static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
   ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Shallow","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_shallow_gravity","Gravity","",user->gravity,&user->gravity,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_shallow_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_shallow_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_shallow_gravity","Gravity","",user->gravity,&user->gravity,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_shallow_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_shallow_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
@@ -1529,18 +1529,18 @@ int main(int argc,char *argv[])
   ctx.comm = comm;
   ctx.cfl  = 0.9; ctx.bctype = FVBC_PERIODIC;
   ctx.xmin = -1; ctx.xmax = 1;
-  ierr     = PetscOptionsBegin(comm,PETSC_NULL,"Finite Volume solver options","");CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-limit","Name of flux limiter to use","",limiters,lname,lname,sizeof(lname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics","Name of physics (Riemann solver and characteristics) to use","",physics,physname,physname,sizeof(physname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-limit","Name of flux limiter to use","",limiters,lname,lname,sizeof(lname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics","Name of physics (Riemann solver and characteristics) to use","",physics,physname,physname,sizeof(physname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof(final_fname),&view_final);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1558,7 +1558,7 @@ int main(int argc,char *argv[])
   }
 
   /* Create a DMDA to manage the parallel grid */
-  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_PERIODIC,-50,ctx.physics.dof,2,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_PERIODIC,-50,ctx.physics.dof,2,NULL,&da);CHKERRQ(ierr);
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i=0; i<ctx.physics.dof; i++) {
@@ -1579,7 +1579,7 @@ int main(int argc,char *argv[])
   ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(da,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,NULL,&B);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);

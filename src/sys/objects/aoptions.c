@@ -40,7 +40,7 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
   ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&PetscOptionsObject.title);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&PetscOptionsObject.printhelp);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-help",&PetscOptionsObject.printhelp);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1) {
     if (!PetscOptionsObject.alreadyprinted) {
       ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);
@@ -495,7 +495,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   /* reset alreadyprinted flag */
   PetscOptionsObject.alreadyprinted = PETSC_FALSE;
   if (PetscOptionsObject.object) PetscOptionsObject.object->optionsprinted = PETSC_TRUE;
-  PetscOptionsObject.object = PETSC_NULL;
+  PetscOptionsObject.object = NULL;
 
   while (PetscOptionsObject.next) {
     if (PetscOptionsObject.next->set) {
@@ -1040,7 +1040,7 @@ PetscErrorCode  PetscOptionsBoolGroupBegin(const char opt[],const char text[],co
     *(PetscBool*)amsopt->data = PETSC_FALSE;
   }
   *flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  Pick at most one of -------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,text,ManSection(man));CHKERRQ(ierr);
@@ -1092,7 +1092,7 @@ PetscErrorCode  PetscOptionsBoolGroup(const char opt[],const char text[],const c
     *(PetscBool*)amsopt->data = PETSC_FALSE;
   }
   *flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }
@@ -1143,7 +1143,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
     *(PetscBool*)amsopt->data = PETSC_FALSE;
   }
   *flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"    -%s%s: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,text,ManSection(man));CHKERRQ(ierr);
   }

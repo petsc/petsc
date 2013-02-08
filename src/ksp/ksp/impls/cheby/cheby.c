@@ -206,7 +206,7 @@ PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal 
 
    Input Arguments:
 +  ksp - linear solver context
--  random - random number context or PETSC_NULL to disable randomized RHS
+-  random - random number context or NULL to disable randomized RHS
 
    Level: intermediate
 
@@ -279,7 +279,7 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
   }
   if (cheb->kspest) {
     PetscBool estrand = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_chebyshev_estimate_eigenvalues_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_chebyshev_estimate_eigenvalues_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,NULL);CHKERRQ(ierr);
     if (estrand) {
       PetscRandom random;
       ierr = PetscRandomCreate(((PetscObject)ksp)->comm,&random);CHKERRQ(ierr);
@@ -296,9 +296,9 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
    Ref: "A hybrid Chebyshev Krylov-subspace algorithm for solving nonsymmetric systems of linear equations",
          Howard Elman and Y. Saad and P. E. Saylor, SIAM Journal on Scientific and Statistical Computing, 1986.
    */
-  ierr = PetscOptionsBool("-ksp_chebyshev_hybrid","Use hybrid Chebyshev","",cheb->hybrid,&cheb->hybrid,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_chebysteps","Number of Chebyshev steps in hybrid Chebyshev","",cheb->chebysteps,&cheb->chebysteps,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_purification","Use purification in hybrid Chebyshev","",cheb->purification,&cheb->purification,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_chebyshev_hybrid","Use hybrid Chebyshev","",cheb->hybrid,&cheb->hybrid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_chebysteps","Number of Chebyshev steps in hybrid Chebyshev","",cheb->chebysteps,&cheb->chebysteps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_purification","Use purification in hybrid Chebyshev","",cheb->purification,&cheb->purification,NULL);CHKERRQ(ierr);
 
   if (cheb->kspest) {
     /* Mask the PC so that PCSetFromOptions does not do anything */
@@ -578,10 +578,10 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","",NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

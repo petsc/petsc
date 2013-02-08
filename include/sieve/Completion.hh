@@ -91,7 +91,7 @@ namespace ALE {
           }
         }
         PetscBool  flg;
-        PetscOptionsHasName(PETSC_NULL, "-output_partition", &flg);
+        PetscOptionsHasName(NULL, "-output_partition", &flg);
         if (flg) {
           ostringstream fname;
           fname << "part." << sieve->commSize() << ".dat";

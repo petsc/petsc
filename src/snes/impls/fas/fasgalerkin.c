@@ -80,7 +80,7 @@ PetscErrorCode SNESFASGalerkinDefaultFunction(SNES snes, Vec X, Vec F, void * ct
   ierr = MatInterpolate(prevfas->interpolate, X, prevfas->Xg);CHKERRQ(ierr);
   /* the RHS we care about is at the coarsest level */
   b_temp            = prevsnes->vec_rhs;
-  prevsnes->vec_rhs = PETSC_NULL;
+  prevsnes->vec_rhs = NULL;
   ierr              = SNESComputeFunction(prevsnes, prevfas->Xg, prevfas->Fg);CHKERRQ(ierr);
   prevsnes->vec_rhs = b_temp;
   /* restrict up the function */

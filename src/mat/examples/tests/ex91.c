@@ -21,14 +21,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
 
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
 
   /* create a SeqBAIJ matrix A */
   M    = m*bs;
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,NULL,&A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 

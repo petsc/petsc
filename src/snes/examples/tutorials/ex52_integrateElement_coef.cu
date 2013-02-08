@@ -319,7 +319,7 @@ PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt 
   if (Nbc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);
   if (!Ne) {
     PetscStageLog     stageLog;
-    PetscEventPerfLog eventLog = PETSC_NULL;
+    PetscEventPerfLog eventLog = NULL;
     PetscInt          stage;
 
     ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -397,7 +397,7 @@ PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt 
   ierr = cudaFree(d_elemVec);CHKERRQ(ierr);
   {
     PetscStageLog     stageLog;
-    PetscEventPerfLog eventLog = PETSC_NULL;
+    PetscEventPerfLog eventLog = NULL;
     PetscInt          stage;
 
     ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);

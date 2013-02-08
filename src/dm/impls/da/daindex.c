@@ -17,7 +17,7 @@
 .  da - the distributed array
 
    Output Parameters:
-+  n - the number of local elements, including ghost nodes (or PETSC_NULL)
++  n - the number of local elements, including ghost nodes (or NULL)
 -  idx - the global indices
 
    Level: intermediate
@@ -177,7 +177,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 .   da - the distributed array
 
     Output Parameters:
-+   n - the number of local elements, including ghost nodes (or PETSC_NULL)
++   n - the number of local elements, including ghost nodes (or NULL)
 .   idx - the Fortran90 pointer to the global indices
 -   ierr - error code
 

@@ -23,28 +23,28 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   char            m[64];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ams_port",&port,NULL);CHKERRQ(ierr);
   ierr = PetscInfo1(v,"Publishing with the AMS on port %d\n",port);CHKERRQ(ierr);
   ierr = AMS_Comm_publish((char*)name,&vams->ams_comm,MPI_TYPE,((PetscObject)v)->comm,&port);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_printf",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-ams_printf",&flg);CHKERRQ(ierr);
   if (!flg) {
 #if !defined(PETSC_MISSING_DEV_NULL)
     ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
 #endif
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-ams_matlab",m,16,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-ams_matlab",m,16,&flg);CHKERRQ(ierr);
   if (flg) {
     FILE *fp;
     ierr = PetscStartMatlab(((PetscObject)v)->comm,m,"petscview",&fp);CHKERRQ(ierr);
   }
 
   ierr = PetscGetHostName(m,64);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_java",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-ams_java",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscOptionsGetString(PETSC_NULL,"-ams_java",m,64,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-options_gui",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-ams_java",m,64,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"-options_gui",&flg2);CHKERRQ(ierr);
     if (flg2) {
       char cmd[PETSC_MAX_PATH_LEN];
       ierr = PetscStrcpy(cmd,"cd ${PETSC_DIR}/${PETSC_ARCH}/bin;java -d64 -classpath .:");CHKERRQ(ierr);
@@ -52,7 +52,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
       ierr = PetscStrcat(cmd,"/java -Djava.library.path=");CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,PETSC_AMS_DIR);CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,"/lib amsoptions -ams_server ${HOSTNAME}");CHKERRQ(ierr);
-      ierr = PetscPOpen(((PetscObject)v)->comm,m,cmd,"r",PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscPOpen(((PetscObject)v)->comm,m,cmd,"r",NULL);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -155,7 +155,7 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&ncomm,PETSC_NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Ams_keyval,0);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,PETSC_ERROR_INITIAL," "); viewer = 0;}

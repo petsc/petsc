@@ -76,7 +76,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
     ierr = ISCreateGeneral(PETSC_COMM_SELF,0,0,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   }
   ierr = DMGetGlobalVector(da,&vec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vec,is,*newvec,PETSC_NULL,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vec,is,*newvec,NULL,scatter);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&vec);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -115,7 +115,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
   MPI_Group      group,subgroup;
   PetscErrorCode ierr;
   PetscInt       i,ict,flag,*owners,xs,xm,ys,ym,zs,zm;
-  PetscMPIInt    size,*ranks = PETSC_NULL;
+  PetscMPIInt    size,*ranks = NULL;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
@@ -185,7 +185,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   MPI_Group      group, subgroup;
   PetscInt       subgroupSize = 0;
   PetscInt       *firstPoints;
-  PetscMPIInt    size, *subgroupRanks = PETSC_NULL;
+  PetscMPIInt    size, *subgroupRanks = NULL;
   PetscInt       xs, xm, ys, ym, zs, zm, firstPoint, p;
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;

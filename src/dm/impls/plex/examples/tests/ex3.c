@@ -69,11 +69,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->order           = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-order", "The order of polynomials to test", "ex3.c", options->order, &options->order, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-order", "The order of polynomials to test", "ex3.c", options->order, &options->order, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -94,8 +94,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = PETSC_NULL;
-    DM distributedMesh = PETSC_NULL;
+    DM refinedMesh     = NULL;
+    DM distributedMesh = NULL;
 
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscInt       numBC               = 0;
   PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0};
   PetscInt       bcFields[1]         = {0};
-  IS             bcPoints[1]         = {PETSC_NULL};
+  IS             bcPoints[1]         = {NULL};
   PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
   PetscInt       f, d;
   PetscErrorCode ierr;
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
   Vec            u;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);

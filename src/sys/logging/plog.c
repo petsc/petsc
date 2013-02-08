@@ -38,8 +38,8 @@ std::map<std::string,PETSc::LogStage> PETSc::Log::stage_registry;
 /* used in the MPI_XXX() count macros in petsclog.h */
 
 /* Action and object logging variables */
-Action    *petsc_actions            = PETSC_NULL;
-Object    *petsc_objects            = PETSC_NULL;
+Action    *petsc_actions            = NULL;
+Object    *petsc_objects            = NULL;
 PetscBool petsc_logActions          = PETSC_FALSE;
 PetscBool petsc_logObjects          = PETSC_FALSE;
 int       petsc_numActions          = 0, petsc_maxActions = 100;
@@ -67,13 +67,13 @@ PetscLogDouble petsc_gather_ct       = 0.0;  /* The number of gathers and gather
 PetscLogDouble petsc_scatter_ct      = 0.0;  /* The number of scatters and scattervs */
 
 /* Logging functions */
-PetscErrorCode (*PetscLogPHC)(PetscObject) = PETSC_NULL;
-PetscErrorCode (*PetscLogPHD)(PetscObject) = PETSC_NULL;
-PetscErrorCode (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
-PetscErrorCode (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode (*PetscLogPHC)(PetscObject) = NULL;
+PetscErrorCode (*PetscLogPHD)(PetscObject) = NULL;
+PetscErrorCode (*PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
+PetscErrorCode (*PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = NULL;
 
 /* Tracing event logging variables */
-FILE             *petsc_tracefile            = PETSC_NULL;
+FILE             *petsc_tracefile            = NULL;
 int              petsc_tracelevel            = 0;
 const char       *petsc_traceblanks          = "                                                                                                    ";
 char             petsc_tracespace[128]       = " ";
@@ -105,7 +105,7 @@ PetscErrorCode  PetscLogDestroy(void)
   PetscFunctionBegin;
   ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
   ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
-  ierr = PetscLogSet(PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogSet(NULL, NULL);CHKERRQ(ierr);
 
   /* Resetting phase */
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -117,8 +117,8 @@ PetscErrorCode  PetscLogDestroy(void)
   petsc_numObjectsDestroyed   = 0;
   petsc_maxActions            = 100;
   petsc_maxObjects            = 100;
-  petsc_actions               = PETSC_NULL;
-  petsc_objects               = PETSC_NULL;
+  petsc_actions               = NULL;
+  petsc_objects               = NULL;
   petsc_logActions            = PETSC_FALSE;
   petsc_logObjects            = PETSC_FALSE;
   petsc_BaseTime              = 0.0;
@@ -140,9 +140,9 @@ PetscErrorCode  PetscLogDestroy(void)
   petsc_gather_ct             = 0.0;
   petsc_scatter_ct            = 0.0;
   PETSC_LARGEST_EVENT         = PETSC_EVENT;
-  PetscLogPHC                 = PETSC_NULL;
-  PetscLogPHD                 = PETSC_NULL;
-  petsc_tracefile             = PETSC_NULL;
+  PetscLogPHC                 = NULL;
+  PetscLogPHD                 = NULL;
+  petsc_tracefile             = NULL;
   petsc_tracelevel            = 0;
   petsc_traceblanks           = "                                                                                                    ";
   petsc_tracespace[0]         = ' '; petsc_tracespace[1] = 0;
@@ -199,9 +199,9 @@ PetscErrorCode  PetscLogBegin_Private(void)
   if (PetscLogBegin_PrivateCalled) PetscFunctionReturn(0);
   PetscLogBegin_PrivateCalled = PETSC_TRUE;
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) petsc_logActions = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
   if (opt) petsc_logObjects = PETSC_FALSE;
   if (petsc_logActions) {
     ierr = PetscMalloc(petsc_maxActions * sizeof(Action), &petsc_actions);CHKERRQ(ierr);
@@ -1258,8 +1258,8 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   FILE               *fd;
   PetscLogDouble     zero       = 0.0;
   PetscStageLog      stageLog;
-  PetscStageInfo     *stageInfo = PETSC_NULL;
-  PetscEventPerfInfo *eventInfo = PETSC_NULL;
+  PetscStageInfo     *stageInfo = NULL;
+  PetscEventPerfInfo *eventInfo = NULL;
   PetscClassPerfInfo *classInfo;
   char               arch[128],hostname[128],username[128],pname[PETSC_MAX_PATH_LEN],date[128];
   const char         *name;
@@ -1757,9 +1757,9 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
 {
   FILE               *fd = PETSC_STDOUT;
   PetscStageLog      stageLog;
-  PetscStageInfo     *stageInfo = PETSC_NULL;
-  PetscEventPerfInfo *eventInfo = PETSC_NULL;
-  const char         *name      = PETSC_NULL;
+  PetscStageInfo     *stageInfo = NULL;
+  PetscEventPerfInfo *eventInfo = NULL;
+  const char         *name      = NULL;
   PetscLogDouble     TotalTime;
   PetscLogDouble     stageTime, flops, flopr, mess, messLen, red;
   PetscLogDouble     maxf, totf, maxt, tott, totm, totml, totr = 0.0;
@@ -2077,8 +2077,8 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   FILE               *fd;
   PetscLogDouble     zero                    = 0.0;
   PetscStageLog      stageLog;
-  PetscStageInfo     *stageInfo              = PETSC_NULL;
-  PetscEventPerfInfo *eventInfo              = PETSC_NULL;
+  PetscStageInfo     *stageInfo              = NULL;
+  PetscEventPerfInfo *eventInfo              = NULL;
   const char         *name;
   char               stageName[2048];
   char               eventName[2048];

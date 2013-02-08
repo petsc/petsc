@@ -737,7 +737,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
 
   /* Select hyperslab in the file */
-  ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xin, &low, NULL);CHKERRQ(ierr);
   dim  = 0;
   if (timestep >= 0) {
     offset[dim] = timestep;

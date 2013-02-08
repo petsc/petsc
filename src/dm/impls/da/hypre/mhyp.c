@@ -15,28 +15,28 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
   PetscInt       i,n_d,n_o;
   const PetscInt *ia_d,*ia_o;
   PetscBool      done_d=PETSC_FALSE,done_o=PETSC_FALSE;
-  PetscInt       *nnz_d=PETSC_NULL,*nnz_o=PETSC_NULL;
+  PetscInt       *nnz_d=NULL,*nnz_o=NULL;
 
   PetscFunctionBegin;
   if (A_d) { /* determine number of nonzero entries in local diagonal part */
-    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,PETSC_NULL,&done_d);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,NULL,&done_d);CHKERRQ(ierr);
     if (done_d) {
       ierr = PetscMalloc(n_d*sizeof(PetscInt),&nnz_d);CHKERRQ(ierr);
       for (i=0; i<n_d; i++) {
         nnz_d[i] = ia_d[i+1] - ia_d[i];
       }
     }
-    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,PETSC_NULL,&done_d);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,NULL,&done_d);CHKERRQ(ierr);
   }
   if (A_o) { /* determine number of nonzero entries in local off-diagonal part */
-    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,PETSC_NULL,&done_o);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,NULL,&done_o);CHKERRQ(ierr);
     if (done_o) {
       ierr = PetscMalloc(n_o*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
       for (i=0; i<n_o; i++) {
         nnz_o[i] = ia_o[i+1] - ia_o[i];
       }
     }
-    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,PETSC_NULL,&done_o);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,NULL,&done_o);CHKERRQ(ierr);
   }
   if (done_d) {    /* set number of nonzeros in HYPRE IJ matrix */
     if (!done_o) { /* only diagonal part */
@@ -88,12 +88,12 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
     }
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&same);CHKERRQ(ierr);
     if (same) {
-      ierr = MatHYPRE_IJMatrixPreallocate(A,PETSC_NULL,*ij);CHKERRQ(ierr);
+      ierr = MatHYPRE_IJMatrixPreallocate(A,NULL,*ij);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQBAIJ,&same);CHKERRQ(ierr);
     if (same) {
-      ierr = MatHYPRE_IJMatrixPreallocate(A,PETSC_NULL,*ij);CHKERRQ(ierr);
+      ierr = MatHYPRE_IJMatrixPreallocate(A,NULL,*ij);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
@@ -205,7 +205,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
   pdiag = (Mat_SeqAIJ*) pA->A->data;
   poffd = (Mat_SeqAIJ*) pA->B->data;
   /* cstart is only valid for square MPIAIJ layed out in the usual way */
-  ierr = MatGetOwnershipRange(A,&cstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&cstart,NULL);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
@@ -481,8 +481,8 @@ PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
-  ierr        = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr        = DMDAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr        = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
+  ierr        = DMDAGetGlobalIndices(ex->da,NULL,&ex->gindices);CHKERRQ(ierr);
   ierr        = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
   ex->gnxgny *= ex->gnx;
   ierr        = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
@@ -962,8 +962,8 @@ PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
-  ierr = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(ex->da,NULL,&ex->gindices);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
 
   ex->gnxgny    *= ex->gnx;

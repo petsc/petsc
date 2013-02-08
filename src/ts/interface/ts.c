@@ -34,7 +34,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
   else defaultType = TSEULER;
 
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
@@ -99,20 +99,20 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
   /* Handle generic TS options */
-  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
   if (flg) {ierr = TSSetExactFinalTime(ts,eftopt);CHKERRQ(ierr);}
-  ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections before step fails","TSSetMaxStepRejections",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections before step fails","TSSetMaxStepRejections",ts->max_reject,&ts->max_reject,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,NULL);CHKERRQ(ierr);
 
   /* Monitor options */
   ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
@@ -137,7 +137,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
@@ -146,7 +146,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
@@ -155,7 +155,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGSNESIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
@@ -164,7 +164,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorLGCtx ctx;
     PetscInt       howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGKSPIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
@@ -173,7 +173,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorSPEigCtx ctx;
     PetscInt          howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_sp_eig","Monitor eigenvalues of linearized operator graphically","TSMonitorSPEig",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorSPEigCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorSPEig,ctx,(PetscErrorCode (*)(void**))TSMonitorSPEigCtxDestroy);CHKERRQ(ierr);
   }
@@ -183,7 +183,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorDrawCtx ctx;
     PetscInt         howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorDrawCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
@@ -193,7 +193,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     TSMonitorDrawCtx ctx;
     PetscInt         howoften = 1;
 
-    ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorDrawCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
@@ -206,7 +206,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     } else {
       ctx = PETSC_VIEWER_BINARY_(((PetscObject)ts)->comm);
-      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))NULL);CHKERRQ(ierr);
     }
   }
   opt  = PETSC_FALSE;
@@ -318,7 +318,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
-  ierr = DMTSGetIJacobian(dm,&ijacobianfunc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
   ierr = PetscObjectStateQuery((PetscObject)U,&Ustate);CHKERRQ(ierr);
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate))) {
     *flg = ts->rhsjacobian.mstructure;
@@ -388,7 +388,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
-  ierr = DMTSGetIFunction(dm,&ifunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
 
   if (!rhsfunction && !ifunction) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
@@ -501,8 +501,8 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *Frhs = PETSC_NULL;
-  ierr  = TSGetIFunction(ts,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  *Frhs = NULL;
+  ierr  = TSGetIFunction(ts,&F,NULL,NULL);CHKERRQ(ierr);
   if (!ts->Frhs) {
     ierr = VecDuplicate(F,&ts->Frhs);CHKERRQ(ierr);
   }
@@ -518,7 +518,7 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetIJacobian(ts,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSGetIJacobian(ts,&A,&B,NULL,NULL);CHKERRQ(ierr);
   if (Arhs) {
     if (!ts->Arhs) {
       ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&ts->Arhs);CHKERRQ(ierr);
@@ -580,7 +580,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIFunction(dm,&ifunction,&ctx);CHKERRQ(ierr);
-  ierr = DMTSGetRHSFunction(dm,&rhsfunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunction(dm,&rhsfunction,NULL);CHKERRQ(ierr);
 
   if (!rhsfunction && !ifunction) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
@@ -665,7 +665,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobian,&ctx);CHKERRQ(ierr);
-  ierr = DMTSGetRHSJacobian(dm,&rhsjacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSJacobian(dm,&rhsjacobian,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectStateQuery((PetscObject)U,&Ustate);CHKERRQ(ierr);
   ierr = PetscObjectStateQuery((PetscObject)Udot,&Udotstate);CHKERRQ(ierr);
@@ -746,10 +746,10 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   r - vector to put the computed right hand side (or PETSC_NULL to have it created)
+.   r - vector to put the computed right hand side (or NULL to have it created)
 .   f - routine for evaluating the right-hand-side function
 -   ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be PETSC_NULL)
+          function evaluation routine (may be NULL)
 
     Calling sequence of func:
 $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
@@ -769,7 +769,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 {
   PetscErrorCode ierr;
   SNES           snes;
-  Vec            ralloc = PETSC_NULL;
+  Vec            ralloc = NULL;
   DM             dm;
 
   PetscFunctionBegin;
@@ -799,7 +799,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 +   ts - the TS context obtained from TSCreate()
 .   f - routine for evaluating the solution
 -   ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be PETSC_NULL)
+          function evaluation routine (may be NULL)
 
     Calling sequence of func:
 $     func (TS ts,PetscReal t,Vec u,void *ctx);
@@ -844,7 +844,7 @@ PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec
 +   ts - the TS context obtained from TSCreate()
 .   f - routine for evaluating the forcing function
 -   ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be PETSC_NULL)
+          function evaluation routine (may be NULL)
 
     Calling sequence of func:
 $     func (TS ts,PetscReal t,Vec u,void *ctx);
@@ -891,7 +891,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
 .  B   - preconditioner matrix (usually same as A)
 .  f   - the Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be NULL)
 
    Calling sequence of func:
 $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
@@ -937,7 +937,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetRHSJacobian(dm,f,ctx);CHKERRQ(ierr);
-  ierr = DMTSGetIJacobian(dm,&ijacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetIJacobian(dm,&ijacobian,NULL);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!ijacobian) {
@@ -968,9 +968,9 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
-.  r   - vector to hold the residual (or PETSC_NULL to have it created internally)
+.  r   - vector to hold the residual (or NULL to have it created internally)
 .  f   - the function evaluation routine
--  ctx - user-defined context for private data for the function evaluation routine (may be PETSC_NULL)
+-  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
 
    Calling sequence of f:
 $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
@@ -994,7 +994,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  Vec            resalloc = PETSC_NULL;
+  Vec            resalloc = NULL;
   DM             dm;
 
   PetscFunctionBegin;
@@ -1025,9 +1025,9 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
 .  ts - the TS context
 
    Output Parameter:
-+  r - vector to hold residual (or PETSC_NULL)
-.  func - the function to compute residual (or PETSC_NULL)
--  ctx - the function context (or PETSC_NULL)
++  r - vector to hold residual (or NULL)
+.  func - the function to compute residual (or NULL)
+-  ctx - the function context (or NULL)
 
    Level: advanced
 
@@ -1044,7 +1044,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,r,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIFunction(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1061,9 +1061,9 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
 .  ts - the TS context
 
    Output Parameter:
-+  r - vector to hold computed right hand side (or PETSC_NULL)
-.  func - the function to compute right hand side (or PETSC_NULL)
--  ctx - the function context (or PETSC_NULL)
++  r - vector to hold computed right hand side (or NULL)
+.  func - the function to compute right hand side (or NULL)
+-  ctx - the function context (or NULL)
 
    Level: advanced
 
@@ -1080,7 +1080,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,r,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetRHSFunction(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1099,7 +1099,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 .  A   - Jacobian matrix
 .  B   - preconditioning matrix for A (may be same as A)
 .  f   - the Jacobian evaluation routine
--  ctx - user-defined context for private data for the Jacobian evaluation routine (may be PETSC_NULL)
+-  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
 $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx);
@@ -1311,7 +1311,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscStrcpy(str,"TS: ");CHKERRQ(ierr);
     ierr   = PetscStrcat(str,((PetscObject)ts)->type_name);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLACK,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (ts->ops->view) {
@@ -1672,16 +1672,16 @@ PetscErrorCode  TSSetUp(TS ts)
    to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
    */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetFunction(dm,&func,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSNESGetFunction(dm,&func,NULL);CHKERRQ(ierr);
   if (!func) {
     ierr =DMSNESSetFunction(dm,SNESTSFormFunction,ts);CHKERRQ(ierr);
   }
   /* if the SNES doesn't have a jacobian set and the TS has an ijacobian or rhsjacobian set, set the SNES to use it.
      Otherwise, the SNES will use coloring internally to form the Jacobian.
    */
-  ierr = DMSNESGetJacobian(dm,&jac,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMTSGetIJacobian(dm,&ijac,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMTSGetRHSJacobian(dm,&rhsjac,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSNESGetJacobian(dm,&jac,NULL);CHKERRQ(ierr);
+  ierr = DMTSGetIJacobian(dm,&ijac,NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSJacobian(dm,&rhsjac,NULL);CHKERRQ(ierr);
   if (!jac && (ijac || rhsjac)) {
     ierr = DMSNESSetJacobian(dm,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
@@ -1789,7 +1789,7 @@ PetscErrorCode  TSDestroy(TS *ts)
    KSP, KSP, and PC contexts as well.
 
    TSGetSNES() does not work for integrators that do not use SNES; in
-   this case TSGetSNES() returns PETSC_NULL in snes.
+   this case TSGetSNES() returns NULL in snes.
 
    Level: beginner
 
@@ -1804,7 +1804,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
   PetscValidPointer(snes,2);
   if (!ts->snes) {
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
-    ierr = SNESSetFunction(ts->snes,PETSC_NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = SNESSetFunction(ts->snes,NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
     if (ts->dm) {ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);}
@@ -1847,10 +1847,10 @@ PetscErrorCode TSSetSNES(TS ts,SNES snes)
 
   ts->snes = snes;
 
-  ierr = SNESSetFunction(ts->snes,PETSC_NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(ts->snes,PETSC_NULL,PETSC_NULL,&func,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ts->snes,NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(ts->snes,NULL,NULL,&func,NULL);CHKERRQ(ierr);
   if (func == SNESTSFormJacobian) {
-    ierr = SNESSetJacobian(ts->snes,PETSC_NULL,PETSC_NULL,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(ts->snes,NULL,NULL,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1875,7 +1875,7 @@ PetscErrorCode TSSetSNES(TS ts,SNES snes)
    KSP and PC contexts as well.
 
    TSGetKSP() does not work for integrators that do not use KSP;
-   in this case TSGetKSP() returns PETSC_NULL in ksp.
+   in this case TSGetKSP() returns NULL in ksp.
 
    Level: beginner
 
@@ -1908,8 +1908,8 @@ PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 
    Input Parameters:
 +  ts       - the TS context obtained from TSCreate()
-.  maxsteps - maximum number of iterations to use, or PETSC_NULL
--  maxtime  - final time to iterate to, or PETSC_NULL
+.  maxsteps - maximum number of iterations to use, or NULL
+-  maxtime  - final time to iterate to, or NULL
 
    Level: intermediate
 
@@ -2207,9 +2207,9 @@ PetscErrorCode  TSPostStep(TS ts)
 +  ts - the TS context obtained from TSCreate()
 .  monitor - monitoring routine
 .  mctx - [optional] user-defined context for private data for the
-             monitor routine (use PETSC_NULL if no context is desired)
+             monitor routine (use NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
-          (may be PETSC_NULL)
+          (may be NULL)
 
    Calling sequence of monitor:
 $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
@@ -2431,7 +2431,7 @@ PetscErrorCode  TSStep(TS ts)
    Input Arguments:
 +  ts - time stepping context
 .  order - desired order of accuracy
--  done - whether the step was evaluated at this order (pass PETSC_NULL to generate an error if not available)
+-  done - whether the step was evaluated at this order (pass NULL to generate an error if not available)
 
    Output Arguments:
 .  U - state at the end of the current step
@@ -2634,7 +2634,7 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-lg_indicate_data_points",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-lg_indicate_data_points",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
   }
@@ -2879,7 +2879,7 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 .  func - Function to compute the Jacobian of the RHS
 -  ctx - User-defined context for Jacobian evaluation routine
 
-   Notes: You can pass in PETSC_NULL for any return argument you do not need.
+   Notes: You can pass in NULL for any return argument you do not need.
 
    Level: intermediate
 
@@ -2895,7 +2895,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,J,M,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,J,M,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2917,7 +2917,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **
 .  f   - The function to compute the matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
-   Notes: You can pass in PETSC_NULL for any return argument you do not need.
+   Notes: You can pass in NULL for any return argument you do not need.
 
    Level: advanced
 
@@ -2934,7 +2934,7 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,A,B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,A,B,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2960,7 +2960,7 @@ struct _n_TSMonitorDrawCtx {
 +  ts - the TS context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or PETSC_NULL
+-  dummy - either a viewer or NULL
 
    Options Database:
 .   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
@@ -3007,7 +3007,7 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
     ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
     ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
     ierr =  PetscStrlen(time,&len);CHKERRQ(ierr);
-    ierr = PetscDrawStringGetSize(draw,&tw,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
     w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = yl + .95*(yr - yl);
     ierr = PetscDrawString(draw,w,h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
@@ -3081,10 +3081,10 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 
   (*ctx)->howoften    = howoften;
   (*ctx)->showinitial = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_draw_solution_initial",&(*ctx)->showinitial,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-ts_monitor_draw_solution_initial",&(*ctx)->showinitial,NULL);CHKERRQ(ierr);
 
   (*ctx)->showtimestepandtime = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_draw_solution_show_time",&(*ctx)->showtimestepandtime,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-ts_monitor_draw_solution_show_time",&(*ctx)->showtimestepandtime,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3100,7 +3100,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 +  ts - the TS context
 .  step - current time-step
 .  ptime - current time
--  dummy - either a viewer or PETSC_NULL
+-  dummy - either a viewer or NULL
 
    Level: intermediate
 
@@ -3382,7 +3382,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
   MatStructure   flg2;
 
   PetscFunctionBegin;
-  ierr = TSGetIJacobian(ts,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSGetIJacobian(ts,&A,&B,NULL,NULL);CHKERRQ(ierr);
   ierr = TSComputeIJacobian(ts,t,U,Udot,1.0,&A,&B,&flg2,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatMult(A,Udot,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3923,9 +3923,9 @@ PetscErrorCode TSGetTSAdapt(TS ts,TSAdapt *adapt)
    Input Arguments:
 +  ts - time integration context
 .  atol - scalar absolute tolerances, PETSC_DECIDE to leave current value
-.  vatol - vector of absolute tolerances or PETSC_NULL, used in preference to atol if present
+.  vatol - vector of absolute tolerances or NULL, used in preference to atol if present
 .  rtol - scalar relative tolerances, PETSC_DECIDE to leave current value
--  vrtol - vector of relative tolerances or PETSC_NULL, used in preference to atol if present
+-  vrtol - vector of relative tolerances or NULL, used in preference to atol if present
 
    Level: beginner
 
@@ -3964,10 +3964,10 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
 .  ts - time integration context
 
    Output Arguments:
-+  atol - scalar absolute tolerances, PETSC_NULL to ignore
-.  vatol - vector of absolute tolerances, PETSC_NULL to ignore
-.  rtol - scalar relative tolerances, PETSC_NULL to ignore
--  vrtol - vector of relative tolerances, PETSC_NULL to ignore
++  atol - scalar absolute tolerances, NULL to ignore
+.  vatol - vector of absolute tolerances, NULL to ignore
+.  rtol - scalar relative tolerances, NULL to ignore
+-  vrtol - vector of relative tolerances, NULL to ignore
 
    Level: beginner
 
@@ -4257,7 +4257,7 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
   */
   sctx->ctx = mxDuplicateArray(ctx);
 
-  ierr = TSSetIFunction(ts,PETSC_NULL,TSComputeFunction_Matlab,sctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,TSComputeFunction_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4443,7 +4443,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
   */
   sctx->ctx = mxDuplicateArray(ctx);
 
-  ierr = TSMonitorSet(ts,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,TSMonitor_Matlab,sctx,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

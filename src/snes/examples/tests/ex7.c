@@ -33,8 +33,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-variant",&user.variant);CHKERRQ(ierr);
   h    = 1.0/(n-1);
 
   /* Set up data structures */
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
   /* create explict matrix preconditioner */
-  ierr         = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr         = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&B);CHKERRQ(ierr);
   user.precond = B;
 
   /* Store right-hand-side of PDE and exact solution */
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
 
@@ -168,7 +168,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
     *flag = SAME_PRECONDITIONER;
   }
   if (user->variant) {
-    ierr = MatMFFDSetBase(*jac,x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMFFDSetBase(*jac,x,NULL);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   PetscBool      flg              = PETSC_FALSE;
   DM             da;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  Vec            r               = PETSC_NULL;
+  Vec            r               = NULL;
   PetscBool      matlab_function = PETSC_FALSE;
 #endif
 
@@ -99,19 +99,19 @@ int main(int argc,char **argv)
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
-  ierr       = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetGS(snes, NonlinearGS, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetGS(snes, NonlinearGS, NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
@@ -125,18 +125,18 @@ int main(int argc,char **argv)
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-fd",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,&user);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-obj",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-obj",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = DMDASNESSetObjectiveLocal(da,(DMDASNESObjective)FormObjectiveLocal,&user);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
   if (matlab_function) {
     ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -216,7 +216,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -544,7 +544,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      xs, ys   - starting grid indices (no ghost points)
      xm, ym   - widths of local grid (no ghost points)
      */
-    ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {

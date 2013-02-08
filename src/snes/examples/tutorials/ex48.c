@@ -632,7 +632,7 @@ static PetscErrorCode DMCoarsenHook_THI(DM dmf,DM dmc,void *ctx)
   ierr = DMGetRefineLevel(dmc,&rlevel);CHKERRQ(ierr);
   ierr = DMGetCoarsenLevel(dmc,&clevel);CHKERRQ(ierr);
   if (rlevel-clevel == 0) {ierr = DMSetMatType(dmc,MATAIJ);CHKERRQ(ierr);}
-  ierr = DMCoarsenHookAdd(dmc,DMCoarsenHook_THI,PETSC_NULL,thi);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmc,DMCoarsenHook_THI,NULL,thi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -646,9 +646,9 @@ static PetscErrorCode DMRefineHook_THI(DM dmc,DM dmf,void *ctx)
   PetscFunctionBeginUser;
   ierr = THISetUpDM(thi,dmf);CHKERRQ(ierr);
   ierr = DMSetMatType(dmf,thi->mattype);CHKERRQ(ierr);
-  ierr = DMRefineHookAdd(dmf,DMRefineHook_THI,PETSC_NULL,thi);CHKERRQ(ierr);
+  ierr = DMRefineHookAdd(dmf,DMRefineHook_THI,NULL,thi);CHKERRQ(ierr);
   /* With grid sequencing, a formerly-refined DM will later be coarsened by PCSetUp_MG */
-  ierr = DMCoarsenHookAdd(dmf,DMCoarsenHook_THI,PETSC_NULL,thi);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmf,DMCoarsenHook_THI,NULL,thi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1310,7 +1310,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   if (dim != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
 
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
-  ierr = DMDACreate3d(((PetscObject)dac)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&daf);CHKERRQ(ierr);
+  ierr = DMDACreate3d(((PetscObject)dac)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
 
   daf->ops->creatematrix        = dac->ops->creatematrix;
   daf->ops->createinterpolation = dac->ops->createinterpolation;
@@ -1393,12 +1393,12 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,MatType mtype,Mat *J)
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,3*2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,3*2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,2,3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,2,3,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A,2,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A,2,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,3*2,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,3*2,NULL,0,NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,2,3,NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,2,3,NULL,0,NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A,2,2,NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A,2,2,NULL,0,NULL);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
@@ -1555,25 +1555,25 @@ int main(int argc,char *argv[])
   } else {
     ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
   }
-  ierr = DMCoarsenHookAdd(da,DMCoarsenHook_THI,PETSC_NULL,thi);CHKERRQ(ierr);
-  ierr = DMRefineHookAdd(da,DMRefineHook_THI,PETSC_NULL,thi);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(da,DMCoarsenHook_THI,NULL,thi);CHKERRQ(ierr);
+  ierr = DMRefineHookAdd(da,DMRefineHook_THI,NULL,thi);CHKERRQ(ierr);
 
   ierr = DMSetApplicationContext(da,thi);CHKERRQ(ierr);
 
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = SNESSetComputeInitialGuess(snes,THIInitial,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,THIInitial,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,NULL);CHKERRQ(ierr);
 
   ierr = THISolveStatistics(thi,snes,0,"Full");CHKERRQ(ierr);
 
   {
     PetscBool flg;
     char      filename[PETSC_MAX_PATH_LEN] = "";
-    ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       Vec X;
       DM  dm;

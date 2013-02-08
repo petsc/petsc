@@ -96,7 +96,7 @@ int main(int argc,char **argv)
 
 
   /* This option allows loading user-provided PetscBag */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
   if (!flg) {
 
     /* write bag to stdio & binary file */

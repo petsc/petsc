@@ -52,7 +52,7 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
-                      2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      2,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,da);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,FormFunction,da);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&ts_snes);
-  ierr = SNESMonitorSet(ts_snes,MySNESMonitor,PETSC_NULL,PETSC_NULL);
+  ierr = SNESMonitorSet(ts_snes,MySNESMonitor,NULL,NULL);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -163,7 +163,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -219,7 +219,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid

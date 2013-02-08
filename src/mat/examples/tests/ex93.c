@@ -134,7 +134,7 @@ PetscErrorCode testPTAPRectangular(void)
 
   PetscFunctionBegin;
   /* set up A  */
-  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,1, PETSC_NULL, &A);
+  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,1, NULL, &A);
   PETSc_CHKERRQ(_ierr);
   for (i=0; i<rows; i++) {
     _ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);
@@ -146,7 +146,7 @@ PetscErrorCode testPTAPRectangular(void)
   PETSc_CHKERRQ(_ierr);
 
   /* set up P */
-  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,5, PETSC_NULL, &P);
+  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,5, NULL, &P);
   PETSc_CHKERRQ(_ierr);
   _ierr = MatSetValue(P, 0, 0,  1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
   _ierr = MatSetValue(P, 0, 1,  2.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);

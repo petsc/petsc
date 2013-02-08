@@ -82,7 +82,7 @@ PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
 PetscErrorCode  MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
 {
   PetscErrorCode ierr;
-  Mat            Aij = PETSC_NULL;
+  Mat            Aij = NULL;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(A,dof,2);
@@ -101,8 +101,8 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
   PetscFunctionBegin;
   ierr = MatDestroy(&b->AIJ);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqmaij_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatPtAP_seqaij_seqmaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqmaij_seqaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatPtAP_seqaij_seqmaij_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,8 +157,8 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->w);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_mpimaij_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatPtAP_mpiaij_mpimaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_mpimaij_mpiaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatPtAP_mpiaij_mpimaij_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2991,7 +2991,7 @@ PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   Mat_SeqMAIJ        *pp       =(Mat_SeqMAIJ*)PP->data;
   Mat                P         =pp->AIJ;
   Mat_SeqAIJ         *a        =(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
@@ -3313,8 +3313,8 @@ PETSC_EXTERN_C PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,M
   Mat_SeqAIJ     *AIJ    = (Mat_SeqAIJ*) MatAIJ->data;
   Mat_SeqAIJ     *OAIJ   =(Mat_SeqAIJ*) MatOAIJ->data;
   Mat_MPIAIJ     *mpiaij = (Mat_MPIAIJ*) maij->A->data;
-  PetscInt       dof     = maij->dof,i,j,*dnz = PETSC_NULL,*onz = PETSC_NULL,nmax = 0,onmax = 0;
-  PetscInt       *oicols = PETSC_NULL,*icols = PETSC_NULL,ncols,*cols = PETSC_NULL,oncols,*ocols = PETSC_NULL;
+  PetscInt       dof     = maij->dof,i,j,*dnz = NULL,*onz = NULL,nmax = 0,onmax = 0;
+  PetscInt       *oicols = NULL,*icols = NULL,ncols,*cols = NULL,oncols,*ocols = NULL;
   PetscInt       rstart,cstart,*garray,ii,k;
   PetscErrorCode ierr;
   PetscScalar    *vals,*ovals;
@@ -3443,7 +3443,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
       ierr = MatSetType(B,MATSEQMAIJ);CHKERRQ(ierr);
 
-      B->ops->setup   = PETSC_NULL;
+      B->ops->setup   = NULL;
       B->ops->destroy = MatDestroy_SeqMAIJ;
       B->ops->view    = MatView_SeqMAIJ;
       b               = (Mat_SeqMAIJ*)B->data;
@@ -3526,7 +3526,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
       ierr = MatSetType(B,MATMPIMAIJ);CHKERRQ(ierr);
 
-      B->ops->setup   = PETSC_NULL;
+      B->ops->setup   = NULL;
       B->ops->destroy = MatDestroy_MPIMAIJ;
       B->ops->view    = MatView_MPIMAIJ;
 
@@ -3548,7 +3548,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = ISCreateStride(PETSC_COMM_SELF,n*dof,0,1,&to);CHKERRQ(ierr);
 
       /* create temporary global vector to generate scatter context */
-      ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,dof,dof*A->cmap->n,dof*A->cmap->N,PETSC_NULL,&gvec);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,dof,dof*A->cmap->n,dof*A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
       /* generate the scatter context */
       ierr = VecScatterCreate(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);

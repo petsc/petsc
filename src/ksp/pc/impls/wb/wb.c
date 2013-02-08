@@ -64,8 +64,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   Nface = 2*((m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart));
   Nwire = 4*((m-2-istart) + (n-2-jstart) + (p-2-kstart)) + 8;
   Nsurf = Nface + Nwire;
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,PETSC_NULL,&Xint);CHKERRQ(ierr);
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
+  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,NULL,&Xint);CHKERRQ(ierr);
+  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,NULL,&Xsurf);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
 
   /*
@@ -260,7 +260,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
-  ierr = MatGetSize(Aglobal,&Nt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
   ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
   for (i=0; i<26*mp*np*pp; i++) {
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
@@ -276,9 +276,9 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
-  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(Aglobal,&Ng,NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint+Nsurf,PETSC_NULL,P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint+Nsurf,NULL,P);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
@@ -374,8 +374,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   Nface = 2*((m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart));
   Nwire = 4*((m-2-istart) + (n-2-jstart) + (p-2-kstart)) + 8;
   Nsurf = Nface + Nwire;
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nint,6,PETSC_NULL,&Xint);CHKERRQ(ierr);
-  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,6,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
+  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nint,6,NULL,&Xint);CHKERRQ(ierr);
+  ierr  = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,6,NULL,&Xsurf);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
 
   /*
@@ -538,7 +538,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
-  ierr = MatGetSize(Aglobal,&Nt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
   ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
   for (i=0; i<6*mp*np*pp; i++) {
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
@@ -554,9 +554,9 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
-  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(Aglobal,&Ng,NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint,PETSC_NULL,P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint,NULL,P);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
@@ -667,7 +667,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
 
   PetscFunctionBegin;
   if (!pc->dm) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
-  ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,NULL,&A,NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
     ierr = DMDAGetFaceInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
@@ -675,7 +675,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
-  ierr = PCSetDM(pc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCSetDM(pc,NULL);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -748,7 +748,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
   if (flg) {
     ierr = PCExoticSetType(pc,mgctype);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,NULL);CHKERRQ(ierr);
   if (!ctx->directSolve) {
     if (!ctx->ksp) {
       const char *prefix;
@@ -829,7 +829,7 @@ PetscErrorCode  PCCreate_Exotic(PC pc)
   ((PetscObject)pc)->type_name = 0;
 
   ierr         = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr         = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PCMGSetLevels(pc,2,NULL);CHKERRQ(ierr);
   ierr         = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
   ierr         = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr); \
   ex->type     = PC_EXOTIC_FACE;

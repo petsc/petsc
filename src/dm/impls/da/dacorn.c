@@ -215,7 +215,7 @@ PetscErrorCode  DMDAGetCoordinateName(DM da,PetscInt nf,const char **name)
    freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
-   Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
+   Any of y, z, n, and p can be passed in as NULL if not needed.
 
   Level: beginner
 
@@ -263,7 +263,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
 {
   PetscErrorCode    ierr;
-  Vec               coords = PETSC_NULL;
+  Vec               coords = NULL;
   PetscInt          dim,i,j;
   const PetscScalar *local_coords;
   PetscReal         min[3]={PETSC_MAX_REAL,PETSC_MAX_REAL,PETSC_MAX_REAL},max[3]={PETSC_MIN_REAL,PETSC_MIN_REAL,PETSC_MIN_REAL};

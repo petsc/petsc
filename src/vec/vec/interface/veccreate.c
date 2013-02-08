@@ -31,9 +31,9 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
 
   PetscFunctionBegin;
   PetscValidPointer(vec,2);
-  *vec = PETSC_NULL;
+  *vec = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_CLASSID, -1, "Vec", "Vector", "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);

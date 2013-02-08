@@ -39,7 +39,7 @@ PetscErrorCode  PCFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -72,7 +72,7 @@ PetscErrorCode  PCInitializePackage(const char path[])
   ierr = PetscLogEventRegister("PCApplySymmRight", PC_CLASSID,&PC_ApplySymmetricRight);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCModifySubMatri", PC_CLASSID,&PC_ModifySubMatrices);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
@@ -80,7 +80,7 @@ PetscErrorCode  PCInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
@@ -132,7 +132,7 @@ PetscErrorCode  KSPFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -161,7 +161,7 @@ PetscErrorCode  KSPInitializePackage(const char path[])
   ierr = PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSolve",         KSP_CLASSID,&KSP_Solve);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {
@@ -169,7 +169,7 @@ PetscErrorCode  KSPInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {

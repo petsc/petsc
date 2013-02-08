@@ -510,7 +510,7 @@ namespace ALE {
       PetscInt    *fieldSize;
       PetscInt     numFields;
     public:
-      SizeWithBCVisitor(PetscSection s) : section(s), size(0), fieldSize(PETSC_NULL), numFields(0) {};
+      SizeWithBCVisitor(PetscSection s) : section(s), size(0), fieldSize(NULL), numFields(0) {};
       SizeWithBCVisitor(PetscSection s, PetscInt *fieldSize) : section(s), size(0), fieldSize(fieldSize) {
         PetscErrorCode ierr = PetscSectionGetNumFields(section, &numFields);CHKERRXX(ierr);
         for(PetscInt f = 0; f < numFields; ++f) {this->fieldSize[f] = 0;}
@@ -1247,17 +1247,17 @@ namespace ALE {
         }
       }
     public:
-      IndicesVisitor(const PetscSection& s, Order& o, const int size, const bool unique = false, const PetscInt fieldSize[] = PETSC_NULL) : section(s), order(o), size(size), i(0), p(0), setBC(false) {
+      IndicesVisitor(const PetscSection& s, Order& o, const int size, const bool unique = false, const PetscInt fieldSize[] = NULL) : section(s), order(o), size(size), i(0), p(0), setBC(false) {
         PetscErrorCode ierr;
 
         ierr = PetscMalloc(this->size * sizeof(value_type), &this->values);CHKERRXX(ierr);
         this->allocated = true;
-        this->points    = PETSC_NULL;
+        this->points    = NULL;
         if (unique) {
           ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
         }
         nF = 0;
-        this->fieldSize = this->j = PETSC_NULL;
+        this->fieldSize = this->j = NULL;
         if (fieldSize) {
           ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
           ierr = PetscMalloc2(nF,PetscInt,&this->fieldSize,nF,PetscInt,&j);CHKERRXX(ierr);
@@ -1267,17 +1267,17 @@ namespace ALE {
         }
         this->clear();
       };
-      IndicesVisitor(const PetscSection& s, Order& o, const int size, value_type *values, const bool unique = false, const PetscInt fieldSize[] = PETSC_NULL) : section(s), order(o), size(size), i(0), p(0), setBC(false) {
+      IndicesVisitor(const PetscSection& s, Order& o, const int size, value_type *values, const bool unique = false, const PetscInt fieldSize[] = NULL) : section(s), order(o), size(size), i(0), p(0), setBC(false) {
         PetscErrorCode ierr;
 
         this->values    = values;
         this->allocated = false;
-        this->points    = PETSC_NULL;
+        this->points    = NULL;
         if (unique) {
           ierr = PetscMalloc(this->size * sizeof(point_type), &this->points);CHKERRXX(ierr);
         }
         nF = 0;
-        this->fieldSize = this->j = PETSC_NULL;
+        this->fieldSize = this->j = NULL;
         if (fieldSize) {
           ierr = PetscSectionGetNumFields(section, &nF);CHKERRXX(ierr);
           ierr = PetscMalloc2(nF,PetscInt,&fieldSize,nF,PetscInt,&j);CHKERRXX(ierr);
@@ -2789,7 +2789,7 @@ namespace ALE {
       PetscInt       maxConeSize;
       PetscErrorCode ierr;
 
-      ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRXX(ierr);
+      ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRXX(ierr);
       if (maxConeSize < 0) return;
       const Obj<typename Sieve::baseSequence>& base = sieve.base();
       int *orientations = new int[maxConeSize];

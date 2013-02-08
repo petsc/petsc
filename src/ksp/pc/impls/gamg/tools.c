@@ -136,15 +136,15 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   ierr = PetscMalloc(nloc*sizeof(PetscInt), &d_nnz);CHKERRQ(ierr);
   ierr = PetscMalloc(nloc*sizeof(PetscInt), &o_nnz);CHKERRQ(ierr);
   for (Ii = Istart, jj = 0; Ii < Iend; Ii++, jj++) {
-    ierr      = MatGetRow(Gmat,Ii,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr      = MatGetRow(Gmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
     d_nnz[jj] = ncols;
     o_nnz[jj] = ncols;
-    ierr      = MatRestoreRow(Gmat,Ii,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr      = MatRestoreRow(Gmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
     if (symm) {
-      ierr       = MatGetRow(matTrans,Ii,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr       = MatGetRow(matTrans,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
       d_nnz[jj] += ncols;
       o_nnz[jj] += ncols;
-      ierr       = MatRestoreRow(matTrans,Ii,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr       = MatRestoreRow(matTrans,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
     }
     if (d_nnz[jj] > nloc) d_nnz[jj] = nloc;
     if (o_nnz[jj] > (MM-nloc)) o_nnz[jj] = MM - nloc;

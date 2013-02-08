@@ -14,10 +14,10 @@ PetscErrorCode DMMeshInterpolationCreate(DM dm, DMMeshInterpolationInfo *ctx)
 
   (*ctx)->dim    = -1;
   (*ctx)->nInput = 0;
-  (*ctx)->points = PETSC_NULL;
-  (*ctx)->cells  = PETSC_NULL;
+  (*ctx)->points = NULL;
+  (*ctx)->cells  = NULL;
   (*ctx)->n      = -1;
-  (*ctx)->coords = PETSC_NULL;
+  (*ctx)->coords = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -685,6 +685,6 @@ PetscErrorCode DMMeshInterpolationDestroy(DM dm, DMMeshInterpolationInfo *ctx)
   ierr = PetscFree((*ctx)->points);CHKERRQ(ierr);
   ierr = PetscFree((*ctx)->cells);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
-  *ctx = PETSC_NULL;
+  *ctx = NULL;
   PetscFunctionReturn(0);
 }

@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
   ierr = ISView(iscol,viewer);CHKERRQ(ierr);
 
-  ierr = MatLUFactor(mat,isrow,iscol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatLUFactor(mat,isrow,iscol,NULL);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Factored matrix permuted by RCM + NonzeroDiagonal()\n");CHKERRQ(ierr);
   ierr = MatView(mat,viewer);CHKERRQ(ierr);
 

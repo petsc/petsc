@@ -19,7 +19,7 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
   ierr = TSGetCFLTime(ts,&cfltime);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesGet(adapt,&ncandidates,&order,PETSC_NULL,&ccfl,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesGet(adapt,&ncandidates,&order,NULL,&ccfl,NULL);CHKERRQ(ierr);
 
   hcfl = cfl->safety * cfltime * ccfl[0];
   if (hcfl < adapt->dt_min) {
@@ -64,8 +64,8 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("CFL adaptive controller options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
   if (!cfl->always_accept) SETERRQ(((PetscObject)adapt)->comm,PETSC_ERR_SUP,"step rejection not implemented yet");
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

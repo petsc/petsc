@@ -637,7 +637,7 @@ PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
@@ -651,8 +651,8 @@ PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
-  pastix->scat_rhs      = PETSC_NULL;
-  pastix->scat_sol      = PETSC_NULL;
+  pastix->scat_rhs      = NULL;
+  pastix->scat_sol      = NULL;
   pastix->Destroy       = B->ops->destroy;
   B->ops->destroy       = MatDestroy_Pastix;
   B->spptr              = (void*)pastix;
@@ -678,8 +678,8 @@ PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
@@ -692,8 +692,8 @@ PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
-  pastix->scat_rhs      = PETSC_NULL;
-  pastix->scat_sol      = PETSC_NULL;
+  pastix->scat_rhs      = NULL;
+  pastix->scat_sol      = NULL;
   pastix->Destroy       = B->ops->destroy;
   B->ops->destroy       = MatDestroy_Pastix;
   B->spptr              = (void*)pastix;
@@ -718,8 +718,8 @@ PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(B,1,0,NULL,0,NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
@@ -732,8 +732,8 @@ PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
-  pastix->scat_rhs      = PETSC_NULL;
-  pastix->scat_sol      = PETSC_NULL;
+  pastix->scat_rhs      = NULL;
+  pastix->scat_sol      = NULL;
   pastix->Destroy       = B->ops->destroy;
   B->ops->destroy       = MatDestroy_Pastix;
   B->spptr              = (void*)pastix;
@@ -759,8 +759,8 @@ PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(B,1,0,NULL,0,NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
@@ -773,8 +773,8 @@ PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
-  pastix->scat_rhs      = PETSC_NULL;
-  pastix->scat_sol      = PETSC_NULL;
+  pastix->scat_rhs      = NULL;
+  pastix->scat_sol      = NULL;
   pastix->Destroy       = B->ops->destroy;
   B->ops->destroy       = MatDestroy_Pastix;
   B->spptr              = (void*)pastix;

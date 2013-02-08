@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr     = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr     = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

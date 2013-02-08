@@ -496,7 +496,7 @@ EXTERN_C_END
 +  comm - MPI communicator that is to share AO
 .  napp - size of integer arrays
 .  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be PETSC_NULL to
+-  mypetsc - integer array that defines another ordering (may be NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
    Output Parameter:
@@ -523,7 +523,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
   if (mypetsc) {
     ierr = ISCreateGeneral(comm,napp,petsc,PETSC_USE_POINTER,&ispetsc);CHKERRQ(ierr);
   } else {
-    ispetsc = PETSC_NULL;
+    ispetsc = NULL;
   }
   ierr = AOCreateMemoryScalableIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
   ierr = ISDestroy(&isapp);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
 
    Input Parameters:
 +  isapp - index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
+-  ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
    Output Parameter:

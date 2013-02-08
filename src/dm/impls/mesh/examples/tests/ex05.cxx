@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   ierr = testHat(comm);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ PetscErrorCode testHat(MPI_Comm comm) {
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   debug = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
 
   ALE::Obj<PointBiGraph> bg = PointBiGraph(comm, debug);
@@ -95,7 +95,7 @@ PetscErrorCode testSkewedHat(MPI_Comm comm) {
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   debug = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
 
   ALE::Obj<PointBiGraph> bg = PointBiGraph(comm, debug);
@@ -136,7 +136,7 @@ PetscErrorCode testSkewedHatFlip(MPI_Comm comm) {
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   debug = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
 
   ALE::Obj<PointBiGraphFlip> bg = PointBiGraphFlip(comm, debug);

@@ -29,7 +29,7 @@ M*/
 +  snes - the SNES context
 .  SNESObjectiveFunction - objective evaluation routine
 -  ctx - [optional] user-defined context for private data for the
-         function evaluation routine (may be PETSC_NULL)
+         function evaluation routine (may be NULL)
 
    Level: beginner
 
@@ -62,8 +62,8 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 .  snes - the SNES context
 
    Output Parameter:
-+  func - the function (or PETSC_NULL)
--  ctx - the function context (or PETSC_NULL)
++  func - the function (or NULL)
+-  ctx - the function context (or NULL)
 
    Level: advanced
 
@@ -136,7 +136,7 @@ PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES snes,Vec X,Vec F,void 
 
   PetscFunctionBegin;
   ierr = VecDuplicate(X,&Xh);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_fd_function_eps","Tolerance for nonzero entries in fd function","None",eps,&eps,NULL);CHKERRQ(ierr);
   ierr = VecSet(F,0.);CHKERRQ(ierr);
 
   ierr = VecNorm(X,NORM_2,&fob);CHKERRQ(ierr);

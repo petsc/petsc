@@ -119,7 +119,7 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_coarsen_view",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_coarsen_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)coarser)->comm,&viewer);CHKERRQ(ierr);
@@ -273,7 +273,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   *newcrs = 0;
 
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,-1,"MatCoarsen","Matrix/graph coarsen",
                            "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
@@ -374,7 +374,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   if (coarser->setupcalled) {
     ierr =  (*coarser->ops->destroy)(coarser);CHKERRQ(ierr);
 
-    coarser->ops->destroy = PETSC_NULL;
+    coarser->ops->destroy = NULL;
     coarser->subctx       = 0;
     coarser->setupcalled  = 0;
   }

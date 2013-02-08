@@ -32,18 +32,18 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
 
   /*  Load the matrices A_save and B */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],128,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f0",file[0],128,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for small matrix A with the -f0 option.");
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],128,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f1",file[1],128,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for small matrix B with the -f1 option.");
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f2",file[2],128,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f2",file[2],128,&flg);CHKERRQ(ierr);
   if (!flg) {
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(PETSC_NULL,"-f3",file[3],128,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-f3",file[3],128,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for test matrix B with the -f3 option.");
   }
 
@@ -65,14 +65,14 @@ int main(int argc,char **args)
 
   /* Create vectors v1 and v2 that are compatible with A_save */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A_save,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A_save,&m,NULL);CHKERRQ(ierr);
   ierr = VecSetSizes(v1,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
   ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
 
   /* Test MatMatMult() */
   /*-------------------*/
@@ -93,7 +93,7 @@ int main(int argc,char **args)
 
     /* Create vector x that is compatible with B */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(B,PETSC_NULL,&n);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(B,NULL,&n);CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
@@ -133,8 +133,8 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
     ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr);
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(P,nzp,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(P,nzp,NULL,nzp,NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
     for (i=0; i<nzp; i++) {
       ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
@@ -219,8 +219,8 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
     ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr);
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(P,nzp,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(P,nzp,NULL,nzp,NULL);CHKERRQ(ierr);
     for (i=0; i<nzp; i++) {
       ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
     }

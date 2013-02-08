@@ -69,8 +69,8 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same
      array for storing vector values.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-allocate",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc((nlocal+nghost)*sizeof(PetscScalar),&tarray);CHKERRQ(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);

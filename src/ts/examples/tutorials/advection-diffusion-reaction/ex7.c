@@ -46,12 +46,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char*)0,help);
   user.N = 1;
-  ierr   = PetscOptionsGetInt(PETSC_NULL,"-N",&user.N,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,"-N",&user.N,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,user.N,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,user.N,1,NULL,&da);CHKERRQ(ierr);
 
   for (i=0; i<user.N; i++) {
     ierr = PetscSNPrintf(Name,16,"Void size %d",(int)(i+1));
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr);
 
 
@@ -156,7 +156,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -211,7 +211,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
@@ -282,7 +282,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid

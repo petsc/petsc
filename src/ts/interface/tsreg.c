@@ -1,6 +1,6 @@
 #include <petsc-private/tsimpl.h>      /*I "petscts.h"  I*/
 
-PetscFunctionList TSList              = PETSC_NULL;
+PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -57,7 +57,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
 
-    ts->ops->destroy = PETSC_NULL;
+    ts->ops->destroy = NULL;
   }
   ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
 

@@ -324,10 +324,10 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,n,PETSC_NULL,N-n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,n,NULL,N-n,NULL);CHKERRQ(ierr);
   }
 
   for (i=0; i<N; i++) {
@@ -419,9 +419,9 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
   for (r = rStart; r < rEnd; ++r) {
     PetscInt ncols;
 
-    ierr   = MatGetRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatGetRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
     colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
-    ierr   = MatRestoreRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
   }
   numRows = rEnd - rStart;
   ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);

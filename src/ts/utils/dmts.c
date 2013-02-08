@@ -86,7 +86,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
@@ -219,8 +219,8 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
     ierr = PetscInfo(dm,"Creating new DMTS\n");CHKERRQ(ierr);
     ierr = DMTSCreate(((PetscObject)dm)->comm,tsdm);CHKERRQ(ierr);
     dm->dmts = (PetscObject) *tsdm;
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -291,8 +291,8 @@ PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
   ierr         = DMTSDestroy((DMTS*)&dmdest->dmts);CHKERRQ(ierr);
   dmdest->dmts = dmsrc->dmts;
   ierr         = PetscObjectReference(dmdest->dmts);CHKERRQ(ierr);
-  ierr         = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
-  ierr         = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL);CHKERRQ(ierr);
+  ierr         = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

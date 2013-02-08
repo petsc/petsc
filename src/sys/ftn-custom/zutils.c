@@ -1,6 +1,6 @@
 #include <petsc-private/fortranimpl.h>
 
-void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
+void *PETSCNULLPOINTERADDRESS = NULL;
 
 /*MC
    PetscFortranAddr - a variable type in Fortran that can hold a
@@ -28,7 +28,6 @@ M*/
 char *PETSC_NULL_CHARACTER_Fortran = 0;
 void *PETSC_NULL_INTEGER_Fortran   = 0;
 void *PETSC_NULL_OBJECT_Fortran    = 0;
-void *PETSC_NULL_Fortran           = 0;
 void *PETSC_NULL_SCALAR_Fortran    = 0;
 void *PETSC_NULL_DOUBLE_Fortran    = 0;
 void *PETSC_NULL_REAL_Fortran      = 0;

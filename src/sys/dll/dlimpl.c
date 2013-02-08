@@ -71,7 +71,7 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
     char           *buff = NULL;
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-                  PETSC_NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,PETSC_NULL);
+                  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
     ierr = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
                       "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff);
     LocalFree(buff);
@@ -155,7 +155,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 #if defined(PETSC_HAVE_GETLASTERROR)
     char  *buff = NULL;
     DWORD erc   = GetLastError();
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,PETSC_NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,PETSC_NULL);
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
     PetscErrorPrintf("Error closing dynamic library:\n  Error message from FreeLibrary() %s\n",buff);
     LocalFree(buff);
 #else
@@ -189,7 +189,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
 
-  *handle = PETSC_NULL;
+  *handle = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -201,16 +201,16 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
    Not Collective
 
    Input Parameters:
-+   handle - obtained with PetscDLOpen() or PETSC_NULL
++   handle - obtained with PetscDLOpen() or NULL
 -   symbol - name of symbol
 
    Output Parameter:
-.   value - pointer to the function, PETSC_NULL if not found
+.   value - pointer to the function, NULL if not found
 
    Level: developer
 
   Notes:
-   If handle is PETSC_NULL, the symbol is looked for in the main executable's dynamic symbol table.
+   If handle is NULL, the symbol is looked for in the main executable's dynamic symbol table.
    In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
    systems this requires platform-specific linker flags.
 

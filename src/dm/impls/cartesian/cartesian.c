@@ -60,7 +60,7 @@ PetscErrorCode  DMDestroy_Cartesian(DM dm)
   DM_Cartesian *c = (DM_Cartesian*) dm->data;
 
   PetscFunctionBegin;
-  c->m = PETSC_NULL;
+  c->m = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +259,7 @@ PetscErrorCode DMCreate_Cartesian(DM dm)
   ierr     = PetscNewLog(dm, DM_Cartesian, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
-  new(&mesh->m) ALE::Obj<ALE::CartesianMesh>(PETSC_NULL);
+  new(&mesh->m) ALE::Obj<ALE::CartesianMesh>(NULL);
 
   ierr = DMSetVecType(dm,VECSTANDARD);CHKERRQ(ierr);
 

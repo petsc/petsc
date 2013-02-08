@@ -23,7 +23,7 @@ int main(int argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 
   /* create Cperm = rperm*C*icperm */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-testmyordering",&TestMyorder,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-testmyordering",&TestMyorder,NULL);CHKERRQ(ierr);
   if (TestMyorder) {
     ierr = MatGetOrdering_myordering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
     printf("myordering's rperm:\n");
@@ -62,7 +62,7 @@ int main(int argc,char **args)
     ierr = ISInvertPermutation(cperm,PETSC_DECIDE,&icperm);CHKERRQ(ierr);
     ierr = ISGetIndices(rperm,&rperm_ptr);CHKERRQ(ierr);
     ierr = ISGetIndices(icperm,&cperm_ptr);CHKERRQ(ierr);
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&Cperm);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&Cperm);CHKERRQ(ierr);
     for (i=0; i<m*n; i++) {
       ierr = MatGetRow(C,rperm_ptr[i],&ncols,&cols,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
@@ -99,8 +99,8 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,I
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = n-i-1; /* replace your index here */

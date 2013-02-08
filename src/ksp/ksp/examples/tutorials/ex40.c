@@ -42,9 +42,9 @@ int main(int Argc,char **Args)
   PetscErrorCode ierr;
 
   PetscInitialize(&Argc,&Args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&n,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&beta,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-rho",&rho,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-size",&n,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-beta",&beta,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-rho",&rho,&flg);CHKERRQ(ierr);
 
   /* Set the fudge parameters, we scale the whole thing by 1/(2*h) later */
   h    = 1.;
@@ -56,7 +56,7 @@ int main(int Argc,char **Args)
     periodic[i] = PETSC_TRUE;
     refine[i]   = 3;
   }
-  ierr = DMADDACreate(PETSC_COMM_WORLD, 2, nodes, PETSC_NULL, 2,periodic, &adda);CHKERRQ(ierr);
+  ierr = DMADDACreate(PETSC_COMM_WORLD, 2, nodes, NULL, 2,periodic, &adda);CHKERRQ(ierr);
   ierr = DMADDASetRefinement(adda, refine, 2);CHKERRQ(ierr);
 
   /* Random numbers */

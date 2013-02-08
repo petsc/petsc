@@ -280,7 +280,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-is_coloring_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-is_coloring_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
@@ -315,8 +315,8 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm       comm;
-  PetscInt       i,np,npt,n,*starts = PETSC_NULL,*sums = PETSC_NULL,*lsizes = PETSC_NULL,*newi = PETSC_NULL;
-  const PetscInt *indices = PETSC_NULL;
+  PetscInt       i,np,npt,n,*starts = NULL,*sums = NULL,*lsizes = NULL,*newi = NULL;
+  const PetscInt *indices = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -473,7 +473,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
   PetscInt       *indices,n,i,N,step,first;
   const PetscInt *lindices;
   MPI_Comm       comm;
-  PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
+  PetscMPIInt    size,*sizes = NULL,*offsets = NULL,nn;
   PetscBool      stride;
 
   PetscFunctionBegin;
@@ -541,7 +541,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   ISColoringValue *indices;
   PetscErrorCode  ierr;
   PetscInt        i,N;
-  PetscMPIInt     size,*offsets = PETSC_NULL,*sizes = PETSC_NULL, nn = n;
+  PetscMPIInt     size,*offsets = NULL,*sizes = NULL, nn = n;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

@@ -123,10 +123,10 @@ int main(int argc,char **argv)
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);
@@ -154,7 +154,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
 
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Get a pointer to vector data.

@@ -166,7 +166,7 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
     PetscScalar result;
     PetscReal   wnorm;
 
-    ierr = VecSetRandom(W,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(W,NULL);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&wnorm);CHKERRQ(ierr);
     ierr = VecDuplicate(W,&work);CHKERRQ(ierr);
     ierr = MatMult(A,W,work);CHKERRQ(ierr);
@@ -479,8 +479,8 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -526,7 +526,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   PetscInt          i,n, cnt = 0;
 
   PetscFunctionBegin;
-  ierr = SNESGetFunction(snes,&snes->vec_func,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&snes->vec_func,NULL,NULL);CHKERRQ(ierr);
   if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
   if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);

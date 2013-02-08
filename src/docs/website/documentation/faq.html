@@ -656,7 +656,7 @@ int main(int ac, char *av[]) {
     strcat(buf," ");
   }
 
-  PetscInitialize(&amp;ac, &amp;av, PETSC_NULL, help);
+  PetscInitialize(&amp;ac, &amp;av, NULL, help);
 
   return WinMain(inst,NULL,buf,SW_SHOWNORMAL);
 }
@@ -1198,11 +1198,11 @@ PETSC_COMM_WORLD = NewComm;
       <ol>
         <li>
           Preallocate enough space for the sparse matrix. For example, rather
-          than calling MatCreateSeqAIJ(comm,n,n,0,PETSC_NULL,&amp;mat); call
-          MatCreateSeqAIJ(comm,n,n,rowmax,PETSC_NULL,&amp;mat); where rowmax is
+          than calling MatCreateSeqAIJ(comm,n,n,0,NULL,&amp;mat); call
+          MatCreateSeqAIJ(comm,n,n,rowmax,NULL,&amp;mat); where rowmax is
           the maximum number of nonzeros expected per row. Or if you know the
           number of nonzeros per row, you can pass this information in instead of
-          the PETSC_NULL argument. See the manual pages for each of the
+          the NULL argument. See the manual pages for each of the
           MatCreateXXX() routines.
         </li>
 

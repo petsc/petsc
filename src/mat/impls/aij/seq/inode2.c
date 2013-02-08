@@ -60,8 +60,8 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
   PetscFunctionBegin;
   ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
   ierr = PetscFree3(a->inode.ibdiag,a->inode.bdiag,a->inode.ssor_work);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeAdjustForInodes_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeGetInodeSizes_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeAdjustForInodes_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeGetInodeSizes_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -90,15 +90,15 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   b->inode.bdiag       = 0;
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",NULL,no_unroll,&no_unroll,NULL);CHKERRQ(ierr);
   if (no_unroll) {
     ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-mat_no_inode","Do not optimize for inodes -slower-",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_no_inode","Do not optimize for inodes -slower-",NULL,no_inode,&no_inode,NULL);CHKERRQ(ierr);
   if (no_inode) {
     ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",NULL,b->inode.limit,&b->inode.limit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   b->inode.use = (PetscBool)(!(no_unroll || no_inode));

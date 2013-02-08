@@ -26,15 +26,15 @@ int main(int argc,char **args)
   isbinary  = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-binary",&isbinary,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-hdf5",&ishdf5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-sizes_set",&vstage2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-type_set",&vstage3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-hdf5",&ishdf5,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mpiio",&mpiio_use,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-sizes_set",&vstage2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-type_set",&vstage3,NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   /* PART 1:  Generate vector, then write it in the given data format */
 

@@ -428,7 +428,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   PetscInt       i,n,N;
   const PetscInt *lindices;
   MPI_Comm       comm;
-  PetscMPIInt    rank,size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
+  PetscMPIInt    rank,size,*sizes = NULL,*offsets = NULL,nn;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -569,7 +569,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
-  if (size == 1) *indices = PETSC_NULL;
+  if (size == 1) *indices = NULL;
   else {
     if (!is->total) {
       ierr = ISGatherTotal_Private(is);CHKERRQ(ierr);

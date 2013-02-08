@@ -17,7 +17,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
   PetscFunctionBegin;
   CharacteristicPackageInitialized = PETSC_FALSE;
   CharacteristicRegisterAllCalled  = PETSC_FALSE;
-  CharacteristicList               = PETSC_NULL;
+  CharacteristicList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -29,7 +29,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -62,7 +62,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MOCFullTimeRemot", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeRemote);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MOCFullTimeExchg", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeExchange);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "characteristic", &className);CHKERRQ(ierr);
     if (className) {
@@ -70,7 +70,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "characteristic", &className);CHKERRQ(ierr);
     if (className) {

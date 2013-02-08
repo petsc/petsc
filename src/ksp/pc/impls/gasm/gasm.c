@@ -103,7 +103,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   char           fname[PETSC_MAX_PATH_LEN+1];
   PetscInt       i, l, d, count, gcount, *permutation, *numbering;
   PetscBool      found;
-  PetscViewer    viewer, sviewer = PETSC_NULL;
+  PetscViewer    viewer, sviewer = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -177,7 +177,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   }
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(prefix,"-pc_gasm_view_subdomains",&view_subdomains,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(prefix,"-pc_gasm_view_subdomains",&view_subdomains,NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -266,7 +266,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   IS             goid;      /* Identity IS of the size of the disjoint union of outer subdomains. */
   PetscScalar    *gxarray, *gyarray;
   PetscInt       gofirst;   /* Start of locally-owned indices in the vectors -- osm->gx,osm->gy -- over the disjoint union of outer subdomains. */
-  DM             *subdomain_dm = PETSC_NULL;
+  DM             *subdomain_dm = NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
@@ -340,7 +340,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
 
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(prefix,"-pc_gasm_print_subdomains",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(prefix,"-pc_gasm_print_subdomains",&flg,NULL);CHKERRQ(ierr);
     if (flg) { ierr = PCGASMPrintSubdomains(pc);CHKERRQ(ierr); }
 
     if (osm->sort_indices) {
@@ -371,7 +371,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = MatGetVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
     ierr = VecCreateMPI(((PetscObject)pc)->comm, on, PETSC_DECIDE, &osm->gx);CHKERRQ(ierr);
     ierr = VecDuplicate(osm->gx,&osm->gy);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(osm->gx, &gofirst, PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(osm->gx, &gofirst, NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(((PetscObject)pc)->comm,on,gofirst,1, &goid);CHKERRQ(ierr);
     ierr = VecScatterCreate(x,gois,osm->gx,goid, &(osm->gorestriction));CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -393,7 +393,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       }
       ierr = PetscMalloc(in*sizeof(PetscInt), &iidx);CHKERRQ(ierr);
       ierr = PetscMalloc(in*sizeof(PetscInt), &ioidx);CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(osm->gx,&gofirst, PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(osm->gx,&gofirst, NULL);CHKERRQ(ierr);
       in   = 0;
       on   = 0;
       for (i=0; i<osm->n; i++) {
@@ -874,9 +874,9 @@ EXTERN_C_END
 +   pc  - the preconditioner context
 .   n   - the number of subdomains for this processor
 .   iis - the index sets that define this processor's local inner subdomains
-         (or PETSC_NULL for PETSc to determine subdomains)
+         (or NULL for PETSc to determine subdomains)
 -   ois- the index sets that define this processor's local outer subdomains
-         (or PETSC_NULL to use the same as iis)
+         (or NULL to use the same as iis)
 
     Notes:
     The IS indices use the parallel, global numbering of the vector entries.
@@ -1083,9 +1083,9 @@ PetscErrorCode  PCGASMSetSortIndices(PC pc,PetscBool doSort)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this processor or PETSC_NULL
-.  first_local - the global number of the first block on this processor or PETSC_NULL,
-                 all processors must request or all must pass PETSC_NULL
++  n_local - the number of blocks on this processor or NULL
+.  first_local - the global number of the first block on this processor or NULL,
+                 all processors must request or all must pass NULL
 -  ksp - the array of KSP contexts
 
    Note:
@@ -1251,7 +1251,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
   PetscMPIInt     size;
   PetscInt        i,j,rstart,rend,bs;
   PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
-  Mat             Ad     = PETSC_NULL, adj;
+  Mat             Ad     = NULL, adj;
   IS              ispart,isnumb,*is;
   PetscErrorCode  ierr;
 
@@ -1325,7 +1325,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
           iia[i+1] = nnz;
         }
         /* Partitioning of the adjacency matrix */
-        ierr      = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,PETSC_NULL,&adj);CHKERRQ(ierr);
+        ierr      = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,NULL,&adj);CHKERRQ(ierr);
         ierr      = MatPartitioningSetAdjacency(mpart,adj);CHKERRQ(ierr);
         ierr      = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
         ierr      = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
@@ -1428,7 +1428,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
    Input Parameters:
 +  n   - the number of index sets
 .  iis - the array of inner subdomains,
--  ois - the array of outer subdomains, can be PETSC_NULL
+-  ois - the array of outer subdomains, can be NULL
 
    Level: intermediate
 
@@ -1643,7 +1643,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
               subcomm = ((PetscObject)(*is)[s])->comm;
             }
           } /* if (q == 1) */
-          idx  = PETSC_NULL;
+          idx  = NULL;
           ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
           if (nidx) {
             k = 0;
@@ -1682,8 +1682,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
 
     Output Parameters:
 +   n   - the number of subdomains for this processor (default value = 1)
-.   iis - the index sets that define the inner subdomains (without overlap) supported on this processor (can be PETSC_NULL)
--   ois - the index sets that define the outer subdomains (with overlap) supported on this processor (can be PETSC_NULL)
+.   iis - the index sets that define the inner subdomains (without overlap) supported on this processor (can be NULL)
+-   ois - the index sets that define the outer subdomains (with overlap) supported on this processor (can be NULL)
 
 
     Notes:

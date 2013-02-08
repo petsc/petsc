@@ -329,7 +329,7 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 
    Output Parameters:
 +  val - the maximum component
--  p - the location of val (pass PETSC_NULL if you don't want this)
+-  p - the location of val (pass NULL if you don't want this)
 
    Notes:
    Returns the value PETSC_MIN_REAL and p = -1 if the vector is of length 0.
@@ -368,7 +368,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 
    Output Parameter:
 +  val - the minimum component
--  p - the location of val (pass PETSC_NULL if you don't want this location)
+-  p - the location of val (pass NULL if you don't want this location)
 
    Level: intermediate
 
@@ -1306,7 +1306,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecCreate(((PetscObject)is)->comm,&Z);CHKERRQ(ierr);
       ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-      ierr = VecScatterCreate(X,is,Z,PETSC_NULL,&scatter);CHKERRQ(ierr);
+      ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
@@ -1846,7 +1846,7 @@ PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
   ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1932,7 +1932,7 @@ PetscErrorCode  VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2041,7 +2041,7 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
   ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2157,7 +2157,7 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
   ierr  = PetscFree(dummy);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

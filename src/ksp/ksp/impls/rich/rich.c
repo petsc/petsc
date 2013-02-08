@@ -30,7 +30,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   MatStructure   pflag;
   PetscReal      rnorm = 0.0,abr;
   PetscScalar    scale,rdot;
-  Vec            x,b,r,z,w = PETSC_NULL,y = PETSC_NULL;
+  Vec            x,b,r,z,w = NULL,y = NULL;
   PetscInt       xs, ws;
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -211,7 +211,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C","",NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

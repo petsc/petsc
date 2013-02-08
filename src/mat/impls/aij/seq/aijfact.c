@@ -127,7 +127,7 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSetBlockSizes(*B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
@@ -150,7 +150,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
   PetscInt           *bdiag,row,nnz,nzi,reallocs=0,nzbd,*im;
   PetscReal          f;
   PetscInt           nlnk,*lnk,k,**bi_ptr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -246,7 +246,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(B)->data;
 
@@ -300,14 +300,14 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   PetscInt           *bdiag,row,nnz,nzi,reallocs=0,nzbd,*im;
   PetscReal          f;
   PetscInt           nlnk,*lnk,k,**bi_ptr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
   /* Uncomment the oldatastruct part only while testing new data structure for MatSolve() */
   /*
   PetscBool          olddatastruct=PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-lu_old",&olddatastruct,NULL);CHKERRQ(ierr);
   if (olddatastruct) {
     ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -391,7 +391,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(B)->data;
 
@@ -455,7 +455,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_factor_dump_on_error",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_factor_dump_on_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
@@ -1737,17 +1737,17 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscInt           i,levels,diagonal_fill;
   PetscBool          col_identity,row_identity;
   PetscReal          f;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL;
   PetscBT            lnkbt;
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
 
   PetscFunctionBegin;
   /* Uncomment the old data struct part only while testing new data structure for MatSolve() */
   /*
   PetscBool          olddatastruct=PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-ilu_old",&olddatastruct,NULL);CHKERRQ(ierr);
   if (olddatastruct) {
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1870,7 +1870,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   }
 #endif
   /* put together the new matrix */
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(fact)->data;
 
@@ -1921,11 +1921,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
   PetscInt           i,levels,diagonal_fill;
   PetscBool          col_identity,row_identity;
   PetscReal          f;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL;
   PetscBT            lnkbt;
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBool          missing;
 
   PetscFunctionBegin;
@@ -2066,7 +2066,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
 #endif
 
   /* put together the new matrix */
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(fact)->data;
 
@@ -2442,11 +2442,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=A->rmap->n,*ui,*udiag;
   const PetscInt     *rip,*riip;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,d;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL,d;
   PetscInt           ncols,ncols_upper,*cols,*ajtmp,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill          =info->fill,levels=info->levels;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBT            lnkbt;
   IS                 iperm;
 
@@ -2646,11 +2646,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
   PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=A->rmap->n,*ui,*udiag;
   const PetscInt     *rip,*riip;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,d;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL,d;
   PetscInt           ncols,ncols_upper,*cols,*ajtmp,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill          =info->fill,levels=info->levels;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBT            lnkbt;
   IS                 iperm;
 
@@ -2852,7 +2852,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   PetscInt           i,am=A->rmap->n,*ai=a->i,*aj=a->j,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,ncols_upper,*cols,*uj,**ui_ptr,*uj_ptr,*udiag;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
   IS                 iperm;
 
@@ -3022,7 +3022,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
   PetscInt           i,am=A->rmap->n,*ai=a->i,*aj=a->j,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,ncols_upper,*cols,*uj,**ui_ptr,*uj_ptr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
   IS                 iperm;
 
@@ -3326,7 +3326,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = PetscMalloc((nnz_max+1)*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)B->data;
 

@@ -205,7 +205,7 @@ PetscErrorCode DMPlexGetPointGlobal(DM dm,PetscInt point,PetscInt *start,PetscIn
 -  array - array to index into
 
    Output Arguments:
-.  ptr - address of read reference to point data, type generic so user can place in structure; returns PETSC_NULL if global point is not owned
+.  ptr - address of read reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
 
    Level: intermediate
 
@@ -228,7 +228,7 @@ PetscErrorCode DMPlexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *arr
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
   ierr                      = DMPlexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
-  *(const PetscScalar**)ptr = (start >= 0) ? array + start - dm->map->rstart : PETSC_NULL;
+  *(const PetscScalar**)ptr = (start >= 0) ? array + start - dm->map->rstart : NULL;
   PetscFunctionReturn(0);
 }
 
@@ -245,7 +245,7 @@ PetscErrorCode DMPlexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *arr
 -  array - array to index into
 
    Output Arguments:
-.  ptr - address of reference to point data, type generic so user can place in structure; returns PETSC_NULL if global point is not owned
+.  ptr - address of reference to point data, type generic so user can place in structure; returns NULL if global point is not owned
 
    Level: intermediate
 
@@ -268,6 +268,6 @@ PetscErrorCode DMPlexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
   ierr                = DMPlexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
-  *(PetscScalar**)ptr = (start >= 0) ? array + start - dm->map->rstart : PETSC_NULL;
+  *(PetscScalar**)ptr = (start >= 0) ? array + start - dm->map->rstart : NULL;
   PetscFunctionReturn(0);
 }

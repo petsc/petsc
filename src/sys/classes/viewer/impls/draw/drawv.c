@@ -215,7 +215,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   if (windownumber < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
-    ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDraw(viewer,windownumber,NULL);CHKERRQ(ierr);
   }
   if (!vdraw->drawlg[windownumber+vdraw->draw_base]) {
     ierr = PetscDrawLGCreate(vdraw->draw[windownumber+vdraw->draw_base],1,&vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
   if (windownumber < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
-    ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDraw(viewer,windownumber,NULL);CHKERRQ(ierr);
   }
   if (!vdraw->drawaxis[windownumber+vdraw->draw_base]) {
     ierr = PetscDrawAxisCreate(vdraw->draw[windownumber+vdraw->draw_base],&vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
@@ -337,8 +337,8 @@ PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const 
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
-   PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
-   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
+   NULL_CHARACTER must be employed; using NULL is not
+   correct for character data!  Thus, NULL_CHARACTER can be
    used for the display and title input parameters.
 
   Concepts: graphics^opening PetscViewer
@@ -685,7 +685,7 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&ncomm,PETSC_NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Draw_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}

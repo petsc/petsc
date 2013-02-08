@@ -414,32 +414,32 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex31.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex31.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex31.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex31.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
 
   options->runType = (RunType) run;
 
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex31.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex31.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex31.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex31.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex31.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex31.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex31.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex31.c",bcTypes,2,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
 
   options->bcType = (BCType) bc;
   forcing         = options->forcingType;
 
-  ierr = PetscOptionsEList("-forcing_type","Type of forcing function","ex31.c",forcingTypes,3,forcingTypes[options->forcingType],&forcing,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-forcing_type","Type of forcing function","ex31.c",forcingTypes,3,forcingTypes[options->forcingType],&forcing,NULL);CHKERRQ(ierr);
 
   options->forcingType = (ForcingType) forcing;
 
-  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex31.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex31.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex31.c", options->jacobianMF, &options->jacobianMF, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex31.c", options->showInitial, &options->showInitial, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex31.c", options->showSolution, &options->showSolution, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex31.c", options->numBatches, &options->numBatches, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex31.c", options->numBlocks, &options->numBlocks, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex31.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex31.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex31.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -484,8 +484,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = PETSC_NULL;
-    DM distributedMesh = PETSC_NULL;
+    DM refinedMesh     = NULL;
+    DM distributedMesh = NULL;
 
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
@@ -591,7 +591,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
       ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
       ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
     } else {
-      PetscInt *closure = PETSC_NULL;
+      PetscInt *closure = NULL;
       PetscInt closureSize, q, r;
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -632,7 +632,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
       ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
       ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
     } else {
-      PetscInt *closure = PETSC_NULL;
+      PetscInt *closure = NULL;
       PetscInt closureSize, q, r;
 
       ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -744,7 +744,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscInt       numBC               = 0;
   PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1, NUM_BASIS_COMPONENTS_2};
   PetscInt       bcFields[2]         = {0, 2};
-  IS             bcPoints[2]         = {PETSC_NULL, PETSC_NULL};
+  IS             bcPoints[2]         = {NULL, NULL};
   PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
   PetscInt       f, d;
   PetscBool      view;
@@ -781,7 +781,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     for (b = 0; b < numBoundaries; ++b) {
       ierr = DMPlexCreateSectionBCIndicesField(dm, bcFields[0], boundaryPoints[b], constraintIndices[b], section);CHKERRQ(ierr);
     }
-    ierr = DMPlexCreateSectionBCIndicesField(dm, bcFields[1], bcPoints[0], PETSC_NULL, section);CHKERRQ(ierr);
+    ierr = DMPlexCreateSectionBCIndicesField(dm, bcFields[1], bcPoints[0], NULL, section);CHKERRQ(ierr);
     ierr = DMPlexCreateSectionBCIndices(dm, section);CHKERRQ(ierr);
   } else {
     if (user->bcType == DIRICHLET) {
@@ -861,41 +861,41 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   fem->f1Funcs[0] = f1_u;
   fem->f1Funcs[1] = f1_p;
   fem->f1Funcs[2] = f1_T;
-  fem->g0Funcs[0] = PETSC_NULL;
-  fem->g0Funcs[1] = PETSC_NULL;
-  fem->g0Funcs[2] = PETSC_NULL;
-  fem->g0Funcs[3] = PETSC_NULL;
-  fem->g0Funcs[4] = PETSC_NULL;
-  fem->g0Funcs[5] = PETSC_NULL;
-  fem->g0Funcs[6] = PETSC_NULL;
-  fem->g0Funcs[7] = PETSC_NULL;
-  fem->g0Funcs[8] = PETSC_NULL;
-  fem->g1Funcs[0] = PETSC_NULL;
-  fem->g1Funcs[1] = PETSC_NULL;
-  fem->g1Funcs[2] = PETSC_NULL;
+  fem->g0Funcs[0] = NULL;
+  fem->g0Funcs[1] = NULL;
+  fem->g0Funcs[2] = NULL;
+  fem->g0Funcs[3] = NULL;
+  fem->g0Funcs[4] = NULL;
+  fem->g0Funcs[5] = NULL;
+  fem->g0Funcs[6] = NULL;
+  fem->g0Funcs[7] = NULL;
+  fem->g0Funcs[8] = NULL;
+  fem->g1Funcs[0] = NULL;
+  fem->g1Funcs[1] = NULL;
+  fem->g1Funcs[2] = NULL;
   fem->g1Funcs[3] = g1_pu;      /* < q, \nabla\cdot v > */
-  fem->g1Funcs[4] = PETSC_NULL;
-  fem->g1Funcs[5] = PETSC_NULL;
-  fem->g1Funcs[6] = PETSC_NULL;
-  fem->g1Funcs[7] = PETSC_NULL;
-  fem->g1Funcs[8] = PETSC_NULL;
-  fem->g2Funcs[0] = PETSC_NULL;
+  fem->g1Funcs[4] = NULL;
+  fem->g1Funcs[5] = NULL;
+  fem->g1Funcs[6] = NULL;
+  fem->g1Funcs[7] = NULL;
+  fem->g1Funcs[8] = NULL;
+  fem->g2Funcs[0] = NULL;
   fem->g2Funcs[1] = g2_up;      /* < \nabla\cdot v, p > */
-  fem->g2Funcs[2] = PETSC_NULL;
-  fem->g2Funcs[3] = PETSC_NULL;
-  fem->g2Funcs[4] = PETSC_NULL;
-  fem->g2Funcs[5] = PETSC_NULL;
-  fem->g2Funcs[6] = PETSC_NULL;
-  fem->g2Funcs[7] = PETSC_NULL;
-  fem->g2Funcs[8] = PETSC_NULL;
+  fem->g2Funcs[2] = NULL;
+  fem->g2Funcs[3] = NULL;
+  fem->g2Funcs[4] = NULL;
+  fem->g2Funcs[5] = NULL;
+  fem->g2Funcs[6] = NULL;
+  fem->g2Funcs[7] = NULL;
+  fem->g2Funcs[8] = NULL;
   fem->g3Funcs[0] = g3_uu;      /* < \nabla v, \nabla u + {\nabla u}^T > */
-  fem->g3Funcs[1] = PETSC_NULL;
-  fem->g3Funcs[2] = PETSC_NULL;
-  fem->g3Funcs[3] = PETSC_NULL;
-  fem->g3Funcs[4] = PETSC_NULL;
-  fem->g3Funcs[5] = PETSC_NULL;
-  fem->g3Funcs[6] = PETSC_NULL;
-  fem->g3Funcs[7] = PETSC_NULL;
+  fem->g3Funcs[1] = NULL;
+  fem->g3Funcs[2] = NULL;
+  fem->g3Funcs[3] = NULL;
+  fem->g3Funcs[4] = NULL;
+  fem->g3Funcs[5] = NULL;
+  fem->g3Funcs[6] = NULL;
+  fem->g3Funcs[7] = NULL;
   fem->g3Funcs[8] = g3_TT;      /* < \nabla t, \nabla T + {\nabla T}^T > */
   switch (user->forcingType) {
   case FORCING_CONSTANT:
@@ -1002,7 +1002,7 @@ PetscErrorCode CreateNullSpaces(DM dm, PetscInt field, MatNullSpace *nullSpace)
   ierr = DMLocalToGlobalBegin(dm, localNullVec, INSERT_VALUES, nullVec);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localNullVec, INSERT_VALUES, nullVec);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localNullVec);CHKERRQ(ierr);
-  ierr = VecNormalize(nullVec, PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecNormalize(nullVec, NULL);CHKERRQ(ierr);
   if (user->debug) {
     ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
     ierr = VecView(nullVec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -1110,7 +1110,7 @@ int main(int argc, char **argv)
   const PetscInt numComponents = NUM_BASIS_COMPONENTS_TOTAL;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
@@ -1189,7 +1189,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(comm, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-    ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
+    ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = DMPlexComputeL2Diff(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);

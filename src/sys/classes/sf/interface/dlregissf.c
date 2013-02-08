@@ -14,7 +14,7 @@ PetscBool PetscSFRegisterAllCalled;
    Logically Collective
 
    Input Arguments:
-.  path - the dynamic library path or PETSC_NULL
+.  path - the dynamic library path or NULL
 
    Level: developer
 

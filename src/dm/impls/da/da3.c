@@ -1382,8 +1382,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   dd->Nl        = nn*dof;
   dd->base      = base;
   da->ops->view = DMView_DA_3d;
-  dd->ltol      = PETSC_NULL;
-  dd->ao        = PETSC_NULL;
+  dd->ltol      = NULL;
+  dd->ao        = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1408,7 +1408,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx, ly, lz - arrays containing the number of nodes in each cell along
-          the x, y, and z coordinates, or PETSC_NULL. If non-null, these
+          the x, y, and z coordinates, or NULL. If non-null, these
           must be of length as m,n,p and the corresponding
           m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of
           the ly[] must N, sum of the lz[] must be P

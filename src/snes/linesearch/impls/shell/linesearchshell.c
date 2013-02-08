@@ -44,7 +44,7 @@ $  ...
 $
 $  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
 $  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL);CHKERRQ(ierr);
-$  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, PETSC_NULL);CHKERRQ(ierr);
+$  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL);CHKERRQ(ierr);
 
    Level: advanced
 
@@ -152,10 +152,10 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesear
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_Shell;
   linesearch->ops->destroy        = SNESLineSearchDestroy_Shell;
-  linesearch->ops->setfromoptions = PETSC_NULL;
-  linesearch->ops->reset          = PETSC_NULL;
-  linesearch->ops->view           = PETSC_NULL;
-  linesearch->ops->setup          = PETSC_NULL;
+  linesearch->ops->setfromoptions = NULL;
+  linesearch->ops->reset          = NULL;
+  linesearch->ops->view           = NULL;
+  linesearch->ops->setup          = NULL;
 
   ierr = PetscNewLog(linesearch, SNESLineSearch_Shell, &shell);CHKERRQ(ierr);
 

@@ -804,8 +804,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   dd->Nl        = nn*dof;
   dd->base      = base;
   da->ops->view = DMView_DA_2d;
-  dd->ltol      = PETSC_NULL;
-  dd->ao        = PETSC_NULL;
+  dd->ltol      = NULL;
+  dd->ao        = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -829,7 +829,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx, ly - arrays containing the number of nodes in each cell along
-           the x and y coordinates, or PETSC_NULL. If non-null, these
+           the x and y coordinates, or NULL. If non-null, these
            must be of length as m and n, and the corresponding
            m and n cannot be PETSC_DECIDE. The sum of the lx[] entries
            must be M, and the sum of the ly[] entries must be N.
@@ -881,7 +881,7 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMDABoundaryType bx,DMDABoundaryType 
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
-  ierr = DMDASetOwnershipRanges(*da, lx, ly, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*da, lx, ly, NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);

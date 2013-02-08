@@ -27,7 +27,7 @@
     Level: developer
 
     Notes:
-       PETSC_NULL (0), "stderr" or "stdout" may be passed in as the filename
+       NULL (0), "stderr" or "stdout" may be passed in as the filename
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -113,10 +113,10 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
--   fp - the file pointer where program input or output may be read or PETSC_NULL if don't care
+-   fp - the file pointer where program input or output may be read or NULL if don't care
 
    Output Parameters:
-.   rval - return value from pclose() or PETSC_NULL to raise an error on failure
+.   rval - return value from pclose() or NULL to raise an error on failure
 
    Level: intermediate
 
@@ -155,12 +155,12 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
-.   machine - machine to run command on or PETSC_NULL, or string with 0 in first location
+.   machine - machine to run command on or NULL, or string with 0 in first location
 .   program - name of program to run
 -   mode - either r or w
 
    Output Parameter:
-.   fp - the file pointer where program input or output may be read or PETSC_NULL if don't care
+.   fp - the file pointer where program input or output may be read or NULL if don't care
 
    Level: intermediate
 

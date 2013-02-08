@@ -29,7 +29,7 @@ PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,Pet
     PetscScalar result;
     PetscReal   wnorm;
 
-    ierr = VecSetRandom(W,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(W,NULL);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&wnorm);CHKERRQ(ierr);
     ierr = VecDuplicate(W,&work);CHKERRQ(ierr);
     ierr = MatMult(A,W,work);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetFunction(snes->pc, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
       ierr = VecCopy(FPC, F);CHKERRQ(ierr);
       ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
     }

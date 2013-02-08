@@ -52,9 +52,9 @@ int main(int argc,char **argv)
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = KSPGetOperators(ksp,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&b2);CHKERRQ(ierr);

@@ -18,7 +18,7 @@ PetscErrorCode  ISFinalizePackage(void)
 {
   PetscFunctionBegin;
   ISPackageInitialized = PETSC_FALSE;
-  ISList               = PETSC_NULL;
+  ISList               = NULL;
   ISRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -31,7 +31,7 @@ PetscErrorCode  ISFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-. path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -55,7 +55,7 @@ PetscErrorCode  ISInitializePackage(const char path[])
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -64,7 +64,7 @@ PetscErrorCode  ISInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -99,7 +99,7 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
   when using static libraries.
 
   Input Parameter:
-. path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -176,7 +176,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
   ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -184,7 +184,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -193,7 +193,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
   }
   /* Special processing */
   opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-log_sync", &opt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-log_sync", &opt,NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_TRUE);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode  VecFinalizePackage(void)
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
   VecPackageInitialized = PETSC_FALSE;
-  VecList               = PETSC_NULL;
+  VecList               = NULL;
   VecRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

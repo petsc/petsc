@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   }
 
   fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-malloc",&flg);CHKERRQ(ierr);
   if (flg) fprintf(stdout,"-malloc ");
   fprintf(stdout,"\n");
 

@@ -33,7 +33,7 @@ int main(int argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Read matrix and right-hand-side vector */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **args)
   ierr = MatCreate(MPI_COMM_SELF,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,M,N,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
     ierr = MatSetValues(B,1,&i,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }

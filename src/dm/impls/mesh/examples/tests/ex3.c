@@ -30,14 +30,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Mesh Distribution Options", "DMMESH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->filename, "");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The input filename", "ex1.c", options->filename, options->filename, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The input filename", "ex1.c", options->filename, options->filename, 2048, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "ex1.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "ex1.c", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",    DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh = PETSC_NULL;
+    DM refinedMesh = NULL;
 
     /* Refine mesh using a volume constraint */
     ierr = DMMeshRefine(*dm, refinementLimit, interpolate, &refinedMesh);CHKERRQ(ierr);
@@ -113,12 +113,12 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
     remoteRanks[p].index = 0;
   }
   ierr = PetscSFCreate(comm, &partSF);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(partSF, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(partSF, 1, numRemoteRanks, NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Debugging */
   ierr = PetscPrintf(comm, "Cell Partition:\n");CHKERRQ(ierr);
   ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFView(partSF, PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISView(cellPart, NULL);CHKERRQ(ierr);
+  ierr = PetscSFView(partSF, NULL);CHKERRQ(ierr);
   /* Close the partition over the mesh */
   ierr = DMMeshCreatePartitionClosure(dm, cellPartSection, cellPart, &partSection, &part);CHKERRQ(ierr);
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
@@ -132,10 +132,10 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   /* Debugging */
   ierr = PetscPrintf(comm, "Point Partition:\n");CHKERRQ(ierr);
   ierr = PetscSectionView(partSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscSFView(*pointSF, PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISView(part, NULL);CHKERRQ(ierr);
+  ierr = PetscSFView(*pointSF, NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(renumbering, PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(renumbering, NULL);CHKERRQ(ierr);
   /* Cleanup */
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
@@ -152,14 +152,14 @@ PetscErrorCode DistributeMesh(DM dm, AppCtx *user, PetscSF *pointSF, DM *paralle
   ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newConesSize, newCones, PETSC_NULL, newCones);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   /* Debugging */
   ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
   ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Parallel Cone Section:\n");CHKERRQ(ierr);
   ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFView(coneSF, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFView(coneSF, NULL);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
   /* Create supports and stratify sieve */
   ierr = DMMeshSymmetrize(*parallelDM);CHKERRQ(ierr);

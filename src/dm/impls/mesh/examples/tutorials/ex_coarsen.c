@@ -41,7 +41,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   ierr                     = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "Options");CHKERRQ(ierr);
   options->dim             = 2;
-  ierr                     = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);
+  ierr                     = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, NULL);
   options->debug           = 0;
   options->useZeroBase     = PETSC_TRUE;
   ierr                     = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
@@ -58,17 +58,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   } else {
     options->refinementLimit = 0.0001;
   }
-  ierr = PetscOptionsBool("-interpolate", "construct additional elements of the sieve", "ex_coarsen.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinementlimit", "The maximum cell volume in the finest mesh", "ex_coarsen.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen_3", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);
-  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);
-  ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL);
-  ierr = PetscOptionsBool("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, PETSC_NULL);
-  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);
-  ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "construct additional elements of the sieve", "ex_coarsen.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinementlimit", "The maximum cell volume in the finest mesh", "ex_coarsen.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen_3", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, NULL);
+  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, NULL);
+  ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, NULL);
+  ierr = PetscOptionsBool("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, NULL);
+  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, NULL);
+  ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

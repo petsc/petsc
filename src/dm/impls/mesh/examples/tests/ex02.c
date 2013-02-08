@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr      = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr      = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetInt(NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm      = PETSC_COMM_WORLD;
 
   ierr = PetscPrintf(comm, "Creating a doublet Sieve bottom-up\n");CHKERRQ(ierr);

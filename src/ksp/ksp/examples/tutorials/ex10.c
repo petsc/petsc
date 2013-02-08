@@ -56,24 +56,24 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-table",&table,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-trans",&trans,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-initialguess",&initialguess,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-output_solution",&outputSoln,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-table",&table,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-initialguess",&initialguess,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-output_solution",&outputSoln,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
 
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr    = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 or -f option");
-    ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (!flg) preload = PETSC_FALSE;   /* don't bother with second system */
   }
 
@@ -109,14 +109,14 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
     if (file[2][0] == '0') {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
-      ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
       ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
       ierr = VecSet(b,one);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ int main(int argc,char **args)
   /* Make A singular for testing zero-pivot of ilu factorization        */
   /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-test_zeropivot", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-test_zeropivot", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscInt          row,ncols;
     const PetscInt    *cols;
@@ -146,7 +146,7 @@ int main(int argc,char **args)
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
     ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(PETSC_NULL, "-set_row_zero", &flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
     if (flg1) {   /* set entire row as zero */
       ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
     } else {   /* only set (row,row) entry as zero */
@@ -158,7 +158,7 @@ int main(int argc,char **args)
 
   /* Check whether A is symmetric */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-check_symmetry", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-check_symmetry", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat Atrans;
     ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);
@@ -178,7 +178,7 @@ int main(int argc,char **args)
 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   /*  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);*/
-  ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = VecGetSize(b,&m);CHKERRQ(ierr);
   if (M != m) {   /* Create a new vector b by padding the old one */
     PetscInt    j,mvec,start,end,indx;
@@ -202,7 +202,7 @@ int main(int argc,char **args)
     b    = tmp;
   }
 
-  ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   if (initialguessfile) {
     PetscViewer viewer2;
@@ -219,7 +219,7 @@ int main(int argc,char **args)
 
   /* Check scaling in A */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-check_scaling", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-check_scaling", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Vec       max, min;
     PetscInt  idx;
@@ -227,8 +227,8 @@ int main(int argc,char **args)
 
     ierr = VecDuplicate(x, &max);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &min);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(A, max, PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetRowMinAbs(A, min, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(A, max, NULL);CHKERRQ(ierr);
+    ierr = MatGetRowMinAbs(A, min, NULL);CHKERRQ(ierr);
     {
       PetscViewer viewer;
 
@@ -275,11 +275,11 @@ int main(int argc,char **args)
   ierr       = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr       = KSPSetInitialGuessNonzero(ksp,initialguess);CHKERRQ(ierr);
   num_numfac = 1;
-  ierr       = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
+  ierr       = PetscOptionsGetInt(NULL,"-num_numfac",&num_numfac,NULL);CHKERRQ(ierr);
   while (num_numfac--) {
     PetscBool lsqr;
     char      str[32];
-    ierr = PetscOptionsGetString(PETSC_NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
     if (lsqr) {
       ierr = PetscStrcmp("lsqr",str,&lsqr);CHKERRQ(ierr);
     }
@@ -317,9 +317,9 @@ int main(int argc,char **args)
       ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     } else {
       PetscInt num_rhs=1;
-      ierr   = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
+      ierr   = PetscOptionsGetInt(NULL,"-num_rhs",&num_rhs,NULL);CHKERRQ(ierr);
       cknorm = PETSC_FALSE;
-      ierr   = PetscOptionsGetBool(PETSC_NULL,"-cknorm",&cknorm,PETSC_NULL);CHKERRQ(ierr);
+      ierr   = PetscOptionsGetBool(NULL,"-cknorm",&cknorm,NULL);CHKERRQ(ierr);
       while (num_rhs--) {
         if (num_rhs == 1) VecSet(x,0.0);
         ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
@@ -389,7 +389,7 @@ int main(int argc,char **args)
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
       }
     }
-    ierr = PetscOptionsGetString(PETSC_NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       Vec         xstar;
@@ -413,7 +413,7 @@ int main(int argc,char **args)
     }
 
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL, "-ksp_reason", &flg,NULL);CHKERRQ(ierr);
     if (flg) {
       KSPConvergedReason reason;
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);

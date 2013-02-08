@@ -241,8 +241,8 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   PetscEnum         etmp;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
   }
@@ -265,12 +265,12 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
   }

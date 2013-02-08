@@ -126,7 +126,7 @@ PetscErrorCode DMAKKTGetFieldDecompositionName(DM dm, char **dname)
   ierr = PetscObjectTypeCompare((PetscObject)dm, DMAKKT, &iskkt);CHKERRQ(ierr);
   if (!iskkt) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "DM not of type DMAKKT");
   if (dname) {
-    *dname = PETSC_NULL;
+    *dname = NULL;
     if (kkt->dname) {
       ierr = PetscStrallocpy(kkt->dname, dname);CHKERRQ(ierr);
     }
@@ -202,21 +202,21 @@ PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char ***names, IS
     if (kkt->names) {
       ierr = PetscMalloc(sizeof(char*)*2, names);CHKERRQ(ierr);
     } else {
-      *names = PETSC_NULL;
+      *names = NULL;
     }
   }
   if (iss) {
     if (kkt->isf) {
       ierr = PetscMalloc(sizeof(IS)*2, iss);CHKERRQ(ierr);
     } else {
-      *iss = PETSC_NULL;
+      *iss = NULL;
     }
   }
   if (dms) {
     if (kkt->dmf) {
       ierr = PetscMalloc(sizeof(DM)*2, dms);CHKERRQ(ierr);
     } else {
-      *dms = PETSC_NULL;
+      *dms = NULL;
     }
   }
   for (i = 0; i < 2; ++i) {
@@ -249,20 +249,20 @@ PetscErrorCode DMSetFromOptions_AKKT(DM dm)
                           "DMAKKTSetDupulicateMat",
                           kkt->duplicate_mat,
                           &kkt->duplicate_mat,
-                          PETSC_NULL);CHKERRQ(ierr);
+                          NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_akkt_detect_saddle_point",
                           "Identify dual variables by zero diagonal entries",
                           "DMAKKTSetDetectSaddlePoint",
                           kkt->detect_saddle_point,
                           &kkt->detect_saddle_point,
-                          PETSC_NULL);CHKERRQ(ierr);
+                          NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_akkt_decomposition_name",
                             "Name of primal-dual decomposition to request from DM",
                             "DMAKKTSetFieldDecompositionName",
                             kkt->dname,
                             kkt->dname,
                             DMAKKT_DECOMPOSITION_NAME_LEN,
-                            PETSC_NULL);CHKERRQ(ierr);
+                            NULL);CHKERRQ(ierr);
   dm->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -334,7 +334,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
     ierr = DMAKKTSetMatrix(kkt->dmf[0], A0f0f);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A0f0f, &lstart, &lend);CHKERRQ(ierr);
     ierr = ISCreateStride(((PetscObject)A0f0f)->comm, lend-lstart, lstart, 1, &is00);CHKERRQ(ierr);
-    ierr = DMAKKTSetFieldDecomposition(kkt->dmf[0], 1, &primal, &is00, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMAKKTSetFieldDecomposition(kkt->dmf[0], 1, &primal, &is00, NULL);CHKERRQ(ierr);
   }
   dm->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -412,10 +412,10 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
   DM_AKKT        *kkt = (DM_AKKT*)(dm->data);
   Mat            Acc;                                /* coarse-level KKT matrix */
   Mat            P0f0c, P1f1c;                       /* Primal and dual block prolongator    */
-  DM             dmc[2] = {PETSC_NULL, PETSC_NULL};  /* Coarse subDMs defining the block prolongators and the coarsened decomposition. */
+  DM             dmc[2] = {NULL, NULL};  /* Coarse subDMs defining the block prolongators and the coarsened decomposition. */
   PetscInt       M0,N0,M1,N1;   /* Sizes of P0f0c and P1f1c. */
   PetscInt       start0,end0,start1,end1; /* Ownership ranges for P0f0c and P1f1c. */
-  static Mat     mats[4] = {PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL}; /* Used to construct MatNest out of pieces. */
+  static Mat     mats[4] = {NULL, NULL, NULL, NULL}; /* Used to construct MatNest out of pieces. */
   IS             isc[2];  /* Used to construct MatNest out of pieces and to define the coarsened decomposition. */
 
   PetscFunctionBegin;
@@ -428,7 +428,7 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
   /* Coarsen the 00 block with the attached DM and obtain the primal prolongator. */
   if (kkt->dmf[0]) {
     ierr = DMCoarsen(kkt->dmf[0], comm,  dmc+0);CHKERRQ(ierr);
-    ierr = DMCreateInterpolation(dmc[0], kkt->dmf[0], &P0f0c, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(dmc[0], kkt->dmf[0], &P0f0c, NULL);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Could not coarsen the primal block: primal subDM not set.");
 
   /* Should P0f0c be transposed to act as a prolongator (i.e., to map from coarse to fine). */
@@ -439,7 +439,7 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm)
   /* See if the 11 block can be coarsened with an attached DM. If so, we are done. Otherwise, use GAMG to coarsen 11. */
   if (kkt->dmf[1]) {
     ierr = DMCoarsen(kkt->dmf[1], comm, &dmc[1]);CHKERRQ(ierr);
-    ierr = DMCreateInterpolation(dmc[1], kkt->dmf[1], &P1f1c, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(dmc[1], kkt->dmf[1], &P1f1c, NULL);CHKERRQ(ierr);
   } else {
     ierr = DMCoarsen_AKKT_GAMG11(dm, P0f0c, &P1f1c);CHKERRQ(ierr);
   }
@@ -509,7 +509,7 @@ PetscErrorCode DMCreateInterpolation_AKKT(DM cdm, DM fdm, Mat *interp, Vec * rsc
     ierr    = PetscObjectReference((PetscObject)(fkkt->Pfc));CHKERRQ(ierr);
     *interp = fkkt->Pfc;
   }
-  if (rscale) *rscale = PETSC_NULL;
+  if (rscale) *rscale = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -549,7 +549,7 @@ PetscErrorCode DMCreateGlobalVector_AKKT(DM dm, Vec *v)
   ierr = PetscObjectTypeCompare((PetscObject)dm, DMAKKT, &iskkt);CHKERRQ(ierr);
   if (!iskkt) SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "DM not of type DMAKKT");
   if (v) {
-    ierr = MatGetVecs(kkt->Aff, v, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(kkt->Aff, v, NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -654,9 +654,9 @@ PetscErrorCode DMCreate_AKKT(DM dm)
   ierr          = PetscNewLog(dm, DM_AKKT, &kkt);
   dm->data      = kkt;
   ierr          = PetscObjectChangeTypeName((PetscObject)kkt,DMAKKT);CHKERRQ(ierr);
-  kkt->dmf[0]   = kkt->dmf[1] = PETSC_NULL;
-  kkt->isf[0]   = kkt->isf[1] = PETSC_NULL;
-  kkt->names[0] = kkt->names[1] = PETSC_NULL;
+  kkt->dmf[0]   = kkt->dmf[1] = NULL;
+  kkt->isf[0]   = kkt->isf[1] = NULL;
+  kkt->names[0] = kkt->names[1] = NULL;
 
   kkt->duplicate_mat       = PETSC_FALSE;
   kkt->detect_saddle_point = PETSC_FALSE;

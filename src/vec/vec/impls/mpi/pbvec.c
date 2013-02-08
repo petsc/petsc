@@ -169,7 +169,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 
-    If alloc is true and array is PETSC_NULL then this routine allocates the space, otherwise
+    If alloc is true and array is NULL then this routine allocates the space, otherwise
     no space is allocated.
 */
 PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
@@ -292,7 +292,7 @@ EXTERN_C_END
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
-   If the user-provided array is PETSC_NULL, then VecPlaceArray() can be used
+   If the user-provided array is NULL, then VecPlaceArray() can be used
    at a later stage to SET the array for storing the vector values.
 
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
@@ -333,7 +333,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 .  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
-.  ghosts - global indices of ghost points (or PETSC_NULL if not needed), these do not need to be in increasing order (sorted)
+.  ghosts - global indices of ghost points (or NULL if not needed), these do not need to be in increasing order (sorted)
 -  array - the space to store the vector values (as long as n + nghost)
 
    Output Parameter:
@@ -394,7 +394,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 
   /* set local to global mapping for ghosted vector */
   ierr = PetscMalloc((n+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(*vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rstart + i;
   }
@@ -501,7 +501,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     N    = vv->map->N;
     ierr = (*vv->ops->destroy)(vv);CHKERRQ(ierr);
     ierr = VecSetSizes(vv,n,N);CHKERRQ(ierr);
-    ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,nghost,NULL);CHKERRQ(ierr);
     w    = (Vec_MPI*)(vv)->data;
     /* Create local representation */
     ierr = VecGetArray(vv,&larray);CHKERRQ(ierr);
@@ -521,7 +521,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 
     /* set local to global mapping for ghosted vector */
     ierr = PetscMalloc((n+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(vv,&rstart,NULL);CHKERRQ(ierr);
 
     for (i=0; i<n; i++)      indices[i]   = rstart + i;
     for (i=0; i<nghost; i++) indices[n+i] = ghosts[i];
@@ -550,7 +550,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 .  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
-.  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
+.  ghosts - global indices of ghost blocks (or NULL if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
 -  array - the space to store the vector values (as long as n + nghost*bs)
 
    Output Parameter:
@@ -616,7 +616,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   /* set local to global mapping for ghosted vector */
   nb   = n/bs;
   ierr = PetscMalloc((nb+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(*vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
 
   for (i=0; i<nb; i++)      indices[i]    = rstart + i*bs;
   for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];

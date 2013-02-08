@@ -109,7 +109,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   ierr = PetscDrawString(draw,xminf,yminf - .05*(ymaxf - yminf),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
   ierr = PetscSNPrintf(value,16,"%f",xmaxf);CHKERRQ(ierr);
   ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-  ierr = PetscDrawStringGetSize(draw,&w,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawStringGetSize(draw,&w,NULL);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,xmaxf - len*w,yminf - .05*(ymaxf - yminf),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
   ierr = PetscSNPrintf(value,16,"%f",yminf);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,xminf - .05*(xmaxf - xminf),yminf,PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   DMDABoundaryType   bx,by;
   DMDAStencilType    st;
   ZoomCtx            zctx;
-  PetscDrawViewPorts *ports = PETSC_NULL;
+  PetscDrawViewPorts *ports = NULL;
   PetscViewerFormat  format;
   PetscInt           *displayfields;
   PetscInt           ndisplayfields,i,nbounds;
@@ -155,7 +155,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&bx,&by,0,&st);CHKERRQ(ierr);
-  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,NULL);CHKERRQ(ierr);
 
   /*
         Obtain a sequential vector that is going to contain the local values plus ONE layer of
@@ -213,10 +213,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   /*
       Determine the min and max  coordinates in plot
   */
-  ierr     = VecStrideMin(xcoor,0,PETSC_NULL,&xmin);CHKERRQ(ierr);
-  ierr     = VecStrideMax(xcoor,0,PETSC_NULL,&xmax);CHKERRQ(ierr);
-  ierr     = VecStrideMin(xcoor,1,PETSC_NULL,&ymin);CHKERRQ(ierr);
-  ierr     = VecStrideMax(xcoor,1,PETSC_NULL,&ymax);CHKERRQ(ierr);
+  ierr     = VecStrideMin(xcoor,0,NULL,&xmin);CHKERRQ(ierr);
+  ierr     = VecStrideMax(xcoor,0,NULL,&xmax);CHKERRQ(ierr);
+  ierr     = VecStrideMin(xcoor,1,NULL,&ymin);CHKERRQ(ierr);
+  ierr     = VecStrideMax(xcoor,1,NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
   ierr     = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %G %G %G %G\n",coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
@@ -246,12 +246,12 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMDAGetInfo(dac,0,&M,&N,0,0,0,0,&zctx.step,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,0,0,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-draw_contour_grid",&zctx.showgrid,NULL);CHKERRQ(ierr);
 
   ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_ports",&useports,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-draw_ports",&useports,NULL);CHKERRQ(ierr);
   if (useports || format == PETSC_VIEWER_DRAW_PORTS) {
     ierr       = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr       = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
@@ -276,8 +276,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     /*
         Determine the min and max color in plot
     */
-    ierr = VecStrideMin(xin,zctx.k,PETSC_NULL,&zctx.min);CHKERRQ(ierr);
-    ierr = VecStrideMax(xin,zctx.k,PETSC_NULL,&zctx.max);CHKERRQ(ierr);
+    ierr = VecStrideMin(xin,zctx.k,NULL,&zctx.min);CHKERRQ(ierr);
+    ierr = VecStrideMax(xin,zctx.k,NULL,&zctx.max);CHKERRQ(ierr);
     if (zctx.k < nbounds) {
       zctx.min = bounds[2*zctx.k];
       zctx.max = bounds[2*zctx.k+1];

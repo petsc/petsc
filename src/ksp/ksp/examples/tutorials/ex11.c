@@ -57,8 +57,8 @@ int main(int argc,char **args)
   a=1.0+PETSC_i;
   printf("%G+%Gi\n",PetscRealPart(a),PetscImaginaryPart(a));
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   dim  = n*n;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,7 +91,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
   */
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-norandom",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-norandom",&flg,NULL);CHKERRQ(ierr);
   if (flg) use_random = 0;
   else use_random = 1;
   if (use_random) {
@@ -193,7 +193,7 @@ int main(int argc,char **args)
       real and imaginary components of the complex vector, x.
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-print_x3",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-print_x3",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);

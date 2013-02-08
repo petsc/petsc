@@ -57,9 +57,9 @@ static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
   ierr = PetscFree(vtk);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerVTKAddField_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerVTKAddField_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +80,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
   ierr       = PetscObjectDestroy(&vtk->dm);CHKERRQ(ierr);
-  vtk->write = PETSC_NULL;
+  vtk->write = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -148,7 +148,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   ierr       = PetscMalloc(sizeof(struct _n_PetscViewerVTKObjectLink),&link);CHKERRQ(ierr);
   link->ft   = fieldtype;
   link->vec  = vec;
-  link->next = PETSC_NULL;
+  link->next = NULL;
   /* Append to list */
   if (tail) {
     while (tail->next) tail = tail->next;

@@ -46,7 +46,7 @@ PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str
   PetscFunctionBegin;
   ierr = VecScatterBegin(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(ctx->snes,&As,&Bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(ctx->snes,&As,&Bs,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESComputeJacobian(ctx->snes,ctx->xwork,&As,&Bs,str);CHKERRQ(ierr);
   if (*B) {
     ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,MAT_REUSE_MATRIX,B);CHKERRQ(ierr);
@@ -110,7 +110,7 @@ PetscErrorCode SolveSubproblem(SNES snes)
   ierr = VecSetSizes(x,cnt,cnt);CHKERRQ(ierr);
   ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = VecScatterCreate(solution,ctx.is,x,PETSC_NULL,&ctx.scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(solution,ctx.is,x,NULL,&ctx.scatter);CHKERRQ(ierr);
 
   ierr = VecDuplicate(solution,&ctx.xwork);CHKERRQ(ierr);
   ierr = VecCopy(solution,ctx.xwork);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode SolveSubproblem(SNES snes)
   ierr = SNESSetFunction(snessub,f,FormFunctionSub,(void*)&ctx);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snessub,0,0,FormJacobianSub,(void*)&ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snessub);CHKERRQ(ierr);
-  ierr = SNESSolve(snessub,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snessub,NULL,x);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx.scatter,x,solution,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx.scatter,x,solution,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 

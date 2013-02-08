@@ -68,7 +68,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
   ierr = DMRestoreNamedGlobalVector(cdmc,"coefficient",&cc);CHKERRQ(ierr);
   ierr = DMRestoreNamedLocalVector(cdmc,"coefficient",&ccl);CHKERRQ(ierr);
 
-  ierr = DMCoarsenHookAdd(dmc,CoefficientCoarsenHook,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmc,CoefficientCoarsenHook,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDestroy(&cdmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
@@ -133,8 +133,8 @@ int main(int argc,char **argv)
 
   ierr = TSSetDM(ts, da);CHKERRQ(ierr);
 
-  ierr = FormInitialGuess(da,PETSC_NULL,x);CHKERRQ(ierr);
-  ierr = DMDATSSetIFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*))FormIFunctionLocal,PETSC_NULL);CHKERRQ(ierr);
+  ierr = FormInitialGuess(da,NULL,x);CHKERRQ(ierr);
+  ierr = DMDATSSetIFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*))FormIFunctionLocal,NULL);CHKERRQ(ierr);
 
   /* set up the coefficient */
 
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
   ierr = DMGetNamedGlobalVector(cda,"coefficient",&c);CHKERRQ(ierr);
   ierr = DMGetNamedLocalVector(cda,"coefficient",&clocal);CHKERRQ(ierr);
 
-  ierr = FormDiffusionCoefficient(cda,PETSC_NULL,c);CHKERRQ(ierr);
+  ierr = FormDiffusionCoefficient(cda,NULL,c);CHKERRQ(ierr);
 
   ierr = DMGlobalToLocalBegin(cda,c,INSERT_VALUES,clocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(cda,c,INSERT_VALUES,clocal);CHKERRQ(ierr);
@@ -152,8 +152,8 @@ int main(int argc,char **argv)
   ierr = DMRestoreNamedLocalVector(cda,"coefficient",&clocal);CHKERRQ(ierr);
   ierr = DMRestoreNamedGlobalVector(cda,"coefficient",&c);CHKERRQ(ierr);
 
-  ierr = DMCoarsenHookAdd(da,CoefficientCoarsenHook,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMSubDomainHookAdd(da,CoefficientSubDomainRestrictHook,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(da,CoefficientCoarsenHook,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(da,CoefficientSubDomainRestrictHook,NULL,NULL);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,10000,10000.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.05);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ PetscErrorCode FormInitialGuess(DM da,void *ctx,Vec X)
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -216,12 +216,12 @@ PetscErrorCode FormDiffusionCoefficient(DM da,void *ctx,Vec X)
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   /*
-  ierr = VecSetRandom(X,PETSC_NULL);
-  ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
+  ierr = VecSetRandom(X,NULL);
+  ierr = VecMin(X,NULL,&min);CHKERRQ(ierr);
    */
 
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {

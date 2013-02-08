@@ -101,7 +101,7 @@ PetscInt main(PetscInt argc,char **args)
   if (N2%2==0) NM=N2+2;
   else NM=N2+1;
 
-  ierr = VecGetOwnershipRange(fin,&low,PETSC_NULL);
+  ierr = VecGetOwnershipRange(fin,&low,NULL);
   printf("The local index is %d from %d\n",low,rank);
   ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx3);
   ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx4);

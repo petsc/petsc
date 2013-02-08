@@ -274,8 +274,8 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSuperluSetILUDropTol_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSuperluSetILUDropTol_C","",NULL);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -454,9 +454,9 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   lu->options.Trans = TRANS;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_SuperLU() is not implemented yet");
@@ -585,7 +585,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
@@ -640,7 +640,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   if (flg) lu->options.ReplaceTinyPivot = YES;
   ierr = PetscOptionsBool("-mat_superlu_printstat","PrintStat","None",(PetscBool)lu->options.PrintStat,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.PrintStat = YES;
-  ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,NULL);CHKERRQ(ierr);
   if (lu->lwork > 0) {
     ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr);
   } else if (lu->lwork != 0 && lu->lwork != -1) {
@@ -654,7 +654,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   if (flg) lu->options.ILU_FillTol = (double) real_input;
   ierr = PetscOptionsReal("-mat_superlu_ilu_fillfactor","ILU_FillFactor","None",lu->options.ILU_FillFactor,&real_input,&flg);CHKERRQ(ierr);
   if (flg) lu->options.ILU_FillFactor = (double) real_input;
-  ierr = PetscOptionsInt("-mat_superlu_ilu_droprull","ILU_DropRule","None",lu->options.ILU_DropRule,&lu->options.ILU_DropRule,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_superlu_ilu_droprull","ILU_DropRule","None",lu->options.ILU_DropRule,&lu->options.ILU_DropRule,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_superlu_ilu_norm","ILU_Norm","None",lu->options.ILU_Norm,&indx,&flg);CHKERRQ(ierr);
   if (flg) lu->options.ILU_Norm = (norm_t)indx;
   ierr = PetscOptionsInt("-mat_superlu_ilu_milu","ILU_MILU","None",lu->options.ILU_MILU,&indx,&flg);CHKERRQ(ierr);
@@ -675,19 +675,19 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   /* create rhs and solution x without allocate space for .Store */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-  cCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_C, SLU_GE);
-  cCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_C, SLU_GE);
+  cCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE);
+  cCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_C, SLU_GE);
 #else
-  zCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_Z, SLU_GE);
-  zCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_Z, SLU_GE);
+  zCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE);
+  zCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_Z, SLU_GE);
 #endif
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
-  sCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_S, SLU_GE);
-  sCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_S, SLU_GE);
+  sCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE);
+  sCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_S, SLU_GE);
 #else
-  dCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
-  dCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
+  dCreate_Dense_Matrix(&lu->B, m, 1, NULL, m, SLU_DN, SLU_D, SLU_GE);
+  dCreate_Dense_Matrix(&lu->X, m, 1, NULL, m, SLU_DN, SLU_D, SLU_GE);
 #endif
 #endif
 

@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   /* Create 2D DMDA */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da);CHKERRQ(ierr);
   /* Create 1D DMDAs along two directions */
-  ierr = DMDAGetOwnershipRanges(da, &lx, &ly, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da, &lx, &ly, NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   ierr = DMDAGetProcessorSubsets(da, DMDA_X, &commX);CHKERRQ(ierr);
   ierr = DMDAGetProcessorSubsets(da, DMDA_Y, &commY);CHKERRQ(ierr);

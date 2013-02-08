@@ -134,12 +134,12 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     PetscBool flg1,flg2,flg3,flg4;
     PetscPThreadCommInitializeCalled = PETSC_TRUE;
 
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"PThread communicator options",PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-threadcomm_pthread_main_is_worker","Main thread is also a worker thread",PETSC_NULL,PETSC_TRUE,&ptcomm->ismainworker,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"PThread communicator options",NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-threadcomm_pthread_main_is_worker","Main thread is also a worker thread",NULL,PETSC_TRUE,&ptcomm->ismainworker,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_affpolicy","Thread affinity policy"," ",PetscPThreadCommAffinityPolicyTypes,(PetscEnum)ptcomm->aff,(PetscEnum*)&ptcomm->aff,&flg2);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_type","Thread pool type"," ",PetscPThreadCommSynchronizationTypes,(PetscEnum)ptcomm->sync,(PetscEnum*)&ptcomm->sync,&flg3);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_spark","Thread pool spark type"," ",PetscPThreadCommPoolSparkTypes,(PetscEnum)ptcomm->spark,(PetscEnum*)&ptcomm->spark,&flg4);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-threadcomm_pthread_synchronizeafter","Puts a barrier after every kernel call",PETSC_NULL,PETSC_TRUE,&ptcomm->synchronizeafter,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-threadcomm_pthread_synchronizeafter","Puts a barrier after every kernel call",NULL,PETSC_TRUE,&ptcomm->synchronizeafter,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     if (ptcomm->ismainworker) {

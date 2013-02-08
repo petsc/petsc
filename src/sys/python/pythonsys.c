@@ -16,7 +16,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
   PetscFunctionBegin;
   /* get the path for the Python interpreter executable */
   ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-python",pythonexe,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-python",pythonexe,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
   if (!flag || pythonexe[0]==0) {
     ierr = PetscStrncpy(pythonexe,PETSC_PYTHON_EXE,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   }
@@ -46,10 +46,10 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   ierr = PetscStrcat(command," ");CHKERRQ(ierr);
   ierr = PetscStrcat(command,cmdline);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
-  ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,command,"r",&fp);CHKERRQ(ierr);
+  ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp);CHKERRQ(ierr);
   if (!fgets(prefix,sizeof(prefix),fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
   if (!fgets(version,sizeof(version),fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
-  ierr = PetscPClose(PETSC_COMM_SELF,fp,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(PETSC_COMM_SELF,fp,NULL);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,1,"Python: Aborted due to missing popen()");
 #endif
@@ -122,7 +122,7 @@ static void      (*PyErr_Restore)(PyObject*,PyObject*,PyObject*);
 #define PetscDLPyLibOpen(libname) \
   PetscDLLibraryAppend(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,libname)
 #define PetscDLPyLibSym(symbol, value) \
-  PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,PETSC_NULL,symbol,(void**)value)
+  PetscDLLibrarySym(PETSC_COMM_SELF,&PetscDLLibrariesLoaded,NULL,symbol,(void**)value)
 #define PetscDLPyLibClose(comm) \
   do { } while (0)
 
@@ -193,8 +193,8 @@ PetscErrorCode  PetscPythonFinalize(void)
   PetscPythonInitialize - Initialize Python and import petsc4py.
 
    Input Parameter:
-+  pyexe - path to the Python interpreter executable, or PETSC_NULL.
--  pylib - full path to the Python dynamic library, or PETSC_NULL.
++  pyexe - path to the Python interpreter executable, or NULL.
+-  pylib - full path to the Python dynamic library, or NULL.
 
   Level: intermediate
 
@@ -241,7 +241,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     }
     if (py_version[0] == '3') {
       /* XXX 'argv' is type 'wchar_t**' */
-      PySys_SetArgv(0,PETSC_NULL);
+      PySys_SetArgv(0,NULL);
     }
     /* add PETSC_LIB_DIR in front of 'sys.path' */
     sys_path = PySys_GetObject("path");
@@ -300,7 +300,7 @@ PetscErrorCode  PetscPythonPrintError(void)
 
 EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
-PetscErrorCode        (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = PETSC_NULL;
+PetscErrorCode        (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = NULL;
 EXTERN_C_END
 
 #undef __FUNCT__
@@ -320,9 +320,9 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(url,2);
-  if (PetscPythonMonitorSet_C == PETSC_NULL) {
-    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    if (PetscPythonMonitorSet_C == PETSC_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
+  if (PetscPythonMonitorSet_C == NULL) {
+    ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
+    if (PetscPythonMonitorSet_C == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
   }
   ierr = PetscPythonMonitorSet_C(obj,url);CHKERRQ(ierr);
   PetscFunctionReturn(0);

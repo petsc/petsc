@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,2,2,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,2,2,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");
   {
     user.A      = 1;
     user.B      = 3;
@@ -70,13 +70,13 @@ int main(int argc,char **argv)
     user.uright = 1;
     user.vleft  = 3;
     user.vright = 3;
-    ierr        = PetscOptionsReal("-A","Reaction rate","",user.A,&user.A,PETSC_NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-B","Reaction rate","",user.B,&user.B,PETSC_NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-alpha","Diffusion coefficient","",user.alpha,&user.alpha,PETSC_NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user.uleft,&user.uleft,PETSC_NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright,&user.uright,PETSC_NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft,&user.vleft,PETSC_NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright,&user.vright,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-A","Reaction rate","",user.A,&user.A,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-B","Reaction rate","",user.B,&user.B,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-alpha","Diffusion coefficient","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user.uleft,&user.uleft,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright,&user.uright,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft,&user.vleft,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright,&user.vright,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -86,8 +86,8 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormRHSFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 

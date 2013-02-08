@@ -11,11 +11,11 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   ierr = PetscStrallocpy(name, &(*label)->name);CHKERRQ(ierr);
 
   (*label)->refct          = 1;
-  (*label)->stratumValues  = PETSC_NULL;
-  (*label)->stratumOffsets = PETSC_NULL;
-  (*label)->stratumSizes   = PETSC_NULL;
-  (*label)->points         = PETSC_NULL;
-  (*label)->next           = PETSC_NULL;
+  (*label)->stratumValues  = NULL;
+  (*label)->stratumOffsets = NULL;
+  (*label)->stratumSizes   = NULL;
+  (*label)->points         = NULL;
+  (*label)->next           = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -273,7 +273,7 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 
   PetscFunctionBegin;
   PetscValidPointer(points, 3);
-  *points = PETSC_NULL;
+  *points = NULL;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) {
       ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], PETSC_COPY_VALUES, points);CHKERRQ(ierr);
@@ -493,7 +493,7 @@ PetscErrorCode DMPlexGetLabelSize(DM dm, const char name[], PetscInt *size)
 - name - The label name
 
   Output Parameter:
-. ids - The integer ids, or PETSC_NULL if the label does not exist
+. ids - The integer ids, or NULL if the label does not exist
 
   Level: beginner
 
@@ -510,7 +510,7 @@ PetscErrorCode DMPlexGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscValidCharPointer(name, 2);
   PetscValidPointer(ids, 3);
   ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
-  *ids = PETSC_NULL;
+  *ids = NULL;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetValueIS(label, ids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -565,7 +565,7 @@ PetscErrorCode DMPlexGetStratumSize(DM dm, const char name[], PetscInt value, Pe
 - value - The stratum value
 
   Output Parameter:
-. points - The stratum points, or PETSC_NULL if the label does not exist or does not have that value
+. points - The stratum points, or NULL if the label does not exist or does not have that value
 
   Level: beginner
 
@@ -582,7 +582,7 @@ PetscErrorCode DMPlexGetStratumIS(DM dm, const char name[], PetscInt value, IS *
   PetscValidCharPointer(name, 2);
   PetscValidPointer(points, 4);
   ierr    = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
-  *points = PETSC_NULL;
+  *points = NULL;
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelGetStratumIS(label, value, points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -738,7 +738,7 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetLabel"
 /*@C
-  DMPlexGetLabel - Return the label of a given name, or PETSC_NULL
+  DMPlexGetLabel - Return the label of a given name, or NULL
 
   Not Collective
 
@@ -747,7 +747,7 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 - name - The label name
 
   Output Parameter:
-. label - The DMLabel, or PETSC_NULL if the label is absent
+. label - The DMLabel, or NULL if the label is absent
 
   Level: intermediate
 
@@ -765,7 +765,7 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(label, 3);
-  *label = PETSC_NULL;
+  *label = NULL;
   while (next) {
     ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
@@ -820,7 +820,7 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 - name - The label name
 
   Output Parameter:
-. label - The DMLabel, or PETSC_NULL if the label is absent
+. label - The DMLabel, or NULL if the label is absent
 
   Level: developer
 
@@ -831,21 +831,21 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
   DMLabel        next  = mesh->labels;
-  DMLabel        last  = PETSC_NULL;
+  DMLabel        last  = NULL;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr   = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
-  *label = PETSC_NULL;
+  *label = NULL;
   if (!hasLabel) PetscFunctionReturn(0);
   while (next) {
     ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       if (last) last->next   = next->next;
       else      mesh->labels = next->next;
-      next->next = PETSC_NULL;
+      next->next = NULL;
       *label     = next;
       break;
     }

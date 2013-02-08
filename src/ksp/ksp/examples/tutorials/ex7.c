@@ -47,7 +47,7 @@ int main(int argc,char **args)
   PetscBool      isbjacobi,flg = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = m+2;
@@ -63,8 +63,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
@@ -211,7 +211,7 @@ int main(int argc,char **args)
   /*
      View info about the solver
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-nokspview",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-nokspview",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

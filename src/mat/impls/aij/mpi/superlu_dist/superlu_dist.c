@@ -197,9 +197,9 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 
   PetscFunctionBegin;
   if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
-  ierr = PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   }
   ierr = MatCopy(B_mpi,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = MatGetSize(B_mpi,PETSC_NULL,&nrhs);CHKERRQ(ierr);
+  ierr = MatGetSize(B_mpi,NULL,&nrhs);CHKERRQ(ierr);
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
   ierr = MatDenseGetArray(X,&bptr);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
 PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat              *tseq,A_seq = PETSC_NULL;
+  Mat              *tseq,A_seq = NULL;
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(F)->spptr;
   PetscErrorCode   ierr;
@@ -264,7 +264,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   double         *berr=0;
   IS             isrow;
   PetscLogDouble time0,time,time_min,time_max;
-  Mat            F_diag=PETSC_NULL;
+  Mat            F_diag=NULL;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex *av, *bv;
 #else
@@ -493,8 +493,8 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
-  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);
+  ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->view             = MatView_SuperLU_DIST;
@@ -534,13 +534,13 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   }
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,NULL);CHKERRQ(ierr);
   if (size != lu->nprow * lu->npcol) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
 
   lu->MatInputMode = DISTRIBUTED;
 
-  ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,NULL);CHKERRQ(ierr);
   if (lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
   ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr);

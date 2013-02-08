@@ -20,16 +20,16 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
   /* alocate pool, partially */
   ierr                 = PetscMalloc(sizeof(PetscCoarsenData), &ail);CHKERRQ(ierr);
   *a_out               = ail;
-  ail->pool_list.next  = PETSC_NULL;
-  ail->pool_list.array = PETSC_NULL;
+  ail->pool_list.next  = NULL;
+  ail->pool_list.array = NULL;
   ail->chk_sz          = 0;
   /* allocate array */
   ail->size = a_size;
   ierr      = PetscMalloc(a_size*sizeof(PetscCDIntNd*), &ail->array);CHKERRQ(ierr);
-  for (ii=0; ii<a_size; ii++) ail->array[ii] = PETSC_NULL;
-  ail->extra_nodes = PETSC_NULL;
-  ail->mat         = PETSC_NULL;
-  /* ail->removedIS = PETSC_NULL; */
+  for (ii=0; ii<a_size; ii++) ail->array[ii] = NULL;
+  ail->extra_nodes = NULL;
+  ail->mat         = NULL;
+  /* ail->removedIS = NULL; */
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +84,7 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
     PetscCDIntNd *node = ail->extra_nodes;
     ail->extra_nodes = node->next;
     node->gid        = a_id;
-    node->next       = PETSC_NULL;
+    node->next       = NULL;
     *a_out           = node;
   } else {
     if (!ail->pool_list.array) {
@@ -92,7 +92,7 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
       ierr                = PetscMalloc(ail->chk_sz*sizeof(PetscCDIntNd), &ail->pool_list.array);CHKERRQ(ierr);
       ail->new_node       = ail->pool_list.array;
       ail->new_left       = ail->chk_sz;
-      ail->new_node->next = PETSC_NULL;
+      ail->new_node->next = NULL;
     } else if (!ail->new_left) {
       PetscCDArrNd *node;
       ierr                = PetscMalloc(ail->chk_sz*sizeof(PetscCDIntNd) + sizeof(PetscCDArrNd), &node);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
       ail->new_node       = node->array;
     }
     ail->new_node->gid  = a_id;
-    ail->new_node->next = PETSC_NULL;
+    ail->new_node->next = NULL;
     *a_out              = ail->new_node++; ail->new_left--;
   }
   PetscFunctionReturn(0);
@@ -169,7 +169,7 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
     do {
       if (!n2->next) {
         n2->next = n;
-        assert(n->next == PETSC_NULL);
+        assert(n->next == NULL);
         break;
       }
       n2 = n2->next;
@@ -193,7 +193,7 @@ PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx,  PetscCD
     do {
       if (!n2->next) {
         n2->next  = a_n;
-        a_n->next = PETSC_NULL;
+        a_n->next = NULL;
         break;
       }
       n2 = n2->next;
@@ -216,7 +216,7 @@ PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx,  Pet
   assert(a_last->next);
   del          = a_last->next;
   a_last->next = del->next;
-  /* del->next = PETSC_NULL; -- this still used in a iterator so keep it intact -- need to fix this with a double linked list */
+  /* del->next = NULL; -- this still used in a iterator so keep it intact -- need to fix this with a double linked list */
   /* could reuse n2 but PetscCDAppendNode sometimes uses it */
   PetscFunctionReturn(0);
 }
@@ -268,7 +268,7 @@ PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, Pe
       n = n->next;
     } while (1);
   }
-  ail->array[a_srcidx] = PETSC_NULL;
+  ail->array[a_srcidx] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -283,7 +283,7 @@ PetscErrorCode PetscCDRemoveAll(PetscCoarsenData *ail, PetscInt a_idx)
   PetscFunctionBegin;
   if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
   rem               = ail->array[a_idx];
-  ail->array[a_idx] = PETSC_NULL;
+  ail->array[a_idx] = NULL;
   if (!(n1=ail->extra_nodes)) ail->extra_nodes = rem;
   else {
     while (n1->next) n1 = n1->next;
@@ -320,7 +320,7 @@ PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData *ail, PetscInt a_idx, Petsc
 {
   PetscFunctionBegin;
   if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
-  *a_e = (PetscBool)(ail->array[a_idx]==PETSC_NULL);
+  *a_e = (PetscBool)(ail->array[a_idx]==NULL);
   PetscFunctionReturn(0);
 }
 
@@ -426,7 +426,7 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
 /* PetscErrorCode PetscCDGetRemovedIS(PetscCoarsenData *ail, IS *a_is) */
 /* { */
 /*   *a_is = ail->removedIS; */
-/*   ail->removedIS = PETSC_NULL; /\* hack to relinquish ownership *\/ */
+/*   ail->removedIS = NULL; /\* hack to relinquish ownership *\/ */
 /*   PetscFunctionReturn(0); */
 /* } */
 
@@ -469,7 +469,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
   Mat_SeqAIJ       *matA, *matB=0;
   Mat_MPIAIJ       *mpimat     =0;
   PetscScalar      one         =1.;
-  PetscCoarsenData *agg_llists = PETSC_NULL,*deleted_list = PETSC_NULL;
+  PetscCoarsenData *agg_llists = NULL,*deleted_list = NULL;
   Mat              cMat,tMat,P;
   MatScalar        *ap;
   PetscMPIInt      tag1,tag2;

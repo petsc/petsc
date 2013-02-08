@@ -45,7 +45,7 @@ int main(int argc,char **args)
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1);
   M    = m*m;
   h    = 1.0/m;
@@ -63,8 +63,8 @@ int main(int argc,char **args)
   ierr  = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr  = MatSeqAIJSetPreallocation(A,9,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = MatMPIAIJSetPreallocation(A,9,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr); /* More than necessary */
+  ierr  = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
+  ierr  = MatMPIAIJSetPreallocation(A,9,NULL,5,NULL);CHKERRQ(ierr); /* More than necessary */
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 

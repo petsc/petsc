@@ -96,20 +96,20 @@ static PetscErrorCode assembled_system(void)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /*
     Set function evaluation routine and vector.
     */
-    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,NULL);CHKERRQ(ierr);
 
     /*
     Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,NULL);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,7 +152,7 @@ static PetscErrorCode assembled_system(void)
   this vector to zero by calling VecSet().
   */
 
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;
@@ -383,7 +383,7 @@ static int block_system(void)
   */
   bx[0] = x1;
   bx[1] = x2;
-  ierr  = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,bx,&x);CHKERRQ(ierr);
+  ierr  = VecCreateNest(PETSC_COMM_WORLD,2,NULL,bx,&x);CHKERRQ(ierr);
   ierr  = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr  = VecAssemblyEnd(x);CHKERRQ(ierr);
   ierr  = VecDestroy(&x1);CHKERRQ(ierr);
@@ -391,7 +391,7 @@ static int block_system(void)
 
   bx[0] = r1;
   bx[1] = r2;
-  ierr  = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,bx,&r);CHKERRQ(ierr);
+  ierr  = VecCreateNest(PETSC_COMM_WORLD,2,NULL,bx,&r);CHKERRQ(ierr);
   ierr  = VecDestroy(&r1);CHKERRQ(ierr);
   ierr  = VecDestroy(&r2);CHKERRQ(ierr);
   ierr  = VecAssemblyBegin(r);CHKERRQ(ierr);
@@ -427,7 +427,7 @@ static int block_system(void)
   bA[1][0] = j21;
   bA[1][1] = j22;
 
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&bA[0][0],&J);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,&bA[0][0],&J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
   ierr = MatNestSetVecType(J,VECNEST);CHKERRQ(ierr);
   ierr = MatDestroy(&j11);CHKERRQ(ierr);
@@ -438,20 +438,20 @@ static int block_system(void)
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
     /*
     Set function evaluation routine and vector.
     */
-    ierr = SNESSetFunction(snes,r,FormFunction1_block,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1_block,NULL);CHKERRQ(ierr);
 
     /*
     Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1_block,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1_block,NULL);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,FormFunction2_block,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2_block,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2_block,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2_block,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -484,7 +484,7 @@ static int block_system(void)
     ierr = VecSet(x,pfive);CHKERRQ(ierr);
   } else {
     Vec *vecs;
-    ierr = VecNestGetSubVecs(x, PETSC_NULL, &vecs);CHKERRQ(ierr);
+    ierr = VecNestGetSubVecs(x, NULL, &vecs);CHKERRQ(ierr);
     bv   = vecs[0];
 /*    ierr = VecBlockGetSubVec(x, 0, &bv);CHKERRQ(ierr); */
     ierr = VecSetValue(bv, 0, 2.0, INSERT_VALUES);CHKERRQ(ierr);  /* xx[0] = 2.0; */
@@ -503,7 +503,7 @@ static int block_system(void)
   to employ an initial guess of zero, the user should explicitly set
   this vector to zero by calling VecSet().
   */
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;
@@ -586,7 +586,7 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat *jac,Mat *B,MatStr
   ierr  = VecGetValues(x2,1, &index, &xx_1);CHKERRQ(ierr);
 
   /* get block matrices */
-  ierr = MatNestGetSubMats(*jac,PETSC_NULL,PETSC_NULL,&mats);CHKERRQ(ierr);
+  ierr = MatNestGetSubMats(*jac,NULL,NULL,&mats);CHKERRQ(ierr);
   j11  = mats[0][0];
   j12  = mats[0][1];
   j21  = mats[1][0];

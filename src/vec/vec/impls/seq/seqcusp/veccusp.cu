@@ -636,7 +636,7 @@ struct VecCUSPPointwiseDivide
 #define __FUNCT__ "VecPointwiseDivide_SeqCUSP"
 PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec win, Vec xin, Vec yin)
 {
-  CUSPARRAY      *warray=PETSC_NULL,*xarray=PETSC_NULL,*yarray=PETSC_NULL;
+  CUSPARRAY      *warray=NULL,*xarray=NULL,*yarray=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -702,7 +702,7 @@ struct VecCUSPDiff
 #define __FUNCT__ "VecWAXPY_SeqCUSP"
 PetscErrorCode VecWAXPY_SeqCUSP(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
-  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL,*warray=PETSC_NULL;
+  CUSPARRAY      *xarray=NULL,*yarray=NULL,*warray=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1290,7 +1290,7 @@ PetscErrorCode VecMDot_SeqCUSPOld(Vec xin,PetscInt nv,const Vec yin[],PetscScala
 #define __FUNCT__ "VecSet_SeqCUSP"
 PetscErrorCode VecSet_SeqCUSP(Vec xin,PetscScalar alpha)
 {
-  CUSPARRAY      *xarray=PETSC_NULL;
+  CUSPARRAY      *xarray=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1894,8 +1894,8 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
       if (((Vec_CUSP*)v->spptr)->GPUvector) delete ((Vec_CUSP*)v->spptr)->GPUvector;
       Vec_Seq *s;
       s                  = (Vec_Seq*)v->data;
-      s->array           = PETSC_NULL;
-      s->array_allocated = PETSC_NULL;
+      s->array           = NULL;
+      s->array_allocated = NULL;
 #endif
       delete ((Vec_CUSP*)v->spptr)->GPUarray;
       delete (Vec_CUSP*) v->spptr;

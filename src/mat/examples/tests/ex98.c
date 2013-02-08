@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,16,16);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocationCSR(A,ia,ja,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocationCSR(A,ia,ja,NULL);CHKERRQ(ierr);
   ierr = PetscFree(ia);CHKERRQ(ierr);
   ierr = PetscFree(ja);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

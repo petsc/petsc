@@ -15,7 +15,7 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
   /* Handle DMMesh refinement */
   /* Handle associated vectors */
   /* Handle viewing */
-  ierr = PetscOptionsBool("-dm_mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
 
@@ -26,7 +26,7 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
     ierr = DMView(dm, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-dm_mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
 
@@ -231,7 +231,7 @@ PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
-  ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMView", PETSC_FALSE, &flg, NULL);CHKERRQ(ierr);
   if (flg) {
     DM boundary;
 
@@ -312,7 +312,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm comm, PetscInt dim, PetscI
   /* PetscValidLogicalCollectiveBool(comm,interpolate,6); */
   PetscValidPointer(dm, 7);
   if (interpolate) SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-dm_mesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-dm_mesh_debug", &debug, NULL);CHKERRQ(ierr);
   Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, debug);
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
@@ -352,7 +352,7 @@ PetscErrorCode DMMeshCreateMeshFromAdjacencyHybrid(MPI_Comm comm, PetscInt dim, 
   /* PetscValidLogicalCollectiveBool(comm,interpolate,6); */
   PetscValidPointer(dm, 7);
   if (interpolate) SETERRQ(comm, PETSC_ERR_SUP, "Interpolation (creation of faces and edges) is not yet supported.");
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-dmmesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-dmmesh_debug", &debug, NULL);CHKERRQ(ierr);
   Obj<PETSC_MESH_TYPE>             mesh  = new PETSC_MESH_TYPE(comm, dim, debug);
   Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, 0, numCells+numVertices, debug);
 
@@ -400,7 +400,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-dm_mesh_debug", &debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-dm_mesh_debug", &debug, NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   if (info.sw  > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only DMDAs with unti stencil width can be converted to DMMeshes.");
@@ -641,37 +641,37 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   ierr     = PetscNewLog(dm, DM_Mesh, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
-  new(&mesh->m) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
+  new(&mesh->m) ALE::Obj<PETSC_MESH_TYPE>(NULL);
 
-  mesh->globalScatter  = PETSC_NULL;
-  mesh->defaultSection = PETSC_NULL;
-  mesh->lf             = PETSC_NULL;
-  mesh->lj             = PETSC_NULL;
+  mesh->globalScatter  = NULL;
+  mesh->defaultSection = NULL;
+  mesh->lf             = NULL;
+  mesh->lj             = NULL;
 
   mesh->useNewImpl     = PETSC_FALSE;
   mesh->dim            = 0;
-  mesh->sf             = PETSC_NULL;
+  mesh->sf             = NULL;
 
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
 
   mesh->maxConeSize    = 0;
-  mesh->cones          = PETSC_NULL;
+  mesh->cones          = NULL;
 
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
 
   mesh->maxSupportSize = 0;
-  mesh->supports       = PETSC_NULL;
+  mesh->supports       = NULL;
 
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
 
-  mesh->meetTmpA    = PETSC_NULL;
-  mesh->meetTmpB    = PETSC_NULL;
-  mesh->joinTmpA    = PETSC_NULL;
-  mesh->joinTmpB    = PETSC_NULL;
-  mesh->closureTmpA = PETSC_NULL;
-  mesh->closureTmpB = PETSC_NULL;
+  mesh->meetTmpA    = NULL;
+  mesh->meetTmpB    = NULL;
+  mesh->joinTmpA    = NULL;
+  mesh->joinTmpB    = NULL;
+  mesh->closureTmpA = NULL;
+  mesh->closureTmpB = NULL;
 
   ierr = DMSetVecType(dm,VECSTANDARD);CHKERRQ(ierr);
 
@@ -704,7 +704,7 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void))DMConvert_DA_Mesh);CHKERRQ(ierr);
 
   /* NEW_MESH_IMPL */
-  ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMCreate", PETSC_FALSE, &mesh->useNewImpl, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMCreate", PETSC_FALSE, &mesh->useNewImpl, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

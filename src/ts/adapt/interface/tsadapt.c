@@ -70,7 +70,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
   PetscFunctionBegin;
   TSAdaptPackageInitialized = PETSC_FALSE;
   TSAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSAdaptList               = PETSC_NULL;
+  TSAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -82,7 +82,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
   TSCreate_GL() when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -372,9 +372,9 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
   if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
-  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);

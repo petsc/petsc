@@ -850,7 +850,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or PETSC_NULL
+         (possibly different for each row) or NULL
 
    Output Parameter:
 .  A - the matrix
@@ -868,7 +868,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 

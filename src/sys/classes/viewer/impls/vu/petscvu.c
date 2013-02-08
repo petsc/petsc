@@ -32,7 +32,7 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
   }
   ierr   = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
   ierr   = PetscFClose(((PetscObject)viewer)->comm, vu->fd);CHKERRQ(ierr);
-  vu->fd = PETSC_NULL;
+  vu->fd = NULL;
   ierr   = PetscFree(vu->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -148,17 +148,17 @@ PetscErrorCode  PetscViewerCreate_VU(PetscViewer viewer)
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;
   viewer->ops->flush            = PetscViewerFlush_VU;
-  viewer->ops->getsingleton     = PETSC_NULL;
-  viewer->ops->restoresingleton = PETSC_NULL;
+  viewer->ops->getsingleton     = NULL;
+  viewer->ops->restoresingleton = NULL;
   viewer->format                = PETSC_VIEWER_DEFAULT;
   viewer->iformat               = 0;
 
-  vu->fd          = PETSC_NULL;
+  vu->fd          = NULL;
   vu->mode        = FILE_MODE_WRITE;
-  vu->filename    = PETSC_NULL;
+  vu->filename    = NULL;
   vu->vecSeen     = PETSC_FALSE;
-  vu->queue       = PETSC_NULL;
-  vu->queueBase   = PETSC_NULL;
+  vu->queue       = NULL;
+  vu->queueBase   = NULL;
   vu->queueLength = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerFileSetName_C", "PetscViewerFileSetName_VU",
@@ -310,7 +310,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   if (vu->queue) {
     vu->queue->next = next;
     vu->queue       = next;
-    vu->queue->next = PETSC_NULL;
+    vu->queue->next = NULL;
   } else {
     vu->queueBase   = vu->queue = next;
   }
@@ -353,7 +353,7 @@ PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)
     next     = next->next;
     ierr     = PetscFree(previous);CHKERRQ(ierr);
   }
-  vu->queue       = PETSC_NULL;
+  vu->queue       = NULL;
   vu->queueLength = 0;
   PetscFunctionReturn(0);
 }

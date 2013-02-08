@@ -245,10 +245,10 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   // get matrix information
-  ierr = MatGetLocalSize(J, &Nr, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(J, &Nr, NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(J, &firstRow, &lastRow);CHKERRQ(ierr);
   ierr = MatGetOwnershipRanges(J, &rowRanges);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(J, &firstCol, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(J, &firstCol, NULL);CHKERRQ(ierr);
   ierr = PetscInfo3(J, "Assembling matrix of size %d (rows %d -- %d)\n", Nr, firstRow, lastRow);CHKERRQ(ierr);
 
   // repeat elemRows entries Nl times

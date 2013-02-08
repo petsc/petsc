@@ -114,34 +114,34 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Swing equation options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
   {
     ctx.omega_s = 2*PETSC_PI*60;
     ctx.H       = 3.01;
-    ierr        = PetscOptionsScalar("-Inertia","","",ctx.H,&ctx.H,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-Inertia","","",ctx.H,&ctx.H,NULL);CHKERRQ(ierr);
     ctx.D       = 0.01;
-    ierr        = PetscOptionsScalar("-D","","",ctx.D,&ctx.D,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-D","","",ctx.D,&ctx.D,NULL);CHKERRQ(ierr);
     ctx.E       = 1.056;
-    ierr        = PetscOptionsScalar("-E","","",ctx.E,&ctx.E,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-E","","",ctx.E,&ctx.E,NULL);CHKERRQ(ierr);
     ctx.V       = 1.025;
-    ierr        = PetscOptionsScalar("-V","","",ctx.V,&ctx.V,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-V","","",ctx.V,&ctx.V,NULL);CHKERRQ(ierr);
     ctx.X       = 0.1813;
-    ierr        = PetscOptionsScalar("-X","","",ctx.X,&ctx.X,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-X","","",ctx.X,&ctx.X,NULL);CHKERRQ(ierr);
     ctx.Pm      = 0.85;
     ctx.tf      = 2.0;
     ctx.tcl     = 2.1;
-    ierr        = PetscOptionsReal("-tcl","","",ctx.tcl,&ctx.tcl,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-tcl","","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = ctx.omega_s;
     u[1] = asin(ctx.Pm*ctx.X/(ctx.E*ctx.V));
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsVec("-initial","Initial values","",U,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsVec("-initial","Initial values","",U,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -151,7 +151,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

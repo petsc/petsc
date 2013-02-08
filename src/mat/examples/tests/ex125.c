@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
@@ -40,7 +40,7 @@ int main(int argc,char **args)
 
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nrhs",&nrhs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   if (!rank) printf("ex125: nrhs %d\n",nrhs);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
   switch (ipack) {
   case 0:
 #if defined(PETSC_HAVE_SUPERLU)

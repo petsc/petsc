@@ -98,7 +98,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);}
 
   /*======================================================================*/
@@ -108,15 +108,15 @@ int main(int argc,char **args)
   tsCtx.max_steps         = 50;   tsCtx.max_time    = 1.0e+12; tsCtx.iramp   = -50;
   tsCtx.dt                = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
   tsCtx.LocalTimeStepping = 1;
-  ierr                    = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetReal(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetReal(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetReal(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetInt(NULL,"-max_st",&tsCtx.max_steps,NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetReal(NULL,"-ts_rtol",&tsCtx.fnorm_ratio,NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetReal(NULL,"-cfl_ini",&tsCtx.cfl_ini,NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetReal(NULL,"-cfl_max",&tsCtx.cfl_max,NULL);CHKERRQ(ierr);
   tsCtx.print_freq        = tsCtx.max_steps;
-  ierr                    = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetString(PETSC_NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetInt(NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetString(NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu);CHKERRQ(ierr);
   pvtu_base64             = PETSC_FALSE;
-  ierr                    = PetscOptionsGetBool(PETSC_NULL,"-pvtu_base64",&pvtu_base64,PETSC_NULL);CHKERRQ(ierr);
+  ierr                    = PetscOptionsGetBool(NULL,"-pvtu_base64",&pvtu_base64,NULL);CHKERRQ(ierr);
 
   c_info->alpha = 3.0;
   c_info->beta  = 15.0;
@@ -130,14 +130,14 @@ int main(int argc,char **args)
   ierr          = PetscMemzero(&f_pntr,sizeof(f_pntr));CHKERRQ(ierr);
   f_pntr.jvisc  = c_info->ivisc;
   f_pntr.ileast = 4;
-  ierr          = PetscOptionsGetReal(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr          = PetscOptionsGetReal(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetReal(NULL,"-alpha",&c_info->alpha,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetReal(NULL,"-beta",&c_info->beta,NULL);CHKERRQ(ierr);
 
   /*======================================================================*/
 
   /*Set the maximum number of threads for OpenMP */
 #if defined(_OPENMP)
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
   omp_set_num_threads(max_threads);
   ierr = PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
@@ -173,7 +173,7 @@ int main(int argc,char **args)
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matrix_free",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
     ierr = MatCreateSNESMF(snes,&Jpc);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ int main(int argc,char **args)
 
   ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
   }
@@ -235,13 +235,13 @@ int main(int argc,char **args)
   ierr = VecDestroy(&user.grid->gradLoc);CHKERRQ(ierr);
   ierr = MatDestroy(&user.grid->A);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matrix_free",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = MatDestroy(&Jpc);CHKERRQ(ierr);}
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user.grid->scatter);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user.grid->gradScatter);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
   }
@@ -513,7 +513,7 @@ int Update(SNES snes,void *ctx)
   long long      counter0,counter1;*/
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-print",&print_flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-print",&print_flag,NULL);CHKERRQ(ierr);
   if (print_flag) {
     ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
@@ -527,8 +527,8 @@ int Update(SNES snes,void *ctx)
 #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
   /* if (!user->PreLoading) {
     PetscBool  flg = PETSC_FALSE;
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
     ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
     if ((gen_start = start_counters(event0,event1)) < 0)
     SETERRQ(PETSC_COMM_SELF,1,"Error in start_counters\n");
@@ -540,7 +540,7 @@ int Update(SNES snes,void *ctx)
     ierr = ComputeTimeStep(snes,tsCtx->itstep,user);CHKERRQ(ierr);
     /*tsCtx->ptime +=  tsCtx->dt;*/
 
-    ierr = SNESSolve(snes,PETSC_NULL,grid->qnode);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,grid->qnode);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
     ierr       = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
@@ -699,7 +699,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(grid_param,&tmp);
   if (!rank) {
     PetscBool exists;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
     if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
@@ -755,7 +755,7 @@ int GetLocalOrdering(GRID *grid)
       char      spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool exists;
 
-      ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try appending the number of processors */
         sprintf(part_file,"part_vec.part.%d",size);
@@ -889,7 +889,7 @@ int GetLocalOrdering(GRID *grid)
    printf("%d %d %d\n",i,tmp[i],eperm[i]);
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-no_edge_reordering",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-no_edge_reordering",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
@@ -1085,7 +1085,7 @@ int GetLocalOrdering(GRID *grid)
     PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
     /* Write the partition vector to disk */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(0,"-omp_partitioning",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(0,"-omp_partitioning",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       int  *partv_loc, *partv_glo;
       int  *disp,*counts,*loc2glo_glo;
@@ -1610,7 +1610,7 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscPrintf(comm,"Free boundaries partitioned\n");CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
   }
@@ -1698,7 +1698,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscPrintf(comm,"------------------------------------------------------------\n");CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-partition_info",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-partition_info",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     char part_file[PETSC_MAX_PATH_LEN];
     sprintf(part_file,"output.%d",rank);
@@ -1957,7 +1957,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
 
   PetscFunctionBegin;
   *incell = -1;
-  *iconn  = PETSC_NULL;
+  *iconn  = NULL;
   acell   = 100000;              /* allocate for this many cells */
   ierr    = PetscMalloc(acell*sizeof(*conn),&conn);CHKERRQ(ierr);
   ierr    = PetscMalloc2(nnodes+1,PetscInt,&ui,nedge,PetscInt,&uj);CHKERRQ(ierr);
@@ -2090,7 +2090,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
     if (rstart <= node1p && node1p < rstart+nnodesLoc) vne[nodeEdgeOffset[node1p-rstart] + nodeEdgeCount[node1p-rstart]++] = node0p;
   }
   ierr = VecRestoreArray(VNodeEdge,&vne);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VNodeEdge,&nodeEdgeRstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VNodeEdge,&nodeEdgeRstart,NULL);CHKERRQ(ierr);
 
   /* Move the count and offset into a Vec so that we can use VecScatter, translating offset from local to global */
   ierr = VecCreate(PETSC_COMM_WORLD,&VNodeEdgeInfo);CHKERRQ(ierr);
@@ -2113,7 +2113,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = VecSetType(VNodeEdgeInfoOv,VECSEQ);CHKERRQ(ierr);
 
   ierr = ISCreateBlock(PETSC_COMM_WORLD,2,nvertices,grid->loc2pet,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr); /* Address the nodes in overlap to get info from */
-  ierr = VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,PETSC_NULL,&neiscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,NULL,&neiscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&neiscat);CHKERRQ(ierr);
@@ -2133,7 +2133,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = VecRestoreArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,nedgeOv,eIdxOv,PETSC_USE_POINTER,&isedgeOv);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nedgeOv,&VNodeEdgeOv);CHKERRQ(ierr);
-  ierr = VecScatterCreate(VNodeEdge,isedgeOv,VNodeEdgeOv,PETSC_NULL,&nescat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(VNodeEdge,isedgeOv,VNodeEdgeOv,NULL,&nescat);CHKERRQ(ierr);
   ierr = VecScatterBegin(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&nescat);CHKERRQ(ierr);
@@ -2193,7 +2193,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-complete_overlap",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-complete_overlap",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     *invertices = grid->nvertices; /* We did not change the number of vertices */
     *inedgeOv   = nedgeOv;
@@ -2491,8 +2491,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     val_offd[i] = nbrs_offd;
   }
   ierr = MatCreateBAIJ(comm,bs,bs*nnodesLoc,bs*nnodesLoc,
-                       bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
-                       PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
+                       bs*nnodes,bs*nnodes,NULL,val_diag,
+                       NULL,val_offd,&grid->A);CHKERRQ(ierr);
 #else
   ICALLOC(nnodesLoc*4,&val_diag);
   ICALLOC(nnodesLoc*4,&val_offd);
@@ -2512,8 +2512,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     }
   }
   ierr = MatCreateAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
-                      bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
-                      PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
+                      bs*nnodes,bs*nnodes,NULL,val_diag,
+                      NULL,val_offd,&grid->A);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(val_diag);CHKERRQ(ierr);
   ierr = PetscFree(val_offd);CHKERRQ(ierr);
@@ -2532,18 +2532,18 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
       val_diag[row] = nbrs_diag*4;
       val_offd[row] = 0;
     }
-  /* ierr = MatCreateSeqAIJ(MPI_COMM_SELF,nnodes*4,nnodes*4,PETSC_NULL,
+  /* ierr = MatCreateSeqAIJ(MPI_COMM_SELF,nnodes*4,nnodes*4,NULL,
                         val,&grid->A);*/
   ierr = MatCreateAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
-                      bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
-                      PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
+                      bs*nnodes,bs*nnodes,NULL,val_diag,
+                      NULL,val_offd,&grid->A);CHKERRQ(ierr);
   ierr = MatSetBlockSize(grid->A,bs);CHKERRQ(ierr);
   ierr = PetscFree(val_diag);CHKERRQ(ierr);
   ierr = PetscFree(val_offd);CHKERRQ(ierr);
 #endif
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
   }

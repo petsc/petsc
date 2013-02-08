@@ -91,7 +91,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   /*ierr = PetscOptionsInt("-pc_sacusp_cycles","Number of v-cycles to perform","PCSACUSPSetCycles",sa->cycles,
-    &sa->cycles,PETSC_NULL);CHKERRQ(ierr);*/
+    &sa->cycles,NULL);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -148,7 +148,7 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
-  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
+  CUSPARRAY      *xarray=NULL,*yarray=NULL;
 
   PetscFunctionBegin;
   /*how to apply a certain fixed number of iterations?*/

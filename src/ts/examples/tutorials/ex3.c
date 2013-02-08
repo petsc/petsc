@@ -104,8 +104,8 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
 
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
@@ -146,7 +146,7 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -159,14 +159,14 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-time_dependent_rhs",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   } else {
     /*
@@ -177,7 +177,7 @@ int main(int argc,char **argv)
     */
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
 
@@ -398,7 +398,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  ierr  = PetscOptionsGetReal(PETSC_NULL,"-dttol",&dttol,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetReal(NULL,"-dttol",&dttol,NULL);CHKERRQ(ierr);
   if (dt < dttol) {
     dt  *= .999;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);

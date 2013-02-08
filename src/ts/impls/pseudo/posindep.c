@@ -157,7 +157,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
     ts->time_step = next_time_step;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     ierr = TSPreStage(ts,ts->ptime+ts->time_step);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,PETSC_NULL,pseudo->update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,NULL,pseudo->update);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
@@ -208,11 +208,11 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_Pseudo(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -343,13 +343,13 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,"stdout",&viewer);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
   }
@@ -385,7 +385,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 +  ts - timestep context
 .  dt - user-defined function to verify timestep
 -  ctx - [optional] user-defined context for private data
-         for the timestep verification routine (may be PETSC_NULL)
+         for the timestep verification routine (may be NULL)
 
    Level: advanced
 
@@ -525,7 +525,7 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
 +  ts - timestep context
 .  dt - function to compute timestep
 -  ctx - [optional] user-defined context for private data
-         required by the function (may be PETSC_NULL)
+         required by the function (may be NULL)
 
    Level: intermediate
 

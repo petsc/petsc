@@ -342,7 +342,7 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(((PetscObject)draw)->comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
   ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
 
   draw->popup = *popup;
@@ -553,7 +553,7 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *popup = PETSC_NULL;
+  *popup = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1122,7 +1122,7 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
 
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-  ierr    = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetIntArray(NULL,"-geometry",xywh,&osize,NULL);CHKERRQ(ierr);
   x       = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
 
 
@@ -1238,8 +1238,8 @@ EXTERN_C_END
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
-   PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
-   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
+   NULL_CHARACTER must be employed; using NULL is not
+   correct for character data!  Thus, NULL_CHARACTER can be
    used for the display and title input parameters.
 
    Concepts: OpenGL^drawing to

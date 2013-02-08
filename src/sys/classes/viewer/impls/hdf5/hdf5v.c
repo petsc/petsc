@@ -121,7 +121,7 @@ PetscErrorCode  PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->btype     = (PetscFileMode) -1;
   hdf5->filename  = 0;
   hdf5->timestep  = -1;
-  hdf5->groups    = PETSC_NULL;
+  hdf5->groups    = NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",
                                            PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetGroup"
 /*@C
-  PetscViewerHDF5GetGroup - Get the current HDF5 group for output. If none has been assigned, returns PETSC_NULL.
+  PetscViewerHDF5GetGroup - Get the current HDF5 group for output. If none has been assigned, returns NULL.
 
   Not collective
 
@@ -287,7 +287,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
   if (hdf5->groups) *name = hdf5->groups->name;
-  else *name = PETSC_NULL;
+  else *name = NULL;
   PetscFunctionReturn(0);
 }
 

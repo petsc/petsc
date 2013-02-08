@@ -14,7 +14,7 @@ static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
    Logically Collective
 
    Input Arguments:
-.  path - the dynamic library path or PETSC_NULL
+.  path - the dynamic library path or NULL
 
    Level: developer
 
@@ -414,7 +414,7 @@ static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  if (L == PETSC_NULL) {
+  if (L == NULL) {
     ierr = VecGetArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->cmap->N,1,0,d,X->cmap->n,*x->grid);
     elem::DiagonalScale(elem::RIGHT,elem::NORMAL,de,*x->emat);
@@ -857,16 +857,16 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->emat;
 
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-  ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(cxxcomm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1086,7 +1086,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt           optv1,optv2;
 
   PetscFunctionBegin;
-  ierr = PetscElementalInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscElementalInitializePackage(NULL);CHKERRQ(ierr);
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->insertmode = NOT_SET_VALUES;
 
@@ -1100,7 +1100,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);
   }
-  ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(cxxcomm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscNewLog(A,Mat_Elemental_Grid,&commgrid);CHKERRQ(ierr);

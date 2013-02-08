@@ -56,10 +56,10 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char*)0,help);
   ctx.kappa     = 1.0;
-  ierr          = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.allencahn = PETSC_FALSE;
-  ierr          = PetscOptionsHasName(PETSC_NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
-  ierr          = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  ierr          = PetscOptionsHasName(NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
+  ierr          = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,1,2,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,1,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dt   = 1.0/(ctx.kappa*Mx*Mx);
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,FormFunction,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
 
 
   if (mymonitor) {
-    ctx.ports = PETSC_NULL;
+    ctx.ports = NULL;
     ierr      = TSMonitorSet(ts,MyMonitor,&ctx,MyDestroy);CHKERRQ(ierr);
   }
 
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-wait",&wait,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
@@ -187,7 +187,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -234,7 +234,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*  InitialSolution is obtained with
       ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
@@ -248,7 +248,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   /* scale = N/Mx; */
   /* ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr); */
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-square_initial",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-square_initial",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr  = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr  = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   hx   = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr  = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
   xx[0] = 0.0; xx[1] = 1.0; cnt = 2;
-  ierr  = PetscOptionsGetRealArray(PETSC_NULL,"-zoom",xx,&cnt,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetRealArray(NULL,"-zoom",xx,&cnt,NULL);CHKERRQ(ierr);
   xs    = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
   /*
@@ -374,7 +374,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     x   += hx;
   }
   ierr = PetscDrawAxisSetLabels(axis,"Right hand side","","");CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(lg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,NULL);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
   /*

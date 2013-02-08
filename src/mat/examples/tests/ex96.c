@@ -55,16 +55,16 @@ int main(int argc,char **argv)
   PetscRandom    rdm;
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,NULL,help);
+  ierr = PetscOptionsGetReal(NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
 
   user.ratio     = 2;
   user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mz",&user.coarse.mz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
 
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
@@ -74,18 +74,18 @@ int main(int argc,char **argv)
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Npx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npy",&Npy,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npz",&Npz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Npx",&Npx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Npy",&Npy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Npz",&Npz,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                        user.fine.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        user.fine.my,Npx,Npy,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,
-                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
   /* Test DMCreateMatrix()                                         */
@@ -127,22 +127,22 @@ int main(int argc,char **argv)
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                        user.coarse.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
-                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the levels */
-  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = VecSetSizes(v1,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
   ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ int main(int argc,char **argv)
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(P,PETSC_NULL,&n);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(P,NULL,&n);CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 

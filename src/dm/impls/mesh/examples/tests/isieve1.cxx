@@ -51,10 +51,10 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISieve");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isieve.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isieve.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The interval size", "isieve.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isieve.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isieve.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "isieve.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -458,7 +458,7 @@ public:
 
     createTetrahedralMesh(interpolate, m, renumbering);
     ALE::Obj<sieve_type> copySieve = this->_sieve;
-    m = PETSC_NULL;
+    m = NULL;
     this->_sieve = new sieve_type(PETSC_COMM_WORLD, this->_debug);
     createTetrahedralMesh(interpolate, m, renumbering2);
     testRelabeling(*copySieve);
@@ -507,8 +507,8 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISieve");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isieve.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isieve.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isieve.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isieve.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };

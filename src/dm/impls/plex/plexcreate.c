@@ -15,8 +15,8 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
   /* Handle DMPlex refinement */
   /* Handle associated vectors */
   /* Handle viewing */
-  ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -54,7 +54,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
     markerTop    = 1;
     markerBottom = 0;
@@ -272,7 +272,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
     markerTop    = 3;
     markerBottom = 1;
@@ -431,7 +431,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
   default:
     SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
   }
-  ierr = DMPlexGenerate(boundary, PETSC_NULL, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
   ierr = DMDestroy(&boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -524,9 +524,9 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->setup                           = DMSetUp_Plex;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
-  dm->ops->createlocaltoglobalmapping      = PETSC_NULL;
-  dm->ops->createlocaltoglobalmappingblock = PETSC_NULL;
-  dm->ops->createfieldis                   = PETSC_NULL;
+  dm->ops->createlocaltoglobalmapping      = NULL;
+  dm->ops->createlocaltoglobalmappingblock = NULL;
+  dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
   dm->ops->getcoloring                     = 0;
   dm->ops->creatematrix                    = DMCreateMatrix_Plex;
@@ -537,10 +537,10 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->coarsen                         = 0;
   dm->ops->refinehierarchy                 = 0;
   dm->ops->coarsenhierarchy                = 0;
-  dm->ops->globaltolocalbegin              = PETSC_NULL;
-  dm->ops->globaltolocalend                = PETSC_NULL;
-  dm->ops->localtoglobalbegin              = PETSC_NULL;
-  dm->ops->localtoglobalend                = PETSC_NULL;
+  dm->ops->globaltolocalbegin              = NULL;
+  dm->ops->globaltolocalend                = NULL;
+  dm->ops->localtoglobalbegin              = NULL;
+  dm->ops->localtoglobalend                = NULL;
   dm->ops->destroy                         = DMDestroy_Plex;
   dm->ops->createsubdm                     = DMCreateSubDM_Plex;
   dm->ops->locatepoints                    = DMLocatePoints_Plex;
@@ -565,30 +565,30 @@ PetscErrorCode DMCreate_Plex(DM dm)
   mesh->dim               = 0;
   ierr                    = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
   mesh->maxConeSize       = 0;
-  mesh->cones             = PETSC_NULL;
-  mesh->coneOrientations  = PETSC_NULL;
+  mesh->cones             = NULL;
+  mesh->coneOrientations  = NULL;
   ierr                    = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
   mesh->maxSupportSize    = 0;
-  mesh->supports          = PETSC_NULL;
+  mesh->supports          = NULL;
   mesh->refinementUniform = PETSC_TRUE;
   mesh->refinementLimit   = -1.0;
 
-  mesh->facesTmp = PETSC_NULL;
+  mesh->facesTmp = NULL;
 
-  mesh->subpointMap = PETSC_NULL;
+  mesh->subpointMap = NULL;
 
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
-  mesh->labels              = PETSC_NULL;
-  mesh->globalVertexNumbers = PETSC_NULL;
-  mesh->globalCellNumbers   = PETSC_NULL;
+  mesh->labels              = NULL;
+  mesh->globalVertexNumbers = NULL;
+  mesh->globalCellNumbers   = NULL;
   for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
   mesh->vtkCellHeight     = 0;
   mesh->preallocCenterDim = -1;
 
-  mesh->integrateResidualFEM       = PETSC_NULL;
-  mesh->integrateJacobianActionFEM = PETSC_NULL;
-  mesh->integrateJacobianFEM       = PETSC_NULL;
+  mesh->integrateResidualFEM       = NULL;
+  mesh->integrateJacobianActionFEM = NULL;
+  mesh->integrateJacobianFEM       = NULL;
 
   mesh->printSetValues = PETSC_FALSE;
   mesh->printFEM       = 0;

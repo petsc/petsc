@@ -41,11 +41,11 @@ int main(int argc,char **args)
   wcomm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-ne",&ne,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coordinates",&use_coords,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
   M    = 2*(ne+1)*(ne+1); /* global number of equations */
   m    = (ne+1)*(ne+1)/npe;
   if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
@@ -55,15 +55,15 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Amat,18,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Amat,18,PETSC_NULL,18,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Amat,18,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(wcomm,&Pmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Pmat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Pmat,2);CHKERRQ(ierr);
   ierr = MatSetType(Pmat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pmat,18,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pmat,18,PETSC_NULL,12,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Pmat,18,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Pmat,18,NULL,12,NULL);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   assert(m == Iend - Istart);

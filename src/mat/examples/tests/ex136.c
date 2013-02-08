@@ -15,10 +15,10 @@ int main(int argc,char **args)
   MatType        type = MATMPIBAIJ;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-aij",&flg);CHKERRQ(ierr);
   if (flg) type = MATMPIAIJ;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /*

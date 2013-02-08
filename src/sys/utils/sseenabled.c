@@ -120,7 +120,7 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 .    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
 
      Notes:
-     PETSC_NULL can be specified for lflag or gflag if either of these values are not desired.
+     NULL can be specified for lflag or gflag if either of these values are not desired.
 
      Options Database Keys:
 .    -disable_sse - Disable use of hand tuned Intel SSE implementations
@@ -142,7 +142,7 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
 
     ierr = PetscOptionsBool("-disable_sse",
                             "Disable use of hand tuned Intel SSE implementations <true,false>.",
-                            "PetscSSEIsEnabled",disabled_option,&disabled_option,PETSC_NULL);CHKERRQ(ierr);
+                            "PetscSSEIsEnabled",disabled_option,&disabled_option,NULL);CHKERRQ(ierr);
     if (disabled_option) {
       petsc_sse_local_is_untested  = PETSC_FALSE;
       petsc_sse_enabled_local      = PETSC_FALSE;

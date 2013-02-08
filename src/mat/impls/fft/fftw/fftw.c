@@ -653,7 +653,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(y,&low,PETSC_NULL);
+  ierr = VecGetOwnershipRange(y,&low,NULL);
 
   if (size==1) {
     ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
@@ -891,7 +891,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(x,&low,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x,&low,NULL);CHKERRQ(ierr);
 
   if (size==1) {
     ierr = ISCreateStride(comm,N,0,1,&list1);CHKERRQ(ierr);

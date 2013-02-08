@@ -144,7 +144,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   ierr = PCGetOperators(ksp->pc, &Amat, &Pmat, &flag);CHKERRQ(ierr);
   ierr = KSPSetOperators(kspgmres, Amat, Pmat, flag);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-ksp_view", &flg);CHKERRQ(ierr);
   if (flag) { ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }
   ierr = KSPSetType(kspgmres, KSPGMRES);CHKERRQ(ierr);
   ierr = KSPGMRESSetRestart(kspgmres, max_k);CHKERRQ(ierr);
@@ -227,7 +227,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
 
   /* It may happen that the Ritz values from one cycle of GMRES are not accurate enough to provide a good stability. In this case, another cycle of GMRES is performed.  The two sets of values thus generated are sorted and the most accurate are kept as shifts */
   PetscBool flg;
-  ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_agmres_ImproveShifts", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-ksp_agmres_ImproveShifts", &flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = KSPAGMRESLejaOrdering(agmres->wr, agmres->wi, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);
   } else { /* Perform another cycle of DGMRES to find another set of eigenvalues */

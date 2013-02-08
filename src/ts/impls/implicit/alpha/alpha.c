@@ -54,7 +54,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     /* predictor */
     ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
     /* solve R(X,V) = 0 */
-    ierr = SNESSolve(ts->snes,PETSC_NULL,th->X1);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,NULL,th->X1);CHKERRQ(ierr);
     /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
     ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
     ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
@@ -136,10 +136,10 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   ierr = TSReset_Alpha(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaGetParams_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAdapt_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaGetParams_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAdapt_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -212,19 +212,19 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
     PetscReal radius = 1.0;
     ierr = PetscOptionsReal("-ts_alpha_radius","spectral radius","TSAlphaSetRadius",radius,&radius,&flag);CHKERRQ(ierr);
     if (flag) { ierr = TSAlphaSetRadius(ts,radius);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-ts_alpha_alpha_m","algoritmic parameter alpha_m","TSAlphaSetParams",th->Alpha_m,&th->Alpha_m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_alpha_f","algoritmic parameter alpha_f","TSAlphaSetParams",th->Alpha_f,&th->Alpha_f,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_gamma","algoritmic parameter gamma","TSAlphaSetParams",th->Gamma,&th->Gamma,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_alpha_m","algoritmic parameter alpha_m","TSAlphaSetParams",th->Alpha_m,&th->Alpha_m,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_alpha_f","algoritmic parameter alpha_f","TSAlphaSetParams",th->Alpha_f,&th->Alpha_f,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_gamma","algoritmic parameter gamma","TSAlphaSetParams",th->Gamma,&th->Gamma,NULL);CHKERRQ(ierr);
     ierr = TSAlphaSetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-ts_alpha_adapt","default time step adaptativity","TSAlphaSetAdapt",adapt,&adapt,&flag);CHKERRQ(ierr);
-    if (flag) { ierr = TSAlphaSetAdapt(ts,adapt ? TSAlphaAdaptDefault : PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-ts_alpha_adapt_rtol","relative tolerance for dt adaptativity","",th->rtol,&th->rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absolute tolerance for dt adaptativity","",th->atol,&th->atol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_adapt_min","minimum dt scale","",th->scale_min,&th->scale_min,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_adapt_max","maximum dt scale","",th->scale_max,&th->scale_max,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_adapt_dt_min","minimum dt","",th->dt_min,&th->dt_min,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_adapt_dt_max","maximum dt","",th->dt_max,&th->dt_max,PETSC_NULL);CHKERRQ(ierr);
+    if (flag) { ierr = TSAlphaSetAdapt(ts,adapt ? TSAlphaAdaptDefault : NULL,NULL);CHKERRQ(ierr); }
+    ierr = PetscOptionsReal("-ts_alpha_adapt_rtol","relative tolerance for dt adaptativity","",th->rtol,&th->rtol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absolute tolerance for dt adaptativity","",th->atol,&th->atol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_min","minimum dt scale","",th->scale_min,&th->scale_min,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_max","maximum dt scale","",th->scale_max,&th->scale_max,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_dt_min","minimum dt","",th->dt_min,&th->dt_min,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_dt_max","maximum dt","",th->dt_max,&th->dt_max,NULL);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -382,7 +382,7 @@ EXTERN_C_END
 +  ts - timestepping context
 .  adapt - user-defined adapt routine
 -  ctx  - [optional] user-defined context for private data for the
-         adapt routine (may be PETSC_NULL)
+         adapt routine (may be NULL)
 
    Calling sequence of adapt:
 $    adapt (TS ts,PetscReal t,Vec X,Vec Xdot,

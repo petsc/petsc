@@ -1,7 +1,7 @@
 
 #include <../src/dm/ao/aoimpl.h>    /*I "petscao.h"  I*/
 
-PetscFunctionList AOList              = PETSC_NULL;
+PetscFunctionList AOList              = NULL;
 PetscBool         AORegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -37,12 +37,12 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
   ierr = PetscObjectTypeCompare((PetscObject)ao, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!AORegisterAllCalled) {ierr = AORegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!AORegisterAllCalled) {ierr = AORegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscFunctionListFind(((PetscObject)ao)->comm, AOList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
     ierr             = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
-    ao->ops->destroy = PETSC_NULL;
+    ao->ops->destroy = NULL;
   }
 
   ierr = (*r)(ao);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!AORegisterAllCalled) {
-    ierr = AORegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    ierr = AORegisterAll(NULL);CHKERRQ(ierr);
   }
   *type = ((PetscObject)ao)->type_name;
   PetscFunctionReturn(0);

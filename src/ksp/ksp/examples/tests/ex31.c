@@ -32,12 +32,12 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-partition",&partition,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-displayIS",&displayIS,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-displayMat",&displayMat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-partition",&partition,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-displayIS",&displayIS,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-displayMat",&displayMat,NULL);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix.*/
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,7 +140,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-ksp_reason", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     KSPConvergedReason reason;
     ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);

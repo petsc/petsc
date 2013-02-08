@@ -187,11 +187,11 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
     if (!accept) continue;
-    ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCandidateAdd(adapt,PETSC_NULL,th->order,1,th->ccfl,1.0,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,NULL,th->order,1,th->ccfl,1.0,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
 
     if (accept) {
@@ -249,10 +249,10 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_Theta(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetTheta_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetTheta_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetEndpoint_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetEndpoint_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetTheta_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetTheta_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetEndpoint_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetEndpoint_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -299,13 +299,13 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
 
   /* th->Xdot has already been computed in SNESTSFormFunction_Theta (SNES guarantees this) */
-  ierr = TSThetaGetX0AndXdot(ts,dm,PETSC_NULL,&Xdot);CHKERRQ(ierr);
+  ierr = TSThetaGetX0AndXdot(ts,dm,NULL,&Xdot);CHKERRQ(ierr);
 
   dmsave = ts->dm;
   ts->dm = dm;
   ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
-  ierr   = TSThetaRestoreX0AndXdot(ts,dm,PETSC_NULL,&Xdot);CHKERRQ(ierr);
+  ierr   = TSThetaRestoreX0AndXdot(ts,dm,NULL,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -351,10 +351,10 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Theta ODE solver options");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_theta_adapt","Use time-step adaptivity with the Theta method","",th->adapt,&th->adapt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_theta_adapt","Use time-step adaptivity with the Theta method","",th->adapt,&th->adapt,NULL);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

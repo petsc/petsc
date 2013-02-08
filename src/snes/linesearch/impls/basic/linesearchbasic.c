@@ -13,7 +13,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   PetscBool      domainerror;
 
   PetscFunctionBegin;
-  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL);CHKERRQ(ierr);
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
@@ -94,10 +94,10 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesear
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_Basic;
-  linesearch->ops->destroy        = PETSC_NULL;
-  linesearch->ops->setfromoptions = PETSC_NULL;
-  linesearch->ops->reset          = PETSC_NULL;
-  linesearch->ops->view           = PETSC_NULL;
-  linesearch->ops->setup          = PETSC_NULL;
+  linesearch->ops->destroy        = NULL;
+  linesearch->ops->setfromoptions = NULL;
+  linesearch->ops->reset          = NULL;
+  linesearch->ops->view           = NULL;
+  linesearch->ops->setup          = NULL;
   PetscFunctionReturn(0);
 }

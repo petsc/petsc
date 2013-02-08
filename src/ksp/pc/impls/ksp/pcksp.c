@@ -72,12 +72,12 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   if (jac->use_true_matrix) mat = pc->mat;
   else                      mat = pc->pmat;
 
-  ierr = KSPGetOperatorsSet(jac->ksp,&A,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperatorsSet(jac->ksp,&A,NULL);CHKERRQ(ierr);
   if (!A) {
     ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   } else if (pc->flag != SAME_PRECONDITIONER) {
     Mat Amat,Bmat;
-    ierr = KSPGetOperators(jac->ksp,&Amat,&Bmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(jac->ksp,&Amat,&Bmat,NULL);CHKERRQ(ierr);
     if (Amat == mat && Bmat == pc->pmat) {
       /* The user has not replaced the matrices so we are expected to forward the update. This incorrectly diagnoses
        * changed matrices at the top level as the user manually changing the inner matrices, but we have no way to
@@ -153,7 +153,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCKSPSetUseTrue(pc);CHKERRQ(ierr);
   }
@@ -254,7 +254,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  *ksp = PETSC_NULL;
+  *ksp = NULL;
   ierr = PetscTryMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

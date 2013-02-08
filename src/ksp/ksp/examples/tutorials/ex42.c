@@ -89,7 +89,7 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
   cells = *C;
   ierr = PetscFree(cells->gpc);CHKERRQ(ierr);
   ierr = PetscFree(cells);CHKERRQ(ierr);
-  *C = PETSC_NULL;
+  *C = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1152,7 +1152,7 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
 
   PetscFunctionBeginUser;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                      mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"anlytic_Vy");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,2,"anlytic_Vz");CHKERRQ(ierr);
@@ -1178,7 +1178,7 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
         pos[1] = PetscRealPart(_coords[k][j][i].y);
         pos[2] = PetscRealPart(_coords[k][j][i].z);
 
-        evaluate_MS_FrankKamentski(pos,vel,&pressure,PETSC_NULL,PETSC_NULL,PETSC_NULL);
+        evaluate_MS_FrankKamentski(pos,vel,&pressure,NULL,NULL,NULL);
 
         _stokes[k][j][i].u_dof = vel[0];
         _stokes[k][j][i].v_dof = vel[1];
@@ -1385,7 +1385,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   char           vtk_filename[PETSC_MAX_PATH_LEN];
   PetscMPIInt    rank;
   MPI_Comm       comm;
-  FILE           *vtk_fp = PETSC_NULL;
+  FILE           *vtk_fp = NULL;
   PetscInt       si,sj,sk,nx,ny,nz,i;
   PetscInt       f,n_fields,N;
   DM             cda;
@@ -1608,7 +1608,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   MPI_Comm       comm;
   PetscMPIInt    nproc,rank;
   char           vtk_filename[PETSC_MAX_PATH_LEN];
-  FILE           *vtk_fp = PETSC_NULL;
+  FILE           *vtk_fp = NULL;
   PetscInt       M,N,P,si,sj,sk,nx,ny,nz;
   PetscInt       i,dofs;
   PetscErrorCode ierr;
@@ -1725,12 +1725,12 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
 
   PetscFunctionBeginUser;
   nlevels = 1;
-  PetscOptionsGetInt(PETSC_NULL,"-levels",&nlevels,0);
+  PetscOptionsGetInt(NULL,"-levels",&nlevels,0);
 
   ierr = PetscMalloc(sizeof(DM)*nlevels,&da_list);CHKERRQ(ierr);
-  for (k=0; k<nlevels; k++) da_list[k] = PETSC_NULL;
+  for (k=0; k<nlevels; k++) da_list[k] = NULL;
   ierr = PetscMalloc(sizeof(DM)*nlevels,&daclist);CHKERRQ(ierr);
-  for (k=0; k<nlevels; k++) daclist[k] = PETSC_NULL;
+  for (k=0; k<nlevels; k++) daclist[k] = NULL;
 
   /* finest grid is nlevels - 1 */
   finest     = nlevels - 1;
@@ -1742,12 +1742,12 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
     ierr       = DMDASetUniformCoordinates(da_list[k],0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   }
 
-  ierr = PCMGSetLevels(pc,nlevels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pc,nlevels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
   ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
 
   for (k=1; k<nlevels; k++) {
-    ierr = DMCreateInterpolation(da_list[k-1],da_list[k],&R,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(da_list[k-1],da_list[k],&R,NULL);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pc,k,R);CHKERRQ(ierr);
     ierr = MatDestroy(&R);CHKERRQ(ierr);
   }
@@ -1790,7 +1790,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   dof           = u_dof+p_dof;
   stencil_width = 1;
   ierr          = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                               mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da_Stokes);CHKERRQ(ierr);
+                               mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,0,"Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,1,"Vy");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,2,"Vz");CHKERRQ(ierr);
@@ -1847,7 +1847,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     }
   }
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-model",&model_definition,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-model",&model_definition,NULL);CHKERRQ(ierr);
 
   switch (model_definition) {
   case 0: /* isoviscous */
@@ -1891,7 +1891,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             pos[1] = coord_y;
             pos[2] = coord_z;
 
-            evaluate_MS_FrankKamentski(pos,PETSC_NULL,PETSC_NULL,&eta,Fm,&Fc);
+            evaluate_MS_FrankKamentski(pos,NULL,NULL,&eta,Fm,&Fc);
             cell->eta[p] = eta;
 
             cell->fx[p] = Fm[0];
@@ -2009,19 +2009,19 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 
   {
     PetscBool stokes_monitor = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_blocks",&stokes_monitor,0);CHKERRQ(ierr);
     if (stokes_monitor) {
-      ierr = KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp_S,KSPMonitorStokesBlocks,NULL,NULL);CHKERRQ(ierr);
     }
   }
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-write_pvts",&write_output,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-write_pvts",&write_output,NULL);CHKERRQ(ierr);
   if (write_output) {ierr = DAView3DPVTS(da_Stokes,X,"up");CHKERRQ(ierr);}
   {
     PetscBool flg = PETSC_FALSE;
     char      filename[PETSC_MAX_PATH_LEN];
-    ierr = PetscOptionsGetString(PETSC_NULL,"-write_binary",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-write_binary",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       /* ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr); */
@@ -2070,10 +2070,10 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 
   mx   = my = mz = 10;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
   my   = mx; mz = mx;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&mz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mz",&mz,NULL);CHKERRQ(ierr);
 
   ierr = solve_stokes_3d_coupled(mx,my,mz);CHKERRQ(ierr);
 

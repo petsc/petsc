@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   h    = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,3,NULL);CHKERRQ(ierr);
 
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
   */
 
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -157,7 +157,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
 

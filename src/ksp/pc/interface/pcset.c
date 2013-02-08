@@ -68,7 +68,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
     ierr             =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);
-    pc->ops->destroy = PETSC_NULL;
+    pc->ops->destroy = NULL;
     pc->data         = 0;
   }
   ierr = PetscFunctionListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,NULL);CHKERRQ(ierr);
 
   if (pc->ops->setfromoptions) {
     ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);

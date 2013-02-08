@@ -201,7 +201,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the maximum occurred  (pass PETSC_NULL if not required)
++  index - the location where the maximum occurred  (pass NULL if not required)
 -  nrm - the max
 
    Notes:
@@ -260,7 +260,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     PetscReal in[2],out[2];
     PetscInt  rstart;
 
-    ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = max;
     in[1] = rstart+id+start;
     ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  idex - the location where the minimum occurred. (pass PETSC_NULL if not required)
++  idex - the location where the minimum occurred. (pass NULL if not required)
 -  nrm - the min
 
    Level: advanced
@@ -342,7 +342,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
     PetscReal in[2],out[2];
     PetscInt  rstart;
 
-    ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = min;
     in[1] = rstart+id;
     ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
@@ -497,7 +497,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 .  v - the vector
 
    Output Parameter:
-+  index - the location where the maximum occurred (not supported, pass PETSC_NULL,
++  index - the location where the maximum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the maximums
 
@@ -564,7 +564,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 .  v - the vector
 
    Output Parameter:
-+  idex - the location where the minimum occurred (not supported, pass PETSC_NULL,
++  idex - the location where the minimum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the minimums
 
@@ -658,7 +658,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,n2,bs,j,k,*bss = PETSC_NULL,nv,jj,nvc;
+  PetscInt       i,n,n2,bs,j,k,*bss = NULL,nv,jj,nvc;
   PetscScalar    *x,**y;
 
   PetscFunctionBegin;
@@ -755,7 +755,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,n2,bs,j,jj,k,*bss = PETSC_NULL,nv,nvc;
+  PetscInt       i,n,n2,bs,j,jj,k,*bss = NULL,nv,nvc;
   PetscScalar    *x,**y;
 
   PetscFunctionBegin;

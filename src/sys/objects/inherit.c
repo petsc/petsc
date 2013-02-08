@@ -200,7 +200,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbackType cbtype,PetscFortranCallbackId *cid,void (*func)(void),void *ctx)
 {
   PetscErrorCode ierr;
-  const char     *subtype = PETSC_NULL;
+  const char     *subtype = NULL;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -234,8 +234,8 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbac
 -  cid - address of callback Id
 
    Output Arguments:
-+  func - Fortran function (or PETSC_NULL if not needed)
--  ctx - Fortran context (or PETSC_NULL if not needed)
++  func - Fortran function (or NULL if not needed)
+-  ctx - Fortran context (or NULL if not needed)
 
    Level: developer
 
@@ -381,7 +381,7 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
   PetscBool      flg;
 
   PetscFunctionBegin;
-  *obj = PETSC_NULL;
+  *obj = NULL;
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if ((h = PetscObjects[i])) {
       ierr = PetscObjectName(h);CHKERRQ(ierr);
@@ -406,7 +406,7 @@ char *PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  *obj = PETSC_NULL;
+  *obj = NULL;
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if ((h = PetscObjects[i])) {
       ierr = PetscObjectName(h);if (ierr) PetscFunctionReturn(0);

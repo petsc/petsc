@@ -27,9 +27,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->numItems = 1000;
 
   ierr = PetscOptionsBegin(comm, "", "Options for stl memory test", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "stl1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "stl1.c", options->iters, &options->iters, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-items", "The number of items per container", "stl1.c", options->numItems, &options->numItems, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "stl1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "stl1.c", options->iters, &options->iters, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-items", "The number of items per container", "stl1.c", options->numItems, &options->numItems, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

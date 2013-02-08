@@ -36,14 +36,14 @@ PetscInt main(PetscInt argc,char **args)
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
-  ierr     = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
+  ierr     = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
   function = (FuncType) func;
   ierr     = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(NULL,"-view_x",&view_x,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(NULL,"-view_y",&view_y,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetBool(NULL,"-view_z",&view_z,NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetIntArray(NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
 
 
 
@@ -51,7 +51,7 @@ PetscInt main(PetscInt argc,char **args)
                       dim[0], dim[1], dim[2],
                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                       dof, stencil,
-                      PETSC_NULL, PETSC_NULL, PETSC_NULL,
+                      NULL, NULL, NULL,
                       &da);CHKERRQ(ierr);
   /* Coordinates */
   ierr = DMGetCoordinateDM(da, &coordsda);

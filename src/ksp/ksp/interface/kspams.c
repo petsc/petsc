@@ -71,7 +71,7 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
 #endif
   ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
-  mon->eigi = PETSC_NULL;
+  mon->eigi = NULL;
   ierr      = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

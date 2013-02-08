@@ -302,7 +302,7 @@ PetscErrorCode  PetscOptionsInsertString(const char in_str[])
         ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
         ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
       } else {
-        ierr  = PetscOptionsSetValue(first,PETSC_NULL);CHKERRQ(ierr);
+        ierr  = PetscOptionsSetValue(first,NULL);CHKERRQ(ierr);
         first = second;
       }
     } else {
@@ -321,7 +321,7 @@ static char *Petscgetline(FILE * f)
   size_t size  = 0;
   size_t len   = 0;
   size_t last  = 0;
-  char   *buf  = PETSC_NULL;
+  char   *buf  = NULL;
 
   if (feof(f)) return 0;
   do {
@@ -537,7 +537,7 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
       PetscBool nextiskey = PETSC_FALSE;
       if (left >= 2) {ierr = PetscOptionsValidKey(eargs[1],&nextiskey);CHKERRQ(ierr);}
       if (left < 2 || nextiskey) {
-        ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsSetValue(eargs[0],NULL);CHKERRQ(ierr);
         eargs++; left--;
       } else {
         ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr);
@@ -591,7 +591,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->argc = (argc) ? *argc : 0;
-  options->args = (args) ? *args : PETSC_NULL;
+  options->args = (args) ? *args : NULL;
 
   if (file && file[0]) {
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,file,PETSC_TRUE);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
      should take precedence, we insert it twice.  It would be sufficient to just scan for -skip_petscrc.
   */
   if (argc && args && *argc) {ierr = PetscOptionsInsertArgs_Private(*argc,*args);CHKERRQ(ierr);}
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-skip_petscrc",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-skip_petscrc",&flag,NULL);CHKERRQ(ierr);
   if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     /* warning: assumes all processes have a home directory or none, but nothing in between */
@@ -638,7 +638,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
 #if defined(PETSC_HAVE_YAML)
   char      yaml_file[PETSC_MAX_PATH_LEN];
   PetscBool yaml_flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
   if (yaml_flg) ierr = PetscOptionsInsertFile_YAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
 #endif
 
@@ -720,7 +720,7 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
   PetscErrorCode ierr;
   PetscInt       i;
   size_t         len       = 1,lent = 0;
-  char           *coptions = PETSC_NULL;
+  char           *coptions = NULL;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -1160,7 +1160,7 @@ PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],c
         ierr = PetscStrcpy(tmp2,"-");CHKERRQ(ierr);
         ierr = PetscStrncat(tmp2,tmp,locs[i]);CHKERRQ(ierr);
         ierr = PetscStrcat(tmp2,tmp+loce[i]);CHKERRQ(ierr);
-        ierr = PetscOptionsFindPair_Private(PETSC_NULL,tmp2,value,flg);CHKERRQ(ierr);
+        ierr = PetscOptionsFindPair_Private(NULL,tmp2,value,flg);CHKERRQ(ierr);
         if (*flg) break;
       }
     }
@@ -1238,7 +1238,7 @@ PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char n
 
    Input Parameters:
 +  name - the option one is seeking
--  mess - error message (may be PETSC_NULL)
+-  mess - error message (may be NULL)
 
    Level: advanced
 
@@ -1257,7 +1257,7 @@ PetscErrorCode  PetscOptionsReject(const char name[],const char mess[])
   PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,name,&flag);CHKERRQ(ierr);
   if (flag) {
     if (mess) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s with %s",name,mess);
     else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s",name);
@@ -1275,7 +1275,7 @@ PetscErrorCode  PetscOptionsReject(const char name[],const char mess[])
 
    Input Parameters:
 +  name - the option one is seeking
--  pre - string to prepend to the name or PETSC_NULL
+-  pre - string to prepend to the name or NULL
 
    Output Parameters:
 .  set - PETSC_TRUE if found else PETSC_FALSE.
@@ -1315,7 +1315,7 @@ PetscErrorCode  PetscOptionsHasName(const char pre[],const char name[],PetscBool
    Not Collective
 
    Input Parameters:
-+  pre - the string to prepend to the name or PETSC_NULL
++  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 
    Output Parameter:
@@ -1365,7 +1365,7 @@ PetscErrorCode  PetscOptionsGetInt(const char pre[],const char name[],PetscInt *
    Not Collective
 
    Input Parameters:
-+  pre - the string to prepend to the name or PETSC_NULL
++  pre - the string to prepend to the name or NULL
 .  opt - option name
 .  list - the possible choices
 .  ntext - number of choices
@@ -1427,7 +1427,7 @@ PetscErrorCode  PetscOptionsGetEList(const char pre[],const char opt[],const cha
    Not Collective
 
    Input Parameters:
-+  pre - option prefix or PETSC_NULL
++  pre - option prefix or NULL
 .  opt - option name
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 -  defaultv - the default (current) value
@@ -1480,7 +1480,7 @@ PetscErrorCode  PetscOptionsGetEnum(const char pre[],const char opt[],const char
    Not Collective
 
    Input Parameters:
-+  pre - the string to prepend to the name or PETSC_NULL
++  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 
    Output Parameter:
@@ -1537,7 +1537,7 @@ PetscErrorCode  PetscOptionsGetBool(const char pre[],const char name[],PetscBool
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
 
@@ -1601,7 +1601,7 @@ PetscErrorCode  PetscOptionsGetBoolArray(const char pre[],const char name[],Pets
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or NULL
 -  name - the option one is seeking
 
    Output Parameter:
@@ -1653,7 +1653,7 @@ PetscErrorCode  PetscOptionsGetReal(const char pre[],const char name[],PetscReal
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or NULL
 -  name - the option one is seeking
 
    Output Parameter:
@@ -1728,7 +1728,7 @@ PetscErrorCode  PetscOptionsGetScalar(const char pre[],const char name[],PetscSc
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
 
@@ -1795,7 +1795,7 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to each name or PETSC_NULL
++  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
 
@@ -1909,7 +1909,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to name or PETSC_NULL
++  pre - string to prepend to name or NULL
 .  name - the option one is seeking
 -  len - maximum length of the string including null termination
 
@@ -1925,7 +1925,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
 .vb
       character *20 string
       integer   flg, ierr
-      call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
+      call PetscOptionsGetString(NULL_CHARACTER,'-s',string,flg,ierr)
 .ve
 
    Notes: if the option is given but no string is provided then an empty string is returned and set is given the value of PETSC_TRUE
@@ -1991,7 +1991,7 @@ char *PetscOptionsGetStringMatlab(const char pre[],const char name[])
    Not Collective
 
    Input Parameters:
-+  pre - string to prepend to name or PETSC_NULL
++  pre - string to prepend to name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of strings
 
@@ -2174,8 +2174,8 @@ PetscErrorCode  PetscOptionsCreate(void)
   options->Naliases       = 0;
   options->numbermonitors = 0;
 
-  PetscOptionsObject.prefix = PETSC_NULL;
-  PetscOptionsObject.title  = PETSC_NULL;
+  PetscOptionsObject.prefix = NULL;
+  PetscOptionsObject.title  = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2211,7 +2211,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
   ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",PETSC_FALSE,&flgc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",PETSC_FALSE,&flgc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flgm) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
@@ -2262,11 +2262,11 @@ PetscErrorCode  PetscOptionsMonitorDefault(const char name[], const char value[]
    Not collective
 
    Input Parameters:
-+  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
++  monitor - pointer to function (if this is NULL, it turns off monitoring
 .  mctx    - [optional] context for private data for the
-             monitor routine (use PETSC_NULL if no context is desired)
+             monitor routine (use NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
-          (may be PETSC_NULL)
+          (may be NULL)
 
    Calling Sequence of monitor:
 $     monitor (const char name[], const char value[], void *mctx)

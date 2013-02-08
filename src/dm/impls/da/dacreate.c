@@ -30,18 +30,18 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   }
 
   ierr = PetscOptionsHead("DMDA Options");CHKERRQ(ierr);
-  if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,PETSC_NULL);CHKERRQ(ierr);}
-  if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,PETSC_NULL);CHKERRQ(ierr);}
-  if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsInt("-da_overlap","Overlap between local grids","DMDASetOverlap",dd->overlap,&dd->overlap,PETSC_NULL);CHKERRQ(ierr);
+  if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);}
+  if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);}
+  if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-da_overlap","Overlap between local grids","DMDASetOverlap",dd->overlap,&dd->overlap,NULL);CHKERRQ(ierr);
   /* Handle DMDA parallel distibution */
-  ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,PETSC_NULL);CHKERRQ(ierr);
-  if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,PETSC_NULL);CHKERRQ(ierr);}
-  if (dd->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,PETSC_NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
+  if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
+  if (dd->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DMDASetNumProcs",dd->p,&dd->p,NULL);CHKERRQ(ierr);}
   /* Handle DMDA refinement */
-  ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,PETSC_NULL);CHKERRQ(ierr);
-  if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
-  if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,NULL);CHKERRQ(ierr);
+  if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,NULL);CHKERRQ(ierr);}
+  if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,NULL);CHKERRQ(ierr);}
   dd->coarsen_x = dd->refine_x; dd->coarsen_y = dd->refine_y; dd->coarsen_z = dd->refine_z;
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
@@ -53,23 +53,23 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     refz[i] = refz[0];
   }
   n    = maxnlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL);CHKERRQ(ierr);
   if (da->levelup - da->leveldown >= 0) dd->refine_x = refx[da->levelup - da->leveldown];
   if (da->levelup - da->leveldown >= 1) dd->coarsen_x = refx[da->levelup - da->leveldown - 1];
   if (dd->dim > 1) {
     n    = maxnlevels;
-    ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL);CHKERRQ(ierr);
     if (da->levelup - da->leveldown >= 0) dd->refine_y = refy[da->levelup - da->leveldown];
     if (da->levelup - da->leveldown >= 1) dd->coarsen_y = refy[da->levelup - da->leveldown - 1];
   }
   if (dd->dim > 2) {
     n    = maxnlevels;
-    ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
     if (da->levelup - da->leveldown >= 0) dd->refine_z = refz[da->levelup - da->leveldown];
     if (da->levelup - da->leveldown >= 1) dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
   }
 
-  if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,PETSC_NULL);CHKERRQ(ierr);}
+  if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
@@ -211,7 +211,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     PetscInt rstart,n;
 
     ierr = DMGetGlobalVector(dm,&v);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);
     ierr = PetscMalloc(dof*sizeof(IS),islist);CHKERRQ(ierr);
@@ -282,7 +282,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->coarsen_x  = 2;
   dd->coarsen_y  = 2;
   dd->coarsen_z  = 2;
-  dd->fieldname  = PETSC_NULL;
+  dd->fieldname  = NULL;
   dd->nlocal     = -1;
   dd->Nlocal     = -1;
   dd->M          = -1;
@@ -306,21 +306,21 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->No              = -1;
   dd->Po              = -1;
 
-  dd->gtol         = PETSC_NULL;
-  dd->ltog         = PETSC_NULL;
-  dd->ltol         = PETSC_NULL;
-  dd->ao           = PETSC_NULL;
+  dd->gtol         = NULL;
+  dd->ltog         = NULL;
+  dd->ltol         = NULL;
+  dd->ao           = NULL;
   dd->base         = -1;
   dd->bx           = DMDA_BOUNDARY_NONE;
   dd->by           = DMDA_BOUNDARY_NONE;
   dd->bz           = DMDA_BOUNDARY_NONE;
   dd->stencil_type = DMDA_STENCIL_BOX;
   dd->interptype   = DMDA_Q1;
-  dd->idx          = PETSC_NULL;
+  dd->idx          = NULL;
   dd->Nl           = -1;
-  dd->lx           = PETSC_NULL;
-  dd->ly           = PETSC_NULL;
-  dd->lz           = PETSC_NULL;
+  dd->lx           = NULL;
+  dd->ly           = NULL;
+  dd->lz           = NULL;
 
   dd->elementtype = DMDA_ELEMENT_Q1;
 

@@ -1,7 +1,7 @@
 #include <petsc-private/linesearchimpl.h> /*I "petscsnes.h" I*/
 
 PetscBool         SNESLineSearchRegisterAllCalled = PETSC_FALSE;
-PetscFunctionList SNESLineSearchList              = PETSC_NULL;
+PetscFunctionList SNESLineSearchList              = NULL;
 
 PetscClassId  SNESLINESEARCH_CLASSID;
 PetscLogEvent SNESLineSearch_Apply;
@@ -33,18 +33,18 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
 
   PetscFunctionBegin;
   PetscValidPointer(outlinesearch,2);
-  *outlinesearch = PETSC_NULL;
+  *outlinesearch = NULL;
 
   ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, 0,"SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
 
-  linesearch->ops->precheck  = PETSC_NULL;
-  linesearch->ops->postcheck = PETSC_NULL;
+  linesearch->ops->precheck  = NULL;
+  linesearch->ops->postcheck = NULL;
 
-  linesearch->vec_sol_new  = PETSC_NULL;
-  linesearch->vec_func_new = PETSC_NULL;
-  linesearch->vec_sol      = PETSC_NULL;
-  linesearch->vec_func     = PETSC_NULL;
-  linesearch->vec_update   = PETSC_NULL;
+  linesearch->vec_sol_new  = NULL;
+  linesearch->vec_func_new = NULL;
+  linesearch->vec_sol      = NULL;
+  linesearch->vec_func     = NULL;
+  linesearch->vec_update   = NULL;
 
   linesearch->lambda       = 1.0;
   linesearch->fnorm        = 1.0;
@@ -59,8 +59,8 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   linesearch->rtol         = 1e-8;
   linesearch->atol         = 1e-15;
   linesearch->ltol         = 1e-8;
-  linesearch->precheckctx  = PETSC_NULL;
-  linesearch->postcheckctx = PETSC_NULL;
+  linesearch->precheckctx  = NULL;
+  linesearch->postcheckctx = NULL;
   linesearch->max_its      = 1;
   linesearch->setupcalled  = PETSC_FALSE;
   *outlinesearch           = linesearch;
@@ -177,7 +177,7 @@ M*/
 +  linesearch - the SNESLineSearch context
 .  SNESLineSearchPreCheckFunction - [optional] function evaluation routine
 -  ctx        - [optional] user-defined context for private data for the
-                function evaluation routine (may be PETSC_NULL)
+                function evaluation routine (may be NULL)
 
 
    Level: intermediate
@@ -206,7 +206,7 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
    Output Parameters:
 +  func       - [optional] function evaluation routine
 -  ctx        - [optional] user-defined context for private data for the
-                function evaluation routine (may be PETSC_NULL)
+                function evaluation routine (may be NULL)
 
    Level: intermediate
 
@@ -252,7 +252,7 @@ M*/
 +  linesearch - the SNESLineSearch context
 .  SNESLineSearchPostCheckFunction - [optional] function evaluation routine
 -  ctx        - [optional] user-defined context for private data for the
-                function evaluation routine (may be PETSC_NULL)
+                function evaluation routine (may be NULL)
 
    Level: intermediate
 
@@ -280,7 +280,7 @@ PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscError
    Output Parameters:
 +  SNESLineSearchPostCheckFunction - [optional] function evaluation routine
 -  ctx        - [optional] user-defined context for private data for the
-                function evaluation routine (may be PETSC_NULL)
+                function evaluation routine (may be NULL)
 
    Level: intermediate
 
@@ -662,7 +662,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscBool      flg, set;
 
   PetscFunctionBegin;
-  if (!SNESLineSearchRegisterAllCalled) {ierr = SNESLineSearchRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!SNESLineSearchRegisterAllCalled) {ierr = SNESLineSearchRegisterAll(NULL);CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject)linesearch);CHKERRQ(ierr);
   if (((PetscObject)linesearch)->type_name) deft = ((PetscObject)linesearch)->type_name;
@@ -697,10 +697,10 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
       linesearch->precheck_picard_angle = 10.; /* correction only active if angle is less than 10 degrees */
 
       ierr = PetscOptionsReal("-snes_linesearch_precheck_picard_angle","Maximum angle at which to activate the correction",
-                              "none",linesearch->precheck_picard_angle,&linesearch->precheck_picard_angle,PETSC_NULL);CHKERRQ(ierr);
+                              "none",linesearch->precheck_picard_angle,&linesearch->precheck_picard_angle,NULL);CHKERRQ(ierr);
       ierr = SNESLineSearchSetPreCheck(linesearch,SNESLineSearchPreCheckPicard,&linesearch->precheck_picard_angle);CHKERRQ(ierr);
     } else {
-      ierr = SNESLineSearchSetPreCheck(linesearch,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetPreCheck(linesearch,NULL,NULL);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsInt("-snes_linesearch_order","Order of approximation used in the line search","SNESLineSearchSetOrder",linesearch->order,&linesearch->order,0);CHKERRQ(ierr);
@@ -809,7 +809,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   if (linesearch->ops->destroy) {
     ierr = (*(linesearch)->ops->destroy)(linesearch);CHKERRQ(ierr);
 
-    linesearch->ops->destroy = PETSC_NULL;
+    linesearch->ops->destroy = NULL;
   }
   /* Reinitialize function pointers in SNESLineSearchOps structure */
   linesearch->ops->apply          = 0;

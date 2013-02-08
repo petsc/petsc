@@ -233,7 +233,7 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   PetscInt          mbs,i,n,nonzerorow=0;
-  const PetscInt    *idx,*ii,*ridx=PETSC_NULL;
+  const PetscInt    *idx,*ii,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -282,7 +282,7 @@ PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -332,7 +332,7 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   const PetscScalar *x,*xb;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
 
@@ -392,7 +392,7 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   const PetscScalar *x,*xb;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -450,7 +450,7 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   const PetscScalar *xb,*x;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  const PetscInt    *idx,*ii,*ridx=PETSC_NULL;
+  const PetscInt    *idx,*ii,*ridx=NULL;
   PetscInt          mbs,i,j,n,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
@@ -507,7 +507,7 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2,x3,x4,x5,x6,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -571,7 +571,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2,x3,x4,x5,x6,x7,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -641,7 +641,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,k,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,k,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -714,7 +714,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -841,7 +841,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -933,7 +933,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,n,*ridx=NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1006,7 +1006,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2;
-  PetscInt       ncols,k,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt       ncols,k,*ridx=NULL,nonzerorow=0;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1061,7 +1061,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar       *y,*z,sum;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs=a->mbs,i,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs=a->mbs,i,n,*ridx=NULL,nonzerorow=0;
   const PetscInt    *idx,*ii;
   PetscBool         usecprow=a->compressedrow.use;
 
@@ -1125,7 +1125,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    x1,x2,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1195,7 +1195,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,x1,x2,x3,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1260,7 +1260,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1328,7 +1328,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    *yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1396,7 +1396,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    x1,x2,x3,x4,x5,x6,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1466,7 +1466,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar    x1,x2,x3,x4,x5,x6,x7,*yarray,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
+  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1537,7 +1537,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2;
-  PetscInt       ncols,k,*ridx=PETSC_NULL;
+  PetscInt       ncols,k,*ridx=NULL;
   PetscBool      usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -1617,7 +1617,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
   MatScalar         *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=PETSC_NULL;
+  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=NULL;
   Mat_CompressedRow cprow   = a->compressedrow;
   PetscBool         usecprow=cprow.use;
 
@@ -1763,7 +1763,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
   MatScalar         *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=PETSC_NULL;
+  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=NULL;
   Mat_CompressedRow cprow   = a->compressedrow;
   PetscBool         usecprow=cprow.use;
 

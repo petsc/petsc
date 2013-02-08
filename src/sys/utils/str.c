@@ -226,7 +226,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
   for (i=0; i<n; i++) {
     ierr = PetscStrallocpy(list[i],(*t)+i);CHKERRQ(ierr);
   }
-  (*t)[n] = PETSC_NULL;
+  (*t)[n] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -567,7 +567,7 @@ PetscErrorCode  PetscStrncmp(const char a[],const char b[],size_t n,PetscBool  *
 -  b - character
 
    Output Parameter:
-.  c - location of occurance, PETSC_NULL if not found
+.  c - location of occurance, NULL if not found
 
    Level: intermediate
 
@@ -806,7 +806,7 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
 -  needle - string to find
 
    Output Parameter:
-.  tmp - location of occurance, is a PETSC_NULL if the string is not found
+.  tmp - location of occurance, is a NULL if the string is not found
 
    Notes: Not for use in Fortran
 
@@ -833,7 +833,7 @@ struct _p_PetscToken {char token;char *array;char *current;};
 .  a - pointer to token
 
    Output Parameter:
-.  result - location of occurance, PETSC_NULL if not found
+.  result - location of occurance, NULL if not found
 
    Notes:
 

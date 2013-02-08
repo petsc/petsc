@@ -47,9 +47,9 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The interval size", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "isection.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -78,7 +78,7 @@ public:
 
   void readMesh(const char filename[], const int dim, const bool interpolate) {
     int           spaceDim    = 0;
-    double       *coordinates = PETSC_NULL;
+    double       *coordinates = NULL;
     std::ifstream f;
 
     this->_mesh = new mesh_type(PETSC_COMM_WORLD, dim);

@@ -169,7 +169,7 @@ PetscErrorCode VecScale_Seq(Vec xin,PetscScalar alpha)
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   } else if (alpha != (PetscScalar)1.0) {
     PetscScalar *scalar;
-    ierr    = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr    = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,NULL,NULL);CHKERRQ(ierr);
     *scalar = alpha;
     ierr    = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecScale_kernel,xin,scalar);CHKERRQ(ierr);
   }
@@ -231,7 +231,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != (PetscScalar)0.0) {
     PetscScalar *scalar;
-    ierr    = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr    = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scalar,NULL,NULL);CHKERRQ(ierr);
     *scalar = alpha;
     ierr    = PetscThreadCommRunKernel3(((PetscObject)yin)->comm,(PetscThreadKernel)VecAXPY_kernel,yin,scalar,xin);CHKERRQ(ierr);
     ierr    = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
   } else {
     PetscScalar *scal1,*scal2;
-    ierr   = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scal1,&scal2,PETSC_NULL);CHKERRQ(ierr);
+    ierr   = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scal1,&scal2,NULL);CHKERRQ(ierr);
     *scal1 = alpha; *scal2 = beta;
     ierr   = PetscThreadCommRunKernel4(((PetscObject)yin)->comm,(PetscThreadKernel)VecAXPBY_kernel,yin,scal1,scal2,xin);CHKERRQ(ierr);
     if (beta == (PetscScalar)0.0) {

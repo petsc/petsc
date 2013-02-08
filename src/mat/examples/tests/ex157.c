@@ -41,7 +41,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 /*  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); */
-/*  ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); */
+/*  ierr = MatGetVecs(A,&z,NULL);CHKERRQ(ierr); */
 
   ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
   printf("The vector size  of input from the main routine is %d\n",vsize);

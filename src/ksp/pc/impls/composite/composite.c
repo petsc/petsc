@@ -237,7 +237,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
     ierr = PCCompositeSetType(pc,jac->type);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
   }
@@ -319,7 +319,7 @@ PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
     pc->ops->applytranspose = PCApplyTranspose_Composite_Multiplicative;
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
     pc->ops->apply          = PCApply_Composite_Special;
-    pc->ops->applytranspose = PETSC_NULL;
+    pc->ops->applytranspose = NULL;
   } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
   jac->type = type;
   PetscFunctionReturn(0);
@@ -348,7 +348,7 @@ PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   next = jac->head;
   if (!next) {
     jac->head       = ilink;
-    ilink->previous = PETSC_NULL;
+    ilink->previous = NULL;
   } else {
     cnt++;
     while (next->next) {

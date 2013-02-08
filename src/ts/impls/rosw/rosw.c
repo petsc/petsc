@@ -319,7 +319,7 @@ PetscErrorCode TSRosWRegisterAll(void)
     const PetscReal b = 1;
     const PetscReal binterpt=1;
 
-    ierr = TSRosWRegister(TSROSWTHETA1,1,1,&A,&Gamma,&b,PETSC_NULL,1,&binterpt);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSWTHETA1,1,1,&A,&Gamma,&b,NULL,1,&binterpt);CHKERRQ(ierr);
   }
 
   {
@@ -328,7 +328,7 @@ PetscErrorCode TSRosWRegisterAll(void)
     const PetscReal b = 1;
     const PetscReal binterpt=1;
 
-    ierr = TSRosWRegister(TSROSWTHETA2,2,1,&A,&Gamma,&b,PETSC_NULL,1,&binterpt);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSWTHETA2,2,1,&A,&Gamma,&b,NULL,1,&binterpt);CHKERRQ(ierr);
   }
 
   {
@@ -427,7 +427,7 @@ PetscErrorCode TSRosWRegisterAll(void)
       b[4]  = {5./6,-1./6,-1./6,0.5},
       b2[4] = {0.75,-0.25,0.5,0};
 
-    ierr = TSRosWRegister(TSROSWRODAS3,3,4,&A[0][0],&Gamma[0][0],b,b2,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSWRODAS3,3,4,&A[0][0],&Gamma[0][0],b,b2,0,NULL);CHKERRQ(ierr);
   }
   {
     /*const PetscReal g = 0.43586652150845899941601945119356;       Directly written in-place below */
@@ -640,7 +640,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -694,7 +694,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
 .  A - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
 .  Gamma - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
 .  b - Step completion table (dimension s)
-.  bembed - Step completion table for a scheme of order one less (dimension s, PETSC_NULL if no embedded scheme is available)
+.  bembed - Step completion table for a scheme of order one less (dimension s, NULL if no embedded scheme is available)
 .  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt
 -  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
 
@@ -913,7 +913,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
     const PetscReal misfit = a2*a2*bm[1] + a3*a3*bm[2] + a4*a4*bm[3] - one/three;
     if (PetscAbs(misfit) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Assumptions violated, could not construct a third order embedded method");
   }
-  ierr = TSRosWRegister(name,4,4,&A[0][0],&Gamma[0][0],b,bm,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSRosWRegister(name,4,4,&A[0][0],&Gamma[0][0],b,bm,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1026,7 +1026,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         if (!ros->recompute_jacobian && !i) {
           ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
         }
-        ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
+        ierr = SNESSolve(snes,NULL,Y[i]);CHKERRQ(ierr);
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
@@ -1045,7 +1045,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr);
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
         str  = SAME_NONZERO_PATTERN;
-        ierr = TSGetIJacobian(ts,&J,&Jp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
         ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
 
@@ -1054,7 +1054,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ts->ksp_its += 1;
       }
     }
-    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ros->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
@@ -1170,9 +1170,9 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_RosW(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRosWGetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRosWSetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRosWSetRecomputeJacobian_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRosWGetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRosWSetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRosWSetRecomputeJacobian_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1415,7 +1415,7 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts)
     ierr = TSRosWSetType(ts,flg ? namelist[choice] : rostype);CHKERRQ(ierr);
     ierr = PetscFree(namelist);CHKERRQ(ierr);
 
-    ierr = PetscOptionsBool("-ts_rosw_recompute_jacobian","Recompute the Jacobian at each stage","TSRosWSetRecomputeJacobian",ros->recompute_jacobian,&ros->recompute_jacobian,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_rosw_recompute_jacobian","Recompute the Jacobian at each stage","TSRosWSetRecomputeJacobian",ros->recompute_jacobian,&ros->recompute_jacobian,NULL);CHKERRQ(ierr);
 
     /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -1680,7 +1680,7 @@ PetscErrorCode  TSCreate_RosW(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSRosWInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSRosWInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ts->ops->reset          = TSReset_RosW;

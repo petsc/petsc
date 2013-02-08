@@ -97,8 +97,8 @@ int main(int argc,char **argv)
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(ctx.snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ctx.snes,PETSC_NULL,SNESFunction,&ctx);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ctx.snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobian,&ctx);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ctx.snes,NULL,NULL,SNESDefaultComputeJacobian,&ctx);CHKERRQ(ierr);
   ctx.F = F;
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&ctx.V);CHKERRQ(ierr);
 
@@ -106,11 +106,11 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&ctx.UV);CHKERRQ(ierr);
   I    = 2*rank;
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(U,PETSC_NULL,ctx.UV,is,&ctx.scatterU);CHKERRQ(ierr);
+  ierr = VecScatterCreate(U,NULL,ctx.UV,is,&ctx.scatterU);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   I    = 2*rank + 1;
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,1,&I,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(ctx.V,PETSC_NULL,ctx.UV,is,&ctx.scatterV);CHKERRQ(ierr);
+  ierr = VecScatterCreate(ctx.V,NULL,ctx.UV,is,&ctx.scatterV);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   ierr = VecSet(U,1.0);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
   ctx->t = t;
   ierr = VecScatterBegin(ctx->scatterU,U,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatterU,U,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = SNESSolve(ctx->snes,PETSC_NULL,ctx->V);CHKERRQ(ierr);
+  ierr = SNESSolve(ctx->snes,NULL,ctx->V);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx->scatterV,ctx->V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatterV,ctx->V,ctx->UV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*ctx->f)(t,ctx->UV,F);CHKERRQ(ierr);

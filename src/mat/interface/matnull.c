@@ -98,7 +98,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   N   /= dim;
   switch (dim) {
   case 1:
-    ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_TRUE,0,PETSC_NULL,sp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_TRUE,0,NULL,sp);CHKERRQ(ierr);
     break;
   case 2:
   case 3:
@@ -148,7 +148,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
       ierr = VecMDot(vec[i],i,vec,dots);CHKERRQ(ierr);
       for (j=0; j<i; j++) dots[j] *= -1.;
       ierr = VecMAXPY(vec[i],i,dots,vec);CHKERRQ(ierr);
-      ierr = VecNormalize(vec[i],PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecNormalize(vec[i],NULL);CHKERRQ(ierr);
     }
     ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_FALSE,nmodes,vec,sp);CHKERRQ(ierr);
     for (i=0; i<nmodes; i++) {ierr = VecDestroy(&vec[i]);CHKERRQ(ierr);}
@@ -250,9 +250,9 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
 
-  *SP = PETSC_NULL;
+  *SP = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
@@ -322,7 +322,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
    Input Parameters:
 +  sp - the null space context
 .  vec - the vector from which the null space is to be removed
--  out - if this is requested (not PETSC_NULL) then this is a vector with the null space removed otherwise
+-  out - if this is requested (not NULL) then this is a vector with the null space removed otherwise
          the removal is done in-place (in vec)
 
    Note: The user is not responsible for the vector returned and should not destroy it.
@@ -409,14 +409,14 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   n    = sp->n;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test_view",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_null_space_test_view",&flg1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_null_space_test_view_draw",&flg2,NULL);CHKERRQ(ierr);
 
   if (!sp->vec) {
     if (n) {
       ierr = VecDuplicate(sp->vecs[0],&sp->vec);CHKERRQ(ierr);
     } else {
-      ierr = MatGetVecs(mat,&sp->vec,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetVecs(mat,&sp->vec,NULL);CHKERRQ(ierr);
     }
   }
   l = sp->vec;

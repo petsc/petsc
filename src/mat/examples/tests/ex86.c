@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_SELF,&seqaijmat);CHKERRQ(ierr);
   ierr = MatSetSizes(seqaijmat,n+rank,PETSC_DECIDE,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(seqaijmat);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(seqaijmat,3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(seqaijmat,3,NULL);CHKERRQ(ierr);
 
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {

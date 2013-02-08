@@ -66,9 +66,9 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscFunctionBegin;
   PetscValidPointer(A,2);
 
-  *A = PETSC_NULL;
+  *A = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,0,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
@@ -196,10 +196,10 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   }
 
   ierr = PetscViewerDestroy(&B->viewonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatView",&B->viewonassembly,&B->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-mat_view","Display mat with the viewer on MatAssemblyEnd()","MatView",&B->viewonassembly,&B->viewformatonassembly,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsName("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",&B->checksymmetryonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",0.0,&B->checksymmetrytol,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",PETSC_FALSE,&B->checknullspaceonassembly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_is_symmetric","Checks if mat is symmetric on MatAssemblyEnd()","MatIsSymmetric",0.0,&B->checksymmetrytol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",PETSC_FALSE,&B->checknullspaceonassembly,NULL);CHKERRQ(ierr);
 
   if (B->ops->setfromoptions) {
     ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
@@ -265,14 +265,14 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
       ierr = MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
-      ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2((!!dnnz)*m,PetscInt,&sdnnz,(!!onnz)*m,PetscInt,&sonnz);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
         if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
         if (onnz) sonnz[i] = onnz[i/bs] * bs;
       }
-      ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : PETSC_NULL,0,onnz ? sonnz : PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(A,0,dnnz ? sdnnz : NULL,0,onnz ? sonnz : NULL);CHKERRQ(ierr);
       ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
     }
   }

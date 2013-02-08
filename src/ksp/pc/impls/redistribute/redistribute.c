@@ -29,7 +29,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = MPI_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
-    ierr = MatGetSize(pc->pmat,&N,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Number rows eliminated %D Percentage rows eliminated %g\n",ncnt,100.0*((PetscReal)ncnt)/((PetscReal)N));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Redistribute preconditioner: \n");CHKERRQ(ierr);
     ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
@@ -50,13 +50,13 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt,dcnt,*drows;
   PetscLayout       map,nmap;
   PetscMPIInt       size,imdex,tag,n;
-  PetscInt          *source = PETSC_NULL;
-  PetscMPIInt       *nprocs = PETSC_NULL,nrecvs;
+  PetscInt          *source = NULL;
+  PetscMPIInt       *nprocs = NULL,nrecvs;
   PetscInt          j,nsends;
-  PetscInt          *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
+  PetscInt          *owner = NULL,*starts = NULL,count,slen;
   PetscInt          *rvalues,*svalues,recvtotal;
   PetscMPIInt       *onodes1,*olengths1;
-  MPI_Request       *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
+  MPI_Request       *send_waits = NULL,*recv_waits = NULL;
   MPI_Status        recv_status,*send_status;
   Vec               tvec,diag;
   Mat               tmat;
@@ -64,7 +64,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
   PetscFunctionBegin;
   if (pc->setupcalled) {
-    ierr = KSPGetOperators(red->ksp,PETSC_NULL,&tmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(red->ksp,NULL,&tmat,NULL);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   } else {
@@ -78,9 +78,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = MatGetOwnershipRange(pc->mat,&rstart,&rend);CHKERRQ(ierr);
     cnt  = 0;
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
       if (nz > 1) cnt++;
-      ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
     }
     ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
     ierr = PetscMalloc((rend - rstart - cnt)*sizeof(PetscInt),&drows);CHKERRQ(ierr);
@@ -88,10 +88,10 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     /* list non-diagonal rows on process */
     cnt = 0; dcnt = 0;
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
       if (nz > 1) rows[cnt++] = i;
       else drows[dcnt++] = i - rstart;
-      ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
     }
 
     /* create PetscLayout for non-diagonal rows on each process */
@@ -109,7 +109,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
-    ierr = MatGetSize(pc->pmat,&NN,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetSize(pc->pmat,&NN,NULL);CHKERRQ(ierr);
     ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));CHKERRQ(ierr);
     /*
         this code is taken from VecScatterCreate_PtoS()
@@ -132,7 +132,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       }
     }
     /* inform other processors of number of messages and max length*/
-    ierr      = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
+    ierr      = PetscGatherNumberOfMessages(comm,NULL,nprocs,&nrecvs);CHKERRQ(ierr);
     ierr      = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
     ierr      = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
     recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
@@ -197,8 +197,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&tvec,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecScatterCreate(tvec,red->is,red->b,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
+    ierr = MatGetVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
   /* get diagonal portion of matrix */
   ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&diag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
   ierr = VecGetArrayRead(diag,&d);CHKERRQ(ierr);
   for (i=0; i<red->dcnt; i++) red->diag[i] = 1.0/d[red->drows[i]];

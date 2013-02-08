@@ -468,7 +468,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
   if (!setjmp(PetscXIOErrorJumpBuf)) XSetIOErrorHandler((XIOErrorHandler)PetscXIOHandler);
   else {
-    XSetIOErrorHandler(PETSC_NULL);
+    XSetIOErrorHandler(NULL);
     ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -516,7 +516,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
-  XSetIOErrorHandler(PETSC_NULL);
+  XSetIOErrorHandler(NULL);
 #endif
   PetscFunctionReturn(0);
 }

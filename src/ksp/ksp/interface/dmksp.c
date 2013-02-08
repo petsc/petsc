@@ -25,9 +25,9 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMKSP, struct _DMKSPOps, DMKSP_CLASSID, -1, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMKSP, struct _DMKSPOps, DMKSP_CLASSID, -1, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMKSPOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -134,8 +134,8 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
     ierr      = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
     ierr      = DMKSPCreate(((PetscObject)dm)->comm,kspdm);CHKERRQ(ierr);
     dm->dmksp = (PetscObject) *kspdm;
-    ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+    ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -206,8 +206,8 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
   ierr          = DMKSPDestroy((DMKSP*)&dmdest->dmksp);CHKERRQ(ierr);
   dmdest->dmksp = dmsrc->dmksp;
   ierr          = PetscObjectReference(dmdest->dmksp);CHKERRQ(ierr);
-  ierr          = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr          = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  ierr          = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

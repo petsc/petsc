@@ -141,8 +141,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   */
   if (!lx) {
     ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-da_partition_blockcomm",&flg1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-da_partition_nodes_at_end",&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-da_partition_blockcomm",&flg1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-da_partition_nodes_at_end",&flg2,NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
       xs = rank*M/m;
       x  = (rank + 1)*M/m - xs;
@@ -326,7 +326,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx - array containing number of nodes in the X direction on each processor,
-        or PETSC_NULL. If non-null, must be of length as the number of processes in the MPI_Comm.
+        or NULL. If non-null, must be of length as the number of processes in the MPI_Comm.
 
    Output Parameter:
 .  da - the resulting distributed array object
@@ -365,7 +365,7 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, Pet
   ierr = DMDASetBoundaryType(*da, bx, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
-  ierr = DMDASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*da, lx, NULL, NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);

@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 {
   PetscInt        i,M = 3,N = 5,P=3,s=1,w=2,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
   PetscErrorCode  ierr;
-  PetscInt        *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscInt        *lx = NULL,*ly = NULL,*lz = NULL;
   DM              da;
   PetscBool       flg = PETSC_FALSE,test_order = PETSC_FALSE;
   ISColoring      coloring;
@@ -22,19 +22,19 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-w",&w,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-star",&flg,NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-test_order",&test_order,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-test_order",&test_order,NULL);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);

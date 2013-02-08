@@ -218,7 +218,7 @@ EXTERN_C_END
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or PETSC_NULL
+         (possibly different for each row) or NULL
 
    Output Parameter:
 .  A - the matrix

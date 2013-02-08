@@ -1154,7 +1154,7 @@ rows, \trl{n} columns, and a block size of \trl{nb} is
 The arguments \trl{nz} and \trl{nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
 performance during matrix assembly, preallocation is crucial; however, the
-user can set \trl{nz=0} and \trl{nzz=PETSC_NULL} for PETSc to dynamically
+user can set \trl{nz=0} and \trl{nzz=NULL} for PETSc to dynamically
 allocate matrix memory as needed.  The PETSc users manual
 discusses preallocation for the AIJ format; extension to the block AIJ
 format is straightforward.
@@ -1188,8 +1188,8 @@ must match the local size used in the VecCreateMPI() for \trl{y}.
 The \trl{n} used must match that used as the local size in
 VecCreateMPI() for \trl{x}.
 
-The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=PETSC_NULL}, and
-\trl{o_nnz=PETSC_NULL} for PETSc to control dynamic allocation of matrix
+The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=NULL}, and
+\trl{o_nnz=NULL} for PETSc to control dynamic allocation of matrix
 memory space.  Analogous to \trl{nz} and \trl{nnz} for the routine
 MatCreateSeqBAIJ(), these arguments optionally specify
 block nonzero information for the diagonal (\trl{d_nz} and \trl{d_nnz}) and

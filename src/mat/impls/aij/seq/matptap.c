@@ -44,7 +44,7 @@ PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   Mat_SeqAIJ         *a        = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
   PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*ptaj,nspacedouble=0;
@@ -273,7 +273,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* flag 'sparse_axpy' determines which implementations to be used:
        0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P;
        1: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
-  ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but slower MatPtAPNumeric()","",sparse_axpy,&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but slower MatPtAPNumeric()","",sparse_axpy,&sparse_axpy,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (sparse_axpy) {
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);

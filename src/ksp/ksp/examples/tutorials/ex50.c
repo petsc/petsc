@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeJacobian,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
     MatNullSpace nullspace;
 
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,NULL);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -175,10 +175,10 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
   PetscErrorCode ierr;
 
   /* Do row scaling  and add diagonal perturbation */
-  ierr = MatDiagonalScale(jac,Db,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(jac,Db,NULL);CHKERRQ(ierr);
   ierr = MatDiagonalSet(jac,Da,ADD_VALUES);CHKERRQ(ierr);
   if (jac != jac_pre) { /* If jac and jac_pre are different */
-    ierr = MatDiagonalScale(jac_pre,Db,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(jac_pre,Db,NULL);CHKERRQ(ierr);
     ierr = MatDiagonalSet(jac_pre,Da,ADD_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -504,7 +504,7 @@ PetscErrorCode  SNESCreate_VINEWTONSSLS(SNES snes)
   snes->ops->solve          = SNESSolve_VINEWTONSSLS;
   snes->ops->destroy        = SNESDestroy_VI;
   snes->ops->setfromoptions = SNESSetFromOptions_VINEWTONSSLS;
-  snes->ops->view           = PETSC_NULL;
+  snes->ops->view           = NULL;
 
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;

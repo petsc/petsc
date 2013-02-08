@@ -92,12 +92,12 @@ int main(int argc, char **argv)
 
   user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5; user.param = 6.0;
-  ierr           = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr           = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr           = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
   user.fine.mx   = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-redundant_build",&user.redundant_build);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-redundant_build",&user.redundant_build);CHKERRQ(ierr);
   if (user.redundant_build) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Building coarse Jacobian redundantly\n");CHKERRQ(ierr);
   }
@@ -105,28 +105,28 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                      user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                      user.fine.my,Nx,Ny,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                      user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                      user.coarse.my,Nx,Ny,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
@@ -135,13 +135,13 @@ int main(int argc, char **argv)
     ierr = DMDANaturalAllToGlobalCreate(user.coarse.da,&user.fromlocalall);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&user.localall);CHKERRQ(ierr);
     /* Create sequential matrix to hold entire coarse grid Jacobian on each processor */
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,NULL,&user.coarse.J);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
     ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRQ(ierr);
     /* We will compute the coarse Jacobian in parallel */
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,NULL,3,NULL,&user.coarse.J);CHKERRQ(ierr);
   }
 
   /* Create nonlinear solver */
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pc,2,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc,PC_MG_ADDITIVE);CHKERRQ(ierr);
 
   /* always solve the coarse problem redundantly with direct LU solver */
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
   /* Set options, then solve nonlinear system */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = FormInitialGuess1(&user,user.fine.x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,user.fine.x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,user.fine.x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
 
@@ -490,11 +490,11 @@ PetscErrorCode FormInterpolation(AppCtx *user)
 
   ierr = DMDAGetCorners(user->fine.da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->fine.da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(user->fine.da,PETSC_NULL,&idx);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->fine.da,NULL,&idx);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(user->coarse.da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->coarse.da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(user->coarse.da,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(user->coarse.da,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = VecGetLocalSize(user->fine.x,&m_fine_local);CHKERRQ(ierr);

@@ -31,17 +31,17 @@ namespace PETSc {
     LogEvent() : name(), id() {};
     LogEvent(const std::string& name, PetscLogEvent id) : name(name), id(id) {};
     LogEvent(const LogEvent& event) : name(event.name), id(event.id) {};
-    void begin(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL) {
+    void begin(PetscObject o1 = NULL, PetscObject o2 = NULL, PetscObject o3 = NULL, PetscObject o4 = NULL) {
       PetscErrorCode ierr = PetscLogEventBegin(this->id, o1, o2, o3, o4);CHKERRXX(ierr);
     };
-    void end(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL) {
+    void end(PetscObject o1 = NULL, PetscObject o2 = NULL, PetscObject o3 = NULL, PetscObject o4 = NULL) {
       PetscErrorCode ierr = PetscLogEventEnd(this->id, o1, o2, o3, o4);CHKERRXX(ierr);
     };
-    void barrierBegin(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL, MPI_Comm comm = MPI_COMM_NULL) {
+    void barrierBegin(PetscObject o1 = NULL, PetscObject o2 = NULL, PetscObject o3 = NULL, PetscObject o4 = NULL, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) comm = PETSC_COMM_WORLD;
       PetscErrorCode ierr = PetscLogEventBarrierBegin(this->id, o1, o2, o3, o4, comm);CHKERRXX(ierr);
     };
-    void barrierEnd(PetscObject o1 = PETSC_NULL, PetscObject o2 = PETSC_NULL, PetscObject o3 = PETSC_NULL, PetscObject o4 = PETSC_NULL, MPI_Comm comm = MPI_COMM_NULL) {
+    void barrierEnd(PetscObject o1 = NULL, PetscObject o2 = NULL, PetscObject o3 = NULL, PetscObject o4 = NULL, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) comm = PETSC_COMM_WORLD;
       PetscErrorCode ierr = PetscLogEventBarrierEnd(this->id, o1, o2, o3, o4, comm);CHKERRXX(ierr);
     };

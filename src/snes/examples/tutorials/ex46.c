@@ -48,17 +48,17 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr   = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");CHKERRQ(ierr);
   user.D = 1.0;
-  ierr   = PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, NULL);CHKERRQ(ierr);
   user.K = 1.0;
-  ierr   = PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, NULL);CHKERRQ(ierr);
   user.m = 1;
-  ierr   = PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, NULL);CHKERRQ(ierr);
   ierr   = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);

@@ -72,14 +72,14 @@ PetscErrorCode spbas_allocate_pattern(spbas_matrix * result, PetscBool do_values
   if (col_idx_type == SPBAS_OFFSET_ARRAY) {
     ierr = PetscMalloc(nrows*sizeof(PetscInt),&result->icol0);CHKERRQ(ierr);
   } else  {
-    result->icol0 = PETSC_NULL;
+    result->icol0 = NULL;
   }
 
   /* If values are given, allocate values array */
   if (do_values)  {
     ierr = PetscMalloc(nrows*sizeof(PetscScalar*),&result->values);CHKERRQ(ierr);
   } else {
-    result->values = PETSC_NULL;
+    result->values = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -101,7 +101,7 @@ PetscErrorCode spbas_allocate_data(spbas_matrix * result)
   PetscInt       nrows = result->nrows;
   PetscInt       r_nnz;
   PetscErrorCode ierr;
-  PetscBool      do_values  = (result->values != PETSC_NULL) ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      do_values  = (result->values != NULL) ? PETSC_TRUE : PETSC_FALSE;
   PetscBool      block_data = result->block_data;
 
   PetscFunctionBegin;
@@ -303,7 +303,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
 
   /* Sort the rows so that identical columns will be next to each other */
   ierr = spbas_mergesort_icols(nrows, irow_in, icol_in, col_idx_type, isort);CHKERRQ(ierr);
-  ierr = PetscInfo(PETSC_NULL,"Rows have been sorted for patterns\n");CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"Rows have been sorted for patterns\n");CHKERRQ(ierr);
 
   /* Replace identical rows with the first one in the list */
   for (i=1; i<nrows; i++) {
@@ -350,8 +350,8 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
   for (i=0; i<nrows; i++) {
     B->icols[i] = B->icols[ipoint[i]];
   }
-  ierr = PetscInfo(PETSC_NULL,"Row patterns have been compressed\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(PETSC_NULL,"         (%G nonzeros per row)\n",  (PetscReal) nnz / (PetscReal) nrows);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"Row patterns have been compressed\n");CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"         (%G nonzeros per row)\n",  (PetscReal) nnz / (PetscReal) nrows);CHKERRQ(ierr);
 
   ierr=PetscFree(isort);CHKERRQ(ierr);
   ierr=PetscFree(used);CHKERRQ(ierr);
@@ -552,7 +552,7 @@ PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix * result)
       on output, icol[0..nnz-1] is increasing;
                   val[0..nnz-1] has undergone the same permutation as icol
 
-      NB: val may be PETSC_NULL: in that case, only the integers are sorted
+      NB: val may be NULL: in that case, only the integers are sorted
 
 */
 #undef __FUNCT__
@@ -563,13 +563,13 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
   PetscInt       i, i1, i2;   /* Loop counters for (partly) sorted arrays */
   PetscInt       istart, i1end, i2end; /* start of newly sorted array part, end of both parts */
   PetscInt       *ialloc;     /* Allocated arrays */
-  PetscScalar    *valloc=PETSC_NULL;
+  PetscScalar    *valloc=NULL;
   PetscInt       *iswap;      /* auxiliary pointers for swapping */
   PetscScalar    *vswap;
   PetscInt       *ihlp1;      /* Pointers to new version of arrays, */
-  PetscScalar    *vhlp1=PETSC_NULL;  /* (arrays under construction) */
+  PetscScalar    *vhlp1=NULL;  /* (arrays under construction) */
   PetscInt       *ihlp2;      /* Pointers to previous version of arrays, */
-  PetscScalar    *vhlp2=PETSC_NULL;
+  PetscScalar    *vhlp2=NULL;
   PetscErrorCode ierr;
 
   ierr  = PetscMalloc(nnz*sizeof(PetscInt),&ialloc);CHKERRQ(ierr);
@@ -663,7 +663,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   PetscInt       * row_nnz;
   PetscInt       **icols;
   PetscBool      do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
-  PetscScalar    **vals    = PETSC_NULL;
+  PetscScalar    **vals    = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -707,7 +707,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A,const PetscInt
   PetscInt       row_nnz;
   PetscInt       *icols;
   PetscBool      do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
-  PetscScalar    *vals     = PETSC_NULL;
+  PetscScalar    *vals     = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

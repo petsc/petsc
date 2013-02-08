@@ -27,7 +27,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
   ierr = MPI_Keyval_free(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
 
   PetscThreadCommPackageInitialized = PETSC_FALSE;
-  PetscThreadCommList               = PETSC_NULL;
+  PetscThreadCommList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -39,7 +39,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
    Logically collective
 
    Input Parameter:
-.  path - The dynamic library path, or PETSC_NULL
+.  path - The dynamic library path, or NULL
 
    Level: developer
 

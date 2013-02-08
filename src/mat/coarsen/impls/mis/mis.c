@@ -43,7 +43,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   const PetscInt   nloc = Gmat->rmap->n;
   PetscInt         *lid_cprowID, *lid_gid;
   PetscBool        *lid_removed;
-  PetscScalar      *lid_parent_gid = PETSC_NULL; /* only used for strict aggs */
+  PetscScalar      *lid_parent_gid = NULL; /* only used for strict aggs */
   PetscScalar      *lid_state;
   PetscCoarsenData *agg_lists;
 

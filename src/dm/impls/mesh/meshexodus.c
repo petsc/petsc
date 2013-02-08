@@ -222,7 +222,7 @@ PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 
   PetscFunctionBegin;
   ierr = DMMeshCreate(comm, dm);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, -1, debug);
 #if defined(PETSC_HAVE_EXODUSII)
   ierr = PetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ PetscErrorCode DMMeshCreateExodusNG(MPI_Comm comm, PetscInt exoid,DM *dm)
 #if defined(PETSC_HAVE_EXODUSII)
   ierr = MPI_Comm_rank(comm,&rank);
   ierr = MPI_Comm_size(comm,&num_proc);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-debug",&debug,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-debug",&debug,NULL);CHKERRQ(ierr);
 
   ierr = DMMeshCreate(comm,dm);CHKERRQ(ierr);
   /*
@@ -738,7 +738,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertex(DM dm,VecScatter *scatter)
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,num_vertices,vertices,PETSC_OWN_POINTER,&is_local);CHKERRQ(ierr);
-  ierr = VecScatterCreate(v_local,PETSC_NULL,v_zero,is_local,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(v_local,NULL,v_zero,is_local,scatter);CHKERRQ(ierr);
 
   ierr = ISDestroy(&is_local);CHKERRQ(ierr);
   ierr = VecDestroy(&v_local);CHKERRQ(ierr);
@@ -865,7 +865,7 @@ PetscErrorCode DMMeshCreateScatterToZeroVertexSet(DM dm,IS is_local,IS is_zero,V
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,setsize_local,setvertices_localtozero,PETSC_OWN_POINTER,&is_localtozero);CHKERRQ(ierr);
-  ierr = VecScatterCreate(v_local,PETSC_NULL,v_zero,is_localtozero,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(v_local,NULL,v_zero,is_localtozero,scatter);CHKERRQ(ierr);
 
   ierr = ISDestroy(&is_localtozero);CHKERRQ(ierr);
   ierr = PetscFree(allvertices);CHKERRQ(ierr);
@@ -948,7 +948,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCell(DM dm,VecScatter *scatter)
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,num_cells,cells,PETSC_OWN_POINTER,&is_local);CHKERRQ(ierr);
-  ierr = VecScatterCreate(v_local,PETSC_NULL,v_zero,is_local,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(v_local,NULL,v_zero,is_local,scatter);CHKERRQ(ierr);
 
   ierr = ISDestroy(&is_local);CHKERRQ(ierr);
   ierr = VecDestroy(&v_local);CHKERRQ(ierr);
@@ -1062,7 +1062,7 @@ PetscErrorCode DMMeshCreateScatterToZeroCellSet(DM dm,IS is_local,IS is_zero,Vec
   ierr = VecSetFromOptions(v_zero);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(comm,setsize_local,setcells_localtozero,PETSC_OWN_POINTER,&is_localtozero);CHKERRQ(ierr);
-  ierr = VecScatterCreate(v_local,PETSC_NULL,v_zero,is_localtozero,scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(v_local,NULL,v_zero,is_localtozero,scatter);CHKERRQ(ierr);
 
   ierr = PetscFree(setcells_localtozero);CHKERRQ(ierr);
   ierr = PetscFree(allcells);CHKERRQ(ierr);
@@ -1569,7 +1569,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = DMMeshGetStratumIS(dm,"Cell Sets",setsID[set],&setIS);CHKERRQ(ierr);
       ierr = DMMeshGetStratumSize(dm,"Cell Sets",setsID[set],&num_cells_in_set);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_in_set,&vdof_set);CHKERRQ(ierr);
-      ierr = VecScatterCreate(vdof,setIS,vdof_set,PETSC_NULL,&setscatter);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vdof,setIS,vdof_set,NULL,&setscatter);CHKERRQ(ierr);
       for (c = 0; c < num_dof; c++) {
         ierr = VecStrideGather(v,c,vdof,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -1625,7 +1625,7 @@ PetscErrorCode VecViewExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
       ierr = DMMeshGetStratumIS(dm,"Cell Sets",setsID_zero[set],&setIS);CHKERRQ(ierr);
       ierr = DMMeshGetStratumSize(dm,"Cell Sets",setsID_zero[set],&num_cells_in_set);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_in_set,&vdof_set);CHKERRQ(ierr);
-      ierr = VecScatterCreate(vdof,setIS,vdof_set,PETSC_NULL,&setscatter);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vdof,setIS,vdof_set,NULL,&setscatter);CHKERRQ(ierr);
       /*
         Get the scatter to send the values of a single dof at a single block to cpu 0
       */
@@ -1751,7 +1751,7 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
         ierr = DMMeshGetStratumIS(dm,"Cell Sets",setsID[set],&setIS);CHKERRQ(ierr);
         ierr = DMMeshGetStratumSize(dm,"Cell Sets",setsID[set],&num_cells_in_set);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_in_set,&vdof_set);CHKERRQ(ierr);
-        ierr = VecScatterCreate(vdof,setIS,vdof_set,PETSC_NULL,&setscatter);CHKERRQ(ierr);
+        ierr = VecScatterCreate(vdof,setIS,vdof_set,NULL,&setscatter);CHKERRQ(ierr);
         /*
           Read array from disk
         */
@@ -1803,7 +1803,7 @@ PetscErrorCode VecLoadExodusCell(DM dm,Vec v,MPI_Comm comm,PetscInt exoid,PetscI
         ierr = DMMeshGetStratumIS(dm,"Cell Sets",setsID_zero[set],&setIS);CHKERRQ(ierr);
         ierr = DMMeshGetStratumSize(dm,"Cell Sets",setsID_zero[set],&num_cells_in_set);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF,num_cells_in_set,&vdof_set);CHKERRQ(ierr);
-        ierr = VecScatterCreate(vdof,setIS,vdof_set,PETSC_NULL,&setscatter);CHKERRQ(ierr);
+        ierr = VecScatterCreate(vdof,setIS,vdof_set,NULL,&setscatter);CHKERRQ(ierr);
         /*
           Get the scatter to send the values of a single dof at a single block to cpu 0
         */

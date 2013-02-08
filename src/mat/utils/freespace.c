@@ -16,7 +16,7 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
   a->local_remaining  = n;
   a->local_used       = 0;
   a->total_array_size = 0;
-  a->more_space       = PETSC_NULL;
+  a->more_space       = NULL;
 
   if (*list) {
     (*list)->more_space = a;

@@ -59,21 +59,21 @@ static PetscErrorCode ourcreatelocalvector(DM dm,Vec *v)
 
 PETSC_EXTERN_C void PETSC_STDCALL dmshellsetcreatematrix_(DM *dm,void (PETSC_STDCALL *func)(DM*,CHAR type PETSC_MIXED_LEN(len),Mat*,PetscErrorCode* PETSC_END_LEN(len)),PetscErrorCode *ierr)
 {
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.creatematrix,(PetscVoidFunction)func,PETSC_NULL);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.creatematrix,(PetscVoidFunction)func,NULL);
   if (*ierr) return;
   *ierr = DMShellSetCreateMatrix(*dm,ourcreatematrix);
 }
 
 PETSC_EXTERN_C void PETSC_STDCALL dmshellsetcreateglobalvector_(DM *dm,void (PETSC_STDCALL *func)(DM*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.createglobalvector,(PetscVoidFunction)func,PETSC_NULL);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.createglobalvector,(PetscVoidFunction)func,NULL);
   if (*ierr) return;
   *ierr = DMShellSetCreateGlobalVector(*dm,ourcreateglobalvector);
 }
 
 PETSC_EXTERN_C void PETSC_STDCALL dmshellsetcreatelocalvector_(DM *dm,void (PETSC_STDCALL *func)(DM*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.createlocalvector,(PetscVoidFunction)func,PETSC_NULL);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.createlocalvector,(PetscVoidFunction)func,NULL);
   if (*ierr) return;
   *ierr = DMShellSetCreateLocalVector(*dm,ourcreatelocalvector);
 }

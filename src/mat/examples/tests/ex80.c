@@ -52,7 +52,7 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
 
-  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*

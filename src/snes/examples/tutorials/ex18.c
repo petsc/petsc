@@ -67,15 +67,15 @@ int main(int argc,char **argv)
   PetscReal      litspit;
   DM             da;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
 
   /* set problem parameters */
   user.tleft  = 1.0;
   user.tright = 0.1;
   user.beta   = 2.5;
-  ierr        = PetscOptionsGetReal(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
-  ierr        = PetscOptionsGetReal(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
-  ierr        = PetscOptionsGetReal(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-tleft",&user.tleft,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-tright",&user.tright,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-beta",&user.beta,NULL);CHKERRQ(ierr);
   user.bm1    = user.beta - 1.0;
   user.coef   = user.beta/2.0;
 
@@ -95,12 +95,12 @@ int main(int argc,char **argv)
   /*
      Create the nonlinear solver, and tell it the functions to use
   */
-  ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,FormJacobian,&user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,NULL,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetComputeInitialGuess(snes,FormInitialGuess,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,FormInitialGuess,NULL);CHKERRQ(ierr);
 
-  ierr    = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = SNESSolve(snes,NULL,NULL);CHKERRQ(ierr);
   ierr    = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr    = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((PetscReal)lits)/((PetscReal)its);
@@ -162,7 +162,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionBeginUser;
   ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr  = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr  = DMDAGetInfo(da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = DMDAGetInfo(da,NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);
   hxdhy = hx/hy;               hydhx = hy/hx;
   tleft = user->tleft;         tright = user->tright;
@@ -331,7 +331,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr  = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   *flg  = SAME_NONZERO_PATTERN;
-  ierr  = DMDAGetInfo(da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = DMDAGetInfo(da,NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy     = one/(PetscReal)(my-1);
   hxdhy = hx/hy;               hydhx  = hy/hx;
   tleft = user->tleft;         tright = user->tright;

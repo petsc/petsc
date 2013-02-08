@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc(N*sizeof(PetscScalar),&a);CHKERRQ(ierr);
 
   /* Set thread ownership ranges for the array */
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
 
   /* Set a[i] = 1.0 .. i = 1,N */
   /* Get location to store the scalar value alpha from threadcomm */
-  ierr    = PetscThreadCommGetScalars(PETSC_COMM_WORLD,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscThreadCommGetScalars(PETSC_COMM_WORLD,&scalar,NULL,NULL);CHKERRQ(ierr);
   *scalar = alpha;
   ierr    = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)set_kernel,2,a,scalar);CHKERRQ(ierr);
 

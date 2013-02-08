@@ -24,7 +24,7 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   }
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(part->adj,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)part)->comm,m,rank,0,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -43,7 +43,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   p = (PetscInt)sqrt((double)part->n);
   if (p*p != part->n) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
 
-  ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(part->adj,&N,NULL);CHKERRQ(ierr);
   n    = (PetscInt)sqrt((double)N);
   if (n*n != N) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Square partitioning requires square domain");
   if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
@@ -229,7 +229,7 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_partitioning_view",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)matp)->comm,&viewer);CHKERRQ(ierr);
@@ -404,11 +404,11 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   *newp = 0;
 
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,-1,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
-  part->vertex_weights = PETSC_NULL;
-  part->part_weights   = PETSC_NULL;
+  part->vertex_weights = NULL;
+  part->part_weights   = NULL;
 
   ierr    = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   part->n = (PetscInt)size;
@@ -511,7 +511,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
   if (part->setupcalled) {
     ierr =  (*part->ops->destroy)(part);CHKERRQ(ierr);
 
-    part->ops->destroy = PETSC_NULL;
+    part->ops->destroy = NULL;
     part->data         = 0;
     part->setupcalled  = 0;
   }

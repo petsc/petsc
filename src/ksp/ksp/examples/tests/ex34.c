@@ -73,11 +73,11 @@ int main(int argc,char **args)
   ctx.comm = PETSC_COMM_WORLD;
   ierr     = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr     = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr     = PetscOptionsGetInt(PETSC_NULL,"-nodesize",&nodesize,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL,"-nodesize",&nodesize,NULL);CHKERRQ(ierr);
   if (size % nodesize) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPI_COMM_WORLD size must be divisible by nodesize");
 
   /* Read matrix */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&ctx.A);CHKERRQ(ierr);
   ierr = MatSetType(ctx.A,MATMPIAIJ);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ int main(int argc,char **args)
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,PETSC_DETERMINE,&ctx.xr);CHKERRQ(ierr);
   ierr = VecDuplicate(ctx.xr,&ctx.yr);CHKERRQ(ierr);
   /* create scatter from ctx.xr to ctx.x vector */
-  ierr = VecGetOwnershipRange(ctx.x,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(ctx.x,&rstart,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,ns[rank],rstart,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(ctx.xr,is,ctx.x,is,&ctx.sct);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);

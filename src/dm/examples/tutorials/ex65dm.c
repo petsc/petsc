@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for complex numbers");
 #else
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,1024,1024,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&daf);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,1024,1024,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&daf);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(daf,&x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
 
@@ -52,10 +52,10 @@ int main(int argc, char **argv)
   ierr = DMCreateInterpolation(dac2,dac1,&interp_p2,&scaling_p2);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(dac3,dac2,&interp_p3,&scaling_p3);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(dac4,dac3,&interp_p4,&scaling_p4);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(daf,daf1,&interp_m1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(daf1,daf2,&interp_m2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(daf2,daf3,&interp_m3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(daf3,daf4,&interp_m4,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf,daf1,&interp_m1,NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf1,daf2,&interp_m2,NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf2,daf3,&interp_m3,NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(daf3,daf4,&interp_m4,NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer_in);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer_in,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);

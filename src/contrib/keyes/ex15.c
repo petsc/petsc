@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   PC         pc;
   PLogDouble v1, v2, elapsed;
 
-  PetscInitialize(&argc, &argv,PETSC_NULL,help);
+  PetscInitialize(&argc, &argv,NULL,help);
 
   /* set problem parameters */
   user.tleft  = 1.0;
@@ -93,11 +93,11 @@ int main(int argc, char **argv)
   user.beta   = 2.5;
   user.bm1    = 1.5;
   user.coef   = 1.25;
-  ierr        = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
-  ierr        = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr        = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRA(ierr);
-  ierr        = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRA(ierr);
-  ierr        = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRA(ierr);
+  ierr        = OptionsGetDouble(NULL,"-tleft",&user.tleft,NULL);CHKERRA(ierr);
+  ierr        = OptionsGetDouble(NULL,"-tright",&user.tright,NULL);CHKERRA(ierr);
+  ierr        = OptionsGetDouble(NULL,"-beta",&user.beta,NULL);CHKERRA(ierr);
+  ierr        = OptionsGetDouble(NULL,"-bm1",&user.bm1,NULL);CHKERRA(ierr);
+  ierr        = OptionsGetDouble(NULL,"-coef",&user.coef,NULL);CHKERRA(ierr);
 
   /* set number of levels and grid size on coarsest level */
   user.ratio      = 2;
@@ -105,10 +105,10 @@ int main(int argc, char **argv)
   user.grid[0].mx = 5;
   user.grid[0].my = 5;
 
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,&flag);CHKERRA(ierr);
+  ierr = OptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(NULL,"-nlevels",&user.nlevels,NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(NULL,"-mx",&user.grid[0].mx,NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(NULL,"-my",&user.grid[0].my,&flag);CHKERRA(ierr);
   if (!flag) user.grid[0].my = user.grid[0].mx;
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.grid[0].mx,user.grid[0].my);CHKERRA(ierr);
@@ -121,13 +121,13 @@ int main(int argc, char **argv)
   }
 
   /* set partitioning of domains accross processors */
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRA(ierr);
 
   /* Set up distributed array for  each level */
   for (i=0; i<user.nlevels; i++) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.grid[i].mx,
-                        user.grid[i].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[i].da);CHKERRA(ierr);
+                        user.grid[i].my,Nx,Ny,1,1,NULL,NULL,&user.grid[i].da);CHKERRA(ierr);
     ierr = DMCreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b);CHKERRA(ierr);
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF);CHKERRA(ierr);
     ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRA(ierr);
     ierr = VecGetSize(user.grid[i].x,&n);CHKERRA(ierr);
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[i].J);CHKERRA(ierr);
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&user.grid[i].J);CHKERRA(ierr);
   }
 
   /* Create nonlinear solver */
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRA(ierr);
   ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf);CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x);CHKERRA(ierr);
+  ierr = SNESSolve(snes,NULL,finegrid->x);CHKERRA(ierr);
   ierr = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load SNES iterations = %d\n", its);CHKERRA(ierr);
 
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
   ierr    = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
   ierr    = PLogStagePush(1);CHKERRA(ierr);
   ierr    = PetscGetTime(&v1);CHKERRA(ierr);
-  ierr    = SNESSolve(snes,PETSC_NULL,finegrid->x);CHKERRA(ierr);
+  ierr    = SNESSolve(snes,NULL,finegrid->x);CHKERRA(ierr);
   ierr    = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
   ierr    = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr    = PetscGetTime(&v2);CHKERRA(ierr);
@@ -815,11 +815,11 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(g_f->da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(g_f->da,PETSC_NULL,&idx);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(g_f->da,NULL,&idx);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(g_c->da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(g_c->da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(g_c->da,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(g_c->da,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = VecGetLocalSize(g_f->x,&m_f_local);CHKERRQ(ierr);

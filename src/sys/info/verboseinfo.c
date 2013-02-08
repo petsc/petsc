@@ -26,7 +26,7 @@ PetscBool PetscLogPrintInfoNull = PETSC_FALSE;
 int       PetscInfoFlags[]      = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                    1,1,1,1,1,1,1,1,1,1,1,1};
-FILE      *PetscInfoFile = PETSC_NULL;
+FILE      *PetscInfoFile = NULL;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscInfoAllow"
@@ -150,7 +150,7 @@ extern FILE *petsc_history;
     Collective over PetscObject argument
 
     Input Parameter:
-+   vobj - object most closely associated with the logging statement or PETSC_NULL
++   vobj - object most closely associated with the logging statement or NULL
 .   message - logging message
 -   formatmessage - logging message using standard "printf" format
 

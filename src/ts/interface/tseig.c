@@ -73,7 +73,7 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   (*ctx)->howoften          = howoften;
   (*ctx)->computeexplicitly = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,NULL);CHKERRQ(ierr);
 
   (*ctx)->comm = comm;
   (*ctx)->xmin = -2.1;
@@ -117,7 +117,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && (step == -1))) {
     ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,&A,&B,NULL,NULL);CHKERRQ(ierr);
     ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
     /*
        This doesn't work because methods keep and use internal information about the shift so it

@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr     = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr     = MatCreateSeqDense(PETSC_COMM_SELF,n,n,NULL,&mat);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

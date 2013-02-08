@@ -94,7 +94,7 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
 
     ierr = PetscFree((*map));CHKERRQ(ierr);
   }
-  *map = PETSC_NULL;
+  *map = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -571,7 +571,7 @@ PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 +  sf - star forest
 .  layout - PetscLayout defining the global space
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
-.  ilocal - locations of leaves in leafdata buffers, pass PETSC_NULL for contiguous storage
+.  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
 -  iremote - remote locations of root vertices for each leaf on the current process
 
    Level: intermediate

@@ -334,8 +334,8 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     ierr = MatCreate(((PetscObject)pc)->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,1,NULL);CHKERRQ(ierr);
     ierr = MatSetValues(pcnn->coarse_mat,n_neigh,neigh,n_neigh,neigh,mat,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
-      ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one,0,0);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,0,NULL,one,0,0);CHKERRQ(ierr);
     } else { /* here it DOES zero the row, since it's not a floating subdomain. */
       PetscInt row = (PetscInt) rank;
       ierr = MatZeroRows(pcnn->coarse_mat,1,&row,one,0,0);CHKERRQ(ierr);
@@ -380,7 +380,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   /* for DEBUGGING, save the coarse matrix to a file. */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-pc_nn_save_coarse_matrix",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-pc_nn_save_coarse_matrix",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-pc_nn_turn_off_first_balancing",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-pc_nn_turn_off_first_balancing",&flg,NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,(Vec)0,z,vec1_B,vec2_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -490,7 +490,7 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-pc_turn_off_second_balancing",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-pc_turn_off_second_balancing",&flg,NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {

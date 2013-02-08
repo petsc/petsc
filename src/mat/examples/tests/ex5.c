@@ -18,11 +18,11 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) n += 2;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-rectB",&flg);CHKERRQ(ierr);
   if (flg) n -= 2;
 
   /* ---------- Assemble matrix and vectors ----------- */
@@ -134,7 +134,7 @@ int main(int argc,char **args)
   }
 
   /* -------------------- Test () MatDiagonalScale ------------------ */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-test_diagonalscale",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatDiagonalScale(C,x,y);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

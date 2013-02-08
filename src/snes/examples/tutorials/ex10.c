@@ -603,7 +603,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   /* Create meshes */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,NULL,&dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);
@@ -663,7 +663,7 @@ int main(int argc, char *argv[])
   ierr = DMCompositeGetLocalVectors(pack, &user->Uloc, &user->Kloc);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack, X, user->Uloc, user->Kloc);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
   {
     user->ptype = 0; view_draw = PETSC_FALSE;
 
@@ -680,27 +680,27 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dmu,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dmu,NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,Xu);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,Xu);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,F,&Fu,0);CHKERRQ(ierr);
     break;
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dmk,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dmk,NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,Xk);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,Xk);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -708,7 +708,7 @@ int main(int argc, char *argv[])
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCFieldSplitSetIS(pc,"u",isg[0]);CHKERRQ(ierr);
     ierr = PCFieldSplitSetIS(pc,"k",isg[1]);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     break;
   }
   if (view_draw) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}

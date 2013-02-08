@@ -44,7 +44,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
 
   PetscFunctionBegin;
   if (!jac->x) {
-    ierr = KSPGetOperatorsSet(jac->ksp,&a,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperatorsSet(jac->ksp,&a,NULL);CHKERRQ(ierr);
     if (!a) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
     ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
     jac->x = *xx;

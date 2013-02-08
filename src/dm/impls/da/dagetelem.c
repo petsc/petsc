@@ -156,7 +156,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 
     dd->elementtype = etype;
     dd->ne          = 0;
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 
   PetscFunctionBegin;
   if (da->dim==-1) {
-    *nel = 0; *nen = 0; *e = PETSC_NULL;
+    *nel = 0; *nen = 0; *e = NULL;
   } else if (da->dim==1) {
     ierr = DMDAGetElements_1D(dm,nel,nen,e);CHKERRQ(ierr);
   } else if (da->dim==2) {

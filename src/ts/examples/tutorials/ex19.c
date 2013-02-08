@@ -133,8 +133,8 @@ static PetscErrorCode RegisterMyARK2(void)
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
                   {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}},
-    *bembedt = PETSC_NULL,*bembed = PETSC_NULL;
-    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,bembedt,bembed,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    *bembedt = NULL,*bembed = NULL;
+    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembed,0,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -152,7 +152,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetDuration(ts,PETSC_NULL,&tfinal);CHKERRQ(ierr);
+  ierr = TSGetDuration(ts,NULL,&tfinal);CHKERRQ(ierr);
 
   while (user->next_output <= t && user->next_output <= tfinal) {
     ierr = VecDuplicate(X,&interpolatedX);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   user.next_output = 0.0;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -205,18 +205,18 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
   if (monitor) {
-    ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

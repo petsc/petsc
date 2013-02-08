@@ -2624,7 +2624,7 @@ namespace ALE {
           const int                           oSize   = pV.getSize();
 
           if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
-          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(int cl = 0; cl < oSize; ++cl) {
             const int cDim = s->getConstraintDimension(oPoints[cl]);
@@ -3568,7 +3568,7 @@ namespace ALE {
           const typename coneArray::iterator end     = closure->end();
 
           if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
-          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(typename coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             const int cDim = s->getConstraintDimension(*cl_iter);

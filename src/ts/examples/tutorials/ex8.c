@@ -211,9 +211,9 @@ static PetscErrorCode CECreate(Problem p)
   p->hasexact   = PETSC_TRUE;
 
   ce->lambda = 10;
-  ierr       = PetscOptionsBegin(p->comm,PETSC_NULL,"CE options","");CHKERRQ(ierr);
+  ierr       = PetscOptionsBegin(p->comm,NULL,"CE options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -343,7 +343,7 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscFunctionList plist = PETSC_NULL;
+  PetscFunctionList plist = NULL;
   char              pname[256];
   TS                ts;            /* nonlinear solver */
   Vec               x,r;           /* solution, residual vectors */
@@ -372,11 +372,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Timestepping benchmark options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Timestepping benchmark options","");CHKERRQ(ierr);
   {
-    ierr        = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),NULL);CHKERRQ(ierr);
     use_monitor = PETSC_FALSE;
-    ierr        = PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -399,7 +399,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   mon.comm    = PETSC_COMM_WORLD;
@@ -412,13 +412,13 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr); /* Rosenbrock-W */
-  ierr = TSSetIFunction(ts,PETSC_NULL,problem->function,problem->data);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,problem->function,problem->data);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,problem->jacobian,problem->data);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,problem->final_time);CHKERRQ(ierr);
   ierr = TSSetMaxStepRejections(ts,10);CHKERRQ(ierr);
   ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr); /* unlimited */
   if (use_monitor) {
-    ierr = TSMonitorSet(ts,&MonitorError,&mon,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,&MonitorError,&mon,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

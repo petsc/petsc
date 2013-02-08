@@ -27,7 +27,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   ierr = VecCreate(PETSC_COMM_WORLD,b1);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,b2);CHKERRQ(ierr);
   /* Load matrices from a Q1-P0 discretisation of variable viscosity Stokes. The matrix blocks are packed into one file. */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must provide a matrix file with -f");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(*A11,viewer);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   bX[0] = f;  bX[1] = h;
   ierr  = PetscMalloc(sizeof(VecScatter)*2,&vscat);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
-    ierr = VecScatterCreate(b,bis[i],bX[i],PETSC_NULL,&vscat[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b,bis[i],bX[i],NULL,&vscat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   for (i=0; i<2; i++) {
@@ -157,15 +157,15 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = MatGetSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
 
-    ierr = MatGetVecs(A11,&uvec,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetVecs(A22,&pvec,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(A11,&uvec,NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(A22,&pvec,NULL);CHKERRQ(ierr);
 
     /* perform the scatter from x -> (u,p) */
-    ierr = VecScatterCreate(x,isu,uvec,PETSC_NULL,&uscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,isu,uvec,NULL,&uscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    ierr = VecScatterCreate(x,isp,pvec,PETSC_NULL,&pscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,isp,pvec,NULL,&pscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 

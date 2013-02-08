@@ -1,7 +1,7 @@
 
 #include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
 
-PetscFunctionList ISList              = PETSC_NULL;
+PetscFunctionList ISList              = NULL;
 PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -37,7 +37,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   PetscFunctionBegin;
   PetscValidPointer(is,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*is,_p_IS,struct _ISOps,IS_CLASSID,-1,"IS","Index Set","IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
@@ -79,12 +79,12 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   ierr = PetscObjectTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!ISRegisterAllCalled) {ierr = ISRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!ISRegisterAllCalled) {ierr = ISRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscFunctionListFind(((PetscObject)is)->comm,ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
-    is->ops->destroy = PETSC_NULL;
+    is->ops->destroy = NULL;
   }
   ierr = (*r)(is);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)is,method);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!ISRegisterAllCalled) {
-    ierr = ISRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    ierr = ISRegisterAll(NULL);CHKERRQ(ierr);
   }
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(0);

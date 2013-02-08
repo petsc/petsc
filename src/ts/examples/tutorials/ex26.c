@@ -117,12 +117,12 @@ int main(int argc,char **argv)
   user.parabolic   = PETSC_FALSE;
   user.cfl_initial = 50.;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Driven cavity/natural convection options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-grashof","Ratio of bouyant to viscous forces","",user.grashof,&user.grashof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Driven cavity/natural convection options","");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-grashof","Ratio of bouyant to viscous forces","",user.grashof,&user.grashof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
@@ -206,7 +206,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Get a pointer to vector data.

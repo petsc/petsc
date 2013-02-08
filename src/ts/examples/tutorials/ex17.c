@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,1,1,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -70,8 +70,8 @@ int main(int argc,char **argv)
   user.boundary     = 0;  /* 0: Dirichlet BC; 1: Neumann BC */
   user.viewJacobian = PETSC_FALSE;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* Make the Theta method behave like backward Euler */
-  ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   jacType = JACOBIAN_ANALYTIC; /* use user-provide Jacobian */
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
 
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.
      Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,PETSC_NULL,"Options for Jacobian evaluation",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,NULL,"Options for Jacobian evaluation",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-jac_type","Type of Jacobian","",JacobianTypes,(PetscEnum)jacType,(PetscEnum*)&jacType,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (jacType == JACOBIAN_FD_COLORING) {
@@ -171,7 +171,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,v
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {
@@ -272,7 +272,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ptr)
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {

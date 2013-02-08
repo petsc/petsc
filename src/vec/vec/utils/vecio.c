@@ -151,7 +151,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
   hid_t          file_id, group;
-  const char     *groupName = PETSC_NULL;
+  const char     *groupName = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -223,7 +223,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
   ++dim;
 #endif
-  rdim = H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
+  rdim = H5Sget_simple_extent_dims(filespace, dims, NULL);
 #if defined(PETSC_USE_COMPLEX)
   bsInd = rdim-2;
 #else
@@ -264,7 +264,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not H5Screate_simple()");
 
   /* Select hyperslab in the file */
-  ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xin, &low, NULL);CHKERRQ(ierr);
   dim  = 0;
   if (timestep >= 0) {
     offset[dim] = timestep;

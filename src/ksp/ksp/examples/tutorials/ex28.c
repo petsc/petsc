@@ -25,8 +25,8 @@ int main(int argc,char **argv)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-  ierr = KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,NULL);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   for (i=0; i<10; i++) {
-    ierr = KSPSolve(ksp,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,NULL,x);CHKERRQ(ierr);
     ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&x);CHKERRQ(ierr);

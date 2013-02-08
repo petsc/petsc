@@ -159,14 +159,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "DMDA Test Problem Options", "DMDA");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex62.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex62.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex62.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex62.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex62.c", options->numBatches, &options->numBatches, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex62.c", options->numBlocks, &options->numBlocks, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex62.c", options->showResidual, &options->showResidual, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex62.c", options->showJacobian, &options->showJacobian, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("Residual",            SNES_CLASSID, &options->residualEvent);CHKERRQ(ierr);
@@ -187,10 +187,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   switch (dim) {
   case 2:
-    ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, dm);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, -4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
+    ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, -4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, dm);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not create mesh for dimension %d", dim);
@@ -256,22 +256,22 @@ PetscErrorCode SetupExactSolution(AppCtx *user)
   user->f0Funcs[1] = f0_p;
   user->f1Funcs[0] = f1_u;
   user->f1Funcs[1] = f1_p;
-  user->g0Funcs[0] = PETSC_NULL;
-  user->g0Funcs[1] = PETSC_NULL;
-  user->g0Funcs[2] = PETSC_NULL;
-  user->g0Funcs[3] = PETSC_NULL;
-  user->g1Funcs[0] = PETSC_NULL;
-  user->g1Funcs[1] = PETSC_NULL;
+  user->g0Funcs[0] = NULL;
+  user->g0Funcs[1] = NULL;
+  user->g0Funcs[2] = NULL;
+  user->g0Funcs[3] = NULL;
+  user->g1Funcs[0] = NULL;
+  user->g1Funcs[1] = NULL;
   user->g1Funcs[2] = g1_pu;      /* < q, \nabla\cdot v > */
-  user->g1Funcs[3] = PETSC_NULL;
-  user->g2Funcs[0] = PETSC_NULL;
+  user->g1Funcs[3] = NULL;
+  user->g2Funcs[0] = NULL;
   user->g2Funcs[1] = g2_up;      /* < \nabla\cdot v, p > */
-  user->g2Funcs[2] = PETSC_NULL;
-  user->g2Funcs[3] = PETSC_NULL;
+  user->g2Funcs[2] = NULL;
+  user->g2Funcs[3] = NULL;
   user->g3Funcs[0] = g3_uu;      /* < \nabla v, \nabla u + {\nabla u}^T > */
-  user->g3Funcs[1] = PETSC_NULL;
-  user->g3Funcs[2] = PETSC_NULL;
-  user->g3Funcs[3] = PETSC_NULL;
+  user->g3Funcs[1] = NULL;
+  user->g3Funcs[2] = NULL;
+  user->g3Funcs[3] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -465,7 +465,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 
     ierr = DMDAComputeCellGeometry(dm, c, &user->q[0], v0, J, &invJ[c*jacSize], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
-    ierr = DMDAVecGetClosure(dm, PETSC_NULL, X, c, &x);CHKERRQ(ierr);
+    ierr = DMDAVecGetClosure(dm, NULL, X, c, &x);CHKERRQ(ierr);
 
     for (i = 0; i < cellDof; ++i) u[c*cellDof+i] = x[i];
   }
@@ -489,7 +489,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
-    ierr = DMDAVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMDAVecSetClosure(dm, NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemVec);CHKERRQ(ierr);
   ierr = PetscFree3(coords,v0,J);CHKERRQ(ierr);
@@ -557,7 +557,7 @@ int main(int argc, char **argv)
   PetscReal      error = 0.0;          /* L_2 error in the solution */
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);

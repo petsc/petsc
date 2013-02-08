@@ -23,9 +23,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "SNES");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex11.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex11.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -63,11 +63,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   if (size > 1) {
     Mesh parallelMesh;
 
-    ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
+    ierr = MeshDistribute(mesh, NULL, &parallelMesh);CHKERRQ(ierr);
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
     ALE::Obj<ALE::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);

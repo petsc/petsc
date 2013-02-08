@@ -161,7 +161,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ValueArray d_elemMats(elemMats, elemMats + No);
 
   PetscFunctionBegin;
-  ierr = MatGetSize(J, &Nr, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(J, &Nr, NULL);CHKERRQ(ierr);
   // allocate storage for "fat" COO representation of matrix
   ierr = PetscInfo1(J, "Making COO matrix of size %d\n", Nr);CHKERRQ(ierr);
   cusp::coo_matrix<IndexType,ValueType, memSpace> COO(Nr, Nr, No);

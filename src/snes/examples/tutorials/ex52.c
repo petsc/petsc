@@ -90,27 +90,27 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex52.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex52.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex52.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex52.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex52.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex52.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "ex52.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compute_function", "Compute the residual", "ex52.c", options->computeFunction, &options->computeFunction, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compute_jacobian", "Compute the Jacobian", "ex52.c", options->computeJacobian, &options->computeJacobian, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-batch", "Use the batch assembly method", "ex52.c", options->batch, &options->batch, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "ex52.c", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compute_function", "Compute the residual", "ex52.c", options->computeFunction, &options->computeFunction, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compute_jacobian", "Compute the Jacobian", "ex52.c", options->computeJacobian, &options->computeJacobian, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-batch", "Use the batch assembly method", "ex52.c", options->batch, &options->batch, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, NULL);CHKERRQ(ierr);
 
   op = options->op;
 
-  ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,NULL);CHKERRQ(ierr);
 
   options->op = (OpType) op;
 
-  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex52.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex52.c", options->showJacobian, &options->showJacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",    DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -138,8 +138,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = PETSC_NULL;
-    DM distributedMesh = PETSC_NULL;
+    DM refinedMesh     = NULL;
+    DM distributedMesh = NULL;
 
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
-  ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof_0, numBC, PETSC_NULL, PETSC_NULL, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof_0, numBC, NULL, NULL, &section);CHKERRQ(ierr);
   ierr = DMPlexSetDefaultSection(dm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -278,7 +278,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug > 1) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
 
     for (q = 0; q < numQuadPoints; ++q) {
@@ -320,7 +320,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
       }
     }
     if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs, elemVec);CHKERRQ(ierr);}
-    ierr = DMPlexVecSetClosure(dm, PETSC_NULL, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dm, NULL, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
   ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
@@ -372,7 +372,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = PetscMemzero(elemVec, numBasisFuncs*numBasisComps * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug > 1) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs*numBasisComps, x);CHKERRQ(ierr);}
 
     for (q = 0; q < numQuadPoints; ++q) {
@@ -428,7 +428,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
       }
     }
     if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs*numBasisComps, elemVec);CHKERRQ(ierr);}
-    ierr = DMPlexVecSetClosure(dm, PETSC_NULL, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dm, NULL, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
   ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
@@ -662,7 +662,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
     PetscInt          f;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
 
     for (f = 0; f < numBasisFuncs*numBasisComps; ++f) {
       u[c*numBasisFuncs*numBasisComps+f] = x[f];
@@ -704,7 +704,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs*numBasisComps, &elemVec[c*numBasisFuncs*numBasisComps]);CHKERRQ(ierr);}
-    ierr = DMPlexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*numBasisFuncs*numBasisComps], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dm, NULL, F, c, &elemVec[c*numBasisFuncs*numBasisComps], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemVec);CHKERRQ(ierr);
   ierr = PetscFree3(coords,v0,J);CHKERRQ(ierr);
@@ -754,7 +754,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
 
     for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
@@ -785,7 +785,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
       }
     }
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
   ierr = PetscFree3(realSpaceTestDer,realSpaceBasisDer,elemMat);CHKERRQ(ierr);
@@ -836,7 +836,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
 
     for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
@@ -868,7 +868,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
       }
     }
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
   ierr = PetscFree3(realSpaceTestDer,realSpaceBasisDer,elemMat);CHKERRQ(ierr);
@@ -919,7 +919,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
 
     for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
@@ -951,7 +951,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
       }
     }
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
   ierr = PetscFree3(realSpaceTestDer,realSpaceBasisDer,elemMat);CHKERRQ(ierr);
@@ -977,7 +977,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_CUDA)
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires CUDA support.");
 #endif

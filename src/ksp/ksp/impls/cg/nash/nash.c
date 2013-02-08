@@ -620,9 +620,9 @@ PetscErrorCode KSPDestroy_NASH(KSP ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHSetRadius_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHGetNormD_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHGetObjFcn_C","",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -677,9 +677,9 @@ PetscErrorCode KSPSetFromOptions_NASH(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP NASH options");CHKERRQ(ierr);
 
-  ierr = PetscOptionsReal("-ksp_nash_radius", "Trust Region Radius", "KSPNASHSetRadius", cg->radius, &cg->radius, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_nash_radius", "Trust Region Radius", "KSPNASHSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEList("-ksp_nash_dtype", "Norm used for direction", "", DType_Table, NASH_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-ksp_nash_dtype", "Norm used for direction", "", DType_Table, NASH_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

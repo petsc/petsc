@@ -288,10 +288,10 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   /* construct matrix */
   if (comm_size == 1) {
     ierr = DMADDAGetMatrixNS(dmc, dmf, MATSEQAIJ, rest);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(*rest, max_agg_size, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(*rest, max_agg_size, NULL);CHKERRQ(ierr);
   } else {
     ierr = DMADDAGetMatrixNS(dmc, dmf, MATMPIAIJ, rest);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*rest, max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*rest, max_agg_size, NULL, max_agg_size, NULL);CHKERRQ(ierr);
   }
   /* store nodes in the fine grid here */
   ierr = PetscMalloc(sizeof(ADDAIdx)*max_agg_size, &fine_nodes);CHKERRQ(ierr);
@@ -636,7 +636,7 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
   /* procs */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->procs));CHKERRQ(ierr);
   /* create distribution of nodes to processors */
-  if (procs == PETSC_NULL) {
+  if (procs == NULL) {
     procs = dd->procs;
     nodesleft = nodes_total;
     procsleft = size;
@@ -801,7 +801,7 @@ EXTERN_C_END
 .  dim - the dimension of the grid
 .  nodes - array with d entries that give the number of nodes in each dimension
 .  procs - array with d entries that give the number of processors in each dimension
-          (or PETSC_NULL if to be determined automatically)
+          (or NULL if to be determined automatically)
 .  dof - number of degrees of freedom per node
 -  periodic - array with d entries that, i-th entry is set to  true iff dimension i is periodic
 

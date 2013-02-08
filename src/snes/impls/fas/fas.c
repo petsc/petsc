@@ -75,22 +75,22 @@ PETSC_EXTERN_C PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->n_cycles               = 1;
   fas->max_up_it              = 1;
   fas->max_down_it            = 1;
-  fas->smoothu                = PETSC_NULL;
-  fas->smoothd                = PETSC_NULL;
-  fas->next                   = PETSC_NULL;
-  fas->previous               = PETSC_NULL;
+  fas->smoothu                = NULL;
+  fas->smoothd                = NULL;
+  fas->next                   = NULL;
+  fas->previous               = NULL;
   fas->fine                   = snes;
-  fas->interpolate            = PETSC_NULL;
-  fas->restrct                = PETSC_NULL;
-  fas->inject                 = PETSC_NULL;
-  fas->monitor                = PETSC_NULL;
+  fas->interpolate            = NULL;
+  fas->restrct                = NULL;
+  fas->inject                 = NULL;
+  fas->monitor                = NULL;
   fas->usedmfornumberoflevels = PETSC_FALSE;
   fas->fastype                = SNES_FAS_MULTIPLICATIVE;
 
-  fas->eventsmoothsetup    = PETSC_NULL;
-  fas->eventsmoothsolve    = PETSC_NULL;
-  fas->eventresidual       = PETSC_NULL;
-  fas->eventinterprestrict = PETSC_NULL;
+  fas->eventsmoothsetup    = 0;
+  fas->eventsmoothsolve    = 0;
+  fas->eventresidual       = 0;
+  fas->eventinterprestrict = 0;
   PetscFunctionReturn(0);
 }
 
@@ -157,13 +157,13 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       vec_func             = snes->vec_func;
       vec_sol_update       = snes->vec_sol_update;
       vec_rhs              = snes->vec_rhs;
-      snes->vec_sol        = PETSC_NULL;
-      snes->vec_func       = PETSC_NULL;
-      snes->vec_sol_update = PETSC_NULL;
-      snes->vec_rhs        = PETSC_NULL;
+      snes->vec_sol        = NULL;
+      snes->vec_func       = NULL;
+      snes->vec_sol_update = NULL;
+      snes->vec_rhs        = NULL;
 
       /* reset the number of levels */
-      ierr = SNESFASSetLevels(snes,dm_levels,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESFASSetLevels(snes,dm_levels,NULL);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
       snes->vec_sol        = vec_sol;
@@ -216,13 +216,13 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   /*pass the smoother, function, and jacobian up to the next level if it's not user set already */
   if (fas->galerkin) {
     if (next) {
-      ierr = SNESSetFunction(next, PETSC_NULL, SNESFASGalerkinDefaultFunction, next);CHKERRQ(ierr);
+      ierr = SNESSetFunction(next, NULL, SNESFASGalerkinDefaultFunction, next);CHKERRQ(ierr);
     }
     if (fas->smoothd && fas->level != fas->levels - 1) {
-      ierr = SNESSetFunction(fas->smoothd, PETSC_NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
+      ierr = SNESSetFunction(fas->smoothd, NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
     }
     if (fas->smoothu && fas->level != fas->levels - 1) {
-      ierr = SNESSetFunction(fas->smoothu, PETSC_NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
+      ierr = SNESSetFunction(fas->smoothu, NULL, SNESFASGalerkinDefaultFunction, snes);CHKERRQ(ierr);
     }
   }
 
@@ -335,7 +335,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
       levels++;
       fas->usedmfornumberoflevels = PETSC_TRUE;
     }
-    ierr    = SNESFASSetLevels(snes, levels, PETSC_NULL);CHKERRQ(ierr);
+    ierr    = SNESFASSetLevels(snes, levels, NULL);CHKERRQ(ierr);
     fastype = fas->fastype;
     ierr    = PetscOptionsEnum("-snes_fas_type","FAS correction type","SNESFASSetType",SNESFASTypes,(PetscEnum)fastype,(PetscEnum*)&fastype,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -457,7 +457,7 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
         /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
         bottom -= 5*th;
         if (curfas->next) curfas = (SNES_FAS*)curfas->next->data;
-        else curfas = PETSC_NULL;
+        else curfas = NULL;
       }
     }
   }
@@ -490,7 +490,7 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
-  ierr = SNESGetFunction(smoothd, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(smoothd, &FPC, NULL, NULL);CHKERRQ(ierr);
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
   ierr = SNESGetFunctionNorm(smoothd, fnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -521,7 +521,7 @@ PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
-  ierr = SNESGetFunction(smoothu, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(smoothu, &FPC, NULL, NULL);CHKERRQ(ierr);
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
   ierr = SNESGetFunctionNorm(smoothu, fnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -553,7 +553,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
   if (fas->rscale) {
     ierr = VecDuplicate(fas->rscale,Xcoarse);CHKERRQ(ierr);
   } else if (fas->inject) {
-    ierr = MatGetVecs(fas->inject,Xcoarse,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(fas->inject,Xcoarse,NULL);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

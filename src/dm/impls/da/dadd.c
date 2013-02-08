@@ -28,7 +28,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   /* construct the natural mapping */
   ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(v,&base,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(v,&base,NULL);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&v);CHKERRQ(ierr);
 
@@ -39,7 +39,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
 
   /* construct the list of natural indices on this process when PETSc ordering is considered */
-  ierr = DMDAGetOffset(da,&ox,&oy,&oz,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetOffset(da,&ox,&oy,&oz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&natidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&globidx);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*n,&leafidx);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   /* construct the SF going from the natural indices to the local set of PETSc indices */
   ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(sf,map,n,PETSC_NULL,PETSC_OWN_POINTER,natidx);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,map,n,NULL,PETSC_OWN_POINTER,natidx);CHKERRQ(ierr);
 
   /* broadcast the global indices over to the corresponding natural indices */
   ierr = PetscSFGatherBegin(sf,MPIU_INT,globidx,leafidx);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
 
   ierr = PetscSFCreate(comm,&psf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(psf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(psf,map,pn,PETSC_NULL,PETSC_OWN_POINTER,pnatidx);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(psf,map,pn,NULL,PETSC_OWN_POINTER,pnatidx);CHKERRQ(ierr);
 
   /* broadcast the global indices through to the patch */
   ierr = PetscSFBcastBegin(psf,MPIU_INT,leafidx,pleafidx);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
 
   if (iscat) {ierr = VecScatterCreate(dvec,idis,svec,isis,&(*iscat)[0]);CHKERRQ(ierr);}
   if (oscat) {ierr = VecScatterCreate(dvec,odis,svec,osis,&(*oscat)[0]);CHKERRQ(ierr);}
-  if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,PETSC_NULL,&(*lscat)[0]);CHKERRQ(ierr);}
+  if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,NULL,&(*lscat)[0]);CHKERRQ(ierr);}
 
   ierr = DMRestoreGlobalVector(dm,&dvec);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(subdm,&svec);CHKERRQ(ierr);

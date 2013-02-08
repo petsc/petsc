@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&UV);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,TSFunctionI,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,TSFunctionI,&ctx);CHKERRQ(ierr);
   ctx.f = f;
   ctx.F = F;
 

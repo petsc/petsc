@@ -752,13 +752,13 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Prol, bs, bs);CHKERRQ(ierr);
   ierr = MatSetType(Prol, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL,3*data_cols,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Prol,3*data_cols,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Prol,3*data_cols,NULL,3*data_cols,NULL);CHKERRQ(ierr);
   /* ierr = MatCreateAIJ(wcomm,  */
   /*                      nloc*bs, nLocalSelected*bs, */
   /*                      PETSC_DETERMINE, PETSC_DETERMINE, */
-  /*                      3*data_cols, PETSC_NULL,  */
-  /*                      3*data_cols, PETSC_NULL, */
+  /*                      3*data_cols, NULL,  */
+  /*                      3*data_cols, NULL, */
   /*                      &Prol); */
   /* CHKERRQ(ierr); */
 
@@ -768,14 +768,14 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
     if (verbose) PetscPrintf(wcomm,"[%d]%s ERROE: no selected points on coarse grid\n",rank,__FUNCT__);
     ierr = PetscFree(clid_flid);CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
-    *a_P_out = PETSC_NULL;  /* out */
+    *a_P_out = NULL;  /* out */
     PetscFunctionReturn(0);
   }
 
   {
     PetscReal *coords;
     PetscInt  data_stride;
-    PetscInt  *crsGID = PETSC_NULL;
+    PetscInt  *crsGID = NULL;
     Mat       Gmat2;
 
     assert(dim==data_cols);
@@ -817,7 +817,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
       if (tm > 1.) { /* needs to be globalized - should not happen */
         if (verbose) PetscPrintf(wcomm,"[%d]%s failed metric for coarse grid %e\n",rank,__FUNCT__,tm);
         ierr = MatDestroy(&Prol);CHKERRQ(ierr);
-        Prol = PETSC_NULL;
+        Prol = NULL;
       } else if (metric > .0) {
         if (verbose) PetscPrintf(wcomm,"[%d]%s worst metric for coarse grid = %e\n",rank,__FUNCT__,metric);
       }

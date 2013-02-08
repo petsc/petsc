@@ -34,8 +34,8 @@ PetscErrorCode  MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     /*
       We actually create general index sets because this avoids mallocs to
@@ -234,7 +234,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
   if (isseqdense || ismpidense || ismpibaij || ismpisbaij || ismpiaijcusp || ismpiaijcusparse || iselemental) {
-    ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(mat,&m,NULL);CHKERRQ(ierr);
     /*
        These matrices only give natural ordering
     */
@@ -260,7 +260,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscFunctionListFind(((PetscObject)mat)->comm,MatOrderingList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 

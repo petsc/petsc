@@ -201,17 +201,17 @@ theend:
 
   /* For now, compute h **each** MV Mult!! */
   /*
-  ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free_jorge_each_mvp",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-matrix_free_jorge_each_mvp",&flg);CHKERRQ(ierr);
   if (!flg) {
     Mat mat;
-    ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,&mat,NULL,NULL);CHKERRQ(ierr);
     ierr = SNESDefaultMatrixFreeSetParameters2(mat,PETSC_DEFAULT,PETSC_DEFAULT,*hopt);CHKERRQ(ierr);
   }
   */
   fcount = neP->function_count - fcount;
   ierr   = PetscInfo5(snes,"fct_now = %D, fct_cum = %D, rerrf=%G, sqrt(noise)=%G, h_more=%G\n",fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-noise_test",&noise_test,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-noise_test",&noise_test,NULL);CHKERRQ(ierr);
   if (noise_test) {
     ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr);
   }
@@ -239,9 +239,9 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 
   PetscFunctionBegin;
   /* Compute function and analytic Jacobian at x */
-  ierr = SNESGetJacobian(snes,&Jmf,&J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,&Jmf,&J,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESComputeJacobian(snes,x,&Jmf,&J,&sparsity);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
 
   /* Duplicate work vectors */
@@ -253,7 +253,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = VecNorm(yy1,NORM_2,&yy1n);CHKERRQ(ierr);
 
   /* View product vector if desired */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-print_vecs",&printv,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-print_vecs",&printv,NULL);CHKERRQ(ierr);
   if (printv) {
     ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

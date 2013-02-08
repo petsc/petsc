@@ -393,7 +393,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 
   i = PetscPowScalar(3.0*(dd.p+1.0),dd.dim);
 
-  ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,PETSC_NULL);CHKERRQ(ierr);      /* very overestimated */
+  ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
 
   yloc = dd.p+1;
@@ -593,7 +593,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);
   ierr = MatSetSizes(glldata->elem_mat,xyzloc,xyzloc,xyzloc,xyzloc);CHKERRQ(ierr);
   ierr = MatSetType(glldata->elem_mat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(glldata->elem_mat,xyzloc,PETSC_NULL);CHKERRQ(ierr); /* overestimated */
+  ierr = MatSeqAIJSetPreallocation(glldata->elem_mat,xyzloc,NULL);CHKERRQ(ierr); /* overestimated */
   ierr = MatZeroEntries(glldata->elem_mat);CHKERRQ(ierr);
   ierr = MatSetOption(glldata->elem_mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -749,9 +749,9 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   ierr = MatAssemblyEnd  (temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (dd.DBC_zerorows) {
-    ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,PETSC_NULL);CHKERRQ(ierr);
+    ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL);CHKERRQ(ierr);
     ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
   }
   ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -846,7 +846,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
 
   /* Primal constraints implemented by using a near null space attached to A -> now it passes in only the constants
     (which in practice is not needed since, by default, PCBDDC build the primal space using constants for quadrature formulas */
-  ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,PETSC_NULL,&near_null_space);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,NULL,&near_null_space);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,near_null_space);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&near_null_space);CHKERRQ(ierr);
 
@@ -863,7 +863,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   } else {
     if (dd.pure_neumann) {
       /* In such a case, all interface nodes lying on the global boundary are neumann nodes */
-      ierr = ComputeSpecialBoundaryIndices(dd,PETSC_NULL,&neumannIS);CHKERRQ(ierr);
+      ierr = ComputeSpecialBoundaryIndices(dd,NULL,&neumannIS);CHKERRQ(ierr);
       ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
     } else {
       /* It is wrong setting dirichlet indices without having zeroed the corresponding rows in the global matrix */
@@ -876,7 +876,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   /* Pass null space information to BDDC (don't pass it via MatSetNullSpace!) */
   if (dd.pure_neumann) {
     MatNullSpace nsp;
-    ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,PETSC_NULL,&nsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
     ierr = PCBDDCSetNullSpace(pc,nsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   }
@@ -910,9 +910,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->npy = 0;
   dd->npz = 0;
   dd->dim = 1;
-  ierr    = PetscOptionsGetInt (PETSC_NULL,"-npx",&dd->npx,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (PETSC_NULL,"-npy",&dd->npy,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (PETSC_NULL,"-npz",&dd->npz,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt (NULL,"-npx",&dd->npx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt (NULL,"-npy",&dd->npy,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt (NULL,"-npz",&dd->npz,NULL);CHKERRQ(ierr);
   if (dd->npy) dd->dim++;
   if (dd->npz) dd->dim++;
   /* Number of elements per dimension */
@@ -920,9 +920,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->nex = dd->npx;
   dd->ney = dd->npy;
   dd->nez = dd->npz;
-  ierr    = PetscOptionsGetInt (PETSC_NULL,"-nex",&dd->nex,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (PETSC_NULL,"-ney",&dd->ney,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt (PETSC_NULL,"-nez",&dd->nez,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt (NULL,"-nex",&dd->nex,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt (NULL,"-ney",&dd->ney,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt (NULL,"-nez",&dd->nez,NULL);CHKERRQ(ierr);
   if (!dd->npy) {
     dd->ney=0;
     dd->nez=0;
@@ -930,20 +930,20 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   if (!dd->npz) dd->nez=0;
   /* Spectral degree */
   dd->p = 3;
-  ierr  = PetscOptionsGetInt (PETSC_NULL,"-p",&dd->p,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt (NULL,"-p",&dd->p,NULL);CHKERRQ(ierr);
   /* pure neumann problem? */
   dd->pure_neumann = PETSC_FALSE;
-  ierr             = PetscOptionsGetBool(PETSC_NULL,"-pureneumann",&dd->pure_neumann,PETSC_NULL);CHKERRQ(ierr);
+  ierr             = PetscOptionsGetBool(NULL,"-pureneumann",&dd->pure_neumann,NULL);CHKERRQ(ierr);
 
   /* How to enforce dirichlet boundary conditions (in case pureneumann has not been requested explicitly) */
   dd->DBC_zerorows = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-usezerorows",&dd->DBC_zerorows,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-usezerorows",&dd->DBC_zerorows,NULL);CHKERRQ(ierr);
   if (dd->pure_neumann) dd->DBC_zerorows = PETSC_FALSE;
   dd->scalingfactor = 1.0;
 
   factor = 0.0;
-  ierr   = PetscOptionsGetInt(PETSC_NULL,"-jump",&factor,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
   /* checkerboard pattern */
   dd->scalingfactor = PetscPowScalar(10,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */
@@ -991,7 +991,7 @@ int main(int argc,char **args)
   /* assemble global matrix */
   ierr = ComputeMatrix(dd,&A);CHKERRQ(ierr);
   /* get work vectors */
-  ierr = MatGetVecs(A,&bddc_solution,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&bddc_solution,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&bddc_rhs);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&fetidp_solution_all);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&exact_solution);CHKERRQ(ierr);
@@ -1000,7 +1000,7 @@ int main(int argc,char **args)
   /* create KSP/PC for FETIDP */
   ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
   /* create random exact solution */
-  ierr = VecSetRandom(exact_solution,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(exact_solution,NULL);CHKERRQ(ierr);
   ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
   ierr = VecGetSize(exact_solution,&ndofs);
@@ -1031,7 +1031,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   /* assemble fetidp rhs on the space of Lagrange multipliers */
-  ierr = KSPGetOperators(KSPwithFETIDP,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL,NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
   ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
   ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);

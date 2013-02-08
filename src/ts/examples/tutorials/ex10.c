@@ -365,12 +365,12 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
     rad = (1.-Theta)*RDRadiation(rd,&x0[i],0) + Theta*RDRadiation(rd,&x[i],0);
     if (rd->endpoint) {
       PetscScalar Em0,Em1;
-      RDMaterialEnergy(rd,&x0[i],&Em0,PETSC_NULL);
-      RDMaterialEnergy(rd,&x[i],&Em1,PETSC_NULL);
+      RDMaterialEnergy(rd,&x0[i],&Em0,NULL);
+      RDMaterialEnergy(rd,&x[i],&Em1,NULL);
       Em_t = (Em1 - Em0) / dt;
     } else {
       RDNode dEm;
-      RDMaterialEnergy(rd,&x[i],PETSC_NULL,&dEm);
+      RDMaterialEnergy(rd,&x[i],NULL,&dEm);
       Em_t = dEm.E * xdot[i].E + dEm.T * xdot[i].T;
     }
     /* Residuals are multiplied by the volume element (hx).  */
@@ -438,7 +438,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     if (rd->endpoint) {
       PetscScalar Em0,Em1;
       RDNode      dEm1;
-      RDMaterialEnergy(rd,&x0[i],&Em0,PETSC_NULL);
+      RDMaterialEnergy(rd,&x0[i],&Em0,NULL);
       RDMaterialEnergy(rd,&x[i],&Em1,&dEm1);
       /*Em_t = (Em1 - Em0) / (Theta*dt);*/
       dEm_t.E = dEm1.E / (Theta*dt);
@@ -451,8 +451,8 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
 
       n1.E = x[i].E;
       n1.T = x[i].T+epsilon;
-      RDMaterialEnergy(rd,&x[i],PETSC_NULL,&dEm);
-      RDMaterialEnergy(rd,&n1,PETSC_NULL,&dEm1);
+      RDMaterialEnergy(rd,&x[i],NULL,&dEm);
+      RDMaterialEnergy(rd,&n1,NULL,&dEm1);
       /* The Jacobian needs another derivative.  We finite difference here instead of
        * propagating second derivatives through the ionization model. */
       Em_TT = (dEm1.T - dEm.T) / epsilon;
@@ -627,12 +627,12 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       rad = (1.-Theta)*RDRadiation(rd,&n0,0) + Theta*RDRadiation(rd,&n,0);
       if (rd->endpoint) {
         PetscScalar Em0,Em1;
-        RDMaterialEnergy(rd,&n0,&Em0,PETSC_NULL);
-        RDMaterialEnergy(rd,&n,&Em1,PETSC_NULL);
+        RDMaterialEnergy(rd,&n0,&Em0,NULL);
+        RDMaterialEnergy(rd,&n,&Em1,NULL);
         Em_t = (Em1 - Em0) / dt;
       } else {
         RDNode dEm;
-        RDMaterialEnergy(rd,&n,PETSC_NULL,&dEm);
+        RDMaterialEnergy(rd,&n,NULL,&dEm);
         Em_t = dEm.E * nt.E + dEm.T * nt.T;
       }
       RDDiffusionCoefficient(rd,PETSC_TRUE,&n0,&n0x,&D0_R,0,0);
@@ -712,7 +712,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
       RDEvaluate(interp,deriv,q,xdot,i,&nt,&ntx);
       rad = RDRadiation(rd,&n,&drad);
       RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,&dD_R,&dxD_R);
-      RDMaterialEnergy(rd,&n,PETSC_NULL,&dEm);
+      RDMaterialEnergy(rd,&n,NULL,&dEm);
       for (j=0; j<2; j++) {
         for (k=0; k<2; k++) {
           K[j*2+0][k*2+0] += (+interp[q][j] * weight[q] * (a - drad.E) * interp[q][k]
@@ -924,7 +924,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
   *inrd = 0;
   ierr  = PetscNew(struct _n_RD,&rd);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",NULL);CHKERRQ(ierr);
   {
     rd->initial = 1;
     ierr = PetscOptionsInt("-rd_initial","Initial condition (1=Marshak, 2=Blast, 3=Marshak+)","",rd->initial,&rd->initial,0);CHKERRQ(ierr);
@@ -1033,7 +1033,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     break;
   }
 
-  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,-20,sizeof(RDNode)/sizeof(PetscScalar),1,PETSC_NULL,&rd->da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,-20,sizeof(RDNode)/sizeof(PetscScalar),1,NULL,&rd->da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(rd->da,0,"E");CHKERRQ(ierr);
   ierr = DMDASetFieldName(rd->da,1,"T");CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(rd->da,0.,1.,0.,0.,0.,0.);CHKERRQ(ierr);
@@ -1067,11 +1067,11 @@ int main(int argc, char *argv[])
   ierr = TSSetDM(ts,rd->da);CHKERRQ(ierr);
   switch (rd->discretization) {
   case DISCRETIZATION_FD:
-    ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FD,rd);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,RDIFunction_FD,rd);CHKERRQ(ierr);
     if (rd->jacobian == JACOBIAN_ANALYTIC) ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FD,rd);CHKERRQ(ierr);
     break;
   case DISCRETIZATION_FE:
-    ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FE,rd);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,RDIFunction_FE,rd);CHKERRQ(ierr);
     if (rd->jacobian == JACOBIAN_ANALYTIC) ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
     break;
   }

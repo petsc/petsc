@@ -88,12 +88,12 @@ PetscErrorCode  PFCreate_Matlab(PF pf,void *value)
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 
-  ierr = PetscMatlabEngineCreate(((PetscObject)pf)->comm,PETSC_NULL,&matlab->mengine);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineCreate(((PetscObject)pf)->comm,NULL,&matlab->mengine);CHKERRQ(ierr);
 
   if (value) {
     ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
   }
-  ierr = PFSet(pf,PFApply_Matlab,PETSC_NULL,PFView_Matlab,PFDestroy_Matlab,matlab);CHKERRQ(ierr);
+  ierr = PFSet(pf,PFApply_Matlab,NULL,PFView_Matlab,PFDestroy_Matlab,matlab);CHKERRQ(ierr);
 
   pf->ops->setfromoptions = PFSetFromOptions_Matlab;
   PetscFunctionReturn(0);

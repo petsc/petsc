@@ -19,9 +19,9 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank < size-1) {
-    ierr = MatMPISBAIJSetPreallocation(A,1,1,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL);CHKERRQ(ierr);
   } else {
-    ierr = MatMPISBAIJSetPreallocation(A,1,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL);CHKERRQ(ierr);
   }
   ierr = MatGetOwnershipRange(A,&first,&last);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int main(int argc,char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = Assemble(comm,n,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

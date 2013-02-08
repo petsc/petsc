@@ -461,12 +461,12 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
   PetscBool      flg   = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->prefix,"-draw_popup",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->prefix,"-draw_popup",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscDrawOpenX(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+    ierr = PetscDrawOpenX(((PetscObject)draw)->comm,NULL,NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
     draw->popup = *popup;
   } else {
-    *popup = PETSC_NULL;
+    *popup = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -581,8 +581,8 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (draw->savefilename && !rank && draw->savefilemovie) {
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg  -i %s/%s_%%d.Gif %s.m4v",draw->savefilename,draw->savefilename,draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(((PetscObject)draw)->comm,fd,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(((PetscObject)draw)->comm,NULL,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscPClose(((PetscObject)draw)->comm,fd,NULL);CHKERRQ(ierr);
   }
 #endif
 
@@ -769,7 +769,7 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
 
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,"-geometry",xywh,&osize,NULL);CHKERRQ(ierr);
 
   x = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
 
@@ -846,7 +846,7 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_double_buffer",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-draw_double_buffer",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   }

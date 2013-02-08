@@ -21,12 +21,12 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   ierr  = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-width",&w,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-height",&h,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-n",&nn,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-bins",&b,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-color",&c,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-width",&w,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-height",&h,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-n",&nn,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-bins",&b,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-color",&c,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsHasName(NULL,"-nolabels",&flg);CHKERRQ(ierr);
   width = (int) w; height = (int)h; n = (int)nn; bins = (int) b; color = (int) c;
   if (flg) {
     xlabel = (char*)0; toplabel = (char*)0;

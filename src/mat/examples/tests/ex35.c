@@ -15,7 +15,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&A);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  Ii = j + n*i;

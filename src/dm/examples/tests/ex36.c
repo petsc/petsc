@@ -349,7 +349,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
                       mx+1,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
-                      PETSC_NULL,
+                      NULL,
                       &dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
@@ -376,7 +376,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
 
-  ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
   ierr = VecSet(ac,66.99);CHKERRQ(ierr);
@@ -399,7 +399,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
-  PetscOptionsGetBool(PETSC_NULL,"-output",&output,PETSC_NULL);CHKERRQ(ierr);
+  PetscOptionsGetBool(NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_1D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -441,7 +441,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
                       PETSC_DECIDE, PETSC_DECIDE,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
-                      PETSC_NULL, PETSC_NULL,
+                      NULL, NULL,
                       &dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
@@ -454,7 +454,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 
   /* apply conformal mappings */
   map_id = 0;
-  ierr   = PetscOptionsGetInt(PETSC_NULL,"-cmap", &map_id,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,"-cmap", &map_id,NULL);CHKERRQ(ierr);
   if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
@@ -476,7 +476,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   }
 
 
-  ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
   ierr = DADefineXLinearField2D(dac,ac);CHKERRQ(ierr);
@@ -499,7 +499,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
-  PetscOptionsGetBool(PETSC_NULL,"-output",&output,PETSC_NULL);CHKERRQ(ierr);
+  PetscOptionsGetBool(NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_2D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -541,7 +541,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
                       PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
-                      PETSC_NULL,PETSC_NULL,PETSC_NULL,
+                      NULL,NULL,NULL,
                       &dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
 
@@ -556,7 +556,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   /*ierr = DAApplyTrilinearMapping(dac);CHKERRQ(ierr);*/
   /* apply conformal mappings */
   map_id = 0;
-  ierr   = PetscOptionsGetInt(PETSC_NULL,"-cmap", &map_id,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt(NULL,"-cmap", &map_id,NULL);CHKERRQ(ierr);
   if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
@@ -577,7 +577,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
 
-  ierr = DMCreateInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
   ierr = VecZeroEntries(ac);CHKERRQ(ierr);
@@ -603,7 +603,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
 
-  PetscOptionsGetBool(PETSC_NULL,"-output",&output,PETSC_NULL);CHKERRQ(ierr);
+  PetscOptionsGetBool(NULL,"-output",&output,NULL);CHKERRQ(ierr);
   if (output) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_3D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -636,13 +636,13 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,0,help);
 
   mx = my = mz = 2;
-  PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0);
-  PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0);
-  PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0);
+  PetscOptionsGetInt(NULL,"-mx", &mx, 0);
+  PetscOptionsGetInt(NULL,"-my", &my, 0);
+  PetscOptionsGetInt(NULL,"-mz", &mz, 0);
   nl = 1;
-  PetscOptionsGetInt(PETSC_NULL,"-nl", &nl, 0);
+  PetscOptionsGetInt(NULL,"-nl", &nl, 0);
   dim = 2;
-  PetscOptionsGetInt(PETSC_NULL,"-dim", &dim, 0);
+  PetscOptionsGetInt(NULL,"-dim", &dim, 0);
 
   for (l=0; l<nl; l++) {
     if      (dim==1) da_test_RefineCoords1D(mx);

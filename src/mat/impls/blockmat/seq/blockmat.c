@@ -317,9 +317,9 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   ierr = MatLoad_SeqAIJ(tmpA,viewer);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_SELF,NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Determine number of nonzero blocks for each block row */
@@ -898,13 +898,13 @@ static struct _MatOps MatOps_Values = {
 .  bs - size of each block in matrix
 .  nz - number of nonzeros per block row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various block rows
-         (possibly different for each row) or PETSC_NULL
+         (possibly different for each row) or NULL
 
    Notes:
      If nnz is given then nz is ignored
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
@@ -948,8 +948,8 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   }
   bmat->mbs = A->rmap->n/bs;
 
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,PETSC_NULL,&bmat->middle);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,NULL,&bmat->right);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,NULL,&bmat->middle);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
 
   if (!bmat->imax) {
@@ -1034,7 +1034,7 @@ EXTERN_C_END
 .  n  - number of columns
 .  bs - size of each submatrix
 .  nz  - expected maximum number of nonzero blocks in row (use PETSC_DEFAULT if not known)
--  nnz - expected number of nonzers per block row if known (use PETSC_NULL otherwise)
+-  nnz - expected number of nonzers per block row if known (use NULL otherwise)
 
 
    Output Parameter:

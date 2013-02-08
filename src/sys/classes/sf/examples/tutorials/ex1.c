@@ -29,21 +29,21 @@ int main(int argc,char **argv)
 
   ierr            = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");CHKERRQ(ierr);
   test_bcast      = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL);CHKERRQ(ierr);
   test_reduce     = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
   test_degree     = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,NULL);CHKERRQ(ierr);
   test_fetchandop = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,NULL);CHKERRQ(ierr);
   test_gather     = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,NULL);CHKERRQ(ierr);
   test_scatter    = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,NULL);CHKERRQ(ierr);
   test_embed      = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,NULL);CHKERRQ(ierr);
   test_invert     = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
   nroots  = 2 + (PetscInt)(rank == 0);
@@ -60,10 +60,10 @@ int main(int argc,char **argv)
     remote[2].index = 2;
   }
 
-  /* Create a star forest for communication. In this example, the leaf space is dense, so we pass PETSC_NULL. */
+  /* Create a star forest for communication. In this example, the leaf space is dense, so we pass NULL. */
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,nroots,nleaves,PETSC_NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
 
   /* View graph, mostly useful for debugging purposes. */
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);

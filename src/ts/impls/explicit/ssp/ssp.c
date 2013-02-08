@@ -46,7 +46,7 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
   if (!ssp->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
   if (*work != ssp->work) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
   ssp->workout = PETSC_FALSE;
-  *work = PETSC_NULL;
+  *work = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -245,10 +245,10 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
   ierr = TSReset_SSP(ts);CHKERRQ(ierr);
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetNumStages_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetNumStages_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetNumStages_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetNumStages_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -429,7 +429,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
     if (flg) {
       ierr = TSSSPSetType(ts,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-ts_ssp_nstages","Number of stages","TSSSPSetNumStages",ssp->nstages,&ssp->nstages,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_ssp_nstages","Number of stages","TSSSPSetNumStages",ssp->nstages,&ssp->nstages,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

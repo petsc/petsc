@@ -71,7 +71,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   fft->ndim = ndim;
   fft->n    = PETSC_DECIDE;
   fft->N    = N;
-  fft->data = PETSC_NULL;
+  fft->data = NULL;
 
   ierr = MatSetType(FFT,mattype);CHKERRQ(ierr);
 

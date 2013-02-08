@@ -78,21 +78,21 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
   }
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da1,DMDA_ELEMENT_P1);CHKERRQ(ierr);
   ierr = DMDASetElementType(user.da2,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
   /* Set x and y coordinates */
-  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
   /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
   ierr = DMCreateGlobalVector(user.da1,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
     /*ierr = VecView(user.q,view_q);CHKERRQ(ierr);*/
     /*ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
 
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
     /*ierr = VecView(x,view_out);CHKERRQ(ierr);*/
 
 
@@ -431,7 +431,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   if (!user->radiation) {
-    ierr = DMDAGetInfo(user->da2,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(user->da2,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
@@ -548,7 +548,7 @@ PetscErrorCode SetRandomVectors(AppCtx *user,PetscReal t)
     PetscBool   flg;
     PetscInt    seed;
 
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
     if (flg) {
       sprintf(filename,"ex61.random.%d",(int)seed);CHKERRQ(ierr);
     } else {
@@ -627,7 +627,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
@@ -687,10 +687,10 @@ PetscErrorCode GetParams(AppCtx *user)
   ierr          = PetscOptionsReal("-dtevent","Average time between random events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
 
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-periodic","Use periodic boundary conditions\n","None",user->periodic,&user->periodic,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-radiation","Allow radiation\n","None",user->radiation,&user->radiation,&flg);CHKERRQ(ierr);
@@ -722,8 +722,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
 
 
   PetscFunctionBeginUser;
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   if (Mda!=Nda) printf("Currently different Mda and Nda are not supported");
   if (user->periodic) h = (user->xmax-user->xmin)/Mda;
@@ -832,7 +832,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMGlobalToLocalEnd(da,UIN,INSERT_VALUES,UOUT);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,UOUT,&uout);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   for (i=xs; i < xs+xm;i++) {
     if (uout[i-1][1] && uout[i][1] && uout[i+1][1]) uout[i][0] = 1.0;
@@ -878,7 +878,7 @@ PetscErrorCode Phi(AppCtx *user)
   /*PetscViewer        view;*/
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 

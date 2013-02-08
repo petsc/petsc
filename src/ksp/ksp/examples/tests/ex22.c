@@ -31,8 +31,8 @@ PetscErrorCode test_solve(void)
   ierr = MatCreate(PETSC_COMM_WORLD, &A11);CHKERRQ(ierr);
   ierr = MatSetSizes(A11, PETSC_DECIDE, PETSC_DECIDE, n, n);CHKERRQ(ierr);
   ierr = MatSetType(A11, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A11, n, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A11, np, PETSC_NULL,np, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A11, n, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A11, np, NULL,np, NULL);CHKERRQ(ierr);
   ierr = MatDiagonalSet(A11, diag, INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
@@ -41,8 +41,8 @@ PetscErrorCode test_solve(void)
   ierr = MatCreate(PETSC_COMM_WORLD, &A12);CHKERRQ(ierr);
   ierr = MatSetSizes(A12, PETSC_DECIDE, PETSC_DECIDE, n, np);CHKERRQ(ierr);
   ierr = MatSetType(A12, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A12, np, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A12, np, PETSC_NULL,np, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A12, np, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A12, np, NULL,np, NULL);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     for (j=0; j<np; j++) {
@@ -56,7 +56,7 @@ PetscErrorCode test_solve(void)
   /* A21 */
   ierr = MatTranspose(A12, MAT_INITIAL_MATRIX, &A21);CHKERRQ(ierr);
 
-  A22 = PETSC_NULL;
+  A22 = NULL;
 
   /* Create block matrix */
   tmp[0][0] = A11;
@@ -64,7 +64,7 @@ PetscErrorCode test_solve(void)
   tmp[1][0] = A21;
   tmp[1][1] = A22;
 
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&tmp[0][0],&A);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,&tmp[0][0],&A);CHKERRQ(ierr);
   ierr = MatNestSetVecType(A,VECNEST);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ PetscErrorCode test_solve(void)
   tmp_x[0] = f;
   tmp_x[1] = h;
 
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_x,&b);CHKERRQ(ierr);
+  ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_x,&b);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   ierr = VecDuplicate(b, &x);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode test_solve(void)
 
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
 
-  ierr = VecNestGetSubVecs(x,PETSC_NULL,&_tmp_x);CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs(x,NULL,&_tmp_x);CHKERRQ(ierr);
 
   x1 = _tmp_x[0];
   x2 = _tmp_x[1];
@@ -149,8 +149,8 @@ PetscErrorCode test_solve_matgetvecs(void)
   ierr = MatCreate(PETSC_COMM_WORLD, &A11);CHKERRQ(ierr);
   ierr = MatSetSizes(A11, PETSC_DECIDE, PETSC_DECIDE, n, n);CHKERRQ(ierr);
   ierr = MatSetType(A11, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A11, n, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A11, np, PETSC_NULL,np, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A11, n, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A11, np, NULL,np, NULL);CHKERRQ(ierr);
   ierr = MatDiagonalSet(A11, diag, INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
@@ -159,8 +159,8 @@ PetscErrorCode test_solve_matgetvecs(void)
   ierr = MatCreate(PETSC_COMM_WORLD, &A12);CHKERRQ(ierr);
   ierr = MatSetSizes(A12, PETSC_DECIDE, PETSC_DECIDE, n, np);CHKERRQ(ierr);
   ierr = MatSetType(A12, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A12, np, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A12, np, PETSC_NULL,np, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A12, np, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A12, np, NULL,np, NULL);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     for (j=0; j<np; j++) {
@@ -178,16 +178,16 @@ PetscErrorCode test_solve_matgetvecs(void)
   tmp[0][0] = A11;
   tmp[0][1] = A12;
   tmp[1][0] = A21;
-  tmp[1][1] = PETSC_NULL;
+  tmp[1][1] = NULL;
 
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&tmp[0][0],&A);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,&tmp[0][0],&A);CHKERRQ(ierr);
   ierr = MatNestSetVecType(A,VECNEST);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create vectors */
   ierr = MatGetVecs(A, &b, &x);CHKERRQ(ierr);
-  ierr = VecNestGetSubVecs(b,PETSC_NULL,&tmp_x);CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs(b,NULL,&tmp_x);CHKERRQ(ierr);
   f    = tmp_x[0];
   h    = tmp_x[1];
 
@@ -201,7 +201,7 @@ PetscErrorCode test_solve_matgetvecs(void)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
-  ierr = VecNestGetSubVecs(x,PETSC_NULL,&tmp_x);CHKERRQ(ierr);
+  ierr = VecNestGetSubVecs(x,NULL,&tmp_x);CHKERRQ(ierr);
   x1   = tmp_x[0];
   x2   = tmp_x[1];
 

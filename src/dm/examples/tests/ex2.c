@@ -26,13 +26,13 @@ int main(int argc,char **argv)
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
   /* Readoptions */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DMDABoundaryTypes,(PetscEnum*)&bx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-wrap",DMDABoundaryTypes,(PetscEnum*)&bx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,s,NULL,&da);CHKERRQ(ierr);
   ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-local_print",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer            sviewer;
     ISLocalToGlobalMapping is;

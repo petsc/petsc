@@ -65,12 +65,12 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval mesh stress test", "IMesh");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "imesh.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-dim", "The mesh dimension", "imesh.c", this->_dim, &this->_dim, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "imesh.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-dim", "The mesh dimension", "imesh.c", this->_dim, &this->_dim, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -423,8 +423,8 @@ public:
     ALE::Obj<mesh_type> copyMesh = this->_mesh;
     std::map<mesh_type::point_type,mesh_type::point_type> renumbering;
 
-    this->_m    = PETSC_NULL;
-    this->_mesh = PETSC_NULL;
+    this->_m    = NULL;
+    this->_mesh = NULL;
     this->_renumbering.clear();
     this->setUp();
     // Renumbering must respect the cell/vertex division
@@ -620,10 +620,10 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -803,8 +803,8 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };

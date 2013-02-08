@@ -90,7 +90,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   if (!da->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
@@ -139,7 +139,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
    Level: beginner
 
    Note:
-   Use PETSC_NULL (PETSC_NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
+   Use NULL (NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
 
 .keywords: distributed array, get, information
 

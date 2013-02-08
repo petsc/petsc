@@ -28,12 +28,12 @@ int main(int argc,char **argv)
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
   /* Get local dimensions of matrices */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   p    = m/2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
   /* Create matrix A */
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix A\n");CHKERRQ(ierr);

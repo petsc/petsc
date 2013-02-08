@@ -40,7 +40,7 @@ int main(int argc,char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"LocalRef Test Options",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"LocalRef Test Options",NULL);CHKERRQ(ierr);
   {
     top_bs = 2; row_bs = 2; col_bs = 2; diag = PETSC_FALSE; blocked = PETSC_FALSE;
     ierr   = PetscOptionsInt("-top_bs","Block size of top-level matrix",0,top_bs,&top_bs,0);CHKERRQ(ierr);

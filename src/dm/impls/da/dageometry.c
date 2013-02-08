@@ -101,7 +101,7 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, NULL, NULL);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   xfStart = fStart; xfEnd = xfStart+nXF;
   yfStart = xfEnd;
@@ -194,7 +194,7 @@ PetscErrorCode DMDARestoreClosure(DM dm, PetscSection section, PetscInt p,PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetClosureScalar"
-/* If you did not pass PETSC_NULL for 'values', you must call DMDARestoreClosureScalar() */
+/* If you did not pass NULL for 'values', you must call DMDARestoreClosureScalar() */
 PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,PetscScalar *vArray,const PetscScalar **values)
 {
   DM_DA          *da = (DM_DA*) dm->data;
@@ -213,7 +213,7 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, NULL, NULL);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   xfStart = fStart; xfEnd = xfStart+nXF;
   yfStart = xfEnd;  yfEnd = yfStart+nYF;
@@ -349,7 +349,7 @@ PetscErrorCode DMDAVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscIn
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
   PetscValidPointer(values, 5);
-  ierr = DMDARestoreClosureScalar(dm,section,p,PETSC_NULL,values);CHKERRQ(ierr);
+  ierr = DMDARestoreClosureScalar(dm,section,p,NULL,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -373,7 +373,7 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, NULL, NULL);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   xfStart = fStart; xfEnd = xfStart+nXF;
   yfStart = xfEnd;  yfEnd = yfStart+nYF;
@@ -562,7 +562,7 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   ierr = DMDAGetInfo(dm, &dim, 0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMDAVecGetClosure(cdm, PETSC_NULL, coordinates, cell, &vertices);CHKERRQ(ierr);
+  ierr = DMDAVecGetClosure(cdm, NULL, coordinates, cell, &vertices);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) v0[d] = PetscRealPart(vertices[d]);
   switch (dim) {
   case 2:

@@ -83,9 +83,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr    = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -123,21 +123,21 @@ int main(int argc,char **argv)
      for the Jacobian.  See the users manual for a discussion of better
      techniques for preallocating matrix memory.
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     PetscBool matrix_free_operator = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-snes_mf_operator",&matrix_free_operator,NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
   if (!matrix_free) {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&J);CHKERRQ(ierr);
   }
 
   /*
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_fd_coloring",&fd_coloring,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-snes_fd_coloring",&fd_coloring,NULL);CHKERRQ(ierr);
   if (matrix_free && fd_coloring) SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
@@ -215,7 +215,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
@@ -224,7 +224,7 @@ int main(int argc,char **argv)
      Print the convergence history.  This is intended just to demonstrate
      use of the data attained via SNESSetConvergenceHistory().
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %G\n",i,hist_its[i],history[i]);CHKERRQ(ierr);

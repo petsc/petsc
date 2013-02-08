@@ -156,7 +156,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 @*/
 PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 {
-  const char     *debugger = PETSC_NULL;
+  const char     *debugger = NULL;
   PetscBool      xterm     = PETSC_TRUE;
   char           *f;
   PetscErrorCode ierr;
@@ -387,7 +387,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-debugger_pause",&sleeptime,NULL);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
     /*
@@ -560,7 +560,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   fflush(stdout); /* ignore error because may already be in error handler */
 
   sleeptime = 25; /* default to sleep waiting for debugger */
-  PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL); /* ignore error because may already be in error handler */
+  PetscOptionsGetInt(NULL,"-debugger_pause",&sleeptime,NULL); /* ignore error because may already be in error handler */
   if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
   /*

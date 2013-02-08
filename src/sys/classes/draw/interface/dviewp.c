@@ -166,7 +166,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   PetscValidPointer(ports,3);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    *ports = PETSC_NULL;
+    *ports = NULL;
     PetscFunctionReturn(0);
   }
 
@@ -244,7 +244,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   if ((nx < 1) || (ny < 1)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
   ierr = PetscObjectTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (isnull) {
-    *ports = PETSC_NULL;
+    *ports = NULL;
     PetscFunctionReturn(0);
   }
   n    = nx*ny;

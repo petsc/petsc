@@ -60,9 +60,9 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nphase",&nphase,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nphase",&nphase,NULL);CHKERRQ(ierr);
   if (nphase > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
   /* initializations */
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
 
   /* create LHS matrix Amat */
   /*------------------------*/
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, PETSC_NULL, &appctx.Amat);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, NULL, &appctx.Amat);
   ierr = MatSetFromOptions(appctx.Amat);
   /* set space grid points - interio points only! */
   ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&z);CHKERRQ(ierr);
@@ -126,19 +126,19 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
 
   /* Set optional user-defined monitoring routine */
-  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
   /* set the right hand side of U_t = RHSfunction(U,t) */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
 
   if (appctx.useAlhs) {
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
-    ierr = TSSetIFunction(ts,PETSC_NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
   }
 
   /* use petsc to compute the jacobian by finite differences */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,Jmat,Jmat,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,Jmat,Jmat,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
 
   /* get the command line options if there are any and set them */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

@@ -24,12 +24,12 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
 
   n   = mbs*bs;
-  ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
-  ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA);CHKERRQ(ierr);
+  ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL, &A);CHKERRQ(ierr);
+  ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL, &sA);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ int main(int argc,char **args)
 
   /* Assemble matrix */
   if (bs == 1) {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-test_problem",&prob,NULL);CHKERRQ(ierr);
     if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {

@@ -35,7 +35,7 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&ncomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);CHKERRQ(ierr);
   }
@@ -116,7 +116,7 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&ncomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);CHKERRQ(ierr);
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);CHKERRQ(ierr);
   }
@@ -252,7 +252,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
       communictor and hence will overwrite the old data. It may be better to simply remove all this code
   */
   /* make sure communicator is a PETSc communicator */
-  ierr = PetscCommDuplicate(comm,&comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&comm,NULL);CHKERRQ(ierr);
   /* has file already been opened into a viewer */
   ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {

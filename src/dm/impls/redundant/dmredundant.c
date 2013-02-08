@@ -21,10 +21,10 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,MatType mtype,Mat *J)
   ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,red->n,red->n,red->N,red->N);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*J,red->n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(*J,1,red->n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*J,red->n,PETSC_NULL,red->N-red->n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(*J,1,red->n,PETSC_NULL,red->N-red->n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*J,red->n,NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(*J,1,red->n,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*J,red->n,NULL,red->N-red->n,NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(*J,1,red->n,NULL,red->N-red->n,NULL);CHKERRQ(ierr);
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
@@ -53,8 +53,8 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","",NULL);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -349,8 +349,8 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscInt rank,PetscInt N)
 +   dm - redundant DM
 
     Output Parameters:
-+   rank - rank of process to own redundant degrees of freedom (or PETSC_NULL)
--   N - total number of redundant degrees of freedom (or PETSC_NULL)
++   rank - rank of process to own redundant degrees of freedom (or NULL)
+-   N - total number of redundant degrees of freedom (or NULL)
 
     Level: advanced
 

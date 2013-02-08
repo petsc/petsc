@@ -107,17 +107,17 @@ PetscErrorCode SetFromOptions(AppCtx * ctx)
   stoich(0, 2) = 1.;
 
   PetscInt as = N_SPECIES;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-length_x",&ctx->length[0],PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-length_y",&ctx->length[1],PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-porosity",&ctx->porosity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-saturation",&ctx->saturation,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dispersivity",&ctx->dispersivity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-gradq_inflow",&ctx->gradq_inflow,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-rate_constant",&ctx->rate_constant[0],PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(PETSC_NULL,"-sp_inflow",ctx->x_inflow.sp,&as,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(PETSC_NULL,"-sp_0",ctx->x_0.sp,&as,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-length_x",&ctx->length[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-length_y",&ctx->length[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-porosity",&ctx->porosity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-saturation",&ctx->saturation,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-dispersivity",&ctx->dispersivity,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-gradq_inflow",&ctx->gradq_inflow,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-rate_constant",&ctx->rate_constant[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,"-sp_inflow",ctx->x_inflow.sp,&as,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,"-sp_0",ctx->x_0.sp,&as,NULL);CHKERRQ(ierr);
   as   = N_SPECIES;
-  ierr = PetscOptionsGetRealArray(PETSC_NULL,"-stoich",ctx->stoichiometry,&as,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,"-stoich",ctx->stoichiometry,&as,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -138,8 +138,8 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts, PETSC_NULL, FormIFunction, &ctx);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,N_SPECIES,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts, NULL, FormIFunction, &ctx);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,N_SPECIES,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"species A");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"species B");CHKERRQ(ierr);
@@ -182,7 +182,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -314,7 +314,7 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
 
   PetscFunctionBeginUser;
    *changed_w = PETSC_FALSE;
-  ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
+  ierr = VecMin(X,NULL,&min);CHKERRQ(ierr);
   if (min >= 0.) PetscFunctionReturn(0);
 
   *changed_w = PETSC_TRUE;
@@ -323,7 +323,7 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   ierr = DMDAVecGetArray(da,W,&x);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       for (l = 0; l < N_SPECIES; l++) {

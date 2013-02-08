@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   AO             ao;
-  PetscInt       *localvert=PETSC_NULL, nlocal;
+  PetscInt       *localvert=NULL, nlocal;
   PetscMPIInt    rank;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -28,11 +28,11 @@ int main(int argc,char **argv)
   }
 
   /* Test AOCreateBasic() */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert, PETSC_NULL, &ao);CHKERRQ(ierr);
+  ierr = AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao);CHKERRQ(ierr);
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* Test AOCreateMemoryScalable() */
-  ierr = AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert, PETSC_NULL, &ao);CHKERRQ(ierr);
+  ierr = AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert, NULL, &ao);CHKERRQ(ierr);
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   ierr = PetscFree(localvert);CHKERRQ(ierr);

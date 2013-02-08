@@ -63,12 +63,12 @@ int main(int argc,char **argv)
   ierr          = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   appctx.a      = 1.0;
   appctx.d      = 0.0;
-  ierr          = PetscOptionsGetScalar(PETSC_NULL,"-a",&appctx.a,PETSC_NULL);CHKERRQ(ierr);
-  ierr          = PetscOptionsGetScalar(PETSC_NULL,"-d",&appctx.d,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetScalar(NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetScalar(NULL,"-d",&appctx.d,NULL);CHKERRQ(ierr);
   appctx.upwind = PETSC_TRUE;
-  ierr          = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetBool(NULL,"-upwind",&appctx.upwind,NULL);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -60, 1, 1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -60, 1, 1,NULL,&da);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -90,8 +90,8 @@ int main(int argc,char **argv)
      u_t = f(u,t), the user provides the discretized right-hand-side
       as a time-dependent matrix.
   */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,PETSC_NULL,PETSC_NULL,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))Solution,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -17,7 +17,7 @@ int main(int argc,char **args)
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Test is only for seqeuntial");
-  ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,NULL,&A);CHKERRQ(ierr);
   ierr   = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
   rstart = 0;
 

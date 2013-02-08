@@ -41,7 +41,7 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
   ierr = VecAYPX(Y,-1.0,X[1]);CHKERRQ(ierr);
   ierr = VecNorm(Y,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-verbose",&verbose,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-verbose",&verbose,NULL);CHKERRQ(ierr);
   if (norm < 1.e-12 && verbose < 1) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference < 1e-12\n",test);CHKERRQ(ierr);
   } else {
@@ -115,12 +115,12 @@ int main(int argc, char *argv[])
   IS             isrow,iscol;
   PetscBool      random = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,PETSC_NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRICES,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&ms,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRICES,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&ms,NULL);CHKERRQ(ierr);
 
   idxrow[0] = ms+1;
   idxrow[1] = ms+2;
@@ -142,14 +142,14 @@ int main(int argc, char *argv[])
   ierr = VecDuplicate(left,&Y);CHKERRQ(ierr);
   ierr = VecDuplicate(left,&Y1);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-random",&random,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-random",&random,NULL);CHKERRQ(ierr);
   if (random) {
-    ierr = VecSetRandom(right,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(left,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(X,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(Y,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(X1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecSetRandom(Y1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(right,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(left,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(X,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(Y,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(X1,NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(Y1,NULL);CHKERRQ(ierr);
   } else {
     ierr = VecSet(right,1.0);CHKERRQ(ierr);
     ierr = VecSet(left,2.0);CHKERRQ(ierr);

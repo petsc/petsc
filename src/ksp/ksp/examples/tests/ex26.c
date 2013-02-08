@@ -57,26 +57,26 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   /* set up discretization matrix for fine grid */
   fine_ctx.mx = 9; fine_ctx.my = 9;
-  ierr        = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetInt(NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
   if (flg) fine_ctx.mx = mx;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&my,&flg);CHKERRQ(ierr);
   if (flg) fine_ctx.my = my;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
   n    = fine_ctx.mx*fine_ctx.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,
-                      fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
+                      fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&A);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);
 
   /* create linear solver */

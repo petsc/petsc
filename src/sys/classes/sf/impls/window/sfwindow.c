@@ -389,7 +389,7 @@ static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PetscSF Window options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-sf_window_sync","synchronization type to use for PetscSF Window communication","PetscSFWindowSetSyncType",PetscSFWindowSyncTypes,(PetscEnum)w->sync,(PetscEnum*)&w->sync,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-sf_window_sync","synchronization type to use for PetscSF Window communication","PetscSFWindowSetSyncType",PetscSFWindowSyncTypes,(PetscEnum)w->sync,(PetscEnum*)&w->sync,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -415,14 +415,14 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
     ierr = PetscFree2(link->mine,link->remote);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
-  w->link = PETSC_NULL;
+  w->link = NULL;
   for (wlink=w->wins; wlink; wlink=wnext) {
     wnext = wlink->next;
     if (wlink->inuse) SETERRQ1(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
     ierr = MPI_Win_free(&wlink->win);CHKERRQ(ierr);
     ierr = PetscFree(wlink);CHKERRQ(ierr);
   }
-  w->wins = PETSC_NULL;
+  w->wins = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -486,7 +486,7 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf,MPI_Datatype unit,cons
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,(void*)rootdata,PETSC_TRUE,MPI_MODE_NOPUT|MPI_MODE_NOPRECEDE,MPI_MODE_NOPUT,0,&win);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
@@ -522,7 +522,7 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,const void
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFWindowOpTranslate(&op);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOPRECEDE,0,0,&win);CHKERRQ(ierr);
@@ -560,7 +560,7 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   MPI_Win            win;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetRanks(sf,&nranks,&ranks,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetRanks(sf,&nranks,&ranks,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFWindowGetDataTypes(sf,unit,&mine,&remote);CHKERRQ(ierr);
   ierr = PetscSFWindowOpTranslate(&op);CHKERRQ(ierr);
   ierr = PetscSFGetWindow(sf,unit,rootdata,PETSC_FALSE,0,0,0,&win);CHKERRQ(ierr);
@@ -618,7 +618,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
 #if defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6))
   {
     PetscBool ackbug = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-acknowledge_ompi_onesided_bug",&ackbug,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-acknowledge_ompi_onesided_bug",&ackbug,NULL);CHKERRQ(ierr);
     if (ackbug) {
       ierr = PetscInfo(sf,"Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.");CHKERRQ(ierr);
     } else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_LIB,"Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");

@@ -381,7 +381,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
@@ -442,7 +442,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -501,7 +501,7 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  mesh->m = PETSC_NULL;
+  mesh->m = NULL;
   ierr    = PetscSectionDestroy(&mesh->defaultSection);CHKERRQ(ierr);
   ierr    = VecScatterDestroy(&mesh->globalScatter);CHKERRQ(ierr);
 
@@ -1855,7 +1855,7 @@ PetscErrorCode DMMeshGetStratumIS(DM dm, const char name[], PetscInt value, IS *
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(is, 4);
-  *is = PETSC_NULL;
+  *is = NULL;
   if (mesh->useNewImpl) {
     SieveLabel next = mesh->labels;
     PetscBool  flg;
@@ -1965,7 +1965,7 @@ PetscErrorCode DMMeshMeetPoints(DM dm, PetscInt numPoints, const PetscInt points
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
     /* const Obj<typename Mesh::sieve_type::supportSet> edge = m->getSieve()->nJoin(points[0], points[1], 1); */
     *numCoveringPoints = 0;
-    *coveringPoints    = PETSC_NULL;
+    *coveringPoints    = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -2436,8 +2436,8 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
   ierr = DMMeshGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   if (cEnd - cStart == 0) {
     *numVertices = 0;
-    *offsets     = PETSC_NULL;
-    *adjacency   = PETSC_NULL;
+    *offsets     = NULL;
+    *adjacency   = NULL;
     PetscFunctionReturn(0);
   }
   numCells = cEnd - cStart;
@@ -2685,7 +2685,7 @@ PetscErrorCode DMMeshPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
     ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm, 0, PETSC_NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
@@ -2786,8 +2786,8 @@ PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *parti
   }
   if (height == 0) {
     PetscInt numVertices;
-    PetscInt *start     = PETSC_NULL;
-    PetscInt *adjacency = PETSC_NULL;
+    PetscInt *start     = NULL;
+    PetscInt *adjacency = NULL;
 
     if (1) {
       ierr = DMMeshCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
@@ -2820,7 +2820,7 @@ PetscErrorCode DMMeshCreatePartition(DM dm, PetscSection *partSection, IS *parti
 PetscErrorCode DMMeshCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition)
 {
   const PetscInt *partArray;
-  PetscInt       *allPoints, *partPoints = PETSC_NULL;
+  PetscInt       *allPoints, *partPoints = NULL;
   PetscInt       rStart, rEnd, rank, maxPartSize = 0, newSize;
   PetscErrorCode ierr;
 
@@ -2981,13 +2981,13 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       remoteRanks[p].index = 0;
     }
     ierr = PetscSFCreate(comm, &partSF);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(partSF, 1, numRemoteRanks, PETSC_NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(partSF, 1, numRemoteRanks, NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-partition_view", &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscPrintf(comm, "Cell Partition:\n");CHKERRQ(ierr);
       ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscSFView(partSF, PETSC_NULL);CHKERRQ(ierr);
+      ierr = ISView(cellPart, NULL);CHKERRQ(ierr);
+      ierr = PetscSFView(partSF, NULL);CHKERRQ(ierr);
     }
     /* Close the partition over the mesh */
     ierr = DMMeshCreatePartitionClosure(dm, cellPartSection, cellPart, &partSection, &part);CHKERRQ(ierr);
@@ -3003,10 +3003,10 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
     if (flg) {
       ierr = PetscPrintf(comm, "Point Partition:\n");CHKERRQ(ierr);
       ierr = PetscSectionView(partSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = ISView(part, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscSFView(pointSF, PETSC_NULL);CHKERRQ(ierr);
+      ierr = ISView(part, NULL);CHKERRQ(ierr);
+      ierr = PetscSFView(pointSF, NULL);CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingView(renumbering, PETSC_NULL);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingView(renumbering, NULL);CHKERRQ(ierr);
     }
     /* Distribute cone section */
     ierr = DMMeshGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
@@ -3030,14 +3030,14 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
     ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newConesSize, newCones, PETSC_NULL, newCones);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-cones_view", &flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
       ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "Parallel Cone Section:\n");CHKERRQ(ierr);
       ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = PetscSFView(coneSF, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSFView(coneSF, NULL);CHKERRQ(ierr);
     }
     ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
     /* Create supports and stratify sieve */
@@ -3057,7 +3057,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
     }
     /* Distribute labels */
     {
-      SieveLabel next      = mesh->labels, newNext = PETSC_NULL;
+      SieveLabel next      = mesh->labels, newNext = NULL;
       PetscInt   numLabels = 0, l;
 
       /* Bcast number of labels */
@@ -3069,8 +3069,8 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       for (l = 0; l < numLabels; ++l) {
         SieveLabel     newLabel;
         const PetscInt *partArray;
-        PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
-        PetscMPIInt    *sendcnts     = PETSC_NULL, *offsets = PETSC_NULL, *displs = PETSC_NULL;
+        PetscInt       *stratumSizes = NULL, *points = NULL;
+        PetscMPIInt    *sendcnts     = NULL, *offsets = NULL, *displs = NULL;
         PetscInt       nameSize, s, p;
         size_t         len = 0;
 
@@ -3162,7 +3162,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
         ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
         ierr = PetscFree(stratumSizes);CHKERRQ(ierr);
         /* Renumber points */
-        ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newLabel->stratumOffsets[newLabel->numStrata], newLabel->points, PETSC_NULL, newLabel->points);CHKERRQ(ierr);
+        ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newLabel->stratumOffsets[newLabel->numStrata], newLabel->points, NULL, newLabel->points);CHKERRQ(ierr);
         /* Sort points */
         for (s = 0; s < newLabel->numStrata; ++s) {
           ierr = PetscSortInt(newLabel->stratumSizes[s], &newLabel->points[newLabel->stratumOffsets[s]]);CHKERRQ(ierr);
@@ -3186,7 +3186,7 @@ PetscErrorCode DMMeshDistribute(DM dm, const char partitioner[], DM *dmParallel)
       PetscMPIInt    *rowners, *lowners;
       PetscInt       *ghostPoints, numRoots, numLeaves, numGhostPoints = 0, p, gp;
 
-      ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
       for (p = 0; p < numRoots*2; ++p) rowners[p] = 0;
       for (p = 0; p < numLeaves; ++p) {
@@ -3277,18 +3277,18 @@ PetscErrorCode TriangleInitInput(struct triangulateio *inputCtx)
   PetscFunctionBegin;
   inputCtx->numberofpoints             = 0;
   inputCtx->numberofpointattributes    = 0;
-  inputCtx->pointlist                  = PETSC_NULL;
-  inputCtx->pointattributelist         = PETSC_NULL;
-  inputCtx->pointmarkerlist            = PETSC_NULL;
+  inputCtx->pointlist                  = NULL;
+  inputCtx->pointattributelist         = NULL;
+  inputCtx->pointmarkerlist            = NULL;
   inputCtx->numberofsegments           = 0;
-  inputCtx->segmentlist                = PETSC_NULL;
-  inputCtx->segmentmarkerlist          = PETSC_NULL;
+  inputCtx->segmentlist                = NULL;
+  inputCtx->segmentmarkerlist          = NULL;
   inputCtx->numberoftriangleattributes = 0;
-  inputCtx->trianglelist               = PETSC_NULL;
+  inputCtx->trianglelist               = NULL;
   inputCtx->numberofholes              = 0;
-  inputCtx->holelist                   = PETSC_NULL;
+  inputCtx->holelist                   = NULL;
   inputCtx->numberofregions            = 0;
-  inputCtx->regionlist                 = PETSC_NULL;
+  inputCtx->regionlist                 = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -3298,17 +3298,17 @@ PetscErrorCode TriangleInitOutput(struct triangulateio *outputCtx)
 {
   PetscFunctionBegin;
   outputCtx->numberofpoints        = 0;
-  outputCtx->pointlist             = PETSC_NULL;
-  outputCtx->pointattributelist    = PETSC_NULL;
-  outputCtx->pointmarkerlist       = PETSC_NULL;
+  outputCtx->pointlist             = NULL;
+  outputCtx->pointattributelist    = NULL;
+  outputCtx->pointmarkerlist       = NULL;
   outputCtx->numberoftriangles     = 0;
-  outputCtx->trianglelist          = PETSC_NULL;
-  outputCtx->triangleattributelist = PETSC_NULL;
-  outputCtx->neighborlist          = PETSC_NULL;
-  outputCtx->segmentlist           = PETSC_NULL;
-  outputCtx->segmentmarkerlist     = PETSC_NULL;
-  outputCtx->edgelist              = PETSC_NULL;
-  outputCtx->edgemarkerlist        = PETSC_NULL;
+  outputCtx->trianglelist          = NULL;
+  outputCtx->triangleattributelist = NULL;
+  outputCtx->neighborlist          = NULL;
+  outputCtx->segmentlist           = NULL;
+  outputCtx->segmentmarkerlist     = NULL;
+  outputCtx->edgelist              = NULL;
+  outputCtx->edgemarkerlist        = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -3408,7 +3408,7 @@ PetscErrorCode DMMeshGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     if (constrained) {
       ierr = PetscStrcpy(args, "zepDQ");CHKERRQ(ierr);
     }
-    triangulate(args, &in, &out, PETSC_NULL);
+    triangulate(args, &in, &out, NULL);
   }
   ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
   ierr = PetscFree(in.pointmarkerlist);CHKERRQ(ierr);
@@ -3583,7 +3583,7 @@ PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsReal("-mesh_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mesh_coarsen_factor", "The coarsening factor", NULL, cfactor, &cfactor, NULL);CHKERRQ(ierr);
   SETERRQ(((PetscObject) mesh)->comm, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
   PetscFunctionReturn(0);
 }
@@ -4210,7 +4210,7 @@ PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar val
     const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = mesh->getFactory()->getGlobalOrder(mesh, s->getName(), s);
     PetscSection                                 section;
     PetscInt                                     numFields;
-    PetscInt                                     *fieldSize = PETSC_NULL;
+    PetscInt                                     *fieldSize = NULL;
 
     ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);

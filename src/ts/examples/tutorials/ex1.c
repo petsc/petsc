@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   PetscReal      ftime;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
@@ -73,11 +73,11 @@ int main(int argc,char **argv)
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
-  PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);
-  PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);
+  PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);
+  PetscOptionsGetInt(NULL,"-my",&user.my,NULL);
   N  = user.mx*user.my;
   dt = .5/PetscMax(user.mx,user.my);
-  PetscOptionsGetReal(PETSC_NULL,"-param",&user.param,PETSC_NULL);
+  PetscOptionsGetReal(NULL,"-param",&user.param,NULL);
   if (user.param >= param_max || user.param <= param_min) SETERRQ(PETSC_COMM_SELF,1,"Parameter is out of range");
 
   /*
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
      function they will call this routine. Note the final argument
      is the application context used by the call-back functions.
   */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,FormFunction,&user);CHKERRQ(ierr);
 
   /*
      Set the Jacobian matrix and the function used to compute

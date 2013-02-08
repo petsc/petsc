@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
   }
 
   if (user.tsmonitor) {
-    ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
 
   ierr = TSSetInitialTimeStep(ts,0.0,user.dt);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
@@ -308,14 +308,14 @@ PetscErrorCode GetParams(AppCtx *user)
   user->gamma     = 3.2E-4; user->theta_c = 1;
   user->implicit  = 0;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-monitor",&user->tsmonitor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -424,8 +424,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
     PetscInt n,rstart;
     IS       isrow,iscol;
 
-    ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(M,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(M,&rstart,NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart,2,&isrow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart+1,2,&iscol);CHKERRQ(ierr);
 

@@ -29,9 +29,9 @@ PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int maxl,KSPFischerGuess_M
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method1),&itg);CHKERRQ(ierr);
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
-  ierr = KSPGetVecs(ksp,maxl,&itg->btilde,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,maxl,&itg->btilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->btilde);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ksp,itg->guess);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int maxl,KSPFischerGuess_M
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method2),&itg);CHKERRQ(ierr);
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->Ax);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ksp,itg->Ax);CHKERRQ(ierr);
@@ -291,7 +291,7 @@ PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPF
   (*itg)->ksp    = ksp;
   (*itg)->refcnt = 1;
 
-  ierr = KSPGetOperators(ksp,&(*itg)->mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -302,7 +302,7 @@ PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -321,7 +321,7 @@ PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess *ITG)
   } else if ((*ITG)->method == 2) {
     ierr = KSPFischerGuessDestroy_Method2((KSPFischerGuess_Method2*)*ITG);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)(*ITG)->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
-  *ITG = PETSC_NULL;
+  *ITG = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess itg)
 
   PetscFunctionBegin;
   itg->curl = 0;
-  ierr      = KSPGetOperators(itg->ksp,&itg->mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -44,7 +44,7 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 
    Input Parameters:
 +  x  - the vector
--  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
+-  rctx - the random number context, formed by PetscRandomCreate(), or NULL and
           it will create one internally.
 
    Output Parameter:
@@ -67,7 +67,7 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 PetscErrorCode  MatSetRandom(Mat x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
-  PetscRandom    randObj = PETSC_NULL;
+  PetscRandom    randObj = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_CLASSID,1);
@@ -185,7 +185,7 @@ PetscErrorCode  MatGetTrace(Mat mat,PetscScalar *trace)
   Vec            diag;
 
   PetscFunctionBegin;
-  ierr = MatGetVecs(mat,&diag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(mat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(mat,diag);CHKERRQ(ierr);
   ierr = VecSum(diag,trace);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
@@ -359,7 +359,7 @@ PetscErrorCode  MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
    MatGetRow() always returns 0-based column indices, regardless of
    whether the internal representation is 0-based (default) or 1-based.
 
-   For better efficiency, set cols and/or vals to PETSC_NULL if you do
+   For better efficiency, set cols and/or vals to NULL if you do
    not wish to extract these quantities.
 
    The user can only examine the values extracted with MatGetRow();
@@ -942,13 +942,13 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetOption(newmat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_spd",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)newmat)->prefix,"-matload_spd",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -975,7 +975,7 @@ PetscErrorCode  MatDestroy(Mat *A)
   PetscFunctionBegin;
   if (!*A) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*A,MAT_CLASSID,1);
-  if (--((PetscObject)(*A))->refct > 0) {*A = PETSC_NULL; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*A))->refct > 0) {*A = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscViewerDestroy(&(*A)->viewonassembly);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
@@ -3116,15 +3116,15 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
   ierr = MatDenseGetArray(B,&bb);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(B,&m,PETSC_NULL);CHKERRQ(ierr);  /* number local rows */
-  ierr = MatGetSize(B,PETSC_NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
+  ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
+  ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
   ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
@@ -3783,7 +3783,7 @@ PetscErrorCode  MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=NULL;
     const char     *prefix[3] = {"seq","mpi",""};
     PetscInt       i;
     /*
@@ -4150,7 +4150,7 @@ PetscErrorCode  MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Output Parameter:
 +  v - the vector for storing the minimums
--  idx - the indices of the column found for each row (or PETSC_NULL if not needed)
+-  idx - the indices of the column found for each row (or NULL if not needed)
 
    Level: intermediate
 
@@ -4237,7 +4237,7 @@ PetscErrorCode  MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Output Parameter:
 +  v - the vector for storing the maximums
--  idx - the indices of the column found for each row (or PETSC_NULL if not needed)
+-  idx - the indices of the column found for each row (or NULL if not needed)
 
    Level: intermediate
 
@@ -4590,14 +4590,14 @@ PetscErrorCode  MatEqual(Mat A,Mat B,PetscBool  *flg)
 /*@
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
-   matrices can be PETSC_NULL.
+   matrices can be NULL.
 
    Collective on Mat
 
    Input Parameters:
 +  mat - the matrix to be scaled
-.  l - the left scaling vector (or PETSC_NULL)
--  r - the right scaling vector (or PETSC_NULL)
+.  l - the left scaling vector (or NULL)
+-  r - the right scaling vector (or NULL)
 
    Notes:
    MatDiagonalScale() computes A = LAR, where
@@ -4936,7 +4936,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
       }
     }
     if (mat->nullsp && mat->checknullspaceonassembly) {
-      ierr = MatNullSpaceTest(mat->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(mat->nullsp,mat,NULL);CHKERRQ(ierr);
     }
   }
   inassm--;
@@ -5898,7 +5898,7 @@ PetscErrorCode  MatZeroRowsColumnsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,V
 +  m - the number of global rows
 -  n - the number of global columns
 
-   Note: both output parameters can be PETSC_NULL on input.
+   Note: both output parameters can be NULL on input.
 
    Level: beginner
 
@@ -5931,7 +5931,7 @@ PetscErrorCode  MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 +  m - the number of local rows
 -  n - the number of local columns
 
-   Note: both output parameters can be PETSC_NULL on input.
+   Note: both output parameters can be NULL on input.
 
    Level: beginner
 
@@ -5965,7 +5965,7 @@ PetscErrorCode  MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 +  m - the global index of the first local column
 -  n - one more than the global index of the last local column
 
-   Notes: both output parameters can be PETSC_NULL on input.
+   Notes: both output parameters can be NULL on input.
 
    Level: developer
 
@@ -6004,7 +6004,7 @@ PetscErrorCode  MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 +  m - the global index of the first local row
 -  n - one more than the global index of the last local row
 
-   Note: Both output parameters can be PETSC_NULL on input.
+   Note: Both output parameters can be NULL on input.
 $  This function requires that the matrix be preallocated. If you have not preallocated, consider using
 $    PetscSplitOwnership(MPI_Comm comm, PetscInt *n, PetscInt *N)
 $  and then MPI_Scan() to calculate prefix sums of the local sizes.
@@ -6443,7 +6443,7 @@ PetscErrorCode  MatDestroyMatrices(PetscInt n,Mat *mat[])
   }
   /* memory is allocated even if n = 0 */
   ierr = PetscFree(*mat);CHKERRQ(ierr);
-  *mat = PETSC_NULL;
+  *mat = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -7093,7 +7093,7 @@ M*/
     The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
     the input matrix.
 
-    If iscol is PETSC_NULL then all columns are obtained (not supported in Fortran).
+    If iscol is NULL then all columns are obtained (not supported in Fortran).
 
    Example usage:
    Consider the following 8x8 matrix with 34 non-zero values, that is
@@ -7488,7 +7488,7 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
 .  mat - the matrix
 
    Output Parameters:
-.  nullsp - the null space object, PETSC_NULL if not set
+.  nullsp - the null space object, NULL if not set
 
    Level: developer
 
@@ -8105,12 +8105,12 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode ierr;
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=PETSC_NULL;
+  PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=NULL;
   PetscBool      viatranspose=PETSC_FALSE,viamatmatmatmult=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,NULL);CHKERRQ(ierr);
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
@@ -8502,7 +8502,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode ierr;
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*mult)(Mat,Mat,MatReuse,PetscReal,Mat*)=PETSC_NULL;
+  PetscErrorCode (*mult)(Mat,Mat,MatReuse,PetscReal,Mat*)=NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -8590,7 +8590,7 @@ PetscErrorCode  MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
   PetscErrorCode ierr;
   PetscErrorCode (*Asymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*Bsymbolic)(Mat,Mat,PetscReal,Mat*);
-  PetscErrorCode (*symbolic)(Mat,Mat,PetscReal,Mat*)=PETSC_NULL;
+  PetscErrorCode (*symbolic)(Mat,Mat,PetscReal,Mat*)=NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -8772,7 +8772,7 @@ PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   PetscErrorCode ierr;
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*) = PETSC_NULL;
+  PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -8845,7 +8845,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
   PetscErrorCode (*fA)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fB)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fC)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
-  PetscErrorCode (*mult)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*)=PETSC_NULL;
+  PetscErrorCode (*mult)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*)=NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -9089,7 +9089,7 @@ PetscErrorCode  MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   } else {
     ierr = MatDestroy(submat);CHKERRQ(ierr);
   }
-  *submat = PETSC_NULL;
+  *submat = NULL;
   PetscFunctionReturn(0);
 }
 

@@ -114,8 +114,8 @@ PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt col
   else if (duprank >= 0 && duprank < size) {
     ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   }
-  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 
@@ -214,8 +214,8 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
     ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
     tcomm->refct++;
   }
-  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 
@@ -297,8 +297,8 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
     ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
     tcomm->refct++;
   }
-  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 

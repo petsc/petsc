@@ -62,14 +62,14 @@ int main(int argc,char **argv)
   PC             pc;
   PetscScalar    one = 1.0;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
 
   user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
@@ -79,29 +79,29 @@ int main(int argc,char **argv)
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                      user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                      user.fine.my,Nx,Ny,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                      user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                      user.coarse.my,Nx,Ny,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,NULL,3,NULL,&user.coarse.J);CHKERRQ(ierr);
 
   /* Create linear solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   /* set two level additive Schwarz preconditioner */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pc,2,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc,PC_MG_ADDITIVE);CHKERRQ(ierr);
 
   ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ int main(int argc,char **argv)
   ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
-  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&user.Ii,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&user.Ii,NULL);CHKERRQ(ierr);
   ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
 

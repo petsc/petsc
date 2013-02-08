@@ -21,13 +21,13 @@ int main(int argc,char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-X",&X,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Y",&Y,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Z",&Z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-X",&X,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Y",&Y,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Z",&Z,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                      X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,MATMPIAIJ,&A);CHKERRQ(ierr);
   ierr = MatShift(A,X);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);

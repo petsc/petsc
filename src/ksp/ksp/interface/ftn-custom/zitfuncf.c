@@ -217,7 +217,7 @@ void PETSC_STDCALL kspdefaultconvergeddestroy_(PetscFortranAddr *ctx,PetscErrorC
 
 void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,PetscInt *na,PetscErrorCode *ierr)
 {
-  *ierr = KSPGetResidualHistory(*ksp,PETSC_NULL,na);
+  *ierr = KSPGetResidualHistory(*ksp,NULL,na);
 }
 
 void PETSC_STDCALL kspsetcomputerhs_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)

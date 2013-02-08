@@ -264,7 +264,7 @@ namespace ALE {
     void setMesh(Obj<PETSC_MESH_TYPE> m){mesh = m;}
     Obj<PETSC_MESH_TYPE> getMesh() {return mesh;}
     Mesh getPetscMesh() {
-      return PETSC_NULL;
+      return NULL;
     }
     void setForm(ufc::form * f) {form = f;}
     ufc::form * getForm() {}
@@ -334,7 +334,7 @@ Do we even need this one if we're not going to be assembling ourselves?
 #undef __FUNCT__
 #define __FUNCT__ "Map_SieveCell_UFCCell"
 
-void Map_SieveCell_UFCCell(ALE::Obj<PETSC_MESH_TYPE> m, PETSC_MESH_TYPE::point_type c, ufc::form * form, ufc::cell * cell, const PETSC_MESH_TYPE::point_type * _oPoints = PETSC_NULL, const int _num_oPoints= -1) {
+void Map_SieveCell_UFCCell(ALE::Obj<PETSC_MESH_TYPE> m, PETSC_MESH_TYPE::point_type c, ufc::form * form, ufc::cell * cell, const PETSC_MESH_TYPE::point_type * _oPoints = NULL, const int _num_oPoints= -1) {
   //set up the ufc cell to be equivalent to the sieve cell given by c;  Assume that the # of dofs is constant
   //PetscErrorCode ierr;
 
@@ -346,7 +346,7 @@ void Map_SieveCell_UFCCell(ALE::Obj<PETSC_MESH_TYPE> m, PETSC_MESH_TYPE::point_t
   //  ALE::Obj<PETSC_MESH_TYPE::oConeArray> cell_closure = PETSC_MESH_TYPE::sieve_alg_type::orientedClosure(m, m->getArrowSection("orientation"), c);
   const PETSC_MESH_TYPE::point_type * oPoints = _oPoints;
   int num_oPoints = _num_oPoints;
-  if (oPoints == PETSC_NULL) {
+  if (oPoints == NULL) {
     ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> oC((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
     ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*s, c, oC);
     PetscPrintf(m->comm(), "Got the orientedClosure\n");
@@ -435,7 +435,7 @@ PetscErrorCode Assemble_Mat_UFC(Mesh mesh, SectionReal section, Mat A, ufc::form
     Map_SieveCell_UFCCell(m, *c_iter, form, &cell);
     //for now just do the first cell integral.  Fix when you talk to someone about what exactly having more than one means.
     //todo: coefficients.... ask if they're global and if yes ask why.
-    cell_integrals[0]->tabulate_tensor(localTensor, (double * const *)PETSC_NULL, cell);
+    cell_integrals[0]->tabulate_tensor(localTensor, (double * const *)NULL, cell);
     //see what the local tensor coming out looks like:
     if (1) {
       //maybe print the local tensor?
@@ -711,7 +711,7 @@ PetscErrorCode CreateProblem_UFC(DM dm, const char * name, ufc::form * form,  co
       const ALE::Obj<ALE::BoundaryCondition>& e = new ALE::BoundaryCondition(m->comm(), m->debug());
       e->setLabelName("marker");
       e->setFunction(exactFunc);
-      e->setDualIntegrator(PETSC_NULL); //TODO
+      e->setDualIntegrator(NULL); //TODO
       d->setExactSolution(e);
     }
   }
@@ -808,7 +808,7 @@ void SetupDiscretization_UFC(ALE::Obj<PETSC_MESH_TYPE> m, ufc::form * form) {
        const int num_oPoints = oC.getSize();
        Map_SieveCell_UFCCell(m, *c_iter, form, &cell, oPoints, num_oPoints);
        PetscPrintf(m->comm(), "successfully quit the cell map\n");
-       //m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+       //m->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
        for(int f = 0; f < numFields; ++f) v[f] = 0;
        for(int t = 0; t < num_oPoints; t++) {
          const int cDim = s->getConstraintDimension(oPoints[t]);
@@ -973,7 +973,7 @@ void SetupField_UFC(ALE::Obj<PETSC_MESH_TYPE> m, const ALE::Obj<PETSC_MESH_TYPE:
       const int                  oSize   = pV.getSize();
 
       if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
-      m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+      m->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
       for(int f = 0; f < numFields; ++f) v[f] = 0;
       for(int cl = 0; cl < oSize; ++cl) {
         const int cDim = s->getConstraintDimension(oPoints[cl]);
@@ -1110,7 +1110,7 @@ void SetupField_UFC(ALE::Obj<PETSC_MESH_TYPE> m, const ALE::Obj<PETSC_MESH_TYPE:
      const PETSC_MESH_TYPE::coneArray::iterator end     = closure->end();
      int                                  v       = 0;
 
-     //m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+     //m->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
      Map_SieveCell_UFCCell(m, *c_iter, form, &cell);
      for(PETSC_MESH_TYPE::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
        const int pointDim = s->getFiberDimension(*cl_iter);

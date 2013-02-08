@@ -95,7 +95,7 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,2,&X);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ int main(int argc,char **args)
   for (i=0; i<4; i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
   }
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,D,&N);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,D,&N);CHKERRQ(ierr);
   ierr = MatSetUp(N);CHKERRQ(ierr);
 
   ierr = TestMatrix(S,X,Y,Z);CHKERRQ(ierr);

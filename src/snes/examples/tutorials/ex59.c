@@ -43,8 +43,8 @@ int main(int argc,char **argv)
 
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-second_order",&second_order,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-second_order",&second_order,NULL);CHKERRQ(ierr);
   h    = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
      Create matrix data structures; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&J);CHKERRQ(ierr);
 
   /*
      Note that in this case we create separate matrices for the Jacobian
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
 
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"SNES iterations = %D\n\n",it);CHKERRQ(ierr);
 

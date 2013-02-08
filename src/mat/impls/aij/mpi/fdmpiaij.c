@@ -18,7 +18,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   IS                     *isa;
   PetscBool              done,flg;
   ISLocalToGlobalMapping map   = mat->cmap->mapping;
-  PetscInt               *ltog = (map ? map->indices : (PetscInt*) PETSC_NULL),ctype=c->ctype;
+  PetscInt               *ltog = (map ? map->indices : (PetscInt*) NULL),ctype=c->ctype;
 
   PetscFunctionBegin;
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
@@ -98,7 +98,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     */
     /* Temporary option to allow for debugging/testing */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-matfdcoloring_slow",&flg,NULL);CHKERRQ(ierr);
     if (!flg) { /*-----------------------------------------------------------------------------*/
       /* crude, fast version */
       ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);

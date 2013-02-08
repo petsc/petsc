@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   char                filename[PETSC_MAX_PATH_LEN] = "ex15.vts";
   PetscReal           bratu_lambda_max             = 6.81,bratu_lambda_min = 0.;
   DM                  da,dastar;               /* distributed array data structure */
-  PreCheck            precheck = PETSC_NULL;    /* precheck context for version in this file */
+  PreCheck            precheck = NULL;    /* precheck context for version in this file */
   PetscInt            use_precheck;      /* 0=none, 1=version in this file, 2=SNES-provided version */
   PetscReal           precheck_angle;    /* When manually setting the SNES-provided precheck function */
   PetscErrorCode      ierr;
@@ -140,10 +140,10 @@ int main(int argc,char **argv)
     ierr = PetscOptionsInt("-precheck","Use a pre-check correction intended for use with Picard iteration 1=this version, 2=library","",use_precheck,&use_precheck,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-initial","Initial conditions type (-1: default, 0: zero-valued, 1: peaked guess)","",user.initial,&user.initial,NULL);CHKERRQ(ierr);
     if (use_precheck == 2) {    /* Using library version, get the angle */
-      ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck_angle,&precheck_angle,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck_angle,&precheck_angle,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsIntArray("-blocks","number of coefficient interfaces in x and y direction","",user.blocks,&two,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kappa","diffusivity in odd regions","",user.kappa,&user.kappa,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-blocks","number of coefficient interfaces in x and y direction","",user.blocks,&two,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kappa","diffusivity in odd regions","",user.kappa,&user.kappa,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-o","Output solution in vts format","",filename,filename,sizeof(filename),&write_output);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -160,9 +160,9 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                      1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                      1,1,PETSC_NULL,PETSC_NULL,&dastar);CHKERRQ(ierr);
+                      1,1,NULL,NULL,&dastar);CHKERRQ(ierr);
 
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -202,8 +202,8 @@ int main(int argc,char **argv)
     extern PetscErrorCode  SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
     ierr = DMDASNESSetPicardLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionPicardLocal,
                                   (PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,PETSC_NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESPicardComputeJacobian,&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,NULL,NULL,SNESPicardComputeJacobian,&user);CHKERRQ(ierr);
   } else {
     ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
     ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
@@ -313,7 +313,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -641,10 +641,10 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsBegin(precheck->comm,PETSC_NULL,"PreCheck Options","none");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck->angle,&precheck->angle,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(precheck->comm,NULL,"PreCheck Options","none");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck->angle,&precheck->angle,NULL);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-precheck_monitor","Monitor choices made by precheck routine","",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-precheck_monitor","Monitor choices made by precheck routine","",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIOpen(precheck->comm,"stdout",&precheck->monitor);CHKERRQ(ierr);
   }
@@ -787,7 +787,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      xs, ys   - starting grid indices (no ghost points)
      xm, ym   - widths of local grid (no ghost points)
      */
-    ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
     for (m=0; m<2; m++) {
       for (j=ys; j<ys+ym; j++) {
         for (i=xs+(m+j)%2; i<xs+xm; i+=2) {

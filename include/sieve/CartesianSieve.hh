@@ -836,7 +836,7 @@ namespace ALE {
           const coneArray::iterator end     = closure->end();
           int                       v       = 0;
 
-          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
           for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             const int cDim = s->getConstraintDimension(*cl_iter);
 

@@ -60,7 +60,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSetUp(B);CHKERRQ(ierr);
     }
-    ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
@@ -97,7 +97,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
         ierr = PetscViewerASCIIGetStdout(((PetscObject)snes)->comm,&viewer);CHKERRQ(ierr);
         ierr = VecView(f,viewer);CHKERRQ(ierr);
       }
-      ierr = SNESDefaultObjectiveComputeFunctionFD(snes,x,f1,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESDefaultObjectiveComputeFunctionFD(snes,x,f1,NULL);CHKERRQ(ierr);
       ierr = VecNorm(f1,NORM_2,&f1norm);CHKERRQ(ierr);
       if (neP->complete_print) {
         PetscViewer viewer;
@@ -150,7 +150,7 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -251,7 +251,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
   ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
 
   if (complete_print) {
@@ -279,7 +279,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
       ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded Objective Function \n");CHKERRQ(ierr);
       ierr = VecView(f,viewer);CHKERRQ(ierr);
     }
-    ierr = SNESDefaultObjectiveComputeFunctionFD(snes,x,f1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESDefaultObjectiveComputeFunctionFD(snes,x,f1,NULL);CHKERRQ(ierr);
     ierr = VecNorm(f1,NORM_2,&f1norm);CHKERRQ(ierr);
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Finite-Difference Objective Function\n");CHKERRQ(ierr);

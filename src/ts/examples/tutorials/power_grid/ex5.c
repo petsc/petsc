@@ -113,12 +113,12 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   user->kw       = 2; /* Rayleigh distribution */
   user->nsamples = 2000;
   user->Tw       = 0.2;
-  ierr           = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Wind Speed Options","");CHKERRQ(ierr);
+  ierr           = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Wind Speed Options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-cw","","",user->cw,&user->cw,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kw","","",user->kw,&user->kw,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-nsamples","","",user->nsamples,&user->nsamples,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-nsamples","","",user->nsamples,&user->nsamples,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->wind_data);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   ierr = VecRestoreArray(user->t_wind,&t);CHKERRQ(ierr);
 
   /* Wind speed deviation = (-log(rand)/cw)^(1/kw) */
-  ierr = VecSetRandom(user->wind_data,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(user->wind_data,NULL);CHKERRQ(ierr);
   ierr = VecLog(user->wind_data);CHKERRQ(ierr);
   ierr = VecScale(user->wind_data,-1/user->cw);CHKERRQ(ierr);
   ierr = VecGetArray(user->wind_data,&x);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
 
   /* Create wind speed data using Weibull distribution */
   ierr = WindSpeeds(&user);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ int main(int argc,char **argv)
   /* Create matrix to save solutions at each time step */
   user.stepnum = 0;
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,2010,PETSC_NULL,&user.Sol);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,2010,NULL,&user.Sol);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -276,10 +276,10 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
   SNES snes;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,A,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,A,A,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
   /*  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr); */
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
 
@@ -317,7 +317,7 @@ int main(int argc,char **argv)
 
   Mat         B;
   PetscScalar *amat;
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B);CHKERRQ(ierr);
   ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(B,&amat);CHKERRQ(ierr);
   ierr = PetscMemcpy(amat,mat,user.stepnum*3*sizeof(PetscScalar));CHKERRQ(ierr);

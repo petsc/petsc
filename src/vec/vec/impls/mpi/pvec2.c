@@ -181,7 +181,7 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     PetscReal work2[2],z2[2];
     PetscInt  rstart;
 
-    ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
     ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMin_Local_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);

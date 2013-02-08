@@ -350,7 +350,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBoo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = Mat_CreateColInode(A,n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = Mat_CreateColInode(A,n,NULL);CHKERRQ(ierr);
   if (!ia) PetscFunctionReturn(0);
 
   if (!blockcompressed) {
@@ -4001,7 +4001,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
     ierr = PetscFree(ns);CHKERRQ(ierr);
 
     a->inode.node_count       = 0;
-    a->inode.size             = PETSC_NULL;
+    a->inode.size             = NULL;
     a->inode.use              = PETSC_FALSE;
     A->ops->mult              = MatMult_SeqAIJ;
     A->ops->sor               = MatSOR_SeqAIJ;
@@ -4151,7 +4151,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool samestructure)
     ierr = PetscFree(ns);CHKERRQ(ierr);
 
     a->inode.node_count = 0;
-    a->inode.size       = PETSC_NULL;
+    a->inode.size       = NULL;
     a->inode.use        = PETSC_FALSE;
 
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
@@ -4286,7 +4286,7 @@ EXTERN_C_END
    of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.
    The contents of the sizes[] array should not be changed.
-   PETSC_NULL may be passed for information not requested.
+   NULL may be passed for information not requested.
 
 .keywords: matrix, seqaij, get, inode
 

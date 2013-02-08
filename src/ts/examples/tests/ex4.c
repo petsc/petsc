@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   data.dx      = 1.0/(data.m+1.0);
   data.dy      = 1.0/(data.n+1.0);
   mn           = (data.m)*(data.n);
-  ierr         = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
 
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,&global);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
 
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,Monitor,&data,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&data,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSetType(ts,TSSUNDIALS);CHKERRQ(ierr);
 #else
@@ -98,23 +98,23 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
   /* set user provided RHSFunction and RHSJacobian */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&data);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&data);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,5,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,5,NULL,5,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-ts_fd",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
   } else {
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
     if (fd_jacobian_coloring) { /* Use finite differences with coloring */
       /* Get data structure of J */
       PetscBool pc_diagonal;
-      ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
       if (pc_diagonal) { /* the preconditioner of J is a diagonal matrix */
         PetscInt    rstart,rend,i;
         PetscScalar zero=0.0;
@@ -139,7 +139,7 @@ int main(int argc,char **argv)
       ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     } else { /* Use finite differences (slow) */
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
     }
   }
 
@@ -154,12 +154,12 @@ int main(int argc,char **argv)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   /* Test TSSetPostStep() */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-NOUT",&NOUT,NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++) {
     ierr = TSSetDuration(ts,time_steps,iout*ftime_original/NOUT);CHKERRQ(ierr);
     ierr = TSSolve(ts,global);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
   ierr = TSInterpolate(ts,ftime_original,global);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-matlab_view",&flg);CHKERRQ(ierr);
   if (flg) { /* print solution into a MATLAB file */
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);

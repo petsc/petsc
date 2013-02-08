@@ -701,7 +701,7 @@ PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
 
   B->ops->iccfactorsymbolic      = MatICCFactorSymbolic_sbstrm;

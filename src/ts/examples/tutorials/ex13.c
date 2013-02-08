@@ -45,7 +45,7 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
-                      1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      1,1,NULL,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -66,14 +66,14 @@ int main(int argc,char **argv)
 
   /* Set Jacobian */
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,NULL);CHKERRQ(ierr);
 
   /* Use coloring to compute Jacobian efficiently */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-use_coloring",&coloring,NULL);CHKERRQ(ierr);
   if (coloring) {
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,NULL,NULL,SNESDefaultComputeJacobianColor,NULL);CHKERRQ(ierr);
   }
 
   ftime = 1.0;
@@ -157,7 +157,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -262,7 +262,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {

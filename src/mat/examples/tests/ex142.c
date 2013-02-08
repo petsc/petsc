@@ -38,9 +38,9 @@ PetscInt main(PetscInt argc,char **args)
   alloc_local=fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD,&local_n0, &local_0_start);
 
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
-  ierr     = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
+  ierr     = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL);CHKERRQ(ierr);
   function = (FuncType) func;
   ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 

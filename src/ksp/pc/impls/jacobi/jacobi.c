@@ -157,7 +157,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 
   if (diag) {
     if (jac->userowmax) {
-      ierr = MatGetRowMaxAbs(pc->pmat,diag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(pc->pmat,diag,NULL);CHKERRQ(ierr);
     } else if (jac->userowsum) {
       ierr = MatGetRowSum(pc->pmat,diag);CHKERRQ(ierr);
     } else {
@@ -179,7 +179,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   }
   if (diagsqrt) {
     if (jac->userowmax) {
-      ierr = MatGetRowMaxAbs(pc->pmat,diagsqrt,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(pc->pmat,diagsqrt,NULL);CHKERRQ(ierr);
     } else if (jac->userowsum) {
       ierr = MatGetRowSum(pc->pmat,diagsqrt);CHKERRQ(ierr);
     } else {
@@ -349,11 +349,11 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
-                          &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
+                          &jac->userowmax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
-                          &jac->userowsum,PETSC_NULL);CHKERRQ(ierr);
+                          &jac->userowsum,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
-                          &jac->useabs,PETSC_NULL);CHKERRQ(ierr);
+                          &jac->useabs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

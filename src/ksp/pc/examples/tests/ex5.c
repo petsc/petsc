@@ -43,16 +43,16 @@ int main(int Argc,char **Args)
 
   PetscInitialize(&Argc,&Args,(char*)0,help);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-a",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-x",&x_mesh,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-l",&levels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-c",&cycles,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-smooths",&smooths,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-a",&flg);CHKERRQ(ierr);
 
   if (flg) am = PC_MG_ADDITIVE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-f",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-f",&flg);CHKERRQ(ierr);
   if (flg) am = PC_MG_FULL;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) use_jacobi = 1;
 
   ierr = PetscMalloc(levels*sizeof(PetscInt),&N);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int main(int Argc,char **Args)
   ierr = KSPGetPC(kspmg,&pcmg);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspmg);CHKERRQ(ierr);
   ierr = PCSetType(pcmg,PCMG);CHKERRQ(ierr);
-  ierr = PCMGSetLevels(pcmg,levels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pcmg,levels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pcmg,am);CHKERRQ(ierr);
 
   ierr = PCMGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
@@ -330,7 +330,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,mat);CHKERRQ(ierr);
 
   idx  = n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);

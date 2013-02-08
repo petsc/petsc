@@ -63,9 +63,9 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
   ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&user.red1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.red1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,NULL,&user.da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.da1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,NULL,&user.da2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.da2);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,FU,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESMonitorSet(snes,Monitor,&user,0);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,U);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,U);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
@@ -119,7 +119,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void *dummy)
   ierr = DMCompositeGetLocalVectors(user->packer,&vfw,&vfu,&vflambda);CHKERRQ(ierr);
   ierr = DMCompositeScatter(user->packer,U,vw,vu,vlambda);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(user->da1,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da1,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,0,&N,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = VecGetArray(vw,&w);CHKERRQ(ierr);
   ierr = VecGetArray(vfw,&fw);CHKERRQ(ierr);

@@ -1,7 +1,7 @@
 
 #include <petscvec.h>    /*I "petscvec.h"  I*/
 
-PetscFunctionList VecList              = PETSC_NULL;
+PetscFunctionList VecList              = NULL;
 PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -44,7 +44,7 @@ PetscErrorCode  VecSetType(Vec vec, VecType method)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
-    vec->ops->destroy = PETSC_NULL;
+    vec->ops->destroy = NULL;
   }
   if (vec->map->n < 0 && vec->map->N < 0) {
     vec->ops->create = r;
@@ -81,7 +81,7 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecRegisterAll(NULL);CHKERRQ(ierr);
   }
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(0);

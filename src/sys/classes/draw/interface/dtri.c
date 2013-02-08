@@ -125,7 +125,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
    Input Parameters:
 +   win   - the window to draw in
 .   m,n   - the global number of mesh points in the x and y directions
-.   xi,yi - the locations of the global mesh points (optional, use PETSC_NULL
+.   xi,yi - the locations of the global mesh points (optional, use NULL
             to indicate uniform spacing on [0,1])
 -   V     - the values
 
@@ -178,7 +178,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   if (popup) {ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);}
 
   ctx.showgrid = PETSC_FALSE;
-  ierr         = PetscOptionsGetBool(PETSC_NULL,"-draw_contour_grid",&ctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetBool(NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);
 
   /* fill up x and y coordinates */
   if (!xi) {

@@ -11,7 +11,7 @@
      Input Parameters:
 +    comm - MPI communicator, all processors in communicator must call this but input
             from first communicator is the only one that is used
-.    machine - location to run popup program or PETSC_NULL
+.    machine - location to run popup program or NULL
 .    title - text to display above choices
 .    n - number of choices
 -    choices - array of strings
@@ -70,7 +70,7 @@ PetscErrorCode  PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *t
   }
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,machine,buffer,"r",&fp);CHKERRQ(ierr);
-  ierr = PetscPClose(comm,fp,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fp,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     FILE *fd;

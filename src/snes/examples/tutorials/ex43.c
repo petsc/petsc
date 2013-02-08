@@ -37,12 +37,12 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ctx.n = 0;
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-n",&ctx.n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-n",&ctx.n,NULL);CHKERRQ(ierr);
   ctx.p = 0;
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-p",&ctx.p,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-max_snes_solves",&max_snes_solves,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-snes_steps_per_solve",&snes_steps_per_solve,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-criteria_reduce",&criteria_reduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-p",&ctx.p,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-max_snes_solves",&max_snes_solves,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-snes_steps_per_solve",&snes_steps_per_solve,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-criteria_reduce",&criteria_reduce,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   ierr = SNESMonitorSet(snes,MonitorRange,0,0);CHKERRQ(ierr);
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,snes_steps_per_solve,PETSC_DEFAULT);CHKERRQ(ierr);
   for (i=0; i<max_snes_solves; i++) {
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason && reason != SNES_DIVERGED_MAX_IT) break;
     if (CountGood > criteria_reduce) {

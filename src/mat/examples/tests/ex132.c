@@ -22,18 +22,18 @@ int main(int argc,char **args)
 
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
 
   /* Set flag if we are doing a nonsymmetric problem; the default is symmetric. */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_nonsym",&mat_nonsymmetric,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(C,5,NULL);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) {
@@ -63,7 +63,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C1);CHKERRQ(ierr);
   ierr = MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(C1,1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(C1,1,NULL);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) {
     ierr = MatSetValues(C1,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
@@ -81,7 +81,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C2);CHKERRQ(ierr);
   ierr = MatSetSizes(C2,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(C2,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(C2,5,NULL);CHKERRQ(ierr);
   */
   for (Ii=Istart; Ii<Iend; Ii++) {
     v    = 1.0;

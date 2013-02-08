@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create a aij matrix for checking */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,NULL,&A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 

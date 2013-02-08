@@ -39,7 +39,7 @@ EXTERN_C_END
 @*/
 PetscErrorCode  PetscGetDate(char date[],size_t len)
 {
-  char           *str=PETSC_NULL;
+  char           *str=NULL;
 #if defined(PETSC_HAVE_TIME)
   time_t         aclock;
 #else

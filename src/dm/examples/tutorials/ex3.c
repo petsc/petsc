@@ -116,21 +116,21 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dim",&dim,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
   if (dim == 1) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,1,1,PETSC_NULL,&dac);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,1,1,NULL,&dac);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&dac);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dac);CHKERRQ(ierr);
   }
 
   ierr = DMRefine(dac,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);

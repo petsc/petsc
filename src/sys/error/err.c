@@ -275,8 +275,8 @@ static const char *PetscErrorStrings[] = {
 .   errnum - the error code
 
    Output Parameter:
-+  text - the error message (PETSC_NULL if not desired)
--  specific - the specific error message that was set with SETERRxxx() or PetscError().  (PETSC_NULL if not desired)
++  text - the error message (NULL if not desired)
+-  specific - the specific error message that was set with SETERRxxx() or PetscError().  (NULL if not desired)
 
    Level: developer
 

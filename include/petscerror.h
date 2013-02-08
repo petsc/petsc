@@ -239,7 +239,7 @@ M*/
     it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
     you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or
          if (n) {PetscError(....); return(YourReturnType);}
-    where you may pass back a PETSC_NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
+    where you may pass back a NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
     MPI_Abort() returned immediately.
 
     In Fortran MPI_Abort() is always called
@@ -458,7 +458,7 @@ PETSC_STATIC_INLINE void PetscThreadLocalSetValue(PetscThreadKey *key,void* valu
 /* Create pthread thread local key */
 PETSC_STATIC_INLINE void PetscThreadLocalRegister(PetscThreadKey *key)
 {
-  pthread_key_create(key,PETSC_NULL);
+  pthread_key_create(key,NULL);
 }
 
 /* Delete pthread thread local key */
@@ -618,7 +618,7 @@ M*/
 #define PetscRegister__FUNCT__() do { \
   static PetscBool __chked = PETSC_FALSE; \
   if (!__chked) {\
-  void *ptr; PetscDLSym(PETSC_NULL,__FUNCT__,&ptr);\
+  void *ptr; PetscDLSym(NULL,__FUNCT__,&ptr);\
   __chked = PETSC_TRUE;\
   }} while (0)
 #else

@@ -5549,7 +5549,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   PetscInt        sol_ver;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(((PetscObject)A)->prefix,"-sol_ver",&sol_ver,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)A)->prefix,"-sol_ver",&sol_ver,NULL);CHKERRQ(ierr);
 
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
@@ -5850,11 +5850,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   PetscInt           i,levels,diagonal_fill;
   PetscBool          col_identity,row_identity,both_identity;
   PetscReal          f;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL;
   PetscBT            lnkbt;
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBool          missing;
   PetscInt           bs=A->rmap->bs,bs2=a->bs2;
 
@@ -6011,7 +6011,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 #endif
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(fact,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
 
   b               = (Mat_SeqBAIJ*)(fact)->data;
@@ -6234,7 +6234,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 #endif
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(fact,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqBAIJ*)fact->data;
 
@@ -6285,7 +6285,7 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
   /*      AJ[i] = AJ[i]/4; */
   /*    } */
   /* This should really invoke a push/pop logic, but we don't have that yet. */
-  A->ops->setunfactored = PETSC_NULL;
+  A->ops->setunfactored = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -6302,7 +6302,7 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
   while (nz--) {
     AJ[nz] = (int)((unsigned int)aj[nz]); /* First extend, then convert to signed. */
   }
-  A->ops->setunfactored = PETSC_NULL;
+  A->ops->setunfactored = NULL;
   PetscFunctionReturn(0);
 }
 

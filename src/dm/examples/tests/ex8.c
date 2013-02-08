@@ -83,7 +83,7 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
   PetscInt         m   = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
-  PetscInt         *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscInt         *lx = NULL,*ly = NULL,*lz = NULL;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
@@ -97,14 +97,14 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-p",&p,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-star",&flg,NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */

@@ -25,7 +25,7 @@
            (same value is used for all local rows)
 .  d_nnz - array containing the number of nonzeros in the various rows of the
            DIAGONAL portion of the local submatrix (possibly different for each row)
-           or PETSC_NULL, if d_nz is used to specify the nonzero structure.
+           or NULL, if d_nz is used to specify the nonzero structure.
            The size of this array is equal to the number of local rows, i.e 'm'.
            For matrices you plan to factor you must leave room for the diagonal entry and
            put in the entry even if it is zero.
@@ -33,7 +33,7 @@
            submatrix (same value is used for all local rows).
 -  o_nnz - array containing the number of nonzeros in the various rows of the
            OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or PETSC_NULL, if o_nz is used to specify the nonzero
+           each row) or NULL, if o_nz is used to specify the nonzero
            structure. The size of this array is equal to the number
            of local rows, i.e 'm'.
 

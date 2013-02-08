@@ -46,7 +46,7 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *dmdats = PETSC_NULL;
+  *dmdats = NULL;
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
     sdm->ops->destroy   = DMTSDestroy_DMDA;

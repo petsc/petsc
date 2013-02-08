@@ -46,8 +46,8 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   MatStencil      blower, bupper, loclower, locupper;
   IS              is;
   const PetscInt  *ranges, *indices;
-  PetscInt        *localPoints  = PETSC_NULL;
-  PetscSFNode     *remotePoints = PETSC_NULL;
+  PetscInt        *localPoints  = NULL;
+  PetscSFNode     *remotePoints = NULL;
   PetscInt        dim, dof;
   PetscInt        M, N, P, rM, rN, rP, halo = 1, sxb, syb, szb, sxr, syr, szr, exr, eyr, ezr, mxb, myb, mzb, i, j, k, q;
   PetscMPIInt     size;
@@ -75,7 +75,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
     ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
     ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
     ierr = DMDASetStencilWidth(*dmz, 0);CHKERRQ(ierr);
-    ierr = DMDASetOwnershipRanges(*dmz, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(*dmz, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMSetFromOptions(*dmz);CHKERRQ(ierr);
     ierr = DMSetUp(*dmz);CHKERRQ(ierr);
     ierr = DMDAGetCorners(*dmz, &sxb, &syb, &szb, &mxb, &myb, &mzb);CHKERRQ(ierr);
@@ -217,14 +217,14 @@ PetscErrorCode DMPatchSolve(DM dm)
     for (j = 0; j < N; j += PetscMax(patchSize.j, 1)) {
       for (i = 0; i < M; i += PetscMax(patchSize.i, 1), ++p) {
         MPI_Comm commp = MPI_COMM_NULL;
-        DM       dmz   = PETSC_NULL;
+        DM       dmz   = NULL;
 #if 0
-        DM  dmf     = PETSC_NULL;
-        Mat interpz = PETSC_NULL;
+        DM  dmf     = NULL;
+        Mat interpz = NULL;
 #endif
-        Vec         XZ       = PETSC_NULL;
-        PetscScalar *xcarray = PETSC_NULL;
-        PetscScalar *xzarray = PETSC_NULL;
+        Vec         XZ       = NULL;
+        PetscScalar *xcarray = NULL;
+        PetscScalar *xzarray = NULL;
 
         if ((gridRank.k/commSize.k == p/(l/commSize.i * m/commSize.j) % n/commSize.k) &&
             (gridRank.j/commSize.j == p/(l/commSize.i)                % m/commSize.j) &&
@@ -254,7 +254,7 @@ PetscErrorCode DMPatchSolve(DM dm)
 #if 0
         /* Interpolate Xzoom -> Xfine, note that this may be on subcomms */
         ierr = DMRefine(dmz, MPI_COMM_NULL, &dmf);CHKERRQ(ierr);
-        ierr = DMCreateInterpolation(dmz, dmf, &interpz, PETSC_NULL);CHKERRQ(ierr);
+        ierr = DMCreateInterpolation(dmz, dmf, &interpz, NULL);CHKERRQ(ierr);
         ierr = DMInterpolate(dmz, interpz, dmf);CHKERRQ(ierr);
         /* Smooth Xfine using two-step smoother, normal smoother plus Kaczmarz---moves back and forth from dmzoom to dmfine */
         /* Compute residual Rfine */

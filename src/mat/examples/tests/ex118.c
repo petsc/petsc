@@ -66,7 +66,7 @@ int main(int argc,char **args)
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info);
 #endif
   /* View evals */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);
     for (i=0; i<nevs; i++) PetscPrintf(PETSC_COMM_SELF,"%d  %G\n",i,evals[i]);

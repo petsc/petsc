@@ -18,9 +18,9 @@ extern PetscErrorCode DMDALocalToLocalCreate(DM);
 .  da - the distributed array
 
    Output Parameters:
-+  ltog - local-to-global scatter context (may be PETSC_NULL)
-.  gtol - global-to-local scatter context (may be PETSC_NULL)
--  ltol - local-to-local scatter context (may be PETSC_NULL)
++  ltog - local-to-global scatter context (may be NULL)
+.  gtol - global-to-local scatter context (may be NULL)
+-  ltol - local-to-local scatter context (may be NULL)
 
    Level: developer
 

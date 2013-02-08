@@ -162,7 +162,7 @@ PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int
   if (PetscDrawXi_wait_map(XiWin)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_virtual",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-draw_virtual",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     XiWin->drw = XCreatePixmap(XiWin->disp,XiWin->win,XiWin->w,XiWin->h,XiWin->depth);
     XDestroyWindow(XiWin->disp,XiWin->win);
@@ -284,11 +284,11 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s %s.m4v",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(((PetscObject)draw)->comm,fd,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(((PetscObject)draw)->comm,NULL,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscPClose(((PetscObject)draw)->comm,fd,NULL);CHKERRQ(ierr);
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"mkdir %s",draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(((PetscObject)draw)->comm,fd,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(((PetscObject)draw)->comm,NULL,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscPClose(((PetscObject)draw)->comm,fd,NULL);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);

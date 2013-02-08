@@ -750,7 +750,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     if (rowflag && colflag && nrow == C->rmap->N && ncol == C->cmap->N) {
       wantallmatrix = PETSC_TRUE;
 
-      ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
     }
   }
   ierr = MPI_Allreduce(&wantallmatrix,&twantallmatrix,1,MPIU_BOOL,MPI_MIN,((PetscObject)C)->comm);CHKERRQ(ierr);
@@ -819,9 +819,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   PetscInt       **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2;
   PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable *cmap,cmap_i=PETSC_NULL,*rmap,rmap_i;
+  PetscTable *cmap,cmap_i=NULL,*rmap,rmap_i;
 #else
-  PetscInt **cmap,*cmap_i=PETSC_NULL,**rmap,*rmap_i;
+  PetscInt **cmap,*cmap_i=NULL,**rmap,*rmap_i;
 #endif
   const PetscInt *irow_i;
   PetscInt       ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*lens_i;
@@ -851,7 +851,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
     if (allcolumns[i]) {
-      icol[i] = PETSC_NULL;
+      icol[i] = NULL;
       ncol[i] = C->cmap->N;
     } else {
       ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
@@ -1165,7 +1165,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           ierr = PetscTableAdd(cmap[i],icol_i[j]+1,j+1,INSERT_VALUES);CHKERRQ(ierr);
         }
       } else {
-        cmap[i] = PETSC_NULL;
+        cmap[i] = NULL;
       }
     }
 #else
@@ -1181,7 +1181,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           cmap_i[icol_i[j]] = j+1;
         }
       } else {
-        cmap[i] = PETSC_NULL;
+        cmap[i] = NULL;
       }
     }
 #endif

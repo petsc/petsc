@@ -4,7 +4,7 @@
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
 PetscClassId      PF_CLASSID          = 0;
-PetscFunctionList PFunctionList       = PETSC_NULL;   /* list of all registered PD functions */
+PetscFunctionList PFunctionList       = NULL;   /* list of all registered PD functions */
 PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -66,7 +66,7 @@ PetscErrorCode  PFDestroy(PF *pf)
   PetscValidHeaderSpecific((*pf),PF_CLASSID,1);
   if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)(*pf))->comm,&viewer);CHKERRQ(ierr);
@@ -109,9 +109,9 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
-  *pf = PETSC_NULL;
+  *pf = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PFInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,-1,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
    Input Parameters:
 +  pf - the function context
--  x - input vector (or PETSC_NULL for the vector (0,1, .... N-1)
+-  x - input vector (or NULL for the vector (0,1, .... N-1)
 
    Output Parameter:
 .  y - output vector
@@ -474,7 +474,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
   ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
   }
   if (pf->ops->setfromoptions) {
     ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ PetscErrorCode  PFFinalizePackage(void)
 {
   PetscFunctionBegin;
   PFPackageInitialized = PETSC_FALSE;
-  PFunctionList        = PETSC_NULL;
+  PFunctionList        = NULL;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -515,7 +515,7 @@ PetscErrorCode  PFFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-. path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -537,7 +537,7 @@ PetscErrorCode  PFInitializePackage(const char path[])
   /* Register Constructors */
   ierr = PFRegisterAll(path);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
     if (className) {
@@ -545,7 +545,7 @@ PetscErrorCode  PFInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
     if (className) {

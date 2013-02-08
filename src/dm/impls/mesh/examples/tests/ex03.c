@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr      = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr      = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetInt(NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm      = PETSC_COMM_WORLD;
 
   ierr = testBiGraphDiv2();CHKERRQ(ierr);
@@ -51,7 +51,7 @@ PetscErrorCode testBiGraphDiv2()
 
   PetscFunctionBegin;
   debug = 0;
-  ierr  = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<BiGraphInt3> bg = BiGraphInt3(PETSC_COMM_SELF, debug);
 
   // Add arrows from the first 10 integers to the first 20 integers, coloring the arrows for 0 (even target) or 1 (odd target)

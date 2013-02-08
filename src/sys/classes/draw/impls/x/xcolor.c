@@ -92,7 +92,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
   ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(PETSC_NULL,"-draw_fast",&fast,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
   if (!fast) {
     for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
       colordef.red   = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -157,7 +157,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
   ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(PETSC_NULL,"-draw_fast",&fast,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,"-draw_fast",&fast,NULL);CHKERRQ(ierr);
   if (!fast) {
     for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
       colordef.red   = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -193,7 +193,7 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   XVisualInfo    vinfo;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-draw_x_shared_colormap",&sharedcolormap,NULL);CHKERRQ(ierr);
   /*
         Need to determine if window supports allocating a private colormap,
   */

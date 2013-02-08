@@ -196,7 +196,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   usfft->inda  = inda;
   usfft->outda = outda;
   /* inda */
-  ierr = DMDAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, NULL, NULL, NULL, &dof, NULL, NULL, NULL);CHKERRQ(ierr);
   if (ndim <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   if (dof <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"dof %d must be > 0",dof);
   usfft->ndim   = ndim;
@@ -208,7 +208,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   for (i = usfft->ndim; i > 0; --i) usfft->indim[usfft->ndim-i] = dim[i-1];
 
   /* outda */
-  ierr = DMDAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, NULL, NULL, NULL, &dof, NULL, NULL, NULL);CHKERRQ(ierr);
   if (ndim != usfft->ndim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dimensions must match: %d != %d",usfft->ndim, ndim);
   if (dof != usfft->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dof must match: %d != %d",usfft->dof, dof);
   /* Store output dimensions */
@@ -220,7 +220,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   /* TODO: Use the new form of DMDACreate() */
 #if 0
   ierr = DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
-                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA));CHKERRQ(ierr);
+                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, NULL, NULL, NULL,  0, &(usfft->resampleDA));CHKERRQ(ierr);
 #endif
   ierr = DMDAGetVec(usfft->resampleDA, usfft->resample);CHKERRQ(ierr);
 

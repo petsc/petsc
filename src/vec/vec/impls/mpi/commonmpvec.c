@@ -36,7 +36,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of
     a parallel vector (obtained with VecCreateGhost(), VecCreateGhostWithArray()
-    or VecCreateSeq()). Returns PETSC_NULL if the Vec is not ghosted.
+    or VecCreateSeq()). Returns NULL if the Vec is not ghosted.
 
     Not Collective
 
@@ -44,7 +44,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 .   g - the global vector
 
     Output Parameter:
-.   l - the local (ghosted) representation, PETSC_NULL if g is not ghosted
+.   l - the local (ghosted) representation, NULL if g is not ghosted
 
     Notes:
     This routine does not actually update the ghost values, but rather it
@@ -90,7 +90,7 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
   } else if (isseq) {
     *l = g;
   } else {
-    *l = PETSC_NULL;
+    *l = NULL;
   }
   if (*l) {
     ierr = VecGhostStateSync_Private(g,*l);CHKERRQ(ierr);

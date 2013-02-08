@@ -66,7 +66,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMSNESOps));CHKERRQ(ierr);
@@ -225,9 +225,9 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
 
     dm->dmsnes = (PetscObject) *snesdm;
 
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,NULL);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -300,9 +300,9 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
   dmdest->dmsnes = dmsrc->dmsnes;
 
   ierr = PetscObjectReference(dmdest->dmsnes);CHKERRQ(ierr);
-  ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

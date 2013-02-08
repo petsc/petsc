@@ -72,12 +72,12 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomains",&user_set_subdomains,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mdomains",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ndomains",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-user_set_subdomains",&user_set_subdomains,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mdomains",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ndomains",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-overlap",&overlap,NULL);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -169,7 +169,7 @@ int main(int argc,char **args)
     ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris);CHKERRQ(ierr);
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
       printf("Outer IS:\n");
@@ -214,7 +214,7 @@ int main(int argc,char **args)
   */
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomain_solvers",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-user_set_subdomain_solvers",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     KSP       *subksp;        /* array of KSP contexts for local subblocks */
     PetscInt  nlocal,first;   /* number of local subblocks, first local subblock */
@@ -277,7 +277,7 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_INFINITY, &e);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-print_error",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
   }

@@ -44,7 +44,7 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) found = fgets(buf,1024,fd);
   ierr = MPI_Bcast(&found,1,MPI_CHAR,0,comm);CHKERRQ(ierr);
-  ierr = PetscPClose(comm,fd,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fd,NULL);CHKERRQ(ierr);
   if (found) PetscFunctionReturn(0);
 #endif
 
@@ -54,7 +54,7 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
     sprintf(command,"echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
 #if defined(PETSC_HAVE_POPEN)
     ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(comm,fd,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPClose(comm,fd,NULL);CHKERRQ(ierr);
 #endif
   }
 #if defined(PETSC_HAVE_POPEN)

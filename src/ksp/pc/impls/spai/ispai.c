@@ -757,8 +757,8 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   /* count number of nonzeros in every row */
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&num_ptr[i-rstart],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&num_ptr[i-rstart],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
   }
 
   /* allocate buffers */
@@ -799,8 +799,8 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
     /* count number of nonzeros in every column */
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(AT,i,&num_ptr[i-rstart],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatRestoreRow(AT,i,&num_ptr[i-rstart],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
     }
 
     /* allocate buffers */

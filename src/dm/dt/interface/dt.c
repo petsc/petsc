@@ -17,9 +17,9 @@
 -  degrees - sorted array of degrees to evaluate
 
    Output Arguments:
-+  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or PETSC_NULL)
-.  D - row-oriented derivative evaluation matrix (or PETSC_NULL)
--  D2 - row-oriented second derivative evaluation matrix (or PETSC_NULL)
++  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
+.  D - row-oriented derivative evaluation matrix (or NULL)
+-  D2 - row-oriented second derivative evaluation matrix (or NULL)
 
    Level: intermediate
 

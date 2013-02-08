@@ -419,7 +419,7 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
   /*
       Create the adjacency graph matrix
   */
-  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,PETSC_NULL,&Adj);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,NULL,&Adj);CHKERRQ(ierr);
 
   /*
       Create the partioning object
@@ -512,7 +512,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   /*
      Scatter the element vertex information (still in the original vertex ordering) to the correct processor
   */
-  ierr = VecScatterCreate(veleold,PETSC_NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(veleold,NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
   ierr = ISDestroy(&isscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vecscat,veleold,vele,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vecscat,veleold,vele,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -676,7 +676,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   /* ---------------------------------------------------------------------
       Create a global reodering of the vertex numbers
   */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,gdata->nlocal,gdata->localvert,PETSC_NULL,&ao);CHKERRQ(ierr);
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,gdata->nlocal,gdata->localvert,NULL,&ao);CHKERRQ(ierr);
 
   /*
      Change the element vertex information to the new vertex numbering
@@ -715,7 +715,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   /*
       Scatter the element vertex information to the correct processor
   */
-  ierr = VecScatterCreate(overt,isscat,vert,PETSC_NULL,&vecscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(overt,isscat,vert,NULL,&vecscat);CHKERRQ(ierr);
   ierr = ISDestroy(&isscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vecscat,overt,vert,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vecscat,overt,vert,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

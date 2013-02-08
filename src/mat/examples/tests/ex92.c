@@ -24,20 +24,20 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-view_id",&vid,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-test_overlap", &TestOverlap);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-test_submat", &TestSubMat);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-test_allcols", &TestAllcols);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_mbs",&mbs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-view_id",&vid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-test_overlap", &TestOverlap);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-test_submat", &TestSubMat);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-test_allcols", &TestAllcols);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,bs,PETSC_DEFAULT,PETSC_NULL);
-  ierr = MatMPIBAIJSetPreallocation(A,bs,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,bs,PETSC_DEFAULT,NULL);
+  ierr = MatMPIBAIJSetPreallocation(A,bs,PETSC_DEFAULT,NULL,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);

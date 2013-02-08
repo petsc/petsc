@@ -78,7 +78,7 @@ PetscErrorCode  SNESGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pe
 -  maxit - maximum number of iterations
 
    Notes:
-   The user can specify PETSC_NULL for any parameter that is not needed.
+   The user can specify NULL for any parameter that is not needed.
 
    Level: intermediate
 

@@ -111,8 +111,8 @@ int main(int argc,char **argv)
   appctx.comm = PETSC_COMM_WORLD;
 
   m               = 60;
-  ierr            = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -165,13 +165,13 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-nonlinear",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-nonlinear",&flg,NULL);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,flg ? TS_NONLINEAR : TS_LINEAR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -184,14 +184,14 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-time_dependent_rhs",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-time_dependent_rhs",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   } else {
     /*
@@ -202,15 +202,15 @@ int main(int argc,char **argv)
     */
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
 
   if (tsproblem == TS_NONLINEAR) {
     SNES snes;
-    ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ts,NULL,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,NULL,NULL,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -581,8 +581,8 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
   MatStructure   A_structure;
 
   PetscFunctionBeginUser;
-  ierr = TSGetRHSJacobian(ts,&A,PETSC_NULL,PETSC_NULL,&ctx);CHKERRQ(ierr);
-  ierr = RHSMatrixHeat(ts,t,globalin,&A,PETSC_NULL,&A_structure,ctx);CHKERRQ(ierr);
+  ierr = TSGetRHSJacobian(ts,&A,NULL,NULL,&ctx);CHKERRQ(ierr);
+  ierr = RHSMatrixHeat(ts,t,globalin,&A,NULL,&A_structure,ctx);CHKERRQ(ierr);
   /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = MatMult(A,globalin,globalout);CHKERRQ(ierr);
   PetscFunctionReturn(0);

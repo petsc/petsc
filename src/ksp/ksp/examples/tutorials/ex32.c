@@ -68,9 +68,9 @@ int main(int argc,char **argv)
 
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   user.nu     = 0.1;
-  ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)NEUMANN;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
   ierr        = PetscOptionsEnd();
 
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
     MatNullSpace nullspace;
 
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,NULL);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -207,7 +207,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse 
     ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
     ierr = MatSetSizes(newmat,nrows,ncols,PETSC_DECIDE,Ncols);CHKERRQ(ierr);
     ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMPIDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   }
 
   /* Now extract the data pointers and do the copy, column at a time */
@@ -563,11 +563,11 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
 
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -703,7 +703,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     }
     /* Since this is a temporary matrix, MATMPIDENSE instead of ((PetscObject)A)->type_name here is probably acceptable. */
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
-    ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* Copy the matrix ... This isn't the most efficient means,
@@ -950,7 +950,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
   } else {
     B = *matout;
   }
@@ -1047,7 +1047,7 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
   PetscReal      *work;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscReal),&work);CHKERRQ(ierr);
   ierr = MatGetColumnNorms_SeqDense(a->A,type,work);CHKERRQ(ierr);
   if (type == NORM_2) {
@@ -1315,7 +1315,7 @@ M*/
 
    Input Parameters:
 .  A - the matrix
--  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc
+-  data - optional location of matrix data.  Set data=NULL for PETSc
    to control all matrix memory allocation.
 
    Notes:
@@ -1324,7 +1324,7 @@ M*/
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=PETSC_NULL.
+   set data=NULL.
 
    Level: intermediate
 
@@ -1354,7 +1354,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 .  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
--  data - optional location of matrix data.  Set data=PETSC_NULL (PETSC_NULL_SCALAR for Fortran users) for PETSc
+-  data - optional location of matrix data.  Set data=NULL (NULL_SCALAR for Fortran users) for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
@@ -1366,7 +1366,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=PETSC_NULL (PETSC_NULL_SCALAR for Fortran users).
+   set data=NULL (NULL_SCALAR for Fortran users).
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
@@ -1459,7 +1459,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
   if (!sizesset) {
     ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   }
-  ierr = MatMPIDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   ierr = MatDenseGetArray(newmat,&array);CHKERRQ(ierr);
 
   if (!rank) {
@@ -1639,7 +1639,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   if (!sizesset) {
     ierr = MatSetSizes(newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   }
-  ierr = MatMPIDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   for (i=0; i<m; i++) ourlens[i] += offlens[i];
 
   if (!rank) {

@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-view_info",&flg);CHKERRQ(ierr);
   if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

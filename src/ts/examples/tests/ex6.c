@@ -70,8 +70,8 @@ int main(int argc,char **argv)
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(ctx.snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ctx.snes,PETSC_NULL,SNESFunction,&ctx);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ctx.snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobian,&ctx);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ctx.snes,NULL,NULL,SNESDefaultComputeJacobian,&ctx);CHKERRQ(ierr);
   ctx.F = F;
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&ctx.V);CHKERRQ(ierr);
 
@@ -103,7 +103,7 @@ PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
   PetscFunctionBeginUser;
   ctx->t = t;
   ctx->U = U;
-  ierr   = SNESSolve(ctx->snes,PETSC_NULL,ctx->V);CHKERRQ(ierr);
+  ierr   = SNESSolve(ctx->snes,NULL,ctx->V);CHKERRQ(ierr);
   ierr   = (*ctx->f)(t,U,ctx->V,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

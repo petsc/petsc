@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
     ierr = Update_q(user.q,user.u1,user.u2,user.u3,user.M_0,&user);
     ierr = VecView(user.q,view_q);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);CHKERRQ(ierr);
@@ -241,8 +241,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
   ierr = VecDuplicate(user->u1,&rand1);
   ierr = VecDuplicate(user->u1,&rand2);
-  ierr = VecSetRandom(rand1,PETSC_NULL);
-  ierr = VecSetRandom(rand2,PETSC_NULL);
+  ierr = VecSetRandom(rand1,NULL);
+  ierr = VecSetRandom(rand2,NULL);
 
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   PetscInt       j,i;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
   for (j=ys; j < ys+ym; j++) {
@@ -407,13 +407,13 @@ PetscErrorCode GetParams(AppCtx *user)
   user->T       = 0.2; user->dt   = 0.001;
   user->epsilon = 0.05;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-epsilon",&user->epsilon,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-epsilon",&user->epsilon,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -442,13 +442,13 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
   /* Create the mass matrix M_0 */
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
 
 
   /* ierr = MatCreate(PETSC_COMM_WORLD,&user->M_0);CHKERRQ(ierr);*/
-  ierr = DMDAGetInfo(user->da,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
   hx   = 1.0/(Mda-1);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,MATAIJ,&user->M_0);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 

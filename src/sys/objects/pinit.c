@@ -67,7 +67,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
 #if defined(PETSC_USE_LOG)
     MPI_Comm comm = PETSC_COMM_WORLD;
@@ -143,7 +143,7 @@ PetscErrorCode  PetscInitializeNoArguments(void)
   char           **args = 0;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);
+  ierr = PetscInitialize(&argc,&args,NULL,NULL);
   PetscFunctionReturn(ierr);
 }
 
@@ -563,9 +563,9 @@ PetscErrorCode  PetscFreeArguments(char **args)
    Input Parameters:
 +  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL to not check for
+.  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use NULL to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
--  help - [optional] Help message to print, use PETSC_NULL for no message
+-  help - [optional] Help message to print, use NULL for no message
 
    If you wish PETSc code to run ONLY on a subcommunicator of MPI_COMM_WORLD, create that
    communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize(). Thus if you are running a
@@ -626,12 +626,12 @@ PetscErrorCode  PetscFreeArguments(char **args)
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use NULL_CHARACTER to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 
    Important Fortran Note:
-   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
-   null character string; you CANNOT just use PETSC_NULL as
+   In Fortran, you MUST use NULL_CHARACTER to indicate a
+   null character string; you CANNOT just use NULL as
    in the C version. See the <a href="../../docs/manual.pdf">users manual</a> for details.
 
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
@@ -770,7 +770,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
      Print main application help message
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-help",&flg);CHKERRQ(ierr);
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
@@ -803,11 +803,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       Currently not used because it is not supported by MPICH.
   */
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  ierr = MPI_Register_datarep((char*)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Register_datarep((char*)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,NULL);CHKERRQ(ierr);
 #endif
 #endif
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
     ierr = PetscHMPISpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
@@ -815,9 +815,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
 #endif
   } else {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_merge_size",&nodesize,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-hmpi_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,NULL,NULL);CHKERRQ(ierr);
       if (PetscHMPIWorker) { /* if worker then never enter user code */
         PetscInitializeCalled = PETSC_TRUE;
         PetscEnd();
@@ -836,17 +836,17 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
   if (flg) PetscAMSPublishAll = PETSC_TRUE;
 #endif
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-python",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInitializeCalled = PETSC_TRUE;
-    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscThreadCommInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommInitializePackage(NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates petscstack_key if needed */
@@ -925,7 +925,7 @@ PetscErrorCode  PetscFinalize(void)
     printf("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
-  ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);
@@ -933,7 +933,7 @@ PetscErrorCode  PetscFinalize(void)
 
 
 #if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-options_gui",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
   }
@@ -942,10 +942,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-memory_info",&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-memory_info",&flg2,NULL);CHKERRQ(ierr);
   }
   if (flg2) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
@@ -953,7 +953,7 @@ PetscErrorCode  PetscFinalize(void)
 
 #if defined(PETSC_USE_LOG)
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-get_total_flops",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-get_total_flops",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
     PetscLogDouble flops = 0;
     ierr = MPI_Reduce(&petsc_TotalFlops,&flops,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -966,7 +966,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_MPE)
   mname[0] = 0;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
     else          {ierr = PetscLogMPEDump(0);CHKERRQ(ierr);}
@@ -974,7 +974,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   mname[0] = 0;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
     if (mname[0]) {
@@ -989,7 +989,7 @@ PetscErrorCode  PetscFinalize(void)
 
   mname[0] = 0;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
     if (mname[0]) {
@@ -1002,7 +1002,7 @@ PetscErrorCode  PetscFinalize(void)
     }
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
     else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
@@ -1010,8 +1010,8 @@ PetscErrorCode  PetscFinalize(void)
 
   mname[0] = 0;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     if (mname[0]) PetscLogDump(mname);
     else          PetscLogDump(0);
@@ -1028,19 +1028,19 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-no_signal_handler",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
   if (!flg1) { ierr = PetscPopSignalHandler();CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mpidump",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mpidump",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscMPIDump(stdout);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
   flg2 = PETSC_FALSE;
   /* preemptive call to avoid listing this option in options table as unused */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-options_table",&flg2,NULL);CHKERRQ(ierr);
 
   if (flg2) {
     PetscViewer viewer;
@@ -1050,12 +1050,12 @@ PetscErrorCode  PetscFinalize(void)
   }
 
   /* to prevent PETSc -options_left from warning */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-nox",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
 
   if (!PetscHMPIWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
     if (flg3) {
       if (!flg2) { /* have not yet printed the options */
@@ -1088,12 +1088,12 @@ PetscErrorCode  PetscFinalize(void)
   /*
        List all objects the user may have forgot to free
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
   if (flg1) {
     MPI_Comm local_comm;
     char     string[64];
 
-    ierr = PetscOptionsGetString(PETSC_NULL,"-objects_dump",string,64,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-objects_dump",string,64,NULL);CHKERRQ(ierr);
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
     ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
@@ -1129,7 +1129,7 @@ PetscErrorCode  PetscFinalize(void)
     petsc_history = 0;
   }
 
-  ierr = PetscInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInfoAllow(PETSC_FALSE,NULL);CHKERRQ(ierr);
 
   {
     char fname[PETSC_MAX_PATH_LEN];
@@ -1138,9 +1138,9 @@ PetscErrorCode  PetscFinalize(void)
 
     fname[0] = 0;
 
-    ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     flg2 = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_test",&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-malloc_test",&flg2,NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     if (PETSC_RUNNING_ON_VALGRIND) flg2 = PETSC_FALSE;
 #else
@@ -1167,12 +1167,12 @@ PetscErrorCode  PetscFinalize(void)
 
   {
     char fname[PETSC_MAX_PATH_LEN];
-    FILE *fd = PETSC_NULL;
+    FILE *fd = NULL;
 
     fname[0] = 0;
 
-    ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"-malloc_log_threshold",&flg2);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
       int err;
 

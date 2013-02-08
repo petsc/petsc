@@ -74,7 +74,7 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
 +  snes   - the snes context
 .  levels - the number of levels
 -  comms  - optional communicators for each level; this is to allow solving the coarser
-            problems on smaller sets of processors. Use PETSC_NULL_OBJECT for default in
+            problems on smaller sets of processors. Use NULL_OBJECT for default in
             Fortran.
 
    Level: intermediate
@@ -106,8 +106,8 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
   ierr = SNESReset(snes);CHKERRQ(ierr);
   /* destroy any coarser levels if necessary */
   if (fas->next) SNESDestroy(&fas->next);CHKERRQ(ierr);
-  fas->next     = PETSC_NULL;
-  fas->previous = PETSC_NULL;
+  fas->next     = NULL;
+  fas->previous = NULL;
   prevsnes      = snes;
   /* setup the finest level */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
     fas->level  = i;
     fas->levels = levels;
     fas->fine   = snes;
-    fas->next   = PETSC_NULL;
+    fas->next   = NULL;
     if (i > 0) {
       ierr = SNESCreate(comm, &fas->next);CHKERRQ(ierr);
       ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
@@ -355,7 +355,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg)
         fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)levelsnes)->comm);CHKERRQ(ierr);
         /* set the monitors for the upsmoother and downsmoother */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
-        ierr = SNESMonitorSet(levelsnes,SNESMonitorDefault,PETSC_NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = SNESMonitorSet(levelsnes,SNESMonitorDefault,NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
       } else if (i != fas->levels - 1) {
         /* unset the monitors on the coarse levels */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
@@ -409,10 +409,10 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
           ierr = PetscLogEventRegister(eventname,((PetscObject)snes)->classid,&fas->eventinterprestrict);CHKERRQ(ierr);
         }
       } else {
-        fas->eventsmoothsetup    = PETSC_NULL;
-        fas->eventsmoothsolve    = PETSC_NULL;
-        fas->eventresidual       = PETSC_NULL;
-        fas->eventinterprestrict = PETSC_NULL;
+        fas->eventsmoothsetup    = 0;
+        fas->eventsmoothsolve    = 0;
+        fas->eventresidual       = 0;
+        fas->eventinterprestrict = 0;
       }
     }
   }
@@ -602,7 +602,7 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 .  correction - the coarse correction on this level
 
    Notes:
-   Returns PETSC_NULL on the coarsest level.
+   Returns NULL on the coarsest level.
 
    Level: advanced
 

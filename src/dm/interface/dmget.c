@@ -42,7 +42,7 @@ PetscErrorCode  DMGetLocalVector(DM dm,Vec *g)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->localin[i]) {
       *g             = dm->localin[i];
-      dm->localin[i] = PETSC_NULL;
+      dm->localin[i] = NULL;
       goto alldone;
     }
   }
@@ -89,7 +89,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
   PetscValidPointer(g,2);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->localout[j]) {
-      dm->localout[j] = PETSC_NULL;
+      dm->localout[j] = NULL;
       for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
         if (!dm->localin[i]) {
           dm->localin[i] = *g;
@@ -147,7 +147,7 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec *g)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->globalin[i]) {
       *g              = dm->globalin[i];
-      dm->globalin[i] = PETSC_NULL;
+      dm->globalin[i] = NULL;
       goto alldone;
     }
   }
@@ -228,7 +228,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   PetscValidPointer(g,2);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->globalout[j]) {
-      dm->globalout[j] = PETSC_NULL;
+      dm->globalout[j] = NULL;
       for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
         if (!dm->globalin[i]) {
           dm->globalin[i] = *g;
@@ -328,7 +328,7 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
       if (link->status != DMVEC_STATUS_OUT) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
       if (link->X != *X) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
       link->status = DMVEC_STATUS_IN;
-      *X           = PETSC_NULL;
+      *X           = NULL;
       PetscFunctionReturn(0);
     }
   }
@@ -422,7 +422,7 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm,const char *name,Vec *X)
       if (link->status != DMVEC_STATUS_OUT) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
       if (link->X != *X) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
       link->status = DMVEC_STATUS_IN;
-      *X           = PETSC_NULL;
+      *X           = NULL;
       PetscFunctionReturn(0);
     }
   }

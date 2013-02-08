@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
   PetscMPIInt    rank,size;
   PetscInt       i,j;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   }
 
   usenest = PETSC_FALSE;
-  ierr    = PetscOptionsGetBool(PETSC_NULL,"-nest",&usenest,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetBool(NULL,"-nest",&usenest,NULL);CHKERRQ(ierr);
   if (usenest) {
     ISLocalToGlobalMapping l2g;
     PetscInt               l2gind[3];
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     l2gind[0] = (rank-1+size)%size; l2gind[1] = rank; l2gind[2] = (rank+1)%size;
     ierr      = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,3,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
     for (i=0; i<9; i++) {
-      ierr = MatCreateAIJ(PETSC_COMM_WORLD,1,1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&B[i]);CHKERRQ(ierr);
+      ierr = MatCreateAIJ(PETSC_COMM_WORLD,1,1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&B[i]);CHKERRQ(ierr);
       ierr = MatSetUp(B[i]);CHKERRQ(ierr);
       ierr = MatSetLocalToGlobalMapping(B[i],l2g,l2g);CHKERRQ(ierr);
     }
@@ -60,9 +60,9 @@ int main(int argc, char *argv[])
 
       ierr = MatCreateNest(PETSC_COMM_WORLD,2,isx,2,isx,Bx00,&B00);CHKERRQ(ierr);
       ierr = MatSetUp(B00);CHKERRQ(ierr);
-      ierr = MatCreateNest(PETSC_COMM_WORLD,2,isx,1,PETSC_NULL,Bx01,&B01);CHKERRQ(ierr);
+      ierr = MatCreateNest(PETSC_COMM_WORLD,2,isx,1,NULL,Bx01,&B01);CHKERRQ(ierr);
       ierr = MatSetUp(B01);CHKERRQ(ierr);
-      ierr = MatCreateNest(PETSC_COMM_WORLD,1,PETSC_NULL,2,isx,Bx10,&B10);CHKERRQ(ierr);
+      ierr = MatCreateNest(PETSC_COMM_WORLD,1,NULL,2,isx,Bx10,&B10);CHKERRQ(ierr);
       ierr = MatSetUp(B10);CHKERRQ(ierr);
       {
         Mat By[4];
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     PetscInt               l2gind[9];
     for (i=0; i<3; i++) for (j=0; j<3; j++) l2gind[3*i+j] = ((rank-1+j+size) % size)*3 + i;
     ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,9,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(A,l2g,l2g);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
   }

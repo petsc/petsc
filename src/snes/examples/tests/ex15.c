@@ -54,15 +54,15 @@ int main(int argc, char **argv)
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
 
   /* Check for any command line arguments that override defaults */
-  info = PetscOptionsGetReal(PETSC_NULL,"-ecc",&user.ecc,&flg);CHKERRQ(info);
-  info = PetscOptionsGetReal(PETSC_NULL,"-b",&user.b,&flg);CHKERRQ(info);
+  info = PetscOptionsGetReal(NULL,"-ecc",&user.ecc,&flg);CHKERRQ(info);
+  info = PetscOptionsGetReal(NULL,"-b",&user.b,&flg);CHKERRQ(info);
 
   /*
      A two dimensional distributed array will help define this problem,
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-50,-50,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
+  info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-50,-50,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(info);
   info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.nx,&user.ny,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem -----\n");
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
   info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
 
   /* Solve the application */
-  info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
+  info = SNESSolve(snes,NULL,x);CHKERRQ(info);
 
   info = SNESGetConvergedReason(snes,&reason);CHKERRQ(info);
   if (reason <= 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The SNESVI solver did not converge, adjust some parameters, or check the function evaluation routines\n");
@@ -153,7 +153,7 @@ PetscErrorCode ComputeB(AppCtx *user)
   /* Get pointer to local vector data */
   info = DMDAVecGetArray(user->da,user->B, &b);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(info);
 
   /* Compute the linear term in the objective function */
   for (i=xs; i<xs+xm; i++) {
@@ -205,7 +205,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   info = DMDAVecGetArray(user->da,localX,&x);CHKERRQ(info);
   info = DMDAVecGetArray(user->da,G,&g);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(info);
 
   for (i=xs; i< xs+xm; i++) {
     xi     = (i+1)*hx;
@@ -311,7 +311,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   /* Get pointers to vector data */
   info = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(info);
 
   for (i=xs; i< xs+xm; i++) {
     xi     = (i+1)*hx;

@@ -78,7 +78,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 #else
     _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE;
 #endif
-    ierr = PetscOptionsGetEnum(PETSC_NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,NULL);CHKERRQ(ierr);
   }
   *twosided = _twosided_type;
   PetscFunctionReturn(0);
@@ -167,7 +167,7 @@ static PetscErrorCode SegArrayDestroy(SegArray *seg)
     ierr = PetscFree(s);CHKERRQ(ierr);
     s = tail;
   }
-  *seg = PETSC_NULL;
+  *seg = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +198,7 @@ static PetscErrorCode SegArrayExtract(SegArray *seg,void *contiguous)
   }
   if (ptr != contig) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
   s->tailused         = 0;
-  s->tail             = PETSC_NULL;
+  s->tail             = NULL;
   *(char**)contiguous = contig;
   PetscFunctionReturn(0);
 }
@@ -277,7 +277,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr = PetscMalloc(size*sizeof(*iflags),&iflags);CHKERRQ(ierr);
   ierr = PetscMemzero(iflags,size*sizeof(*iflags));CHKERRQ(ierr);
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
-  ierr = PetscGatherNumberOfMessages(comm,iflags,PETSC_NULL,&nrecvs);CHKERRQ(ierr);
+  ierr = PetscGatherNumberOfMessages(comm,iflags,NULL,&nrecvs);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
   ierr     = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);

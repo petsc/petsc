@@ -149,13 +149,13 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -272,13 +272,13 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -384,9 +384,9 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
     if (*found) {
-      ierr = PetscInfo1(PETSC_NULL,"Found file %s\n",libname);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Found file %s\n",libname);CHKERRQ(ierr);
     } else {
-      ierr = PetscInfo1(PETSC_NULL,"Did not find file %s\n",libname);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Did not find file %s\n",libname);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
@@ -421,7 +421,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscStrcat(urlget," 2>&1 ");CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,urlget,"r",&fp);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,urlget,"r",&fp);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

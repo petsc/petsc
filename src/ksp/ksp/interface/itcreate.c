@@ -168,7 +168,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (!flg) {
       ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
       ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
-      ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+      ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
       bottom = y - h;
     } else {
       bottom = y;
@@ -472,7 +472,7 @@ $      Pmat does not have the same nonzero structure.
 
     All future calls to KSPSetOperators() must use the same size matrices!
 
-    Passing a PETSC_NULL for Amat or Pmat removes the matrix that is currently used.
+    Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
@@ -498,7 +498,7 @@ $      Pmat does not have the same nonzero structure.
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&mat,PETSC_NULL,PETSC_NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,NULL,NULL); is equivalent to
 $           set size, type, etc of mat
 
 $         MatCreate(comm,&mat);
@@ -508,7 +508,7 @@ $           set size, type, etc of mat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,PETSC_NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,NULL); is equivalent to
 $           set size, type, etc of mat and pmat
 
 $         MatCreate(comm,&mat);
@@ -660,7 +660,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscValidPointer(inksp,2);
   *inksp = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,-1,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
@@ -677,8 +677,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->its            = 0;
   ksp->guess_zero     = PETSC_TRUE;
   ksp->calc_sings     = PETSC_FALSE;
-  ksp->res_hist       = PETSC_NULL;
-  ksp->res_hist_alloc = PETSC_NULL;
+  ksp->res_hist       = NULL;
+  ksp->res_hist_alloc = NULL;
   ksp->res_hist_len   = 0;
   ksp->res_hist_max   = 0;
   ksp->res_hist_reset = PETSC_TRUE;
@@ -762,7 +762,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
     ierr              = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
-    ksp->ops->destroy = PETSC_NULL;
+    ksp->ops->destroy = NULL;
   }
   /* Reinitialize function pointers in KSPOps structure */
   ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);

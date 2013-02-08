@@ -686,7 +686,7 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ;
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(*B,A->rmap->bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(*B,A->rmap->bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqBAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqBAIJ;
@@ -996,10 +996,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=a->mbs,bs=A->rmap->bs,*ui;
   const PetscInt     *rip;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,ncols_upper,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL,ncols,ncols_upper,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill          =info->fill,levels=info->levels;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -1154,7 +1154,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
 
   /* put together the new matrix in MATSEQSBAIJ format */
   B    = fact;
-  ierr = MatSeqSBAIJSetPreallocation(B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,1,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
   b                = (Mat_SeqSBAIJ*)B->data;
   b->singlemalloc  = PETSC_FALSE;
@@ -1223,7 +1223,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   PetscInt           i,mbs=a->mbs,bs=A->rmap->bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,ncols_upper,*cols,*uj,**ui_ptr,*uj_ptr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -1335,7 +1335,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
 
   /* put together the new matrix in MATSEQSBAIJ format */
   B    = fact;
-  ierr = MatSeqSBAIJSetPreallocation(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
   b               = (Mat_SeqSBAIJ*)B->data;
   b->singlemalloc = PETSC_FALSE;
@@ -1568,7 +1568,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr    = PetscMalloc(nnz_max*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
 
   b               = (Mat_SeqBAIJ*)(B)->data;

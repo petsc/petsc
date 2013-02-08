@@ -88,7 +88,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
 
   if (use_ngs) {
     ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (use_ngs) {
@@ -111,10 +111,10 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
-  ierr = VecSetRandom(b,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
 
-  ierr = SNESSetFunction(snes,PETSC_NULL,MyComputeFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,MyComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,NULL,MyComputeFunction,NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,MyComputeJacobian,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -156,7 +156,7 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
     ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
-    ierr = MatSetDM(J, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSetDM(J, NULL);CHKERRQ(ierr);
     ierr = FormMatrix(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContext(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContextDestroy(dm,(PetscErrorCode (*)(void**))MatDestroy);CHKERRQ(ierr);
@@ -235,7 +235,7 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatZeroRowsColumnsStencil(jac,nrows,rows,2.0*(hydhx + hxdhy),PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatZeroRowsColumnsStencil(jac,nrows,rows,2.0*(hydhx + hxdhy),NULL,NULL);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
   /*
      Tell the matrix we will never add a new nonzero location to the
@@ -264,7 +264,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   Vec            localX;
 
   PetscFunctionBeginUser;
-  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetTolerances(snes,NULL,NULL,NULL,&its,NULL);CHKERRQ(ierr);
   ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -297,7 +297,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
      xm, ym   - widths of local grid (no ghost points)
 
      */
-    ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {

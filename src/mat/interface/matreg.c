@@ -67,7 +67,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   if (mat->ops->destroy) {
     ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
 
-    mat->ops->destroy = PETSC_NULL;
+    mat->ops->destroy = NULL;
   }
   mat->preallocated = PETSC_FALSE;
 

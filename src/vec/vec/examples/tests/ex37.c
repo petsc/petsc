@@ -69,7 +69,7 @@ PetscErrorCode test_view(void)
   tmp_buf[1] = f;
   ierr       = PetscOptionsGetBool(0,"-explicit_is",&explcit,0);CHKERRQ(ierr);
   ierr       = GetISs(tmp_buf,tmp_is);CHKERRQ(ierr);
-  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,explcit ? tmp_is : PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,explcit ? tmp_is : NULL,tmp_buf,&b);CHKERRQ(ierr);
   ierr       = VecDestroy(&e);CHKERRQ(ierr);
   ierr       = VecDestroy(&f);CHKERRQ(ierr);
   ierr       = ISDestroy(&tmp_is[0]);CHKERRQ(ierr);
@@ -77,12 +77,12 @@ PetscErrorCode test_view(void)
 
   tmp_buf[0] = c;
   tmp_buf[1] = d;
-  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&a);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&a);CHKERRQ(ierr);
   ierr       = VecDestroy(&c);CHKERRQ(ierr);   ierr = VecDestroy(&d);CHKERRQ(ierr);
 
   tmp_buf[0] = a;
   tmp_buf[1] = b;
-  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X);CHKERRQ(ierr);
   ierr       = VecDestroy(&a);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
@@ -231,7 +231,7 @@ PetscErrorCode test_axpy_dot_max(void)
 
   tmp_buf[0] = x1;
   tmp_buf[1] = x2;
-  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X);CHKERRQ(ierr);
   ierr       = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr       = VecAssemblyEnd(X);CHKERRQ(ierr);
   ierr       = VecDestroy(&x1);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode test_axpy_dot_max(void)
 
   tmp_buf[0] = y1;
   tmp_buf[1] = y2;
-  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&Y);CHKERRQ(ierr);
+  ierr       = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&Y);CHKERRQ(ierr);
   ierr       = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr       = VecAssemblyEnd(Y);CHKERRQ(ierr);
   ierr       = VecDestroy(&y1);CHKERRQ(ierr);

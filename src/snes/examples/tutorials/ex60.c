@@ -76,10 +76,10 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 5; the whole thing */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
 
   /* Create a 1D DA with dof = 1; for individual componentes */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
 
 
   /* Set Element type (triangular) */
@@ -87,8 +87,8 @@ int main(int argc, char **argv)
   ierr = DMDASetElementType(user.da2,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
   /* Set x and y coordinates */
-  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
   /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
   ierr = DMCreateGlobalVector(user.da1,&x);CHKERRQ(ierr);
   ierr = VecGetSize(x,&N);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     ierr = Update_q(&user);CHKERRQ(ierr);
     /*    ierr = VecView(user.q,view_q);CHKERRQ(ierr);
      ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
     ierr = SNESVIGetInactiveSet(snes,&inactiveconstraints);CHKERRQ(ierr);
     ierr = ISGetSize(inactiveconstraints,&ninactiveconstraints);CHKERRQ(ierr);
     /* if (ninactiveconstraints < .90*N) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"To many active constraints, model has become non-physical"); */
@@ -433,8 +433,8 @@ PetscErrorCode SetRandomVectors(AppCtx *user)
   PetscScalar    *w1,*w2,*Pv_p,*eta_p;
 
   PetscFunctionBeginUser;
-  ierr = VecSetRandom(user->work1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecSetRandom(user->work2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(user->work1,NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(user->work2,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecGetArray(user->Pv,&Pv_p);CHKERRQ(ierr);
@@ -500,7 +500,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
@@ -544,12 +544,12 @@ PetscErrorCode GetParams(AppCtx *user)
   user->T     = 1.0e-2;    user->dt = 1.0e-4;
   user->VG    = 100.0;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-P_casc",&user->P_casc,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-P_casc",&user->P_casc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -578,8 +578,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   /* Create the mass matrix M_0 */
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
   ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
@@ -804,10 +804,10 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
 
   PetscFunctionBeginUser;
   /* Create the mass matrix M_0 */
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
   ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);

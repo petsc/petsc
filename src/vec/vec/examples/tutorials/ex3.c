@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /*
      Create a vector, specifying only its global dimension.
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
                   (0 is default, -1 implies until user input).
 
   */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,NULL,NULL,0,0,300,300,&viewer);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)viewer,"Line graph Plot");CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
   /*

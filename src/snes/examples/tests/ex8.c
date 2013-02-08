@@ -64,11 +64,11 @@ int main(int argc, char **argv)
 #endif
 
   /* Check if lower and upper bounds are set */
-  info = PetscOptionsGetScalar(PETSC_NULL, "-lb", &lb, &flg_l);CHKERRQ(info);
-  info = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg_u);CHKERRQ(info);
+  info = PetscOptionsGetScalar(NULL, "-lb", &lb, &flg_l);CHKERRQ(info);
+  info = PetscOptionsGetScalar(NULL, "-ub", &ub, &flg_u);CHKERRQ(info);
 
   /* Create distributed array to manage the 2d grid */
-  info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
+  info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(info);
   info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
   /* Extract global vectors from DMDA; */
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
@@ -102,9 +102,9 @@ int main(int argc, char **argv)
   info = SNESSetFromOptions(snes);CHKERRQ(info);
 
   /* Solve the application */
-  info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
+  info = SNESSolve(snes,NULL,x);CHKERRQ(info);
 
-  info = PetscOptionsHasName(PETSC_NULL,"-view_sol",&flg);CHKERRQ(info);
+  info = PetscOptionsHasName(NULL,"-view_sol",&flg);CHKERRQ(info);
   if (flg) { info = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(info); }
 
   /* Free memory */
@@ -167,7 +167,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   info = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(info);
   info = DMDAVecGetArray(user->da,G, &g);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(info);
   /* Compute function over the locally owned part of the mesh */
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -296,7 +296,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure 
   /* Get pointers to vector data */
   info = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(info);
 
-  info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+  info = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(info);
   /* Compute Jacobian over the locally owned part of the mesh */
   for (j=ys; j< ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -528,7 +528,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool      flg;
 
   PetscFunctionBeginUser;
-  info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(info);
+  info = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(info);
 
   if (flg && start==0) { /* The zero vector is reasonable */
 
@@ -543,7 +543,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
     /* Get pointers to vector data */
     info = DMDAVecGetArray(user->da,X,&x);CHKERRQ(info);
-    info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
+    info = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(info);
 
     /* Perform local computations */
     for (j=ys; j<ys+ym; j++) {

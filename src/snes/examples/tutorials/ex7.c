@@ -122,8 +122,8 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal(bag, &user->alpha, 1.0, "alpha", "Linear coefficient");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &user->lambda, 6.0, "lambda", "Nonlinear coefficient");CHKERRQ(ierr);
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user->alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user->lambda,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-alpha",&user->alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lambda",&user->lambda,NULL);CHKERRQ(ierr);
   if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, (DM) da);CHKERRQ(ierr);
@@ -146,12 +146,12 @@ int main(int argc,char **argv)
   ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = SNESSetComputeInitialGuess(snes, FormInitialGuess,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes, FormInitialGuess,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
 
@@ -193,7 +193,7 @@ PetscErrorCode CreateNullSpace(DM da, Vec *N)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetCorners(da, &xs, &ys, PETSC_NULL, &xm, &ym, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,N);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, *N, &x);CHKERRQ(ierr);
   for (j = ys; j < ys+ym; j++) {
@@ -254,7 +254,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid

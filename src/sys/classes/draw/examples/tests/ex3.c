@@ -20,16 +20,16 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-width",&width,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-height",&height,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-nolabels",&flg);CHKERRQ(ierr);
   if (flg) {
     xlabel = (char*)0; toplabel = (char*)0;
   }
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nports",&nports,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nports",&nports,NULL);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsCreate(draw,nports,&ports);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
 

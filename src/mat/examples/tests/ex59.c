@@ -22,13 +22,13 @@ int main(int argc,char **args)
   n    = 2*size;
 
   ierr = PetscStrcpy(type,MATSAME);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-mat_type",type,256,NULL);CHKERRQ(ierr);
 
   ierr = PetscStrcmp(type,MATMPIDENSE,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE, m*n,m*n,PETSC_NULL,&C);CHKERRQ(ierr);
+    ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE, m*n,m*n,NULL,&C);CHKERRQ(ierr);
   } else {
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE, m*n,m*n,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&C);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE, m*n,m*n,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&C);CHKERRQ(ierr);
   }
 
   /*

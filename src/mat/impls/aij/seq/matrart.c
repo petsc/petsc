@@ -22,7 +22,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   /* Note: This code is virtually identical to that of MatApplyPtAP_SeqAIJ_Symbolic */
   /*        and MatMatMult_SeqAIJ_SeqAIJ_Symbolic.  Perhaps they could be merged nicely. */
   PetscErrorCode     ierr;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space=NULL,current_space=NULL;
   Mat_SeqAIJ         *a        =(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
   PetscInt           *ai       =a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pti,*ptj,*ptjj;
   PetscInt           *ci,*cj,*paj,*padenserow,*pasparserow,*denserow,*sparserow;
@@ -280,7 +280,7 @@ PetscErrorCode MatDestroy_SeqAIJ_RARt(Mat A)
 {
   PetscErrorCode ierr;
   PetscContainer container;
-  Mat_RARt       *rart=PETSC_NULL;
+  Mat_RARt       *rart=NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Mat_RARt",(PetscObject*)&container);CHKERRQ(ierr);
@@ -313,7 +313,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   /* create symbolic P=Rt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,PETSC_NULL,&P);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,NULL,&P);CHKERRQ(ierr);
 
   /* get symbolic C=Pt*A*P */
   ierr           = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
@@ -353,7 +353,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = MatCreate(PETSC_COMM_SELF,&Rt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(Rt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
   ierr = MatSetType(Rt_dense,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Rt_dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(Rt_dense,NULL);CHKERRQ(ierr);
 
   Rt_dense->assembled = PETSC_TRUE;
   rart->Rt            = Rt_dense;
@@ -362,7 +362,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = MatCreate(PETSC_COMM_SELF,&RARt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(RARt_dense,(*C)->rmap->n,matcoloring->ncolors,(*C)->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
   ierr = MatSetType(RARt_dense,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(RARt_dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(RARt_dense,NULL);CHKERRQ(ierr);
 
   rart->RARt = RARt_dense;
 

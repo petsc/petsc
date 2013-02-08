@@ -23,7 +23,7 @@ struct _n_PetscObjectList {
 
     Level: developer
 
-       Notes: Use PetscObjectListAdd(PetscObjectList,const char name[],PETSC_NULL) to truly remove the object from the list
+       Notes: Use PetscObjectListAdd(PetscObjectList,const char name[],NULL) to truly remove the object from the list
 
               Use this routine ONLY if you know that the object referenced will remain in existence until the pointing object is destroyed
 
@@ -66,7 +66,7 @@ PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char na
 
     Level: developer
 
-       Notes: Replaces item if it is already in list. Removes item if you pass in a PETSC_NULL object.
+       Notes: Replaces item if it is already in list. Removes item if you pass in a NULL object.
 
         Use PetscObjectListFind() or PetscObjectListReverseFind() to get the object back
 
@@ -161,7 +161,7 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
     ierr = PetscFree(fl);CHKERRQ(ierr);
     fl   = tmp;
   }
-  *ifl = PETSC_NULL;
+  *ifl = NULL;
   PetscFunctionReturn(0);
 }
 

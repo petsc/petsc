@@ -28,7 +28,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
 
   PetscFunctionBegin;
-  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL);CHKERRQ(ierr);
   ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, &rtol, &atol, &ltol, &max_its);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
-  ierr = SNESGetObjective(snes,&objective,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetObjective(snes,&objective,NULL);CHKERRQ(ierr);
 
   /* precheck */
   ierr       = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
@@ -210,11 +210,11 @@ PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_L2;
-  linesearch->ops->destroy        = PETSC_NULL;
-  linesearch->ops->setfromoptions = PETSC_NULL;
-  linesearch->ops->reset          = PETSC_NULL;
-  linesearch->ops->view           = PETSC_NULL;
-  linesearch->ops->setup          = PETSC_NULL;
+  linesearch->ops->destroy        = NULL;
+  linesearch->ops->setfromoptions = NULL;
+  linesearch->ops->reset          = NULL;
+  linesearch->ops->view           = NULL;
+  linesearch->ops->setup          = NULL;
 
   linesearch->max_its = 1;
   PetscFunctionReturn(0);

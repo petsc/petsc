@@ -12,14 +12,14 @@ PetscLogEvent PETSC_Barrier=0;
 
    Input Parameters:
 .  A - PETSc object  (Mat, Vec, IS, SNES etc...)
-        Must be caste with a (PetscObject), can use PETSC_NULL (for MPI_COMM_WORLD)
+        Must be caste with a (PetscObject), can use NULL (for MPI_COMM_WORLD)
 
   Level: intermediate
 
   Notes:
   This routine calls MPI_Barrier with the communicator of the PETSc Object "A".
 
-  With fortran Use PETSC_NULL_OBJECT (instead of PETSC_NULL)
+  With fortran Use NULL_OBJECT (instead of NULL)
 
    Concepts: barrier
 

@@ -12,9 +12,9 @@
   Input Parameters:
 + comm     - Communicator
 . iflags   - an array of integers of length sizeof(comm). A '1' in ilengths[i] represent a
-             message from current node to ith node. Optionally PETSC_NULL
+             message from current node to ith node. Optionally NULL
 - ilengths - Non zero ilengths[i] represent a message to i of length ilengths[i].
-             Optionally PETSC_NULL.
+             Optionally NULL.
 
   Output Parameters:
 . nrecvs    - number of messages received
@@ -28,14 +28,14 @@
   PetscGatherMessageLengths()
 
   Either iflags or ilengths should be provided.  If iflags is not
-  provided (PETSC_NULL) it can be computed from ilengths. If iflags is
+  provided (NULL) it can be computed from ilengths. If iflags is
   provided, ilengths is not required.
 
 .seealso: PetscGatherMessageLengths()
 @*/
 PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt iflags[],const PetscMPIInt ilengths[],PetscMPIInt *nrecvs)
 {
-  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local = PETSC_NULL,*iflags_localm = PETSC_NULL;
+  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local = NULL,*iflags_localm = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -101,8 +101,8 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,tag,i,j;
-  MPI_Request    *s_waits  = PETSC_NULL,*r_waits = PETSC_NULL;
-  MPI_Status     *w_status = PETSC_NULL;
+  MPI_Request    *s_waits  = NULL,*r_waits = NULL;
+  MPI_Status     *w_status = NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -173,9 +173,9 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,const PetscMPIInt ilengths1[],const PetscMPIInt ilengths2[],PetscMPIInt **onodes,PetscMPIInt **olengths1,PetscMPIInt **olengths2)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,tag,i,j,*buf_s = PETSC_NULL,*buf_r = PETSC_NULL,*buf_j = PETSC_NULL;
-  MPI_Request    *s_waits  = PETSC_NULL,*r_waits = PETSC_NULL;
-  MPI_Status     *w_status = PETSC_NULL;
+  PetscMPIInt    size,tag,i,j,*buf_s = NULL,*buf_r = NULL,*buf_j = NULL;
+  MPI_Request    *s_waits  = NULL,*r_waits = NULL;
+  MPI_Status     *w_status = NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

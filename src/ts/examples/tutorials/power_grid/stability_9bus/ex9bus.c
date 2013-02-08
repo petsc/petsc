@@ -478,13 +478,13 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   PetscInt ncols;
 
   for (i=0; i < nbus; i++) {
-    ierr = MatGetRow(user->Ybus,2*i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
     d_nnz[start+2*i]   += ncols;
     d_nnz[start+2*i+1] += ncols;
-    ierr = MatRestoreRow(user->Ybus,2*i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatRestoreRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = MatSeqAIJSetPreallocation(J,PETSC_NULL,d_nnz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,NULL,d_nnz);CHKERRQ(ierr);
 
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -745,7 +745,7 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg,void 
   PetscFunctionBegin;
   ierr = ResidualJacobian(snes,X,A,B,flg,ctx);CHKERRQ(ierr);
   ierr = MatSetOption(*A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatZeroRowsIS(*A,user->is_diff,1.0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(*A,user->is_diff,1.0,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -836,19 +836,19 @@ int main(int argc,char **argv)
   ierr = MatLoad(user.Ybus,Ybusview);CHKERRQ(ierr);
 
   /* Set run time options */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Transient stability fault options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Transient stability fault options","");CHKERRQ(ierr);
   {
     user.tfaulton  = 1.0;
     user.tfaultoff = 1.2;
     user.Rfault    = 0.0001;
     user.faultbus  = 8;
-    ierr           = PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,PETSC_NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,PETSC_NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsInt("-faultbus","","",user.faultbus,&user.faultbus,PETSC_NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsInt("-faultbus","","",user.faultbus,&user.faultbus,NULL);CHKERRQ(ierr);
     user.t0        = 0.0;
     user.tmax      = 5.0;
-    ierr           = PetscOptionsReal("-t0","","",user.t0,&user.t0,PETSC_NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,PETSC_NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsReal("-t0","","",user.t0,&user.t0,NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -856,9 +856,9 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(&Ybusview);CHKERRQ(ierr);
 
   /* Create DMs for generator and network subsystems */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_gen,1,1,PETSC_NULL,&user.dmgen);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmgen,"dmgen_");CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_net,1,1,PETSC_NULL,&user.dmnet);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmnet,"dmnet_");CHKERRQ(ierr);
   /* Create a composite DM packer and add the two DMs */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.dmpgrid);CHKERRQ(ierr);
@@ -876,7 +876,7 @@ int main(int argc,char **argv)
   /* Create matrix to save solutions at each time step */
   user.stepnum = 0;
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,1002,PETSC_NULL,&user.Sol);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,1002,NULL,&user.Sol);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -884,7 +884,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
   ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
 
@@ -953,7 +953,7 @@ int main(int argc,char **argv)
 
   user.alg_flg = PETSC_TRUE;
   /* Solve the algebraic equations */
-  ierr = SNESSolve(snes_alg,PETSC_NULL,X);CHKERRQ(ierr);
+  ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
   /* Save fault-on solution */
   idx      = user.stepnum*(user.neqs_pgrid+1);
@@ -989,7 +989,7 @@ int main(int argc,char **argv)
   user.alg_flg = PETSC_TRUE;
 
   /* Solve the algebraic equations */
-  ierr = SNESSolve(snes_alg,PETSC_NULL,X);CHKERRQ(ierr);
+  ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
   /* Save tfault off solution */
   idx      = user.stepnum*(user.neqs_pgrid+1);
@@ -1014,7 +1014,7 @@ int main(int argc,char **argv)
 
   Mat         A;
   PetscScalar *amat;
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,NULL,&A);CHKERRQ(ierr);
   ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&amat);CHKERRQ(ierr);
   ierr = PetscMemcpy(amat,mat,(user.stepnum*(user.neqs_pgrid+1))*sizeof(PetscScalar));CHKERRQ(ierr);

@@ -99,7 +99,7 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
   ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(map,&com->N);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(map,&com->rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(map,&com->rstart,NULL);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
 
   /* now set the rstart for each linked vector */
@@ -162,7 +162,7 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
 -    gvec - the global vector
 
     Output Parameters:
-.    Vec* ... - the packed parallel vectors, PETSC_NULL for those that are not needed
+.    Vec* ... - the packed parallel vectors, NULL for those that are not needed
 
     Notes: Use DMCompositeRestoreAccess() to return the vectors when you no longer need them
 
@@ -220,7 +220,7 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
 +    dm - the packer object
 .    pvec - packed vector
 .    nwanted - number of vectors wanted
--    wanted - sorted array of vectors wanted, or PETSC_NULL to get all vectors
+-    wanted - sorted array of vectors wanted, or NULL to get all vectors
 
     Output Parameters:
 .    vecs - array of requested global vectors (must be allocated)
@@ -270,7 +270,7 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
     Input Parameters:
 +    dm - the packer object
 .    gvec - the global vector
--    Vec* ... - the individual parallel vectors, PETSC_NULL for those that are not needed
+-    Vec* ... - the individual parallel vectors, NULL for those that are not needed
 
     Level: advanced
 
@@ -320,7 +320,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
 +    dm - the packer object
 .    pvec - packed vector
 .    nwanted - number of vectors wanted
-.    wanted - sorted array of vectors wanted, or PETSC_NULL to get all vectors
+.    wanted - sorted array of vectors wanted, or NULL to get all vectors
 -    vecs - array of global vectors to return
 
     Level: advanced
@@ -361,7 +361,7 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
     Input Parameters:
 +    dm - the packer object
 .    gvec - the global vector
--    Vec ... - the individual sequential vectors, PETSC_NULL for those that are not needed
+-    Vec ... - the individual sequential vectors, NULL for those that are not needed
 
     Level: advanced
 
@@ -418,7 +418,7 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
--    Vec ... - the individual sequential vectors, PETSC_NULL for any that are not needed
+-    Vec ... - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
 
@@ -510,7 +510,7 @@ PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
   mine->n      = n;
   mine->nlocal = nlocal;
   mine->dm     = dm;
-  mine->next   = PETSC_NULL;
+  mine->next   = NULL;
   com->n      += n;
 
   /* add to end of list */
@@ -836,7 +836,7 @@ PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fiel
 
 /*
  This could take over from DMCreateFieldIS(), as it is more general,
- making DMCreateFieldIS() a special case -- calling with dmlist == PETSC_NULL;
+ making DMCreateFieldIS() a special case -- calling with dmlist == NULL;
  At this point it's probably best to be less intrusive, however.
  */
 #undef __FUNCT__
@@ -1117,14 +1117,14 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   /* loop over packed objects, handling one at at time */
   for (nextc=comcoarse->next,nextf=comfine->next,i=0; nextc; nextc=nextc->next,nextf=nextf->next,i++) {
     if (!v) {
-      ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],PETSC_NULL);CHKERRQ(ierr);
+      ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],NULL);CHKERRQ(ierr);
     } else {
       ierr = DMCreateInterpolation(nextc->dm,nextf->dm,&mats[i*nDM+i],&vecs[i]);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreateNest(((PetscObject)fine)->comm,nDM,PETSC_NULL,nDM,PETSC_NULL,mats,A);CHKERRQ(ierr);
+  ierr = MatCreateNest(((PetscObject)fine)->comm,nDM,NULL,nDM,NULL,mats,A);CHKERRQ(ierr);
   if (v) {
-    ierr = VecCreateNest(((PetscObject)fine)->comm,nDM,PETSC_NULL,vecs,v);CHKERRQ(ierr);
+    ierr = VecCreateNest(((PetscObject)fine)->comm,nDM,NULL,vecs,v);CHKERRQ(ierr);
   }
   for (i=0; i<nDM*nDM; i++) {ierr = MatDestroy(&mats[i]);CHKERRQ(ierr);}
   ierr = PetscFree(mats);CHKERRQ(ierr);
@@ -1173,7 +1173,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,MatType mt
   } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-dmcomposite_dense_jacobian",&dense,NULL);CHKERRQ(ierr);
   if (dense) {
     for (i=0; i<n; i++) {
       colors[i] = (ISColoringValue)(com->rstart + i);
@@ -1244,8 +1244,8 @@ PetscErrorCode  DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,InsertMode mode,Ve
     next    = next->next;
   }
 
-  ierr = VecRestoreArray(gvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecRestoreArray(lvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gvec,NULL);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lvec,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1281,7 +1281,7 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->data   = com;
   ierr      = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
   com->n    = 0;
-  com->next = PETSC_NULL;
+  com->next = NULL;
   com->nDM  = 0;
 
   p->ops->createglobalvector              = DMCreateGlobalVector_Composite;

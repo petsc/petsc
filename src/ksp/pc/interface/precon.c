@@ -326,7 +326,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscValidPointer(newpc,1);
   *newpc = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PCInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,-1,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
@@ -1010,7 +1010,7 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
 -     DIFFERENT_NONZERO_PATTERN -
        Pmat does not have the same nonzero structure.
 
-    Passing a PETSC_NULL for Amat or Pmat removes the matrix that is currently used.
+    Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
@@ -1103,7 +1103,7 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&mat,PETSC_NULL,PETSC_NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,NULL,NULL); is equivalent to
 $           set size, type, etc of mat
 
 $         MatCreate(comm,&mat);
@@ -1113,7 +1113,7 @@ $           set size, type, etc of mat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,PETSC_NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,NULL); is equivalent to
 $           set size, type, etc of mat and pmat
 
 $         MatCreate(comm,&mat);
@@ -1593,12 +1593,12 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     if (pc->mat) {
-      ierr = MatGetSize(pc->mat,&n,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetSize(pc->mat,&n,NULL);CHKERRQ(ierr);
       ierr = PetscSNPrintf(str,25,"PC: %s (%D)",((PetscObject)pc)->type_name,n);CHKERRQ(ierr);
     } else {
       ierr = PetscSNPrintf(str,25,"PC: %s",((PetscObject)pc)->type_name);CHKERRQ(ierr);
     }
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (pc->ops->view) {
@@ -1719,10 +1719,10 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
   for (i=0; i<M; i++) {

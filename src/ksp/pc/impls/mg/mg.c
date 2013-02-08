@@ -149,7 +149,7 @@ PetscErrorCode PCReset_MG(PC pc)
 +  pc - the preconditioner context
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
-           on smaller sets of processors. Use PETSC_NULL_OBJECT for default in Fortran
+           on smaller sets of processors. Use NULL_OBJECT for default in Fortran
 
    Level: intermediate
 
@@ -215,7 +215,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
     ierr = KSPSetType(mglevels[i]->smoothd,KSPCHEBYSHEV);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);
     ierr = KSPSetNormType(mglevels[i]->smoothd,KSP_NORM_NONE);CHKERRQ(ierr);
     ierr = KSPGetPC(mglevels[i]->smoothd,&ipc);CHKERRQ(ierr);
     ierr = PCSetType(ipc,PCSOR);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   /* When the DM is supplying the matrix then it will not exist until here */
   for (i=0; i<levels; i++) {
     if (!mglevels[i]->A) {
-      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,NULL,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)mglevels[i]->A);CHKERRQ(ierr);
     }
   }
@@ -326,7 +326,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   if (mg->am == PC_MG_MULTIPLICATIVE) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     for (i=0; i<mg->cyclesperpcapply; i++) {
-      ierr = PCMGMCycle_Private(pc,mglevels+levels-1,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCMGMCycle_Private(pc,mglevels+levels-1,NULL);CHKERRQ(ierr);
     }
   } else if (mg->am == PC_MG_ADDITIVE) {
     ierr = PCMGACycle_Private(pc,mglevels);CHKERRQ(ierr);
@@ -361,7 +361,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       levels++;
       mg->usedmfornumberoflevels = PETSC_TRUE;
     }
-    ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGSetLevels(pc,levels,NULL);CHKERRQ(ierr);
   }
   mglevels = mg->levels;
 
@@ -395,7 +395,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
     }
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_mg_log","Log times for each multigrid level","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_mg_log","Log times for each multigrid level","None",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscInt i;
     char     eventname[128];
@@ -495,7 +495,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     PetscReal x,w,y,bottom,th;
     ierr   = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr   = PetscDrawStringGetSize(draw,PETSC_NULL,&th);CHKERRQ(ierr);
+    ierr   = PetscDrawStringGetSize(draw,NULL,&th);CHKERRQ(ierr);
     bottom = y - th;
     for (i=levels-1; i>=0; i--) {
       if (!mglevels[i]->smoothu || (mglevels[i]->smoothu == mglevels[i]->smoothd)) {
@@ -511,7 +511,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
       }
-      ierr    = PetscDrawGetBoundingBox(draw,PETSC_NULL,&bottom,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr    = PetscDrawGetBoundingBox(draw,NULL,&bottom,NULL,NULL);CHKERRQ(ierr);
       bottom -= th;
     }
   }
@@ -547,7 +547,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = DMGetRefineLevel(pc->dm,&levels);CHKERRQ(ierr);
     levels++;
     if (levels > n) { /* the problem is now being solved on a finer grid */
-      ierr     = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
+      ierr     = PCMGSetLevels(pc,levels,NULL);CHKERRQ(ierr);
       n        = levels;
       ierr     = PCSetFromOptions(pc);CHKERRQ(ierr); /* it is bad to call this here, but otherwise will never be called for the new hierarchy */
       mglevels =  mg->levels;
@@ -559,10 +559,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
   /* Is this what we always want? What if user wants to keep old one? */
-  ierr = KSPGetOperatorsSet(mglevels[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
+  ierr = KSPGetOperatorsSet(mglevels[n-1]->smoothd,NULL,&opsset);CHKERRQ(ierr);
   if (opsset) {
     Mat mmat;
-    ierr = KSPGetOperators(mglevels[n-1]->smoothd,PETSC_NULL,&mmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(mglevels[n-1]->smoothd,NULL,&mmat,NULL);CHKERRQ(ierr);
     if (mmat == pc->pmat) opsset = PETSC_FALSE;
   }
   if (!opsset) {
@@ -585,8 +585,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
       /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
        * a bitwise OR of computing the matrix, RHS, and initial iterate. */
-      kdm->ops->computerhs = PETSC_NULL;
-      kdm->rhsctx          = PETSC_NULL;
+      kdm->ops->computerhs = NULL;
+      kdm->rhsctx          = NULL;
       if (!mglevels[i+1]->interpolate) {
         ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
         ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
@@ -622,7 +622,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (n > 1) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
     } else {
       for (i=n-2; i>-1; i--) {
-        ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
+        ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
         ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
         ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
         dB   = B;
@@ -635,7 +635,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       Vec rscale;
       if (!mglevels[i]->smoothd->dm->x) {
         Vec *vecs;
-        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,PETSC_NULL);CHKERRQ(ierr);
+        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
 
         mglevels[i]->smoothd->dm->x = vecs[0];
 
@@ -656,7 +656,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr   = KSPGetDM(mglevels[i]->smoothd,&dmcoarse);CHKERRQ(ierr);
       ierr   = PCMGGetRestriction(pc,i+1,&Restrict);CHKERRQ(ierr);
       ierr   = PCMGGetRScale(pc,i+1,&rscale);CHKERRQ(ierr);
-      Inject = PETSC_NULL;      /* Callback should create it if it needs Injection */
+      Inject = NULL;      /* Callback should create it if it needs Injection */
       ierr   = DMRestrict(dmfine,Restrict,rscale,Inject,dmcoarse);CHKERRQ(ierr);
     }
   }
@@ -677,7 +677,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     for (i=0; i<n-1; i++) {
       if (!mglevels[i]->b) {
         Vec *vec;
-        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
+        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
         ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
         ierr = VecDestroy(vec);CHKERRQ(ierr);
         ierr = PetscFree(vec);CHKERRQ(ierr);
@@ -696,7 +696,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (n != 1 && !mglevels[n-1]->r) {
       /* PCMGSetR() on the finest level if user did not supply it */
       Vec *vec;
-      ierr = KSPGetVecs(mglevels[n-1]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPGetVecs(mglevels[n-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
       ierr = PCMGSetR(pc,n-1,*vec);CHKERRQ(ierr);
       ierr = VecDestroy(vec);CHKERRQ(ierr);
       ierr = PetscFree(vec);CHKERRQ(ierr);
@@ -720,7 +720,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     if (!mglevels[i]->residual) {
       Mat mat;
-      ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat,NULL);CHKERRQ(ierr);
       ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,mat);CHKERRQ(ierr);
     }
   }
@@ -730,7 +730,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       MatStructure matflag;
 
       /* check if operators have been set for up, if not use down operators to set them */
-      ierr = KSPGetOperatorsSet(mglevels[i]->smoothu,&opsset,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperatorsSet(mglevels[i]->smoothu,&opsset,NULL);CHKERRQ(ierr);
       if (!opsset) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,&downmat,&downpmat,&matflag);CHKERRQ(ierr);
         ierr = KSPSetOperators(mglevels[i]->smoothu,downmat,downpmat,matflag);CHKERRQ(ierr);
@@ -773,11 +773,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
    Only support one or the other at the same time.
   */
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_matlab",&dump,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_matlab",&dump,NULL);CHKERRQ(ierr);
   if (dump) viewer = PETSC_VIEWER_SOCKET_(((PetscObject)pc)->comm);
   dump = PETSC_FALSE;
 #endif
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,NULL);CHKERRQ(ierr);
   if (dump) viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
 
   if (viewer) {
@@ -1039,7 +1039,7 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 
   for (i=1; i<levels; i++) {
     /* make sure smoother up and down are different */
-    ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGGetSmootherUp(pc,i,NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
 
     mg->default_smoothd = n;
@@ -1087,7 +1087,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
   for (i=1; i<levels; i++) {
     /* make sure smoother up and down are different */
-    ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGGetSmootherUp(pc,i,NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[i]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
 
     mg->default_smoothu = n;

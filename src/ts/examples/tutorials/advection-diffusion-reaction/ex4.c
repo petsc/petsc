@@ -64,13 +64,13 @@ int main(int argc,char **argv)
   appctx.cstar   = .2;
   appctx.upwind  = PETSC_TRUE;
 
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-delta",&appctx.delta,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-delta",&appctx.delta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-upwind",&appctx.upwind,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"rho");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"c");CHKERRQ(ierr);
 
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,7 +170,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   if (!xs) {
     f[0].rho = udot[0].rho; /* u[0].rho - 0.0; */
@@ -238,7 +238,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid

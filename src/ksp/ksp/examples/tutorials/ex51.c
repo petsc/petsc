@@ -45,9 +45,9 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Options for p-FEM","");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   N    = (p*m+1)*(p*m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */

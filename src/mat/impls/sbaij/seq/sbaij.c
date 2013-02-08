@@ -149,13 +149,13 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -559,7 +559,7 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
   xr  += w;    yr += h;  xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatView_SeqSBAIJ_Draw_Zoom,A);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1224,7 +1224,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
-      ierr    = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
+      ierr    = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,NULL, y->i,y->j,NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
     }
     for (i=0; i<x->nz; i++) {
@@ -1592,7 +1592,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   B->ops->multtranspose    = MatMult_SeqSBAIJ_N;
   B->ops->multtransposeadd = MatMultAdd_SeqSBAIJ_N;
 
-  ierr  = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
     case 1:
@@ -1710,7 +1710,7 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool natura
   PetscInt       bs  = B->rmap->bs;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,NULL);CHKERRQ(ierr);
   if (flg) bs = 8;
 
   if (!natural) {
@@ -1793,7 +1793,7 @@ PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(*B,A->rmap->bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(*B,A->rmap->bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
@@ -1902,11 +1902,11 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
 
   b->ignore_ltriangular = PETSC_TRUE;
 
-  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,NULL);CHKERRQ(ierr);
 
   b->getrow_utriangular = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
@@ -1962,15 +1962,15 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for SEQSBAIJ matrix","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for inodes (slower)",NULL,no_unroll,&no_unroll,NULL);CHKERRQ(ierr);
   if (no_unroll) {
     ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBool("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_no_inode","Do not optimize for inodes (slower)",NULL,no_inode,&no_inode,NULL);CHKERRQ(ierr);
   if (no_inode) {
     ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",NULL,b->inode.limit,&b->inode.limit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
@@ -1994,7 +1994,7 @@ EXTERN_C_END
 .  bs - size of block
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the upper triangular plus
-         diagonal portion of each block (possibly different for each block row) or PETSC_NULL
+         diagonal portion of each block (possibly different for each block row) or NULL
 
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the
@@ -2005,7 +2005,7 @@ EXTERN_C_END
 
    Notes:
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  See the <a href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</a> for details.
 
    You can call MatGetInfo() to get information on how effective the preallocation was;
@@ -2047,7 +2047,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
 .  m - number of rows, or number of columns
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the upper triangular plus
-         diagonal portion of each block (possibly different for each block row) or PETSC_NULL
+         diagonal portion of each block (possibly different for each block row) or NULL
 
    Output Parameter:
 .  A - the symmetric matrix
@@ -2068,7 +2068,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    This matrix type does not support complex Hermitian operation.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  See the <a href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</a> for details.
 
    If the nnz parameter is given then the nz parameter is ignored
@@ -2215,7 +2215,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(((PetscObject)newmat)->prefix,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)newmat)->prefix,"-matload_block_size",&bs,NULL);CHKERRQ(ierr);
   bs2  = bs*bs;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

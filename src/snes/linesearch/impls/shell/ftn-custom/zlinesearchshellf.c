@@ -30,6 +30,6 @@ void PETSC_STDCALL sneslinesearchshellgetuserfunc_(SNESLineSearch *linesearch, v
 {
 
   CHKFORTRANNULLINTEGER(ctx);
-  *ierr = SNESLineSearchShellGetUserFunc(*linesearch,PETSC_NULL,ctx);
+  *ierr = SNESLineSearchShellGetUserFunc(*linesearch,NULL,ctx);
 }
 EXTERN_C_END

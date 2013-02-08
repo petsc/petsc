@@ -355,7 +355,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
 #if !defined(PETSC_HAVE_TXPETSCGPU)
   PetscBool usecprow = a->compressedrow.use;
 #endif
-  CUSPARRAY *xarray=PETSC_NULL,*yarray=PETSC_NULL;
+  CUSPARRAY *xarray=NULL,*yarray=NULL;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
@@ -409,7 +409,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
-  CUSPARRAY      *xarray     = PETSC_NULL,*yarray=PETSC_NULL,*zarray=PETSC_NULL;
+  CUSPARRAY      *xarray     = NULL,*yarray=NULL,*zarray=NULL;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
@@ -491,7 +491,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
-         (possibly different for each row) or PETSC_NULL
+         (possibly different for each row) or NULL
 
    Output Parameter:
 .  A - the matrix
@@ -509,7 +509,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 

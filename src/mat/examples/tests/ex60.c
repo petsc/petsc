@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Vec            yy;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-col",&col,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-col",&col,NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                      m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRQ(ierr);
+                      m*n,m*n,5,NULL,5,NULL,&C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;

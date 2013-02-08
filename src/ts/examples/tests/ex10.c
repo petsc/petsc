@@ -125,7 +125,7 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void
   PetscFunctionBeginUser;
   red->t = t;
   red->U = U;
-  ierr   = SNESSolve(red->snes,PETSC_NULL,tsdae->V);CHKERRQ(ierr);
+  ierr   = SNESSolve(red->snes,NULL,tsdae->V);CHKERRQ(ierr);
   ierr   = (*tsdae->f)(t,U,tsdae->V,F,tsdae->fctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -212,8 +212,8 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
 
   ierr = SNESCreate(tsdae->comm,&red->snes);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(red->snes,"tsdaesimple_");CHKERRQ(ierr);
-  ierr = SNESSetFunction(red->snes,PETSC_NULL,TSDAESimple_Reduced_SNESFunction,tsdae);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(red->snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobian,tsdae);CHKERRQ(ierr);
+  ierr = SNESSetFunction(red->snes,NULL,TSDAESimple_Reduced_SNESFunction,tsdae);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(red->snes,NULL,NULL,SNESDefaultComputeJacobian,tsdae);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -361,16 +361,16 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   ierr = VecCreateMPI(tsdae->comm,nU+nV,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
   ierr = VecDuplicate(tsrhs,&full->UV);CHKERRQ(ierr);
 
-  ierr = VecGetOwnershipRange(tsrhs,&UVstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(tsrhs,&UVstart,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(tsdae->comm,nU,UVstart,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tsdae->U,PETSC_NULL,tsrhs,is,&full->scatterU);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tsdae->U,NULL,tsrhs,is,&full->scatterU);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISCreateStride(tsdae->comm,nV,UVstart+nU,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tsdae->V,PETSC_NULL,tsrhs,is,&full->scatterV);CHKERRQ(ierr);
+  ierr = VecScatterCreate(tsdae->V,NULL,tsrhs,is,&full->scatterV);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   ierr = TSSetRHSFunction(full->ts,tsrhs,TSDAESimple_Full_TSRHSFunction,tsdae);CHKERRQ(ierr);
-  ierr = TSSetIFunction(full->ts,PETSC_NULL,TSDAESimple_Full_TSIFunction,tsdae);CHKERRQ(ierr);
+  ierr = TSSetIFunction(full->ts,NULL,TSDAESimple_Full_TSIFunction,tsdae);CHKERRQ(ierr);
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -422,8 +422,8 @@ int main(int argc,char **argv)
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&V);CHKERRQ(ierr);
-  ierr = TSDAESimpleSetRHSFunction(tsdae,U,f,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSDAESimpleSetIFunction(tsdae,V,F,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSDAESimpleSetRHSFunction(tsdae,U,f,NULL);CHKERRQ(ierr);
+  ierr = TSDAESimpleSetIFunction(tsdae,V,F,NULL);CHKERRQ(ierr);
 
   ierr = VecDuplicate(U,&Usolution);CHKERRQ(ierr);
   ierr = VecSet(Usolution,1.0);CHKERRQ(ierr);

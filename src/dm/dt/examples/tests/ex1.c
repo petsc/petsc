@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Discretization tools test options",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);CHKERRQ(ierr);
   {
     ndegrees   = 1000;
     degrees[0] = 0;
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
     two         = 2;
     interval[0] = -1.;
     interval[1] = 1.;
-    ierr        = PetscOptionsRealArray("-interval","interval on which to construct quadrature","",interval,&two,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsRealArray("-interval","interval on which to construct quadrature","",interval,&two,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = CheckPoints("User-provided points",npoints,points,ndegrees,degrees);CHKERRQ(ierr);

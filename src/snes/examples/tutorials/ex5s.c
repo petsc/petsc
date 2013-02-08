@@ -125,9 +125,9 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr    = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
   if (flg) fnc = FormFunctionFortran;
   else     fnc = FormFunction;
 
@@ -247,7 +247,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 

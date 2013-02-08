@@ -580,7 +580,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInf
     PetscErrorCode ierr;
     PetscBool      flg = PETSC_FALSE;
 
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_dump",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-mat_dump",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = MatView(mat,PETSC_VIEWER_BINARY_(((PetscObject)mat)->comm));CHKERRQ(ierr);
     }

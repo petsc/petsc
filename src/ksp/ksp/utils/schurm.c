@@ -21,10 +21,10 @@ PetscErrorCode MatGetVecs_SchurComplement(Mat N,Vec *right,Vec *left)
     PetscFunctionReturn(0);
   }
   if (right) {
-    ierr = MatGetVecs(Na->B,right,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(Na->B,right,NULL);CHKERRQ(ierr);
   }
   if (left) {
-    ierr = MatGetVecs(Na->C,PETSC_NULL,left);CHKERRQ(ierr);
+    ierr = MatGetVecs(Na->C,NULL,left);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -73,8 +73,8 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,PETSC_NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,PETSC_NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   ierr = MatMult(Na->C,Na->work2,y);CHKERRQ(ierr);
@@ -96,8 +96,8 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,PETSC_NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,PETSC_NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   if (y == z) {
@@ -233,8 +233,8 @@ PetscErrorCode  MatSchurComplementSet(Mat N,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
-  ierr   = MatGetLocalSize(A01,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr   = MatGetLocalSize(A10,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = MatGetLocalSize(A01,NULL,&n);CHKERRQ(ierr);
+  ierr   = MatGetLocalSize(A10,&m,NULL);CHKERRQ(ierr);
   ierr   = MatSetSizes(N,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr   = PetscObjectReference((PetscObject)A00);CHKERRQ(ierr);
   ierr   = PetscObjectReference((PetscObject)Ap00);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,Ma
 - A,B,C,D  - the four parts of the original matrix (D is optional)
 
   Note:
-  D is optional, and thus can be PETSC_NULL
+  D is optional, and thus can be NULL
 
   Level: intermediate
 
@@ -495,7 +495,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     if (!C) {ierr = MatGetSubMatrix(mat,isrow1,iscol0,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);}
     if (!D) {ierr = MatGetSubMatrix(mat,isrow1,iscol1,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);}
 
-    ierr = MatGetVecs(A,&diag,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(A,&diag,NULL);CHKERRQ(ierr);
     ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -506,8 +506,8 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     ierr = MatSetOptionsPrefix(Ad,((PetscObject)mat)->prefix);CHKERRQ(ierr);
     ierr = MatAppendOptionsPrefix(Ad,"diag_");CHKERRQ(ierr);
     ierr = MatSetFromOptions(Ad);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(Ad,1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(Ad,1,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(Ad,1,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(Ad,1,NULL,0,NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Ad,&mstart,&mend);CHKERRQ(ierr);
     ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
     for (i=mstart; i<mend; i++) {

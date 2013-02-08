@@ -114,27 +114,27 @@ PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
 
   /* Allocate workspace for the Schur vectors*/
   ierr          = PetscMalloc((neig) *max_k*sizeof(PetscReal), &SR);CHKERRQ(ierr);
-  dgmres->wr    = PETSC_NULL;
-  dgmres->wi    = PETSC_NULL;
-  dgmres->perm  = PETSC_NULL;
-  dgmres->modul = PETSC_NULL;
-  dgmres->Q     = PETSC_NULL;
-  dgmres->Z     = PETSC_NULL;
+  dgmres->wr    = NULL;
+  dgmres->wi    = NULL;
+  dgmres->perm  = NULL;
+  dgmres->modul = NULL;
+  dgmres->Q     = NULL;
+  dgmres->Z     = NULL;
 
-  UU   = PETSC_NULL;
-  XX   = PETSC_NULL;
-  MX   = PETSC_NULL;
-  AUU  = PETSC_NULL;
-  XMX  = PETSC_NULL;
-  XMU  = PETSC_NULL;
-  UMX  = PETSC_NULL;
-  AUAU = PETSC_NULL;
-  TT   = PETSC_NULL;
-  TTF  = PETSC_NULL;
-  INVP = PETSC_NULL;
-  X1   = PETSC_NULL;
-  X2   = PETSC_NULL;
-  MU   = PETSC_NULL;
+  UU   = NULL;
+  XX   = NULL;
+  MX   = NULL;
+  AUU  = NULL;
+  XMX  = NULL;
+  XMU  = NULL;
+  UMX  = NULL;
+  AUAU = NULL;
+  TT   = NULL;
+  TTF  = NULL;
+  INVP = NULL;
+  X1   = NULL;
+  X2   = NULL;
+  MU   = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -492,7 +492,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   dgmres->vv_allocated += nalloc;
 
-  ierr = KSPGetVecs(ksp,nalloc,&dgmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&dgmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,dgmres->user_work[nwork]);CHKERRQ(ierr);
 
   dgmres->mwork_alloc[nwork] = nalloc;
@@ -543,7 +543,7 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
   if (iascii) {
     if (dgmres->force) PetscViewerASCIIPrintf(viewer, "   DGMRES: Adaptive strategy is used: FALSE\n");
     else PetscViewerASCIIPrintf(viewer, "   DGMRES: Adaptive strategy is used: TRUE\n");
-    ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_dgmres_harmonic_ritz", &isharmonic);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL, "-ksp_dgmres_harmonic_ritz", &isharmonic);CHKERRQ(ierr);
     if (isharmonic) {
       ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig);CHKERRQ(ierr);
     } else {
@@ -857,7 +857,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   /* copy the Hessenberg matrix to work space */
   ierr = PetscMemcpy(A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-ksp_dgmres_harmonic_ritz", &flag);CHKERRQ(ierr);
   if (flag) {
     /* Compute the matrix H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
     /* Transpose the Hessenberg matrix */

@@ -16,9 +16,9 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -29,8 +29,8 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   am   = Iend - Istart;
@@ -50,8 +50,8 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,an,PETSC_DECIDE,PETSC_DECIDE,M);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatSetRandom(B,r);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);

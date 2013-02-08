@@ -446,7 +446,7 @@ represented locally in the mapping are not included in `idxout`, so that
 potentially `nout` is smaller than `nin`.  One must
 pass in an array long enough to hold all the indices. One can call
 ISGlobalToLocalMappingApply() with `idxout` equal to
-PETSC_NULL to determine the required length (returned in
+NULL to determine the required length (returned in
 `nout`) and then allocate the required space and call
 ISGlobalToLocalMappingApply() a second time to set the values.
 
@@ -520,7 +520,7 @@ indicates the number of degrees of freedom at each array point,
 and `s` is the stencil width (i.e., the width of the ghost point region).
 The optional arrays `lx` and `ly` may contain the number of nodes
 along the x and y axis for each cell, i.e. the dimension of `lx` is
-`m` and the dimension of `ly` is `n`; or PETSC_NULL
+`m` and the dimension of `ly` is `n`; or NULL
 may be passed in.
 
 Two types of distributed array communication data structures
@@ -733,7 +733,7 @@ command
 The output argument `n` contains the number of
 local nodes, including ghost nodes, while `idx` contains a list of length
 `n` containing the global indices that correspond to the local nodes. Either
-parameter may be omitted by passing PETSC_NULL. Note that the Fortran
+parameter may be omitted by passing NULL. Note that the Fortran
 interface differs slightly; see \ref manual-user-sec-fortranarrays " here " for details.
   - or to set up the vectors and matrices so that their entries may be
 added using the local numbering. This is done by first calling
@@ -986,7 +986,7 @@ or
 \endcode
 Here, `n` is the
 number of local vector entries, `N` is the number of
-global entries (or PETSC_NULL), and `nghost` is the number of
+global entries (or NULL), and `nghost` is the number of
 ghost entries. The array `ghosts` is of size `nghost` and contains the
 global vector location for each local ghost location. Using VecDuplicate()
 or VecDuplicateVecs() on a ghosted vector will generate additional ghosted vectors.

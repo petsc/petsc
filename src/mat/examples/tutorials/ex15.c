@@ -19,12 +19,12 @@ int main(int argc, char **args)
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc, &args, (char*) 0, help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-N", &N, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-N", &N, NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 3, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, 3, PETSC_NULL, 2, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A, 3, NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL);CHKERRQ(ierr);
 
   /* Create a linear mesh */
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);

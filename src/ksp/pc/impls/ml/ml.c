@@ -73,7 +73,7 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
   FineGridCtx    *ml=(FineGridCtx*)ML_Get_MyGetrowData(ML_data);
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)ml->Aloc->data;
 
-  ierr = MatGetSize(ml->Aloc,&m,PETSC_NULL); if (ierr) return(0);
+  ierr = MatGetSize(ml->Aloc,&m,NULL); if (ierr) return(0);
   for (i = 0; i<N_requested_rows; i++) {
     row            = requested_rows[i];
     row_lengths[i] = a->ilen[row];
@@ -293,7 +293,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
 {
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata*)mlmat->data;
   PetscErrorCode        ierr;
-  PetscInt              m       =mlmat->outvec_leng,n=mlmat->invec_leng,*nnz = PETSC_NULL,nz_max;
+  PetscInt              m       =mlmat->outvec_leng,n=mlmat->invec_leng,*nnz = NULL,nz_max;
   PetscInt              *ml_cols=matdata->columns,*ml_rowptr=matdata->rowptr,*aj,i;
   PetscScalar           *ml_vals=matdata->values,*aa;
 
@@ -377,7 +377,7 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
 
   shellctx->A         = *newmat;
   shellctx->mlmat     = mlmat;
-  shellctx->work      = PETSC_NULL;
+  shellctx->work      = NULL;
 
   ierr = VecCreate(MLcomm->USR_comm,&shellctx->y);CHKERRQ(ierr);
   ierr = VecSetSizes(shellctx->y,m,PETSC_DECIDE);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       ierr = PetscObjectTypeCompare((PetscObject) A, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject) A, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
       if (isMPI) {
-        ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
+        ierr = MatConvert_MPIAIJ_ML(A,NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
       } else if (isSeq) {
         Aloc = A;
         ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
@@ -667,7 +667,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr        = PetscObjectTypeCompare((PetscObject) A, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
   ierr        = PetscObjectTypeCompare((PetscObject) A, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
   if (isMPI) {
-    ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_ML(A,NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
   } else if (isSeq) {
     Aloc = A;
     ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
@@ -747,8 +747,8 @@ PetscErrorCode PCSetUp_ML(PC pc)
       const Vec         *vecs;
 
       if (!mnull) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Must provide explicit null space using MatSetNearNullSpace() to use user-specified null space");
-      ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Aloc,&mlocal,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Aloc,&mlocal,NULL);CHKERRQ(ierr);
       ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvec,&vecs);CHKERRQ(ierr);
       ierr = PetscMalloc((nvec+!!has_const)*mlocal*sizeof(*nullvec),&nullvec);CHKERRQ(ierr);
       if (has_const) for (i=0; i<mlocal; i++) nullvec[i] = 1.0/M;
@@ -865,7 +865,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   pc_ml->Nlevels = Nlevels;
   fine_level     = Nlevels - 1;
 
-  ierr = PCMGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pc,Nlevels,NULL);CHKERRQ(ierr);
   /* set default smoothers */
   for (level=1; level<=fine_level; level++) {
     ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
@@ -962,7 +962,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       MPI_Comm               comm       = ((PetscObject)gridctx[level].A)->comm;
 
       ierr  = MatGetBlockSize (gridctx[level].A, &bs);CHKERRQ(ierr);
-      ierr  = MatGetLocalSize (gridctx[level].A, PETSC_NULL, &nloc);CHKERRQ(ierr);
+      ierr  = MatGetLocalSize (gridctx[level].A, NULL, &nloc);CHKERRQ(ierr);
       nloc /= bs; /* number of local nodes */
 
       ierr = VecCreate(comm,&gridctx[level].coords);CHKERRQ(ierr);
@@ -1016,7 +1016,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   ierr = PCReset_ML(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1045,22 +1045,22 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   indx       = 0;
   partindx   = 0;
 
-  ierr = PetscOptionsInt("-pc_ml_PrintLevel","Print level","ML_Set_PrintLevel",PrintLevel,&PrintLevel,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_ml_PrintLevel","Print level","ML_Set_PrintLevel",PrintLevel,&PrintLevel,NULL);CHKERRQ(ierr);
   ML_Set_PrintLevel(PrintLevel);
-  ierr = PetscOptionsInt("-pc_ml_maxNlevels","Maximum number of levels","None",pc_ml->MaxNlevels,&pc_ml->MaxNlevels,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_ml_maxCoarseSize","Maximum coarsest mesh size","ML_Aggregate_Set_MaxCoarseSize",pc_ml->MaxCoarseSize,&pc_ml->MaxCoarseSize,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_ml_CoarsenScheme","Aggregate Coarsen Scheme","ML_Aggregate_Set_CoarsenScheme_*",scheme,4,scheme[0],&indx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_ml_maxNlevels","Maximum number of levels","None",pc_ml->MaxNlevels,&pc_ml->MaxNlevels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_ml_maxCoarseSize","Maximum coarsest mesh size","ML_Aggregate_Set_MaxCoarseSize",pc_ml->MaxCoarseSize,&pc_ml->MaxCoarseSize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_ml_CoarsenScheme","Aggregate Coarsen Scheme","ML_Aggregate_Set_CoarsenScheme_*",scheme,4,scheme[0],&indx,NULL);CHKERRQ(ierr);
 
   pc_ml->CoarsenScheme = indx;
 
-  ierr = PetscOptionsReal("-pc_ml_DampingFactor","P damping factor","ML_Aggregate_Set_DampingFactor",pc_ml->DampingFactor,&pc_ml->DampingFactor,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",pc_ml->Threshold,&pc_ml->Threshold,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-pc_ml_nullspace","Which type of null space information to use","None",PCMLNullSpaceTypes,(PetscEnum)pc_ml->nulltype,(PetscEnum*)&pc_ml->nulltype,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_ml_EnergyMinimization","Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)","None",pc_ml->EnergyMinimization,&pc_ml->EnergyMinimization,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ml_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",pc_ml->reuse_interpolation,&pc_ml->reuse_interpolation,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_ml_DampingFactor","P damping factor","ML_Aggregate_Set_DampingFactor",pc_ml->DampingFactor,&pc_ml->DampingFactor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",pc_ml->Threshold,&pc_ml->Threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-pc_ml_nullspace","Which type of null space information to use","None",PCMLNullSpaceTypes,(PetscEnum)pc_ml->nulltype,(PetscEnum*)&pc_ml->nulltype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_ml_EnergyMinimization","Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)","None",pc_ml->EnergyMinimization,&pc_ml->EnergyMinimization,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",pc_ml->reuse_interpolation,&pc_ml->reuse_interpolation,NULL);CHKERRQ(ierr);
   /*
     The following checks a number of conditions.  If we let this stuff slip by, then ML's error handling will take over.
     This is suboptimal because it amounts to calling exit(1) so we check for the most common conditions.
@@ -1072,18 +1072,18 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   if (pc_ml->EnergyMinimization == 4 && size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
   if (pc_ml->EnergyMinimization == 4) {ierr = PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2");CHKERRQ(ierr);}
   if (pc_ml->EnergyMinimization) {
-    ierr = PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,NULL);CHKERRQ(ierr);
   }
   if (pc_ml->EnergyMinimization == 2) {
     /* According to ml_MultiLevelPreconditioner.cpp, this option is only meaningful for norm type (2) */
-    ierr = PetscOptionsBool("-pc_ml_EnergyMinimizationCheap","Use cheaper variant of norm type 2","None",pc_ml->EnergyMinimizationCheap,&pc_ml->EnergyMinimizationCheap,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_ml_EnergyMinimizationCheap","Use cheaper variant of norm type 2","None",pc_ml->EnergyMinimizationCheap,&pc_ml->EnergyMinimizationCheap,NULL);CHKERRQ(ierr);
   }
   /* energy minimization sometimes breaks if this is turned off, the more classical stuff should be okay without it */
   if (pc_ml->EnergyMinimization) pc_ml->KeepAggInfo = PETSC_TRUE;
-  ierr = PetscOptionsBool("-pc_ml_KeepAggInfo","Allows the preconditioner to be reused, or auxilliary matrices to be generated","None",pc_ml->KeepAggInfo,&pc_ml->KeepAggInfo,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_KeepAggInfo","Allows the preconditioner to be reused, or auxilliary matrices to be generated","None",pc_ml->KeepAggInfo,&pc_ml->KeepAggInfo,NULL);CHKERRQ(ierr);
   /* Option (-1) doesn't work at all (calls exit(1)) if the tentative restriction operator isn't stored. */
   if (pc_ml->EnergyMinimization == -1) pc_ml->Reusable = PETSC_TRUE;
-  ierr = PetscOptionsBool("-pc_ml_Reusable","Store intermedaiate data structures so that the multilevel hierarchy is reusable","None",pc_ml->Reusable,&pc_ml->Reusable,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_Reusable","Store intermedaiate data structures so that the multilevel hierarchy is reusable","None",pc_ml->Reusable,&pc_ml->Reusable,NULL);CHKERRQ(ierr);
   /*
     ML's C API is severely underdocumented and lacks significant functionality.  The C++ API calls
     ML_Gen_MultiLevelHierarchy_UsingAggregation() which is a modified copy (!?) of the documented function
@@ -1091,31 +1091,31 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
     functionality in the old function, so some users may still want to use it.  Note that many options are ignored in
     this context, but ML doesn't provide a way to find out which ones.
    */
-  ierr = PetscOptionsBool("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ml_repartition", "Allow ML to repartition levels of the heirarchy","ML_Repartition_Activate",pc_ml->Repartition,&pc_ml->Repartition,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_repartition", "Allow ML to repartition levels of the heirarchy","ML_Repartition_Activate",pc_ml->Repartition,&pc_ml->Repartition,NULL);CHKERRQ(ierr);
   if (pc_ml->Repartition) {
-    ierr = PetscOptionsReal("-pc_ml_repartitionMaxMinRatio", "Acceptable ratio of repartitioned sizes","ML_Repartition_Set_LargestMinMaxRatio",pc_ml->MaxMinRatio,&pc_ml->MaxMinRatio,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_ml_repartitionMinPerProc", "Smallest repartitioned size","ML_Repartition_Set_MinPerProc",pc_ml->MinPerProc,&pc_ml->MinPerProc,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_ml_repartitionPutOnSingleProc", "Problem size automatically repartitioned to one processor","ML_Repartition_Set_PutOnSingleProc",pc_ml->PutOnSingleProc,&pc_ml->PutOnSingleProc,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ml_repartitionMaxMinRatio", "Acceptable ratio of repartitioned sizes","ML_Repartition_Set_LargestMinMaxRatio",pc_ml->MaxMinRatio,&pc_ml->MaxMinRatio,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_ml_repartitionMinPerProc", "Smallest repartitioned size","ML_Repartition_Set_MinPerProc",pc_ml->MinPerProc,&pc_ml->MinPerProc,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_ml_repartitionPutOnSingleProc", "Problem size automatically repartitioned to one processor","ML_Repartition_Set_PutOnSingleProc",pc_ml->PutOnSingleProc,&pc_ml->PutOnSingleProc,NULL);CHKERRQ(ierr);
 #if defined(HAVE_ML_ZOLTAN)
     partindx = 0;
-    ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[0],&partindx,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[0],&partindx,NULL);CHKERRQ(ierr);
 
     pc_ml->RepartitionType = partindx;
     if (!partindx) {
       PetscInt zindx = 0;
 
-      ierr = PetscOptionsEList("-pc_ml_repartitionZoltanScheme", "Repartitioning scheme to use","None",zscheme,3,zscheme[0],&zindx,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEList("-pc_ml_repartitionZoltanScheme", "Repartitioning scheme to use","None",zscheme,3,zscheme[0],&zindx,NULL);CHKERRQ(ierr);
 
       pc_ml->ZoltanScheme = zindx;
     }
 #else
     partindx = 1;
-    ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,NULL);CHKERRQ(ierr);
     if (!partindx) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
 #endif
-    ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_ml_AuxThreshold","Auxiliary smoother drop tol","None",pc_ml->AuxThreshold,&pc_ml->AuxThreshold,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ml_AuxThreshold","Auxiliary smoother drop tol","None",pc_ml->AuxThreshold,&pc_ml->AuxThreshold,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

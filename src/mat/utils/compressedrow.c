@@ -28,7 +28,7 @@
 PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscInt mbs,PetscReal ratio)
 {
   PetscErrorCode ierr;
-  PetscInt       nrows,*cpi=PETSC_NULL,*ridx=PETSC_NULL,nz,i,row;
+  PetscInt       nrows,*cpi=NULL,*ridx=NULL,nz,i,row;
 
   PetscFunctionBegin;
   if (!compressedrow->check) PetscFunctionReturn(0);
@@ -36,8 +36,8 @@ PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pets
   /* in case this is being reused, delete old space */
   ierr = PetscFree2(compressedrow->i,compressedrow->rindex);CHKERRQ(ierr);
 
-  compressedrow->i      = PETSC_NULL;
-  compressedrow->rindex = PETSC_NULL;
+  compressedrow->i      = NULL;
+  compressedrow->rindex = NULL;
 
 
   /* compute number of zero rows */

@@ -35,13 +35,13 @@ int main(int argc,char **args)
   KSP            ksp;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,NULL,&C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* forms the element stiffness for the Laplacian */

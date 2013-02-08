@@ -153,8 +153,8 @@ void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *c
     return;
   }
 
-  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = PETSC_NULL;
-  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = NULL;
+  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = NULL;
 
   *ierr = MatGetRow(*mat,*row,ncols,oocols,oovals);
   if (*ierr) return;
@@ -174,8 +174,8 @@ void PETSC_STDCALL matrestorerow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscIn
     *ierr = 1;
     return;
   }
-  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = PETSC_NULL;
-  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = NULL;
+  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = NULL;
 
   *ierr           = MatRestoreRow(*mat,*row,ncols,oocols,oovals);
   matgetrowactive = 0;

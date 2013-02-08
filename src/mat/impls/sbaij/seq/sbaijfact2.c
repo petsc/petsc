@@ -2361,7 +2361,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   ierr = PetscFree(lev);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,NULL);CHKERRQ(ierr);
 
   /* ierr = PetscLogObjectParent(B,iperm);CHKERRQ(ierr); */
   b    = (Mat_SeqSBAIJ*)(B)->data;
@@ -2418,10 +2418,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   const PetscInt     *rip;
   PetscInt           reallocs=0,i,*ui,*udiag,*cols;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*uj,**uj_ptr,**uj_lvl_ptr;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL,ncols,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill          =info->fill,levels=info->levels;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -2562,7 +2562,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   } /* end of case: levels>0 || (levels=0 && !perm_identity) */
 
   /* put together the new matrix in MATSEQSBAIJ format */
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(fact,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
   b    = (Mat_SeqSBAIJ*)(fact)->data;
   ierr = PetscFree2(b->imax,b->ilen);CHKERRQ(ierr);
@@ -2625,10 +2625,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   const PetscInt     *cols,*rip,*ai=a->i,*aj=a->j;
   PetscInt           reallocs=0,i,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
+  PetscInt           nlnk,*lnk,*lnk_lvl=NULL,ncols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill          =info->fill,levels=info->levels,ratio_needed;
-  PetscFreeSpaceList free_space    =PETSC_NULL,current_space=PETSC_NULL;
-  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscFreeSpaceList free_space    =NULL,current_space=NULL;
+  PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
@@ -2770,7 +2770,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   } /* end of case: levels>0 || (levels=0 && !perm_identity) */
 
   /* put together the new matrix in MATSEQSBAIJ format */
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(fact,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
   b = (Mat_SeqSBAIJ*)(fact)->data;
 

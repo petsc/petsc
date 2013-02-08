@@ -17,13 +17,13 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = m;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-rectA",&flg);CHKERRQ(ierr);
   if (flg) {n += 2; rect = 1;}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-rectB",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-rectB",&flg);CHKERRQ(ierr);
   if (flg) {n -= 2; rect = 1;}
 
   /* ------- Assemble matrix, test MatValid() --------- */
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* --------------- Test MatTranspose()  -------------- */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
     ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   /* ----------------- Test MatAXPY(), MatAYPX()  ----------------- */
   if (mat && !rect) {
     alpha = 1.0;
-    ierr  = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetScalar(NULL,"-alpha",&alpha,NULL);CHKERRQ(ierr);
     ierr  = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n");CHKERRQ(ierr);
     ierr  = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr  = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

@@ -186,7 +186,6 @@
       PetscChar(80)       PETSC_NULL_CHARACTER
       PetscInt            PETSC_NULL_INTEGER
       PetscFortranDouble  PETSC_NULL_DOUBLE
-      PetscInt            PETSC_NULL
       PetscObject         PETSC_NULL_OBJECT
 !
 !      A PETSC_NULL_FUNCTION pointer
@@ -204,7 +203,6 @@
 !
       common /petscfortran1/ PETSC_NULL_CHARACTER
       common /petscfortran2/ PETSC_NULL_INTEGER
-      common /petscfortran3/ PETSC_NULL
       common /petscfortran4/ PETSC_NULL_SCALAR
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL

@@ -20,8 +20,8 @@ PetscErrorCode  SNESFinalizePackage(void)
   PetscFunctionBegin;
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
-  SNESList               = PETSC_NULL;
-  SNESLineSearchList     = PETSC_NULL;
+  SNESList               = NULL;
+  SNESLineSearchList     = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -33,7 +33,7 @@ PetscErrorCode  SNESFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -67,7 +67,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLineSearch_Apply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
@@ -75,7 +75,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {

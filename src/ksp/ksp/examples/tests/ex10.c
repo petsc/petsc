@@ -32,7 +32,7 @@ int main(int argc,char **args)
   PetscReal      norm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -101,7 +101,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   m   /= 2; /* This is done just to be consistent with the old example */
   N    = 3*(2*m+1)*(2*m+1)*(2*m+1);
   ierr = PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat);CHKERRQ(ierr);
 
   /* Form stiffness for element */
   ierr = PetscMalloc(81*sizeof(PetscReal*),&K);CHKERRQ(ierr);

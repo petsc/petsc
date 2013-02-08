@@ -61,7 +61,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
 
     Input Parameter:
 +   da - the distributed array
-.   dfill - the fill pattern in the diagonal block (may be PETSC_NULL, means use dense block)
+.   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
 
 
@@ -622,7 +622,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
   MPI_Comm       comm;
   MatType        Atype;
   PetscSection   section, sectionGlobal;
-  void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
+  void           (*aij)(void)=NULL,(*baij)(void)=NULL,(*sbaij)(void)=NULL;
   MatType        ttype[256];
   PetscBool      flg;
   PetscMPIInt    size;
@@ -630,7 +630,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
@@ -814,7 +814,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
-  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = PETSC_NULL,k,nc,*rows = PETSC_NULL,col,cnt,l,p;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -1044,7 +1044,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
-  PetscInt               m,n,dim,s,*cols = PETSC_NULL,k,nc,*rows = PETSC_NULL,col,cnt,l,p,*dnz = PETSC_NULL,*onz = PETSC_NULL;
+  PetscInt               m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,*dnz = NULL,*onz = NULL;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -1161,7 +1161,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   PetscErrorCode         ierr;
   DM_DA                  *dd = (DM_DA*)da->data;
   PetscInt               xs,nx,i,j,gxs,gnx,row,k,l;
-  PetscInt               m,dim,s,*cols = PETSC_NULL,nc,col,cnt,*ocols;
+  PetscInt               m,dim,s,*cols = NULL,nc,col,cnt,*ocols;
   PetscInt               *ofill = dd->ofill;
   PetscScalar            *values;
   DMDABoundaryType       bx;
@@ -1307,7 +1307,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,nx,i,i1,slot,gxs,gnx;
-  PetscInt               m,dim,s,*cols = PETSC_NULL,nc,*rows = PETSC_NULL,col,cnt,l;
+  PetscInt               m,dim,s,*cols = NULL,nc,*rows = NULL,col,cnt,l;
   PetscInt               istart,iend;
   PetscScalar            *values;
   DMDABoundaryType       bx;

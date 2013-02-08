@@ -118,7 +118,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   Output Parameters:
 + comm_out - Output communicator.  May be comm_in.
 - first_tag - Tag available that has not already been used with this communicator (you may
-              pass in PETSC_NULL if you do not need a tag)
+              pass in NULL if you do not need a tag)
 
   PETSc communicators are just regular MPI communicators that keep track of which
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into

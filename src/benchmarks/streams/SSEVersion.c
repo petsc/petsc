@@ -86,7 +86,7 @@ int main(int argc,char *argv[])
 
   PetscInitialize(&argc,&argv,0,help);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  PetscOptionsGetInt(PETSC_NULL,"-node",&node,PETSC_NULL);
+  PetscOptionsGetInt(NULL,"-node",&node,NULL);
   /* --- SETUP --- determine precision and check timing --- */
 
   PetscPrintf(PETSC_COMM_WORLD,HLINE);

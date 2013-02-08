@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = testPointConeArraySequence();CHKERRQ(ierr);
 
@@ -53,7 +53,7 @@ PetscErrorCode testPointConeArraySequence() {
 
   // Allocate a raw array of n PointConeArrows
   int n = 10;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-sequenceSize", &n, &flag);CHKERRQ(ierr);
   if(n < 0) {
     SETERRQ1(PETSC_COMM_SELF,1, "Invalid PointConeArraySequence size: %d", n);
   }

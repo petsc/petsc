@@ -46,7 +46,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   if (lsqr->se_flg && !lsqr->se) {
     /* lsqr->se is not set by user, get it from pmat */
     Vec *se;
-    ierr     = KSPGetVecs(ksp,1,&se,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = KSPGetVecs(ksp,1,&se,0,NULL);CHKERRQ(ierr);
     lsqr->se = *se;
     ierr     = PetscFree(se);CHKERRQ(ierr);
   }
@@ -61,7 +61,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscInt       i,size1,size2;
   PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,tau;
   PetscReal      beta,alpha,rnorm;
-  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = PETSC_NULL;
+  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = NULL;
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -292,7 +292,7 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
       PC  pc;
       Mat Amat;
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCGetOperators(pc,&Amat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&Amat,NULL,NULL);CHKERRQ(ierr);
       ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
     }
     *anorm = lsqr->anorm;
@@ -470,7 +470,7 @@ PetscErrorCode  KSPCreate_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
-  lsqr->se     = PETSC_NULL;
+  lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
   ksp->data    = (void*)lsqr;

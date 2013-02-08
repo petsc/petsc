@@ -428,7 +428,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     if (obj->name) {
       ierr = PetscStrncpy(petsc_objects[obj->id].name, obj->name, 64);CHKERRQ(ierr);
     }
-    petsc_objects[obj->id].obj = PETSC_NULL;
+    petsc_objects[obj->id].obj = NULL;
     petsc_objects[obj->id].mem = obj->mem;
   }
   PetscFunctionReturn(0);

@@ -203,7 +203,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dt
 
   if (setjmp(PetscSegvJumpBuf)) {
     /* A segv was triggered in the code below hence we return with an error code */
-    sigaction(SIGSEGV, &oldsa, PETSC_NULL);/* reset old signal hanlder */
+    sigaction(SIGSEGV, &oldsa, NULL);/* reset old signal hanlder */
     return PETSC_FALSE;
   } else {
     switch (dtype) {
@@ -241,7 +241,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dt
     default:;
     }
   }
-  sigaction(SIGSEGV, &oldsa, PETSC_NULL); /* reset old signal hanlder */
+  sigaction(SIGSEGV, &oldsa, NULL); /* reset old signal hanlder */
   return PETSC_TRUE;
 }
 #else

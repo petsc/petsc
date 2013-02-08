@@ -82,7 +82,7 @@ PetscErrorCode  TSGLAdaptFinalizePackage(void)
   PetscFunctionBegin;
   TSGLAdaptPackageInitialized = PETSC_FALSE;
   TSGLAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSGLAdaptList               = PETSC_NULL;
+  TSGLAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -94,7 +94,7 @@ PetscErrorCode  TSGLAdaptFinalizePackage(void)
   TSCreate_GL() when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 

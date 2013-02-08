@@ -109,7 +109,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(prefix,"-pc_asm_print_subdomains",fname,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(prefix,"-pc_asm_print_subdomains",fname,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   if (fname[0] == 0) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   ierr = PetscViewerASCIIOpen(((PetscObject)pc)->comm,fname,&viewer);CHKERRQ(ierr);
   for (i=0; i<osm->n_local; i++) {
@@ -182,7 +182,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PC             subpc;
   const char     *prefix,*pprefix;
   Vec            vec;
-  DM             *domain_dm = PETSC_NULL;
+  DM             *domain_dm = NULL;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -255,7 +255,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(prefix,"-pc_asm_print_subdomains",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(prefix,"-pc_asm_print_subdomains",&flg,NULL);CHKERRQ(ierr);
     if (flg) { ierr = PCASMPrintSubdomains(pc);CHKERRQ(ierr); }
 
     if (osm->overlap > 0) {
@@ -597,7 +597,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
   }
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); }
+  if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr); }
   ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
   flg  = PETSC_FALSE;
@@ -774,9 +774,9 @@ EXTERN_C_END
 +   pc - the preconditioner context
 .   n - the number of subdomains for this processor (default value = 1)
 .   is - the index set that defines the subdomains for this processor
-         (or PETSC_NULL for PETSc to determine subdomains)
+         (or NULL for PETSc to determine subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor
-         (or PETSC_NULL to use the default of 1 subdomain per process)
+         (or NULL to use the default of 1 subdomain per process)
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector for both is and is_local
@@ -815,9 +815,9 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 +   pc - the preconditioner context
 .   N  - the number of subdomains for all processors
 .   is - the index sets that define the subdomains for all processors
-         (or PETSC_NULL to ask PETSc to compe up with subdomains)
+         (or NULL to ask PETSc to compe up with subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor
-         (or PETSC_NULL to use the default of 1 subdomain per process)
+         (or NULL to use the default of 1 subdomain per process)
 
     Options Database Key:
     To set the total number of subdomain blocks rather than specify the
@@ -985,9 +985,9 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this processor or PETSC_NULL
-.  first_local - the global number of the first block on this processor or PETSC_NULL,
-                 all processors must request or all must pass PETSC_NULL
++  n_local - the number of blocks on this processor or NULL
+.  first_local - the global number of the first block on this processor or NULL,
+                 all processors must request or all must pass NULL
 -  ksp - the array of KSP contexts
 
    Note:
@@ -999,7 +999,7 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
    You must call KSPSetUp() before calling PCASMGetSubKSP().
 
    Fortran note:
-   The output argument 'ksp' must be an array of sufficient length or PETSC_NULL_OBJECT. The latter can be used to learn the necessary length.
+   The output argument 'ksp' must be an array of sufficient length or NULL_OBJECT. The latter can be used to learn the necessary length.
 
    Level: advanced
 
@@ -1147,7 +1147,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   PetscMPIInt     size;
   PetscInt        i,j,rstart,rend,bs;
   PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
-  Mat             Ad     = PETSC_NULL, adj;
+  Mat             Ad     = NULL, adj;
   IS              ispart,isnumb,*is;
   PetscErrorCode  ierr;
 
@@ -1223,7 +1223,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
           iia[i+1] = nnz;
         }
         /* Partitioning of the adjacency matrix */
-        ierr      = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,PETSC_NULL,&adj);CHKERRQ(ierr);
+        ierr      = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,NULL,&adj);CHKERRQ(ierr);
         ierr      = MatPartitioningSetAdjacency(mpart,adj);CHKERRQ(ierr);
         ierr      = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
         ierr      = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
@@ -1310,7 +1310,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
    Input Parameters:
 +  n - the number of index sets
 .  is - the array of index sets
--  is_local - the array of local index sets, can be PETSC_NULL
+-  is_local - the array of local index sets, can be NULL
 
    Level: advanced
 
@@ -1438,7 +1438,7 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
     Output Parameters:
 +   n - the number of subdomains for this processor (default value = 1)
 .   is - the index sets that define the subdomains for this processor
--   is_local - the index sets that define the local part of the subdomains for this processor (can be PETSC_NULL)
+-   is_local - the index sets that define the local part of the subdomains for this processor (can be NULL)
 
 
     Notes:
@@ -1464,7 +1464,7 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
   if (!match) {
     if (n) *n = 0;
-    if (is) *is = PETSC_NULL;
+    if (is) *is = NULL;
   } else {
     osm = (PC_ASM*)pc->data;
     if (n) *n = osm->n_local_true;
@@ -1515,7 +1515,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
   if (!match) {
     if (n) *n = 0;
-    if (mat) *mat = PETSC_NULL;
+    if (mat) *mat = NULL;
   } else {
     osm = (PC_ASM*)pc->data;
     if (n) *n = osm->n_local_true;

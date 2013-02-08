@@ -33,11 +33,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   gridSize       = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Patch Test Options", "DMPATCH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The spatial dimension", "ex1.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-patch_size", "The patch size in each dimension", "ex1.c", patchSize, &patchSize, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-comm_size", "The comm size in each dimension", "ex1.c", commSize, &commSize, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-grid_size", "The grid size in each dimension", "ex1.c", gridSize, &gridSize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The spatial dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-patch_size", "The patch size in each dimension", "ex1.c", patchSize, &patchSize, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-comm_size", "The comm size in each dimension", "ex1.c", commSize, &commSize, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-grid_size", "The grid size in each dimension", "ex1.c", gridSize, &gridSize, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   options->patchSize.i = options->patchSize.j = options->patchSize.k = 1;
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPatchCreateGrid(PETSC_COMM_WORLD, user.dim, user.patchSize, user.commSize, user.gridSize, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "Patch Mesh");CHKERRQ(ierr);

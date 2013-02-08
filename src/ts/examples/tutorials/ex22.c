@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,2,2,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,2,2,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -64,14 +64,14 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");
   {
-    user.a[0] = 1;           ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0],&user.a[0],PETSC_NULL);CHKERRQ(ierr);
-    user.a[1] = 0;           ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1],&user.a[1],PETSC_NULL);CHKERRQ(ierr);
-    user.k[0] = 1e6;         ierr = PetscOptionsReal("-k0","Reaction rate 0","",user.k[0],&user.k[0],PETSC_NULL);CHKERRQ(ierr);
-    user.k[1] = 2*user.k[0]; ierr = PetscOptionsReal("-k1","Reaction rate 1","",user.k[1],&user.k[1],PETSC_NULL);CHKERRQ(ierr);
-    user.s[0] = 0;           ierr = PetscOptionsReal("-s0","Source 0","",user.s[0],&user.s[0],PETSC_NULL);CHKERRQ(ierr);
-    user.s[1] = 1;           ierr = PetscOptionsReal("-s1","Source 1","",user.s[1],&user.s[1],PETSC_NULL);CHKERRQ(ierr);
+    user.a[0] = 1;           ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0],&user.a[0],NULL);CHKERRQ(ierr);
+    user.a[1] = 0;           ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1],&user.a[1],NULL);CHKERRQ(ierr);
+    user.k[0] = 1e6;         ierr = PetscOptionsReal("-k0","Reaction rate 0","",user.k[0],&user.k[0],NULL);CHKERRQ(ierr);
+    user.k[1] = 2*user.k[0]; ierr = PetscOptionsReal("-k1","Reaction rate 1","",user.k[1],&user.k[1],NULL);CHKERRQ(ierr);
+    user.s[0] = 0;           ierr = PetscOptionsReal("-s0","Source 0","",user.s[0],&user.s[0],NULL);CHKERRQ(ierr);
+    user.s[1] = 1;           ierr = PetscOptionsReal("-s1","Source 1","",user.s[1],&user.s[1],NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -81,8 +81,8 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormRHSFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 

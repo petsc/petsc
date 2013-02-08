@@ -31,12 +31,12 @@ PetscInt main(PetscInt argc,char **args)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
 #endif
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-use_FFTW_interface",&use_interface,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 

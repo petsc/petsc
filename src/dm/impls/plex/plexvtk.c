@@ -92,13 +92,13 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
 
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
-    PetscInt *closure = PETSC_NULL;
+    PetscInt *closure = NULL;
     PetscInt closureSize;
 
     if (hasLabel) {
@@ -127,7 +127,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
     PetscInt *remoteVertices;
 
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
-      PetscInt *closure = PETSC_NULL;
+      PetscInt *closure = NULL;
       PetscInt closureSize, nC = 0;
 
       if (hasLabel) {
@@ -173,7 +173,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 
     ierr = PetscMalloc(numSend * sizeof(PetscInt), &localVertices);CHKERRQ(ierr);
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
-      PetscInt *closure = PETSC_NULL;
+      PetscInt *closure = NULL;
       PetscInt closureSize, nC = 0;
 
       if (hasLabel) {
@@ -254,7 +254,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, PETSC_NULL, PETSC_NULL, &vMax);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, &vMax);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   if (vMax >= 0) vEnd = PetscMin(vEnd, vMax);
   pStart   = PetscMax(PetscMin(cStart, vStart), pStart);
@@ -429,7 +429,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, &globalCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, PETSC_NULL, PETSC_NULL, PETSC_NULL, &vMax);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
   if (vMax >= 0) {
     PetscInt pStart, pEnd, p, localSize = 0;
 
@@ -463,7 +463,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     for (link = vtk->link; link; link = link->next) {
       Vec          X = (Vec) link->vec;
       DM           dmX;
-      PetscSection section, globalSection, newSection = PETSC_NULL;
+      PetscSection section, globalSection, newSection = NULL;
       const char   *name;
       PetscInt     enforceDof = PETSC_DETERMINE;
 

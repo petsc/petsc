@@ -342,7 +342,7 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
 
-  ierr = MatGetSize(mat_seq,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(mat_seq,NULL,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
   n    = n/bs;
   if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -491,7 +491,7 @@ PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscolori
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   /* look for type on command line */
-  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
   if (flag) type = tname;
 
@@ -505,7 +505,7 @@ PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscolori
 
   ierr = PetscInfo1(mat,"Number of colors %d\n",(*iscoloring)->n);CHKERRQ(ierr);
   flag = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_coloring_view",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_coloring_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);

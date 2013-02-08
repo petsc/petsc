@@ -22,29 +22,29 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&pt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-P",&P,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
   if (pt == 1) bx = DMDA_BOUNDARY_PERIODIC;
   if (pt == 2) by = DMDA_BOUNDARY_PERIODIC;
   if (pt == 3) {bx = DMDA_BOUNDARY_PERIODIC; by = DMDA_BOUNDARY_PERIODIC;}
   if (pt == 4) bz = DMDA_BOUNDARY_PERIODIC;
 
-  ierr         = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr);
+  ierr         = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-one",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-two",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-three",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-one",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-two",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-three",&flg3);CHKERRQ(ierr);
   if (flg2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,m,n,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,m,n,p,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
   }
 
   ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);

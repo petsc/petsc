@@ -92,7 +92,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->async       = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-splitreduction_async",&(*sr)->async,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-splitreduction_async",&(*sr)->async,NULL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -381,7 +381,7 @@ static PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction *
    Input Parameters:
 +   x - the first vector
 .   y - the second vector
--   result - where the result will go (can be PETSC_NULL)
+-   result - where the result will go (can be NULL)
 
    Level: advanced
 
@@ -419,8 +419,8 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
    VecDotEnd - Ends a split phase dot product computation.
 
    Input Parameters:
-+  x - the first vector (can be PETSC_NULL)
-.  y - the second vector (can be PETSC_NULL)
++  x - the first vector (can be NULL)
+.  y - the second vector (can be NULL)
 -  result - where the result will go
 
    Level: advanced
@@ -467,7 +467,7 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
    Input Parameters:
 +  x - the first vector
 .  y - the second vector
--  result - where the result will go (can be PETSC_NULL)
+-  result - where the result will go (can be NULL)
 
    Level: advanced
 
@@ -506,8 +506,8 @@ PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
    VecTDotEnd - Ends a split phase transpose dot product computation.
 
    Input Parameters:
-+  x - the first vector (can be PETSC_NULL)
-.  y - the second vector (can be PETSC_NULL)
++  x - the first vector (can be NULL)
+.  y - the second vector (can be NULL)
 -  result - where the result will go
 
    Level: advanced
@@ -540,7 +540,7 @@ PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
    Input Parameters:
 +  x - the first vector
 .  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
--  result - where the result will go (can be PETSC_NULL)
+-  result - where the result will go (can be NULL)
 
    Level: advanced
 
@@ -588,7 +588,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
    VecNormEnd - Ends a split phase norm computation.
 
    Input Parameters:
-+  x - the first vector (can be PETSC_NULL)
++  x - the first vector (can be NULL)
 .  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
 -  result - where the result will go
 
@@ -651,7 +651,7 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
 +   x - the first vector
 .   nv - number of vectors
 .   y - array of vectors
--   result - where the result will go (can be PETSC_NULL)
+-   result - where the result will go (can be NULL)
 
    Level: advanced
 
@@ -693,9 +693,9 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
    VecMDotEnd - Ends a split phase multiple dot product computation.
 
    Input Parameters:
-+   x - the first vector (can be PETSC_NULL)
++   x - the first vector (can be NULL)
 .   nv - number of vectors
--   y - array of vectors (can be PETSC_NULL)
+-   y - array of vectors (can be NULL)
 
    Output Parameters:
 .   result - where the result will go
@@ -746,7 +746,7 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 +  x - the first vector
 .  nv - number of vectors
 .  y - array of  vectors
--  result - where the result will go (can be PETSC_NULL)
+-  result - where the result will go (can be NULL)
 
    Level: advanced
 
@@ -789,9 +789,9 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
    VecMTDotEnd - Ends a split phase transpose multiple dot product computation.
 
    Input Parameters:
-+  x - the first vector (can be PETSC_NULL)
++  x - the first vector (can be NULL)
 .  nv - number of vectors
--  y - array of  vectors (can be PETSC_NULL)
+-  y - array of  vectors (can be NULL)
 
    Output Parameters
 .  result - where the result will go

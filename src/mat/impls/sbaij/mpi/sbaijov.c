@@ -32,7 +32,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
 
   /* ----- previous non-scalable implementation ----- */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL, "-IncreaseOverlap_old", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-IncreaseOverlap_old", &flg);CHKERRQ(ierr);
   if (flg) { /* previous non-scalable implementation */
     printf("use previous non-scalable implementation...\n");
     for (i=0; i<ov; ++i) {
@@ -313,7 +313,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = PetscFree(ctable);CHKERRQ(ierr);
 
   /* Determine the number of messages to expect, their lengths, from from-ids */
-  ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&nrqr);CHKERRQ(ierr);
+  ierr = PetscGatherNumberOfMessages(comm,NULL,len_s,&nrqr);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nrqs,nrqr,len_s,&id_r1,&len_r1);CHKERRQ(ierr);
 
   /*  Now  post the sends */

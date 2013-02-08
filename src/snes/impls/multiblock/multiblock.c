@@ -149,8 +149,8 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
         } else mb->bs = 1;
       }
 
-      ierr = PetscOptionsGetBool(((PetscObject) snes)->prefix, "-snes_multiblock_default", &flg, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetBool(((PetscObject) snes)->prefix, "-snes_multiblock_detect_saddle_point", &stokes, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject) snes)->prefix, "-snes_multiblock_default", &flg, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject) snes)->prefix, "-snes_multiblock_detect_saddle_point", &stokes, NULL);CHKERRQ(ierr);
       if (stokes) {
         IS       zerodiags, rest;
         PetscInt nmin, nmax;
@@ -229,7 +229,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     mb->issetup = PETSC_TRUE;
     bs          = mb->bs;
     ierr        = MatGetOwnershipRange(snes->jacobian_pre, &rstart, &rend);CHKERRQ(ierr);
-    ierr        = MatGetLocalSize(snes->jacobian_pre, PETSC_NULL, &ccsize);CHKERRQ(ierr);
+    ierr        = MatGetLocalSize(snes->jacobian_pre, NULL, &ccsize);CHKERRQ(ierr);
     nslots      = (rend - rstart)/bs;
     for (i = 0; i < numBlocks; ++i) {
       if (mb->defaultblocks) {
@@ -294,12 +294,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (!jac->Afield) {
       ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     }
@@ -396,9 +396,9 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     Vec xtmp;
 
     blocks = mb->blocks;
-    ierr   = MatGetVecs(snes->jacobian_pre, &xtmp, PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatGetVecs(snes->jacobian_pre, &xtmp, NULL);CHKERRQ(ierr);
     while (blocks) {
-      ierr   = VecScatterCreate(xtmp, blocks->is, blocks->x, PETSC_NULL, &blocks->sctx);CHKERRQ(ierr);
+      ierr   = VecScatterCreate(xtmp, blocks->is, blocks->x, NULL, &blocks->sctx);CHKERRQ(ierr);
       blocks = blocks->next;
     }
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
@@ -568,7 +568,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
         /*TODO: Make an array of Vecs for this */
         /*ierr = VecStrideGatherAll(X, mb->x, INSERT_VALUES);CHKERRQ(ierr);*/
         while (blocks) {
-          ierr   = SNESSolve(blocks->snes, PETSC_NULL, blocks->x);CHKERRQ(ierr);
+          ierr   = SNESSolve(blocks->snes, NULL, blocks->x);CHKERRQ(ierr);
           blocks = blocks->next;
         }
         /*ierr = VecStrideScatterAll(mb->x, X, INSERT_VALUES);CHKERRQ(ierr);*/
@@ -576,7 +576,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
         while (blocks) {
           ierr   = VecScatterBegin(blocks->sctx, X, blocks->x, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
           ierr   = VecScatterEnd(blocks->sctx, X, blocks->x, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-          ierr   = SNESSolve(blocks->snes, PETSC_NULL, blocks->x);CHKERRQ(ierr);
+          ierr   = SNESSolve(blocks->snes, NULL, blocks->x);CHKERRQ(ierr);
           ierr   = VecScatterBegin(blocks->sctx, blocks->x, X, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
           ierr   = VecScatterEnd(blocks->sctx, blocks->x, X, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
           blocks = blocks->next;
@@ -649,7 +649,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   ierr = PetscMalloc(n*sizeof(PetscInt), &newblock->fields);CHKERRQ(ierr);
   ierr = PetscMemcpy(newblock->fields, fields, n*sizeof(PetscInt));CHKERRQ(ierr);
 
-  newblock->next = PETSC_NULL;
+  newblock->next = NULL;
 
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
@@ -660,7 +660,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
 
   if (!next) {
     mb->blocks         = newblock;
-    newblock->previous = PETSC_NULL;
+    newblock->previous = NULL;
   } else {
     while (next->next) {
       next = next->next;
@@ -701,7 +701,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
 
   ierr = PetscObjectReference((PetscObject) is);CHKERRQ(ierr);
 
-  newblock->next = PETSC_NULL;
+  newblock->next = NULL;
 
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
@@ -712,7 +712,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
 
   if (!next) {
     mb->blocks         = newblock;
-    newblock->previous = PETSC_NULL;
+    newblock->previous = NULL;
   } else {
     while (next->next) {
       next = next->next;
@@ -803,7 +803,7 @@ EXTERN_C_END
 
   Input Parameters:
 + snes   - the solver
-. name   - name of this block, if PETSC_NULL the number of the block is used
+. name   - name of this block, if NULL the number of the block is used
 . n      - the number of fields in this block
 - fields - the fields in this block
 
@@ -844,7 +844,7 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 
   Input Parameters:
 + snes - the solver context
-. name - name of this block, if PETSC_NULL the number of the block is used
+. name - name of this block, if NULL the number of the block is used
 - is   - the index set that defines the global row indices in this block
 
   Notes:

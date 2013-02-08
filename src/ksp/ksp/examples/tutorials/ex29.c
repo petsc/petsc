@@ -62,11 +62,11 @@ int main(int argc,char **argv)
 
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
   user.rho    = 1.0;
-  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
   user.nu     = 0.1;
-  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)DIRICHLET;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
   ierr        = PetscOptionsEnd();
 
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
@@ -119,7 +119,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
     MatNullSpace nullspace;
 
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,NULL);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

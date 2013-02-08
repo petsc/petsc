@@ -295,8 +295,8 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
     ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
   }
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGUseSingleReduction_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGUseSingleReduction_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -341,10 +341,10 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
   ierr = PetscOptionsHead("KSP CG and CGNE options");CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
-                          (PetscEnum*)&cg->type,PETSC_NULL);CHKERRQ(ierr);
+                          (PetscEnum*)&cg->type,NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscOptionsBool("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()",
-                          "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,PETSC_NULL);CHKERRQ(ierr);
+                          "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

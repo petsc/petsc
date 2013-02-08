@@ -19,7 +19,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for section boundary condition test", "Section");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "section2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "section2.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

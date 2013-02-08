@@ -170,10 +170,10 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   ierr = PetscOptionsHead("Block Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_bjacobi_truelocal","Use the true matrix, not preconditioner matrix to define matrix vector product in sub-problems","PCBJacobiSetUseTrueLocal",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bjacobi_truelocal","Use the true matrix, not preconditioner matrix to define matrix vector product in sub-problems","PCBJacobiSetUseTrueLocal",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
   }
@@ -253,7 +253,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     ierr   = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr   = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr   = PetscSNPrintf(str,25,"Number blocks %D",jac->n);CHKERRQ(ierr);
-    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr   = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     /* warning the communicator on viewer is different then on ksp in parallel */
@@ -422,8 +422,8 @@ PetscErrorCode  PCBJacobiSetUseTrueLocal(PC pc)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this processor, or PETSC_NULL
-.  first_local - the global number of the first block on this processor, or PETSC_NULL
++  n_local - the number of blocks on this processor, or NULL
+.  first_local - the global number of the first block on this processor, or NULL
 -  ksp - the array of KSP contexts
 
    Notes:
@@ -435,7 +435,7 @@ PetscErrorCode  PCBJacobiSetUseTrueLocal(PC pc)
    You must call KSPSetUp() or PCSetUp() before calling PCBJacobiGetSubKSP().
 
    Fortran Usage: You must pass in a KSP array that is large enough to contain all the local KSPs.
-      You can call PCBJacobiGetSubKSP(pc,nlocal,firstlocal,PETSC_NULL_OBJECT,ierr) to determine how large the
+      You can call PCBJacobiGetSubKSP(pc,nlocal,firstlocal,NULL_OBJECT,ierr) to determine how large the
       KSP array must be.
 
    Level: advanced
@@ -897,8 +897,8 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       KSPSolve() on the block.
     */
     ierr = MatGetSize(pmat,&m,&m);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,PETSC_NULL,&bjac->x);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,PETSC_NULL,&bjac->y);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->y);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,bjac->x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,bjac->y);CHKERRQ(ierr);
   } else {
@@ -1136,7 +1136,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,PETSC_NULL,&y);CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&y);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,x);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,y);CHKERRQ(ierr);
 
@@ -1310,16 +1310,16 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
       ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
 
-      ierr = MatGetLocalSize(mpjac->submats,&m,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetSize(mpjac->submats,&n,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(mpjac->submats,&m,NULL);CHKERRQ(ierr);
+      ierr = MatGetSize(mpjac->submats,&n,NULL);CHKERRQ(ierr);
       ierr = PetscSynchronizedPrintf(comm,"[%d], sub-size %d,sub-rank %d\n",rank,subsize,subrank);
       ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
     */
 
     /* create dummy vectors xsub and ysub */
     ierr = MatGetLocalSize(mpjac->submats,&m,&n);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,PETSC_NULL,&mpjac->xsub);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,PETSC_NULL,&mpjac->ysub);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&mpjac->xsub);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&mpjac->ysub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mpjac->ysub);CHKERRQ(ierr);
 

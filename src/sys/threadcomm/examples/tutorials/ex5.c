@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
 
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&tsize);CHKERRQ(ierr);
   ierr = PetscMalloc(tsize*sizeof(*counters),&counters);CHKERRQ(ierr);

@@ -33,16 +33,16 @@ int main(int argc,char **args)
   wcomm = PETSC_COMM_WORLD;
   ierr  = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(PETSC_NULL,"-ne",&ne,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
   M    = (ne+1)*(ne+1); /* global number of nodes */
   /* create stiffness matrix */
   ierr = MatCreateAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                      18,PETSC_NULL,6,PETSC_NULL,&Amat);CHKERRQ(ierr);
+                      18,NULL,6,NULL,&Amat);CHKERRQ(ierr);
   ierr = MatCreateAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                      18,PETSC_NULL,6,PETSC_NULL,&Pmat);CHKERRQ(ierr);
+                      18,NULL,6,NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   m    = Iend-Istart;
   bs   = 1;

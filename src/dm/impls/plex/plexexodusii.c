@@ -205,7 +205,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = PetscMalloc2(num_side_in_set,int,&fs_vertex_count_list,num_side_in_set*4,int,&fs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
-        const PetscInt *faces   = PETSC_NULL;
+        const PetscInt *faces   = NULL;
         PetscInt       faceSize = fs_vertex_count_list[f], numFaces;
         PetscInt       faceVertices[4], v;
 

@@ -254,8 +254,8 @@ namespace ALE {
 
     public:
       UFCBoundaryCondition(MPI_Comm comm, int debug = 0) : GeneralBoundaryCondition(comm, debug) {
-        _function = PETSC_NULL;
-        _exactSol = PETSC_NULL;
+        _function = NULL;
+        _exactSol = NULL;
       }
 
       UFCBoundaryCondition(MPI_Comm comm, ufc::function * function, ufc::function * exactsol, ufc::finite_element * element, ufc::cell * cell, const std::string& name, const int marker, int debug = 0) : GeneralBoundaryCondition(comm, debug){
@@ -467,7 +467,7 @@ namespace ALE {
         //one DOF with multiple coefficients; for the sake of being able to loop independent of the vector space here we split it up.
 
         int ufc_dof;
-        if (_cell == PETSC_NULL) throw Exception("UFCBoundaryCondition->integrateDual: cell is not initialized");
+        if (_cell == NULL) throw Exception("UFCBoundaryCondition->integrateDual: cell is not initialized");
         //TODO reordering
         ufc_dof = this->getReorder()[dof];
         //switch the order
@@ -500,11 +500,11 @@ namespace ALE {
       double * _tmp_coefficients;
     public:
       UFCCellIntegral(MPI_Comm comm, int debug = 1) : GeneralIntegral(comm, debug) {
-        this->_tmp_tensor = PETSC_NULL;
-        this->_tmp_coefficients = PETSC_NULL;
-        this->_integral = PETSC_NULL;
-        this->_cell = PETSC_NULL;
-        this->_coefficients = PETSC_NULL;
+        this->_tmp_tensor = NULL;
+        this->_tmp_coefficients = NULL;
+        this->_integral = NULL;
+        this->_cell = NULL;
+        this->_coefficients = NULL;
       }
 
       UFCCellIntegral(MPI_Comm comm, ufc::cell_integral * integral, ufc::cell * cell, name_type name, int label, int rank, int dimension, int ncoefficients = 0, int debug = 0) : GeneralIntegral(comm, name, label, ncoefficients, debug){
@@ -523,7 +523,7 @@ namespace ALE {
         if (ncoefficients) {
           this->_tmp_coefficients = new double[dimension*ncoefficients];
           this->_coefficients = new const double*[ncoefficients];
-        } else this->_coefficients = PETSC_NULL;
+        } else this->_coefficients = NULL;
       }
 
       virtual ~UFCCellIntegral() {
@@ -550,7 +550,7 @@ namespace ALE {
 
 
       //there will eventually be some reordering occuring here, but for now just assume we've done the right thing.
-      virtual void tabulateTensor(double * tensor, const double * coefficients = PETSC_NULL) {
+      virtual void tabulateTensor(double * tensor, const double * coefficients = NULL) {
         //just run the frickin' tabulate_tensor routine from the form on what gets spit out by restrictClosure right now; rebuild or reorder later.
         //the coefficients have come in in
         if (this->getNumCoefficients()) {
@@ -595,8 +595,8 @@ namespace ALE {
 
       UFCFormSubProblem(MPI_Comm comm, int debug = 0) : GenericFormSubProblem(comm, debug) {
         //yeah
-        _cell = PETSC_NULL;
-        _full_finite_element = PETSC_NULL;
+        _cell = NULL;
+        _full_finite_element = NULL;
       }
 
       UFCFormSubProblem(MPI_Comm comm, ufc::cell * cell, ufc::finite_element * finite_element, int debug = 0) : GenericFormSubProblem(comm, debug) {
@@ -670,7 +670,7 @@ namespace ALE {
       }
 
       virtual void setCell(Obj<PETSC_MESH_TYPE> mesh, PETSC_MESH_TYPE::point_type c) const {
-        if (_cell == PETSC_NULL) throw Exception("UFCFormSubProblem: Uninitialized cell");
+        if (_cell == NULL) throw Exception("UFCFormSubProblem: Uninitialized cell");
         Obj<PETSC_MESH_TYPE::real_section_type> coords = mesh->getRealSection("coordinates");
         const double * cellcoords = mesh->restrictClosure(coords, c);
         int index = 0;

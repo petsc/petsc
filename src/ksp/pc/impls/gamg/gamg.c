@@ -43,7 +43,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
     PetscPrintf(((PetscObject)pc)->comm,"***[%d]%s this should not happen, cleaned up in SetUp\n",0,__FUNCT__);
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
   }
-  pc_gamg->data = PETSC_NULL; pc_gamg->data_sz = 0;
+  pc_gamg->data = NULL; pc_gamg->data_sz = 0;
 
   if (pc_gamg->orig_data) {
     ierr = PetscFree(pc_gamg->orig_data);CHKERRQ(ierr);
@@ -80,10 +80,10 @@ static PetscErrorCode GAMGKKTMatCreate(Mat A, PetscBool iskkt, GAMGKKTMat *out)
     ierr = MatGetSubMatrix(A, is_constraint, is_prime, MAT_INITIAL_MATRIX, &out->A21);CHKERRQ(ierr);
   } else {
     out->A11       = A;
-    out->A21       = PETSC_NULL;
-    out->A12       = PETSC_NULL;
-    out->prim_is   = PETSC_NULL;
-    out->constr_is = PETSC_NULL;
+    out->A21       = NULL;
+    out->A12       = NULL;
+    out->prim_is   = NULL;
+    out->constr_is = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -149,12 +149,12 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
   /* set 'ncrs_prim' (nodes), 'ncrs_eq' (equations)*/
   ncrs_prim = pc_gamg->data_sz/pc_gamg->data_cell_cols/pc_gamg->data_cell_rows;
   assert(pc_gamg->data_sz%(pc_gamg->data_cell_cols*pc_gamg->data_cell_rows)==0);
-  ierr = MatGetLocalSize(Cmat, &ncrs_eq, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(Cmat, &ncrs_eq, NULL);CHKERRQ(ierr);
 
   /* get number of PEs to make active 'new_size', reduce, can be any integer 1-P */
   {
     PetscInt ncrs_eq_glob;
-    ierr     = MatGetSize(Cmat, &ncrs_eq_glob, PETSC_NULL);CHKERRQ(ierr);
+    ierr     = MatGetSize(Cmat, &ncrs_eq_glob, NULL);CHKERRQ(ierr);
     new_size = (PetscMPIInt)((float)ncrs_eq_glob/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
     if (new_size == 0 || ncrs_eq_glob < coarse_max) new_size = 1;
     else if (new_size >= nactive) new_size = nactive; /* no change, rare */
@@ -387,7 +387,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
       Scatter the element vertex information (still in the original vertex ordering)
       to the correct processor
     */
-    ierr = VecScatterCreate(src_crd, PETSC_NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(src_crd, NULL, dest_crd, isscat, &vecscat);CHKERRQ(ierr);
     ierr = ISDestroy(&isscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -557,7 +557,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
       if (pc_gamg->Nlevels > 1) {
         /* currently only handle case where mat and pmat are the same on coarser levels */
-        ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,PETSC_NULL);CHKERRQ(ierr);
+        ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,NULL);CHKERRQ(ierr);
         /* (re)set to get dirty flag */
         ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
@@ -569,7 +569,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
             mglevels[level]->A = B;
           } else {
-            ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
+            ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
           }
           ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -585,14 +585,14 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     }
   }
 
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
 
   ierr = GAMGKKTMatCreate(Pmat, stokes, &kktMatsArr[0]);CHKERRQ(ierr);
 
   if (!pc_gamg->data) {
     if (pc_gamg->orig_data) {
       ierr = MatGetBlockSize(Pmat, &bs);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(Pmat, &qq, PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Pmat, &qq, NULL);CHKERRQ(ierr);
 
       pc_gamg->data_sz        = (qq/bs)*pc_gamg->orig_data_cell_rows*pc_gamg->orig_data_cell_cols;
       pc_gamg->data_cell_rows = pc_gamg->orig_data_cell_rows;
@@ -664,7 +664,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* could have failed to create new level */
       if (Prol11) {
         /* get new block size of coarse matrices */
-        ierr = MatGetBlockSizes(Prol11, PETSC_NULL, &bs);CHKERRQ(ierr);
+        ierr = MatGetBlockSizes(Prol11, NULL, &bs);CHKERRQ(ierr);
 
         if (stokes) {
           if (!pc_gamg->formkktprol) SETERRQ(wcomm,PETSC_ERR_USER,"Stokes not supportd by AMG method.");
@@ -682,10 +682,10 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           Mat a[4];
 
           is_row[0] = kktMatsArr[level].prim_is; is_row[1] = kktMatsArr[level].constr_is;
-          a[0]      = Prol11; a[1] = PETSC_NULL; a[2] = PETSC_NULL; a[3] = Prol22;
+          a[0]      = Prol11; a[1] = NULL; a[2] = NULL; a[3] = Prol22;
           ierr      = MatCreateNest(wcomm,2,is_row, 2, is_row, a, &Parr[level1]);CHKERRQ(ierr);
         } else Parr[level1] = Prol11;
-      } else Parr[level1] = PETSC_NULL;
+      } else Parr[level1] = NULL;
 
       if (pc_gamg->use_aggs_in_gasm) {
         ierr = PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
@@ -749,13 +749,13 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
   if (pc_gamg->data) {
     ierr          = PetscFree(pc_gamg->data);CHKERRQ(ierr);
-    pc_gamg->data = PETSC_NULL;
+    pc_gamg->data = NULL;
   }
 
   if (pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s %d levels, grid complexity = %g\n",0,__FUNCT__,level+1,nnztot/nnz0);
   pc_gamg->Nlevels = level + 1;
   fine_level       = level;
-  ierr             = PCMGSetLevels(pc,pc_gamg->Nlevels,PETSC_NULL);CHKERRQ(ierr);
+  ierr             = PCMGSetLevels(pc,pc_gamg->Nlevels,NULL);CHKERRQ(ierr);
 
   /* simple setup */
   if (!PETSC_TRUE) {
@@ -816,11 +816,11 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           PetscInt my0,kk;
           ierr = MatGetOwnershipRange(Aarr[level], &my0, &kk);CHKERRQ(ierr);
           ierr = ISCreateGeneral(PETSC_COMM_SELF, 1, &my0, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
-          ierr = PCGASMSetSubdomains(subpc, 1, &is, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains(subpc, 1, &is, NULL);CHKERRQ(ierr);
           ierr = ISDestroy(&is);CHKERRQ(ierr);
         } else {
           PetscInt kk;
-          ierr = PCGASMSetSubdomains(subpc, sz, is, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains(subpc, sz, is, NULL);CHKERRQ(ierr);
           for (kk=0; kk<sz; kk++) {
             ierr = ISDestroy(&is[kk]);CHKERRQ(ierr);
           }
@@ -828,7 +828,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         }
         ierr = PCGASMSetOverlap(subpc, 0);CHKERRQ(ierr);
 
-        ASMLocalIDsArr[level] = PETSC_NULL;
+        ASMLocalIDsArr[level] = NULL;
         nASMBlocksArr[level]  = 0;
         ierr                  = PCGASMSetType(subpc, PC_GASM_BASIC);CHKERRQ(ierr);
       } else {
@@ -950,8 +950,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         }
         {
           PetscInt N1, N0;
-          ierr = MatGetSize(Aarr[level], &N1, PETSC_NULL);CHKERRQ(ierr);
-          ierr = MatGetSize(Aarr[level+1], &N0, PETSC_NULL);CHKERRQ(ierr);
+          ierr = MatGetSize(Aarr[level], &N1, NULL);CHKERRQ(ierr);
+          ierr = MatGetSize(Aarr[level+1], &N0, NULL);CHKERRQ(ierr);
           /* heuristic - is this crap? */
           /* emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); */
           emin  = emax * pc_gamg->eigtarget[0];
@@ -1382,7 +1382,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
     /* -pc_gamg_verbose */
     ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG",
                            "none", pc_gamg->verbose,
-                           &pc_gamg->verbose, PETSC_NULL);CHKERRQ(ierr);
+                           &pc_gamg->verbose, NULL);CHKERRQ(ierr);
     /* -pc_gamg_repartition */
     ierr = PetscOptionsBool("-pc_gamg_repartition",
                             "Repartion coarse grids (false)",
@@ -1429,7 +1429,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
       ierr = PetscPrintf(wcomm,"\t[%d]%s threshold set %e\n",0,__FUNCT__,pc_gamg->threshold);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsRealArray("-pc_gamg_eigtarget","Target eigenvalue range as fraction of estimated maximum eigenvalue","PCGAMGSetEigTarget",pc_gamg->eigtarget,&two,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_gamg_eigtarget","Target eigenvalue range as fraction of estimated maximum eigenvalue","PCGAMGSetEigTarget",pc_gamg->eigtarget,&two,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_mg_levels",
                            "Set number of MG levels",
                            "PCGAMGSetNlevels",
@@ -1598,7 +1598,7 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
   {
     char tname[256] = GAMGAGG;
-    ierr = PetscOptionsList("-pc_gamg_type","Type of GAMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_gamg_type","Type of GAMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), NULL);CHKERRQ(ierr);
     ierr = PCGAMGSetType(pc, tname);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

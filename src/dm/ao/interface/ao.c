@@ -474,7 +474,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
    Input Parameters:
 +  ao - the application ordering
 .  isapp -  index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
+-  ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
    Notes:
@@ -533,9 +533,9 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
 
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
-  *ao = PETSC_NULL;
+  *ao = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = AOInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
@@ -543,7 +543,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   *ao  = aonew;
 
   opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-ao_view", &opt,NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = AOView(aonew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

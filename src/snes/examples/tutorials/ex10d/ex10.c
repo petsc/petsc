@@ -134,16 +134,16 @@ int main(int argc,char **argv)
   user.Nvglobal = 16;      /*Global # of vertices  */
   user.Neglobal = 18;      /*Global # of elements  */
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-vert",&user.Nvglobal,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-elem",&user.Neglobal,NULL);CHKERRQ(ierr);
 
   user.non_lin_param = 0.06;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-nl_par",&user.non_lin_param,NULL);CHKERRQ(ierr);
 
   user.lin_param = -1.0;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lin_par",&user.lin_param,NULL);CHKERRQ(ierr);
 
   user.Nvlocal = 0;
   user.Nelocal = 0;
@@ -409,7 +409,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
   if (!fd_jacobian_coloring) {
     ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
   } else {  /* Use matfdcoloring */
@@ -458,7 +458,7 @@ int main(int argc,char **argv)
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
 

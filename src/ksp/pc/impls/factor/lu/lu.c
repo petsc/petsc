@@ -289,7 +289,7 @@ PetscErrorCode  PCCreate_LU(PC pc)
 
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
 
-  ((PC_Factor*)dir)->fact       = PETSC_NULL;
+  ((PC_Factor*)dir)->fact       = NULL;
   ((PC_Factor*)dir)->factortype = MAT_FACTOR_LU;
   dir->inplace                  = PETSC_FALSE;
   dir->nonzerosalongdiagonal    = PETSC_FALSE;

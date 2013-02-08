@@ -21,13 +21,13 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-dm_vec_type",typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrstr(typeName,"cusp",&tmp);CHKERRQ(ierr);
     if (tmp) useCUSP = PETSC_TRUE;
   }
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-8,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-8,1,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,f,ComputeFunction,da);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,ComputeJacobian,da);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     else xstartshift = 0;
     if (rank != size-1) xendshift = 1;
     else xendshift = 0;
-    ierr = VecGetOwnershipRange(f,&fstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(f,&fstart,NULL);CHKERRQ(ierr);
     try {
       thrust::for_each(
         thrust::make_zip_iterator(
@@ -124,7 +124,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   } else {
     ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(da,f,&ff);CHKERRQ(ierr);
-    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx;
@@ -152,7 +152,7 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   ierr = DMGetLocalVector(da,&xlocal);DMGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
     if (i == 0 || i == Mx-1) {

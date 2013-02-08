@@ -78,7 +78,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   if (gmres->q_preallocate) {
     gmres->vv_allocated = VEC_OFFSET + 2 + max_k;
 
-    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);CHKERRQ(ierr);
 
     gmres->mwork_alloc[0] = gmres->vv_allocated;
@@ -89,7 +89,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   } else {
     gmres->vv_allocated = 5;
 
-    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,5,gmres->user_work[0]);CHKERRQ(ierr);
 
     gmres->mwork_alloc[0] = 5;
@@ -288,14 +288,14 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   ierr = KSPReset_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -437,7 +437,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   gmres->vv_allocated += nalloc;
 
-  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKERRQ(ierr);
 
   gmres->mwork_alloc[nwork] = nalloc;
@@ -548,7 +548,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
-    ierr = PetscViewerDrawSetInfo(viewer,PETSC_NULL,"Krylov GMRES Monitor",PETSC_DECIDE,PETSC_DECIDE,300,300);CHKERRQ(ierr);
+    ierr = PetscViewerDrawSetInfo(viewer,NULL,"Krylov GMRES Monitor",PETSC_DECIDE,PETSC_DECIDE,300,300);CHKERRQ(ierr);
   }
 
   x    = VEC_VV(gmres->it+1);
@@ -573,7 +573,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_gmres_preallocate","Preallocate Krylov vectors","KSPGMRESSetPreAllocateVectors",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_gmres_preallocate","Preallocate Krylov vectors","KSPGMRESSetPreAllocateVectors",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
   ierr = PetscOptionsBoolGroupBegin("-ksp_gmres_classicalgramschmidt","Classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);CHKERRQ(ierr);}
@@ -582,7 +582,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   ierr = PetscOptionsEnum("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType",
                           KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewers viewers;
     ierr = PetscViewersCreate(((PetscObject)ksp)->comm,&viewers);CHKERRQ(ierr);

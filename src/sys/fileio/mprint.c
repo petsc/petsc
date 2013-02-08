@@ -277,7 +277,7 @@ PetscErrorCode  PetscSNPrintfCount(char *str,size_t len,const char format[],size
 
 PrintfQueue petsc_printfqueue       = 0,petsc_printfqueuebase = 0;
 int         petsc_printfqueuelength = 0;
-FILE        *petsc_printfqueuefile  = PETSC_NULL;
+FILE        *petsc_printfqueuefile  = NULL;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSynchronizedPrintf"
@@ -467,7 +467,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
         ierr = PetscFree(message);CHKERRQ(ierr);
       }
     }
-    petsc_printfqueuefile = PETSC_NULL;
+    petsc_printfqueuefile = NULL;
   } else { /* other processors send queue to processor 0 */
     PrintfQueue next = petsc_printfqueuebase,previous;
 

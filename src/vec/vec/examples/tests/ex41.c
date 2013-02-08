@@ -57,7 +57,7 @@ PetscErrorCode test_vec_ops(void)
   PetscPrintf(PETSC_COMM_WORLD, "a = [c d] \n");
   tmp_buf[0] = c; tmp_buf[1] = d;
 
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&a);CHKERRQ(ierr);
+  ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&a);CHKERRQ(ierr);
   ierr = VecView(a,PETSC_VIEWER_STDOUT_WORLD);
   PetscPrintf(PETSC_COMM_WORLD, "a = [d c] \n");
   ierr = VecNestSetSubVec(a, 1, c);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PetscErrorCode test_vec_ops(void)
   PetscPrintf(PETSC_COMM_WORLD, "b = [e f] \n");
   tmp_buf[0] = e; tmp_buf[1] = f;
 
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&b);CHKERRQ(ierr);
+  ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&b);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);
   PetscPrintf(PETSC_COMM_WORLD, "b = [f e] \n");
   ierr = VecNestSetSubVec(b, 1, e);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode test_vec_ops(void)
   PetscPrintf(PETSC_COMM_WORLD, "X = [a b] \n");
   tmp_buf[0] = a; tmp_buf[1] = b;
 
-  ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
+  ierr = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&X);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);

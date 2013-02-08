@@ -68,11 +68,11 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
 
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
-  ierr = DMCreateDomainDecomposition(da,PETSC_NULL,PETSC_NULL,&iis,&ois,&subda);CHKERRQ(ierr);
+  ierr = DMCreateDomainDecomposition(da,NULL,NULL,&iis,&ois,&subda);CHKERRQ(ierr);
   ierr = DMCreateDomainDecompositionScatters(da,1,subda,&iscat,&oscat,&gscat);CHKERRQ(ierr);
 
   {
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
     ierr = VecCreate(PETSC_COMM_SELF,&smallvec);CHKERRQ(ierr);
     ierr = VecSetSizes(smallvec,2*(upper.i - lower.i)*(upper.j - lower.j),PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(smallvec);CHKERRQ(ierr);
-    ierr = VecScatterCreate(largevec,patchis,smallvec,PETSC_NULL,&patchscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(largevec,patchis,smallvec,NULL,&patchscat);CHKERRQ(ierr);
 
     ierr = VecSet(smallvec,1.);CHKERRQ(ierr);
 
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
   ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
 
   /* test filling outer between the big DM and the small ones with the IS scatter*/
-  ierr = VecScatterCreate(v,ois[0],sgvec,PETSC_NULL,&oscata);CHKERRQ(ierr);
+  ierr = VecScatterCreate(v,ois[0],sgvec,NULL,&oscata);CHKERRQ(ierr);
 
   ierr = FillLocalSubdomain(subda[0],sgvec);CHKERRQ(ierr);
 

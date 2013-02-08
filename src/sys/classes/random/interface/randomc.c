@@ -109,7 +109,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   r->seed = seed;
-  ierr    = PetscInfo1(PETSC_NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
+  ierr    = PetscInfo1(NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
 #endif
   }
 
-  if (!PetscRandomRegisterAllCalled) {ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!PetscRandomRegisterAllCalled) {ierr = PetscRandomRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscRandomSetType(rnd, typeName);CHKERRQ(ierr);
@@ -362,16 +362,16 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 
   PetscFunctionBegin;
   PetscValidPointer(r,3);
-  *r = PETSC_NULL;
+  *r = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscRandomInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscRandomInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,-1,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  rr->data  = PETSC_NULL;
+  rr->data  = NULL;
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;

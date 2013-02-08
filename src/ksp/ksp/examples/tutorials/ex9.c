@@ -48,8 +48,8 @@ int main(int argc,char **args)
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-t",&ntimes,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-t",&ntimes,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
@@ -108,8 +108,8 @@ int main(int argc,char **args)
   /*
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-my_ksp_monitor",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
+  ierr = PetscOptionsGetBool(NULL,"-my_ksp_monitor",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,NULL,0);CHKERRQ(ierr);}
 
   /*
      Create data structures for second linear system.
@@ -433,7 +433,7 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
   /*
      Build the solution vector
   */
-  ierr = KSPBuildSolution(ksp,PETSC_NULL,&x);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
 
   /*
      Write the solution vector and residual norm to stdout.

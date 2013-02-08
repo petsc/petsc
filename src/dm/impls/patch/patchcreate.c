@@ -39,9 +39,9 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   dm->ops->setup                           = DMSetUp_Patch;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Patch;
   dm->ops->createlocalvector               = DMCreateLocalVector_Patch;
-  dm->ops->createlocaltoglobalmapping      = PETSC_NULL;
-  dm->ops->createlocaltoglobalmappingblock = PETSC_NULL;
-  dm->ops->createfieldis                   = PETSC_NULL;
+  dm->ops->createlocaltoglobalmapping      = NULL;
+  dm->ops->createlocaltoglobalmappingblock = NULL;
+  dm->ops->createfieldis                   = NULL;
   dm->ops->getcoloring                     = 0;
   dm->ops->creatematrix                    = 0;
   dm->ops->createinterpolation             = 0;
@@ -51,10 +51,10 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   dm->ops->coarsen                         = 0;
   dm->ops->refinehierarchy                 = 0;
   dm->ops->coarsenhierarchy                = 0;
-  dm->ops->globaltolocalbegin              = PETSC_NULL;
-  dm->ops->globaltolocalend                = PETSC_NULL;
-  dm->ops->localtoglobalbegin              = PETSC_NULL;
-  dm->ops->localtoglobalend                = PETSC_NULL;
+  dm->ops->globaltolocalbegin              = NULL;
+  dm->ops->globaltolocalend                = NULL;
+  dm->ops->localtoglobalbegin              = NULL;
+  dm->ops->localtoglobalend                = NULL;
   dm->ops->destroy                         = DMDestroy_Patch;
   dm->ops->createsubdm                     = DMCreateSubDM_Patch;
   PetscFunctionReturn(0);
@@ -74,7 +74,7 @@ PetscErrorCode DMCreate_Patch(DM dm)
   dm->data = mesh;
 
   mesh->refct       = 1;
-  mesh->dmCoarse    = PETSC_NULL;
+  mesh->dmCoarse    = NULL;
   mesh->patchSize.i = 0;
   mesh->patchSize.j = 0;
   mesh->patchSize.k = 0;

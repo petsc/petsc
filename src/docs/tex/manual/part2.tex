@@ -4525,27 +4525,27 @@ More details about the solver and code examples can be found at
 \item $ \dot{u} = A u.$ First compute the matrix $ A$ then call
 \begin{tabbing}
   TSSetProblemType(ts,TS\_LINEAR);\\
-  TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,PETSC_NULL); \\
-  TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,PETSC_NULL);
+  TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,NULL); \\
+  TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,NULL);
 \end{tabbing}
 or
 \begin{tabbing}
   TSSetProblemType(ts,TS\_LINEAR);\\
-  TSSetIFunction(ts,PETSC_NULL,TSComputeIFunctionLinear,PETSC_NULL); \\
-  TSSetIJacobian(ts,A,A,TSComputeIJacobianConstant,PETSC_NULL);
+  TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,NULL); \\
+  TSSetIJacobian(ts,A,A,TSComputeIJacobianConstant,NULL);
 \end{tabbing}
 
 
 \item $ \dot{u} = A(t) u.$ Use
 \begin{tabbing}
   TSSetProblemType(ts,TS\_LINEAR);\\
-  TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,PETSC_NULL); \\
+  TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,NULL); \\
   TSSetRHSJacobian(ts,A,A,YourComputeRHSJacobian,\&appctx);
 \end{tabbing}
 where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$ as a function of time. Or use
 \begin{tabbing}
   TSSetProblemType(ts,TS\_LINEAR);\\
-  TSSetIFunction(ts,PETSC_NULL,TSComputeIFunctionLinear,PETSC_NULL); \\
+  TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,NULL); \\
   TSSetIJacobian(ts,A,A,YourComputeIJacobian,\&appctx);
 \end{tabbing}
 
@@ -5121,11 +5121,11 @@ The macros are used, for example, as follows:
 
 In several PETSc C functions, one has the option of passing a 0 (null)
 argument (for example, the fifth argument of MatCreateSeqAIJ()).
-From Fortran, users {\em must} pass \trl{PETSC_NULL_XXX} to indicate a
+From Fortran, users {\em must} pass \trl{NULL_XXX} to indicate a
 null argument (where XXX is \trl{INTEGER}, \trl{DOUBLE}, \trl{CHARACTER},
 or \trl{SCALAR} depending on the type of argument required);
-\findex{PETSC_NULL_INTEGER} passing \findex{PETSC_NULL_SCALAR} 0 from
-\findex{PETSC_NULL_DOUBLE} Fortran \findex{PETSC_NULL_CHARACTER}  will crash
+\findex{NULL_INTEGER} passing \findex{NULL_SCALAR} 0 from
+\findex{NULL_DOUBLE} Fortran \findex{NULL_CHARACTER}  will crash
 the code.   Note
 that the C convention of passing PETSC\_NULL (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
@@ -6306,7 +6306,7 @@ routines set \trl{flg=PETSC_TRUE} if the corresponding option was found, \trl{fl
 was not found.  The optional argument
 \trl{pre} indicates that the true name of the option is the given name
 (with the dash ``-'' removed) prepended by the prefix \trl{pre}.
-Usually \trl{pre} should be set to PETSC\_NULL (or \trl{PETSC_NULL_CHARACTER}
+Usually \trl{pre} should be set to PETSC\_NULL (or \trl{NULL_CHARACTER}
 for Fortran); its purpose is to
 allow someone to rename all the options in a package without knowing
 the names of the individual options.  For example, when using block

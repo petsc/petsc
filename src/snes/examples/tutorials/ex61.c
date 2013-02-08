@@ -108,10 +108,10 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 5; the whole thing */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
 
   /* Create a 1D DA with dof = 1; for individual componentes */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
 
 
   /* Set Element type (triangular) */
@@ -119,8 +119,8 @@ int main(int argc, char **argv)
   ierr = DMDASetElementType(user.da2,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
   /* Set x and y coordinates */
-  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
 
 
   /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
@@ -260,7 +260,7 @@ int main(int argc, char **argv)
 
     ierr = VecNorm(user.q,NORM_2,&normq);CHKERRQ(ierr);
     printf("2-norm of q = %14.12f\n",normq);
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Nonlinear solver failed");
     ierr = SNESVIGetInactiveSet(snes,&inactiveconstraints);CHKERRQ(ierr);
@@ -540,7 +540,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   if (user->voidgrowth) {
-    ierr = DMDAGetInfo(user->da2,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(user->da2,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
@@ -661,7 +661,7 @@ PetscErrorCode SetRandomVectors(AppCtx *user,PetscReal t)
     PetscBool   flg;
     PetscInt    seed;
 
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
     if (flg) {
       sprintf(filename,"ex61.random.%d",(int)seed);CHKERRQ(ierr);
     } else {
@@ -739,7 +739,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
@@ -809,7 +809,7 @@ PetscErrorCode GetParams(AppCtx *user)
   /* degenerate mobility */
   user->smallnumber = 1.0e-3;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-domain","Number of domains (0=one domain, 1=two domains, 2=multidomain\n","None",user->domain,&user->domain,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-Dv","Vacancy Diffusivity\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
@@ -892,8 +892,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = VecGetArray(cvlocal,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(cilocal,&ci_p);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   hx   = (user->xmax-user->xmin)/Mda;
   hy   = (user->ymax-user->ymin)/Nda;
 
@@ -1048,7 +1048,7 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   Vec cvlocal,cilocal;
 
   PetscFunctionBeginUser;
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
 
   /* new stuff */
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
@@ -1066,7 +1066,7 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
    */
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
 
 
@@ -1199,7 +1199,7 @@ PetscErrorCode Phi(AppCtx *user)
   PetscViewer       view;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 

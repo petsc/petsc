@@ -22,7 +22,7 @@ int main(int argc,char **args)
   IS             perm,iperm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = 2*size;
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   /*
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mat_nonsym",&mat_nonsymmetric);CHKERRQ(ierr);
 
   /*
      Create parallel matrix, specifying only its global dimensions.

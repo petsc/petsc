@@ -88,7 +88,7 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *xx = PETSC_NULL;
+  *xx = NULL;
   if (!shell->left) {
     *xx = x;
   } else {
@@ -107,7 +107,7 @@ static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *xx = PETSC_NULL;
+  *xx = NULL;
   if (!shell->right) {
     *xx = x;
   } else {
@@ -396,20 +396,20 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   if (t == MAT_FINAL_ASSEMBLY) {
     shell->vshift = 0.0;
     shell->vscale = 1.0;
-    shell->dshift = PETSC_NULL;
-    shell->left   = PETSC_NULL;
-    shell->right  = PETSC_NULL;
+    shell->dshift = NULL;
+    shell->left   = NULL;
+    shell->right  = NULL;
     if (shell->mult) {
       Y->ops->mult = shell->mult;
-      shell->mult  = PETSC_NULL;
+      shell->mult  = NULL;
     }
     if (shell->multtranspose) {
       Y->ops->multtranspose = shell->multtranspose;
-      shell->multtranspose  = PETSC_NULL;
+      shell->multtranspose  = NULL;
     }
     if (shell->getdiagonal) {
       Y->ops->getdiagonal = shell->getdiagonal;
-      shell->getdiagonal  = PETSC_NULL;
+      shell->getdiagonal  = NULL;
     }
     shell->usingscaled = PETSC_FALSE;
   }

@@ -15,8 +15,8 @@
   Input Parameters:
 +  da - the distributed array object
 .  xmin,xmax - extremes in the x direction
-.  ymin,ymax - extremes in the y direction (use PETSC_NULL for 1 dimensional problems)
--  zmin,zmax - extremes in the z direction (use PETSC_NULL for 1 or 2 dimensional problems)
+.  ymin,ymax - extremes in the y direction (use NULL for 1 dimensional problems)
+-  zmin,zmax - extremes in the z direction (use NULL for 1 or 2 dimensional problems)
 
   Level: beginner
 
@@ -53,7 +53,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     ierr = DMDASetFieldName(cda, 0, "x");CHKERRQ(ierr);
     if (dim > 1) {ierr = DMDASetFieldName(cda, 1, "y");CHKERRQ(ierr);}
     if (dim > 2) {ierr = DMDASetFieldName(cda, 2, "z");CHKERRQ(ierr);}
-    ierr = DMDACreateSection(cda, numComp, numVertexDof, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDACreateSection(cda, numComp, numVertexDof, NULL, NULL);CHKERRQ(ierr);
   }
   ierr = DMCreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
   if (section) {
@@ -182,14 +182,14 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
   ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;
-  ierr           = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  ierr           = PetscOptionsGetIntArray(NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
   if (!ndisplayfields) ndisplayfields = step;
   if (!flg) {
     char       **fields;
     const char *fieldname;
     PetscInt   nfields = step;
     ierr = PetscMalloc(step*sizeof(char*),&fields);CHKERRQ(ierr);
-    ierr = PetscOptionsGetStringArray(PETSC_NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
     if (flg) {
       ndisplayfields = 0;
       for (k=0; k<nfields;k++) {
@@ -244,7 +244,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_vec_mark_points",&showpoints,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-draw_vec_mark_points",&showpoints,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);

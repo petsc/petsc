@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0, help);
 
   /* Create distributed array to manage the 2d grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
 
   /* Extract global vectors from DMDA; */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -81,19 +81,19 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
-  ierr = SNESSetFunction(snes,r,FormGradient,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,FormGradient,NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,NULL);CHKERRQ(ierr);
 
   ierr = SNESSetComputeApplicationContext(snes,(PetscErrorCode (*)(SNES,void**))FormBoundaryConditions,(PetscErrorCode (*)(void**))DestroyBoundaryConditions);CHKERRQ(ierr);
 
-  ierr = SNESSetComputeInitialGuess(snes,ComputeInitialGuess,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,ComputeInitialGuess,NULL);CHKERRQ(ierr);
 
   ierr = SNESVISetComputeVariableBounds(snes,FormBounds);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* Solve the application */
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
   /* Free memory */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   ierr = DMDAVecGetArray(da,localX, &x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,G, &g);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   /* Compute function over the locally owned part of the mesh */
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -313,7 +313,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,localX, &x);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   /* Compute Jacobian over the locally owned part of the mesh */
   for (j=ys; j< ys+ym; j++) {
     for (i=xs; i< xs+xm; i++) {
@@ -478,8 +478,8 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr     = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Check if lower and upper bounds are set */
-  ierr = PetscOptionsGetScalar(PETSC_NULL, "-lb", &user->lb, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL, "-lb", &user->lb, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
   ierr = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(ierr);
@@ -580,7 +580,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Get pointers to vector data */

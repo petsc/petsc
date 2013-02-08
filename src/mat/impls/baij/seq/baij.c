@@ -145,7 +145,7 @@ PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -230,7 +230,7 @@ PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -332,7 +332,7 @@ PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -441,7 +441,7 @@ PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -557,7 +557,7 @@ PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -680,7 +680,7 @@ PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -810,7 +810,7 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -947,7 +947,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -1412,16 +1412,16 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInvertBlockDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInvertBlockDiagonal_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqsbaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocationCSR_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1868,7 +1868,7 @@ static PetscErrorCode MatView_SeqBAIJ_Draw(Mat A,PetscViewer viewer)
   xr  += w;    yr += h;  xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatView_SeqBAIJ_Draw_Zoom,A);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2616,7 +2616,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
-      ierr    = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
+      ierr    = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,NULL, y->i,y->j,NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
       ierr    = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     }
@@ -2744,7 +2744,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
@@ -3107,8 +3107,8 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
   }
 
   b    = (Mat_SeqBAIJ*)B->data;
-  ierr = PetscOptionsBegin(((PetscObject)B)->comm,PETSC_NULL,"Optimize options for SEQBAIJ matrix 2 ","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)B)->comm,NULL,"Optimize options for SEQBAIJ matrix 2 ","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_no_unroll","Do not optimize for block size (slow)",NULL,PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!flg) {
@@ -3470,8 +3470,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
     ierr = PetscMemcpy(c->compressedrow.rindex,a->compressedrow.rindex,i*sizeof(PetscInt));CHKERRQ(ierr);
   } else {
     c->compressedrow.use    = PETSC_FALSE;
-    c->compressedrow.i      = PETSC_NULL;
-    c->compressedrow.rindex = PETSC_NULL;
+    c->compressedrow.i      = NULL;
+    c->compressedrow.rindex = NULL;
   }
   C->same_nonzero = A->same_nonzero;
 
@@ -3510,8 +3510,8 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading SEQBAIJ matrix","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"Options for loading SEQBAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   bs2  = bs*bs;
 
@@ -3665,7 +3665,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 .  n - number of columns
 .  nz - number of nonzero blocks  per block row (same for all rows)
 -  nnz - array containing the number of nonzero blocks in the various block rows
-         (possibly different for each block row) or PETSC_NULL
+         (possibly different for each block row) or NULL
 
    Output Parameter:
 .  A - the matrix
@@ -3693,7 +3693,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
    matrices.
 
@@ -3727,7 +3727,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
 .  bs - size of block
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the various block rows
-         (possibly different for each block row) or PETSC_NULL
+         (possibly different for each block row) or NULL
 
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the
@@ -3749,7 +3749,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
    either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory
+   Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
    allocation.  See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateBAIJ(), MatGetInfo()

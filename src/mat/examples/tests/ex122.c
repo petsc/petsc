@@ -15,9 +15,9 @@ int main(int argc,char **argv)
   PetscInt       nza,am,an;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -27,8 +27,8 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   nza  = (PetscInt)(.3*M); /* num of nozeros in each row of A */
-  ierr = MatSeqAIJSetPreallocation(A,nza,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,nza,PETSC_NULL,nza,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,nza,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,nza,NULL,nza,NULL);CHKERRQ(ierr);
   ierr = MatSetRandom(A,r);CHKERRQ(ierr);
 
   /* create a dense matrix B */
@@ -36,8 +36,8 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,am,N,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(B,NULL);CHKERRQ(ierr);
   ierr = MatSetRandom(B,r);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

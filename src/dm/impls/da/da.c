@@ -360,9 +360,9 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 
   Input Parameter:
 + da - The DMDA
-. lx - array containing number of nodes in the X direction on each process, or PETSC_NULL. If non-null, must be of length da->m
-. ly - array containing number of nodes in the Y direction on each process, or PETSC_NULL. If non-null, must be of length da->n
-- lz - array containing number of nodes in the Z direction on each process, or PETSC_NULL. If non-null, must be of length da->p.
+. lx - array containing number of nodes in the X direction on each process, or NULL. If non-null, must be of length da->m
+. ly - array containing number of nodes in the Y direction on each process, or NULL. If non-null, must be of length da->n
+- lz - array containing number of nodes in the Z direction on each process, or NULL. If non-null, must be of length da->p.
 
   Level: intermediate
 
@@ -600,7 +600,7 @@ PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refin
 
   Level: intermediate
 
-    Notes: Pass PETSC_NULL for values you do not need
+    Notes: Pass NULL for values you do not need
 
 .seealso: DMRefine(), DMDASetRefinementFactor()
 @*/
@@ -787,13 +787,13 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDASetOwnershipRanges(da2,lx,ly,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,ly,NULL);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDASetOwnershipRanges(da2,lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
@@ -844,7 +844,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     /* force creation of the coordinate vector */
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
-    ierr = DMCreateInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdac,cdaf,&II,NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
   }
@@ -918,13 +918,13 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
     ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
     ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDASetOwnershipRanges(da2,lx,ly,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,ly,NULL);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDASetOwnershipRanges(da2,lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
@@ -1011,11 +1011,11 @@ PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
     ierr = DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
   }
   n    = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL);CHKERRQ(ierr);
   n    = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL);CHKERRQ(ierr);
   n    = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
 
   ierr = DMDASetRefinementFactor(da,refx[0],refy[0],refz[0]);CHKERRQ(ierr);
   ierr = DMRefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);

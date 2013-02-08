@@ -14,10 +14,10 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
   (*ctx)->comm   = comm;
   (*ctx)->dim    = -1;
   (*ctx)->nInput = 0;
-  (*ctx)->points = PETSC_NULL;
-  (*ctx)->cells  = PETSC_NULL;
+  (*ctx)->points = NULL;
+  (*ctx)->cells  = NULL;
   (*ctx)->n      = -1;
-  (*ctx)->coords = PETSC_NULL;
+  (*ctx)->coords = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -242,7 +242,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x);CHKERRQ(ierr);
     for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] = x[0*ctx->dof+comp];
 
     for (d = 0; d < ctx->dim; ++d) {
@@ -250,7 +250,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
       for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d*ctx->dim+f]*0.5*PetscRealPart(coords[p*ctx->dim+f] - v0[f]);
       for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] += PetscRealPart(x[(d+1)*ctx->dof+comp] - x[0*ctx->dof+comp])*xi[d];
     }
-    ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, PETSC_NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
@@ -361,8 +361,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
   ierr = MatSetSizes(J, 2, 2, 2, 2);CHKERRQ(ierr);
   ierr = MatSetType(J, MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, QuadMap_Private, PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes, J, J, QuadJacobian_Private, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, QuadMap_Private, NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, J, J, QuadJacobian_Private, NULL);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
   ierr = PCSetType(pc, PCLU);CHKERRQ(ierr);
@@ -377,12 +377,12 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     PetscInt          c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
-    ierr = DMPlexVecGetClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     if (4*2 != coordSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", coordSize, 4*2);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (4*ctx->dof != xSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", xSize, 4*ctx->dof);
-    ierr   = SNESSetFunction(snes, PETSC_NULL, PETSC_NULL, (void*) vertices);CHKERRQ(ierr);
-    ierr   = SNESSetJacobian(snes, PETSC_NULL, PETSC_NULL, PETSC_NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetFunction(snes, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0]  = coords[p*ctx->dim+0];
     xi[1]  = coords[p*ctx->dim+1];
@@ -394,8 +394,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] = x[0*ctx->dof+comp]*(1 - xir[0])*(1 - xir[1]) + x[1*ctx->dof+comp]*xir[0]*(1 - xir[1]) + x[2*ctx->dof+comp]*xir[0]*xir[1] + x[3*ctx->dof+comp]*(1 - xir[0])*xir[1];
 
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
-    ierr = DMPlexVecRestoreClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
-    ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
@@ -579,8 +579,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
   ierr = MatSetSizes(J, 3, 3, 3, 3);CHKERRQ(ierr);
   ierr = MatSetType(J, MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, HexMap_Private, PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes, J, J, HexJacobian_Private, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes, r, HexMap_Private, NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, J, J, HexJacobian_Private, NULL);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
   ierr = PCSetType(pc, PCLU);CHKERRQ(ierr);
@@ -595,12 +595,12 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
     PetscInt          c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
-    ierr = DMPlexVecGetClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     if (8*3 != coordSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", coordSize, 8*3);
-    ierr = DMPlexVecGetClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (8*ctx->dof != xSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %d should be %d", xSize, 8*ctx->dof);
-    ierr   = SNESSetFunction(snes, PETSC_NULL, PETSC_NULL, (void*) vertices);CHKERRQ(ierr);
-    ierr   = SNESSetJacobian(snes, PETSC_NULL, PETSC_NULL, PETSC_NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetFunction(snes, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0]  = coords[p*ctx->dim+0];
     xi[1]  = coords[p*ctx->dim+1];
@@ -623,8 +623,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
         x[7*ctx->dof+comp]*(1-xir[0])*    xir[1]*   xir[2];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
-    ierr = DMPlexVecRestoreClosure(dmCoord, PETSC_NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
-    ierr = DMPlexVecRestoreClosure(dm, PETSC_NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
@@ -691,6 +691,6 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   ierr = PetscFree((*ctx)->points);CHKERRQ(ierr);
   ierr = PetscFree((*ctx)->cells);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
-  *ctx = PETSC_NULL;
+  *ctx = NULL;
   PetscFunctionReturn(0);
 }

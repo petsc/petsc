@@ -543,7 +543,7 @@ PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent 
 PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
 {
   PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = PETSC_NULL;
+  PetscEventPerfLog eventLog = NULL;
   int               stage;
   PetscErrorCode    ierr;
 
@@ -560,7 +560,7 @@ PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
 PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
 {
   PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = PETSC_NULL;
+  PetscEventPerfLog eventLog = NULL;
   int               stage;
   PetscErrorCode    ierr;
 
@@ -589,7 +589,7 @@ extern int PAPIEventSet;
 PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
   PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = PETSC_NULL;
+  PetscEventPerfLog eventLog = NULL;
   int               stage;
   PetscErrorCode    ierr;
 
@@ -628,7 +628,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
 PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
   PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = PETSC_NULL;
+  PetscEventPerfLog eventLog = NULL;
   int               stage;
   PetscErrorCode    ierr;
 
@@ -670,7 +670,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObjec
 {
   PetscStageLog     stageLog;
   PetscEventRegLog  eventRegLog;
-  PetscEventPerfLog eventPerfLog = PETSC_NULL;
+  PetscEventPerfLog eventPerfLog = NULL;
   Action            *tmpAction;
   PetscLogDouble    start, end;
   PetscLogDouble    curTime;
@@ -732,7 +732,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
 {
   PetscStageLog     stageLog;
   PetscEventRegLog  eventRegLog;
-  PetscEventPerfLog eventPerfLog = PETSC_NULL;
+  PetscEventPerfLog eventPerfLog = NULL;
   Action            *tmpAction;
   PetscLogDouble    start, end;
   PetscLogDouble    curTime;
@@ -795,7 +795,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
 {
   PetscStageLog     stageLog;
   PetscEventRegLog  eventRegLog;
-  PetscEventPerfLog eventPerfLog = PETSC_NULL;
+  PetscEventPerfLog eventPerfLog = NULL;
   PetscLogDouble    cur_time;
   PetscMPIInt       rank;
   int               stage,err;
@@ -831,7 +831,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
 {
   PetscStageLog     stageLog;
   PetscEventRegLog  eventRegLog;
-  PetscEventPerfLog eventPerfLog = PETSC_NULL;
+  PetscEventPerfLog eventPerfLog = NULL;
   PetscLogDouble    cur_time;
   int               stage,err;
   PetscMPIInt       rank;

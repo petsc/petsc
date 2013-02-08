@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
 
   ierr = MatDenseGetArray(A,&a);CHKERRQ(ierr);
   for (i=0; i<size; i++) {

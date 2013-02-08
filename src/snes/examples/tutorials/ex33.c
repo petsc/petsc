@@ -43,7 +43,7 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMGetCoordinateDM(da, &cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da, &c);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da, &xs,PETSC_NULL,PETSC_NULL, &xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da, &xs,NULL,NULL, &xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, Kappa, &K);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda, c, &coords);CHKERRQ(ierr);
   for (i = xs; i < xs+xm; ++i) {
@@ -126,15 +126,15 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
   PetscInt       n;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   /* Create solver */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   /* Create mesh */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-4,3,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-4,3,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, da);CHKERRQ(ierr);
   /* Create coefficient */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-4,1,1,PETSC_NULL,&user.cda);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-4,1,1,NULL,&user.cda);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.cda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(user.cda, &user.Kappa);CHKERRQ(ierr);
   ierr = FormPermeability(user.cda, user.Kappa, &user);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-    ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
+    ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     /* Update */
     ierr = VecCopy(u, user.uold);CHKERRQ(ierr);
 

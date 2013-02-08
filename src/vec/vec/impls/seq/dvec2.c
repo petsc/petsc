@@ -40,7 +40,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   PetscInt                 *nvp,nreds,i,j;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommGetInts(((PetscObject)xin)->comm,&nvp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommGetInts(((PetscObject)xin)->comm,&nvp,NULL,NULL);CHKERRQ(ierr);
   for (i=0; i<nv; i+=nreds) {
     nreds = PetscMin(nv-i,PETSC_REDUCTIONS_MAX);
     ierr  = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_SCALAR,nreds,&red);CHKERRQ(ierr);
@@ -709,7 +709,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
   PetscScalar    *scalar;
 
   PetscFunctionBegin;
-  ierr    = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,NULL,NULL);CHKERRQ(ierr);
   *scalar = alpha;
   ierr    = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,xin,scalar);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -824,7 +824,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin,PetscInt nv,const PetscScalar *alpha,Vec *y)
 
   PetscFunctionBegin;
   ierr  = PetscLogFlops(nv*2.0*xin->map->n);
-  ierr  = PetscThreadCommGetInts(((PetscObject)xin)->comm,&int1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscThreadCommGetInts(((PetscObject)xin)->comm,&int1,NULL,NULL);CHKERRQ(ierr);
   *int1 = nv;
   ierr  = PetscThreadCommRunKernel4(((PetscObject)xin)->comm,(PetscThreadKernel)VecMAXPY_kernel,xin,int1,(void*)alpha,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -951,7 +951,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
   } else {
     PetscScalar *scal1;
-    ierr   = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scal1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr   = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scal1,NULL,NULL);CHKERRQ(ierr);
     *scal1 = alpha;
     ierr   = PetscThreadCommRunKernel3(((PetscObject)yin)->comm,(PetscThreadKernel)VecAYPX_kernel,yin,scal1,xin);CHKERRQ(ierr);
     if (alpha == (PetscScalar)-1.0) {
@@ -1060,7 +1060,7 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
   PetscScalar        *scal1;
 
   PetscFunctionBegin;
-  ierr   = PetscThreadCommGetScalars(((PetscObject)win)->comm,&scal1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = PetscThreadCommGetScalars(((PetscObject)win)->comm,&scal1,NULL,NULL);CHKERRQ(ierr);
   *scal1 = alpha;
   ierr   = PetscThreadCommRunKernel4(((PetscObject)win)->comm,(PetscThreadKernel)VecWAXPY_kernel,win,scal1,xin,yin);CHKERRQ(ierr);
   if (alpha == (PetscScalar)1.0) {

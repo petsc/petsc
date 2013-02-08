@@ -427,7 +427,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-  *ierr = PetscThreadCommInitializePackage(PETSC_NULL);
+  *ierr = PetscThreadCommInitializePackage(NULL);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
 
 #if defined(PETSC_USE_DEBUG)
@@ -436,7 +436,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
 
-  *ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_spawn_size",&nodesize,&flg);
+  *ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
     *ierr = PetscHMPISpawn((PetscMPIInt) nodesize); /* worker nodes never return from here; they go directly to PetscEnd() */
@@ -447,9 +447,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     return;
 #endif
   } else {
-    *ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_merge_size",&nodesize,&flg);
+    *ierr = PetscOptionsGetInt(NULL,"-hmpi_merge_size",&nodesize,&flg);
     if (flg) {
-      *ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);
+      *ierr = PetscHMPIMerge((PetscMPIInt) nodesize,NULL,NULL);
       if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIMerge()\n");return;}
       if (PetscHMPIWorker) { /* if worker then never enter user code */
         PetscInitializeCalled = PETSC_TRUE;

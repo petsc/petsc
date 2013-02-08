@@ -46,9 +46,9 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
 
   PetscFunctionBegin;
   PetscValidPointer(ts,1);
-  *ts = PETSC_NULL;
+  *ts = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, -1, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
@@ -56,12 +56,12 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
 
   /* General TS description */
   t->problem_type      = TS_NONLINEAR;
-  t->vec_sol           = PETSC_NULL;
+  t->vec_sol           = NULL;
   t->numbermonitors    = 0;
-  t->snes              = PETSC_NULL;
+  t->snes              = NULL;
   t->setupcalled       = 0;
-  t->data              = PETSC_NULL;
-  t->user              = PETSC_NULL;
+  t->data              = NULL;
+  t->user              = NULL;
   t->ptime             = 0.0;
   t->time_step         = 0.1;
   t->time_step_orig    = 0.1;
@@ -70,7 +70,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->max_steps         = 5000;
   t->ksp_its           = 0;
   t->snes_its          = 0;
-  t->work              = PETSC_NULL;
+  t->work              = NULL;
   t->nwork             = 0;
   t->max_snes_failures = 1;
   t->max_reject        = 10;

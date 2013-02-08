@@ -42,7 +42,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(yy,VEC_CLASSID,2);
   if (col < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requested negative column: %D",col);
-  ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
+  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
   if (col >= N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requested column %D larger than number columns in matrix %D",col,N);
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);

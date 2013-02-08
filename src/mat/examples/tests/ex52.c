@@ -20,14 +20,14 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* Test MatSetValues() and MatGetValues() */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
 
   M    = m*bs*size;
-  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-column_oriented",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatSetValuesBlocked() */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_setvaluesblocked",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-test_setvaluesblocked",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscScalar *bval;
     row /= bs;

@@ -254,7 +254,7 @@ PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
 
   PetscFunctionBegin;
   PetscValidPointer(section,2);
-  *section = PETSC_NULL;
+  *section = NULL;
 
   ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_CLASSID,0,"SectionReal","Section","DM",comm,SectionRealDestroy,0);CHKERRQ(ierr);
 
@@ -265,7 +265,7 @@ PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
   new(&s->s) ALE::Obj<PETSC_MESH_TYPE::real_section_type>(PETSC_MESH_TYPE::real_section_type(comm));
-  new(&s->b) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
+  new(&s->b) ALE::Obj<PETSC_MESH_TYPE>(NULL);
   *section = s;
   PetscFunctionReturn(0);
 }
@@ -1406,7 +1406,7 @@ PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
 
   PetscFunctionBegin;
   PetscValidPointer(section,2);
-  *section = PETSC_NULL;
+  *section = NULL;
 
   ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_CLASSID,0,"SectionInt","Section","DM",comm,SectionIntDestroy,0);CHKERRQ(ierr);
 
@@ -1417,7 +1417,7 @@ PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
   new(&s->s) ALE::Obj<PETSC_MESH_TYPE::int_section_type>(PETSC_MESH_TYPE::int_section_type(comm));
-  new(&s->b) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
+  new(&s->b) ALE::Obj<PETSC_MESH_TYPE>(NULL);
   *section = s;
   PetscFunctionReturn(0);
 }

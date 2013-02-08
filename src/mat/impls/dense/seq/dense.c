@@ -23,7 +23,7 @@ PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,A->cmap->n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,A->cmap->n,NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) rows[i] = i;
@@ -148,7 +148,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi,Mat A,MatDuplicateOption c
   PetscFunctionBegin;
   ierr = PetscLayoutReference(A->rmap,&newi->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutReference(A->cmap,&newi->cmap);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(newi,NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     l = (Mat_SeqDense*)newi->data;
     if (lda>A->rmap->n) {
@@ -242,12 +242,12 @@ PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
-  ierr = MatGetSize(B,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&nrhs);CHKERRQ(ierr);
   ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
@@ -833,7 +833,7 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
     ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
     if (M != grows ||  N != gcols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,grows,gcols);
   }
-  ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
     a = (Mat_SeqDense*)newmat->data;
@@ -1118,7 +1118,7 @@ PetscErrorCode MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
   xr  += w;    yr += h;  xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatView_SeqDense_Draw_Zoom,A);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1160,12 +1160,12 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatDenseGetArray_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatDenseRestoreArray_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMult_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultSymbolic_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatDenseGetArray_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatDenseRestoreArray_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMult_seqaij_seqdense_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultSymbolic_seqaij_seqdense_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_seqaij_seqdense_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1200,7 +1200,7 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
       ierr = MatCreate(((PetscObject)A)->comm,&tmat);CHKERRQ(ierr);
       ierr = MatSetSizes(tmat,A->cmap->n,A->rmap->n,A->cmap->n,A->rmap->n);CHKERRQ(ierr);
       ierr = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
-      ierr = MatSeqDenseSetPreallocation(tmat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSeqDenseSetPreallocation(tmat,NULL);CHKERRQ(ierr);
     } else {
       tmat = *matout;
     }
@@ -1547,7 +1547,7 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
     ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
     ierr = MatSetSizes(newmat,nrows,ncols,nrows,ncols);CHKERRQ(ierr);
     ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(newmat,NULL);CHKERRQ(ierr);
   }
 
   /* Now extract the data pointers and do the copy,column at a time */
@@ -1706,7 +1706,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,M
   ierr = MatCreate(PETSC_COMM_SELF,&Cmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(Cmat,NULL);CHKERRQ(ierr);
 
   *C = Cmat;
   PetscFunctionReturn(0);
@@ -1758,7 +1758,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscRe
   ierr = MatCreate(PETSC_COMM_SELF,&Cmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(Cmat,NULL);CHKERRQ(ierr);
 
   Cmat->assembled = PETSC_TRUE;
 
@@ -2098,7 +2098,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
 +  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
--  data - optional location of matrix data in column major order.  Set data=PETSC_NULL for PETSc
+-  data - optional location of matrix data in column major order.  Set data=NULL for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
@@ -2107,7 +2107,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
    Notes:
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=PETSC_NULL.
+   set data=NULL.
 
    Level: intermediate
 
@@ -2136,7 +2136,7 @@ PetscErrorCode  MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScala
 
    Input Parameters:
 +  A - the matrix
--  data - the array (or PETSC_NULL)
+-  data - the array (or NULL)
 
    Notes:
    The data input variable is intended primarily for Fortran programmers

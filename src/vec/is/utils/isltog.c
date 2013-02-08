@@ -147,7 +147,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   PetscValidPointer(mapping,3);
 
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   if (ilocal) {
     for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,ilocal[i]+1);
   }
@@ -195,9 +195,9 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   if (n) PetscValidIntPointer(indices,3);
   PetscValidPointer(mapping,4);
 
-  *mapping = PETSC_NULL;
+  *mapping = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,0,"ISLocalToGlobalMapping","Local to global mapping","IS",
@@ -467,12 +467,12 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 +   nout - number of indices in output array (if type == IS_GTOLM_MASK then nout = n)
 -   idxout - local index of each global index, one must pass in an array long enough
              to hold all the indices. You can call ISGlobalToLocalMappingApply() with
-             idxout == PETSC_NULL to determine the required length (returned in nout)
+             idxout == NULL to determine the required length (returned in nout)
              and then allocate the required space and call ISGlobalToLocalMappingApply()
              a second time to set the values.
 
     Notes:
-    Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
+    Either nout or idxout may be NULL. idx and idxout may be identical.
 
     This is not scalable in memory usage. Each processor requires O(Nglobal) size
     array to compute these.
@@ -589,15 +589,15 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {
     *nproc         = 0;
-    *procs         = PETSC_NULL;
+    *procs         = NULL;
     ierr           = PetscMalloc(sizeof(PetscInt),numprocs);CHKERRQ(ierr);
     (*numprocs)[0] = 0;
     ierr           = PetscMalloc(sizeof(PetscInt*),indices);CHKERRQ(ierr);
-    (*indices)[0]  = PETSC_NULL;
+    (*indices)[0]  = NULL;
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-islocaltoglobalmappinggetinfo_debug",&debug,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-islocaltoglobalmappinggetinfo_debug",&debug,NULL);CHKERRQ(ierr);
 
   /*
     Notes on ISLocalToGlobalMappingGetInfo
@@ -878,7 +878,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),procs);CHKERRQ(ierr);
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),numprocs);CHKERRQ(ierr);
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt*),indices);CHKERRQ(ierr);
-  for (i=0;i<nt+1;i++) (*indices)[i]=PETSC_NULL;
+  for (i=0;i<nt+1;i++) (*indices)[i]=NULL;
   ierr = PetscMalloc(size*sizeof(PetscInt),&bprocs);CHKERRQ(ierr);
   cnt       = 0;
   for (i=0; i<size; i++) {
@@ -1052,7 +1052,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);
   if (*array != ltog->indices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
-  *array = PETSC_NULL;
+  *array = NULL;
   PetscFunctionReturn(0);
 }
 

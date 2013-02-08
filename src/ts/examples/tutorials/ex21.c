@@ -98,11 +98,11 @@ int main(int argc,char **argv)
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-ul",&ul,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-uh",&uh,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&appctx.m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-ul",&ul,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(NULL,"-uh",&uh,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,PETSC_NULL,
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,NULL,
                       &appctx.da);CHKERRQ(ierr);
 
   /*
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (mymonitor) {
-    ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

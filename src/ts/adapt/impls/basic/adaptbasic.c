@@ -24,7 +24,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   if (!basic->Y) {ierr = VecDuplicate(X,&basic->Y);CHKERRQ(ierr);}
   Y     = basic->Y;
   order = adapt->candidates.order[0];
-  ierr  = TSEvaluateStep(ts,order-1,Y,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
 
   safety = basic->safety;
   ierr   = TSErrorNormWRMS(ts,Y,&enorm);CHKERRQ(ierr);
@@ -82,9 +82,9 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(TSAdapt adapt)
   two  = 2;
   ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase in step size","",basic->clip,&two,&set);CHKERRQ(ierr);
   if (set && (two != 2 || basic->clip[0] > basic->clip[1])) SETERRQ(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
-  ierr = PetscOptionsReal("-ts_adapt_basic_safety","Safety factor relative to target error","",basic->safety,&basic->safety,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_basic_reject_safety","Extra safety factor to apply if the last step was rejected","",basic->reject_safety,&basic->reject_safety,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_basic_always_accept","Always accept the step regardless of whether local truncation error meets goal","",basic->always_accept,&basic->always_accept,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_basic_safety","Safety factor relative to target error","",basic->safety,&basic->safety,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_basic_reject_safety","Extra safety factor to apply if the last step was rejected","",basic->reject_safety,&basic->reject_safety,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_basic_always_accept","Always accept the step regardless of whether local truncation error meets goal","",basic->always_accept,&basic->always_accept,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

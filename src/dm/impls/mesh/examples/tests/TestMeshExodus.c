@@ -40,7 +40,7 @@ int main (int argc,char ** argv)
   PetscErrorCode            ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-i",infilename,PETSC_MAX_PATH_LEN,&inflag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-i",infilename,PETSC_MAX_PATH_LEN,&inflag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&numproc);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (inflag) {
@@ -52,8 +52,8 @@ int main (int argc,char ** argv)
     meshFS->view("meshFS");
 
     if (numproc > 1) {
-      ierr = DMMeshDistribute(dmBody,PETSC_NULL,&dmBodyDist);CHKERRQ(ierr);
-      //ierr = DMMeshDistribute(dmFS,PETSC_NULL,&dmFSDist);CHKERRQ(ierr);
+      ierr = DMMeshDistribute(dmBody,NULL,&dmBodyDist);CHKERRQ(ierr);
+      //ierr = DMMeshDistribute(dmFS,NULL,&dmFSDist);CHKERRQ(ierr);
       ierr = DMMeshGetMesh(dmBodyDist,meshBodyDist);CHKERRQ(ierr);
       meshBodyDist->view("meshBodyDist");
       //ierr = DMMeshGetMesh(dmFSDist,meshFSDist);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscErrorCode MyDMMeshCreateExodus(MPI_Comm comm,const char filename[],DM *dmBo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-debug",&debug,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-debug",&debug,&flag);CHKERRQ(ierr);
 
   ierr = DMMeshCreate(comm,dmBody);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> meshBody = new PETSC_MESH_TYPE(comm,-1,debug);
@@ -135,7 +135,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   int            CPU_word_size = 0;
   int            IO_word_size  = 0;
   PetscBool      interpolate   = PETSC_FALSE;
-  int            **connect     = PETSC_NULL;
+  int            **connect     = NULL;
   int            exoid;
   char           title[MAX_LINE_LENGTH+1];
   float          version;
@@ -144,11 +144,11 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   PetscErrorCode ierr;
 
   //const char          known_elements[] = "tri,tri3,triangle,triangle3,quad,quad4,tet,tet4,tetra,tetra4,hex,hex8";
-  float     *x    = PETSC_NULL,*y = PETSC_NULL,*z = PETSC_NULL;
+  float     *x    = NULL,*y = NULL,*z = NULL;
   PetscBool debug = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-interpolate",&interpolate,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-interpolate",&interpolate,NULL);CHKERRQ(ierr);
 
   /*
     Get the sieve meshes from the dms
@@ -179,10 +179,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read element connectivity
   */
-  int       *eb_ids   = PETSC_NULL,*num_elem_in_block = PETSC_NULL,*num_nodes_per_elem = PETSC_NULL,*num_attr = PETSC_NULL;
-  char      **eb_name = PETSC_NULL,**eb_elemtype = PETSC_NULL;
+  int       *eb_ids   = NULL,*num_elem_in_block = NULL,*num_nodes_per_elem = NULL,*num_attr = NULL;
+  char      **eb_name = NULL,**eb_elemtype = NULL;
   PetscBool eb_hasnoname;
-  char      *elem_sig = PETSC_NULL;
+  char      *elem_sig = NULL;
 
   ierr = PetscMalloc6(num_eb,int,&eb_ids,
                       num_eb,int,&num_elem_in_block,
@@ -240,9 +240,9 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read side sets
   */
-  int       *ss_ids              = PETSC_NULL,*num_sides_in_set = PETSC_NULL;
-  int       **side_set_elem_list = PETSC_NULL,**side_set_side_list = PETSC_NULL;
-  char      **ss_name            = PETSC_NULL;
+  int       *ss_ids              = NULL,*num_sides_in_set = NULL;
+  int       **side_set_elem_list = NULL,**side_set_side_list = NULL;
+  char      **ss_name            = NULL;
   PetscBool ss_hasnoname;
   int       num_df_in_sset;
   int       num_faces = 0;
@@ -285,9 +285,9 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Read node sets
   */
-  int       *ns_ids     = PETSC_NULL,*num_nodes_in_set = PETSC_NULL;
-  int       **node_list = PETSC_NULL;
-  char      **ns_name   = PETSC_NULL;
+  int       *ns_ids     = NULL,*num_nodes_in_set = NULL;
+  int       **node_list = NULL;
+  char      **ns_name   = NULL;
   PetscBool ns_hasnoname;
   ierr = PetscMalloc4(num_ns,int,&ns_ids,
                       num_ns,int,&num_nodes_in_set,
@@ -325,8 +325,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Build mesh topology
   */
-  int *cells               = PETSC_NULL;
-  int **connectivity_table = PETSC_NULL;
+  int *cells               = NULL;
+  int **connectivity_table = NULL;
   int num_local_corners    = 0;
 
   for (int eb = 0; eb < num_eb; ++eb) {
@@ -367,7 +367,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Build coordinates
   */
-  double *coords = PETSC_NULL;
+  double *coords = NULL;
   ierr = PetscMalloc(num_dim*num_nodes * sizeof(double), &coords);CHKERRQ(ierr);
   if (num_dim > 0) {
     for (int v = 0; v < num_nodes; ++v) coords[v*num_dim+0] = x[v];
@@ -395,7 +395,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Initialize parent block mapping needed to build face sets
   */
-  PetscInt *cellParentBlock = PETSC_NULL;
+  PetscInt *cellParentBlock = NULL;
 
   ierr = PetscMalloc(num_elem * sizeof(PetscInt),&cellParentBlock);CHKERRQ(ierr);
   for (int eb = 0,k = 0; eb < num_eb; ++eb) {
@@ -424,8 +424,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm,const char filename[],DM dmBody
   /*
     Build face sets mesh
   */
-  const PetscInt *faceVertex = PETSC_NULL;
-  PetscInt       *faces      = PETSC_NULL,faceNumVertex,faceCell,faceNum,faceParentBlock;
+  const PetscInt *faceVertex = NULL;
+  PetscInt       *faces      = NULL,faceNumVertex,faceCell,faceNum,faceParentBlock;
   PetscInt       faceCount   = 0,vertexCount = 0;
   EXO_ELEM_TYPE  cell_type;
 

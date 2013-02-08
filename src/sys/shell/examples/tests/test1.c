@@ -65,12 +65,12 @@ PetscErrorCode  TestCCall(PetscShell component, const char *message)
 #define __FUNCT__ "main"
 PetscErrorCode main(int argc, char *argv[])
 {
-  PetscShell     shell, a = PETSC_NULL, b = PETSC_NULL;
+  PetscShell     shell, a = NULL, b = NULL;
   const char     *conf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = PetscShellCreate(PETSC_COMM_WORLD, &shell);CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentURL(shell, "TestIA", "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIA");CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentURL(shell, "TestIB", "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIB");CHKERRQ(ierr);
@@ -87,9 +87,9 @@ PetscErrorCode main(int argc, char *argv[])
   ierr = PetscObjectComposeFunction((PetscObject)a, "call", "call", (void (*)(void))TestACall);CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentShell(shell, "TestA", a);CHKERRQ(ierr);
   /**/
-  b    = PETSC_NULL;
+  b    = NULL;
   ierr = PetscShellRegisterComponentShell(shell, "TestB", b);CHKERRQ(ierr);
-  ierr = PetscShellGetComponent(shell, "TestB", &b, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscShellGetComponent(shell, "TestB", &b, NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)b, "initialize", "initialize", (void (*)(void))TestBInitialize);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)b, "call", "call", (void (*)(void))TestBCall);CHKERRQ(ierr);
   /**/

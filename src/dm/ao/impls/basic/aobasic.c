@@ -195,11 +195,11 @@ PetscErrorCode  AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
   PetscMPIInt    size,rank,count,*lens,*disp;
-  PetscInt       napp,*allpetsc,*allapp,ip,ia,N,i,*petsc=PETSC_NULL,start;
+  PetscInt       napp,*allpetsc,*allapp,ip,ia,N,i,*petsc=NULL,start;
   PetscErrorCode ierr;
   IS             isapp=ao->isapp,ispetsc=ao->ispetsc;
   MPI_Comm       comm;
-  const PetscInt *myapp,*mypetsc=PETSC_NULL;
+  const PetscInt *myapp,*mypetsc=NULL;
 
   PetscFunctionBegin;
   /* create special struct aobasic */
@@ -313,7 +313,7 @@ EXTERN_C_END
 +  comm - MPI communicator that is to share AO
 .  napp - size of integer arrays
 .  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be PETSC_NULL to
+-  mypetsc - integer array that defines another ordering (may be NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
    Output Parameter:
@@ -339,7 +339,7 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   if (mypetsc) {
     ierr = ISCreateGeneral(comm,napp,petsc,PETSC_USE_POINTER,&ispetsc);CHKERRQ(ierr);
   } else {
-    ispetsc = PETSC_NULL;
+    ispetsc = NULL;
   }
   ierr = AOCreateBasicIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
   ierr = ISDestroy(&isapp);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
 
    Input Parameters:
 +  isapp - index set that defines an ordering
--  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
+-  ispetsc - index set that defines another ordering (may be NULL to use the
              natural ordering)
 
    Output Parameter:

@@ -63,17 +63,17 @@ int main(int argc,char **argv)
 
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");
   bc          = (PetscInt)NEUMANN;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex34.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex34.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
   ierr        = PetscOptionsEnd();
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,PETSC_NULL,&J,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,NULL,&J,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
 
   ierr = MatMult(J,x,r);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
     MatNullSpace nullspace;
 
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b,NULL);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

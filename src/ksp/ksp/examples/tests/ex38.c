@@ -52,16 +52,16 @@ int main(int argc,char **args)
   n1 = 64;
   n2 = 64;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n1",&n1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n2",&n2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
 
   h     = 1.0/n1;
   gamma = 4.0/h;
   beta  = 0.01/(h*h);
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-h",&h,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-gamma",&gamma,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-h",&h,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and set right-hand-side vector.
@@ -79,8 +79,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n1*n2,n1*n2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   /*

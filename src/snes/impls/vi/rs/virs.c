@@ -85,7 +85,7 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   if (!isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi2);CHKERRQ(ierr);
 
-  ierr = (*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
+  ierr = (*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,NULL);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
   *vec = 0;
@@ -152,7 +152,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
      create index set list of coarse inactive points from coarsemarked
   */
   ierr = VecGetLocalSize(coarsemarked,&n);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(coarsemarked,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(coarsemarked,&rstart,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(coarsemarked,&marked);CHKERRQ(ierr);
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) cnt++;
@@ -254,7 +254,7 @@ PetscErrorCode  DMDestroyVI(DM dm)
 
   PetscFunctionBegin;
   if (!dm) PetscFunctionReturn(0);
-  ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -354,7 +354,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   Y      = snes->work[0];               /* work vectors */
 
   ierr = SNESLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetVecs(snes->linesearch, X, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetVecs(snes->linesearch, X, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = SNESLineSearchSetUp(snes->linesearch);CHKERRQ(ierr);
 
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -474,8 +474,8 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = SNESCreateSubVectors_VINEWTONRSLS(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
 
     /* Create scatter contexts */
-    ierr = VecScatterCreate(Y,IS_act,Y_act,PETSC_NULL,&scat_act);CHKERRQ(ierr);
-    ierr = VecScatterCreate(Y,IS_inact,Y_inact,PETSC_NULL,&scat_inact);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,IS_act,Y_act,NULL,&scat_act);CHKERRQ(ierr);
+    ierr = VecScatterCreate(Y,IS_inact,Y_inact,NULL,&scat_inact);CHKERRQ(ierr);
 
     /* Do a vec scatter to active and inactive set vectors */
     ierr = VecScatterBegin(scat_inact,F,F_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -514,7 +514,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&flg);CHKERRQ(ierr);
       if (flg) {
         KSP *subksps;
-        ierr = PCFieldSplitGetSubKSP(pc,PETSC_NULL,&subksps);CHKERRQ(ierr);
+        ierr = PCFieldSplitGetSubKSP(pc,NULL,&subksps);CHKERRQ(ierr);
         ierr = KSPGetPC(subksps[0],&pc);CHKERRQ(ierr);
         ierr = PetscFree(subksps);CHKERRQ(ierr);
         ierr = PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&flg);CHKERRQ(ierr);
@@ -654,7 +654,7 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS *is_redact,vo
   int               nlhs  = 1, nrhs = 5;
   mxArray           *plhs[1], *prhs[5];
   long long int     l1      = 0, l2 = 0, ls = 0;
-  PetscInt          *indices=PETSC_NULL;
+  PetscInt          *indices=NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -794,7 +794,7 @@ PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
   snes->ops->solve          = SNESSolve_VINEWTONRSLS;
   snes->ops->destroy        = SNESDestroy_VI;
   snes->ops->setfromoptions = SNESSetFromOptions_VI;
-  snes->ops->view           = PETSC_NULL;
+  snes->ops->view           = NULL;
   snes->ops->converged      = SNESDefaultConverged_VI;
 
   snes->usesksp = PETSC_TRUE;
@@ -802,7 +802,7 @@ PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
 
   ierr                = PetscNewLog(snes,SNES_VINEWTONRSLS,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;
-  vi->checkredundancy = PETSC_NULL;
+  vi->checkredundancy = NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);

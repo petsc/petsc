@@ -74,18 +74,18 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
   ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,2,NULL,1,NULL);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
@@ -200,18 +200,18 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 
   ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,2,NULL,0,NULL);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -281,11 +281,11 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /*
    Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -494,11 +494,11 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
@@ -609,11 +609,11 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
      The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the
@@ -744,11 +744,11 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
   ierr = MatPreallocateInitialize(((PetscObject)dac)->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
@@ -1048,11 +1048,11 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 
   ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -1073,7 +1073,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = ISDestroy(&isf);CHKERRQ(ierr);
@@ -1114,11 +1114,11 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -1139,7 +1139,7 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = ISDestroy(&isf);CHKERRQ(ierr);
@@ -1193,11 +1193,11 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&k_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&k_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&k_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&k_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -1222,7 +1222,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = ISDestroy(&isf);CHKERRQ(ierr);
@@ -1312,11 +1312,11 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /*
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
@@ -1330,7 +1330,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   /* create the matrix that will contain the restriction operator */
   ierr = MatCreateAIJ(((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
-                      max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
+                      max_agg_size, NULL, max_agg_size, NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */
   ierr = PetscMalloc2(max_agg_size,PetscScalar, &one_vec,max_agg_size,PetscInt, &fine_nodes);CHKERRQ(ierr);

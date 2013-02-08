@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt         M = 10,N = 8,m = PETSC_DECIDE;
   PetscInt         s =2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
   PetscInt         Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
-  PetscInt         *lx       = PETSC_NULL,*ly = PETSC_NULL;
+  PetscInt         *lx       = NULL,*ly = NULL;
   PetscBool        testorder = PETSC_FALSE,flg;
   DMDABoundaryType bx        = DMDA_BOUNDARY_NONE,by= DMDA_BOUNDARY_NONE;
   DM               da;
@@ -26,33 +26,33 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
 
   /* Readoptions */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-NX",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-NY",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-NX",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-NY",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-w",&w,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) bx = DMDA_BOUNDARY_PERIODIC;
+  ierr = PetscOptionsGetBool(NULL,"-xperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DMDA_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) by = DMDA_BOUNDARY_PERIODIC;
+  ierr = PetscOptionsGetBool(NULL,"-yperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) by = DMDA_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) bx = DMDA_BOUNDARY_GHOSTED;
+  ierr = PetscOptionsGetBool(NULL,"-xghosted",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DMDA_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) by = DMDA_BOUNDARY_GHOSTED;
+  ierr = PetscOptionsGetBool(NULL,"-yghosted",&flg,NULL);CHKERRQ(ierr); if (flg) by = DMDA_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
+  ierr = PetscOptionsGetBool(NULL,"-star",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-box",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_BOX;
+  ierr = PetscOptionsGetBool(NULL,"-box",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_BOX;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-testorder",&testorder,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-testorder",&testorder,NULL);CHKERRQ(ierr);
   /*
       Test putting two nodes in x and y on each processor, exact last processor
       in x and y gets the rest.
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-local_print",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer sviewer;
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
 
   /* Tests mappings betweeen application/PETSc orderings */
   if (testorder) {
-    ierr = DMDAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(da,&Xs,&Ys,NULL,&Xm,&Ym,NULL);CHKERRQ(ierr);
     ierr = DMDAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
     ierr = PetscMalloc(nloc*sizeof(PetscInt),&iglobal);CHKERRQ(ierr);

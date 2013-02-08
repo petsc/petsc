@@ -111,7 +111,7 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg1,flg2;
-  CUSPARRAY      *xarray=PETSC_NULL,*yarray=PETSC_NULL;
+  CUSPARRAY      *xarray=NULL,*yarray=NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ static PetscErrorCode PCReset_AINVCUSP(PC pc)
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
-    ainv->AINVCUSP = PETSC_NULL;
+    ainv->AINVCUSP = NULL;
   }
   PetscFunctionReturn(0);
 }

@@ -46,17 +46,17 @@ PetscErrorCode  MatFinalizePackage(void)
     ierr   = PetscFree(names);CHKERRQ(ierr);
     names  = nnames;
   }
-  MatBaseNameList                  = PETSC_NULL;
+  MatBaseNameList                  = NULL;
   MatPackageInitialized            = PETSC_FALSE;
   MatRegisterAllCalled             = PETSC_FALSE;
-  MatList                          = PETSC_NULL;
+  MatList                          = NULL;
   MatOrderingRegisterAllCalled     = PETSC_FALSE;
-  MatOrderingList                  = PETSC_NULL;
-  MatColoringList                  = PETSC_NULL;
+  MatOrderingList                  = NULL;
+  MatColoringList                  = NULL;
   MatColoringRegisterAllCalled     = PETSC_FALSE;
-  MatPartitioningList              = PETSC_NULL;
+  MatPartitioningList              = NULL;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
-  MatCoarsenList                   = PETSC_NULL;
+  MatCoarsenList                   = NULL;
   MatCoarsenRegisterAllCalled      = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -69,7 +69,7 @@ PetscErrorCode  MatFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -202,7 +202,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {
@@ -210,7 +210,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {

@@ -297,7 +297,7 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
 .  pc - the preconditioner context
 
    Output Parameter:
-.   stype - for example, superlu, superlu_dist (PETSC_NULL if the PC does not have a solver package)
+.   stype - for example, superlu, superlu_dist (NULL if the PC does not have a solver package)
 
    Level: intermediate
 
@@ -317,7 +317,7 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
   if (f) {
     ierr = (*f)(pc,stype);CHKERRQ(ierr);
   } else {
-    *stype = PETSC_NULL;
+    *stype = NULL;
   }
   PetscFunctionReturn(0);
 }

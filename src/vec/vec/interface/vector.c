@@ -208,7 +208,7 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
 
-  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_stash",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_stash",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
@@ -805,13 +805,13 @@ PetscErrorCode  VecGetLocalSize(Vec x,PetscInt *size)
 .  x - the vector
 
    Output Parameters:
-+  low - the first local element, pass in PETSC_NULL if not interested
--  high - one more than the last local element, pass in PETSC_NULL if not interested
++  low - the first local element, pass in NULL if not interested
+-  high - one more than the last local element, pass in NULL if not interested
 
    Note:
    The high argument is one more than the last element stored locally.
 
-   Fortran: PETSC_NULL_INTEGER should be used instead of PETSC_NULL
+   Fortran: NULL_INTEGER should be used instead of NULL
 
    Level: beginner
 
@@ -1222,7 +1222,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
 
    Input Parameters:
 +  x  - the vector
--  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
+-  rctx - the random number context, formed by PetscRandomCreate(), or NULL and
           it will create one internally.
 
    Output Parameter:
@@ -1245,7 +1245,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
 PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
-  PetscRandom    randObj = PETSC_NULL;
+  PetscRandom    randObj = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
@@ -1331,7 +1331,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
     else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);
@@ -1373,7 +1373,7 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   /* Handle vector type options */
   ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&vec->viewonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecViewe",&vec->viewonassembly,&vec->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecViewe",&vec->viewonassembly,&vec->viewformatonassembly,NULL);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {

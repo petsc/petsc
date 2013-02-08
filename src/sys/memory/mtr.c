@@ -601,7 +601,7 @@ PetscErrorCode PetscMallocGetDumpLog(PetscBool *logging)
     Collective on PETSC_COMM_WORLD
 
     Input Parameter:
-.   fp - file pointer; or PETSC_NULL
+.   fp - file pointer; or NULL
 
     Options Database Key:
 .  -malloc_log - Activates PetscMallocDumpLog()

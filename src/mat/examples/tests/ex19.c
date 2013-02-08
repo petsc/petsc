@@ -34,7 +34,7 @@ int main(int argc,char **args)
   PetscReal      h,norm;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m;      /* number of elements */
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   }
 
   /* Now test MatGetValues() */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-get_values",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-get_values",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr  = MatGetOwnershipRange(C,&mystart,&myend);CHKERRQ(ierr);
     nrsub = myend - mystart; ncsub = 4;

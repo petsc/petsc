@@ -205,22 +205,22 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Reaction options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Reaction options","");CHKERRQ(ierr);
   {
     ctx.k = .9;
-    ierr  = PetscOptionsScalar("-k","Reaction coefficient","",ctx.k,&ctx.k,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsScalar("-k","Reaction coefficient","",ctx.k,&ctx.k,NULL);CHKERRQ(ierr);
     ierr  = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
     ierr  = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
     u[0]  = 1;
     u[1]  = .7;
     u[2]  = 0;
     ierr  = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
-    ierr  = PetscOptionsVec("-initial","Initial values","",ctx.initialsolution,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsVec("-initial","Initial values","",ctx.initialsolution,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -230,7 +230,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(TSSolutionFunction)Solution,&ctx);CHKERRQ(ierr);
 
@@ -238,8 +238,8 @@ int main(int argc,char **argv)
     DM   dm;
     void *ptr;
     ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-    ierr = PetscDLSym(PETSC_NULL,"IFunctionView",&ptr);CHKERRQ(ierr);
-    ierr = PetscDLSym(PETSC_NULL,"IFunctionLoad",&ptr);CHKERRQ(ierr);
+    ierr = PetscDLSym(NULL,"IFunctionView",&ptr);CHKERRQ(ierr);
+    ierr = PetscDLSym(NULL,"IFunctionLoad",&ptr);CHKERRQ(ierr);
     ierr = DMTSSetIFunctionSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad);CHKERRQ(ierr);
     ierr = DMTSSetIJacobianSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad);CHKERRQ(ierr);
   }

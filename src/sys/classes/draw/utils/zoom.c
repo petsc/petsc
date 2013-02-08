@@ -47,7 +47,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
   if (!setjmp(PetscXIOErrorJumpBuf)) XSetIOErrorHandler((XIOErrorHandler)PetscXIOHandler);
   else {
-    XSetIOErrorHandler(PETSC_NULL);
+    XSetIOErrorHandler(NULL);
     ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -93,7 +93,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 theend:
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
-  XSetIOErrorHandler(PETSC_NULL);
+  XSetIOErrorHandler(NULL);
 #endif
   PetscFunctionReturn(0);
 }

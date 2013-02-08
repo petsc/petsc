@@ -40,7 +40,7 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *dmlocalsnes = PETSC_NULL;
+  *dmlocalsnes = NULL;
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
 

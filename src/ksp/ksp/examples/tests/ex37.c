@@ -30,7 +30,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   /* Load the matrix */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Create rhs vector b */
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
@@ -55,8 +55,8 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* Test MatGetMultiProcBlock() */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nsubcomm",&nsubcomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-subcomm_type",&type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nsubcomm",&nsubcomm,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-subcomm_type",&type,NULL);CHKERRQ(ierr);
 
   ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **args)
   } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
   subcomm = psubcomm->comm;
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
   if (flg) {
     PetscMPIInt subsize,subrank,duprank;
     ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
@@ -91,9 +91,9 @@ int main(int argc,char **args)
 
   /* Create sub vectors without arrays. Place b's and x's local arrays into subb and subx */
   ierr = MatGetLocalSize(subA,&m,&n);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,PETSC_NULL,&subb);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,PETSC_NULL,&subx);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,PETSC_NULL,&subu);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&subb);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&subx);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&subu);CHKERRQ(ierr);
 
   ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int main(int argc,char **args)
   ierr = VecResetArray(subx);CHKERRQ(ierr);
   ierr = VecResetArray(subu);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
   if (flg && rank == id) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);

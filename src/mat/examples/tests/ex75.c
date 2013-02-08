@@ -19,8 +19,8 @@ int main(int argc,char **args)
   MatType        type;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -34,8 +34,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   /* printf(" mattype: %s\n",type); */
-  ierr = MatMPISBAIJSetPreallocation(sA,bs,d_nz,PETSC_NULL,o_nz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(sA,bs,d_nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(sA,bs,d_nz,NULL,o_nz,NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(sA,bs,d_nz,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(sA,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   if (bs == 1) {
@@ -102,7 +102,7 @@ int main(int argc,char **args)
   ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   */
   /* Assemble MPIBAIJ matrix A */
-  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,NULL,o_nz,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   if (bs == 1) {
@@ -242,8 +242,8 @@ int main(int argc,char **args)
   ierr = MatScale(sA,alpha);CHKERRQ(ierr);
 
   /* Test MatGetRowMaxAbs() */
-  ierr = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(sA,s2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(A,s1,NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(sA,s2,NULL);CHKERRQ(ierr);
 
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);

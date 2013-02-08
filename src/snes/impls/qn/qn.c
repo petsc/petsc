@@ -369,7 +369,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-    ierr = SNESGetFunction(snes->pc, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
     ierr = VecCopy(FPC, F);CHKERRQ(ierr);
     ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
     ierr = VecCopy(F, Y);CHKERRQ(ierr);
@@ -439,7 +439,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetFunction(snes->pc, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
       ierr = VecCopy(FPC, F);CHKERRQ(ierr);
       ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
       ierr = VecCopy(F, D);CHKERRQ(ierr);
@@ -554,7 +554,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionBegin;
   ierr = SNESReset_QN(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -572,11 +572,11 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_qn_powell_downhill","Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNESQN", monflg, &monflg, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_qn_single_reduction", "Aggregate reductions",           "SNESQN", qn->singlereduction, &qn->singlereduction, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_qn_powell_downhill","Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_qn_monitor",         "Monitor for the QN methods",      "SNESQN", monflg, &monflg, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_qn_single_reduction", "Aggregate reductions",           "SNESQN", qn->singlereduction, &qn->singlereduction, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_qn_scale_type","Scaling type","SNESQNSetScaleType",SNESQNScaleTypes,(PetscEnum)stype,(PetscEnum*)&stype,&flg);CHKERRQ(ierr);
   if (flg) ierr = SNESQNSetScaleType(snes,stype);CHKERRQ(ierr);
 
@@ -584,7 +584,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   if (flg) ierr = SNESQNSetRestartType(snes,rtype);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,
-                          (PetscEnum)qn->type,(PetscEnum*)&qn->type,PETSC_NULL);CHKERRQ(ierr);
+                          (PetscEnum)qn->type,(PetscEnum*)&qn->type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
@@ -756,12 +756,12 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   snes->data          = (void*) qn;
   qn->m               = 10;
   qn->scaling         = 1.0;
-  qn->U               = PETSC_NULL;
-  qn->V               = PETSC_NULL;
-  qn->dXtdF           = PETSC_NULL;
-  qn->dFtdX           = PETSC_NULL;
-  qn->dXdFmat         = PETSC_NULL;
-  qn->monitor         = PETSC_NULL;
+  qn->U               = NULL;
+  qn->V               = NULL;
+  qn->dXtdF           = NULL;
+  qn->dFtdX           = NULL;
+  qn->dXdFmat         = NULL;
+  qn->monitor         = NULL;
   qn->singlereduction = PETSC_FALSE;
   qn->powell_gamma    = 0.9999;
   qn->scale_type      = SNES_QN_SCALE_SHANNO;

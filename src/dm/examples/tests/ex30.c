@@ -25,18 +25,18 @@ int main(int argc,char *argv[])
 
   ierr = PetscOptionsBegin(comm,0,"Options for DMSliced test",0);CHKERRQ(ierr);
   {
-    ierr = PetscOptionsInt("-n","Global number of nodes","",N,&N,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-n","Global number of nodes","",N,&N,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,NULL);CHKERRQ(ierr);
     if (bs != 1) {
       if (bs != 2) SETERRQ(PETSC_COMM_WORLD,1,"Block size must be 1 or 2");
-      ierr = PetscOptionsReal("-alpha","Inverse time step for wave operator","",alpha,&alpha,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-K","Bulk modulus of compressibility","",K,&K,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-rho0","Reference density","",rho0,&rho0,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-u0","Reference velocity","",u0,&u0,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-sigma","Width of Gaussian density perturbation","",sigma,&sigma,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-block","Use block matrix assembly","",useblock,&useblock,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-alpha","Inverse time step for wave operator","",alpha,&alpha,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-K","Bulk modulus of compressibility","",K,&K,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-rho0","Reference density","",rho0,&rho0,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-u0","Reference velocity","",u0,&u0,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-sigma","Width of Gaussian density perturbation","",sigma,&sigma,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-block","Use block matrix assembly","",useblock,&useblock,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof(mat_type),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof(mat_type),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

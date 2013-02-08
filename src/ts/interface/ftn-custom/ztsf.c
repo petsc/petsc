@@ -141,7 +141,7 @@ void PETSC_STDCALL tssetrhsfunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
   CHKFORTRANNULLOBJECT(fP);
-  R = r ? *r : (Vec)PETSC_NULL;
+  R = r ? *r : (Vec)NULL;
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsfunctionlinear_) {
     *ierr = TSSetRHSFunction(*ts,R,TSComputeRHSFunctionLinear,fP);
   } else {
@@ -154,7 +154,7 @@ void PETSC_STDCALL tsgetrhsfunction_(TS *ts,Vec *r,void *func,void **ctx,PetscEr
 {
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(r);
-  *ierr = TSGetRHSFunction(*ts,r,PETSC_NULL,ctx);
+  *ierr = TSGetRHSFunction(*ts,r,NULL,ctx);
 }
 
 void tscomputeifunctionlinear_(TS *ts,PetscReal *t,Vec *X,Vec *Xdot,Vec *F,void *ctx,PetscErrorCode *ierr)
@@ -167,7 +167,7 @@ void PETSC_STDCALL tssetifunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL*f
   CHKFORTRANNULLOBJECT(r);
   CHKFORTRANNULLFUNCTION(f);
   CHKFORTRANNULLOBJECT(fP);
-  R = r ? *r : (Vec)PETSC_NULL;
+  R = r ? *r : (Vec)NULL;
   if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeifunctionlinear_) {
     *ierr = TSSetIFunction(*ts,R,TSComputeIFunctionLinear,fP);
   } else {
@@ -180,7 +180,7 @@ void PETSC_STDCALL tsgetifunction_(TS *ts,Vec *r,void *func,void **ctx,PetscErro
 {
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(r);
-  *ierr = TSGetIFunction(*ts,r,PETSC_NULL,ctx);
+  *ierr = TSGetIFunction(*ts,r,NULL,ctx);
 }
 
 /* ---------------------------------------------------------*/
@@ -192,7 +192,7 @@ void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   if (FORTRANNULLFUNCTION(f)) {
-    *ierr = TSSetRHSJacobian(*ts,*A,*B,PETSC_NULL,fP);
+    *ierr = TSSetRHSJacobian(*ts,*A,*B,NULL,fP);
   } else if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsjacobianconstant_) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,TSComputeRHSJacobianConstant,fP);
   } else {
@@ -209,7 +209,7 @@ void PETSC_STDCALL tssetijacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(T
 {
   PetscObjectAllocateFortranPointers(*ts,OUR_COUNT);
   if (FORTRANNULLFUNCTION(f)) {
-    *ierr = TSSetIJacobian(*ts,*A,*B,PETSC_NULL,fP);
+    *ierr = TSSetIJacobian(*ts,*A,*B,NULL,fP);
   } else if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeijacobianconstant_) {
     *ierr = TSSetIJacobian(*ts,*A,*B,TSComputeIJacobianConstant,fP);
   } else {

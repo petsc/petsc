@@ -25,15 +25,15 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
 
   n    = mbs*bs;
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,bs,nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,bs,nz,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF,&sA);CHKERRQ(ierr);
   ierr = MatSetSizes(sA,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
@@ -53,7 +53,7 @@ int main(int argc,char **args)
 
   /* Assemble matrix */
   if (bs == 1) {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-test_problem",&prob,NULL);CHKERRQ(ierr);
     if (prob == 1) { /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
@@ -252,8 +252,8 @@ int main(int argc,char **args)
 #endif
 
   /* Test MatGetRowMaxAbs() */
-  ierr   = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);
-  ierr   = MatGetRowMaxAbs(sB,s2,PETSC_NULL);CHKERRQ(ierr);
+  ierr   = MatGetRowMaxAbs(A,s1,NULL);CHKERRQ(ierr);
+  ierr   = MatGetRowMaxAbs(sB,s2,NULL);CHKERRQ(ierr);
   ierr   = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
   ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;

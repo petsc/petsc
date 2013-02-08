@@ -87,8 +87,8 @@ int main(int argc,char **argv)
   ctx.noreactions     = PETSC_FALSE;
   ctx.nodissociations = PETSC_FALSE;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-noreactions",&ctx.noreactions);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nodissociations",&ctx.nodissociations);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-noreactions",&ctx.noreactions);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-nodissociations",&ctx.nodissociations);CHKERRQ(ierr);
 
   ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
   ctx.HeDiffusion[2]    = 1000*3.24e-4;
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,dof,1,NULL,&da);CHKERRQ(ierr);
 
   /* The only spatial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I.
      The ofill (thought of as a dof by dof 2d (row-oriented) array represents the nonzero coupling between degrees
@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1;
   ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
 
-  ierr = DMDASetBlockFills(da,PETSC_NULL,ofill);CHKERRQ(ierr);
+  ierr = DMDASetBlockFills(da,NULL,ofill);CHKERRQ(ierr);
   ierr = PetscFree(ofill);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,7 +131,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,C);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,7 +207,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -286,7 +286,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Loop over grid points computing ODE terms for each grid point
@@ -532,17 +532,17 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   PetscReal      valuebounds[4] = {0, 1.2, 0, 1.2};
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mymonitor",&flg);CHKERRQ(ierr);
   if (!flg) PetscFunctionReturn(0);
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(((PetscObject)da)->comm,PETSC_NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(((PetscObject)da)->comm,NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = DMDAGetOwnershipRanges(da,&lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(((PetscObject)da)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,PETSC_NULL,&ctx->da);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDACreate2d(((PetscObject)da)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,NULL,&ctx->da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->da,0,"He");CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->da,1,"V");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->da,0,"X coordinate direction");CHKERRQ(ierr);
@@ -560,7 +560,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   }
   ierr = ISCreateGeneral(((PetscObject)ts)->comm,2*N*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
-  ierr = VecScatterCreate(C,is,ctx->He,PETSC_NULL,&ctx->scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(C,is,ctx->He,NULL,&ctx->scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* sets the bounds on the contour plot values so the colors mean the same thing for different timesteps */

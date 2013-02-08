@@ -222,7 +222,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = KSPGetOperators(ksp,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(ksp,&A,&B,NULL);CHKERRQ(ierr);
       if (kdm->ops->computeoperators) {
         ierr = (*kdm->ops->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
       }
@@ -250,7 +250,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     PetscInt    i,n;
     PetscBool   zeroflag = PETSC_FALSE;
     if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-    ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&mat,&pmat,NULL);CHKERRQ(ierr);
     if (!ksp->diagonal) { /* allocate vector to hold diagonal */
       ierr = MatGetVecs(pmat,&ksp->diagonal,0);CHKERRQ(ierr);
     }
@@ -277,11 +277,11 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
     PetscBool test = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
       Mat mat;
-      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(ksp->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(ksp->nullsp,mat,NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
@@ -393,7 +393,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     if (ksp->dscalefix && ksp->dscalefix2) {
       Mat mat,pmat;
 
-      ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,&pmat,NULL);CHKERRQ(ierr);
       ierr = MatDiagonalScale(pmat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
       if (mat != pmat) {ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);}
     }
@@ -449,7 +449,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
       ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
       ierr = VecPointwiseMult(ksp->vec_rhs,ksp->vec_rhs,ksp->diagonal);CHKERRQ(ierr);
-      ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,&pmat,NULL);CHKERRQ(ierr);
       ierr = MatDiagonalScale(pmat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
       if (mat != pmat) {ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);}
       ierr            = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
@@ -464,7 +464,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
 
-  ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&mat,&premat,NULL);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,"-ksp_view_mat");CHKERRQ(ierr);
   ierr = MatViewFromOptions(premat,"-ksp_view_pmat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ksp->vec_rhs,"-ksp_view_rhs");CHKERRQ(ierr);
@@ -472,9 +472,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
   flag3 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",&flag3,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",&flag3,NULL);CHKERRQ(ierr);
   if (flag1 || flag2 || flag3) {
     PetscInt  nits,n,i,neig;
     PetscReal *r,*c;
@@ -522,7 +522,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
 
   flag1 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,NULL);CHKERRQ(ierr);
   if (flag1) {
     PetscInt nits;
 
@@ -540,8 +540,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,NULL);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt  n,i;
     PetscReal *r,*c;
@@ -580,7 +580,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
-    ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
     ierr = MatViewFromOptions(B,"-ksp_view_mat_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat       A;
     Vec       t;
@@ -761,7 +761,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
    refcount (and may be shared, e.g., by other ksps).
    */
   pc         = (*ksp)->pc;
-  (*ksp)->pc = PETSC_NULL;
+  (*ksp)->pc = NULL;
   ierr       = KSPReset((*ksp));CHKERRQ(ierr);
   (*ksp)->pc = pc;
   ierr       = PetscObjectDepublish((*ksp));CHKERRQ(ierr);
@@ -875,7 +875,7 @@ PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side)
 -  maxits - maximum number of iterations
 
    Notes:
-   The user can specify PETSC_NULL for any parameter that is not needed.
+   The user can specify NULL for any parameter that is not needed.
 
    Level: intermediate
 
@@ -1459,11 +1459,11 @@ PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
-.  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
+.  monitor - pointer to function (if this is NULL, it turns off monitoring
 .  mctx    - [optional] context for private data for the
-             monitor routine (use PETSC_NULL if no context is desired)
+             monitor routine (use NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
-          (may be PETSC_NULL)
+          (may be NULL)
 
    Calling Sequence of monitor:
 $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
@@ -1614,7 +1614,7 @@ PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
    Notes: The array is NOT freed by PETSc so the user needs to keep track of
            it and destroy once the KSP object is destroyed.
 
-   If 'a' is PETSC_NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
+   If 'a' is NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
    default array of length 10000 is allocated.
 
 .keywords: KSP, set, residual, history, norm
@@ -1657,8 +1657,8 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
 .  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
-+  a   - pointer to array to hold history (or PETSC_NULL)
--  na  - number of used entries in a (or PETSC_NULL)
++  a   - pointer to array to hold history (or NULL)
+-  na  - number of used entries in a (or NULL)
 
    Level: advanced
 
@@ -1793,9 +1793,9 @@ PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
    Notes:
    This routine can be used in one of two ways
 .vb
-      KSPBuildSolution(ksp,PETSC_NULL,&V);
+      KSPBuildSolution(ksp,NULL,&V);
    or
-      KSPBuildSolution(ksp,v,PETSC_NULL); or KSPBuildSolution(ksp,v,&v);
+      KSPBuildSolution(ksp,v,NULL); or KSPBuildSolution(ksp,v,&v);
 .ve
    In the first case an internal vector is allocated to store the solution
    (the user cannot destroy this vector). In the second case the solution

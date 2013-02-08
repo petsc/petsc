@@ -141,7 +141,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Set the stopping criteria to use the More' trick. */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-snes_tr_ksp_regular_convergence_test",&conv,NULL);CHKERRQ(ierr);
   if (!conv) {
     SNES_TR_KSPConverged_Ctx *ctx;
     ierr      = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);

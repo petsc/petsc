@@ -8,8 +8,8 @@
 #define snprintf _snprintf
 #endif
 
-PetscViewer PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
-static void *mathematicaEnv                        = PETSC_NULL;
+PetscViewer PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = NULL;
+static void *mathematicaEnv                        = NULL;
 
 static PetscBool PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -39,7 +39,7 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -69,7 +69,7 @@ PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
 
   PetscFunctionBegin;
   if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = PetscViewerMathematicaOpen(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_NULL, PETSC_NULL, &PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE);CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaOpen(PETSC_COMM_WORLD, PETSC_DECIDE, NULL, NULL, &PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,7 @@ PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
   ierr            = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
@@ -181,12 +181,12 @@ PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
   v->ops->flush   = 0;
   ierr            = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &((PetscObject)v)->type_name);CHKERRQ(ierr);
 
-  vmath->linkname     = PETSC_NULL;
-  vmath->linkhost     = PETSC_NULL;
+  vmath->linkname     = NULL;
+  vmath->linkhost     = NULL;
   vmath->linkmode     = MATHEMATICA_LINK_CONNECT;
   vmath->graphicsType = GRAPHICS_MOTIF;
   vmath->plotType     = MATHEMATICA_TRIANGULATION_PLOT;
-  vmath->objName      = PETSC_NULL;
+  vmath->objName      = NULL;
 
   ierr = PetscViewerMathematicaSetFromOptions(v);CHKERRQ(ierr);
   ierr = PetscViewerMathematicaSetupConnection_Private(v);CHKERRQ(ierr);
@@ -365,8 +365,8 @@ PetscErrorCode  PetscViewerMathematicaSetLinkMode(PetscViewer v, LinkMode mode)
   Input Parameters:
 + comm    - The MPI communicator
 . port    - [optional] The port to connect on, or PETSC_DECIDE
-. machine - [optional] The machine to run Mathematica on, or PETSC_NULL
-- mode    - [optional] The connection mode, or PETSC_NULL
+. machine - [optional] The machine to run Mathematica on, or NULL
+- mode    - [optional] The connection mode, or NULL
 
   Output Parameter:
 . viewer  - The Mathematica viewer
@@ -538,7 +538,7 @@ PetscErrorCode  PetscViewerMathematicaClearName(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
-  vmath->objName = PETSC_NULL;
+  vmath->objName = NULL;
   PetscFunctionReturn(0);
 }
 

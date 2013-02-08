@@ -41,7 +41,7 @@ int main(int argc,char **args)
   } else {
     jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 5; jj[5] = 3;
   }
-  ierr = MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,PETSC_NULL,&mesh);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,NULL,&mesh);CHKERRQ(ierr);
   ierr = MatMeshToCellGraph(mesh,2,&dual);CHKERRQ(ierr);
   ierr = MatView(dual,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

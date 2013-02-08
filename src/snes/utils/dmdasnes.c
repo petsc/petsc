@@ -51,7 +51,7 @@ static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *dmdasnes = PETSC_NULL;
+  *dmdasnes = NULL;
   if (!sdm->data) {
     ierr                = PetscNewLog(dm,DMSNES_DA,&sdm->data);CHKERRQ(ierr);
     sdm->ops->destroy   = DMSNESDestroy_DMDA;
@@ -448,7 +448,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat 
    Notes:  The user must use
     extern PetscErrorCode  SNESPicardComputeFunction(SNES,Vec,Vec,void*);
     extern PetscErrorCode  SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    ierr = SNESSetFunction(snes,PETSC_NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
     in their code before calling this routine.
 
 

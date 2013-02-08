@@ -56,11 +56,11 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
   PetscFunctionBegin;
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
-  ierr = PCGetOperators(pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,NULL,&pmat,NULL);CHKERRQ(ierr);
   MPI_Comm_size(((PetscObject)pmat)->comm,&npro);
   MPI_Comm_rank(((PetscObject)pmat)->comm,&rank);
 
-  ierr  = MatGetSize(pmat,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = MatGetSize(pmat,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscMalloc((npro+1)*sizeof(int),&mapptr);CHKERRQ(ierr);
   ierr  = PetscMalloc(n*sizeof(int),&maptmp);CHKERRQ(ierr);
   ierr  = MatGetOwnershipRanges(pmat,&mapptr0);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   /* if created, destroy the previous map */
   if (parms->map) {
     parms_MapFree(&parms->map);
-    parms->map = PETSC_NULL;
+    parms->map = NULL;
   }
 
   /* create pARMS map object */
@@ -83,7 +83,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   /* if created, destroy the previous pARMS matrix */
   if (parms->A) {
     parms_MatFree(&parms->A);
-    parms->A = PETSC_NULL;
+    parms->A = NULL;
   }
 
   /* create pARMS mat object */
@@ -142,7 +142,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   /* if created, destroy the previous pARMS pc */
   if (parms->pc) {
     parms_PCFree(&parms->pc);
-    parms->pc = PETSC_NULL;
+    parms->pc = NULL;
   }
 
   /* Now create pARMS preconditioner object based on A */
@@ -265,12 +265,12 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetGlobal_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetLocal_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveTolerances_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveRestart_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetNonsymPerm_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetFill_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetGlobal_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetLocal_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveTolerances_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetSolveRestart_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetNonsymPerm_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPARMSSetFill_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

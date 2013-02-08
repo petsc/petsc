@@ -20,7 +20,7 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 
     Input Parameters:
 +   comm - a separate MATLAB engine is started for each process in the communicator
--   machine - name of machine where MATLAB engine is to be run (usually PETSC_NULL)
+-   machine - name of machine where MATLAB engine is to be run (usually NULL)
 
     Output Parameter:
 .   mengine - the resulting object
@@ -46,7 +46,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   if (MATLABENGINE_CLASSID == -1) {
     ierr = PetscClassIdRegister("MATLAB Engine",&MATLABENGINE_CLASSID);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_engine_graphics",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-matlab_engine_graphics",&flg,NULL);CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,0,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
@@ -304,7 +304,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
-    ierr = PetscOptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
+    ierr = PetscOptionsGetString(NULL,"-matlab_engine_machine",machine,64,&flg);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&mengine);

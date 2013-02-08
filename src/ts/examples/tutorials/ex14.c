@@ -1641,7 +1641,7 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(&da3);CHKERRQ(ierr);
   ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"thi_");CHKERRQ(ierr);
 
@@ -1661,7 +1661,7 @@ int main(int argc,char *argv[])
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,THITSMonitor,thi,NULL);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,THIFunction,thi);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,THIFunction,thi);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,B,B,THIJacobian,thi);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,100,10.0);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
@@ -1678,7 +1678,7 @@ int main(int argc,char *argv[])
   {
     PetscBool flg;
     char      filename[PETSC_MAX_PATH_LEN] = "";
-    ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = THIDAVecView_VTK_XML(thi,pack,X,filename,NULL);CHKERRQ(ierr);
     }

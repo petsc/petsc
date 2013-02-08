@@ -80,7 +80,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 
   PetscFunctionBegin;
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,"-dll_prepend",libname,&nmax,NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     The classes, from PetscDraw to PetscTS, are initialized the first
     time an XXCreate() is called.
   */
-  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage(NULL);CHKERRQ(ierr);
 #else
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 #endif
 
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,"-dll_append",libname,&nmax,NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
 
@@ -182,7 +182,7 @@ static PetscFunctionList dlallhead = 0;
 -  fnc   - function pointer (optional if using dynamic libraries)
 
    Notes:
-   To remove a registered routine, pass in a PETSC_NULL rname and fnc().
+   To remove a registered routine, pass in a NULL rname and fnc().
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine

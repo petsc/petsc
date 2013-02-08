@@ -71,16 +71,16 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,NULL,&user.da2);CHKERRQ(ierr);
 
   } else {
     /* Create a 1D DA with dof = 5; the whole thing */
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
     /* Create a 1D DA with dof = 1; for individual componentes */
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,NULL,&user.da2);CHKERRQ(ierr);
   }
 
   /* Set Element type (rectangular) */
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
 
     printf("after MatView\n");
 
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
     ierr = VecView(x,view_out);CHKERRQ(ierr);
 
@@ -439,8 +439,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   if (user->voidgrowth) {
-    ierr = DMDAGetInfo(user->da2,PETSC_NULL,&Xda,&Yda,&Zda,PETSC_NULL,PETSC_NULL,
-                       PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(user->da2,NULL,&Xda,&Yda,&Zda,NULL,NULL,
+                       NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
@@ -676,10 +676,10 @@ PetscErrorCode GetParams(AppCtx *user)
   /* void growth */
   user->voidgrowth = PETSC_FALSE;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
@@ -718,8 +718,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = VecGetArray(cvlocal,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(cilocal,&ci_p);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Xda,&Yda,&Zda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Xda,&Yda,&Zda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   if (Xda!=Yda) printf("Currently different Xda and Yda are not supported");
   if (user->periodic) {
@@ -904,8 +904,8 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   ierr = VecGetArray(cilocal,&ci_p);CHKERRQ(ierr);
 
   /* Create the mass matrix M_0 */
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Xda,&Yda,&Zda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Xda,&Yda,&Zda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   if (Xda!=Yda) printf("Currently different Xda and Yda are not supported");
   if (user->periodic) h = (user->xmax-user->xmin)/Xda;

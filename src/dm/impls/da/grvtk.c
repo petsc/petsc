@@ -19,7 +19,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   PetscMPIInt              rank,size,tag;
   DMDALocalInfo            info;
   PetscInt                 dim,mx,my,mz,bs,boffset,maxnnodes,i,j,k,f,r;
-  PetscInt                 rloc[6],(*grloc)[6] = PETSC_NULL;
+  PetscInt                 rloc[6],(*grloc)[6] = NULL;
   PetscScalar              *array,*array2;
   PetscReal                gmin[3],gmax[3];
   PetscErrorCode           ierr;

@@ -115,10 +115,10 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only pass one ordering into CholeskyFactor */
 
       flg  = PETSC_FALSE;
-      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,NULL);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
-        ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
       if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
@@ -136,10 +136,10 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only use dir->row ordering in CholeskyFactor */
 
         flg  = PETSC_FALSE;
-        ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,NULL);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
-          ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
         }
         if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}

@@ -108,16 +108,16 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-no_output",&no_output,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_WORLD,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -136,10 +136,10 @@ int main(int argc,char **argv)
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
@@ -168,10 +168,10 @@ int main(int argc,char **argv)
      for preallocating matrix memory.
   */
   if (size == 1) {
-    ierr = MatCreateSeqAIJ(comm,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(comm,N,N,5,NULL,&J);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-    ierr = MatCreateAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm,m,m,N,N,5,NULL,3,NULL,&J);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -325,8 +325,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -398,8 +398,8 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -484,8 +484,8 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points

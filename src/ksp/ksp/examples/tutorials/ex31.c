@@ -84,9 +84,9 @@ int main(int argc,char **argv)
 
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DM");
   user.phi = 0.5;
-  ierr     = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, NULL);CHKERRQ(ierr);
   user.dt  = 0.1;
-  ierr     = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, PETSC_NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, NULL);CHKERRQ(ierr);
   ierr     = PetscOptionsEnd();
 
   ierr = CreateStructures(da, &user);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp, NULL, NULL);CHKERRQ(ierr);
 
   ierr = KSPGetSolution(ksp, &x);CHKERRQ(ierr);
   ierr = VecDuplicate(x, &xNew);CHKERRQ(ierr);

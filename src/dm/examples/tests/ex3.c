@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
-  PetscInt       M = 60,time_steps = 100, localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
+  PetscInt       M = 60,time_steps = 100, localsize,j,i,mybase,myend,width,xbase,*localnodes = NULL;
   DM             da;
   PetscViewer    viewer,viewer_private;
   PetscDraw      draw;
@@ -22,12 +22,12 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
   /*
       Test putting two nodes on each processor, exact last processor gets the rest
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) localnodes[i] = 2;

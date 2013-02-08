@@ -52,11 +52,11 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
     ierr = ISDestroy(&vs->is[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vs->is);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"","",NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(vs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -666,7 +666,7 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *x = PETSC_NULL;
+  *x = NULL;
   for (i=0; i<bx->nb; i++) {
     PetscBool issame = PETSC_FALSE;
     ierr = ISEqual(is,bx->is[i],&issame);CHKERRQ(ierr);
@@ -1243,7 +1243,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
    Input Parameter:
 +  comm - Communicator for the new Vec
 .  nb - number of nested blocks
-.  is - array of nb index sets describing each nested block, or PETSC_NULL to pack subvectors contiguously
+.  is - array of nb index sets describing each nested block, or NULL to pack subvectors contiguously
 -  x - array of nb sub-vectors
 
    Output Parameter:
@@ -1270,7 +1270,7 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
   V->data          = (void*)s;
   s->setup_called  = PETSC_FALSE;
   s->nb            = -1;
-  s->v             = PETSC_NULL;
+  s->v             = NULL;
 
   ierr = VecSetUp_Nest_Private(V,nb,x);CHKERRQ(ierr);
 

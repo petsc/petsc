@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
@@ -26,13 +26,13 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-vec",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-vec",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
     if (file[0] == '0') {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
-      ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
       ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(x);CHKERRQ(ierr);
       ierr = VecSet(x,one);CHKERRQ(ierr);

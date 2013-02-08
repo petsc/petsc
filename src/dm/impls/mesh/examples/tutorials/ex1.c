@@ -225,7 +225,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, DM *mesh)
     ierr = PetscStrcat(coordFile, ".nodes");CHKERRQ(ierr);
     ierr = PetscStrcpy(adjFile,   options->baseFilename);CHKERRQ(ierr);
     ierr = PetscStrcat(adjFile,   ".lcon");CHKERRQ(ierr);
-    ierr = DMMeshCreatePCICE(comm, options->dim, coordFile, adjFile, options->interpolate, PETSC_NULL, mesh);CHKERRQ(ierr);
+    ierr = DMMeshCreatePCICE(comm, options->dim, coordFile, adjFile, options->interpolate, NULL, mesh);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = DMView(*mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -257,7 +257,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
   PetscFunctionBegin;
   if (dim != 3) PetscFunctionReturn(0);
   ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = DMMeshGetHeightStratum(mesh, 0, PETSC_NULL, &numCells);CHKERRQ(ierr);
+  ierr = DMMeshGetHeightStratum(mesh, 0, NULL, &numCells);CHKERRQ(ierr);
   ierr = PetscStrcpy(bndfilename, options->baseFilename);CHKERRQ(ierr);
   ierr = PetscStrcat(bndfilename, ".bnd");CHKERRQ(ierr);
   ierr = PetscFOpen(comm, bndfilename, "r", &fp);
@@ -350,28 +350,28 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   options->interpolate    = PETSC_TRUE;
   options->doPartition    = PETSC_TRUE;
-  options->partition      = PETSC_NULL;
+  options->partition      = NULL;
   options->doOdd          = PETSC_FALSE;
-  options->odd            = PETSC_NULL;
+  options->odd            = NULL;
 
   inputFt  = (PetscInt) options->inputFileType;
   outputFt = (PetscInt) options->outputFileType;
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex1.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-output", "Output the mesh", "ex1.c", options->output, &options->output, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-distribute", "Distribute the mesh among processes", "ex1.c", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-partition", "Create the partition field", "ex1.c", options->doPartition, &options->doPartition, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-odd", "Create the odd field", "ex1.c", options->doOdd, &options->doOdd, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex1.c", options->baseFilename, options->baseFilename, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-output", "Output the mesh", "ex1.c", options->output, &options->output, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-distribute", "Distribute the mesh among processes", "ex1.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-partition", "Create the partition field", "ex1.c", options->doPartition, &options->doPartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-odd", "Create the odd field", "ex1.c", options->doOdd, &options->doOdd, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   options->inputFileType = (FileType) inputFt;

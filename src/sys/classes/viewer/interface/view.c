@@ -29,7 +29,7 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
   PetscViewerInitializePackage - This function initializes everything in the main PetscViewer package.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -53,7 +53,7 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
   ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "viewer", &className);CHKERRQ(ierr);
     if (className) {
@@ -61,7 +61,7 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "viewer", &className);CHKERRQ(ierr);
     if (className) {
@@ -69,7 +69,7 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
     }
   }
 #if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscRegisterFinalize(PetscViewerFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

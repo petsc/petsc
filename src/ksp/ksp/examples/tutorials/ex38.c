@@ -24,7 +24,7 @@ int main(int Argc,char **Args)
 
   PetscInitialize(&Argc,&Args,(char*)0,help);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = Create1dLaplacian(n,&cmat);CHKERRQ(ierr);
   ierr = MatGetVecs(cmat,&x,0);CHKERRQ(ierr);
   ierr = MatGetVecs(cmat,&b,0);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,PETSC_DECIDE, PETSC_NULL, PETSC_DECIDE, PETSC_NULL, mat);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,PETSC_DECIDE, NULL, PETSC_DECIDE, NULL, mat);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(*mat,&loc_start,&loc_end);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {

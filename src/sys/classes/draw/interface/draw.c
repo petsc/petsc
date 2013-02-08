@@ -34,7 +34,7 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -60,7 +60,7 @@ PetscErrorCode  PetscDrawInitializePackage(const char path[])
   /* Register Constructors */
   ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
     if (className) {
@@ -68,7 +68,7 @@ PetscErrorCode  PetscDrawInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
     if (className) {
@@ -309,7 +309,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   if (draw->popup) *popup = draw->popup;
   else if (draw->ops->getpopup) {
     ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
-  } else *popup = PETSC_NULL;
+  } else *popup = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -338,7 +338,7 @@ PetscErrorCode  PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(comm,PETSC_NULL,PETSC_NULL,0,0,1,1,win);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,NULL,NULL,0,0,1,1,win);CHKERRQ(ierr);
   ierr = PetscDrawSetType(*win,PETSC_DRAW_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

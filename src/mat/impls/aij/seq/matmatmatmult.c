@@ -49,7 +49,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (scalable) {
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(B,C,fill,&BC);CHKERRQ(ierr);

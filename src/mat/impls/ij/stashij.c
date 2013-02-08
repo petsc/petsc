@@ -65,7 +65,7 @@ PetscErrorCode MatStashSeqIJExtend_Private(MatStashSeqIJ stash, PetscInt len, co
 #define __FUNCT__ "MatStashSeqIJGetIndices_Private"
 PetscErrorCode MatStashSeqIJGetIndices_Private(MatStashSeqIJ stash, PetscInt *_len, PetscInt **_ixidx, PetscInt **_iyidx)
 {
-  PetscInt       len, *ixidx = PETSC_NULL, *iyidx = PETSC_NULL, *kidx, start, end;
+  PetscInt       len, *ixidx = NULL, *iyidx = NULL, *kidx, start, end;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -128,7 +128,7 @@ PetscErrorCode MatStashSeqIJDestroy_Private(MatStashSeqIJ *_stash)
   ierr    = MatStashSeqIJClear_Private(stash);CHKERRQ(ierr);
   ierr    = PetscHashIJDestroy(&(stash->h));CHKERRQ(ierr);
   ierr    = PetscFree(stash);CHKERRQ(ierr);
-  *_stash = PETSC_NULL;
+  *_stash = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -179,7 +179,7 @@ PetscErrorCode MatStashMPIIJDestroy_Private(MatStashMPIIJ *_stash)
   ierr    = MatStashSeqIJDestroy_Private(&(stash->astash));CHKERRQ(ierr);
   ierr    = MatStashSeqIJDestroy_Private(&(stash->bstash));CHKERRQ(ierr);
   ierr    = PetscFree(stash);CHKERRQ(ierr);
-  *_stash = PETSC_NULL;
+  *_stash = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -267,13 +267,13 @@ PetscErrorCode MatStashMPIIJGetIndices_Private(MatStashMPIIJ stash, PetscInt *_a
 PetscErrorCode MatStashMPIIJGetIndicesMerged_Private(MatStashMPIIJ stash, PetscInt *_len, PetscInt **_ixidx, PetscInt **_iyidx)
 {
   PetscErrorCode ierr;
-  PetscInt       len, alen, *aixidx = PETSC_NULL, *aiyidx = PETSC_NULL, blen, *bixidx = PETSC_NULL, *biyidx = PETSC_NULL;
+  PetscInt       len, alen, *aixidx = NULL, *aiyidx = NULL, blen, *bixidx = NULL, *biyidx = NULL;
 
   PetscFunctionBegin;
   if (!stash->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices requested from an unassembled stash");
   if (!_len && !_ixidx && !_iyidx) PetscFunctionReturn(0);
 
-  ierr = MatStashMPIIJGetIndices_Private(stash, &alen, PETSC_NULL, PETSC_NULL, &blen, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatStashMPIIJGetIndices_Private(stash, &alen, NULL, NULL, &blen, NULL, NULL);CHKERRQ(ierr);
   len  = alen + blen;
   if (_len) *_len = len;
 
@@ -283,10 +283,10 @@ PetscErrorCode MatStashMPIIJGetIndicesMerged_Private(MatStashMPIIJ stash, PetscI
 
   if (!alen) {
     /* Nothing to merge from the left, so get all of the indices from the right. */
-    ierr = MatStashMPIIJGetIndices_Private(stash,PETSC_NULL,PETSC_NULL,PETSC_NULL,_len,_ixidx,_iyidx);CHKERRQ(ierr);
+    ierr = MatStashMPIIJGetIndices_Private(stash,NULL,NULL,NULL,_len,_ixidx,_iyidx);CHKERRQ(ierr);
   } else if (!blen) {
     /* Nothing to merge from the right, so get all of the indices from the left. */
-    ierr = MatStashMPIIJGetIndices_Private(stash,_len,_ixidx,_iyidx,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatStashMPIIJGetIndices_Private(stash,_len,_ixidx,_iyidx,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
     /* Retrieve the indices into temporary arrays to hold the indices prior to merging. */
     ierr = MatStashMPIIJGetIndices_Private(stash,&alen,&aixidx,&aiyidx,&blen,&bixidx,&biyidx);CHKERRQ(ierr);
@@ -307,11 +307,11 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm = stash->rmap->comm;
-  PetscMPIInt    size, rank, tag_ij, nsends, nrecvs, *plengths, *sstarts = PETSC_NULL, *rnodes, *rlengths, *rstarts = PETSC_NULL, rlengthtotal;
+  PetscMPIInt    size, rank, tag_ij, nsends, nrecvs, *plengths, *sstarts = NULL, *rnodes, *rlengths, *rstarts = NULL, rlengthtotal;
   MPI_Request    *recv_reqs_ij, *send_reqs;
   MPI_Status     recv_status, *send_statuses;
-  PetscInt       len, *ixidx = PETSC_NULL, *iyidx = PETSC_NULL;
-  PetscInt       *owner = PETSC_NULL, p, **rindices = PETSC_NULL, *sindices= PETSC_NULL;
+  PetscInt       len, *ixidx = NULL, *iyidx = NULL;
+  PetscInt       *owner = NULL, p, **rindices = NULL, *sindices= NULL;
   PetscInt       low, high, idx, lastidx, count, i, j;
 
   PetscFunctionBegin;
@@ -378,7 +378,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
   for (p=0; p<size; ++p) nsends += (plengths[p] > 0);
 
   /* inform other processors of number of messages and max length*/
-  ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,plengths,&nrecvs);CHKERRQ(ierr);
+  ierr = PetscGatherNumberOfMessages(comm,NULL,plengths,&nrecvs);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,plengths,&rnodes,&rlengths);CHKERRQ(ierr);
   /* Sort on the the receive nodes, so we can store the received ix indices in the order they were globally specified. */
   ierr = PetscSortMPIIntWithArray(nrecvs,rnodes,rlengths);CHKERRQ(ierr);

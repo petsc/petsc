@@ -32,7 +32,7 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-options_left",NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
 
   /*

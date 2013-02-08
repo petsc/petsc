@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   PetscRandom    rdm;
   PetscBool      Test_3D=PETSC_FALSE,flg;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -59,10 +59,10 @@ int main(int argc,char **argv)
   user.ratio     = 2;
   user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mz",&user.coarse.mz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mx",&user.coarse.mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-My",&user.coarse.my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mz",&user.coarse.mz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ratio",&user.ratio,NULL);CHKERRQ(ierr);
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1;
@@ -80,11 +80,11 @@ int main(int argc,char **argv)
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
-                        user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                        1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
   /* Create and set A at fine grids */
@@ -119,15 +119,15 @@ int main(int argc,char **argv)
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                        user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
-                        1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                        1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 
   /* Create interpolation between the fine and coarse grids */
-  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
   /* if (!rank) printf("P:\n"); */
   /* ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 

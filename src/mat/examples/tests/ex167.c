@@ -89,9 +89,9 @@ int main(int argc,char **args)
     jlow = Jlow; jhigh = Jhigh;
   }
   sort_rows = PETSC_FALSE;
-  ierr      = PetscOptionsGetBool(PETSC_NULL, "-sort_rows", &sort_rows, PETSC_NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetBool(NULL, "-sort_rows", &sort_rows, NULL);CHKERRQ(ierr);
   sort_cols = PETSC_FALSE;
-  ierr      = PetscOptionsGetBool(PETSC_NULL, "-sort_cols", &sort_cols, PETSC_NULL);CHKERRQ(ierr);
+  ierr      = PetscOptionsGetBool(NULL, "-sort_cols", &sort_cols, NULL);CHKERRQ(ierr);
   for (l = 0; l < nsub; ++l) {
     ierr = PetscMalloc(12*sizeof(PetscInt), &subindices);CHKERRQ(ierr);
     k    = 0;
@@ -120,7 +120,7 @@ int main(int argc,char **args)
 
   show_inversions = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-show_inversions", &show_inversions, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-show_inversions", &show_inversions, NULL);CHKERRQ(ierr);
 
   inversions = 0;
   for (p = 0; p < size; ++p) {
@@ -137,14 +137,14 @@ int main(int argc,char **args)
         if (show_inversions) {
           ierr = MatGetOwnershipRange(S[l], &i0,&i1);CHKERRQ(ierr);
           for (i = i0; i < i1; ++i) {
-            ierr = MatGetRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
+            ierr = MatGetRow(S[l], i, &ncols, &cols, NULL);CHKERRQ(ierr);
             for (j = 1; j < ncols; ++j) {
               if (cols[j] < cols[j-1]) {
                 ierr = PetscPrintf(PETSC_COMM_SELF, "***Inversion in row %D: col[%D] = %D < %D = col[%D]\n", i, j, cols[j], cols[j-1], j-1);CHKERRQ(ierr);
                 inversions++;
               }
             }
-            ierr = MatRestoreRow(S[l], i, &ncols, &cols, PETSC_NULL);CHKERRQ(ierr);
+            ierr = MatRestoreRow(S[l], i, &ncols, &cols, NULL);CHKERRQ(ierr);
           }
         }
       }

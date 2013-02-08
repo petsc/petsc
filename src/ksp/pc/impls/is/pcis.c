@@ -240,7 +240,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
   /* Creating scaling "matrix" D */
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,NULL);CHKERRQ(ierr);
   if (!pcis->D) {
     ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
     if (!pcis->use_stiffness_scaling) {
@@ -297,19 +297,19 @@ PetscErrorCode  PCISSetUp(PC pc)
 
       ierr = PetscOptionsGetReal(((PetscObject)pc_ctx)->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
       if (!damp_fixed) fixed_factor = 0.0;
-      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_damp_fixed",&damp_fixed,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_damp_fixed",&damp_fixed,NULL);CHKERRQ(ierr);
 
-      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed,NULL);CHKERRQ(ierr);
 
       ierr = PetscOptionsGetReal(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",
                               &floating_factor,&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) floating_factor = 0.0;
-      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating,NULL);CHKERRQ(ierr);
       if (!set_damping_factor_floating) floating_factor = 1.e-12;
 
-      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_not_damp_floating",&not_damp_floating,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_not_damp_floating",&not_damp_floating,NULL);CHKERRQ(ierr);
 
-      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating,NULL);CHKERRQ(ierr);
 
       if (pcis->pure_neumann) {  /* floating subdomain */
         if (!(not_damp_floating)) {
@@ -318,7 +318,7 @@ PetscErrorCode  PCISSetUp(PC pc)
         }
         if (!(not_remove_nullspace_floating)) {
           MatNullSpace nullsp;
-          ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
           ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
           ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
         }
@@ -329,7 +329,7 @@ PetscErrorCode  PCISSetUp(PC pc)
         }
         if (remove_nullspace_fixed) {
           MatNullSpace nullsp;
-          ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
           ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
           ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
         }
@@ -386,9 +386,9 @@ PetscErrorCode  PCISDestroy(PC pc)
   if (pcis->ISLocalToGlobalMappingGetInfoWasCalled) {
     ierr = ISLocalToGlobalMappingRestoreInfo((ISLocalToGlobalMapping)0,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetUseStiffnessScaling_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetUseStiffnessScaling_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -566,7 +566,7 @@ PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   /* Checking for consistency of the RHS */
   {
     PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-pc_is_check_consistency",&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-pc_is_check_consistency",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       PetscScalar average;
       PetscViewer viewer;

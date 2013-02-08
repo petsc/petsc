@@ -42,25 +42,25 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
 
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,&global);CHKERRQ(ierr);
   ierr = VecSetSizes(global,PETSC_DECIDE,3);CHKERRQ(ierr);
   ierr = VecSetFromOptions(global);CHKERRQ(ierr);
-  ierr = Initial(global,PETSC_NULL);CHKERRQ(ierr);
+  ierr = Initial(global,NULL);CHKERRQ(ierr);
 
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,NULL,NULL);CHKERRQ(ierr);
 
   dt = 0.1;
 
   /*
     The user provides the RHS and Jacobian
   */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,NULL);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);

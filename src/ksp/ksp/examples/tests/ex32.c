@@ -31,9 +31,9 @@ int main(int argc,char **argv)
   PetscBool      flg,trans=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-trans",&trans,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMDASetDim(da,3);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DMDASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
 
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
 
   /* Test sbaij matrix */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-test_sbaij1", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-test_sbaij1", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat       sA;
     PetscBool issymm;
@@ -89,7 +89,7 @@ int main(int argc,char **argv)
 
   /* check final residual */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-check_final_residual", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Vec       b1;
     PetscReal norm;

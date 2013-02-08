@@ -77,8 +77,8 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
   }
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +145,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
-  if (v) *v = PETSC_NULL;
+  if (v) *v = NULL;
   if (idx) {
     itmp = a->j + a->i[row];
     if (*nz) {
@@ -242,17 +242,17 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
   MPI_Comm          comm;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
 
   /* count the number of nonzeros per row */
   for (i=0; i<m; i++) {
-    ierr = MatGetRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
     for (j=0; j<len; j++) {
       if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
     }
-    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
     nzeros += len;
   }
 
@@ -444,7 +444,7 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
   PetscMPIInt    i,rank,size,nranks,*ranks;
 
   PetscFunctionBegin;
-  *B    = PETSC_NULL;
+  *B    = NULL;
   acomm = ((PetscObject)A)->comm;
   ierr  = MPI_Comm_size(acomm,&size);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(acomm,&rank);CHKERRQ(ierr);
@@ -471,8 +471,8 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
   if (bcomm != MPI_COMM_NULL) {
     PetscInt   m,N;
     Mat_MPIAdj *b;
-    ierr       = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-    ierr       = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
+    ierr       = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+    ierr       = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
     ierr       = MatCreateMPIAdj(bcomm,m,N,a->i,a->j,a->values,B);CHKERRQ(ierr);
     b          = (Mat_MPIAdj*)(*B)->data;
     b->freeaij = PETSC_FALSE;
@@ -492,7 +492,7 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
 .  A - original MPIAdj matrix
 
    Output Arguments:
-.  B - matrix on subcommunicator, PETSC_NULL on ranks that owned zero rows of A
+.  B - matrix on subcommunicator, NULL on ranks that owned zero rows of A
 
    Level: developer
 

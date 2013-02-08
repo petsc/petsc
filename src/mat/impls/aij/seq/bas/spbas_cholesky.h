@@ -102,15 +102,15 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   }
 
   /* Motivate dimension choice */
-  ierr = PetscInfo1(PETSC_NULL,"   Allocating %d nonzeros: ",n_alloc);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"   Allocating %d nonzeros: ",n_alloc);CHKERRQ(ierr);
   if (n_alloc_max == n_alloc_est) {
-    ierr = PetscInfo(PETSC_NULL,"this is the correct size\n");CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"this is the correct size\n");CHKERRQ(ierr);
   } else if (n_alloc_now >= n_alloc_est) {
-    ierr = PetscInfo(PETSC_NULL,"the current size, which seems enough\n");CHKERRQ(ierr); 
+    ierr = PetscInfo(NULL,"the current size, which seems enough\n");CHKERRQ(ierr); 
   } else if (n_alloc_max < n_alloc_est * (1+xtra_perc/100.0)) {
-    ierr = PetscInfo(PETSC_NULL,"the maximum estimate\n");CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"the maximum estimate\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo1(PETSC_NULL,"%6.2f %% more than the estimate\n",xtra_perc);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL,"%6.2f %% more than the estimate\n",xtra_perc);CHKERRQ(ierr);
   }
 
 
@@ -297,7 +297,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
   epsdiag *= epsdiag_in / nrows;
 
-  ierr = PetscInfo2(PETSC_NULL,"   Dimensioned Manteuffel shift %G Drop tolerance %G\n", PetscRealPart(epsdiag),droptol);CHKERRQ(ierr);
+  ierr = PetscInfo2(NULL,"   Dimensioned Manteuffel shift %G Drop tolerance %G\n", PetscRealPart(epsdiag),droptol);CHKERRQ(ierr);
 
   if (droptol<1e-10) droptol=1e-10;
 
@@ -368,8 +368,8 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
     /* Calculate the new diagonal */
     diag[i] = val[i];
     if (PetscRealPart(diag[i])<droptol) {
-      ierr = PetscInfo(PETSC_NULL,"Error in spbas_incomplete_cholesky:\n");
-      ierr = PetscInfo1(PETSC_NULL,"Negative diagonal in row %d\n",i+1);
+      ierr = PetscInfo(NULL,"Error in spbas_incomplete_cholesky:\n");
+      ierr = PetscInfo1(NULL,"Negative diagonal in row %d\n",i+1);
 
       /* Delete the whole matrix at once. */
       ierr = spbas_delete(retval);

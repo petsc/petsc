@@ -1792,8 +1792,8 @@ namespace ALE {
             float *vCoords[3];
             PetscErrorCode ierr;
 
-            ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_global_method", &global_method, PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
-            ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_local_method",  &local_method,  PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+            ierr = PetscOptionsGetInt(NULL, "-partitioner_chaco_global_method", &global_method, NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+            ierr = PetscOptionsGetInt(NULL, "-partitioner_chaco_local_method",  &local_method,  NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
             if (global_method == 3) {
               // Inertial Partitioning
               ierr = PetscMalloc3(nvtxs,float,&x,nvtxs,float,&y,nvtxs,float,&z);CHKERROR(ierr, "Error in PetscMalloc");

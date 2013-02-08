@@ -76,7 +76,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = VecCopy(VVR[0], VRT);CHKERRQ(ierr);
   zeta = zeta0;
 
-  ierr = KSPGetTolerances(ksp, PETSC_NULL, PETSC_NULL, PETSC_NULL, &maxit);CHKERRQ(ierr);
+  ierr = KSPGetTolerances(ksp, NULL, NULL, NULL, &maxit);CHKERRQ(ierr);
 
   for (k=0; k<maxit; k += bcgsl->ell) {
     ksp->its   = k;
@@ -518,12 +518,12 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   }
 
   /* Set polynomial type */
-  ierr = PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,NULL);CHKERRQ(ierr);
   if (flga) {
     ierr = KSPBCGSLSetPol(ksp, PETSC_TRUE);CHKERRQ(ierr);
   } else {
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,NULL);CHKERRQ(ierr);
     ierr = KSPBCGSLSetPol(ksp, PETSC_FALSE);CHKERRQ(ierr);
   }
 
@@ -535,7 +535,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
 
   /* Use pseudoinverse? */
   flg  = bcgsl->pinv;
-  ierr = PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetUsePseudoinverse",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_bcgsl_pinv", "Polynomial correction via pseudoinverse", "KSPBCGSLSetUsePseudoinverse",flg,&flg,NULL);CHKERRQ(ierr);
   ierr = KSPBCGSLSetUsePseudoinverse(ksp,flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

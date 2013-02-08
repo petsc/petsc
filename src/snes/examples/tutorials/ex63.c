@@ -67,18 +67,18 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 5; the whole thing */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 5, 1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 5, 1,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 5, 1,NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 5, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 1; for individual componentes */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 1, 1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
 
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da1,DMDA_ELEMENT_P1);CHKERRQ(ierr);
   ierr = DMDASetElementType(user.da2,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
   /* Set x and y coordinates */
-  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da1,user.xmin,user.xmax,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
   ierr = DMCreateGlobalVector(user.da1,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     ierr = Update_q(&user);CHKERRQ(ierr);
     ierr = VecView(user.q,view_q);CHKERRQ(ierr);
     ierr = MatView(user.M,view_mat);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
     ierr = VecView(x,view_out);CHKERRQ(ierr);
     if (user.graphics) {
@@ -419,7 +419,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   if (user->voidgrowth) {
-    ierr = DMDAGetInfo(user->da2,PETSC_NULL,&Mda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(user->da2,NULL,&Mda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user->da2,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
@@ -622,7 +622,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
 
   for (i=xs; i < xs+xm; i++) {
@@ -671,10 +671,10 @@ PetscErrorCode GetParams(AppCtx *user)
   /* void growth */
   user->voidgrowth = PETSC_FALSE;
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-voidgrowth","Use initial conditions for void growth\n","None",user->voidgrowth,&user->voidgrowth,&flg);CHKERRQ(ierr);
@@ -720,8 +720,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = VecGetArray(cvlocal,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(cilocal,&ci_p);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   h = (user->xmax-user->xmin)/Mda;
 
@@ -857,8 +857,8 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   ierr = VecGetArray(cilocal,&ci_p);CHKERRQ(ierr);
 
   /* Create the mass matrix M_0 */
-  ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,NULL,&Mda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
   h = (user->xmax-user->xmin)/Mda;
 
@@ -976,7 +976,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMGlobalToLocalEnd(da,UIN,INSERT_VALUES,UOUT);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,UOUT,&uout);CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   for (i=xs; i < xs+xm; i++) {
     if (uout[i-1][1] && uout[i][1] && uout[i+1][1]) uout[i][0] = 1.0;

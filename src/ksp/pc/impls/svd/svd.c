@@ -52,7 +52,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   if (size > 1) {
     Mat      redmat;
     PetscInt M;
-    ierr = MatGetSize(pc->pmat,&M,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetSize(pc->pmat,&M,NULL);CHKERRQ(ierr);
     ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,M,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
     ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
     ierr = MatDestroy(&redmat);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
   }
-  ierr  = MatGetSize(pc->pmat,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = MatGetSize(pc->pmat,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
   ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
 
   PetscFunctionBegin;
   ierr  = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-  *xred = PETSC_NULL;
+  *xred = NULL;
   switch (side) {
   case PC_LEFT:
     if (size == 1) *xred = x;
@@ -199,7 +199,7 @@ static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,V
     break;
   default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
   }
-  *xred = PETSC_NULL;
+  *xred = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -308,8 +308,8 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SVD options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {                    /* Should make PCSVDSetMonitor() */
     if (flg && !jac->monitor) {

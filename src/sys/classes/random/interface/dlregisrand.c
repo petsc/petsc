@@ -20,7 +20,7 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
 {
   PetscFunctionBegin;
   PetscRandomPackageInitialized = PETSC_FALSE;
-  PetscRandomList               = PETSC_NULL;
+  PetscRandomList               = NULL;
   PetscRandomRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -33,7 +33,7 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 

@@ -58,25 +58,25 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char*)0,help);
   ctx.kappa       = 1.0;
-  ierr            = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
-  ierr            = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetBool(NULL,"-cahn-hillard",&ctx.cahnhillard,NULL);CHKERRQ(ierr);
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy      = 1;
-  /* ierr = PetscOptionsGetInt(PETSC_NULL,"-energy",&ctx.energy,PETSC_NULL);CHKERRQ(ierr); */
-  ierr        = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic, 4=degenerate mobility and weird splitting)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
+  /* ierr = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr); */
+  ierr        = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic, 4=degenerate mobility and weird splitting)","",ctx.energy,&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol     = 1.0e-8;
-  ierr        = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta   = .001;
   ctx.theta_c = 1.0;
-  ierr        = PetscOptionsGetReal(PETSC_NULL,"-theta",&ctx.theta,PETSC_NULL);CHKERRQ(ierr);
-  ierr        = PetscOptionsGetReal(PETSC_NULL,"-theta_c",&ctx.theta_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,2,2,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"Biharmonic heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,FormFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,FormFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-wait",&wait,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
@@ -233,7 +233,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -304,7 +304,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid

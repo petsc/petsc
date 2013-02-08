@@ -217,7 +217,7 @@ int main(int argc,char **argv)
 
   /* Create grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
-                      PETSC_DECIDE,PETSC_DECIDE,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                      PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
   /* Define output window for each variable of interest */
@@ -245,7 +245,7 @@ int main(int argc,char **argv)
 
   /* set values for MonitorCtx */
   usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
   if (usermonitor.drawcontours) {
     PetscReal bounds[] = {1000.0,-1000.,  -1000.,-1000.,  1000.,-1000.,  1000.,-1000.,  1000,-1000, 100700,100800};
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer);CHKERRQ(ierr);
@@ -277,14 +277,14 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
   }
 
   /* Define what to print for ts_monitor option */
   PetscBool monitor_off = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
   if (!monitor_off) {
-    ierr = TSMonitorSet(ts,Monitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&usermonitor,NULL);CHKERRQ(ierr);
   }
   ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
@@ -554,7 +554,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   ierr = DMDAVecGetArray(da,Xglobal,&X);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
 
@@ -658,7 +658,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   ierr = DMDAVecGetArray(da,F,&Frhs);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   /* the interior points */

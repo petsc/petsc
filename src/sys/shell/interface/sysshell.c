@@ -13,16 +13,16 @@ typedef PetscErrorCode (*PetscShellPythonClearVTableFunction)(PetscShell shell, 
 typedef PetscErrorCode (*PetscShellPythonCallFunction)(PetscShell shell, const char *message, void *vtable);
 
 EXTERN_C_BEGIN
-PetscShellPythonLoadVTableFunction  PetscShellPythonLoadVTable  = PETSC_NULL;
-PetscShellPythonClearVTableFunction PetscShellPythonClearVTable = PETSC_NULL;
-PetscShellPythonCallFunction        PetscShellPythonCall        = PETSC_NULL;
+PetscShellPythonLoadVTableFunction  PetscShellPythonLoadVTable  = NULL;
+PetscShellPythonClearVTableFunction PetscShellPythonClearVTable = NULL;
+PetscShellPythonCallFunction        PetscShellPythonCall        = NULL;
 EXTERN_C_END
 
 #define PETSC_SHELL_CHECKINIT_PYTHON()                                    \
-  if (PetscShellPythonLoadVTable == PETSC_NULL) {                         \
+  if (PetscShellPythonLoadVTable == NULL) {                         \
     PetscErrorCode ierr;                                                  \
-    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);    \
-    if (PetscShellPythonLoadVTable == PETSC_NULL) {                       \
+    ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);    \
+    if (PetscShellPythonLoadVTable == NULL) {                       \
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,                              \
               "Couldn't initialize Python support for PetscShell");       \
     }                                                                     \
@@ -273,7 +273,7 @@ PetscErrorCode PetscShellGraphCreate(PetscShellGraph *graph_p)
   graph         = *graph_p;
   graph->vcount = graph->vmax = graph->nz = graph->maxnz = graph->rowreallocs = graph->colreallocs = 0;
   ierr          = PetscMalloc(sizeof(PetscInt), &(graph->i));CHKERRQ(ierr);
-  graph->j      = graph->outdegree = graph->indegree = PETSC_NULL;
+  graph->j      = graph->outdegree = graph->indegree = NULL;
   PetscFunctionReturn(0);
 } /* PetscShellGraphCreate() */
 
@@ -316,9 +316,9 @@ static PetscDLLibrary PetscShellDLLibrariesLoaded = 0;
 PetscErrorCode PetscShellCall_SO(PetscShell shell, const char *path, const char *name, const char *message)
 {
   size_t                    namelen, messagelen, msgfunclen, callfunclen;
-  char                      *msgfunc = PETSC_NULL, *callfunc = PETSC_NULL;
-  PetscShellCallFunction    call     = PETSC_NULL;
-  PetscShellMessageFunction msg      = PETSC_NULL;
+  char                      *msgfunc = NULL, *callfunc = NULL;
+  PetscShellCallFunction    call     = NULL;
+  PetscShellMessageFunction msg      = NULL;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
@@ -366,8 +366,8 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char *path, const char 
 #define __FUNCT__ "PetscShellCall_NONE"
 PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char *message)
 {
-  PetscShellCallFunction    call = PETSC_NULL;
-  PetscShellMessageFunction msg  = PETSC_NULL;
+  PetscShellCallFunction    call = NULL;
+  PetscShellMessageFunction msg  = NULL;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
@@ -514,7 +514,7 @@ PetscErrorCode  PetscShellClearURL_Private(PetscShell shell)
     ierr               = PetscFree(vt->path);CHKERRQ(ierr);
     ierr               = PetscFree(vt->name);CHKERRQ(ierr);
     ierr               = PetscFree(vt);CHKERRQ(ierr);
-    shell->vtable      = PETSC_NULL;
+    shell->vtable      = NULL;
     shell->vtable_type = PETSC_SHELL_VTABLE_NONE;
   }
   break;
@@ -528,7 +528,7 @@ PetscErrorCode  PetscShellClearURL_Private(PetscShell shell)
              "Unknown PetscShell vtable type: %d", shell->vtable_type);
   }
   ierr = PetscFree(shell->url);CHKERRQ(ierr);
-  shell->url = PETSC_NULL;
+  shell->url = NULL;
   PetscFunctionReturn(0);
 } /* PetscShellClearURL_Private() */
 
@@ -705,7 +705,7 @@ PetscErrorCode PetscShellView(PetscShell shell,  PetscViewer viewer)
    Output parameters:
 .  visitor -- the visitor PetscShell object
 
-   Notes:  The visitor is valid only during the PetscShellVisit() and is PETSC_NULL otherwise.
+   Notes:  The visitor is valid only during the PetscShellVisit() and is NULL otherwise.
 
    Level: intermediate
 
@@ -761,7 +761,7 @@ PetscErrorCode PetscShellVisit(PetscShell shell, const char *message)
     /* Call "configure" */
     ierr = PetscShellCall(component, message);CHKERRQ(ierr);
     /* Clear visitor */
-    component->visitor = PETSC_NULL;
+    component->visitor = NULL;
   }
   ierr = PetscFree(vertices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -851,11 +851,11 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
 #define __FUNCT__ "PetscShellRegisterComponentShell"
 /*@C
    PetscShellRegisterComponentShell -- register a component as a component of shell, identifiable within shell by key.
-                                    If a component with key already exists within shell, and component is not PETSC_NULL,
+                                    If a component with key already exists within shell, and component is not NULL,
                                   the old component is replace.
-                                    If component is PETSC_NULL, and key has not been registered with PetscShell,
+                                    If component is NULL, and key has not been registered with PetscShell,
                                   and new PetscShell component is created with key as its name, and stored in shell under key.
-                                    If component is PETSC_NULL, and key has already been registered with PetscShell,
+                                    If component is NULL, and key has already been registered with PetscShell,
                                   nothing is done.
                                     The component can be later obtained with a PetscShellGetComponent()
                                   call, or referred to be its key in a PetscShellRegisterDependenceCall().
@@ -866,7 +866,7 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
    Input paramters:
 +  shell     -- a PetscShell object
 .  key       -- a character string designating the added component.
--  component -- a PetscShell object to add (or PETSC_NULL)
+-  component -- a PetscShell object to add (or NULL)
 
 
   Level: intermediate.
@@ -880,7 +880,7 @@ PetscErrorCode  PetscShellRegisterComponentShell(PetscShell shell, const char ke
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(key,2);
-  ierr = PetscShellRegisterKey_Private(shell, key, component, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscShellRegisterKey_Private(shell, key, component, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } /* PetscShellRegisterComponentShell() */
 
@@ -899,7 +899,7 @@ PetscErrorCode  PetscShellRegisterComponentShell(PetscShell shell, const char ke
 -  url   -- a character string desigating the URL of the added component.
 
    Notes: equivalent to the sequence
-          PetscShellRegisterComponentShell(shell,key,PETSC_NULL);
+          PetscShellRegisterComponentShell(shell,key,NULL);
           PetscShellGetComponent(shell, key, &component);
           PetscShellSetURL(component, url);
 
@@ -916,7 +916,7 @@ PetscErrorCode  PetscShellRegisterComponentURL(PetscShell shell, const char key[
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(key,2);
   PetscValidCharPointer(url,3);
-  ierr = PetscShellRegisterKey_Private(shell, key, PETSC_NULL, &id);CHKERRQ(ierr);
+  ierr = PetscShellRegisterKey_Private(shell, key, NULL, &id);CHKERRQ(ierr);
   ierr = PetscShellSetURL(shell->component[id], url);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } /* PetscShellRegisterComponentURL() */
@@ -952,8 +952,8 @@ PetscErrorCode  PetscShellRegisterDependence(PetscShell shell, const char server
   PetscValidCharPointer(clientkey,2);
   PetscValidCharPointer(serverkey,3);
   /* Register keys */
-  ierr = PetscShellRegisterKey_Private(shell, clientkey, PETSC_NULL, &clientid);CHKERRQ(ierr);
-  ierr = PetscShellRegisterKey_Private(shell, serverkey, PETSC_NULL, &serverid);CHKERRQ(ierr);
+  ierr = PetscShellRegisterKey_Private(shell, clientkey, NULL, &clientid);CHKERRQ(ierr);
+  ierr = PetscShellRegisterKey_Private(shell, serverkey, NULL, &serverid);CHKERRQ(ierr);
   /*
     Add the dependency edge to the dependence_graph as follows (serverurl, clienturl):
      this means "server preceeds client", so server should be configured first.
@@ -1023,15 +1023,15 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscShellInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscShellInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   PetscValidPointer(shell,2);
   ierr = PetscHeaderCreate(shell_,_p_PetscShell,PetscInt,PETSC_SHELL_CLASSID,0,"PetscShell","String message interpreter and dependence organizer","shell",comm,PetscShellDestroy,PetscShellView);CHKERRQ(ierr);
 
-  shell_->visitor     = PETSC_NULL;
-  shell_->component   = PETSC_NULL;
+  shell_->visitor     = NULL;
+  shell_->component   = NULL;
   shell_->vtable_type = PETSC_SHELL_VTABLE_NONE;
-  shell_->vtable      = PETSC_NULL;
+  shell_->vtable      = NULL;
   shell_->N           = shell_->maxN = 0;
 
   /* FIX: should only create a graph on demand */
@@ -1058,10 +1058,10 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
 -  key   -- a character string designating the key of the component being sought
 
    Output parameters:
-+  component -- the extracted component PetscShell object (or PETSC_NULL)
--  found     -- PetscBool flag indicating whether a component with the given key has been found (or PETSC_NULL)
++  component -- the extracted component PetscShell object (or NULL)
+-  found     -- PetscBool flag indicating whether a component with the given key has been found (or NULL)
 
-   Notes: component can be PETSC_NULL, in which case only found is returned (if it is itself not PETSC_NULL).
+   Notes: component can be NULL, in which case only found is returned (if it is itself not NULL).
           This is useful for quering for the presence of the given component, without extracting it.
 
    Level: beginner.

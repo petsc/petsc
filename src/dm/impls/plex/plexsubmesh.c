@@ -22,7 +22,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&pMax);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth>1 ? &pMax[depth-1] : PETSC_NULL, depth > 2 ? &pMax[1] : PETSC_NULL, &pMax[0]);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth>1 ? &pMax[depth-1] : NULL, depth > 2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
     if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
@@ -35,7 +35,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   }
   for (v = 0; v < numSubVerticesInitial; ++v) {
     const PetscInt vertex = subvertices[v];
-    PetscInt      *star   = PETSC_NULL;
+    PetscInt      *star   = NULL;
     PetscInt       starSize, s, numCells = 0, c;
 
     ierr = DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
@@ -45,7 +45,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
     }
     for (c = 0; c < numCells; ++c) {
       const PetscInt cell    = star[c];
-      PetscInt      *closure = PETSC_NULL;
+      PetscInt      *closure = NULL;
       PetscInt       closureSize, cl;
       PetscInt       cellLoc, numCorners = 0, faceSize = 0;
 
@@ -97,7 +97,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&pMax);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &pMax[dim], dim>1 ? &pMax[dim-1] : PETSC_NULL, dim > 2 ? &pMax[1] : PETSC_NULL, &pMax[0]);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &pMax[dim], dim>1 ? &pMax[dim-1] : NULL, dim > 2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
     if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
@@ -110,7 +110,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
   }
   for (v = 0; v < numSubVerticesInitial; ++v) {
     const PetscInt vertex = subvertices[v];
-    PetscInt      *star   = PETSC_NULL;
+    PetscInt      *star   = NULL;
     PetscInt       starSize, s, numFaces = 0, f;
 
     ierr = DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
     }
     for (f = 0; f < numFaces; ++f) {
       const PetscInt face    = star[f];
-      PetscInt      *closure = PETSC_NULL;
+      PetscInt      *closure = NULL;
       PetscInt       closureSize, c;
       PetscInt       faceLoc;
 
@@ -470,7 +470,7 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
 */
 PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
-  const PetscInt *cone = PETSC_NULL;
+  const PetscInt *cone = NULL;
   PetscInt        coneSize, v, f, v2;
   PetscInt        oppositeVertex = -1;
   PetscErrorCode  ierr;
@@ -638,12 +638,12 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Create face cones */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
   ierr = DMGetWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
   for (c = 0; c < numSubCells; ++c) {
     const PetscInt cell    = subCells[c];
     const PetscInt subcell = c;
-    PetscInt      *closure = PETSC_NULL;
+    PetscInt      *closure = NULL;
     PetscInt       closureSize, cl, numCorners = 0, faceSize = 0;
 
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -779,7 +779,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   }
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Set cones */
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &coneNew);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     for (p = 0; p < numSubPoints[d]; ++p) {
@@ -932,7 +932,7 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 . dm - The submesh DM
 
   Output Parameter:
-. subpointIS - The IS of all the points from the original mesh in this submesh, or PETSC_NULL if this is not a submesh
+. subpointIS - The IS of all the points from the original mesh in this submesh, or NULL if this is not a submesh
 
   Note: This is IS is guaranteed to be sorted by the construction of the submesh
 */
@@ -949,7 +949,7 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subpointIS, 2);
-  *subpointIS = PETSC_NULL;
+  *subpointIS = NULL;
   ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
   if (subpointMap) {
     ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);

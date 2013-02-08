@@ -41,17 +41,17 @@ int main(int argc,char **argv)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-  ierr = KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,PETSC_NULL);CHKERRQ(ierr);
-  ierr = KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,NULL);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,NULL);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
 
   ierr = MatMult(A,x,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);

@@ -129,7 +129,7 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void 
 +  ksp - the KSP context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  dummy - either a viewer or PETSC_NULL
+-  dummy - either a viewer or NULL
 
    Level: intermediate
 
@@ -148,7 +148,7 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *d
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  ierr = KSPBuildSolution(ksp,PETSC_NULL,&x);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
   if (!viewer) {
     MPI_Comm comm;
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
@@ -880,7 +880,7 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscFunctionBegin;
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
-  ierr = KSPBuildSolution(ksp,t,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,t,NULL);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
   ierr = VecAYPX(v,-1.0,ksp->vec_rhs);CHKERRQ(ierr);
   *V   = v;
@@ -924,8 +924,8 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       } else {
         Mat mat;
         if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatGetVecs(mat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+        ierr = MatGetVecs(mat,&vecr,NULL);CHKERRQ(ierr);
       }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
@@ -946,8 +946,8 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       } else {
         Mat mat;
         if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatGetVecs(mat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+        ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+        ierr = MatGetVecs(mat,NULL,&vecl);CHKERRQ(ierr);
       }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
@@ -981,7 +981,7 @@ PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
   PetscFunctionBegin;
   ierr       = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ksp->nwork = nw;
-  ierr       = KSPGetVecs(ksp,nw,&ksp->work,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr       = KSPGetVecs(ksp,nw,&ksp->work,0,NULL);CHKERRQ(ierr);
   ierr       = PetscLogObjectParents(ksp,nw,ksp->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

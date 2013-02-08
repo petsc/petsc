@@ -418,7 +418,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_RK(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -432,7 +432,7 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("RK ODE solver options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_rk_tol","Tolerance for convergence","TSRKSetTolerance",rk->tolerance,&rk->tolerance,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_rk_tol","Tolerance for convergence","TSRKSetTolerance",rk->tolerance,&rk->tolerance,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

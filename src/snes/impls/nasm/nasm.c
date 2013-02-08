@@ -98,13 +98,13 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     if (dm) {
       nasm->usesdm = PETSC_TRUE;
-      ierr         = DMCreateDomainDecomposition(dm,&nasm->n,PETSC_NULL,PETSC_NULL,PETSC_NULL,&subdms);CHKERRQ(ierr);
+      ierr         = DMCreateDomainDecomposition(dm,&nasm->n,NULL,NULL,NULL,&subdms);CHKERRQ(ierr);
       if (!subdms) {
         ierr = DMCreateDomainDecompositionDM(dm,"default",&ddm);CHKERRQ(ierr);
         if (!ddm) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
         ierr = SNESSetDM(snes,ddm);CHKERRQ(ierr);
         ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-        ierr = DMCreateDomainDecomposition(dm,&nasm->n,PETSC_NULL,PETSC_NULL,PETSC_NULL,&subdms);CHKERRQ(ierr);
+        ierr = DMCreateDomainDecomposition(dm,&nasm->n,NULL,NULL,NULL,&subdms);CHKERRQ(ierr);
       }
       if (!subdms) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
       ierr = DMCreateDomainDecompositionScatters(dm,nasm->n,subdms,&nasm->iscatter,&nasm->oscatter,&nasm->gscatter);CHKERRQ(ierr);
@@ -131,13 +131,13 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 
   for (i=0; i<nasm->n; i++) {
     DM subdm;
-    ierr = SNESGetFunction(nasm->subsnes[i],&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESGetFunction(nasm->subsnes[i],&F,NULL,NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(F,&nasm->x[i]);CHKERRQ(ierr);
     ierr = VecDuplicate(F,&nasm->y[i]);CHKERRQ(ierr);
     ierr = VecDuplicate(F,&nasm->b[i]);CHKERRQ(ierr);
     ierr = SNESGetDM(nasm->subsnes[i],&subdm);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(subdm,&nasm->xl[i]);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,PETSC_NULL,nasm->xl[i]);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -319,7 +319,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       Bl   = nasm->b[i];
       ierr = VecScatterBegin(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     } else {
-      Bl = PETSC_NULL;
+      Bl = NULL;
     }
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
@@ -528,8 +528,8 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;
 
-  nasm->eventrestrictinterp = PETSC_NULL;
-  nasm->eventsubsolve       = PETSC_NULL;
+  nasm->eventrestrictinterp = 0;
+  nasm->eventsubsolve       = 0;
 
   if (!snes->tolerancesset) {
     snes->max_its   = 10000;

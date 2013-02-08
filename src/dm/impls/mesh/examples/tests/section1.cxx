@@ -39,8 +39,8 @@ public :
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for square sieve stress test", "Sieve");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "sieve1.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "sieve1.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "sieve1.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "sieve1.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -144,9 +144,9 @@ public:
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
 
-    this->_mesh    = PETSC_NULL;
-    this->_sieve   = PETSC_NULL;
-    this->_section = PETSC_NULL;
+    this->_mesh    = NULL;
+    this->_sieve   = NULL;
+    this->_section = NULL;
     this->processOptions();
     const ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
     this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
@@ -199,9 +199,9 @@ public:
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {32, 32};
 
-    this->_mesh    = PETSC_NULL;
-    this->_sieve   = PETSC_NULL;
-    this->_section = PETSC_NULL;
+    this->_mesh    = NULL;
+    this->_sieve   = NULL;
+    this->_section = NULL;
     this->processOptions();
     const ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
     this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);

@@ -39,7 +39,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 
   nopt = stash->size;
   ierr = PetscMalloc(nopt*sizeof(PetscInt),&opt);CHKERRQ(ierr);
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
     else if (nopt == stash->size) max = opt[stash->rank];
@@ -71,7 +71,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->nprocessed  = 0;
   stash->reproduce   = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matstash_reproduce",&stash->reproduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -465,7 +465,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   i       = j    = 0;
   lastidx = -1;
   space   = stash->space_head;
-  while (space != PETSC_NULL) {
+  while (space != NULL) {
     space_next = space->next;
     sp_idx     = space->idx;
     for (l=0; l<space->local_used; l++) {
@@ -517,7 +517,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
 
   i     = 0;
   space = stash->space_head;
-  while (space != PETSC_NULL) {
+  while (space != NULL) {
     space_next = space->next;
     sp_idx     = space->idx;
     sp_idy     = space->idy;
