@@ -273,4 +273,3 @@ CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations
 Surface statistics: u in [-6.945709e+01, 2.381387e+04] mean 1.520632e+04
 Global eta range   2.50736e+09 to 9.2273e+12 converged range 2.50736e+09 to 3.8249e+10
 Global beta2 range 0 to 4.97763e+09 converged range 0 to 4.97763e+09
-
