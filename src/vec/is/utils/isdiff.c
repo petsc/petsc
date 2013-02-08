@@ -369,7 +369,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 }
 
 /*@
-   ISListToMap     -    convert an IS list to a pair of ISs of equal length defining an equivalent integer multimap.
+   ISListToPair     -    convert an IS list to a pair of ISs of equal length defining an equivalent integer multimap.
                         Each IS on the input list is assigned an integer j so that all of the indices of that IS are
                         mapped to j.
 
@@ -398,13 +398,13 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   Local lists of PetscObjects (or their subcommes) on a comm are "deadlock-free" if subcomm1
   preceeds subcomm2 on any local list, then it preceeds subcomm2 on all ranks.
   Equivalently, the local numbers of the subcomms on each local list are drawn from some global
-  numbering. This is ensured, for example, by ISMapToList().
+  numbering. This is ensured, for example, by ISPairToList().
 
-.seealso ISMapToList()
+.seealso ISPairToList()
 @*/
 #undef  __FUNCT__
-#define __FUNCT__ "ISListToMap"
-PetscErrorCode ISListToMap(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
+#define __FUNCT__ "ISListToPair"
+PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
 {
   PetscErrorCode ierr;
   PetscInt       ncolors, *colors,i, leni,len,*xinds, *yinds,k,j;
@@ -438,12 +438,12 @@ PetscErrorCode ISListToMap(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis
 
 
 /*@
-   ISMapToList   -   convert an IS pair encoding an integer map to a list of ISs.
+   ISPairToList   -   convert an IS pair encoding an integer map to a list of ISs.
                      Each IS on the output list contains the preimage for each index on the second input IS.
                      The ISs on the output list are constructed on the subcommunicators of the input IS pair.
                      Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
                      exactly the ranks that assign some indices i to j.  This is essentially the inverse of
-                     ISListToMap().
+                     ISListToPair().
 
   Collective on indis.
 
@@ -457,15 +457,15 @@ PetscErrorCode ISListToMap(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis
 
   Note:
 + xis and yis must be of the same length and have congruent communicators.
-- The resulting ISs have subcommunicators in a "deadlock-free" order (see ISListToMap()).
+- The resulting ISs have subcommunicators in a "deadlock-free" order (see ISListToPair()).
 
   Level: advanced
 
-.seealso ISListToMap()
+.seealso ISListToPair()
  @*/
 #undef  __FUNCT__
-#define __FUNCT__ "ISMapToList"
-PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
+#define __FUNCT__ "ISPairToList"
+PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 {
   PetscErrorCode ierr;
   IS             indis = xis, coloris = yis;
@@ -568,24 +568,23 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 
 
 /*@
-   ISMapFactorRight   -   for a pair of ISs a and b, regarded as local-to-global index maps, compute IS c such that
-                          a = b*c as a composition of maps.  In other words, find a substitution of local indices c
-                          such that a factors through c (and b). Another way to look at this is as finding the right
-                          factor for b in a (b is the left factor).
+   ISEmbed   -   embed IS a into IS b by finding the locations in b that have the same indices as in a.
+                 If c is the IS of these locations, we have a = b*c, regarded as a composition of the 
+                 corresponding ISLocalToGlobalMaps.
 
   Not collective.
 
   Input arguments:
-+ a    -  IS to factor
-. b    -  left factor
-- drop -  flag indicating whether to drop a's indices that can't factor through b.
++ a    -  IS to embed
+. b    -  IS to embed into
+- drop -  flag indicating whether to drop a's indices that are not in b.
 
   Output arguments:
-. c    -  right local factor
+. c    -  local embedding indices
 
   Note:
-  If some of a's global indices are not among b's indices the factorization is impossible.  The local indices of a
-  corresponding to these global indices are either mapped to -1 (if !drop) or are omitted (if drop).  In former
+  If some of a's global indices are not among b's indices the embedding is impossible.  The local indices of a
+  corresponding to these global indices are either mapped to -1 (if !drop) or are omitted (if drop).  In the former
   case the size of c is that same as that of a, in the latter case c's size may be smaller.
 
   The resulting IS is sequential, since the index substition it encodes is purely local.
@@ -595,8 +594,8 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 .seealso ISLocalToGlobalMapping
  @*/
 #undef  __FUNCT__
-#define __FUNCT__ "ISMapFactorRight"
-PetscErrorCode ISMapFactorRight(IS a, IS b, PetscBool drop, IS *c)
+#define __FUNCT__ "ISEmbed"
+PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 {
   PetscErrorCode             ierr;
   ISLocalToGlobalMapping     ltog;
