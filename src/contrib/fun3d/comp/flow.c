@@ -4,7 +4,6 @@ originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 
 #include <stdio.h>
-#include <math.h>
 #include <assert.h>
 #include <petscsnes.h>
 #include <petscdraw.h>

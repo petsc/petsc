@@ -9,7 +9,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-#include <math.h>
 EXTERN_C_BEGIN
 /* HAVE_CONFIG_H flag is required by ML include files */
 #if !defined(HAVE_CONFIG_H)

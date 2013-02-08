@@ -1,7 +1,6 @@
 #include <petscsnes.h>
 #include <petscdmda.h>
 #include <../src/snes/impls/vi/viimpl.h>
-#include <math.h>  /* for cos() sin(0), and atan() */
 
 static  char help[]=
 "This example is an implementation of the journal bearing problem from TAO package\n\

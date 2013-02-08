@@ -9,7 +9,6 @@
    The file storage of the vector is independent of the number of processes used.
  */
 
-#include <math.h>
 #include <petscdmda.h>
 #include <petscsys.h>
 

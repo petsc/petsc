@@ -1,10 +1,3 @@
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#define PI 3.14159265358979323846264338328
-
-
 
 static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input parameters: density, viscosity A, viscosity B */
                            double _x_c, int _n,                        /* Input parameters: viscosity jump location, wavenumber in z */
@@ -2235,19 +2228,19 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   /****************************************************************************************/
 
 
-  u5 = (double)(-2*Z*n*PI*u2-u3*2*n*PI)*cos(n*PI*z); /* pressure */
+  u5 = (double)(-2*Z*n*PETSC_PI*u2-u3*2*n*PETSC_PI)*cos(n*PETSC_PI*z); /* pressure */
 
-  u6    = (double)(u3*2*n*PI + 4*Z*n*PI*u2)*cos(n*PI*z); /* zz stress */
+  u6    = (double)(u3*2*n*PETSC_PI + 4*Z*n*PETSC_PI*u2)*cos(n*PETSC_PI*z); /* zz stress */
   sum5 +=u5;
   sum6 +=u6;
 
-  u1   *= cos(n*PI*z); /* x velocity */
+  u1   *= cos(n*PETSC_PI*z); /* x velocity */
   sum1 += u1;
-  u2   *= sin(n*PI*z); /* z velocity */
+  u2   *= sin(n*PETSC_PI*z); /* z velocity */
   sum2 += u2;
-  u3   *= 2*n*PI*cos(n*PI *z); /* xx stress */
+  u3   *= 2*n*PETSC_PI*cos(n*PETSC_PI *z); /* xx stress */
   sum3 += u3;
-  u4   *= 2*n*PI*sin(n*PI *z); /* zx stress */
+  u4   *= 2*n*PETSC_PI*sin(n*PETSC_PI *z); /* zx stress */
   sum4 += u4;
 
 

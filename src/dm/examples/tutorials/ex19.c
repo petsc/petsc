@@ -2,7 +2,6 @@
      Demonstrates creating domain decomposition DAs and how to shuffle around data between the two
  */
 
-#include <math.h>
 #include <petscdmda.h>
 
 static char help[] = "Test for DMDA with overlap.\n\n";

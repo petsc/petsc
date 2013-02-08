@@ -8,7 +8,6 @@
 #if defined(PETSC_HAVE_WINDOWSX_H)
 #include <windowsx.h>
 #endif
-#include <math.h>
 #if defined(PETSC_HAVE_TIME_H)
 #include <time.h>
 #endif

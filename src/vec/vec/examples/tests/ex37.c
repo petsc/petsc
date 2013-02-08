@@ -7,14 +7,7 @@ static char help[] = "Nest vector functionality.\n\n";
    Processors: n
 T*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
 #include <petsc.h>
-#include <petscvec.h>
-#include <petscmat.h>
-#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "GetISs"
