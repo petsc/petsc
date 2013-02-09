@@ -119,8 +119,6 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
 
 /* ----------------------------------------------------------------------------------*/
 
-#include <stdarg.h>
-
 #undef __FUNCT__
 #define __FUNCT__ "DMCompositeGetNumberDM"
 /*@

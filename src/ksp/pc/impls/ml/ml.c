@@ -132,7 +132,7 @@ static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_
     ierr = VecPlaceArray(ml->x,p);CHKERRQ(ierr);
   } else {
     for (i=0; i<in_length; i++) pwork[i] = p[i];
-    PetscML_comm(pwork,ml);
+    ierr = PetscML_comm(pwork,ml);CHKERRQ(ierr);
     ierr = VecPlaceArray(ml->x,pwork);CHKERRQ(ierr);
   }
   ierr = VecPlaceArray(ml->y,ap);CHKERRQ(ierr);
@@ -823,7 +823,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
   /* repartitioning */
   if (pc_ml->Repartition) {
-    ML_Repartition_Activate (ml_object);
+    ML_Repartition_Activate(ml_object);
     ML_Repartition_Set_LargestMinMaxRatio(ml_object,pc_ml->MaxMinRatio);
     ML_Repartition_Set_MinPerProc(ml_object,pc_ml->MinPerProc);
     ML_Repartition_Set_PutOnSingleProc(ml_object,pc_ml->PutOnSingleProc);

@@ -13,14 +13,7 @@
 #if defined(PETSC_HAVE_MPE)
 #include <mpe.h>
 #endif
-#include <stdarg.h>
 #include <sys/types.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
 #include <petsc-private/logimpl.h>
 #include <petscthreadcomm.h>
 

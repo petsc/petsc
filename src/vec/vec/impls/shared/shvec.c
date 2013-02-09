@@ -70,9 +70,6 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 #if defined(PETSC_HAVE_SYS_PARAM_H)
 #include <sys/param.h>
 #endif

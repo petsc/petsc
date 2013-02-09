@@ -3,12 +3,8 @@ static char help[] = "FUN3D - 3-D, Unstructured Compressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 
-#include <stdio.h>
 #include <assert.h>
 #include <petscsnes.h>
-#include <petscdraw.h>
-#include <petscao.h>
-#include <petscis.h>
 #include "user.h"
 
 typedef struct {

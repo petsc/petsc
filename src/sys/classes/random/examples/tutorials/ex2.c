@@ -1,15 +1,8 @@
 static char help[] = "Tests PetscRandom functions.\n\n";
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <sys/types.h>
-
 #include <petscsys.h>
 
 #define PETSC_MAXBSIZE     40
-#define PI           3.1415926535897
 #define DATAFILENAME "ex2_stock.txt"
 
 struct himaInfoTag {
@@ -47,7 +40,6 @@ int main(int argc, char *argv[])
   unsigned long  i,myNumSim,totalNumSim,numdim;
   double         *vol, *St0, x, totalx;
   int            np,myid;
-  time_t         start,stop;
   double         *eps;
   himaInfo       hinfo;
   PetscRandom    ran;
@@ -58,7 +50,6 @@ int main(int argc, char *argv[])
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
 #endif
-  time(&start);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPRNG)
   ierr = PetscRandomSetType(ran,PETSCSPRNG);CHKERRQ(ierr);
@@ -109,7 +100,6 @@ int main(int argc, char *argv[])
   }
 
   ierr = MPI_Reduce(&x, &totalx, 1, MPI_DOUBLE, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  time(&stop);
   /* payoff = exp(-r*dt*n)*(totalx/totalNumSim);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
    payoff,(int)(stop - start),"parallel",np,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
@@ -132,8 +122,8 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
     t        = sqrt(-2*log(u1));
-    eps[i]   = t * cos(2*PI*u2);
-    eps[i+1] = t * sin(2*PI*u2);
+    eps[i]   = t * cos(2*PETSC_PI*u2);
+    eps[i+1] = t * sin(2*PETSC_PI*u2);
   }
 }
 

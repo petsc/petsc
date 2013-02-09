@@ -15,12 +15,6 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
 
 /* ------------------------Nasty global variables -------------------------------*/
 /*

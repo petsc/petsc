@@ -1,6 +1,5 @@
 
 #include <petsc-private/viewerimpl.h>  /*I     "petscsys.h"   I*/
-#include <stdarg.h>
 
 typedef struct {
   FILE          *fd;

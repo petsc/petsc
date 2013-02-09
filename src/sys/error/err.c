@@ -3,10 +3,6 @@
       Code that allows one to set the error handlers
 */
 #include <petscsys.h>           /*I "petscsys.h" I*/
-#include <stdarg.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 typedef struct _EH *EH;
 struct _EH {

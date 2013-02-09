@@ -6,9 +6,6 @@
 */
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 #define ManSection(str) ((str) ? (str) : "None")
 

@@ -3,7 +3,6 @@ static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\
 users should employ the KSP interface instead of using PC directly.\n\n";
 
 #include <petscksp.h>
-#include <stdio.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

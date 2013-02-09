@@ -42,12 +42,9 @@ static const char help[] = "STREAM benchmark for pthread implemenentations\n\n";
 /*     program constitutes acceptance of these licensing restrictions.   */
 /*  5. Absolutely no warranty is expressed or implied.                   */
 /*-----------------------------------------------------------------------*/
-# include <stdio.h>
-# include <math.h>
 # include <limits.h>
 # include <float.h>
 # include <sys/time.h>
-# include <petscconf.h>
 # include <petscsys.h>
 # include <petscthreadcomm.h>
 /* INSTRUCTIONS:

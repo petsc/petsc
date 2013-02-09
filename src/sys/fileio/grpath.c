@@ -9,9 +9,6 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif

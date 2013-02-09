@@ -1,8 +1,5 @@
 
 #include <../src/sys/classes/random/randomimpl.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 #define USE_MPI
 #define SIMPLE_SPRNG

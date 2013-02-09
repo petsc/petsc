@@ -1,4 +1,6 @@
 
+#include <petscmat.h>
+
 #if !defined(PETSC_USE_COMPLEX)
 
 static char help[] = "Reads in a Symmetric matrix in MatrixMarket format. Writes\n\
@@ -6,8 +8,6 @@ it using the PETSc sparse format. It also adds a Vector set to random values to 
 output file. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
-
-#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -78,7 +78,7 @@ int main(int argc,char **args)
   return 0;
 }
 #else
-#include <stdio.h>
+
 int main(int argc,char **args)
 {
   fprintf(stdout,"This example does not work for complex numbers.\n");

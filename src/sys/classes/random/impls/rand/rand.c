@@ -1,8 +1,5 @@
 
 #include <../src/sys/classes/random/randomimpl.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomSeed_Rand"

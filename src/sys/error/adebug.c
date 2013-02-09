@@ -7,9 +7,6 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 /*
       These are the debugger and display used if the debugger is started up

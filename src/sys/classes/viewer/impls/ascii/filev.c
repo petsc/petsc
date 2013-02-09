@@ -1,6 +1,5 @@
 
 #include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
-#include <stdarg.h>
 
 #define QUEUESTRINGSIZE 8192
 

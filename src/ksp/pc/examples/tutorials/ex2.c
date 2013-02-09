@@ -13,7 +13,6 @@ static char help[] = "Test file for the PCFactorSetShiftType()\n";
  *    the method will now successfully converge.
  */
 
-#include <stdlib.h>
 #include <petscksp.h>
 
 #undef __FUNCT__

@@ -98,11 +98,8 @@ int main()
  */
 
 
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-
 #include <petscsys.h>
+#include <limits.h>
 
 /* compiler-specific configuration */
 #if UINT_MAX == 0xffffffffu

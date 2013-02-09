@@ -3,10 +3,6 @@
       Some PETSc utilites routines to add simple parallel IO capability
 */
 #include <petscsys.h>
-#include <stdarg.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFOpen"

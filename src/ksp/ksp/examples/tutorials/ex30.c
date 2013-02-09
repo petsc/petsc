@@ -1,7 +1,5 @@
 static char help[] = " * Example code testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
 
-#include <stdlib.h>
-#include <petscmat.h>
 #include <petscksp.h>
 
 #undef __FUNCT__

@@ -24,9 +24,6 @@ File Description:
 ***********************************const.h************************************/
 #include <petscsys.h>
 #include <petscblaslapack.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 #define X          0
 #define Y          1

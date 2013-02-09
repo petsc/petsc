@@ -4,14 +4,7 @@
    allow it to be replaced at link time by an alternative routine.
 */
 #include <petscsys.h>        /*I    "petscsys.h"   I*/
-#include <stdarg.h>
 #include <sys/types.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
 
 /*
   The next three variables determine which, if any, PetscInfo() calls are used.

@@ -1,18 +1,11 @@
 #if !defined(__WIN32DRAW_H)
 #define __WIN32DRAW_H
 
-#include <stdio.h>
 #if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
 #endif
 #if defined(PETSC_HAVE_WINDOWSX_H)
 #include <windowsx.h>
-#endif
-#if defined(PETSC_HAVE_TIME_H)
-#include <time.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
 #endif
 #include <petscdraw.h>
 

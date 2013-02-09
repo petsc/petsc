@@ -5,10 +5,6 @@
 #include <unistd.h>
 #endif
 
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-
 EXTERN_C_BEGIN
 /* Chaco does not have an include file */
 extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,

@@ -1,8 +1,5 @@
 
 #include <../src/sys/classes/random/randomimpl.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__

@@ -12,9 +12,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <ctype.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
@@ -897,6 +894,8 @@ PetscErrorCode  PetscOptionsDestroy(void)
    Note:
    Only some options have values associated with them, such as
    -ksp_rtol tol.  Other options stand alone, such as -ksp_monitor.
+
+  Developers Note: Uses malloc() directly because PETSc may not yet have been fully initialized
 
   Concepts: options database^adding option
 

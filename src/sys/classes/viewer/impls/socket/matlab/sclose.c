@@ -8,9 +8,6 @@
 #include <../src/sys/viewer/impls/socket/socket.h>
 
 #include <errno.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 #include <sys/types.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MACHINE_ENDIAN_H)

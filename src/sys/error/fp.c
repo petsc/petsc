@@ -18,9 +18,6 @@
 
 #include <petscsys.h>           /*I  "petscsys.h"  I*/
 #include <signal.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 
 struct PetscFPTrapLink {
   PetscFPTrap            trapmode;
@@ -281,7 +278,6 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 struct sigcontext;
 #include <fpxcp.h>
 #include <fptrap.h>
-#include <stdlib.h>
 #define FPE_FLTOPERR_TRAP (fptrap_t)(0x20000000)
 #define FPE_FLTOVF_TRAP   (fptrap_t)(0x10000000)
 #define FPE_FLTUND_TRAP   (fptrap_t)(0x08000000)

@@ -1,4 +1,15 @@
 
+/*
+   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
+   file automatically includes:
+     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscksp.h   - linear solvers
+*/
+#include <petscsnes.h>
+
 #if !defined(PETSC_USE_COMPLEX)
 
 static char help[] = "An Unstructured Grid Example.\n\
@@ -36,19 +47,6 @@ T*/
    of a node. The off diagonal terms will get a weight of -1.
 
    -----------------------------------------------------------------------*/
-
-/*
-   Include petscao.h so that we can use AO (Application Ordering) object's services.
-   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
-*/
-#include <petscao.h>
-#include <petscsnes.h>
 
 
 #define MAX_ELEM      500  /* Maximum number of elements */
@@ -746,7 +744,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   return 0;
 }
 #else
-#include <stdio.h>
+
 int main(int argc,char **args)
 {
   fprintf(stdout,"This example does not work for complex numbers.\n");

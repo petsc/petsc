@@ -5,10 +5,6 @@
 #include <unistd.h>
 #endif
 
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-
 /*
    Currently using Party-1.99
 */

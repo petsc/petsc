@@ -6,13 +6,6 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>
-#endif
-
 #if defined(PETSC_USE_COMPLEX) && defined(__cplusplus)
 #define _H_COMPLEX
 #endif
