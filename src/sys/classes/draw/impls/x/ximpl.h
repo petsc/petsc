@@ -4,12 +4,10 @@
    implementation of the graphics functionality in PETSc.
 */
 
-#include <petsc-private/drawimpl.h>
-
 #if !defined(_XIMPL_H)
 #define _XIMPL_H
+#include <petsc-private/drawimpl.h>
 
-#include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 

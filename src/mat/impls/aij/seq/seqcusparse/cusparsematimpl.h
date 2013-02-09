@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <vector>
-#include <string>
 #include <thrust/sort.h>
 #include <thrust/fill.h>
 

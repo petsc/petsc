@@ -1,5 +1,4 @@
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
-#include <stddef.h>
 
 const char *const PetscBuildTwoSidedTypes[] = {
   "ALLREDUCE",

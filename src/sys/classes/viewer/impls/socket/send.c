@@ -12,7 +12,6 @@ typedef unsigned long   u_long;
 #endif
 
 #include <errno.h>
-#include <sys/types.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
 #include <machine/endian.h>

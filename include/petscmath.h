@@ -264,7 +264,7 @@ M*/
    PetscMax - Returns maxium of two numbers
 
    Synopsis:
-   #include "petscmat.h"
+   #include "petscmath.h"
    type max PetscMax(type v1,type v2)
 
    Not Collective

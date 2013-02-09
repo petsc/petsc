@@ -1,7 +1,6 @@
 
 #include <petscsys.h>
 #if defined(PETSC_HAVE_SYS_TIME_H)
-#include <sys/types.h>
 #include <sys/time.h>
 #endif
 #include <time.h>

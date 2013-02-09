@@ -15,9 +15,6 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#if defined(PETSC_HAVE_SYS_PARAM_H)
-#include <sys/param.h>
-#endif
 #if defined(PETSC_HAVE_YAML)
 #include <yaml.h>
 #endif

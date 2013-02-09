@@ -4,7 +4,6 @@
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <assert.h>
 
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {

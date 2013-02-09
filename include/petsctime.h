@@ -3,12 +3,11 @@
      be included in user programs.
 */
 
-#if !defined(__PTIME_H)
-#define __PTIME_H
+#if !defined(__PETSCTIME_H)
+#define __PETSCTIME_H
 
 #include <petscsys.h>
 #if defined(PETSC_HAVE_SYS_TIME_H)
-#include <sys/types.h>
 #include <sys/time.h>
 #endif
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)

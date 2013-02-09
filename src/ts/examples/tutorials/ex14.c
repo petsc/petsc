@@ -46,7 +46,6 @@ use compatible domain decomposition relative to the 3D DMDAs.
 #include <petscts.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
-#include <stddef.h>             /* offsetof() */
 #include <ctype.h>              /* toupper() */
 
 #if defined __SSE2__

@@ -2,7 +2,6 @@
 #include <petscdraw.h>     /*I "petscdraw.h"  I*/
 
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
-#include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <setjmp.h>

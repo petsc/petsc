@@ -65,13 +65,9 @@ EXTERN_C_END
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_SYS_PARAM_H)
-#include <sys/param.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>

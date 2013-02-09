@@ -13,7 +13,6 @@
 #if defined(PETSC_HAVE_MPE)
 #include <mpe.h>
 #endif
-#include <sys/types.h>
 #include <petsc-private/logimpl.h>
 #include <petscthreadcomm.h>
 

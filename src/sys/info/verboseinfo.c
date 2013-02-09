@@ -4,7 +4,6 @@
    allow it to be replaced at link time by an alternative routine.
 */
 #include <petscsys.h>        /*I    "petscsys.h"   I*/
-#include <sys/types.h>
 
 /*
   The next three variables determine which, if any, PetscInfo() calls are used.

@@ -99,7 +99,6 @@ int main()
 
 
 #include <petscsys.h>
-#include <limits.h>
 
 /* compiler-specific configuration */
 #if UINT_MAX == 0xffffffffu
