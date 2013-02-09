@@ -10,7 +10,6 @@
 #include <triangle.h>
 #endif
 
-#include <assert.h>
 #include <petscblaslapack.h>
 
 /* Private context for the GAMG preconditioner */
@@ -71,8 +70,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
       pc_gamg->data[ii*nloc + kk] =  coords[kk*ndm + ii];
     }
   }
-  assert(pc_gamg->data[arrsz] == -99.);
-
+  if (pc_gamg->data[arrsz] != -99.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data[arrsz %D] %g != -99.",arrsz,pc_gamg->data[arrsz]);
   pc_gamg->data_sz = arrsz;
   PetscFunctionReturn(0);
 }
@@ -203,7 +201,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
     in.pointlist[sid+1] = coords[data_stride + lid];
     if (lid>=nFineLoc) nPlotPts++;
   }
-  assert(sid==2*nselected_2);
+  if (sid != 2*nselected_2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != 2*nselected_2 %D",sid,nselected_2);
 
   in.numberofsegments      = 0;
   in.numberofedges         = 0;
@@ -298,7 +296,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
         if (sel) fprintf(file, "%d %e %e\n",sid++,coords[jj],coords[data_stride + jj]);
       }
       fclose(file);
-      assert(sid==nPlotPts);
+      if (sid != nPlotPts) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != nPlotPts %D",sid,nPlotPts);
       level++;
     }
   }
@@ -328,7 +326,6 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
       if (!ise) {
         const PetscInt lid = mm;
         /* for (clid_iterator=0;clid_iterator<nselected_1;clid_iterator++) { */
-        /* PetscInt flid = clid_lid_1[clid_iterator]; assert(flid != -1); */
         PetscScalar  AA[3][3];
         PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
         PetscCDPos   pos;
@@ -528,7 +525,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
           crsGID[idx++]     = cgid;
         }
       }
-      assert(idx==(nselected_1+num_crs_ghost));
+      if (idx != (nselected_1+num_crs_ghost)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != (nselected_1 %D + num_crs_ghost %D)",idx,nselected_1,num_crs_ghost);
       ierr = VecRestoreArray(mpimat2->lvec, &cpcol_state);CHKERRQ(ierr);
       /* do locals in 'crsGID' */
       ierr = VecGetArray(locState, &cpcol_state);CHKERRQ(ierr);
@@ -539,7 +536,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
           crsGID[idx++]     = cgid;
         }
       }
-      assert(idx==nselected_1);
+      if (idx != nselected_1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != nselected_1 %D",idx,nselected_1);
       ierr = VecRestoreArray(locState, &cpcol_state);CHKERRQ(ierr);
 
       if (a_selected_2 != 0) { /* output */
@@ -728,7 +725,8 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
-  nloc = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
+  nloc = (Iend-Istart)/bs; my0 = Istart/bs; 
+  if ((Iend-Istart) % bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %D - Istart %D) % bs %D",Iend,Istart,bs);
 
   /* get 'nLocalSelected' */
   ierr = PetscCDGetMIS(agg_lists, &selected_1);CHKERRQ(ierr);
@@ -740,7 +738,6 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
     if (lid<nloc) {
       ierr = MatGetRow(Gmat,lid+my0,&ncols,0,0);CHKERRQ(ierr);
       if (ncols>1) clid_flid[nLocalSelected++] = lid; /* fiter out singletons */
-      else assert(0); /* filtered in coarsening */
       ierr = MatRestoreRow(Gmat,lid+my0,&ncols,0,0);CHKERRQ(ierr);
     }
   }
@@ -778,7 +775,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
     PetscInt  *crsGID = NULL;
     Mat       Gmat2;
 
-    assert(dim==data_cols);
+    if (dim != data_cols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %D != data_cols %D",dim,data_cols);
     /* grow ghost data for better coarse grid cover of fine grid */
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);

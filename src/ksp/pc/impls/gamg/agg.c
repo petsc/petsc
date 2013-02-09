@@ -5,7 +5,6 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 
-#include <assert.h>
 #include <petscblaslapack.h>
 
 typedef struct {
@@ -268,8 +267,8 @@ PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
       if (pc_gamg->data_cell_cols != ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Don't know how to create null space for ndm=%d, ndf=%d.  Use MatSetNearNullSpace.",ndm,ndf);
     }
   } else pc_gamg->data_cell_cols = ndf; /* no data, force SA with constant null space vectors */
-  pc_gamg->data_cell_rows = ndatarows = ndf;     assert(pc_gamg->data_cell_cols>0);
-
+  pc_gamg->data_cell_rows = ndatarows = ndf;
+  if (pc_gamg->data_cell_cols <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data_cell_cols %D <= 0",pc_gamg->data_cell_cols);
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
 
   /* create data - syntactic sugar that should be refactored at some point */
@@ -390,10 +389,10 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
     matA_2        = (Mat_SeqAIJ*)Gmat_2->data;
     lid_cprowID_1 = NULL;
   }
-  assert(matA_1 && !matA_1->compressedrow.use);
-  assert(matB_1==0 || matB_1->compressedrow.use);
-  assert(matA_2 && !matA_2->compressedrow.use);
-  assert(matB_2==0 || matB_2->compressedrow.use);
+  if (!(matA_1 && !matA_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_1 && !matA_1->compressedrow.use)");
+  if (!(matB_1==0 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
+  if (!(matA_2 && !matA_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_2 && !matA_2->compressedrow.use)");
+  if (!(matB_2==0 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
 
   /* get state of locals and selected gid for deleted */
   ierr = PetscMalloc(nloc*sizeof(NState), &lid_state);CHKERRQ(ierr);
@@ -410,8 +409,8 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
     if (pos) {
       PetscInt gid1;
 
-      ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr); assert(gid1==lid+my0);
-
+      ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
+      if (gid1 != lid+my0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gid1 %D != lid %D + my0 %D",gid1,lid,my0);
       lid_state[lid] = gid1;
     }
   }
@@ -485,7 +484,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
               PetscInt gid;
               ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
               if (gid == gidj) {
-                assert(last);
+                if (!last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
                 ierr = PetscCDRemoveNextNode(aggs_2, slid, last);CHKERRQ(ierr);
                 ierr = PetscCDAppendNode(aggs_2, lid, pos);CHKERRQ(ierr);
                 hav  = 1;
@@ -495,7 +494,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
               ierr = PetscCDGetNextPos(aggs_2,slid,&pos);CHKERRQ(ierr);
             }
             if (hav!=1) {
-              if (hav==0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
+              if (!hav) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
           } else {            /* I'm stealing this local, owned by a ghost */
@@ -525,7 +524,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
                 ierr = PetscLLNGetID(pos, &gid);CHKERRQ(ierr);
                 if (lid+my0 == gid) {
                   /* id_llist_2[lastid] = id_llist_2[flid];   /\* remove lid from oldslidj list *\/ */
-                  assert(last);
+                  if (!last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
                   ierr = PetscCDRemoveNextNode(aggs_2, oldslidj, last);CHKERRQ(ierr);
                   /* ghost (PetscScalar)statej will add this later */
                   hav = 1;
@@ -683,7 +682,8 @@ PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
   if (!mnull) {
     PetscInt bs,NN,MM;
     ierr = MatGetBlockSize(a_A, &bs);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(a_A, &MM, &NN);CHKERRQ(ierr);  assert(MM%bs==0);
+    ierr = MatGetLocalSize(a_A, &MM, &NN);CHKERRQ(ierr);
+    if (MM % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MM %D must be divisible by bs %D",MM,bs);
     ierr = PCSetCoordinates_AGG(pc, bs, MM/bs, NULL);CHKERRQ(ierr);
   } else {
     PetscReal *nullvec;
@@ -754,7 +754,8 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
   ierr    = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
   ierr    = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr    = MatGetOwnershipRange(a_Prol, &Istart, &Iend);CHKERRQ(ierr);
-  nloc    = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
+  nloc    = (Iend-Istart)/bs; my0 = Istart/bs;
+  if ((Iend-Istart) % bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Iend %D - Istart %d must be divisible by bs %D",Iend,Istart,bs);
   Iend   /= bs;
   nghosts = data_stride/bs - nloc;
 
@@ -776,7 +777,8 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
     if (!ise) nSelected++;
   }
   ierr = MatGetOwnershipRangeColumn(a_Prol, &ii, &jj);CHKERRQ(ierr);
-  assert((ii/nSAvec)==my0crs); assert(nSelected==(jj-ii)/nSAvec);
+  if ((ii/nSAvec) != my0crs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D /nSAvec %D  != my0crs %D",ii,nSAvec,my0crs);
+  if (nSelected != (jj-ii)/nSAvec) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nSelected %D != (jj %D - ii %D)/nSAvec %D",nSelected,jj,ii,nSAvec);
 
   /* aloc space for coarse point data (output) */
   out_data_stride = nSelected*nSAvec;
@@ -818,7 +820,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
         if (gid1 >= my0 && gid1 < Iend) flid = gid1 - my0;
         else {
           ierr = GAMGTableFind(&fgid_flid, gid1, &flid);CHKERRQ(ierr);
-          assert(flid>=0);
+          if (flid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot find gid1 in table");
         }
         /* copy in B_i matrix - column oriented */
         data = &data_in[flid*bs];
@@ -863,9 +865,9 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
         PetscReal *data = &out_data[clid*nSAvec];
         for (jj = 0; jj < nSAvec; jj++) {
           for (ii = 0; ii < nSAvec; ii++) {
-            assert(data[jj*out_data_stride + ii] == 1.e300);
-            if (ii <= jj) data[jj*out_data_stride + ii] = PetscRealPart(qqc[jj*Mdata + ii]);
-            else data[jj*out_data_stride + ii] = 0.;
+           if (data[jj*out_data_stride + ii] != 1.e300) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"data[jj*out_data_stride + ii] != 1.e300");
+           if (ii <= jj) data[jj*out_data_stride + ii] = PetscRealPart(qqc[jj*Mdata + ii]);
+           else data[jj*out_data_stride + ii] = 0.;
           }
         }
       }
@@ -991,7 +993,8 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Gmat1, &n, &m);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(Gmat1, &bs);CHKERRQ(ierr); assert(bs==1);
+  ierr = MatGetBlockSize(Gmat1, &bs);CHKERRQ(ierr);
+  if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bs %D must be 1",bs);
   nloc = n/bs;
 
   if (pc_gamg_agg->square_graph) {
@@ -1112,7 +1115,8 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
-  nloc = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
+  nloc = (Iend-Istart)/bs; my0 = Istart/bs;
+  if ((Iend-Istart) % bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %D - Istart %D) not divisible by bs %D",Iend,Istart,bs);
 
   /* get 'nLocalSelected' */
   for (ii=0, nLocalSelected = 0; ii < nloc; ii++) {
@@ -1145,9 +1149,9 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   if (verbose > 0) PetscPrintf(wcomm,"\t\t[%d]%s New grid %d nodes\n",rank,__FUNCT__,ii/col_bs);
   ierr = MatGetOwnershipRangeColumn(Prol, &myCrs0, &kk);CHKERRQ(ierr);
 
-  assert((kk-myCrs0)%col_bs==0);
+  if ((kk-myCrs0) % col_bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D -myCrs0 %D) not divisible by col_bs %D",kk,myCrs0,col_bs);
   myCrs0 = myCrs0/col_bs;
-  assert((kk/col_bs-myCrs0)==nLocalSelected);
+  if ((kk/col_bs-myCrs0) != nLocalSelected) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D/col_bs %D - myCrs0 %D) != nLocalSelected %D)",kk,col_bs,myCrs0,nLocalSelected);
 
   /* create global vector of data in 'data_w_ghost' */
 #if defined PETSC_GAMG_USE_LOG
@@ -1191,7 +1195,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
     for (kk=0; kk<stride; kk++) flid_fgid[kk] = (PetscInt)fiddata[kk];
     ierr = PetscFree(fiddata);CHKERRQ(ierr);
 
-    assert(stride==nbnodes/bs);
+    if (stride != nbnodes/bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"stride %D != nbnodes %D/bs %D",stride,nbnodes,bs);
     ierr = PetscFree(fid_glid_loc);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc(nloc*sizeof(PetscInt), &flid_fgid);CHKERRQ(ierr);
@@ -1324,7 +1328,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
 
       if (pc_gamg->emax_id == -1) {
         ierr = PetscObjectComposedDataRegister(&pc_gamg->emax_id);CHKERRQ(ierr);
-        assert(pc_gamg->emax_id != -1);
+        if (pc_gamg->emax_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->emax_id == -1");
       }
       ierr = PetscObjectComposedDataSetScalar((PetscObject)Amat, pc_gamg->emax_id, emax);CHKERRQ(ierr);
     }
@@ -1445,7 +1449,7 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22
 
           rids[ii++] = gid1;
         }
-        assert(ii==asz);
+        if (ii != asz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D != asz %D",ii,asz);
         /* add diagonal block of P0 */
         ierr = MatSetValues(Prol22,asz,rids,1,&cgid,&val,INSERT_VALUES);CHKERRQ(ierr);
 

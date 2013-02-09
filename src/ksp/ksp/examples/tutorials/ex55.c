@@ -6,7 +6,6 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
-#include <assert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -66,7 +65,7 @@ int main(int argc,char **args)
   ierr = MatMPIAIJSetPreallocation(Pmat,18,NULL,12,NULL);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  assert(m == Iend - Istart);
+  if (m != Iend - Istart) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
   /* Generate vectors */
   ierr = VecCreate(wcomm,&xx);CHKERRQ(ierr);
   ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);

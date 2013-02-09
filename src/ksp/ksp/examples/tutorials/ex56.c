@@ -6,7 +6,6 @@ Load of 1.0 in x + 2y direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
-#include <assert.h>
 
 static PetscBool log_stages = PETSC_TRUE;
 static PetscErrorCode MaybeLogStagePush(PetscLogStage stage) { return log_stages ? PetscLogStagePush(stage) : 0; }
@@ -109,7 +108,7 @@ int main(int argc,char **args)
         }
       }
     }
-    assert(ic==m);
+    if (ic != m) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %D does not equal m %D",ic,m);
 
     /* create stiffness matrix */
     ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
@@ -124,7 +123,7 @@ int main(int argc,char **args)
 
     ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
 
-    assert(m == Iend-Istart);
+    if (m != Iend - Istart) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
     /* Generate vectors */
     ierr = VecCreate(wcomm,&xx);CHKERRQ(ierr);
     ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);

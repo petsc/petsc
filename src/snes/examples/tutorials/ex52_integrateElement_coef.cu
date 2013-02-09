@@ -1,5 +1,4 @@
 #include <petscsys.h>
-#include <assert.h>
 
 #include "ex52_gpu.h"
 

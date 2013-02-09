@@ -2,7 +2,6 @@
 #include <petsc-private/matimpl.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <assert.h>
 
 /* linked list methods
  *
@@ -169,12 +168,12 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
     do {
       if (!n2->next) {
         n2->next = n;
-        assert(n->next == NULL);
+        if (n->next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"n should not have a next");
         break;
       }
       n2 = n2->next;
     } while (n2);
-    assert(n2);
+    if (!n2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"n2 should be non-null");
   }
   PetscFunctionReturn(0);
 }
@@ -198,7 +197,7 @@ PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx,  PetscCD
       }
       n2 = n2->next;
     } while (n2);
-    assert(n2);
+    if (!n2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"n2 should be non-null");
   }
   PetscFunctionReturn(0);
 }
@@ -213,7 +212,7 @@ PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx,  Pet
 
   PetscFunctionBegin;
   if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Index %d out of range.",a_idx);
-  assert(a_last->next);
+  if (!a_last->next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_last should have a next");
   del          = a_last->next;
   a_last->next = del->next;
   /* del->next = NULL; -- this still used in a iterator so keep it intact -- need to fix this with a double linked list */
@@ -403,7 +402,7 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
       ierr = ISCreateGeneral(PETSC_COMM_SELF, lsz, idxs, PETSC_OWN_POINTER, &is_loc[kk++]);CHKERRQ(ierr);
     }
   }
-  assert(*a_sz == kk);
+  if (*a_sz != kk) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"*a_sz %D != kk %D",*a_sz,kk);
   PetscFunctionReturn(0);
 }
 
@@ -519,12 +518,10 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       matB->compressedrow.check = PETSC_TRUE;
 
       ierr = MatCheckCompressedRow(mpimat->B,&matB->compressedrow,matB->i,cMat->rmap->n,-1.0);CHKERRQ(ierr);
-      assert(matB->compressedrow.use);
+      if (!matB->compressedrow.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matB must have compressed row usage");
     } else {
       matA = (Mat_SeqAIJ*)cMat->data;
     }
-    assert(matA && !matA->compressedrow.use);
-    assert(matB==0 || matB->compressedrow.use);
 
     /* set max edge on nodes */
     ierr = MatGetVecs(cMat, &locMaxEdge, 0);CHKERRQ(ierr);
@@ -653,7 +650,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       ii = matA->i; nn = n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid];
       ap = matA->a + ii[lid];
       for (jj=0; jj<n; jj++) {
-        PetscInt lidj = idx[jj];        assert(PetscRealPart(ap[jj])>0.);
+        PetscInt lidj = idx[jj];
         if (lidj > lid) {
           Edges[nEdges].lid0   = lid;
           Edges[nEdges].gid1   = lidj + my0;
@@ -668,7 +665,6 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
         idx = matB->j + ii[ix];
         nn += n;
         for (jj=0; jj<n; jj++) {
-          assert(PetscRealPart(ap[jj])>0.);
           Edges[nEdges].lid0   = lid;
           Edges[nEdges].gid1   = (PetscInt)PetscRealPart(cpcol_gid[idx[jj]]);
           Edges[nEdges].cpid1  = idx[jj];
@@ -806,7 +802,6 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
 #define CHUNCK_SIZE 100
             PetscInt    *sbuff,*pt;
             MPI_Request *request;
-            assert(n%2==0);
             n   /= 2;
             ierr = PetscMalloc((2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2*sizeof(MPI_Request), &sbuff);CHKERRQ(ierr);
             /* PetscMalloc4(2+2*n,PetscInt,sbuffs1[nSend1],n*CHUNCK_SIZE,PetscInt,rbuffs1[nSend1],1,MPI_Request,rreqs2[nSend1],1,MPI_Request,sreqs2[nSend1]); */
@@ -856,20 +851,18 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
           ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, wcomm, &status);CHKERRQ(ierr);
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
-          n  = *pt++; kk = *pt++;           assert(kk==proc);
+          n  = *pt++; kk = *pt++;
           while (n--) {
-            PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;  assert(lid1>=0 && lid1<nloc);
+            PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;
             if (lid_matched[lid1]) {
               PetscPrintf(PETSC_COMM_SELF,"\t *** [%d]%s %d) ERROR recieved deleted gid %d, deleted by (lid) %d from proc %d\n",rank,__FUNCT__,sub_it,gid1,kk);
               PetscSleep(1);
             }
-            assert(!lid_matched[lid1]);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
             ierr              = PetscCDSizeAt(agg_llists, lid1, &kk);CHKERRQ(ierr);
             count2           += kk + 2;
             count3++; /* number of verts requested (n) */
           }
-          assert(pt-rbuff==count);
           if (count2 > count3*CHUNCK_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Irecv will be too small: %d",count2);
           /* send tag2 *[lid0, n, n*[gid] ] */
           ierr             = PetscMalloc(count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff);CHKERRQ(ierr);
@@ -878,10 +871,10 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
           if (nSend2==REQ_BF_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for requests: %d",nSend2);
           pt2 = sbuff = (PetscInt*)(request+1);
           pt  = rbuff;
-          n   = *pt++; kk = *pt++;           assert(kk==proc);
+          n   = *pt++; kk = *pt++;
           while (n--) {
             /* read [n, proc, n*[gid1,lid0] */
-            PetscInt gid1=*pt++, lid1=gid1-my0, lid0=*pt++;   assert(lid1>=0 && lid1<nloc);
+            PetscInt gid1=*pt++, lid1=gid1-my0, lid0=*pt++;
             /* write [lid0, n, n*[gid] ] */
             *pt2++ = lid0;
             pt3    = pt2++; /* save pointer for later */
@@ -897,7 +890,6 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
             /* clear list */
             ierr = PetscCDRemoveAll(agg_llists, lid1);CHKERRQ(ierr);
           }
-          assert(pt2-sbuff==count2); assert(pt-rbuff==count);
           /* send requested data tag2 *[lid0, n, n*[gid1] ] */
           ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, wcomm, request);CHKERRQ(ierr);
         }
@@ -912,13 +904,12 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
           ierr    = MPI_Get_count(&status, MPIU_INT, &count);CHKERRQ(ierr);
           pt      = pt2 = (PetscInt*)(request+1);
           while (pt-pt2 < count) {
-            PetscInt lid0 = *pt++, n = *pt++;           assert(lid0>=0 && lid0<nloc);
+            PetscInt lid0 = *pt++, n = *pt++;
             while (n--) {
               PetscInt gid1 = *pt++;
               ierr = PetscCDAppendID(agg_llists, lid0, gid1);CHKERRQ(ierr);
             }
           }
-          assert(pt-pt2==count);
         }
 
         /* wait for tag1 isends */
@@ -1014,7 +1005,6 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
               ew = PetscRealPart(ap[jj]); v1_max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* get max pe that has a max_e == to this edge w */
               if ((pe=cpcol_pe[idx[jj]]) > max_pe && ew > v1_max_e - 1.e-12 && ew > v0_max_e - 1.e-12) max_pe = pe;
-              assert(ew < v0_max_e + 1.e-12 && ew < v1_max_e + 1.e-12);
             }
             vval = (PetscScalar)max_pe;
           }

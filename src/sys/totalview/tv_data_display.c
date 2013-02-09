@@ -38,7 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 
 #define DATA_FORMAT_BUFFER_SIZE 1048576
 #define TV_FORMAT_INACTIVE 0

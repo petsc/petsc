@@ -4,7 +4,6 @@
 #include "petsc-private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
-#include <assert.h>
 
 #if defined PETSC_GAMG_USE_LOG
 PetscLogEvent petsc_gamg_setup_events[NUM_SET];
@@ -149,7 +148,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
 
   /* set 'ncrs_prim' (nodes), 'ncrs_eq' (equations)*/
   ncrs_prim = pc_gamg->data_sz/pc_gamg->data_cell_cols/pc_gamg->data_cell_rows;
-  assert(pc_gamg->data_sz%(pc_gamg->data_cell_cols*pc_gamg->data_cell_rows)==0);
+  if (pc_gamg->data_sz % (pc_gamg->data_cell_cols*pc_gamg->data_cell_rows)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data_sz %D not divisible by (pc_gamg->data_cell_cols %D *pc_gamg->data_cell_rows %D)",pc_gamg->data_sz,pc_gamg->data_cell_cols,pc_gamg->data_cell_rows);
   ierr = MatGetLocalSize(Cmat, &ncrs_eq, NULL);CHKERRQ(ierr);
 
   /* get number of PEs to make active 'new_size', reduce, can be any integer 1-P */
@@ -171,7 +170,8 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     PetscScalar    *array;
     Vec            src_crd, dest_crd;
 
-    nloc_old = ncrs_eq/cr_bs; assert(ncrs_eq%cr_bs==0);
+    nloc_old = ncrs_eq/cr_bs;
+    if (ncrs_eq % cr_bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -553,9 +553,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     } else {
       PC_MG_Levels **mglevels = mg->levels;
       /* just do Galerkin grids */
-      Mat B,dA,dB;
-      assert(pc->setupcalled);
+      Mat          B,dA,dB;
 
+     if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
       if (pc_gamg->Nlevels > 1) {
         /* currently only handle case where mat and pmat are the same on coarser levels */
         ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,NULL);CHKERRQ(ierr);
@@ -846,7 +846,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc, PCBJACOBI);CHKERRQ(ierr);
       ierr = PCSetUp(subpc);CHKERRQ(ierr);
-      ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);      assert(ii==1);
+      ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
+      if (ii != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D is not one",ii);
       ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
       ierr = PCSetType(pc2, PCLU);CHKERRQ(ierr);
       ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);

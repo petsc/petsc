@@ -247,6 +247,7 @@ never
 \item Do not leave chunks of commented out code in the source files.
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
+\item assert.h should not be included in PETSc source and assert() should not be used. It doesn't play well in the parallel MPI world.
 \item The macros SETERRQ() and CHKERRQ() should be on the
       same line as the routine to be checked unless this violates the
       150 character width rule. Try to make error messages short, but

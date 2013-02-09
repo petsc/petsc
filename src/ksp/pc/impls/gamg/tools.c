@@ -4,7 +4,6 @@
 #include "petsc-private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
-#include <assert.h>
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -308,7 +307,6 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
 
     if (a_tab->table[idx] == a_key) {
       /* exists */
-      assert(0); /* not used this way now */
       a_tab->data[idx] = a_data;
       break;
     } else if (a_tab->table[idx] == -1) {

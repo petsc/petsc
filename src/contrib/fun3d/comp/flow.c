@@ -3,7 +3,6 @@ static char help[] = "FUN3D - 3-D, Unstructured Compressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 
-#include <assert.h>
 #include <petscsnes.h>
 #include "user.h"
 
@@ -2177,8 +2176,6 @@ int FieldOutput(GRID *grid, int timeStep)
     ierr = ISCreateStride(MPI_COMM_SELF,bs*nfnode,0,1,&islocal);CHKERRQ(ierr);
     ICALLOC(nfnode, &svertices);
     for (i = 0; i < nfnode; i++) {
-      /*assert((ifnode[i] >= 0) && (ifnode[i] < nnodes));
-      assert((ifnodePet[i] >= 0) && (ifnodePet[i] < nnodes));*/
       svertices[i] = ifnodePet[i];
     }
     ierr = ISCreateBlock(MPI_COMM_SELF,bs,nfnode,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
@@ -2361,7 +2358,6 @@ int WriteRestartFile(GRID *grid, int timeStep)
         if ((status = system(command)) < 0)
           printf("Error in opening the file mesh.dat\n");
         fptr = fopen(fileName,"a");
-        assert(fptr != 0);
         fprintf(fptr,"POINT_DATA %d\n", nnodes);
         fprintf(fptr,"SCALARS Mach double\n");
         fprintf(fptr,"LOOKUP_TABLE default\n");

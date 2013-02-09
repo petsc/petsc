@@ -2,7 +2,7 @@
 #include <petsc-private/matimpl.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <assert.h>
+
 
 /* typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState; */
 /* use int instead of enum to facilitate passing them via Scatters */
@@ -60,15 +60,11 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     /* force compressed storage of B */
     matB->compressedrow.check = PETSC_TRUE;
     ierr                      = MatCheckCompressedRow(mpimat->B,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
-    assert(matB->compressedrow.use);
   } else {
     PetscBool isAIJ;
     ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isAIJ);CHKERRQ(ierr);
-    assert(isAIJ);
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
-  assert(matA && !matA->compressedrow.use);
-  assert(matB==0 || matB->compressedrow.use);
   /* get vector */
   ierr = MatGetVecs(Gmat, &locState, 0);CHKERRQ(ierr);
 
@@ -144,7 +140,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
             if (statej == NOT_DONE && gid >= Iend) { /* should be (pe>mype), use gid as pe proxy */
               isOK = PETSC_FALSE; /* can not delete */
               break;
-            } else assert(!IS_SELECTED(statej)); /* lid is now deleted, do it */
+            }
           }
         } /* parallel test */
         if (isOK) { /* select or remove this vertex */
@@ -194,7 +190,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
               idx = matB->j + ii[ix];
               for (j=0; j<n; j++) {
                 PetscInt cpid   = idx[j]; /* compressed row ID in B mat */
-                NState   statej = (NState)PetscRealPart(cpcol_state[cpid]);        assert(!IS_SELECTED(statej));
+                NState   statej = (NState)PetscRealPart(cpcol_state[cpid]);
                 if (statej == NOT_DONE) {
                   /* cpcol_state[cpid] = (PetscScalar)DELETED; this should happen later ... */
                   /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
@@ -251,7 +247,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
       /* all done? */
       {
         PetscInt t1, t2;
-        t1   = nloc - nDone; assert(t1>=0);
+        t1   = nloc - nDone;
         ierr = MPI_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr); /* synchronous version */
         if (t2 == 0) break;
       }
@@ -293,7 +289,6 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
         PetscInt slid = sgid - my0;
         /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
         ierr = PetscCDAppendID(agg_lists, slid, gid);CHKERRQ(ierr);
-        assert(IS_SELECTED((NState)PetscRealPart(lid_state[slid])));
       }
     }
     ierr = VecRestoreArray(mpimat->lvec, &cpcol_sel_gid);CHKERRQ(ierr);
@@ -306,7 +301,6 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   /* for (kk=n=0,ix=my0;kk<nloc;kk++,ix++) { */
   /*   if (lid_removed[kk]) lid_gid[n++] = ix; */
   /* } */
-  /* assert(n==nremoved); */
   /* ierr = PetscCDSetRemovedIS(agg_lists, wcomm, n, lid_gid);CHKERRQ(ierr); */
 
   ierr = PetscFree(lid_cprowID);CHKERRQ(ierr);
