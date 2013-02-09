@@ -40,7 +40,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   const char            *redm,*redo;
   char                  *mesg_log;
 #if defined(PETSC_HAVE_UNISTD_H)
-  int fd_stdout,fd_pipe[2],count,err;
+  int                   fd_stdout,fd_pipe[2],count,err;
 #endif
 
   PetscFunctionBegin;
@@ -96,9 +96,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 
   /* library call */
   party_lib_times_start();
-  ierr = party_lib(n,vertex_w,NULL,NULL,NULL,edge_p,edge,
-                   NULL,p,part_party,&cutsize,redl,(char*)redm,(char*)redo,
-                   party->global,party->local,rec,1);
+  ierr = party_lib(n,vertex_w,NULL,NULL,NULL,edge_p,edge,NULL,p,part_party,&cutsize,redl,(char*)redm,(char*)redo,party->global,party->local,rec,1);
 
   party_lib_times_output(1);
   part_info(n,vertex_w,edge_p,edge,NULL,p,part_party,1);

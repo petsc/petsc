@@ -6,8 +6,6 @@
 #include PETSC_HAVE_SSE
 #define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
 
-#include <string.h>
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEHardwareTest"
 PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)

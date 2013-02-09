@@ -6,12 +6,6 @@
 
 */
 #include <petscsys.h>                   /*I  "petscsys.h"   I*/
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>
-#endif
-#if defined(PETSC_HAVE_STRINGS_H)
-#include <strings.h>
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscStrToArray"

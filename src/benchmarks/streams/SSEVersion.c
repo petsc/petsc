@@ -7,7 +7,6 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
 #if defined(HAVE_NUMA)
 #include <numa.h>
 #endif
-#include <limits.h>
 #include <float.h>
 
 #if !defined(SSE2)
