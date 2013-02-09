@@ -241,7 +241,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm)
       PetscInt i;
 
       ierr = DMCreateFieldDecomposition(kkt->dm, &n, &names, &iss, &dms);CHKERRQ(ierr);
-      if (n < 1 || n > 2) SETERRQ2(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition %s must be between 1 and 2.  Got %D instead",kkt->dname, n);
+      if (n < 1 || n > 2) SETERRQ1(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition must be between 1 and 2.  Got %D instead", n);
       for (i = 0; i < n; ++i) {
         if (!iss[i] && dms[i]) {
           const char *label;
@@ -554,9 +554,6 @@ PetscErrorCode DMView_AKKT(DM dm, PetscViewer v)
       ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
       ierr = MatView(kkt->Aff,v);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
-    }
-    if (kkt->dname) {
-      ierr = PetscViewerASCIIPrintf(v, "Decomposition, name %s:\n");CHKERRQ(ierr);
     }
     for (i = 0; i < 2; ++i) {
       const char *label;
