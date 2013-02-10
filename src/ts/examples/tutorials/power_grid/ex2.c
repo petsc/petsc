@@ -24,7 +24,7 @@ F*/
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar H,D,omega_s,E,V,X,Pm;
+  PetscScalar H,D,omega_s,Pmax,Pm;
   PetscReal   tf,tcl;
 } AppCtx;
 
@@ -36,16 +36,16 @@ typedef struct {
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f,V;
+  PetscScalar    *u,*udot,*f,Pmax;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
-  else V = ctx->V;
-  f[0] = 2.0*ctx->H*udot[0]/ctx->omega_s +  ctx->E*V*PetscSinScalar(u[1])/ctx->X + ctx->D*(u[0] - ctx->omega_s)- ctx->Pm;
+  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  else Pmax = ctx->Pmax;
+  f[0] = 2.0*ctx->H*udot[0]/ctx->omega_s +  Pmax*PetscSinScalar(u[1]) + ctx->D*(u[0] - ctx->omega_s)- ctx->Pm;
   f[1] = udot[1] - u[0] + ctx->omega_s;
 
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
@@ -63,14 +63,14 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1};
-  PetscScalar    *u,*udot,J[2][2],V;
+  PetscScalar    *u,*udot,J[2][2],Pmax;
 
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) V = 0.0; /* A short-circuit on the generator terminal that drives the voltage to 0 */
-  else V = ctx->V;
-  J[0][0] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[0][1] = -ctx->E*V*PetscCosScalar(u[1])/ctx->X;
+  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  else Pmax = ctx->Pmax;
+  J[0][0] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[0][1] = Pmax*PetscCosScalar(u[1]);
   J[1][0] = -1.0;                                 J[1][1] = a;
   ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
@@ -121,25 +121,23 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
   {
-    ctx.omega_s = 2*PETSC_PI*60;
-    ctx.H       = 3.01;
+    ctx.omega_s = 1.0;
+    ctx.H       = 5.0;
     ierr        = PetscOptionsScalar("-Inertia","","",ctx.H,&ctx.H,NULL);CHKERRQ(ierr);
-    ctx.D       = 0.01;
+    ctx.D       = 0.0;
     ierr        = PetscOptionsScalar("-D","","",ctx.D,&ctx.D,NULL);CHKERRQ(ierr);
-    ctx.E       = 1.056;
-    ierr        = PetscOptionsScalar("-E","","",ctx.E,&ctx.E,NULL);CHKERRQ(ierr);
-    ctx.V       = 1.025;
-    ierr        = PetscOptionsScalar("-V","","",ctx.V,&ctx.V,NULL);CHKERRQ(ierr);
-    ctx.X       = 0.1813;
-    ierr        = PetscOptionsScalar("-X","","",ctx.X,&ctx.X,NULL);CHKERRQ(ierr);
-    ctx.Pm      = 0.85;
-    ctx.tf      = 2.0;
-    ctx.tcl     = 2.1;
+    ctx.Pmax    = 2.1;
+    ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
+    ctx.Pm      = 1.0;
+    ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
+    ctx.tf      = 0.1;
+    ctx.tcl     = 0.2;
+    ierr        = PetscOptionsReal("-tf","","",ctx.tf,&ctx.tf,NULL);CHKERRQ(ierr);
     ierr        = PetscOptionsReal("-tcl","","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = ctx.omega_s;
-    u[1] = asin(ctx.Pm*ctx.X/(ctx.E*ctx.V));
+    u[1] = asin(ctx.Pm/ctx.Pmax);
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
     ierr = PetscOptionsVec("-initial","Initial values","",U,NULL);CHKERRQ(ierr);
   }
