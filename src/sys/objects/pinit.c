@@ -848,6 +848,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscThreadCommInitializePackage(NULL);CHKERRQ(ierr);
 
+  /*
+      Setup building of stack frames for all function calls
+  */
 #if defined(PETSC_USE_DEBUG)
   PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates petscstack_key if needed */
   ierr = PetscStackCreate();CHKERRQ(ierr);

@@ -518,10 +518,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #endif
 
-  /*
-      Setup building of stack frames for all function calls
-  */
-
   ierr = PetscOptionsGetBool(NULL,"-options_gui",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
