@@ -10,6 +10,29 @@ static PetscInt VecGetSubVectorSavedStateId = -1;
   if ((x)->map->N != (y)->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths %d != %d", (x)->map->N, (y)->map->N); \
   if ((x)->map->n != (y)->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", (x)->map->n, (y)->map->n);
 
+#undef __FUNCT__
+#define __FUNCT__ "VecValidValues_Private"
+PetscErrorCode VecValidValues_Private(Vec vec,PetscInt argnum,PetscBool begin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n,i;
+  const PetscScalar *x;
+
+  PetscFunctionBegin;
+  if (vec->petscnative || vec->ops->getarray) {
+    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(vec,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      if (begin) {
+        if (PetscIsInfOrNanScalar(x[i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %D",i,argnum);
+      } else {
+        if (PetscIsInfOrNanScalar(x[i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %D",i,argnum);
+      }
+    }
+    ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMaxPointwiseDivide"
@@ -1366,7 +1389,9 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionReturn(0);
 }
 
-/*MC
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray"
+/*@C
    VecGetArray - Returns a pointer to a contiguous array that contains this
    processor's portion of the vector data. For the standard PETSc
    vectors, VecGetArray() returns a pointer to the local data array and
@@ -1374,10 +1399,6 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
    in a contiquous array this routine will copy the data to a contiquous
    array and return a pointer to that. You MUST call VecRestoreArray()
    when you no longer need access to the array.
-
-   Synopsis:
-   #include "petscvec.h"
-   PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 
    Collective on Vec
 
@@ -1409,9 +1430,71 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
-M*/
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
+@*/
+PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->petscnative) {
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)) {
+      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
+    }
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayRead"
+/*@C
+   VecGetArrayRead - Get read-only pointer to contiguous array containing this processor's portion of the vector data.
+
+   Not Collective
+
+   Input Parameters:
+.  x - the vector
+
+   Output Parameter:
+.  a - the array
+
+   Level: beginner
+
+   Notes:
+   The array must be returned using a matching call to VecRestoreArrayRead().
+
+   Unlike VecGetArray(), this routine is not collective and preserves cached information like vector norms.
+
+   Standard PETSc vectors use contiguous storage so that this routine does not perform a copy.  Other vector
+   implementations may require a copy, but must such implementations should cache the contiguous representation so that
+   only one copy is performed when this routine is called multiple times in sequence.
+
+.seealso: VecGetArray(), VecRestoreArray()
+@*/
+PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->petscnative) {
+#if defined(PETSC_HAVE_CUSP)
+    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)) {
+      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
+    }
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArrays"
@@ -1499,12 +1582,10 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscFunctionReturn(0);
 }
 
-/*MC
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray"
+/*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
-
-   Synopsis:
-   #include "petscvec.h"
-   PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
    Collective on Vec
 
@@ -1542,8 +1623,57 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    petsc/src/snes/examples/tutorials/ex5f.F for details.
    For Fortran 90 see VecRestoreArrayF90()
 
-.seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
-M*/
+.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
+@*/
+PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->petscnative) {
+#if defined(PETSC_HAVE_CUSP)
+    x->valid_GPU_array = PETSC_CUSP_CPU;
+#endif
+  } else {
+    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
+  }
+  if (a) *a = NULL;
+  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+/*@C
+   VecRestoreArrayRead - Restore array obtained with VecGetArrayRead()
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Level: beginner
+
+.seealso: VecGetArray(), VecRestoreArray()
+@*/
+PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->petscnative) {
+#if defined(PETSC_HAVE_CUSP)
+    x->valid_GPU_array = PETSC_CUSP_CPU;
+#endif
+  } else {
+    ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  if (a) *a = NULL;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPlaceArray"
