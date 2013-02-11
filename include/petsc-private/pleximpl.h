@@ -3,6 +3,7 @@
 
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
+#include <petscbt.h>
 #include "petsc-private/dmimpl.h"
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
@@ -22,6 +23,8 @@ struct _n_DMLabel {
   PetscInt *stratumSizes;   /* Size of each stratum */
   PetscInt *points;         /* Points for each stratum, sorted after setup */
   DMLabel   next;           /* Linked list */
+  PetscInt  pStart, pEnd;   /* Bounds for index lookup */
+  PetscBT   bt;             /* A bit-wise index */
 };
 
 typedef struct {
