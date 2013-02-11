@@ -7,6 +7,7 @@
       (2) The convergence occasionally is much faster than that of FBiCGStab.
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
+#include <petsc-private/vecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FBCGSR"

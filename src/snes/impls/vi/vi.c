@@ -1,4 +1,5 @@
 #include <petsc-private/snesimpl.h>  /*I "petscsnes.h" I*/
+#include <petsc-private/vecimpl.h>   /* only to access vec->map */
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetComputeVariableBounds"

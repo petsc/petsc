@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/vecimpl.h>   /* only to access vec->map */
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPI_DA"

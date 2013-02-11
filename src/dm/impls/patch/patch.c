@@ -1,5 +1,6 @@
 #include <petsc-private/patchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
+#include <petsc-private/vecimpl.h> /* only to access vec->map */
 
 /*
 Solver loop to update \tau:

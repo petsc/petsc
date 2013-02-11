@@ -1,5 +1,5 @@
 
-#include <petscvec.h>
+#include <petsc-private/vecimpl.h>
 #include <petscpf.h>
 
 static PetscBool ISPackageInitialized = PETSC_FALSE;

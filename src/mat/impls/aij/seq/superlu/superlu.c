@@ -15,6 +15,7 @@
      Defines the data structure for the base matrix type (SeqAIJ)
 */
 #include <../src/mat/impls/aij/seq/aij.h>    /*I "petscmat.h" I*/
+#include <petsc-private/vecimpl.h>           /* only to access vec->map */
 
 /*
      SuperLU include files

@@ -1,6 +1,7 @@
 
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdmcomposite.h>
+#include <petsc-private/vecimpl.h> /* only to access vec->map */
 
 /*
   There is a nice discussion of block preconditioners in
