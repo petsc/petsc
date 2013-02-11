@@ -16,6 +16,9 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   (*label)->stratumSizes   = NULL;
   (*label)->points         = NULL;
   (*label)->next           = NULL;
+  (*label)->pStart         = -1;
+  (*label)->pEnd           = -1;
+  (*label)->bt             = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -31,6 +34,7 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
   ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
   if (label) {
     ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", label->name);CHKERRQ(ierr);
+    if (label->bt) {ierr = PetscViewerASCIIPrintf(viewer, "  Index has been calculated in [%d, %d)\n", label->pStart, label->pEnd);CHKERRQ(ierr);}
     for (v = 0; v < label->numStrata; ++v) {
       const PetscInt value = label->stratumValues[v];
       PetscInt       p;
@@ -72,6 +76,7 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
   ierr = PetscFree((*label)->name);CHKERRQ(ierr);
   ierr = PetscFree3((*label)->stratumValues,(*label)->stratumOffsets,(*label)->stratumSizes);CHKERRQ(ierr);
   ierr = PetscFree((*label)->points);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&(*label)->bt);CHKERRQ(ierr);
   ierr = PetscFree(*label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -103,6 +108,79 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
     }
     (*labelnew)->stratumOffsets[label->numStrata] = label->stratumOffsets[label->numStrata];
   }
+  (*labelnew)->pStart         = -1;
+  (*labelnew)->pEnd           = -1;
+  (*labelnew)->bt             = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelCreateIndex"
+/* This can be hooked into SetValue(),  ClearValue(), etc. for updating */
+PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
+{
+  PetscInt       v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (label->bt) {ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);}
+  label->pStart = pStart;
+  label->pEnd   = pEnd;
+  ierr = PetscBTCreate(pEnd - pStart, &label->bt);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(pEnd - pStart, label->bt);CHKERRQ(ierr);
+  for (v = 0; v < label->numStrata; ++v) {
+    PetscInt i;
+
+    for (i = 0; i < label->stratumSizes[v]; ++i) {
+      const PetscInt point = label->points[label->stratumOffsets[v]+i];
+
+      if ((point < pStart) || (point >= pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, pStart, pEnd);
+      ierr = PetscBTSet(label->bt, point);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelDestroyIndex"
+PetscErrorCode DMLabelDestroyIndex(DMLabel label)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  label->pStart = -1;
+  label->pEnd   = -1;
+  if (label->bt) {ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelHasPoint"
+/*@
+  DMLabelHasPoint - Determine whether a label assigns a value to a point
+
+  Input Parameters:
++ label - the DMLabel
+- point - the point
+
+  Output Parameter:
+. contains - Flag indicating whether the label maps this point to a value
+
+  Note: The user must call DMLabelCreateIndex() before this function.
+
+  Level: developer
+
+.seealso: DMLabelCreateIndex(), DMLabelGetValue(), DMLabelSetValue()
+@*/
+PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contains)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(contains, 3);
+#if defined(PETSC_USE_DEBUG)
+  if (!label->bt) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
+  if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
+#endif
+  *contains = PetscBTLookup(label->bt, point - label->pStart) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -192,6 +270,10 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 
     label->points[off] = point;
     ++label->stratumSizes[v];
+    if (label->bt) {
+      if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
+      ierr = PetscBTSet(label->bt, point);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -200,7 +282,8 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 #define __FUNCT__ "DMLabelClearValue"
 PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 {
-  PetscInt v, p;
+  PetscInt       v, p;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Find label value */
@@ -218,6 +301,10 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
         label->points[q-1] = label->points[q];
       }
       --label->stratumSizes[v];
+      if (label->bt) {
+        if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
+        ierr = PetscBTClear(label->bt, point);CHKERRQ(ierr);
+      }
       break;
     }
   }
@@ -287,13 +374,24 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 #define __FUNCT__ "DMLabelClearStratum"
 PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 {
-  PetscInt v;
+  PetscInt       v;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) break;
   }
   if (v >= label->numStrata) PetscFunctionReturn(0);
+  if (label->bt) {
+    PetscInt i;
+
+    for (i = 0; i < label->stratumSizes[v]; ++i) {
+      const PetscInt point = label->points[label->stratumOffsets[v]+i];
+
+      if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
+      ierr = PetscBTClear(label->bt, point);CHKERRQ(ierr);
+    }
+  }
   label->stratumSizes[v] = 0;
   PetscFunctionReturn(0);
 }
