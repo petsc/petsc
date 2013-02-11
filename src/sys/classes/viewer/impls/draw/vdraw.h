@@ -19,6 +19,7 @@ typedef struct {
   char          *title;
   PetscBool     singleton_made;
   PetscBool     hold;                       /* Keep previous image when adding new */
+  PetscReal     pause;
 } PetscViewer_Draw;
 
 #endif

@@ -106,6 +106,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
       title = tmp_str;
     }
     ierr = PetscDrawCreate(((PetscObject)viewer)->comm,vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
+    ierr = PetscDrawSetPause(vdraw->draw[windownumber],vdraw->pause);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
   if (draw) *draw = vdraw->draw[windownumber];
@@ -572,12 +573,13 @@ PetscErrorCode  PetscViewerDrawSetPause(PetscViewer viewer,PetscReal pause)
   PetscErrorCode   ierr;
   PetscInt         i;
   PetscBool        isdraw;
-  PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (isdraw) {
-    vdraw = (PetscViewer_Draw*)viewer->data;
+    PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
+
+    vdraw->pause = pause;
     for (i=0; i<vdraw->draw_max; i++) {
       if (vdraw->draw[i]) {ierr = PetscDrawSetPause(vdraw->draw[i],pause);CHKERRQ(ierr);}
     }
