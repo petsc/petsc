@@ -330,13 +330,14 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
 @*/
 PetscErrorCode DMDASetUseDomainDecomposition(DM dm, PetscBool flag)
 {
-  DM_DA *dd = (DM_DA*)(dm->data);
-  PetscBool isda;
+  DM_DA          *dd = (DM_DA*)dm->data;
+  PetscBool      isda;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);
-  if (!isda) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM must be of type DMDA");
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"DM must be of type DMDA");
   dd->decompositiondm = flag;
   PetscFunctionReturn(0);
 }
@@ -358,14 +359,15 @@ PetscErrorCode DMDASetUseDomainDecomposition(DM dm, PetscBool flag)
 @*/
 PetscErrorCode DMDAGetUseDomainDecomposition(DM dm,PetscBool *flag)
 {
-  DM_DA *dd = (DM_DA*)(dm->data);
-  PetscBool isda;
+  DM_DA          *dd = (DM_DA*)dm->data;
+  PetscBool      isda;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);
-  if (!isda) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM must be of type DMDA");
-  if(flag) *flag = dd->decompositiondm;
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
+  if (!isda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"DM must be of type DMDA");
+  if (flag) *flag = dd->decompositiondm;
   PetscFunctionReturn(0);
 }
 

@@ -184,7 +184,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y,NULL);}
+  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y,NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
