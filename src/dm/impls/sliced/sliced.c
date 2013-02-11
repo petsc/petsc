@@ -20,7 +20,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
   ISLocalToGlobalMapping lmap,blmap;
-  void                   (*aij)(void) = PETSC_NULL;
+  void                   (*aij)(void) = NULL;
   DM_Sliced              *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
@@ -42,8 +42,8 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
       ierr = MatSeqAIJSetPreallocation(*J,slice->d_nz,slice->d_nnz);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(*J,slice->d_nz,slice->d_nnz,slice->o_nz,slice->o_nnz);CHKERRQ(ierr);
     } else if (!slice->d_nnz) {
-      ierr = MatSeqAIJSetPreallocation(*J,slice->d_nz*bs,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(*J,slice->d_nz*bs,PETSC_NULL,slice->o_nz*bs,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(*J,slice->d_nz*bs,NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(*J,slice->d_nz*bs,NULL,slice->o_nz*bs,NULL);CHKERRQ(ierr);
     } else {
       /* The user has provided preallocation per block-row, convert it to per scalar-row respecting DMSlicedSetBlockFills() if applicable */
       ierr = PetscMalloc2(slice->n*bs,PetscInt,&sd_nnz,(!!slice->o_nnz)*slice->n*bs,PetscInt,&so_nnz);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
 
   /* Set up the local to global map.  For the scalar map, we have to translate to entry-wise indexing instead of block-wise. */
   ierr = PetscMalloc((slice->n+slice->Nghosts)*bs*sizeof(PetscInt),&globals);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*J,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*J,&rstart,NULL);CHKERRQ(ierr);
   for (i=0; i<slice->n*bs; i++) globals[i] = rstart + i;
 
   for (i=0; i<slice->Nghosts*bs; i++) {
@@ -126,12 +126,12 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
            submatrix  (same for all local rows)
 .    d_nnz - array containing the number of block nonzeros in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.
+           row) or NULL.
 .    o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -    o_nnz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
-           each block row) or PETSC_NULL.
+           each block row) or NULL.
 
     Notes:
     See MatMPIBAIJSetPreallocation() for more details on preallocation.  If a scalar matrix (AIJ) is
@@ -193,7 +193,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
 
     Input Parameter:
 +   sliced - the DM object
-.   dfill - the fill pattern in the diagonal block (may be PETSC_NULL, means use dense block)
+.   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
 
     Notes:

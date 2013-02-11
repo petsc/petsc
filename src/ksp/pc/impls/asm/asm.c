@@ -587,7 +587,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+    ierr = PCASMSetTotalSubdomains(pc,blocks,NULL,NULL);CHKERRQ(ierr); 
     osm->use_dm_decomposition = PETSC_FALSE;
   }
   ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);

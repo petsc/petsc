@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Checks for compliance with 
-# Rule: 'Use PETSC_NULL, not NULL'
+# Rule: 'Use NULL instead of PETSC_NULL (which is deprecated)'
 
 
 # Steps:
@@ -18,7 +18,7 @@ find src/ include/ -name *.[ch] \
  | grep -v 'ftn-auto' \
  | grep -v 'ftn-custom' \
  | grep -v 'f90-custom' \
- | xargs grep "[ =]NULL" \
- | grep -v "PETSC_NULL"
-
+ | xargs grep "PETSC_NULL" \
+ | grep -v "PETSC_NULL_" \
+ | grep -v "petscsys.h:"
 

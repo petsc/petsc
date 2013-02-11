@@ -35,7 +35,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-da_overlap","Overlap between local grids","DMDASetOverlap",dd->overlap,&dd->overlap,NULL);CHKERRQ(ierr);
     /* Whether to use DMCreateDomainDecomposition() to define subdomains (e.g., for ASM). */
-    ierr = PetscOptionsBool("-da_use_domain_decomposition", "Use DMCreateDomainDecomposition","DMDASetUseDomainDecomposition",dd->decompositiondm,&dd->decompositiondm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-da_use_domain_decomposition", "Use DMCreateDomainDecomposition","DMDASetUseDomainDecomposition",dd->decompositiondm,&dd->decompositiondm,NULL);CHKERRQ(ierr);
   /* Handle DMDA parallel distibution */
   ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
   if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
