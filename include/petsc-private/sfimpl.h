@@ -2,6 +2,7 @@
 #define _PETSCSFIMPL_H
 
 #include <petscsf.h>
+#include <petsc-private/petscimpl.h>
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);

@@ -1,6 +1,6 @@
 
 #include <petsc-private/fortranimpl.h>
-#include <petscis.h>
+#include <petsc-private/isimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define islocaltoglobalmappingapply_  ISLOCALTOGLOBALMAPPINGAPPLY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

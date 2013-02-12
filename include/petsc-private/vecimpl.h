@@ -9,123 +9,7 @@
 #define __VECIMPL_H
 
 #include <petscvec.h>
-
-/*S
-     PetscLayout - defines layout of vectors and matrices across processes (which rows are owned by which processes)
-
-   Level: developer
-
-
-.seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
-S*/
-typedef struct _n_PetscLayout* PetscLayout;
-struct _n_PetscLayout{
-  MPI_Comm               comm;
-  PetscInt               n,N;         /* local, global vector size */
-  PetscInt               rstart,rend; /* local start, local end + 1 */
-  PetscInt               *range;      /* the offset of each processor */
-  PetscInt               bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
-  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
-  ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
-  ISLocalToGlobalMapping bmapping;    /* mapping used in Vec/MatSetValuesBlockedLocal() */
-  PetscInt               *trstarts;   /* local start for each thread */
-};
-
-PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
-PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetSize(PetscLayout,PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutFindOwner"
-/*@C
-     PetscLayoutFindOwner - Find the owning rank for a global index
-
-    Not Collective
-
-   Input Parameters:
-+    map - the layout
--    idx - global index to find the owner of
-
-   Output Parameter:
-.    owner - the owning rank
-
-   Level: developer
-
-    Fortran Notes:
-      Not available from Fortran
-
-@*/
-PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscInt *owner)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    lo = 0,hi,t;
-
-  PetscFunctionBegin;
-  *owner = -1;                  /* GCC erroneously issues warning about possibly uninitialized use when error condition */
-  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
-  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
-  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
-  while (hi - lo > 1) {
-    t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]) hi = t;
-    else                     lo = t;
-  }
-  *owner = lo;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutFindOwnerIndex"
-/*@C
-     PetscLayoutFindOwnerIndex - Find the owning rank and the local index for a global index
-
-    Not Collective
-
-   Input Parameters:
-+    map   - the layout
--    idx   - global index to find the owner of
-
-   Output Parameter:
-+    owner - the owning rank
--    lidx  - local index used by the owner for idx
-
-   Level: developer
-
-    Fortran Notes:
-      Not available from Fortran
-
-@*/
-PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,PetscInt idx,PetscInt *owner, PetscInt *lidx)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    lo = 0,hi,t;
-
-  PetscFunctionBegin;
-  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
-  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
-  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
-  while (hi - lo > 1) {
-    t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]) hi = t;
-    else                     lo = t;
-  }
-  *owner = lo;
-  *lidx  = idx-map->range[lo];
-  PetscFunctionReturn(0);
-}
+#include <petsc-private/petscimpl.h>
 
 /* ----------------------------------------------------------------------------*/
 typedef struct _n_PetscUniformSection *PetscUniformSection;
@@ -135,15 +19,6 @@ struct _n_PetscUniformSection {
   PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
 };
 
-/*S
-  PetscSection - This is a mapping from DMMESH points to sets of values, which is
-  our presentation of a fibre bundle.
-
-  Level: developer
-
-.seealso:  PetscSectionCreate(), PetscSectionDestroy()
-S*/
-typedef struct _n_PetscSection *PetscSection;
 struct _n_PetscSection {
   struct _n_PetscUniformSection atlasLayout;  /* Layout for the atlas */
   PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
@@ -160,52 +35,6 @@ struct _n_PetscSection {
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
-PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
-PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
-PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionAddFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, const PetscInt**);
-PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, const PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt**);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetUpBC(PetscSection);
-PETSC_EXTERN PetscErrorCode PetscSectionSetUp(PetscSection);
-PETSC_EXTERN PetscErrorCode PetscSectionGetMaxDof(PetscSection, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetOffset(PetscSection, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
-PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection, PetscSF, PetscBool, PetscInt, const PetscInt [], PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, PetscInt [], PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, PetscSection *);
-PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
-PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 
 /* Sieve support */
 PETSC_EXTERN PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
@@ -213,9 +42,6 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF, PetscSection, Pe
 PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
 
-
-PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 
 /* ----------------------------------------------------------------------------*/
 
@@ -285,6 +111,8 @@ struct _VecOps {
   PetscErrorCode (*dotnorm2)(Vec,Vec,PetscScalar*,PetscScalar*);
   PetscErrorCode (*getsubvector)(Vec,IS,Vec*);
   PetscErrorCode (*restoresubvector)(Vec,IS,Vec*);
+  PetscErrorCode (*getarrayread)(Vec,const PetscScalar**);
+  PetscErrorCode (*restorearrayread)(Vec,const PetscScalar**);
 };
 
 /*

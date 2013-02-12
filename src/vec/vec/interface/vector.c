@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include <petscvec.h>    /*I  "petscvec.h"   I*/
+#include <petsc-private/vecimpl.h>    /*I  "petscvec.h"   I*/
 
 /* Logging support */
 PetscClassId  VEC_CLASSID;
@@ -1882,3 +1882,56 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecGetLayout"
+/*@
+   VecGetLayout - get PetscLayout describing vector layout
+
+   Not Collective
+
+   Input Arguments:
+.  x - the vector
+
+   Output Arguments:
+.  map - the layout
+
+   Level: developer
+
+.seealso: VecGetSizes(), VecGetOwnershipRange(), VecGetOwnershipRanges()
+@*/
+PetscErrorCode VecGetLayout(Vec x,PetscLayout *map)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  *map = x->map;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetLayout"
+/*@
+   VecSetLayout - set PetscLayout describing vector layout
+
+   Not Collective
+
+   Input Arguments:
++  x - the vector
+-  map - the layout
+
+   Notes:
+   It is normally only valid to replace the layout with a layout known to be equivalent.
+
+   Level: developer
+
+.seealso: VecGetLayout(), VecGetSizes(), VecGetOwnershipRange(), VecGetOwnershipRanges()
+@*/
+PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

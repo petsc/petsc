@@ -1,5 +1,6 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+#include <petsc-private/vecimpl.h>
 #include <petscblaslapack.h>
 
 /*MC

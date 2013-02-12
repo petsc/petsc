@@ -1,5 +1,5 @@
 #include <petsc-private/fortranimpl.h>
-#include <petscvec.h>
+#include <petsc-private/vecimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecsetvalue_              VECSETVALUE
 #define vecsetvaluelocal_         VECSETVALUELOCAL

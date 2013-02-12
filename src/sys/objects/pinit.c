@@ -3,7 +3,7 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 #define PETSC_DESIRE_COMPLEX
-#include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>

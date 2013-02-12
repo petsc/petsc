@@ -6,6 +6,7 @@
 #define __AOIMPL
 
 #include <petscao.h>
+#include <petsc-private/petscimpl.h>
 
 /*
     Defines the abstract AO operations

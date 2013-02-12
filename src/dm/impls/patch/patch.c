@@ -91,7 +91,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   }
 
   /* Create SF for restricted map */
-  ierr = PetscLayoutGetRanges(X->map, &ranges);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRanges(X,&ranges);CHKERRQ(ierr);
 
   loclower.i = blower.i + sxr; locupper.i = blower.i + exr;
   loclower.j = blower.j + syr; locupper.j = blower.j + eyr;

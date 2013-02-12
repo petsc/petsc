@@ -1,4 +1,5 @@
 #include <../src/mat/utils/petscheap.h>
+#include <petsc-private/petscimpl.h>
 
 typedef struct {
   PetscInt id;

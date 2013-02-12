@@ -455,117 +455,19 @@ PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES} VecOption;
 PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
 
-/*
-   Expose VecGetArray()/VecRestoreArray() to users. Allows this to work without any function
-   call overhead on any 'native' Vecs.
-*/
+PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecGetArrayRead(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArray(Vec,PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecRestoreArrayRead(Vec,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode VecValidValues_Private(Vec,PetscInt,PetscBool);
 
-#include <petsc-private/vecimpl.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
-      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
-    }
-#endif
-    *a = *((PetscScalar **)x->data);
-  } else {
-    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!x->petscnative){
-    ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
-  }
-  if (a) *a = NULL;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUSP)
-    if (x->valid_GPU_array == PETSC_CUSP_GPU || !*((PetscScalar**)x->data)){
-      ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
-    }
-#endif
-    *a = *((PetscScalar **)x->data);
-  } else {
-    ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUSP)
-    x->valid_GPU_array = PETSC_CUSP_CPU;
-#endif
-  } else {
-    ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  if (a) *a = NULL;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecValidValues"
 #if defined(PETSC_USE_DEBUG)
-PETSC_STATIC_INLINE PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
-{
-  PetscErrorCode    ierr;
-  PetscInt          n,i;
-  const PetscScalar *x;
-
-  PetscFunctionBegin;
-  if (vec->petscnative || vec->ops->getarray) {
-    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(vec,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      if (begin) {
-        if (PetscIsInfOrNanScalar(x[i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at beginning of function: Parameter number %D",i,argnum);
-      } else {
-        if (PetscIsInfOrNanScalar(x[i])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FP,"Vec entry at local location %D is not-a-number or infinite at end of function: Parameter number %D",i,argnum);
-      }
-    }
-    ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
+#  define VecValidValues(x,argnum,begin) do {                           \
+    PetscErrorCode _vecvalidvalues_ierr;                                \
+    _vecvalidvalues_ierr = VecValidValues_Private((x),(argnum),(begin));CHKERRQ(_vecvalidvalues_ierr); \
+  } while (0)
 #else
-PETSC_STATIC_INLINE PetscErrorCode VecValidValues(PETSC_UNUSED Vec vec,PETSC_UNUSED PetscInt argnum,PETSC_UNUSED PetscBool begin)
-{
-  return 0;
-}
+#  define VecValidValues(x,argnum,begin) do { } while (0)
 #endif
 
 PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
@@ -650,6 +552,184 @@ PETSC_EXTERN PetscErrorCode VecNestGetSize(Vec,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsVec(const char[],const char[],const char[],Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode VecChop(Vec,PetscReal);
+
+/*S
+     PetscLayout - defines layout of vectors and matrices across processes (which rows are owned by which processes)
+
+   Level: developer
+
+
+.seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
+S*/
+typedef struct _n_PetscLayout* PetscLayout;
+struct _n_PetscLayout{
+  MPI_Comm               comm;
+  PetscInt               n,N;         /* local, global vector size */
+  PetscInt               rstart,rend; /* local start, local end + 1 */
+  PetscInt               *range;      /* the offset of each processor */
+  PetscInt               bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
+  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;    /* mapping used in Vec/MatSetValuesBlockedLocal() */
+  PetscInt               *trstarts;   /* local start for each thread */
+};
+
+PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
+PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
+PETSC_EXTERN PetscErrorCode VecGetLayout(Vec,PetscLayout*);
+PETSC_EXTERN PetscErrorCode VecSetLayout(Vec,PetscLayout);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLayoutFindOwner"
+/*@C
+     PetscLayoutFindOwner - Find the owning rank for a global index
+
+    Not Collective
+
+   Input Parameters:
++    map - the layout
+-    idx - global index to find the owner of
+
+   Output Parameter:
+.    owner - the owning rank
+
+   Level: developer
+
+    Fortran Notes:
+      Not available from Fortran
+
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscInt *owner)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    lo = 0,hi,t;
+
+  PetscFunctionBegin;
+  *owner = -1;                  /* GCC erroneously issues warning about possibly uninitialized use when error condition */
+  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
+  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  while (hi - lo > 1) {
+    t = lo + (hi - lo) / 2;
+    if (idx < map->range[t]) hi = t;
+    else                     lo = t;
+  }
+  *owner = lo;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLayoutFindOwnerIndex"
+/*@C
+     PetscLayoutFindOwnerIndex - Find the owning rank and the local index for a global index
+
+    Not Collective
+
+   Input Parameters:
++    map   - the layout
+-    idx   - global index to find the owner of
+
+   Output Parameter:
++    owner - the owning rank
+-    lidx  - local index used by the owner for idx
+
+   Level: developer
+
+    Fortran Notes:
+      Not available from Fortran
+
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,PetscInt idx,PetscInt *owner, PetscInt *lidx)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    lo = 0,hi,t;
+
+  PetscFunctionBegin;
+  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
+  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  while (hi - lo > 1) {
+    t = lo + (hi - lo) / 2;
+    if (idx < map->range[t]) hi = t;
+    else                     lo = t;
+  }
+  *owner = lo;
+  *lidx  = idx-map->range[lo];
+  PetscFunctionReturn(0);
+}
+
+/*S
+  PetscSection - This is a mapping from DMMESH points to sets of values, which is
+  our presentation of a fibre bundle.
+
+  Level: developer
+
+.seealso:  PetscSectionCreate(), PetscSectionDestroy()
+S*/
+typedef struct _n_PetscSection *PetscSection;
+PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionAddFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, const PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, const PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetUpBC(PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSectionSetUp(PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSectionGetMaxDof(PetscSection, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetOffset(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection, PetscSF, PetscBool, PetscInt, const PetscInt [], PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, PetscInt [], PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
+
+PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
+PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 
 #endif
 

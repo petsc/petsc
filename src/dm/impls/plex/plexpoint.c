@@ -1,4 +1,5 @@
 #include <petsc-private/pleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc-private/vecimpl.h>    /* for inline access to atlasOff */
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetLocalOffset_Private"

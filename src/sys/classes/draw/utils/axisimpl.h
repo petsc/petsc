@@ -1,5 +1,5 @@
 
-#include <petscsys.h>              /*I "petscsys.h" I*/
+#include <petsc-private/petscimpl.h>              /*I "petscsys.h" I*/
 
 struct _p_PetscDrawAxis {
   PETSCHEADER(int);

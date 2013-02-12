@@ -3,7 +3,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = plog.c plogmpe.c
+SOURCEC	  = plog.c stagelog.c plogmpe.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petsc-private/logimpl.h ../../../include/petsclog.h
 MANSEC	  = Profiling

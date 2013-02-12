@@ -380,13 +380,11 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
   PetscFunctionReturn(0);
 }
 
-/*MC
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingApply"
+/*@C
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
-
-   Synopsis:
-   #include "petscis.h"
-   PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
 
    Not collective
 
@@ -408,8 +406,23 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
           AOPetscToApplication(), ISGlobalToLocalMappingApply()
 
     Concepts: mapping^local to global
+@*/
+PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
+{
+  PetscInt       i,Nmax = mapping->n;
+  const PetscInt *idx = mapping->indices;
 
-M*/
+  PetscFunctionBegin;
+  for (i=0; i<N; i++) {
+    if (in[i] < 0) {
+      out[i] = in[i];
+      continue;
+    }
+    if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
+    out[i] = idx[in[i]];
+  }
+  PetscFunctionReturn(0);
+}
 
 /* -----------------------------------------------------------------------------------------*/
 

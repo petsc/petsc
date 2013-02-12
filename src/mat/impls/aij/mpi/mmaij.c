@@ -3,6 +3,7 @@
    Support for the parallel AIJ matrix vector multiply
 */
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petsc-private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUpMultiply_MPIAIJ"

@@ -2,6 +2,7 @@
 #define __LINESEARCHIMPL_H
 
 #include <petscsnes.h>
+#include <petsc-private/petscimpl.h>
 
 typedef struct _LineSearchOps *LineSearchOps;
 

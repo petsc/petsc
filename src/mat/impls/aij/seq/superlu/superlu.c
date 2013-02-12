@@ -308,12 +308,13 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
   PetscScalar    *barray,*xarray;
   PetscErrorCode ierr;
-  PetscInt       info,i,n=x->map->n;
+  PetscInt       info,i,n;
   PetscReal      ferr,berr;
 
   PetscFunctionBegin;
   if (lu->lwork == -1) PetscFunctionReturn(0);
 
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   lu->B.ncol = 1;   /* Set the number of right-hand side */
   if (lu->options.Equil && !lu->rhs_dup) {
     /* superlu overwrites b when Equil is used, thus create rhs_dup to keep user's b unchanged */

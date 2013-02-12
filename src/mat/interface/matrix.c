@@ -1123,12 +1123,14 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 PetscErrorCode  MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
 {
   PetscErrorCode ierr;
+  PetscInt       globalrow;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidScalarPointer(v,2);
-  ierr = MatSetValuesRow(mat, mat->rmap->mapping->indices[row],v);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,1,&row,&globalrow);CHKERRQ(ierr);
+  ierr = MatSetValuesRow(mat,globalrow,v);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;

@@ -2,7 +2,7 @@
    This file contains routines for basic section object implementation.
 */
 
-#include <petscvec.h>   /*I  "petscvec.h"   I*/
+#include <petsc-private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreate"

@@ -1296,35 +1296,6 @@ PETSC_EXTERN_TYPEDEF typedef void (*PetscVoidFunction)(void);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
 
 /*
-   PetscTryMethod - Queries an object for a method, if it exists then calls it.
-              These are intended to be used only inside PETSc functions.
-
-   Level: developer
-
-.seealso: PetscUseMethod()
-*/
-#define  PetscTryMethod(obj,A,B,C) \
-  0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
-    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
-  }
-
-/*
-   PetscUseMethod - Queries an object for a method, if it exists then calls it, otherwise generates an error.
-              These are intended to be used only inside PETSc functions.
-
-   Level: developer
-
-.seealso: PetscTryMethod()
-*/
-#define  PetscUseMethod(obj,A,B,C) \
-  0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
-    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
-    else SETERRQ1(((PetscObject)obj)->comm,PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
-  }
-
-/*
     Functions that can act on any PETSc object.
 */
 PETSC_EXTERN PetscErrorCode PetscObjectDestroy(PetscObject*);
@@ -1535,11 +1506,6 @@ $     PetscBool  flag = PetscNot(a)
 #else
 #  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
 #endif
-
-/*
-    Defines the base data structures for all PETSc objects
-*/
-#include <petsc-private/petscimpl.h>
 
 
 /*MC

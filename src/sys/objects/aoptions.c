@@ -5,7 +5,7 @@
 
 */
 
-#include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
 
 #define ManSection(str) ((str) ? (str) : "None")
 

@@ -176,14 +176,6 @@ PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 .seealso:  ISLocalToGlobalMappingCreate()
 S*/
-struct _p_ISLocalToGlobalMapping{
-  PETSCHEADER(int);
-  PetscInt n;                  /* number of local indices */
-  PetscInt *indices;           /* global index of each local index */
-  PetscInt globalstart;        /* first global referenced in indices */
-  PetscInt globalend;          /* last + 1 global referenced in indices */
-  PetscInt *globals;           /* local index for each global index between start and end */
-};
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
 /*E
@@ -205,6 +197,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,ISLo
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
@@ -214,25 +207,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobal
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm,PetscInt,const ISLocalToGlobalMapping[],ISLocalToGlobalMapping*);
-
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingApply"
-PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
-{
-  PetscInt       i,Nmax = mapping->n;
-  const PetscInt *idx = mapping->indices;
-
-  PetscFunctionBegin;
-  for (i=0; i<N; i++) {
-    if (in[i] < 0) {
-      out[i] = in[i];
-      continue;
-    }
-    if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
-    out[i] = idx[in[i]];
-  }
-  PetscFunctionReturn(0);
-}
 
 /* --------------------------------------------------------------------------*/
 /*E

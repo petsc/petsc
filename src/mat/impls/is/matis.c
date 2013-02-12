@@ -13,6 +13,7 @@
 */
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
+#include <petsc-private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_IS"
