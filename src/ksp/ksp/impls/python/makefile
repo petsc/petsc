@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = pythonK.c
+SOURCEC  = pythonksp.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp

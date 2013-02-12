@@ -3,7 +3,7 @@ ALL: ${TESTS}
 CFLAGS      =
 FFLAGS      =
 CPPFLAGS    = ${EXTRA_FLAGS}
-SOURCEC     = testcomponentsI.c testcomponentsII.c
+SOURCEC     = testcomponents1.c testcomponents2.c
 SOURCEF     =
 SOURCEH     =
 MANSEC      = Sys

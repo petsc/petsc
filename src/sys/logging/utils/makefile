@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = classLog.c stageLog.c eventLog.c stack.c
+SOURCEC	  = classlog.c stagelog.c eventlog.c stack.c
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Profiling
