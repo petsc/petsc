@@ -433,9 +433,10 @@ static PetscErrorCode TSComputeLinearStability_Theta(TS ts,PetscReal xr,PetscRea
 {
   PetscComplex z   = xr + xi*PETSC_i,f;
   TS_Theta     *th = (TS_Theta*)ts->data;
+  const PetscReal one = 1.0;
 
   PetscFunctionBegin;
-  f   = (1.0 + (1.0 - th->Theta)*z)/(1.0 - th->Theta*z);
+  f   = (one + (one - th->Theta)*z)/(one - th->Theta*z);
   *yr = PetscRealPartComplex(f);
   *yi = PetscImaginaryPartComplex(f);
   PetscFunctionReturn(0);
