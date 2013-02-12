@@ -89,6 +89,8 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   PetscValidHeader(h,1);
+  ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
+  ierr = PetscComposedQuantitiesDestroy(h);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectUnPublish((PetscObject)h);CHKERRQ(ierr);

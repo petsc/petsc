@@ -20,14 +20,18 @@
       getcomm()         - Gets the object's communicator.
       view()            - Is the routine for viewing the entire PETSc object; for
                           example, MatView() is the general matrix viewing routine.
+                          This is used by PetscObjectView((PetscObject)obj) to allow
+                          viewing any PETSc object.
       destroy()         - Is the routine for destroying the entire PETSc object;
                           for example,MatDestroy() is the general matrix
                           destruction routine.
-      compose()         - Associates a PETSc object with another PETSc object.
+                          This is used by PetscObjectDestroy((PetscObject*)&obj) to allow
+                          destroying any PETSc object.
+      compose()         - Associates a PETSc object with another PETSc object with a name
       query()           - Returns a different PETSc object that has been associated
-                          with the first object.
-      composefunction() - Attaches an additional registered function.
-      queryfunction()   - Requests a registered function that has been registered.
+                          with the first object using a name.
+      composefunction() - Attaches an a function to a PETSc object with a name.
+      queryfunction()   - Requests a registered function that has been attached to a PETSc object.
       publish()         - Not currently used
 */
 
@@ -71,10 +75,10 @@ typedef struct _p_PetscObject {
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
   PetscObjectList      olist;
-  char                 *class_name;
+  char                 *class_name;    /*  for example, "Vec" */
   char                 *description;
   char                 *mansec;
-  char                 *type_name;
+  char                 *type_name;     /*  this is the subclass, for example VECSEQ which equals "seq" */
   PetscObject          parent;
   PetscInt             parentid;
   char*                name;
@@ -117,22 +121,24 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*)
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
 /*@C
-    PetscHeaderCreate - Creates a PETSc object
+    PetscHeaderCreate - Creates a PETSc object of a particular class, indicated by tp
 
     Input Parameters:
-+   tp - the data structure type of the object
++   tp - the data structure type of the object (for example _p_Vec)
 .   pops - the data structure type of the objects operations (for example VecOps)
-.   cook - the classid associated with this object
+.   cook - the classid associated with this object (for example VEC_CLASSID)
 .   t - type (no longer should be used)
-.   class_name - string name of class; should be static
+.   class_name - string name of class; should be static (for example "Vec")
 .   com - the MPI Communicator
-.   des - the destroy routine for this object
--   vie - the view routine for this object
+.   des - the destroy routine for this object (for example VecDestroy())
+-   vie - the view routine for this object (for example VecView())
 
     Output Parameter:
 .   h - the newly created object
 
     Level: developer
+
+   Developer Note: This currently is a CPP macro because it takes the types (for example _p_Vec and VecOps) as arguments
 
 .seealso: PetscHeaderDestroy(), PetscClassIdRegister()
 
@@ -156,12 +162,12 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,P
 
     Level: developer
 
+   Developer Note: This currently is a CPP macro because it accesses (*h)->ops which is a field in the derived class but not the PetscObject base class
+
 .seealso: PetscHeaderCreate()
 @*/
 #define PetscHeaderDestroy(h)                         \
-  (PetscLogObjectDestroy((PetscObject)(*h)) ||        \
-   PetscComposedQuantitiesDestroy((PetscObject)*h) || \
-   PetscHeaderDestroy_Private((PetscObject)(*h)) ||   \
+  (PetscHeaderDestroy_Private((PetscObject)(*h)) ||   \
    PetscFree((*h)->ops) ||                            \
    PetscFree(*h))
 
