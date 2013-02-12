@@ -1,4 +1,5 @@
 #include <petscdmmesh_formats.hh>   /*I "petscdmmesh.h" I*/
+#include <petsc-private/vecimpl.h>
 
 #if defined(PETSC_HAVE_EXODUSII)
 #include <netcdf.h>
