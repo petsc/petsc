@@ -378,7 +378,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   PetscErrorCode ierr;
   IS             iis0,ois0;
   DM             subdm0;
-  DM_DA          *dd = (DM_DA*)dm;
+  DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
   /* fix to enable PCASM default behavior as taking overlap from the matrix */
