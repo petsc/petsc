@@ -299,8 +299,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       /* scatter the RHS to the local RHS */
       Bl   = nasm->b[i];
       ierr = VecScatterBegin(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    } else {
-      Bl = NULL;
     }
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
@@ -311,6 +309,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     oscat   = nasm->oscatter[i];
     ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (B) {
+      Bl   = nasm->b[i];
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     }
   }
@@ -326,7 +325,11 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     oscat   = nasm->oscatter[i];
     gscat   = nasm->gscatter[i];
     ierr    = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
-
+    if (B) {
+      Bl = nasm->b[i];
+    } else {
+      Bl = NULL;
+    }
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = VecCopy(Xl,Yl);CHKERRQ(ierr);
