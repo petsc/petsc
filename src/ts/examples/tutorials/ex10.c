@@ -180,9 +180,10 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   DMDALocalInfo  info;
   PetscInt       i;
   RDNode         *x,*xdot,*f;
-  MPI_Comm       comm = ((PetscObject)rd->da)->comm;
+  MPI_Comm       comm;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject)rd->da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
@@ -808,6 +809,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   PetscInt       i,m,M;
   const PetscInt *lx;
   DM             da;
+  MPI_Comm       comm;
 
   PetscFunctionBeginUser;
   /*
@@ -817,7 +819,8 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   */
   ierr = DMDAGetInfo(rd->da,0, &M,0,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(rd->da,&lx,0,0);CHKERRQ(ierr);
-  ierr = DMDACreate1d(((PetscObject)rd->da)->comm,DMDA_BOUNDARY_NONE,M,1,0,lx,&da);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)rd->da,&comm);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,M,1,0,lx,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.,rd->L,0.,0.,0.,0.);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"T_rad");CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&Y);CHKERRQ(ierr);
@@ -840,12 +843,13 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 #define __FUNCT__ "RDTestDifferentiation"
 static PetscErrorCode RDTestDifferentiation(RD rd)
 {
-  MPI_Comm       comm = ((PetscObject)rd->da)->comm;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
   RDNode         n,nx;
   PetscScalar    epsilon;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject)rd->da,&comm);CHKERRQ(ierr);
   epsilon = 1e-8;
   {
     RDNode      dEm,fdEm;
@@ -906,7 +910,7 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     rad  = RDRadiation(rd,&n,0); fdrad.E = (rad-rad0)/epsilon;
     n.E  = 1.;         n.T = 1.+epsilon;
     rad  = RDRadiation(rd,&n,0); fdrad.T = (rad-rad0)/epsilon;
-    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"drad {%G,%G}, fdrad {%G,%G}, diff {%G,%G}\n",PetscRealPart(drad.E),PetscRealPart(drad.T),
+    ierr = PetscPrintf(comm,"drad {%G,%G}, fdrad {%G,%G}, diff {%G,%G}\n",PetscRealPart(drad.E),PetscRealPart(drad.T),
                        PetscRealPart(fdrad.E),PetscRealPart(fdrad.T),PetscRealPart(drad.E-drad.E),PetscRealPart(drad.T-fdrad.T));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

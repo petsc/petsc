@@ -307,7 +307,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
 
   PetscFunctionBeginUser;
   *obj   = 0;
-  comm   = ((PetscObject)info->da)->comm;
+  ierr = PetscObjectGetComm((PetscObject)info,&comm);CHKERRQ(ierr);
   lambda = user->param;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);

@@ -195,12 +195,12 @@ static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,Pets
   DMDAGetGhostCorners(da,&si,&sj,&sk,0,0,0);
 
   *sx = si;
-  if (si != 0) *sx = si+1;
+  if (si) *sx = si+1;
 
   *sy = sj;
-  if (sj != 0) *sy = sj+1;
+  if (sj) *sy = sj+1;
 
-  if (sk != NULL) {
+  if (sk) {
     *sz = sk;
     if (sk != 0) *sz = sk+1;
   }
@@ -982,7 +982,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   ierr = DMDASetFieldName(da,2,"analytic_P");CHKERRQ(ierr);
 
 
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.,0.);CHKERRQ(ierr);
 
 
   ierr = DMGetCoordinatesLocal(da,&coords);CHKERRQ(ierr);
@@ -1189,7 +1189,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = DMDASetFieldName(da_Stokes,2,"P");CHKERRQ(ierr);
 
   /* unit box [0,1] x [0,1] */
-  ierr = DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da_Stokes,0.0,1.0,0.0,1.0,0.,0.);CHKERRQ(ierr);
 
 
   /* Generate element properties, we will assume all material properties are constant over the element */
@@ -1212,7 +1212,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   dx   = 1.0/((PetscReal)(M));
   dy   = 1.0/((PetscReal)(N));
 
-  ierr = DMDASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dy,1.0-0.5*dy,0.,0);CHKERRQ(ierr);
 
   /* define coefficients */
   ierr = PetscOptionsGetInt(NULL,"-c_str",&coefficient_structure,NULL);CHKERRQ(ierr);
