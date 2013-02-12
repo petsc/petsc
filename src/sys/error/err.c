@@ -530,7 +530,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
     if (size > 1) {
       if (rank) {
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv((void*)idx,NN,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,0,0,0,MPIU_REAL,0,comm);CHKERRQ(ierr);
       } else {
         ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
           displs[i] =  displs[i-1] + sizes[i-1];
         }
         ierr = PetscMalloc(Ntotal*sizeof(PetscReal),&array);CHKERRQ(ierr);
-        ierr = MPI_Gatherv((void*)idx,NN,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,array,sizes,displs,MPIU_REAL,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_REAL,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
