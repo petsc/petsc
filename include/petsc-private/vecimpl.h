@@ -110,6 +110,8 @@ struct _VecOps {
   PetscErrorCode (*dotnorm2)(Vec,Vec,PetscScalar*,PetscScalar*);
   PetscErrorCode (*getsubvector)(Vec,IS,Vec*);
   PetscErrorCode (*restoresubvector)(Vec,IS,Vec*);
+  PetscErrorCode (*getarrayread)(Vec,const PetscScalar**);
+  PetscErrorCode (*restorearrayread)(Vec,const PetscScalar**);
 };
 
 /*

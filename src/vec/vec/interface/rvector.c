@@ -1491,7 +1491,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 #endif
     *a = *((PetscScalar **)x->data);
   } else {
-    ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+    ierr = (*x->ops->getarrayread)(x,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1669,7 +1669,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
     x->valid_GPU_array = PETSC_CUSP_CPU;
 #endif
   } else {
-    ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
+    ierr = (*x->ops->restorearrayread)(x,a);CHKERRQ(ierr);
   }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
