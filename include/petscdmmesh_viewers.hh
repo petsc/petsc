@@ -2,6 +2,7 @@
 #define __PETSCDMMESH_VIEWERS_HH
 
 #include <petscdmmesh.hh>
+#include <petsc-private/petscimpl.h>
 #include <iomanip>
 
 using ALE::Obj;
