@@ -35,14 +35,6 @@ struct _n_PetscSection {
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
-
-/* Sieve support */
-PETSC_EXTERN PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
-PETSC_EXTERN PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF, PetscSection, PetscSection, PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
-PETSC_EXTERN PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
-
-
 /* ----------------------------------------------------------------------------*/
 
 typedef struct _VecOps *VecOps;
