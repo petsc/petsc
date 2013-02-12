@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = binaryMatlab.c
+SOURCEC  = binarymatlab.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm

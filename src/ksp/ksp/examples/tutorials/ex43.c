@@ -34,7 +34,7 @@ Options: \n\
 #include <petscdmda.h>
 
 /* A Maple-generated exact solution created by Mirko Velic (mirko.velic@sci.monash.edu.au) */
-#include "ex43-solCx.h"
+#include "ex43-solcx.h"
 
 static PetscErrorCode DMDABCApplyFreeSlip(DM,Mat,Vec);
 

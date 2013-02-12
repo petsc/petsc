@@ -1,4 +1,5 @@
 #include <petsc.h>
+#include <petsc-private/petscimpl.h>
 
 EXTERN_C_BEGIN
 

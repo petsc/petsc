@@ -4,12 +4,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = agmres.c agmresorthog.c agmresLeja.c
+SOURCEC  = agmres.c agmresorthog.c agmresleja.c agmresdeflation.c
 SOURCEF  =
 SOURCEH  = agmresimpl.h
-OBJSC    = agmres.o agmresorthog.o agmresLeja.o agmresDeflation.o
 OBJSF    =
-LIBBASE  = libagmres.a
+LIBBASE  = libpetscksp
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gmres/agmres
 DIRS     =
