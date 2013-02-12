@@ -3,7 +3,6 @@
    Support for the parallel SBAIJ matrix vector multiply
 */
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
-#include <petsc-private/vecimpl.h> /* only to access vec->map */
 
 extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
 
@@ -20,7 +19,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   IS             from,to;
   Vec            gvec;
   PetscMPIInt    rank   =sbaij->rank,lsize,size=sbaij->size;
-  PetscInt       *owners=sbaij->rangebs,*sowners,*ec_owner,k;
+  PetscInt       *owners=sbaij->rangebs,*ec_owner,k;
+  const PetscInt *sowners;
   PetscScalar    *ptr;
 
   PetscFunctionBegin;
@@ -97,7 +97,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr  = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
   ierr  = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
 
-  sowners = sbaij->slvec0->map->range;
+  ierr = VecGetOwnershipRanges(sbaij->slvec0,&sowners);CHKERRQ(ierr);
 
   /* x index in the IS sfrom */
   for (i=0; i<ec; i++) {

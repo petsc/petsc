@@ -4,7 +4,6 @@
 */
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
-#include <petsc-private/vecimpl.h>   /* only to access vec->map */
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPI_DA"
@@ -12,11 +11,13 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec *gg)
 {
   PetscErrorCode ierr;
   DM             da;
+  PetscLayout    map;
 
   PetscFunctionBegin;
   ierr = VecGetDM(g, &da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,gg);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(g->map,&(*gg)->map);CHKERRQ(ierr);
+  ierr = VecGetLayout(g,&map);CHKERRQ(ierr);
+  ierr = VecSetLayout(*gg,map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,7 +1,6 @@
 
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdmcomposite.h>
-#include <petsc-private/vecimpl.h> /* only to access vec->map */
 
 /*
   There is a nice discussion of block preconditioners in
@@ -832,8 +831,8 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PetscInt          cnt,bs;
 
   PetscFunctionBegin;
-  x->map->bs = jac->bs;
-  y->map->bs = jac->bs;
+  ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
   CHKMEMQ;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {

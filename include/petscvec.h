@@ -590,6 +590,8 @@ PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[])
 PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
+PETSC_EXTERN PetscErrorCode VecGetLayout(Vec,PetscLayout*);
+PETSC_EXTERN PetscErrorCode VecSetLayout(Vec,PetscLayout);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutFindOwner"
