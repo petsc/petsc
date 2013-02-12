@@ -307,6 +307,8 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 
   for (i=0; i<nasm->n; i++) {
     Xlloc = nasm->xl[i];
+    gscat   = nasm->gscatter[i];
+    oscat   = nasm->oscatter[i];
     ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (B) {
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
