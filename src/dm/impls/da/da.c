@@ -169,30 +169,67 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetOverlap"
+/*@
+  DMDAGetOverlap - Gets the size of the per-processor overlap.
+
+  Not collective
+
+  Input Parameters:
+. da  - The DMDA
+
+  Output Parameters:
++ x   - Overlap in the x direction
+. y   - Overlap in the y direction
+- z   - Overlap in the z direction
+
+  Level: intermediate
+
+.keywords:  distributed array, overlap, domain decomposition
+.seealso: DMDACreateDomainDecomposition(), DMDASetOverlap(), DMDA
+@*/
+PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (x) *x = dd->xol;
+  if (y) *y = dd->yol;
+  if (z) *z = dd->zol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetOverlap"
 /*@
   DMDASetOverlap - Sets the size of the per-processor overlap.
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + da  - The DMDA
-- dof - Number of degrees of freedom
+. x   - Overlap in the x direction
+. y   - Overlap in the y direction
+- z   - Overlap in the z direction
 
   Level: intermediate
 
-.keywords:  distributed array, degrees of freedom
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.keywords:  distributed array, overlap, domain decomposition
+.seealso: DMDACreateDomainDecomposition(), DMDAGetOverlap(), DMDA
 @*/
-PetscErrorCode  DMDASetOverlap(DM da, PetscInt overlap)
+PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidLogicalCollectiveInt(da,overlap,2);
-  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  dd->overlap = overlap;
+  PetscValidLogicalCollectiveInt(da,x,2);
+  PetscValidLogicalCollectiveInt(da,y,3);
+  PetscValidLogicalCollectiveInt(da,z,4);
+  dd->xol = x;
+  dd->yol = y;
+  dd->zol = z;
   PetscFunctionReturn(0);
 }
 

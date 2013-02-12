@@ -116,25 +116,24 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
 PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
 {
   DM             da;
-  DM_DA          *dd;
   PetscErrorCode ierr;
   DMDALocalInfo  info;
   PetscReal      lmin[3],lmax[3];
   PetscInt       xsize,ysize,zsize;
   PetscInt       xo,yo,zo;
+  PetscInt       xol,yol,zol;
 
   PetscFunctionBegin;
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
+  ierr = DMDAGetOverlap(dm,&xol,&yol,&zol);CHKERRQ(ierr);
+
   ierr = DMDACreate(PETSC_COMM_SELF,&da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"sub_");CHKERRQ(ierr);
-
   ierr = DMDASetDim(da, info.dim);CHKERRQ(ierr);
   ierr = DMDASetDof(da, info.dof);CHKERRQ(ierr);
 
   ierr = DMDASetStencilType(da,info.st);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da,info.sw);CHKERRQ(ierr);
-
-  dd = (DM_DA*)dm->data;
 
   /* local with overlap */
   xsize = info.xm;
@@ -144,21 +143,21 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
   yo    = info.ys;
   zo    = info.zs;
   if (info.bx == DMDA_BOUNDARY_PERIODIC || (info.xs != 0)) {
-    xsize += dd->overlap;
-    xo    -= dd->overlap;
+    xsize += xol;
+    xo    -= xol;
   }
   if (info.by == DMDA_BOUNDARY_PERIODIC || (info.ys != 0)) {
-    ysize += dd->overlap;
-    yo    -= dd->overlap;
+    ysize += yol;
+    yo    -= yol;
   }
   if (info.bz == DMDA_BOUNDARY_PERIODIC || (info.zs != 0)) {
-    zsize += dd->overlap;
-    zo    -= dd->overlap;
+    zsize += zol;
+    zo    -= zol;
   }
 
-  if (info.bx == DMDA_BOUNDARY_PERIODIC || (info.xs+info.xm != info.mx)) xsize += dd->overlap;
-  if (info.by == DMDA_BOUNDARY_PERIODIC || (info.ys+info.ym != info.my)) ysize += dd->overlap;
-  if (info.bz == DMDA_BOUNDARY_PERIODIC || (info.zs+info.zm != info.mz)) zsize += dd->overlap;
+  if (info.bx == DMDA_BOUNDARY_PERIODIC || (info.xs+info.xm != info.mx)) xsize += xol;
+  if (info.by == DMDA_BOUNDARY_PERIODIC || (info.ys+info.ym != info.my)) ysize += yol;
+  if (info.bz == DMDA_BOUNDARY_PERIODIC || (info.zs+info.zm != info.mz)) zsize += zol;
 
   ierr = DMDASetSizes(da, xsize, ysize, zsize);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da, 1, 1, 1);CHKERRQ(ierr);

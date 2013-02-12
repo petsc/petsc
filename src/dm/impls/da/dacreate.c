@@ -8,7 +8,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   PetscErrorCode ierr;
   DM_DA          *dd         = (DM_DA*)da->data;
   PetscInt       refine      = 0,maxnlevels = 100,*refx,*refy,*refz,n,i;
-  PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE;
+  PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -33,9 +33,15 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);}
   if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);}
   if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsInt("-da_overlap","Overlap between local grids","DMDASetOverlap",dd->overlap,&dd->overlap,NULL);CHKERRQ(ierr);
-    /* Whether to use DMCreateDomainDecomposition() to define subdomains (e.g., for ASM). */
-    ierr = PetscOptionsBool("-da_use_domain_decomposition", "Use DMCreateDomainDecomposition","DMDASetUseDomainDecomposition",dd->decompositiondm,&dd->decompositiondm,NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = DMDASetOverlap(da,dd->xol,dd->xol,dd->xol);CHKERRQ(ierr);}
+
+  ierr = PetscOptionsInt("-da_overlap_x","Decomposition overlap in x direction","DMDASetOverlap",dd->xol,&dd->xol,NULL);CHKERRQ(ierr);
+  if (dd->dim > 1) {ierr = PetscOptionsInt("-da_overlap_y","Decomposition overlap in y direction","DMDASetOverlap",dd->yol,&dd->yol,NULL);CHKERRQ(ierr);}
+  if (dd->dim > 2) {ierr = PetscOptionsInt("-da_overlap_z","Decomposition overlap in z direction","DMDASetOverlap",dd->zol,&dd->zol,NULL);CHKERRQ(ierr);}
+  /* Whether to use DMCreateDomainDecomposition() to define subdomains (e.g., for ASM). */
+  ierr = PetscOptionsBool("-da_use_domain_decomposition", "Use DMCreateDomainDecomposition","DMDASetUseDomainDecomposition",dd->decompositiondm,&dd->decompositiondm,NULL);CHKERRQ(ierr);
   /* Handle DMDA parallel distibution */
   ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
   if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
@@ -299,7 +305,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->Xs = -1; dd->Xe = -1; dd->Ys = -1; dd->Ye = -1; dd->Zs = -1; dd->Ze = -1;
 
   dd->decompositiondm = PETSC_FALSE;
-  dd->overlap         = 0;
+  dd->xol             = 0;
+  dd->yol             = 0;
+  dd->zol             = 0;
   dd->xo              = 0;
   dd->yo              = 0;
   dd->zo              = 0;

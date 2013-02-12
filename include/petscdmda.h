@@ -131,7 +131,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM,PetscInt,const char**);
 
 PETSC_EXTERN PetscErrorCode DMDASetBoundaryType(DM,DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
 PETSC_EXTERN PetscErrorCode DMDASetDof(DM, PetscInt);
-PETSC_EXTERN PetscErrorCode DMDASetOverlap(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMDASetOverlap(DM,PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMDAGetOverlap(DM,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetOffset(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetOffset(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
