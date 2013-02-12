@@ -1,5 +1,6 @@
 #include <petscdmplex.h> /*I "petscdmplex.h" I*/
 #include <petscsnes.h>      /*I "petscsnes.h" I*/
+#include <petsc-private/petscimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMInterpolationCreate"

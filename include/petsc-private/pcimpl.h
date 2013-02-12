@@ -4,6 +4,7 @@
 
 #include <petscksp.h>
 #include <petscpc.h>
+#include <petsc-private/petscimpl.h>
 
 typedef struct _PCOps *PCOps;
 struct _PCOps {

@@ -4,6 +4,7 @@
 #define _DMIMPL_H
 
 #include <petscdm.h>
+#include <petsc-private/petscimpl.h>
 
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nullSpace);
 

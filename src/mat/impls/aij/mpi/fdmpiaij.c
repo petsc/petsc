@@ -11,19 +11,21 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscErrorCode         ierr;
   PetscMPIInt            size,*ncolsonproc,*disp,nn;
   PetscInt               i,n,nrows,j,k,m,ncols,col;
-  const PetscInt         *is,*A_ci,*A_cj,*B_ci,*B_cj,*rows = 0;
+  const PetscInt         *is,*A_ci,*A_cj,*B_ci,*B_cj,*rows = 0,*ltog;
   PetscInt               nis = iscoloring->n,nctot,*cols;
   PetscInt               *rowhit,M,cstart,cend,colb;
   PetscInt               *columnsforrow,l;
   IS                     *isa;
   PetscBool              done,flg;
   ISLocalToGlobalMapping map   = mat->cmap->mapping;
-  PetscInt               *ltog = (map ? map->indices : (PetscInt*) NULL),ctype=c->ctype;
+  PetscInt               ctype=c->ctype;
 
   PetscFunctionBegin;
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
   if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
 
+  if (map) {ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);}
+  else     ltog = NULL;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
 
   M         = mat->rmap->n;
@@ -248,10 +250,11 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     }
   } else if (ctype == IS_COLORING_GHOSTED) {
     /* Get gtol mapping */
-    PetscInt N = mat->cmap->N, *gtol;
+    PetscInt N = mat->cmap->N,nlocal,*gtol;
     ierr = PetscMalloc((N+1)*sizeof(PetscInt),&gtol);CHKERRQ(ierr);
     for (i=0; i<N; i++) gtol[i] = -1;
-    for (i=0; i<map->n; i++) gtol[ltog[i]] = i;
+    ierr = ISLocalToGlobalMappingGetSize(map,&nlocal);CHKERRQ(ierr);
+    for (i=0; i<nlocal; i++) gtol[ltog[i]] = i;
 
     c->vscale = 0; /* will be created in MatFDColoringApply() */
     ierr      = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
@@ -271,6 +274,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
+  if (map) {ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

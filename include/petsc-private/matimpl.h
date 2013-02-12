@@ -3,6 +3,7 @@
 #define __MATIMPL_H
 
 #include <petscmat.h>
+#include <petsc-private/petscimpl.h>
 
 /*
   This file defines the parts of the matrix data structure that are

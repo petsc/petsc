@@ -3,6 +3,7 @@
 #define __TSIMPL_H
 
 #include <petscts.h>
+#include <petsc-private/petscimpl.h>
 
 /*
     Timesteping context.

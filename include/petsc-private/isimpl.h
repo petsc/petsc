@@ -8,6 +8,7 @@ and matrices.
 #define _IS_H
 
 #include <petscis.h>
+#include <petsc-private/petscimpl.h>
 
 struct _ISOps {
   PetscErrorCode (*getsize)(IS,PetscInt*);
@@ -40,5 +41,13 @@ struct _p_IS {
   IS           complement;          /* IS wrapping nonlocal indices. */
 };
 
+struct _p_ISLocalToGlobalMapping{
+  PETSCHEADER(int);
+  PetscInt n;                  /* number of local indices */
+  PetscInt *indices;           /* global index of each local index */
+  PetscInt globalstart;        /* first global referenced in indices */
+  PetscInt globalend;          /* last + 1 global referenced in indices */
+  PetscInt *globals;           /* local index for each global index between start and end */
+};
 
 #endif

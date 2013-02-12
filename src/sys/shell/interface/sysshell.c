@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petsc-private/petscimpl.h>
 
 /* FIX: is it okay to include this directly? */
 #include <ctype.h>

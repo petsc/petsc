@@ -9,6 +9,7 @@
 #define __VECIMPL_H
 
 #include <petscvec.h>
+#include <petsc-private/petscimpl.h>
 
 /* ----------------------------------------------------------------------------*/
 typedef struct _n_PetscUniformSection *PetscUniformSection;

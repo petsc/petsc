@@ -2,7 +2,7 @@
 /*
       Code that allows one to set the error handlers
 */
-#include <petscsys.h>           /*I "petscsys.h" I*/
+#include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
 
 typedef struct _EH *EH;
 struct _EH {

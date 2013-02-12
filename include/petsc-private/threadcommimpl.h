@@ -3,6 +3,7 @@
 #define __THREADCOMMIMPL_H
 
 #include <petscthreadcomm.h>
+#include <petsc-private/petscimpl.h>
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>

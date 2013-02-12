@@ -3,6 +3,7 @@
 #define __CHARACTERISTICIMPL_H
 
 #include <petsccharacteristic.h>
+#include <petsc-private/petscimpl.h>
 
 /* Logging support */
 PETSC_EXTERN PetscClassId CHARACTERISTIC_CLASSID;

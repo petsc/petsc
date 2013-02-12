@@ -3,6 +3,7 @@
 #define __SNESIMPL_H
 
 #include <petscsnes.h>
+#include <petsc-private/petscimpl.h>
 
 typedef struct _SNESOps *SNESOps;
 

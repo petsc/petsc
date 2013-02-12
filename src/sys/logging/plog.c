@@ -8,12 +8,11 @@
       accessible to users. The private API is defined in logimpl.h and the utils directory.
 
 */
-#include <petscsys.h>        /*I    "petscsys.h"   I*/
+#include <petsc-private/logimpl.h>        /*I    "petscsys.h"   I*/
 #include <petsctime.h>
 #if defined(PETSC_HAVE_MPE)
 #include <mpe.h>
 #endif
-#include <petsc-private/logimpl.h>
 #include <petscthreadcomm.h>
 
 PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;

@@ -3,7 +3,7 @@
   Contains the data structure for plotting a histogram in a window with an axis.
 */
 
-#include <petscsys.h>         /*I "petscsys.h" I*/
+#include <petsc-private/petscimpl.h>         /*I "petscsys.h" I*/
 
 PetscClassId PETSC_DRAWHG_CLASSID = 0;
 
