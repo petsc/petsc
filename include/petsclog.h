@@ -526,4 +526,8 @@ do {\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);            \
   } while (0)
 
+/* some vars for logging */
+PETSC_EXTERN PetscBool PetscPreLoadingUsed;       /* true if we are or have done preloading */
+PETSC_EXTERN PetscBool PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+
 #endif
