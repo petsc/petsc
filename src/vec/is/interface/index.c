@@ -375,6 +375,36 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISGetMinMax"
+/*@C
+   ISGetMinMax - Gets the minimum and maximum values in an IS
+
+   Not Collective
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
++   min - the minimum value
+-   max - the maximum value
+
+   Level: intermediate
+
+   Concepts: index sets^getting indices
+   Concepts: indices of index set
+
+.seealso: ISGetIndices(), ISRestoreIndices(), ISGetIndicesF90()
+@*/
+PetscErrorCode  ISGetMinMax(IS is,PetscInt *min,PetscInt *max)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  if (min) *min = is->min;
+  if (max) *max = is->max;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISRestoreIndices"
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call

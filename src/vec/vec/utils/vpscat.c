@@ -3,7 +3,6 @@
     Defines parallel vector scatters.
 */
 
-#include <petsc-private/isimpl.h>
 #include <../src/vec/vec/impls/dvecimpl.h>         /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 

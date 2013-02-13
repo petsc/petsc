@@ -5,7 +5,6 @@
   some special cases for parallel scatters.
 */
 
-#include <petsc-private/isimpl.h>
 #include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
 /* Logging support */
@@ -1205,7 +1204,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* special case extracting (subset of) local portion */
     if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID) {
       PetscInt              nx,ny,to_first,to_step,from_first,from_step;
-      PetscInt              start,end;
+      PetscInt              start,end,min,max;
       VecScatter_Seq_Stride *from12 = NULL,*to12 = NULL;
 
       ierr = VecGetOwnershipRange(xin,&start,&end);CHKERRQ(ierr);
@@ -1214,7 +1213,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
       ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-      if (ix->min >= start && ix->max < end) islocal = PETSC_TRUE;
+      ierr = ISGetMinMax(ix,&min,&max);CHKERRQ(ierr);
+      if (min >= start && max < end) islocal = PETSC_TRUE;
       else islocal = PETSC_FALSE;
       ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
       if (cando) {
@@ -1421,7 +1421,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* special case local copy portion */
     islocal = PETSC_FALSE;
     if (ix_type == IS_STRIDE_ID && iy_type == IS_STRIDE_ID) {
-      PetscInt              nx,ny,to_first,to_step,from_step,start,end,from_first;
+      PetscInt              nx,ny,to_first,to_step,from_step,start,end,from_first,min,max;
       VecScatter_Seq_Stride *from = NULL,*to = NULL;
 
       ierr = VecGetOwnershipRange(yin,&start,&end);CHKERRQ(ierr);
@@ -1430,7 +1430,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
       ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-      if (iy->min >= start && iy->max < end) islocal = PETSC_TRUE;
+      ierr = ISGetMinMax(iy,&min,&max);CHKERRQ(ierr);
+      if (min >= start && max < end) islocal = PETSC_TRUE;
       else islocal = PETSC_FALSE;
       ierr = MPI_Allreduce(&islocal,&cando,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)yin));CHKERRQ(ierr);
       if (cando) {
